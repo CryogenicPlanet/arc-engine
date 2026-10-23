@@ -12,7 +12,8 @@ type Inventory = { id: string; nonce: string; pid: number; mainThread: boolean;
   nativeActionsPerformed: number; functionalAcceptance: boolean; truncated: boolean;
   nodes: unknown[]; foregroundBefore: number; foregroundAfter: number };
 type Run = { agent: string; pid?: number; errors: string[]; observations: Inventory[];
-  cleanup?: string; elapsedMs?: number; pageAlertScheduled?: boolean };
+  cleanup?: string; elapsedMs?: number; pageAlertScheduled?: boolean; phase?: string;
+  browserAliveOnFailure?: boolean; reconnects?: number; closeAcknowledged?: boolean };
 const root = resolve(import.meta.dir, "../..");
 const args = process.argv.slice(2);
 const allowed = new Set(["--out", "--dylib", "--agents", "--port"]);
@@ -68,7 +69,7 @@ mkdirSync(out, { recursive: true, mode: 0o700 });
 const runs: Run[] = [];
 try {
   for (const agent of agents) {
-    const run: Run = { agent, errors: [], observations: [] }; runs.push(run);
+    const run: Run = { agent, errors: [], observations: [], phase: "preflight", reconnects: 0 }; runs.push(run);
     const dir = join(out, agent); mkdirSync(dir, { mode: 0o700 });
     const app = resolve(root, `../arc/build/ArcModAgent-${agent}.app`);
     const exe = join(app, "Contents/MacOS/Arc");
@@ -129,6 +130,7 @@ try {
       const applicationData = join(process.env.HOME!, "Library/Application Support", `ArcModAgent-${agent}`);
       const data = join(applicationData, "Agent Chromium Data");
       mkdirSync(data, { recursive: true, mode: 0o700 });
+      run.phase = "launch";
       launchRequested = true;
       exec(["open", "-n", "-g", "-a", app,
         "--env", `DYLD_INSERT_LIBRARIES=${dylib}`, "--env", `ARC_UI_INVENTORY_REQUEST=${requestPath}`,
@@ -148,18 +150,32 @@ try {
         const ready = json<{ready: boolean; pid: number}>(join(applicationData, "ArcModAgentReady.json"));
         return ready.ready === true && ready.pid === browser!.pid;
       }, 35000);
+      run.phase = "connect after app-ready";
       client = await wait(connect, 15000);
       if (Date.now() >= workDeadline) throw new Error("work deadline reached");
+      run.phase = "create nonce fixture target";
       const created = await client.request("Target.createTarget", { url: fixtureURL });
       if (typeof created.targetId !== "string") throw new Error("no owned fixture target");
       const target = created.targetId;
+      run.phase = "verify nonce fixture page";
       await wait(async () => {
-        const result = await client!.targetCommand(target, "Runtime.evaluate", { expression: `location.href===${JSON.stringify(fixtureURL)}&&window.inventoryNonce===${JSON.stringify(nonce)}&&document.readyState==='complete'`, returnByValue: true });
+        let result;
+        try { result = await client!.targetCommand(target, "Runtime.evaluate", { expression: `location.href===${JSON.stringify(fixtureURL)}&&window.inventoryNonce===${JSON.stringify(nonce)}&&document.readyState==='complete'`, returnByValue: true }); }
+        catch (error) {
+          // Reattach only for idempotent reads on this exact existing fixture.
+          // Never replay target creation or an uncertain alert/action request.
+          if (!/closed|disconnect/.test(String(error)) || (run.reconnects ?? 0) >= 2 ||
+              !snapshot().some(row => same(row, browser!))) throw error;
+          run.reconnects = (run.reconnects ?? 0) + 1; client?.close(); client = await connect();
+          return false;
+        }
         return (result.result as {value?: unknown} | undefined)?.value === true;
       }, 8000);
+      run.phase = "schedule actual page alert";
       const scheduled = await client.targetCommand(target, "Runtime.evaluate", { expression: "window.triggerInventoryAlert()", returnByValue: true });
       if ((scheduled.result as {value?: unknown} | undefined)?.value !== nonce) throw new Error("fixture did not schedule its actual alert");
       run.pageAlertScheduled = true;
+      run.phase = "read local dialog inventory";
       for (let index = 0; index < 8 && Date.now() + 1500 < workDeadline; ++index) {
         if (verifyAgentEndpoint(agent, port) !== browser.pid) throw new Error("endpoint PID changed");
         const id = `${nonce}-${index}`;
@@ -175,7 +191,10 @@ try {
         if (inventory.fixtureContainerCount > 0 && inventory.fixtureButtonCount > 0) break;
         await sleep(250);
       }
-    } catch (error) { run.errors.push(String(error)); }
+    } catch (error) {
+      run.errors.push(`${run.phase}: ${String(error)}`);
+      if (browser) { try { run.browserAliveOnFailure = snapshot().some(row => same(row, browser!)); } catch {} }
+    }
     finally {
       if (!browser && launchRequested) {
         // Reconcile a partially successful open before deciding whether another
@@ -205,9 +224,9 @@ try {
         try {
           track();
           client ??= await connect();
-          await client.request("Browser.close").catch(() => {});
+          run.closeAcknowledged = await client.request("Browser.close").then(() => true, () => false);
           await wait(gone, 7000, Math.min(totalDeadline, Date.now() + 7000));
-          run.cleanup = "Browser.close; captured browser/helpers exited";
+          run.cleanup = `Captured browser/helpers exited; close request ${run.closeAcknowledged ? "acknowledged" : "not acknowledged"}`;
         } catch {
           terminate([browser]);
           try { await wait(gone, 4000, Math.min(totalDeadline, Date.now() + 4000)); }
@@ -225,6 +244,7 @@ try {
 } finally { fixture.stop(true); }
 const report = { nonce, purpose: "Read-only local AppKit control capability inventory", functionalAcceptance: false,
   nativeActionsPerformed: 0, runs: runs.map(run => ({ agent: run.agent, pid: run.pid, errors: run.errors,
+    phase: run.phase, browserAliveOnFailure: run.browserAliveOnFailure, reconnects: run.reconnects,
     pageAlertScheduled: run.pageAlertScheduled ?? false, cleanup: run.cleanup, elapsedMs: run.elapsedMs,
     observations: run.observations.length,
     capabilityStatus: run.observations.some(row => row.truncated) ? "inventory-truncated-inconclusive" :

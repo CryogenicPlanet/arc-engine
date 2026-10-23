@@ -2,6 +2,7 @@
 #include "arc/api/arc_internal.h"
 #include <array>
 #include <cmath>
+#include <map>
 #include <optional>
 #include "base/functional/bind.h"
 #include "base/files/file_path.h"
@@ -30,14 +31,26 @@
 - (void)didFail:(NSString*)token withError:(int)error;
 @end
 
-ARC_EXPORT @interface ArcURLLoadConfiguration : NSObject
-@property(nonatomic, copy) NSURL* url;
+ARC_EXPORT @interface ArcURLLoadConfiguration : NSObject {
+  NSURL* _url;
+  NSUInteger _method;
+  NSData* _payloadData;
+  NSURL* _payloadFileURL;
+  NSString* _payloadContentType;
+  std::map<std::string, std::string> _headerValues;
+  BOOL _followRedirects;
+  BOOL _streamResponseData;
+  double _timeout;
+  NSUInteger _cachePolicy;
+  BOOL _blockLocalRequest;
+}
+@property(nonatomic, strong) NSURL* url;
 @property(nonatomic) NSUInteger method;
-@property(nonatomic, copy) NSString* payload;
-@property(nonatomic, copy) NSData* payloadData;
-@property(nonatomic, copy) NSURL* payloadFileURL;
-@property(nonatomic, copy) NSString* payloadContentType;
-@property(nonatomic, copy) NSDictionary* headers;
+@property(nonatomic, strong) NSString* payload;
+@property(nonatomic, strong) NSData* payloadData;
+@property(nonatomic, strong) NSURL* payloadFileURL;
+@property(nonatomic, strong) NSString* payloadContentType;
+@property(nonatomic, strong) NSDictionary* headers;
 @property(nonatomic) BOOL followRedirects;
 @property(nonatomic) BOOL streamResponseData;
 @property(nonatomic) double timeout;
@@ -45,29 +58,49 @@ ARC_EXPORT @interface ArcURLLoadConfiguration : NSObject
 @property(nonatomic) BOOL blockLocalRequest;
 @end
 @implementation ArcURLLoadConfiguration
-@synthesize url = _url, method = _method, payloadData = _payloadData;
-@synthesize payloadFileURL = _payloadFileURL, payloadContentType = _payloadContentType;
-@synthesize headers = _headers, followRedirects = _followRedirects;
-@synthesize streamResponseData = _streamResponseData, timeout = _timeout;
-@synthesize cachePolicy = _cachePolicy, blockLocalRequest = _blockLocalRequest;
 - (instancetype)init {
   if ((self = [super init])) {
-    _url = [NSURL URLWithString:@""];
-    _payloadFileURL = [NSURL URLWithString:@""];
     _payloadData = [NSData data];
     _payloadContentType = @"";
-    _headers = @{};
     _followRedirects = YES;
   }
   return self;
 }
+- (NSURL*)url { return ArcNSURL(ArcGURL(_url)); }
+- (void)setUrl:(NSURL*)url { _url = [url copy]; }
+- (NSURL*)payloadFileURL { return ArcNSURL(ArcGURL(_payloadFileURL)); }
+- (void)setPayloadFileURL:(NSURL*)url { _payloadFileURL = [url copy]; }
 - (NSString*)payload { return [[NSString alloc] initWithData:_payloadData encoding:NSUTF8StringEncoding]; }
 - (void)setPayload:(NSString*)payload { _payloadData = [payload dataUsingEncoding:NSUTF8StringEncoding] ?: [NSData data]; }
+- (NSData*)payloadData { return [NSData dataWithBytes:_payloadData.bytes length:_payloadData.length]; }
 - (void)setPayloadData:(NSData*)data { _payloadData = [data copy] ?: [NSData data]; }
-- (void)setHeaders:(NSDictionary*)headers { _headers = [headers copy] ?: @{}; }
+- (NSDictionary*)headers {
+  NSMutableDictionary* headers = [NSMutableDictionary dictionary];
+  for (const auto& [name, value] : _headerValues) {
+    headers[ArcNSString(name)] = ArcNSString(value);
+  }
+  return [headers copy];
+}
+- (void)setHeaders:(NSDictionary*)headers {
+  _headerValues.clear();
+  for (NSString* name in headers) {
+    _headerValues[ArcUTF8(name)] = ArcUTF8(headers[name]);
+  }
+}
+- (NSString*)payloadContentType { return _payloadContentType; }
 - (void)setPayloadContentType:(NSString*)type { _payloadContentType = [type copy] ?: @""; }
+- (NSUInteger)method { return _method; }
 - (void)setMethod:(NSUInteger)method { _method = method <= 3 ? method : 0; }
+- (NSUInteger)cachePolicy { return _cachePolicy; }
 - (void)setCachePolicy:(NSUInteger)policy { _cachePolicy = policy == 1 ? 1 : 0; }
+- (BOOL)followRedirects { return _followRedirects; }
+- (void)setFollowRedirects:(BOOL)value { _followRedirects = value; }
+- (BOOL)streamResponseData { return _streamResponseData; }
+- (void)setStreamResponseData:(BOOL)value { _streamResponseData = value; }
+- (double)timeout { return _timeout; }
+- (void)setTimeout:(double)value { _timeout = value; }
+- (BOOL)blockLocalRequest { return _blockLocalRequest; }
+- (void)setBlockLocalRequest:(BOOL)value { _blockLocalRequest = value; }
 @end
 
 // Chromium invokes this consumer on the same sequence as the load.

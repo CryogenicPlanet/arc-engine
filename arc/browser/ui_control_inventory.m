@@ -51,9 +51,29 @@ static void Visit(id object, NSInteger parent, NSUInteger depth, NSString* edge,
   node.object = object; node.parent = parent;
   const NSUInteger index = nodes.count;
   NSString* role = nil;
+  NSString* className = NSStringFromClass(object_getClass(object));
+  const BOOL remote = [className containsString:@"NSAccessibilityRemote"] ||
+                      [className containsString:@"NSRemoteView"];
+  if (remote || [className containsString:@"WebContents"] || [className containsString:@"RenderWidgetHost"] ||
+      [className containsString:@"BrowserAccessibility"]) {
+    node.row = [@{@"index":@(index), @"parent":@(parent), @"depth":@(depth), @"edge":edge,
+      @"class":className, @"role":NSNull.null, @"enabled":@NO, @"isNSButton":@NO,
+      @"respondsToPerformClick":@NO, @"respondsToAccessibilityPerformPress":@NO,
+      @"fixtureMarker":@NO, @"excludedRemoteOrRenderer":@YES} mutableCopy];
+    [nodes addObject:node];
+    return;
+  }
   BOOL enabled = YES;
   @try {
     role = LocalString(object, @selector(accessibilityRole));
+    if ([role isEqual:NSAccessibilityWebAreaRole]) {
+      node.row = [@{@"index":@(index), @"parent":@(parent), @"depth":@(depth), @"edge":edge,
+        @"class":className, @"role":role, @"enabled":@NO, @"isNSButton":@NO,
+        @"respondsToPerformClick":@NO, @"respondsToAccessibilityPerformPress":@NO,
+        @"fixtureMarker":@NO, @"excludedRemoteOrRenderer":@YES} mutableCopy];
+      [nodes addObject:node];
+      return;
+    }
     if ([object respondsToSelector:@selector(isAccessibilityEnabled)]) enabled = [(id<NSAccessibility>)object isAccessibilityEnabled];
     // Markers must be the exact nonce alert message, not a URL/title substring.
     NSString* label = LocalString(object, @selector(accessibilityLabel));
@@ -73,8 +93,7 @@ static void Visit(id object, NSInteger parent, NSUInteger depth, NSString* edge,
                 @"fixtureMarker":@(node.fixtureMarker)} mutableCopy];
   [nodes addObject:node];
   // A page body cannot establish ownership of a native alert container.
-  NSString* className = NSStringFromClass(object_getClass(object));
-  if ([role isEqual:NSAccessibilityWebAreaRole] || [className containsString:@"WebContents"] ||
+  if (remote || [role isEqual:NSAccessibilityWebAreaRole] || [className containsString:@"WebContents"] ||
       [className containsString:@"RenderWidgetHost"]) return;
   @try {
     if ([object isKindOfClass:NSWindow.class]) {
@@ -105,7 +124,19 @@ static NSDictionary* Inventory(NSString* requestID) {
   NSHashTable* seen = [NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality];
   BOOL truncated = NO;
   const pid_t foregroundBefore = NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier;
-  for (NSWindow* window in [NSApp.windows copy]) Visit(window, -1, 0, @"window", nodes, seen, &truncated);
+  NSArray<NSWindow*>* windows = [NSApp.windows copy];
+  NSMutableOrderedSet<NSWindow*>* dialogs = [NSMutableOrderedSet orderedSet];
+  if (NSApp.modalWindow) [dialogs addObject:NSApp.modalWindow];
+  for (NSWindow* window in windows) {
+    if (window.sheetParent && window.isVisible) [dialogs addObject:window];
+    for (NSWindow* sheet in window.sheets) if (sheet.isVisible) [dialogs addObject:sheet];
+  }
+  // A real modal/sheet is the candidate cohort. Background sidebar trees and
+  // remote view-service windows cannot establish ownership of our alert.
+  NSArray<NSWindow*>* candidates = dialogs.count ? dialogs.array : windows;
+  for (NSWindow* window in candidates) {
+    if (window.isVisible || window == NSApp.modalWindow) Visit(window, -1, 0, @"window", nodes, seen, &truncated);
+  }
   NSMutableIndexSet* scopes = [NSMutableIndexSet indexSet];
   NSUInteger markers = 0;
   for (NSUInteger index = 0; index < nodes.count; ++index) {

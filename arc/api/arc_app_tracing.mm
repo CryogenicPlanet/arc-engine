@@ -15,7 +15,11 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "third_party/perfetto/include/perfetto/tracing/tracing.h"
 
-ARC_EXPORT @interface ArcTracingConfiguration : NSObject
+ARC_EXPORT @interface ArcTracingConfiguration : NSObject {
+  NSString* _filePath;
+  double _tracingDuration;
+  BOOL _privacyFilteringEnabled;
+}
 @property(nonatomic, strong) NSString* filePath;
 @property(nonatomic) double tracingDuration;
 @property(nonatomic) BOOL privacyFilteringEnabled;
@@ -23,7 +27,6 @@ ARC_EXPORT @interface ArcTracingConfiguration : NSObject
 @implementation ArcTracingConfiguration
 @synthesize filePath = _filePath;
 @synthesize tracingDuration = _tracingDuration;
-@synthesize privacyFilteringEnabled = _privacyFilteringEnabled;
 - (instancetype)init {
   if ((self = [super init])) {
     _filePath = @"";
@@ -31,6 +34,9 @@ ARC_EXPORT @interface ArcTracingConfiguration : NSObject
   }
   return self;
 }
+- (void)setFilePath:(NSString*)path { _filePath = [path copy] ?: @""; }
+- (BOOL)privacyFilteringEnabled { return _privacyFilteringEnabled; }
+- (void)setPrivacyFilteringEnabled:(BOOL)value { _privacyFilteringEnabled = value; }
 @end
 
 @class ArcTracingController;

@@ -2,6 +2,7 @@
 
 #import "arc/api/arc_internal.h"
 #import "arc/browser/arc_navigation.h"
+#import "arc/browser/core_render_state.h"
 
 #include "base/memory/weak_ptr.h"
 #include <cmath>
@@ -119,7 +120,6 @@ static_assert(sizeof(CoreWebContentsConfiguration) == 24);
 
 @interface ArcWebContents ()
 - (void)detachFromPaneHostView:(NSView*)host;
-- (void)paneHostSizeChanged:(CGSize)size __attribute__((objc_direct));
 @end
 
 @interface WebContentsPaneHostView : NSView
@@ -127,10 +127,6 @@ static_assert(sizeof(CoreWebContentsConfiguration) == 24);
 @end
 @implementation WebContentsPaneHostView
 @synthesize hostedContents = _hostedContents;
-- (void)setFrameSize:(NSSize)size {
-  [super setFrameSize:size];
-  [_hostedContents paneHostSizeChanged:self.bounds.size];
-}
 @end
 
 @interface ArcWebContents ()
@@ -195,10 +191,6 @@ ARC_EXPORT @interface ArcSecureContext : NSObject
   auto level = chrome_security_state::GetSecurityLevel(_contents.get());
   return level == security_state::NONE ? 0 : level == security_state::SECURE ? 1 : 2;
 }
-@end
-
-ARC_EXPORT @interface ArcColor4f : NSObject
-- (instancetype)initWithR:(float)r g:(float)g b:(float)b a:(float)a;
 @end
 
 @protocol CoreContentsDelegate <NSObject>
@@ -381,12 +373,12 @@ class ArcContentsObserver : public content::WebContentsObserver {
   }
   void DidStopLoading() override {
     ArcWebContents* wrapper __attribute__((objc_precise_lifetime)) = wrapper_;
+    if (!wrapper) { return; }
     if (awaiting_navigation_start_ && !awaiting_policy_) {
       awaiting_navigation_start_ = false;
       FlushPendingState(navigation_generation_);
     }
     UpdateLoadingState();
-    if (wrapper && web_contents()) { UpdateDisplayState(); }
   }
   void NavigationEntryCommitted(const content::LoadCommittedDetails&) override {
     if (web_contents()) {
@@ -527,35 +519,6 @@ class ArcContentsObserver : public content::WebContentsObserver {
     if (!web_contents()) { return; }
     PublishLoadingState(CaptureLoadingState(), navigation_generation_);
   }
-  void UpdateDisplayState() {
-    // Completing a hidden tab's load does not submit a visible viewport or
-    // make it ready for display. Actual paint notifications remain separate.
-    if (!web_contents() || web_contents()->GetVisibility() == content::Visibility::HIDDEN) {
-      return;
-    }
-    ArcWebContents* wrapper = wrapper_;
-    auto native = web_contents()->GetWeakPtr();
-    auto background = native->GetBackgroundColor();
-    if (!background) {
-      if (auto* view = native->GetRenderWidgetHostView()) {
-        background = view->GetBackgroundColor();
-      }
-    }
-    const NSSize size = native->GetNativeView().GetNativeNSView().bounds.size;
-    const uint64_t generation = navigation_generation_;
-    id color = nil;
-    if (background) {
-      SkColor4f channels = SkColor4f::FromColor(*background);
-      color = [[ArcColor4f alloc] initWithR:channels.fR
-          g:channels.fG b:channels.fB a:channels.fA];
-    }
-    wrapper.pendingRenderFrameViewportSize = size;
-    if (!native || generation != navigation_generation_) { return; }
-    wrapper.rootBackgroundColor = color;
-    if (native && generation == navigation_generation_ && !native->IsLoading()) {
-      wrapper.isReadyToDisplay = YES;
-    }
-  }
   __weak ArcWebContents* wrapper_;
   uint64_t navigation_generation_ = 0;
   int visible_navigation_id_ = 0;
@@ -595,6 +558,7 @@ uint64_t NextDiagnosticID() {
   base::WeakPtr<content::WebContents> _contents;
   std::unique_ptr<content::WebContents> _ownedContents;
   std::unique_ptr<ArcContentsObserver> _observer;
+  std::unique_ptr<arc::CoreRenderState> _renderStateObserver;
   NSMutableDictionary<NSString*, id>* _services;
   NSNumber* _diagnosticId;
   ArcWebContentsNavigationController* _navigationController;
@@ -699,10 +663,12 @@ uint64_t NextDiagnosticID() {
     self.visibility = static_cast<NSInteger>(native->GetVisibility());
     self.hasFocus = NO;
     _observer = std::make_unique<ArcContentsObserver>(native, self);
+    _renderStateObserver = arc::CreateCoreRenderStateObserver(self, native);
   }
   return self;
 }
 - (void)dealloc {
+  _renderStateObserver.reset();
   _observer.reset();
   if (_ownedContents) {
     content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, std::move(_ownedContents));
@@ -847,7 +813,6 @@ uint64_t NextDiagnosticID() {
   if (_contents) {
     _contents->WasShown();
   }
-  self.pendingRenderFrameViewportSize = host.bounds.size;
 }
 - (void)detachFromPaneHostView:(NSView*)host {
   if ([host isMemberOfClass:[WebContentsPaneHostView class]] && [self nativeView].superview == host) {
@@ -858,7 +823,6 @@ uint64_t NextDiagnosticID() {
     }
   }
 }
-- (void)paneHostSizeChanged:(CGSize)size { self.pendingRenderFrameViewportSize = size; }
 - (void)stop { if (_contents) { _contents->Stop(); } }
 - (void)close {
   if (_ownedContents) {

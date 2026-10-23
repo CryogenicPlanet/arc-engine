@@ -40,7 +40,7 @@ if [ "$mode" = injected ]; then
   trap 'rm -f "$bundle_fixture"' EXIT
   export ARC_AI_PROBE_FIXTURE="$bundle_fixture"
 fi
-rm -f "$ARC_AI_FIXTURE_LOG" "$out/fixture.jsonl" "$ARC_AI_PROBE_OUTPUT" "$ARC_AI_PROBE_OUTPUT.ready.json" "$out/run.json" "$out/termination.json"
+rm -f "$ARC_AI_FIXTURE_LOG" "$out/fixture.jsonl" "$ARC_AI_PROBE_OUTPUT" "$ARC_AI_PROBE_OUTPUT.ready.json" "$out/run.json" "$out/termination.json" "$out/utility-processes.json"
 : > "$out/app.log"
 if [ "$mode" = build ]; then echo "$build"; exit 0; fi
 if [ "$mode" = cold ]; then
@@ -55,16 +55,52 @@ with open(sys.argv[5],'w') as log:
 PY
 elif [ "$mode" = injected ]; then
   python3 - "$app" "$out" "$build/ArcAIServiceProbe.dylib" <<'PY'
-import json,os,pathlib,plistlib,subprocess,sys,time
+import json,os,pathlib,plistlib,re,subprocess,sys,time
 app=pathlib.Path(sys.argv[1]).resolve();out=pathlib.Path(sys.argv[2]);exe=str(app/'Contents/MacOS/Arc')
 plist=plistlib.loads((app/'Contents/Info.plist').read_bytes());agent=plist['ArcModAgentSession']
 assert agent in ('trace156','ours156') and plist['CFBundleIdentifier']=='company.thebrowser.Browser.mod.agent.'+agent
 embeddings_only='ARC_AI_PROBE_EMBEDDINGS_ONLY' in os.environ
 expect_fatal=embeddings_only and agent=='ours156'
+track_utilities=embeddings_only and agent=='trace156'
+utility_prefix=str(app/'Contents')+'/'
+utility_flag=re.compile(r'(?:^|\s)--utility-sub-type=ai\.mojom\.AIService(?:\s|$)')
+utility_started=time.monotonic()
+utility_timeline={'mode':'injected-embeddings-only','agent':agent,'app':str(app),'poll_interval_seconds':.02,'samples':[]}
 def processes():
     rows=subprocess.check_output(['ps','-axo','pid=,command='],text=True).splitlines()
     return {int(parts[0]):parts[1] for row in rows if len(parts:=row.strip().split(maxsplit=1))==2}
 def owns(command):return command==exe or command.startswith(exe+' ')
+def utility_processes(current):
+    return {pid:command for pid,command in current.items() if command.startswith(utility_prefix) and utility_flag.search(command)}
+def utility_sample(current,events,main_pid):
+    if not track_utilities:return
+    found=utility_processes(current)
+    last={key:events[-1][key] for key in ('method','phase')} if events else None
+    row={'elapsed_monotonic_seconds':round(time.monotonic()-utility_started,6),'utility_pids':sorted(found),'commands':{str(pid):command for pid,command in found.items()},'boundary_last':last,'embeddings_call_seen':any(e['method']=='embeddings' and e['phase']=='call' for e in events),'main_pid':main_pid,'main_alive':main_pid is not None and owns(current.get(main_pid,''))}
+    previous=utility_timeline['samples'][-1] if utility_timeline['samples'] else None
+    if previous is None or any(row[key]!=previous[key] for key in ('utility_pids','boundary_last','main_pid','main_alive')):
+        utility_timeline['samples'].append(row)
+        (out/'utility-processes.json').write_text(json.dumps(utility_timeline,indent=2))
+def verify_utility_turnover():
+    samples=utility_timeline['samples'];initial=None;death=None;replacement=None
+    for index,row in enumerate(samples):
+        if initial is None and row['utility_pids'] and not row['embeddings_call_seen'] and row['main_alive']:
+            initial=(index,set(row['utility_pids']))
+        if initial is not None and row['embeddings_call_seen'] and row['main_alive']:
+            removed=initial[1]-set(row['utility_pids'])
+            if removed and death is None:death=(index,removed)
+            added=set(row['utility_pids'])-initial[1]
+            if death is not None and added and index>=death[0]:
+                replacement=(index,added);break
+    errors=[]
+    if initial is None:errors.append('unclear: initial scoped AI utility not sampled before embeddings')
+    if death is None:errors.append('unclear: initial AI utility exit after embeddings not observed while main app alive')
+    if replacement is None:errors.append('unclear: replacement AI utility not observed while main app alive')
+    summary={'verified':not errors,'initial_sample':initial[0] if initial else None,'initial_pids':sorted(initial[1]) if initial else [],'exit_sample':death[0] if death else None,'exited_pids':sorted(death[1]) if death else [],'replacement_sample':replacement[0] if replacement else None,'replacement_pids':sorted(replacement[1]) if replacement else [],'errors':errors}
+    utility_timeline['turnover']=summary
+    (out/'utility-processes.json').write_text(json.dumps(utility_timeline,indent=2))
+    assert not errors,'; '.join(errors)
+
 def read_events():
     try:return json.loads(pathlib.Path(os.environ['ARC_AI_PROBE_OUTPUT']).read_text())
     except (FileNotFoundError,json.JSONDecodeError):return []
@@ -83,7 +119,11 @@ def fatal_checkpoint(events):
     assert not any(e['method']=='embeddings.error' for e in events), 'fatal probe: termination occurred after a different operation'
     assert not any(e['method']=='embeddings' and e['phase']=='timeout' for e in events), 'fatal probe: first operation timed out before exit'
     assert not any(e['method']=='probe' and e['phase']=='finished' for e in events), 'fatal probe: completed without expected termination'
-assert not any(owns(command) for command in processes().values()),'agent already running; refusing to attach'
+before_launch=processes()
+assert not any(owns(command) for command in before_launch.values()),'agent already running; refusing to attach'
+if track_utilities:
+    assert not utility_processes(before_launch),'preexisting scoped AI utility; refusing ambiguous ownership'
+    utility_sample(before_launch,[],None)
 data=pathlib.Path.home()/'Library/Application Support'/('ArcModAgent-'+agent)/'Agent Chromium Data'
 data.mkdir(parents=True,exist_ok=True)
 cmd=['open','-n','-g','-a',str(app),'--env','DYLD_INSERT_LIBRARIES='+sys.argv[3]]
@@ -103,6 +143,7 @@ try:
         if pid is not None and pid in current and not owns(current[pid]):
             raise SystemExit('owned PID was reused; refusing termination acceptance or cleanup')
         events=read_events()
+        utility_sample(current,events,pid)
         gone=pid is not None and pid not in current
         if gone:
             if not expect_fatal:raise SystemExit('unexpected exit of probe-owned app')
@@ -114,10 +155,11 @@ try:
         if any(e['method']=='probe' and e['phase']=='finished' for e in events):
             assert pid is not None and verified_ready(pid), 'completed probe has no verified owned PID'
             if expect_fatal:raise SystemExit('ours embeddings completed without the expected process exit')
+            if track_utilities:verify_utility_turnover()
             if embeddings_only:
                 (out/'termination.json').write_text(json.dumps({'mode':'injected-embeddings-only','pid':pid,'agent':agent,'observedexit':False,'checkpoint':'original app remained alive through finished marker'}))
             break
-        time.sleep(.2)
+        time.sleep(.02 if track_utilities else .2)
     else:raise SystemExit('injected probe timeout; inspect app.log and partial events')
     print('injected fixture probe complete:',out)
 finally:
@@ -164,17 +206,23 @@ if 'ARC_AI_PROBE_EMBEDDINGS_ONLY' in __import__('os').environ:
         print('ours legacy embeddings: verified owned process exited after initialized call/return with no callback')
     else:
         assert termination['observedexit'] is False, 'original app unexpectedly exited'
-        assert sum(e['method']=='embeddings' and e['phase']=='timeout' for e in events)==1
-        assert not any(e['method']=='embeddings' and e['phase']=='callback' for e in events), 'original first embeddings callback was not dropped'
         for method in ('embeddings','embeddings.error'):
+            assert sum(e['method']==method and e['phase']=='timeout' for e in events)==1, method+': expected one timeout'
+            assert not any(e['method']==method and e['phase']=='callback' for e in events), method+': callback unexpectedly delivered'
             for phase in ('call','return'):
                 assert sum(e['method']==method and e['phase']==phase for e in events)==1
-        assert next(e['value'] for e in events if e['method']=='embeddings.afterFirst.available') is False, 'original embeddings utility unexpectedly recovered'
-        assert callback('embeddings.error')==[None,3], 'original fresh embeddings call did not report disconnected3'
-        fresh=next(e for e in events if e['method']=='embeddings.error' and e['phase']=='callback')
-        assert fresh['mainThread'] is True and fresh['synchronous'] is True, 'original disconnected embeddings callback timing/thread mismatch'
         assert any(e['method']=='probe' and e['phase']=='finished' for e in events)
-        print('original legacy embeddings: app survived, first callback dropped, next call returned3')
+        timeline=json.loads((p/'utility-processes.json').read_text())
+        turnover=timeline['turnover']
+        assert turnover['verified'] is True and not turnover['errors'], 'utility death/replacement is unclear'
+        assert turnover['exited_pids'] and turnover['replacement_pids']
+        assert not set(turnover['initial_pids']) & set(turnover['replacement_pids'])
+        assert turnover['initial_sample']<turnover['exit_sample']<=turnover['replacement_sample']
+        for index in ('initial_sample','exit_sample','replacement_sample'):
+            assert timeline['samples'][turnover[index]]['main_alive'] is True
+        assert timeline['samples'][turnover['exit_sample']]['embeddings_call_seen'] is True
+        available=next(e['value'] for e in events if e['method']=='embeddings.afterFirst.available')
+        print('original legacy embeddings: both callbacks dropped; app survived; scoped AI utility turnover verified; after-first availability=',available)
     raise SystemExit(0)
 if 'ARC_AI_PROBE_EMBEDDINGS_ONLY' not in __import__('os').environ:
     assert callback('type')==[4,-1]

@@ -1,13 +1,16 @@
 --- a/arc/api/arc_internal.h
 +++ b/arc/api/arc_internal.h
-@@ -133,6 +133,12 @@
+@@ -133,6 +133,15 @@
  
  @class ArcURLLoadConfiguration;
  @class ArcURLLoadCancellationToken;
-+// Native feature consumers must not create public ObjC boundary calls.
++// Native renderer consumers share the app feature table without ObjC calls.
 +bool ArcRuntimeFeatureEnabled(NSUInteger identifier);
 +namespace arc {
 +void RefreshRendererAdBlockFeature();
++void InitializeRendererProfile(Profile* profile);
++void SetRendererSkipUserActivationForPiP(content::WebContents*, bool);
++void SetRendererIgnoreDisablePiPAttribute(content::WebContents*, bool);
 +}
 +
  // Starts a URL load like -[ArcBrowserApplication loadUrl:withDelegate:], using |profile|'s network context
@@ -42,9 +45,47 @@
  }
  - (void)setStringFeatureValue:(NSUInteger)identifier value:(NSString*)value {
    auto& features = Features();
+--- a/arc/api/arc_browser_context.mm
++++ b/arc/api/arc_browser_context.mm
+@@ -17,6 +17,10 @@
+ #include "chrome/browser/ui/profiles/profile_colors_util.h"
+ #include "third_party/skia/include/core/SkColor.h"
+ 
++namespace arc {
++__attribute__((weak)) void InitializeRendererProfile(Profile*) {}
++}
++
+ namespace {
+ // Arc's context types: 0 is the regular profile, 1 its off-the-record profile.
+ constexpr NSUInteger kBrowserContextTypeRegular = 0;
+@@ -191,6 +195,7 @@
+ 
+ - (instancetype)initWithProfile:(Profile*)profile {
+   if ((self = [super init])) {
++    arc::InitializeRendererProfile(profile);
+     _profile = profile->GetWeakPtr();
+     _id = [[ArcBrowserContextID alloc]
+         initWithDirectoryBasename:base::SysUTF8ToNSString(profile->GetPath().BaseName().value())
 --- a/chromium/src/chrome/renderer/chrome_content_renderer_client.cc
 +++ b/chromium/src/chrome/renderer/chrome_content_renderer_client.cc
-@@ -1494,6 +1494,8 @@
+@@ -5,6 +5,7 @@
+ #include "chrome/renderer/chrome_content_renderer_client.h"
+ 
+ #include "arc/renderer/render_frame_agent.h"
++#include "arc/renderer/render_process_agent.h"
+ 
+ #include <functional>
+ #include <memory>
+@@ -405,6 +406,8 @@
+ ChromeContentRendererClient::~ChromeContentRendererClient() = default;
+ 
+ void ChromeContentRendererClient::RenderThreadStarted() {
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app"))
++    arc::EnsureRenderProcessAgent();
+   RenderThread* thread = RenderThread::Get();
+ 
+   main_thread_profiler_->SetAuxUnwinderFactory(base::BindRepeating(
+@@ -1494,6 +1497,8 @@
  
  void ChromeContentRendererClient::RunScriptsAtDocumentStart(
      content::RenderFrame* render_frame) {
@@ -53,3 +94,22 @@
  #if BUILDFLAG(ENABLE_EXTENSIONS_CORE)
    extensions::ExtensionsRendererClient::Get()->RunScriptsAtDocumentStart(
        render_frame);
+--- a/chromium/src/chrome/browser/chrome_content_browser_client.cc
++++ b/chromium/src/chrome/browser/chrome_content_browser_client.cc
+@@ -5,6 +5,7 @@
+ #include "chrome/browser/chrome_content_browser_client.h"
+ 
+ #include "chrome/browser/arcmod/arcmod_hooks.h"
++#include "arc/common/ad_block_browser.h"
+ 
+ #include <algorithm>
+ #include <iterator>
+@@ -1885,6 +1886,8 @@
+   for (auto& part : extra_parts_) {
+     part->RenderProcessWillLaunch(host);
+   }
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app"))
++    arc::RendererProcessWillLaunch(host);
+ }
+ 
+ std::optional<GURL> ChromeContentBrowserClient::GetEffectiveURL(

@@ -842,3 +842,33 @@ flag remains0 and selects null at0x4731c9c; cosmetic accepted flag starts0 at
 this pair with engagement1 and publishes resets whileenabled. Enabling with
 such an engaged empty pair reapplies emptyregions; enabling with absentpair
 (afterdisable and no subsequent completion) sends onlyexclusions.
+
+## Bound-agent ordering is assigned during browser RenderProcessWillLaunch
+
+The sole direct caller of RegisterAgent0x4731028 is **0x42ac400** inside
+**0x42abee4, ArcContentBrowserClient::RenderProcessWillLaunch**. Its primary
+vtable entry is0xda7aba8 (slot16 from address point0xda7ab28), matching the
+ContentBrowserClient declaration order including IsDragAllowedByPolicy and
+the two destructor slots. It first calls upstream Chrome implementation
+**0x2adfdb0** at0x42abf00; that implementation's operations match
+ChromeContentBrowserClient::RenderProcessWillLaunch (profile fromhost+416,
+WebRtcLoggingController attachment, AudioDebugRecordingsHandler userdata,
+RendererUpdater). Local source counterpart is
+`chrome/browser/chrome_content_browser_client.cc:1867`.
+
+The Arc body gets the profile's AdBlockerService through0x4296bcc at0x42abf10,
+constructs a generic receiver named **arc.mojom.AdBlockerAgent** (literal
+0xd37db87, used0x42ac3a0), sends it through browser BindReceiver0x28316f4 at
+**0x42ac3c8**, then directly invokes0x4731028 at**0x42ac400**. There is no
+renderer-originated registration dispatch, Ping callback, or acknowledgment
+between the receiver send and monotonic sequence assignment0x4731164.
+The service registry entry is installed synchronously in that browser call.
+
+The local content source calls RenderProcessWillLaunch from RPH initialization
+(`content/browser/renderer_host/render_process_host_impl.cc:2018`); API comment
+explicitly says it notifies before the render process is created. Therefore
+when A's browser bind attempt precedes B's, A receives the earlier native key
+even if B becomes responsive or acknowledges a probe before A. A replacement
+that assigns registry ordering only on Ping acknowledgment can reverse native
+debug-agent selection. Liveness checks may separately gate use, but an
+acknowledgment is not the native ordering event.

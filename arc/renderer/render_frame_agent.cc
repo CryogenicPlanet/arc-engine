@@ -2,11 +2,9 @@
 #include "arc/renderer/render_frame_agent.h"
 
 #include <map>
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
-#include <unordered_set>
 
 #include "arc/common/renderer.mojom.h"
 #include "arc/renderer/ad_block_filter.h"
@@ -14,15 +12,12 @@
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/no_destructor.h"
 #include "base/supports_user_data.h"
-#include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
@@ -190,7 +185,7 @@ class RenderFrameAgent final : public content::RenderFrameObserver,
     if (!ruleset) {
       if (installed_ad_block_filter_ && installed_filter_ruleset_) {
         // Blink requires a non-null filter. Replace the former blocking filter
-        // with an allow-all adapter, while ruleset_ stays null for NoBlockList.
+        // with an allow-all adapter; process rules stay null for NoBlockList.
         loader->SetSubresourceFilter(
             CreateAdBlockFilter(installed_filter_ruleset_, frame->GetSecurityOrigin(),
                                true, base::RepeatingClosure())

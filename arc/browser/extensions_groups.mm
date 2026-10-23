@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/api/tabs/windows_util.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -578,26 +579,51 @@ class HostedTabGroupsMoveFunction : public HostedGroupsFunction {
       ArcBrowser* destination = browser;
       if (window_id) {
         std::string window_error;
-        ArcBrowser* target = self->Window(*window_id, &window_error);
-        if (!target) {
+        extensions::WindowController* target_controller = nullptr;
+        // Group lookup is asynchronous; the dispatcher can have shut down
+        // before Chromium's synchronous window resolver is called.
+        if (!self->browser_context() || !self->dispatcher()) {
+          self->FailString(kClosed);
+          return;
+        }
+        if (!::windows_util::GetControllerFromWindowID(
+                self.get(), *window_id,
+                extensions::WindowController::GetAllWindowFilter(),
+                &target_controller, &window_error)) {
           self->FailString(window_error);
           return;
         }
-        auto* target_native = self->Live(target);
-        if (!target_native || target_native->GetProfile() != native->GetProfile()) {
-          self->Fail(@"Tab groups cannot be moved between different profiles.");
+        auto* target_native = target_controller->GetBrowserWindowInterface();
+        if (!self->Allowed(target_native)) {
+          self->FailString(kUnavailable);
           return;
         }
-        if (!ExtensionTabUtil::IsTabStripEditable(*target_native->GetProfile())) {
+        if (target_native->GetType() != BrowserWindowInterface::TYPE_NORMAL) {
+          self->FailString(
+              ExtensionTabUtil::kCanOnlyMoveTabsWithinNormalWindowsError);
+          return;
+        }
+        if (!ExtensionTabUtil::SupportsTabGroups(target_native)) {
+          self->FailString(kUnavailable);
+          return;
+        }
+        if (target_native->GetProfile() != native->GetProfile()) {
+          self->FailString(
+              ExtensionTabUtil::kCanOnlyMoveTabsWithinSameProfileError);
+          return;
+        }
+        if (!ExtensionTabUtil::IsTabStripEditable(
+                *target_native->GetProfile())) {
           self->FailString(ExtensionTabUtil::kTabStripNotEditableError);
           return;
         }
-        destination = target;
+        destination = BrowserForHostedExtensions(target_native);
       }
-      // The app receiver owns the destination window. Its native implementation
-      // ignores the ArcBrowser argument, so select the destination's delegate
-      // as well as passing that browser and the source group's global UUID.
-      id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(destination);
+      // The retained app wrapper ignores the ArcBrowser argument and passes its
+      // receiver to a Swift helper. Selecting the destination's delegate is an
+      // inference from that shape; cross-window routing needs runtime evidence.
+      id<ArcHostedGroupDelegate> delegate =
+          BrowserExtensionDelegate(destination);
       if (![delegate respondsToSelector:@selector(browser:moveTabGroupWithId:
                                                   toNewIndex:completion:)]) {
         self->FailString(kUnavailable);

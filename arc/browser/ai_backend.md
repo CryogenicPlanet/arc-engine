@@ -480,3 +480,28 @@ The direct logger now writes fixture-direct.jsonl separately; the authoritative
 captured snapshot stays immutable. No record filtering was added. The failed
 comparison is preserved as results/ai-run2/service-diff-before-log-isolation.json.
 A probe-only rerun is queued; no production change or extra build is needed.
+
+
+### Completed validation (10:44 UTC)
+
+Final normal synthetic pair is strict MATCH:152 boundary events and41 captured
+ABI rows per engine, zero event/ABI/coverage errors. Spaced stream also passes
+exact token0, two partials, completion10, main-thread/asynchronous shape.
+
+Legacy original utility turnover is now observed, not inferred: initial69810
+was alive before call, exited after it; replacement69855 appeared~2s later
+while browser69325 survived. Both embeddings callbacks were dropped. Browser
+availability recovered despite Config.maxRetries0; the attempted assumption
+that0 disables native retries was wrong and that failed run is preserved.
+The initial utility is so short-lived that the first20ms poll missed it; a250ms
+pre-call run-loop window in this isolated probe captures it. Strict turnover
+checks were retained. utility-processes.json records verifiedtrue with no errors.
+
+The ours legacy probe then verified initialized call/return and owned browser
+PID70225 exit with no callback. Both probes passed, confirming the intentional
+in-process fatal boundary. Normal comparison, DTOs and native input remain
+clean. All owned wrappers/watchers/drivers/apps exited; temporary app-bundled
+fixture removed. logs/wp/ai.report.md is final, including exact scenario diff
+headers, bounded reachability evidence and uncovered production-model/AI-UI
+acceptance. No pending implementation or lead policy decision remains for the
+authorized in-process scope.

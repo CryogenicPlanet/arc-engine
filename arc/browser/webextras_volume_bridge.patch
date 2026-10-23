@@ -1,0 +1,196 @@
+diff --git a/content/browser/media/session/media_session_controller.h b/content/browser/media/session/media_session_controller.h
+--- a/content/browser/media/session/media_session_controller.h
++++ b/content/browser/media/session/media_session_controller.h
+@@ -57,6 +57,11 @@
+   // Must be called when a pause occurs on the renderer side media player; keeps
+   // the MediaSession instance in sync with renderer side behavior.
+   void OnPlaybackPaused(bool reached_end_of_stream);
++
++  // Applies a multiplier using this controller's private session player ID.
++  void SetVolumeMultiplier(double value) {
++    OnSetVolumeMultiplier(player_id_, value);
++  }
+ 
+   // MediaSessionPlayerObserver implementation.
+   void OnSuspend(int player_id, bool triggered_by_user) override;
+diff --git a/content/browser/media/session/media_session_controllers_manager.h b/content/browser/media/session/media_session_controllers_manager.h
+--- a/content/browser/media/session/media_session_controllers_manager.h
++++ b/content/browser/media/session/media_session_controllers_manager.h
+@@ -71,6 +71,9 @@
+   // WebContents.
+   void PictureInPictureStateChanged(bool is_picture_in_picture);
+ 
++  // Applies a multiplier to every tracked player, including paused players.
++  void SetVolumeMultiplier(double value);
++
+   // Called when the WebContents was muted or unmuted.
+   void WebContentsMutedStateChanged(bool muted);
+ 
+diff --git a/content/browser/media/session/media_session_controllers_manager.cc b/content/browser/media/session/media_session_controllers_manager.cc
+--- a/content/browser/media/session/media_session_controllers_manager.cc
++++ b/content/browser/media/session/media_session_controllers_manager.cc
+@@ -97,6 +97,16 @@
+     entry.second->PictureInPictureStateChanged(is_picture_in_picture);
+ }
+ 
++void MediaSessionControllersManager::SetVolumeMultiplier(double value) {
++  if (!IsMediaSessionEnabled()) {
++    return;
++  }
++
++  for (auto& entry : controllers_map_) {
++    entry.second->SetVolumeMultiplier(value);
++  }
++}
++
+ void MediaSessionControllersManager::WebContentsMutedStateChanged(bool muted) {
+   if (!IsMediaSessionEnabled())
+     return;
+diff --git a/content/browser/media/media_web_contents_observer.h b/content/browser/media/media_web_contents_observer.h
+--- a/content/browser/media/media_web_contents_observer.h
++++ b/content/browser/media/media_web_contents_observer.h
+@@ -109,6 +109,9 @@
+   // Called by WebContentsImpl when the audible state may have changed.
+   void MaybeUpdateAudibleState();
+ 
++  // Applies a volume multiplier to all tracked media players on the UI thread.
++  void SetVolumeMultiplier(double value);
++
+   // Called by WebContentsImpl to know if an active player is effectively
+   // fullscreen. That means that the video is either fullscreen or it is the
+   // content of a fullscreen page (in other words, a fullscreen video with
+diff --git a/content/browser/media/media_web_contents_observer.cc b/content/browser/media/media_web_contents_observer.cc
+--- a/content/browser/media/media_web_contents_observer.cc
++++ b/content/browser/media/media_web_contents_observer.cc
+@@ -337,6 +337,13 @@
+     bool is_picture_in_picture) {
+   session_controllers_manager_->PictureInPictureStateChanged(
+       is_picture_in_picture);
++}
++
++void MediaWebContentsObserver::SetVolumeMultiplier(double value) {
++  CHECK_CURRENTLY_ON(BrowserThread::UI);
++  if (session_controllers_manager_) {
++    session_controllers_manager_->SetVolumeMultiplier(value);
++  }
+ }
+ 
+ void MediaWebContentsObserver::DidUpdateAudioMutingState(bool muted) {
+diff --git a/content/browser/media/media_web_contents_observer_unittest.cc b/content/browser/media/media_web_contents_observer_unittest.cc
+--- a/content/browser/media/media_web_contents_observer_unittest.cc
++++ b/content/browser/media/media_web_contents_observer_unittest.cc
+@@ -4,16 +4,21 @@
+ 
+ #include "content/browser/media/media_web_contents_observer.h"
+ 
++#include <algorithm>
+ #include <memory>
+ #include <optional>
++#include <vector>
+ 
+ #include "base/run_loop.h"
++#include "base/test/scoped_feature_list.h"
+ #include "content/test/test_render_view_host.h"
+ #include "content/test/test_web_contents.h"
+ #include "media/base/media_content_type.h"
++#include "media/base/media_switches.h"
+ #include "media/mojo/mojom/media_player.mojom.h"
+ #include "mojo/public/cpp/bindings/associated_receiver.h"
+ #include "mojo/public/cpp/bindings/associated_remote.h"
++#include "services/media_session/public/cpp/features.h"
+ #include "ui/gfx/geometry/size.h"
+ 
+ namespace content {
+@@ -25,6 +30,10 @@
+  public:
+   mojo::AssociatedReceiver<media::mojom::MediaPlayer>& receiver() {
+     return receiver_;
++  }
++
++  const std::vector<double>& volume_multipliers() const {
++    return volume_multipliers_;
+   }
+ 
+   // media::mojom::MediaPlayer implementation.
+@@ -36,7 +45,9 @@
+   void RequestEnterPictureInPicture(
+       const std::optional<gfx::Size>& min_size) override {}
+   void RequestMute(bool mute) override {}
+-  void SetVolumeMultiplier(double multiplier) override {}
++  void SetVolumeMultiplier(double multiplier) override {
++    volume_multipliers_.push_back(multiplier);
++  }
+   void SetPersistentState(bool persistent) override {}
+   void SetPowerExperimentState(bool enabled) override {}
+   void SetAudioSinkId(const std::string& sink_id) override {}
+@@ -51,6 +62,7 @@
+ 
+  private:
+   mojo::AssociatedReceiver<media::mojom::MediaPlayer> receiver_{this};
++  std::vector<double> volume_multipliers_;
+ };
+ 
+ class MediaWebContentsObserverTest : public RenderViewHostImplTestHarness {
+@@ -139,6 +151,62 @@
+   int32_t next_player_id_ = 0;
+ };
+ 
++TEST_F(MediaWebContentsObserverTest, VolumeMultiplierIncludesPausedPlayers) {
++  base::test::ScopedFeatureList features;
++  features.InitWithFeatures({media::kInternalMediaSession},
++                           {media_session::features::kMediaSessionService});
++
++  // An empty manager must not retain a multiplier for players added later.
++  constexpr double kEmptyMultiplier = 0.125;
++  media_web_contents_observer().SetVolumeMultiplier(kEmptyMultiplier);
++
++  auto player_host = SetupPlayerHost();
++  auto playing = CreateAndAddPlayer(player_host, 41);
++  auto paused = CreateAndAddPlayer(player_host, 73);
++  SetMediaMetadata(playing.observer, /*has_audio=*/true, /*has_video=*/false);
++  SetMediaMetadata(paused.observer, /*has_audio=*/true, /*has_video=*/false);
++  PlayMedia(playing.observer);
++  PlayMedia(paused.observer);
++  PauseMedia(paused.observer);
++  playing.player->receiver().FlushForTesting();
++  paused.player->receiver().FlushForTesting();
++
++  const size_t playing_before = playing.player->volume_multipliers().size();
++  const size_t paused_before = paused.player->volume_multipliers().size();
++  EXPECT_EQ(std::ranges::find(playing.player->volume_multipliers(),
++                             kEmptyMultiplier),
++            playing.player->volume_multipliers().end());
++  EXPECT_EQ(std::ranges::find(paused.player->volume_multipliers(),
++                             kEmptyMultiplier),
++            paused.player->volume_multipliers().end());
++
++  // Forward the exact values to both players, even outside the [0, 1] range.
++  media_web_contents_observer().SetVolumeMultiplier(1.75);
++  media_web_contents_observer().SetVolumeMultiplier(-0.5);
++  playing.player->receiver().FlushForTesting();
++  paused.player->receiver().FlushForTesting();
++  ASSERT_EQ(playing_before + 2, playing.player->volume_multipliers().size());
++  ASSERT_EQ(paused_before + 2, paused.player->volume_multipliers().size());
++  EXPECT_DOUBLE_EQ(1.75, playing.player->volume_multipliers()[playing_before]);
++  EXPECT_DOUBLE_EQ(-0.5,
++                   playing.player->volume_multipliers()[playing_before + 1]);
++  EXPECT_DOUBLE_EQ(1.75, paused.player->volume_multipliers()[paused_before]);
++  EXPECT_DOUBLE_EQ(-0.5, paused.player->volume_multipliers()[paused_before + 1]);
++
++  // Keep the existing controllers but disable both gates: no Mojo delivery.
++  {
++    base::test::ScopedFeatureList disabled_features;
++    disabled_features.InitWithFeatures(
++        {}, {media::kInternalMediaSession,
++             media_session::features::kMediaSessionService});
++    media_web_contents_observer().SetVolumeMultiplier(0.75);
++    playing.player->receiver().FlushForTesting();
++    paused.player->receiver().FlushForTesting();
++    EXPECT_EQ(playing_before + 2, playing.player->volume_multipliers().size());
++    EXPECT_EQ(paused_before + 2, paused.player->volume_multipliers().size());
++  }
++}
++
+ TEST_F(MediaWebContentsObserverTest, GetCurrentlyPlayingVideoCount) {
+   auto player_host = SetupPlayerHost();
+   constexpr int32_t kAudioVideoPlayerId = 0;

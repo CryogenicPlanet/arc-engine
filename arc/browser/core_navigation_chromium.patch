@@ -1,0 +1,124 @@
+--- /dev/null
++++ b/content/public/browser/host_app_hooks.h
+@@ -0,0 +1,21 @@
++// Copyright 2026 ArcMod. Callbacks for an externally hosted app.
++#ifndef CONTENT_PUBLIC_BROWSER_HOST_APP_HOOKS_H_
++#define CONTENT_PUBLIC_BROWSER_HOST_APP_HOOKS_H_
++
++#include "base/functional/callback.h"
++#include "content/common/content_export.h"
++#include "content/public/browser/invalidate_type.h"
++
++class GURL;
++namespace content {
++class WebContents;
++// Synchronous UI-thread callbacks. Arguments are borrowed for the call.
++using HostNavigationStateCallback =
++    base::RepeatingCallback<void(WebContents*, InvalidateTypes)>;
++using HostTargetURLCallback =
++    base::RepeatingCallback<void(WebContents*, const GURL&)>;
++CONTENT_EXPORT HostNavigationStateCallback& GetHostNavigationStateCallback();
++CONTENT_EXPORT HostTargetURLCallback& GetHostTargetURLCallback();
++}  // namespace content
++
++#endif  // CONTENT_PUBLIC_BROWSER_HOST_APP_HOOKS_H_
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -3,6 +3,8 @@
+ // found in the LICENSE file.
+ 
+ #include "content/browser/web_contents/web_contents_impl.h"
++
++#include "content/public/browser/host_app_hooks.h"
+ 
+ #include <stddef.h>
+ 
+@@ -290,6 +292,24 @@
+ namespace content {
+ 
+ namespace {
++thread_local int g_host_app_callback_depth = 0;
++class ScopedHostAppCallback {
++ public:
++  ScopedHostAppCallback() { ++g_host_app_callback_depth; }
++  ~ScopedHostAppCallback() { --g_host_app_callback_depth; }
++};
++}  // namespace
++
++HostNavigationStateCallback& GetHostNavigationStateCallback() {
++  static base::NoDestructor<HostNavigationStateCallback> callback;
++  return *callback;
++}
++HostTargetURLCallback& GetHostTargetURLCallback() {
++  static base::NoDestructor<HostTargetURLCallback> callback;
++  return *callback;
++}
++
++namespace {
+ 
+ // These values are persisted to logs. Entries should not be renumbered and
+ // numeric values should never be reused.
+@@ -3077,6 +3097,21 @@
+     media_web_contents_observer_->MaybeUpdateAudibleState();
+   }
+ 
++  // Arc state is published before forwarding to Chrome's delegate.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto callback = GetHostNavigationStateCallback();
++    if (callback) {
++      base::WeakPtr<WebContentsImpl> weak_this = weak_factory_.GetWeakPtr();
++      {
++        ScopedHostAppCallback scope;
++        callback.Run(this, changed_flags);
++      }
++      if (!weak_this) {
++        return;
++      }
++    }
++  }
++
+   if (delegate_) {
+     delegate_->NavigationStateChanged(this, changed_flags);
+   }
+@@ -10394,8 +10429,20 @@
+ void WebContentsImpl::ClearTargetURL() {
+   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::ClearTargetURL");
+   frame_that_set_last_target_url_ = nullptr;
++  base::WeakPtr<WebContentsImpl> weak_this = weak_factory_.GetWeakPtr();
+   if (delegate_) {
+     delegate_->UpdateTargetURL(this, GURL());
++  }
++  if (!weak_this) {
++    return;
++  }
++  // Arc's target status follows the underlying delegate, including clears.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto callback = GetHostTargetURLCallback();
++    if (callback) {
++      ScopedHostAppCallback scope;
++      callback.Run(this, GURL());
++    }
+   }
+ }
+ 
+@@ -11029,8 +11076,20 @@
+   frame_that_set_last_target_url_ =
+       url.is_valid() ? render_frame_host : nullptr;
+ 
++  base::WeakPtr<WebContentsImpl> weak_this = weak_factory_.GetWeakPtr();
+   if (delegate_) {
+     delegate_->UpdateTargetURL(this, url);
++  }
++  if (!weak_this) {
++    return;
++  }
++  // Arc's target status follows the underlying delegate, including clears.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto callback = GetHostTargetURLCallback();
++    if (callback) {
++      ScopedHostAppCallback scope;
++      callback.Run(this, url);
++    }
+   }
+ }
+ 

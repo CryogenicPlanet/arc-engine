@@ -9,7 +9,39 @@ fi
 run_root="results/core-runtime/$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$run_root"
 python3 arc/tools/gen_api_table.py
-./build-babysit.sh > "$run_root/build.log" 2>&1
+snapshot_sources() {
+  python3 - "$1" <<'PY'
+from pathlib import Path
+import hashlib, json, re, sys
+sources = re.findall(r'"//([^"]+)"', Path('arc/wp/core.gni').read_text().split('wp_core_deps')[0])
+sources += ['arc/wp/core.gni', 'arc/api/arc_internal.h']
+Path(sys.argv[1]).write_text(json.dumps({p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
+                                      for p in sorted(sources)}, indent=2) + '\n')
+PY
+}
+while true; do
+  snapshot_sources "$run_root/sources-before.json"
+  if ! ./build-babysit.sh >> "$run_root/build.log" 2>&1; then
+    mkdir -p "$run_root/build-failure"
+    for attempt_log in logs/build-base.attempt-*.log; do
+      if [ -f "$attempt_log" ]; then cp "$attempt_log" "$run_root/build-failure/"; fi
+    done
+    echo "Build failed; evidence: $run_root"
+    exit 1
+  fi
+  snapshot_sources "$run_root/sources-after.json"
+  if cmp -s "$run_root/sources-before.json" "$run_root/sources-after.json"; then break; fi
+  echo "Core sources changed during build; rebuilding before validation."
+done
+python3 - "$run_root" <<'PY'
+from pathlib import Path
+import json, shutil, sys
+out = Path(sys.argv[1]) / 'sources'
+for name in json.loads((Path(sys.argv[1]) / 'sources-after.json').read_text()):
+    destination = out / name
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(name, destination)
+PY
 ./package-engine.sh ours156 > "$run_root/package.log" 2>&1
 framework="chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
 shasum -a 256 "$framework" > "$run_root/framework.sha256"

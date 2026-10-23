@@ -1,5 +1,16 @@
 {
   "metadata" : {
+    "ArcConfirmInfobar" : {
+      "classPresent" : true,
+      "methods" : {
+        "accept" : "v16@0:8",
+        "initWithConfirmInfobar:" : "@24@0:8r^v16",
+        "messageText" : "@16@0:8"
+      },
+      "properties" : {
+
+      }
+    },
     "ArcContextMenuElementInfo" : {
       "classPresent" : true,
       "methods" : {
@@ -97,6 +108,17 @@
         "selectOptions" : "T@\"NSArray\",R,N,V_selectOptions"
       }
     },
+    "ArcHungRendererDialog" : {
+      "classPresent" : true,
+      "methods" : {
+        "crashProcess" : "v16@0:8",
+        "initWithHungRendererDialog:" : "@24@0:8r^v16",
+        "wait" : "v16@0:8"
+      },
+      "properties" : {
+
+      }
+    },
     "ArcKeyboardAccelerator" : {
       "classPresent" : true,
       "methods" : {
@@ -155,6 +177,67 @@
       },
       "properties" : {
         "items" : "T@\"NSArray\",R,N,V_items"
+      }
+    },
+    "ArcNotification" : {
+      "classPresent" : true,
+      "methods" : {
+        "browserContext" : "@16@0:8",
+        "browserContextLocalID" : "@16@0:8",
+        "browserContextQualifiedID" : "@16@0:8",
+        "buttons" : "@16@0:8",
+        "category" : "@16@0:8",
+        "contextMessage" : "@16@0:8",
+        "didClick:input:" : "v28@0:8i16@20",
+        "didClickSettings" : "v16@0:8",
+        "didClose:" : "v20@0:8B16",
+        "didReceiveResponse:" : "v24@0:8@16",
+        "documentURL" : "@16@0:8",
+        "icon" : "@16@0:8",
+        "iconURL" : "@16@0:8",
+        "id" : "@16@0:8",
+        "image" : "@16@0:8",
+        "initWithNotification:" : "@24@0:8r^v16",
+        "items" : "@16@0:8",
+        "message" : "@16@0:8",
+        "origin" : "@16@0:8",
+        "permanent" : "B16@0:8",
+        "priority" : "q16@0:8",
+        "progress" : "i16@0:8",
+        "progressStatus" : "@16@0:8",
+        "renotify" : "B16@0:8",
+        "setIconURL:" : "v24@0:8@16",
+        "showSettingsButton" : "B16@0:8",
+        "showSnoozeButton" : "B16@0:8",
+        "smallImage" : "@16@0:8",
+        "title" : "@16@0:8",
+        "type" : "q16@0:8"
+      },
+      "properties" : {
+        "browserContext" : "T@\"ArcBrowserContext\",R,N",
+        "browserContextLocalID" : "T@\"NSString\",R,N",
+        "browserContextQualifiedID" : "T@\"NSString\",R,N",
+        "buttons" : "T@\"NSArray\",R,N",
+        "category" : "T@\"NSString\",R,N",
+        "contextMessage" : "T@\"NSString\",R,N",
+        "documentURL" : "T@\"NSURL\",R,N",
+        "icon" : "T@\"NSImage\",R,N",
+        "iconURL" : "T@\"NSURL\",&,N,V_iconURL",
+        "id" : "T@\"NSString\",R,N",
+        "image" : "T@\"NSImage\",R,N",
+        "items" : "T@\"NSArray\",R,N",
+        "message" : "T@\"NSString\",R,N",
+        "origin" : "T@\"NSURL\",R,N",
+        "permanent" : "TB,R,N",
+        "priority" : "Tq,R,N",
+        "progress" : "Ti,R,N",
+        "progressStatus" : "T@\"NSString\",R,N",
+        "renotify" : "TB,R,N",
+        "showSettingsButton" : "TB,R,N",
+        "showSnoozeButton" : "TB,R,N",
+        "smallImage" : "T@\"NSImage\",R,N",
+        "title" : "T@\"NSString\",R,N",
+        "type" : "Tq,R,N"
       }
     },
     "ArcNotificationButton" : {

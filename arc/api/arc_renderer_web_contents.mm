@@ -2,7 +2,6 @@
 #import "arc/api/arc_internal.h"
 
 #include <limits>
-#include <algorithm>
 #include <map>
 #include <utility>
 
@@ -11,7 +10,6 @@
 #include "arc/common/renderer.mojom.h"
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -19,7 +17,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
-#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 @interface ArcWebContents (RendererCountAccessors)

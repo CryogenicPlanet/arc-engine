@@ -117,13 +117,13 @@ static void BlockResult(WebextrasProbeWork* work, NSString* channel, NSNumber* t
   if (!work) return;
   const BOOL mainThread = NSThread.isMainThread;
   NSNumber* offset = Offset();
-  id beforeReturn = mainThread ? @(work.inInvocation) : (id)NSNull.null;
+  id beforeReturn = mainThread ? (work.inInvocation ? @YES : @NO) : (id)NSNull.null;
   NSString* selector = mainThread ? work.currentSelector : nil;
   __weak WebextrasProbeWork* weakWork = work;
   void (^save)(void) = ^{
     WebextrasProbeWork* current = weakWork;
     if (!current || current != gWork) return;
-    NSMutableDictionary* event = [@{@"event":channel, @"mainThread":@(mainThread),
+    NSMutableDictionary* event = [@{@"event":channel, @"mainThread":(mainThread ? @YES : @NO),
         @"beforePublicReturn":beforeReturn, @"publicSelector":selector ?: (id)NSNull.null,
         @"recordOffset":offset, @"message":message ?: (id)NSNull.null,
         @"error":ErrorJSON(error), @"subscriptionID":token ?: (id)NSNull.null} mutableCopy];
@@ -131,7 +131,7 @@ static void BlockResult(WebextrasProbeWork* work, NSString* channel, NSNumber* t
     event[@"parsed"] = SafeJSON(parsed, 0);
     [current.response[@"callbacks"] addObject:event];
     [current.timeline addObject:@{@"event":channel, @"selector":selector ?: (id)NSNull.null,
-        @"beforePublicReturn":beforeReturn, @"mainThread":@(mainThread)}];
+        @"beforePublicReturn":beforeReturn, @"mainThread":(mainThread ? @YES : @NO)}];
     if ([channel isEqual:@"subscription"]) {
       if ([parsed isKindOfClass:NSDictionary.class]) {
         NSArray* arguments = parsed[@"args"];
@@ -193,12 +193,12 @@ static WebextrasProbeWork* CallbackEntry(id tools, BOOL shown, NSUInteger mode, 
       WebextrasProbeWork* work = gWork;
       ++work.forwardingCallbacks;
       NSMutableDictionary* event = [@{@"event":shown ? @"display" : @"closed", @"mode":@(mode),
-          @"mainThread":@YES, @"beforePublicReturn":@(work.inInvocation),
+          @"mainThread":@YES, @"beforePublicReturn":(work.inInvocation ? @YES : @NO),
           @"publicSelector":work.currentSelector ?: (id)NSNull.null, @"recordOffset":Offset(),
           @"forwarded":@NO} mutableCopy];
       [work.response[@"callbacks"] addObject:event];
       [work.timeline addObject:@{@"event":shown ? @"display" : @"closed", @"selector":work.currentSelector ?: (id)NSNull.null,
-          @"beforePublicReturn":@(work.inInvocation), @"mainThread":@YES}];
+          @"beforePublicReturn":(work.inInvocation ? @YES : @NO), @"mainThread":@YES}];
       *callback = event;
       return work;
     }
@@ -277,7 +277,7 @@ static void Finish(NSString* error) {
   if (!CleanupSubscription(gWork)) error = error ?: @"subscription cleanup failed";
   gWork.response[@"publicCalls"] = gWork.publicCalls ?: @[];
   gWork.response[@"timeline"] = gWork.timeline ?: @[];
-  gWork.response[@"ok"] = @(!error);
+  gWork.response[@"ok"] = error ? @NO : @YES;
   if (error) gWork.response[@"probeError"] = error;
   gWork.response[@"recordEnd"] = Offset();
   WriteJSON(gWork.response, [gRequest stringByAppendingString:@".response.json"]);
@@ -296,7 +296,7 @@ static BOOL CleanupSubscription(WebextrasProbeWork* work) {
   BeginPublic(work, @"unsubscribe:");
   BOOL value = ((BOOL (*)(id, SEL, id))objc_msgSend)(tools, NSSelectorFromString(@"unsubscribe:"), work.subscriptionToken);
   EndPublic(work);
-  work.response[@"unsubscribeReturn"] = @(value);
+  work.response[@"unsubscribeReturn"] = value ? @YES : @NO;
   work.subscriptionToken = nil;
   return value;
 }
@@ -316,7 +316,7 @@ static void Poll(void) {
     if (!Install()) return;
     gInstalled = YES;
     WriteJSON(@{@"pid":@([NSProcessInfo processInfo].processIdentifier), @"installed":@YES,
-                @"mainThread":@([NSThread isMainThread])}, [gRequest stringByAppendingString:@".ready.json"]);
+                @"mainThread":([NSThread isMainThread] ? @YES : @NO)}, [gRequest stringByAppendingString:@".ready.json"]);
   }
   if (gWork) {
     WebextrasProbeEntry* entry = gWork.entry;
@@ -350,7 +350,7 @@ static void Poll(void) {
   gWork.timeline = [NSMutableArray array];
   gWork.started = NSDate.timeIntervalSinceReferenceDate;
   gWork.response = [@{@"id":identifier, @"operation":operation, @"url":gExpectedURL,
-      @"pid":@([NSProcessInfo processInfo].processIdentifier), @"mainThread":@([NSThread isMainThread]),
+      @"pid":@([NSProcessInfo processInfo].processIdentifier), @"mainThread":([NSThread isMainThread] ? @YES : @NO),
       @"matches":@(matches.count), @"recordBegin":Offset(), @"callbacks":[NSMutableArray array]} mutableCopy];
   if (matches.count != 1) { Finish(@"expected exactly one live service-bearing app wrapper"); return; }
   WebextrasProbeEntry* entry = matches.firstObject;
@@ -378,7 +378,7 @@ static void Poll(void) {
       BeginPublic(gWork, @"webContents");
       id frontend = ((id (*)(id, SEL))objc_msgSend)(tools, NSSelectorFromString(@"webContents"));
       EndPublic(gWork);
-      gWork.response[@"frontendPresent"] = @(frontend != nil);
+      gWork.response[@"frontendPresent"] = frontend ? @YES : @NO;
       gWork.response[@"frontendClass"] = frontend ? NSStringFromClass(object_getClass(frontend)) : (id)NSNull.null;
     } else if ([operation isEqual:@"panel-closed"]) {
       NSMethodSignature* signature = [tools methodSignatureForSelector:NSSelectorFromString(@"currentPanel:error:")];
@@ -389,7 +389,7 @@ static void Poll(void) {
       BeginPublic(gWork, @"currentPanel:error:");
       BOOL value = ((BOOL (*)(id, SEL, id, NSError* __autoreleasing*))objc_msgSend)(tools, NSSelectorFromString(@"currentPanel:error:"), nil, &error);
       EndPublic(gWork);
-      gWork.response[@"value"] = @(value); gWork.response[@"error"] = ErrorJSON(error);
+      gWork.response[@"value"] = value ? @YES : @NO; gWork.response[@"error"] = ErrorJSON(error);
     } else if ([operation hasPrefix:@"execute-"] || [operation isEqual:@"subscription"]) {
       if (!ExecuteABI(tools)) { Finish(@"unexpected execute ABI"); return; }
       BOOL malformed = [operation isEqual:@"execute-malformed"];
@@ -433,7 +433,7 @@ static void Poll(void) {
       BeginPublic(work, @"execute:completion:error:");
       BOOL value = ((BOOL (*)(id, SEL, id, id, NSError* __autoreleasing*))objc_msgSend)(tools, NSSelectorFromString(@"execute:completion:error:"), command, completion, &error);
       EndPublic(work);
-      work.response[@"value"] = @(value); work.response[@"error"] = ErrorJSON(error);
+      work.response[@"value"] = value ? @YES : @NO; work.response[@"error"] = ErrorJSON(error);
       if (!malformed && value) return;
       if (subscription) { Finish(@"subscription command was rejected"); return; }
     } else if ([operation isEqual:@"media-types"]) {
@@ -463,7 +463,7 @@ static void Poll(void) {
           ? ((BOOL (*)(id, SEL, NSError* __autoreleasing*))objc_msgSend)(media, NSSelectorFromString(selector), &error)
           : ((BOOL (*)(id, SEL, BOOL, NSError* __autoreleasing*))objc_msgSend)(media, NSSelectorFromString(selector), NO, &error);
       EndPublic(gWork);
-      gWork.response[@"value"] = @(value);
+      gWork.response[@"value"] = value ? @YES : @NO;
       gWork.response[@"error"] = ErrorJSON(error);
     } else { Finish(@"unsupported probe operation"); return; }
   } @catch (NSException* exception) { Finish(exception.reason ?: exception.name); return; }

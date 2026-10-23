@@ -159,3 +159,23 @@ proposal is ready in renderer_pip_blink_proposal.patch; core keeps public
 selectors and renderer will supply the native common/IPC bridge. No Chromium
 source was edited. Proposal compile validation is in progress with temporary
 VFS overlays.
+
+## Process ownership refactor checkpoint
+
+New `arc/api/arc_renderer_process.mm` plus `arc/renderer/render_process_agent.h`
+and `.cc` implement the associated process binder, RPH lifetime/incarnation
+registry, per-profile retained file snapshots, native bind-order debug selection,
+distinct rule/exclusion updates and bounded first-frame retry. Global pair
+absence is distinct from engaged empty lists. Cosmetic availability is distinct
+from a network-only ruleset (native debug NoBlockList for no cosmetic region).
+Explicit exclusions work while disabled. Rebind replays an incarnation's own
+pending snapshot rather than incorrectly inheriting current profile rules.
+
+All three changed .mm and both renderer .cc files pass actual flags, and fresh
+review found no remaining concrete source blocker. Evidence:
+`logs/wp/renderer.process-refactor.checks.log`. Legacy frame config/debug Mojo
+methods remain unused temporarily so shared incremental builds stay compiling.
+Fresh full build/package/paired runtime is queued in
+`logs/wp/renderer.process-parity.run2.log`, output `results/renderer-process-parity-run2`.
+No process-refactor runtime parity is claimed yet. Exact lifecycle and shared
+feature/document-start hooks are still required as listed in INTEGRATION.

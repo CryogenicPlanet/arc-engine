@@ -274,12 +274,12 @@ const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
 } });
 const fixtureURL = `http://127.0.0.1:${server.port}${fixturePath}`;
 mkdirSync(out, { recursive: true });
-type Run = { agent: string; pid?: number; actions: any[]; errors: string[]; cleanup?: string };
+type Run = { agent: string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; actions: any[]; errors: string[]; cleanup?: string };
 const runs: Run[] = [];
 const operations = ["console-open", "frontend", "console-close", "panel-closed", "execute-evaluate", "execute-malformed", "execute-unknown", "subscription", "media-types", "pip-request-error", "pip-exit-error"];
 try {
   for (const agent of agents) {
-    const run: Run = { agent, actions: [], errors: [] };
+    const run: Run = { agent, phase: "preflight", actions: [], errors: [] };
     runs.push(run);
     const dir = join(out, agent);
     mkdirSync(dir, { recursive: true });
@@ -336,6 +336,7 @@ try {
       const chromiumData = join(data, "Agent Chromium Data");
       mkdirSync(chromiumData, { recursive: true, mode: 0o700 });
       for (const key of ["cloudKitSyncEnabled", "firebaseSyncEnabled"]) exec(["defaults", "write", `company.thebrowser.Browser.mod.agent.${agent}`, key, "-bool", "false"]);
+      run.phase = "launch";
       readiness = { agent, beforeLaunch: readySnapshot(nativeReadyPath), launchStartedMs: Date.now() };
       writeFileSync(join(dir, "readiness.json"), JSON.stringify(readiness, null, 2));
       exec(["open", "-n", "-g", "-a", app,
@@ -347,12 +348,14 @@ try {
         "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking",
         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${chromiumData}`,
         "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`]);
+      run.phase = "process-identity";
       pid = await wait(() => appPIDs(exe)[0], 30000);
       run.pid = pid;
       browserIdentity = processSnapshot().find(row => row.pid === pid && isExecutable(row, exe));
       if (!browserIdentity) throw new Error("launched browser identity unavailable");
       observeProcesses = trackHelpers;
       trackHelpers();
+      run.phase = "native-readiness";
       await wait(() => {
         const injected = readySnapshot(requestPath + ".ready.json");
         const native = readySnapshot(nativeReadyPath);
@@ -365,13 +368,16 @@ try {
         writeFileSync(join(dir, "readiness.json"), JSON.stringify(readiness, null, 2));
         return readiness.accepted;
       }, 30000);
+      run.phase = "cdp-endpoint";
       await wait(() => verifyAgentEndpoint(agent, port) === pid, 30000);
+      run.phase = "cdp-connect";
       cdp = await AgentCDP.connectAgent(agent, port);
-      const created = await cdp.request("Target.createTarget", { url: "about:blank" });
+      run.phase = "cdp-create-fixture";
+      // Native and hook readiness precede creation, so navigation's setUrl: is observable.
+      const created = await cdp.request("Target.createTarget", { url: fixtureURL });
       if (typeof created.targetId !== "string") throw new Error("no owned fixture target");
       target = created.targetId;
-      // Navigate only after hook readiness, guaranteeing a new observable setUrl: opportunity.
-      await cdp.targetCommand(target, "Page.navigate", { url: fixtureURL });
+      run.phase = "cdp-fixture-eval";
       await wait(async () => {
         const result = await cdp!.targetCommand(target!, "Runtime.evaluate", {
           expression: `location.href === ${JSON.stringify(fixtureURL)} && document.readyState === 'complete' && document.querySelector('#webextras-probe')?.dataset.nonce === ${JSON.stringify(token)}`,
@@ -379,6 +385,7 @@ try {
         });
         return (result.result as any)?.value === true;
       });
+      run.phase = "cdp-fixture-diagnostic";
       // Read-only diagnostic for locked-desktop lifecycle; raw values do not affect parity.
       if (verifyAgentEndpoint(agent, port) !== pid) throw new Error("owned endpoint PID changed before fixture diagnostic");
       try {
@@ -403,25 +410,32 @@ try {
         if (result.pid !== pid || result.mainThread !== true) throw new Error("probe acknowledgment PID/thread mismatch");
         return result;
       };
+      run.phase = "registry";
       const registry = await wait(async () => {
         const response = await action("registry");
         return response.ok === true && response.matches === 1 ? response : undefined;
       });
       writeFileSync(join(dir, "registry.json"), JSON.stringify(registry, null, 2));
       for (const operation of operations) {
+        run.phase = `action:${operation}`;
         const result = await action(operation);
         run.actions.push(result);
-        if (!result.ok) run.errors.push(`${operation}: ${result.probeError}`);
+        if (result.ok !== true) run.errors.push(`${operation}: ${result.probeError}`);
         for (const issue of outcomeErrors(result)) run.errors.push(`${operation}: ${issue}`);
         if (operation === "frontend" && result.frontendPresent !== true) run.errors.push("frontend: expected actual frontend wrapper");
         if (operation === "media-types" && (!Array.isArray(result.types) || result.types.length || result.error !== null)) run.errors.push("media-types: inert fixture should have an empty successful type set");
         if (operation.startsWith("pip-") && (result.value !== false || result.error?.domain !== "company.thebrowser.Arc" || result.error?.code !== 6)) run.errors.push(`${operation}: expected false/Arc NSError6 on inert fixture`);
         if (result.matches !== 1 || result.ownerTag !== registry.ownerTag) run.errors.push(`${operation}: canonical wrapper changed`);
-        console.log(`${agent}: ${operation}: ${result.ok ? "acknowledged" : result.probeError}`);
+        console.log(`${agent}: ${operation}: ${result.ok === true ? "acknowledged" : result.probeError}`);
       }
+      run.phase = "cdp-close-fixture";
       await cdp.request("Target.closeTarget", { targetId: target });
       target = undefined;
-    } catch (error) { run.errors.push(String(error)); }
+      run.phase = "complete";
+    } catch (error) {
+      run.failure = { phase: run.phase, message: String(error) };
+      run.errors.push(`[${run.phase}] ${String(error)}`);
+    }
     finally {
       if (pid && browserIdentity) {
         trackHelpers();

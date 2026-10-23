@@ -20,11 +20,12 @@ class Profile;
 
 namespace arc {
 // Main-thread state. The descriptor is physically read-only and unlinked after
-// compilation; each frame receives a duplicate, never the mutable build file.
+// compilation; each renderer process receives a duplicate of the immutable file.
 struct AdBlockConfiguration {
   base::File indexed_ruleset;
   std::vector<std::string> excluded_origins;
   uint64_t ruleset_id = 0;
+  // Revision of exclusions broadcasts (including re-enable), not rule updates.
   uint64_t config_version = 0;
   bool enabled = false;
   // An engaged update may carry an invalid file: that explicitly clears rules.
@@ -46,6 +47,7 @@ void SetRendererAdBlockApplication(id application);
 void RefreshRendererAdBlockFeature();
 void InitializeRendererProcessBridge();
 void InitializeRendererProfile(Profile* profile);
+void RendererProcessWillLaunch(content::RenderProcessHost* host);
 void RendererProcessFrameReady(content::RenderProcessHost* host);
 void ReleaseRendererRulesetFile(base::File file);
 void GetRendererAdBlockDebugInfo(

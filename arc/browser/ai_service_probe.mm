@@ -104,6 +104,11 @@ static void Run(id application) {
   }
   // Original utility traps on the legacy embeddings endpoint; isolate this run.
   if (getenv("ARC_AI_PROBE_EMBEDDINGS_ONLY")) {
+    // Let the scoped process observer sample the initialized utility before
+    // the fatal legacy call; keep main-queue work available while waiting.
+    NSDate* sampleDeadline=[NSDate dateWithTimeIntervalSinceNow:.25];
+    while(sampleDeadline.timeIntervalSinceNow>0)
+      [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:.01]];
   Observe(@"embeddings",^{[service embeddingsFor:@[@"π",@"東京"] method:1 model:2 completion:^(NSArray* a,NSInteger e){Done(@"embeddings",@[Snapshot(a),@(e)]);}];});
   Event(@"embeddings.afterFirst.available",@"observation",@([service isAvailable]));
   Observe(@"embeddings.error",^{[service embeddingsFor:@[@"error"] method:1 model:2 completion:^(NSArray* a,NSInteger e){Done(@"embeddings.error",@[Snapshot(a),@(e)]);}];});

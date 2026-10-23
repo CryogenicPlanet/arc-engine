@@ -101,7 +101,8 @@ ARC_EXPORT @interface ArcAutocompleteMatch : NSObject
 - (instancetype)initWithAutocompleteMatch:(const void*)match;
 - (void)setSource:(base::WeakPtr<Controller>)source token:(uint64_t)token;
 - (base::WeakPtr<Controller>)source;
-- (uint64_t)token;
+- (uint64_t)token __attribute__((objc_direct));
+- (NSArray*)snapshotDuplicates __attribute__((objc_direct));
 @property(nonatomic, readonly) NSURL* destinationUrl;
 @property(nonatomic, readonly, copy) NSString* destinationUrlSpec;
 @property(nonatomic, readonly) NSURL* imageUrl;
@@ -165,6 +166,7 @@ ARC_EXPORT @interface ArcAutocompleteMatch : NSObject
 }
 - (base::WeakPtr<Controller>)source { return _source; }
 - (uint64_t)token { return _token; }
+- (NSArray*)snapshotDuplicates { return _duplicates; }
 - (NSURL*)destinationUrl { return ArcNSURL(_match.destination_url); }
 - (NSString*)destinationUrlSpec { return ArcNSString(_match.destination_url.spec()); }
 - (NSURL*)imageUrl { return ArcNSURL(_match.image_url); }
@@ -291,7 +293,7 @@ class Controller : public AutocompleteController::Observer,
       matches_.emplace(token, MatchRecord{wrapper, match});
       [wrapper setSource:weak_factory_.GetWeakPtr() token:token];
     }
-    NSArray* duplicates = [wrapper duplicates];
+    NSArray* duplicates = [wrapper snapshotDuplicates];
     for (size_t i = 0; i < match.duplicate_matches.size(); ++i) {
       RegisterMatch(duplicates[i], match.duplicate_matches[i]);
     }

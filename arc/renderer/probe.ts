@@ -278,12 +278,16 @@ try {
         await action("set-block-lists", undefined, undefined, [rules]);
         let ready = false;
         const compileStart = Date.now();
-        for (let attempt=0;attempt<120;++attempt) {
+        while (Date.now() - compileStart < 60000) {
           await sleep(500);
           const debug = await action("adblock-debug");
-          if (!String(debug.info).includes("NoBlockList")) { ready = true; break; }
+          if (/\/\* Result: (Success|Cached: [^*]+) \*\//.test(String(debug.info)) &&
+              String(debug.info).includes(".arc-probe-ad{display:none!important;}")) {
+            ready = true;
+            break;
+          }
         }
-        if (!ready) throw new Error("block list did not reach the queried renderer within 60 seconds");
+        if (!ready) throw new Error(`block list readiness timed out after ${Date.now()-compileStart} ms`);
         writeFileSync(join(dir,"adblock-publication.json"),JSON.stringify({elapsedMs:Date.now()-compileStart},null,2));
         await sleep(1500); await load("rule-active");
         currentURL = base + "/c";
@@ -293,6 +297,10 @@ try {
         if (args.includes("--adblock-toggle")) {
           await action("set-feature-11", undefined, undefined, undefined, undefined, 0);
           await sleep(500); await load("feature-disabled");
+          await action("set-exclusions", undefined, undefined, [fixtureHost]);
+          await sleep(500); await load("feature-disabled-excluded");
+          await action("set-exclusions", undefined, undefined, []);
+          await sleep(500); await load("feature-disabled-exclusions-cleared");
           await action("set-feature-11", undefined, undefined, undefined, undefined, 1);
           await sleep(500); await load("feature-reenabled");
         }

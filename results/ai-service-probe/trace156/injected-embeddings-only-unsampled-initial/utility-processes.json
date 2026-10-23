@@ -1,0 +1,104 @@
+{
+  "mode": "injected-embeddings-only",
+  "agent": "trace156",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app",
+  "poll_interval_seconds": 0.02,
+  "samples": [
+    {
+      "elapsed_monotonic_seconds": 0.051255,
+      "utility_pids": [],
+      "commands": {},
+      "boundary_last": null,
+      "embeddings_call_seen": false,
+      "main_pid": null,
+      "main_alive": false
+    },
+    {
+      "elapsed_monotonic_seconds": 0.16866,
+      "utility_pids": [],
+      "commands": {},
+      "boundary_last": null,
+      "embeddings_call_seen": false,
+      "main_pid": 64638,
+      "main_alive": true
+    },
+    {
+      "elapsed_monotonic_seconds": 12.925265,
+      "utility_pids": [],
+      "commands": {},
+      "boundary_last": {
+        "method": "initialize",
+        "phase": "return"
+      },
+      "embeddings_call_seen": false,
+      "main_pid": 64638,
+      "main_alive": true
+    },
+    {
+      "elapsed_monotonic_seconds": 13.017823,
+      "utility_pids": [],
+      "commands": {},
+      "boundary_last": {
+        "method": "embeddings",
+        "phase": "return"
+      },
+      "embeddings_call_seen": true,
+      "main_pid": 64638,
+      "main_alive": true
+    },
+    {
+      "elapsed_monotonic_seconds": 15.036089,
+      "utility_pids": [
+        65286
+      ],
+      "commands": {
+        "65286": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Helpers/Browser Helper.app/Contents/MacOS/Browser Helper --type=utility --utility-sub-type=ai.mojom.AIService --lang=en-US --service-sandbox-type=bcny_ai_service --host-resolver-rules=MAP arc.net ~NOTFOUND, MAP *.arc.net ~NOTFOUND, MAP diabrowser.engineering ~NOTFOUND, MAP *.diabrowser.engineering ~NOTFOUND, MAP thebrowser.company ~NOTFOUND, MAP *.thebrowser.company ~NOTFOUND, MAP browser.company ~NOTFOUND, MAP *.browser.company ~NOTFOUND, MAP releases.arc.net.s3.us-east-2.amazonaws.com ~NOTFOUND, MAP *.releases.arc.net.s3.us-east-2.amazonaws.com ~NOTFOUND --message-loop-type-ui --user-data-dir=/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/Agent Chromium Data --user-data-dir=/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/User Data --bcny-app-id=0 --shared-files --metrics-shmem-handle=1752395122,r,5083052235089642285,2169653865662941385,524288 --field-trial-handle=1718379636,r,7346348097617165713,10174231525991231640,262144 --variations-seed-version --pseudonymization-salt-handle=1935764596,r,6903553946841258316,18021251947194855157,4 --trace-process-track-uuid=3190708992871164437 --seatbelt-client=62"
+      },
+      "boundary_last": {
+        "method": "embeddings",
+        "phase": "return"
+      },
+      "embeddings_call_seen": true,
+      "main_pid": 64638,
+      "main_alive": true
+    },
+    {
+      "elapsed_monotonic_seconds": 17.028567,
+      "utility_pids": [],
+      "commands": {},
+      "boundary_last": {
+        "method": "embeddings.error",
+        "phase": "return"
+      },
+      "embeddings_call_seen": true,
+      "main_pid": 64638,
+      "main_alive": true
+    },
+    {
+      "elapsed_monotonic_seconds": 21.052578,
+      "utility_pids": [],
+      "commands": {},
+      "boundary_last": {
+        "method": "probe",
+        "phase": "finished"
+      },
+      "embeddings_call_seen": true,
+      "main_pid": 64638,
+      "main_alive": true
+    }
+  ],
+  "turnover": {
+    "verified": false,
+    "initial_sample": null,
+    "initial_pids": [],
+    "exit_sample": null,
+    "exited_pids": [],
+    "replacement_sample": null,
+    "replacement_pids": [],
+    "errors": [
+      "unclear: initial scoped AI utility not sampled before embeddings",
+      "unclear: initial AI utility exit after embeddings not observed while main app alive",
+      "unclear: replacement AI utility not observed while main app alive"
+    ]
+  }
+}

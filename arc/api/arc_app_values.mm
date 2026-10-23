@@ -24,7 +24,10 @@ static_assert(sizeof(ErrorStatus) == 8);
 static_assert(sizeof(DebugProperty) == 48);
 }  // namespace app_values
 
-ARC_EXPORT @interface ArcReference : NSObject
+ARC_EXPORT @interface ArcReference : NSObject {
+  NSString* _referenceText;
+  NSInteger _minimumCharacterCount;
+}
 @property(nonatomic, readonly, copy) NSString* referenceText;
 @property(nonatomic, readonly) NSInteger minimumCharacterCount;
 - (instancetype)initWithReferenceText:(NSString*)text
@@ -95,8 +98,6 @@ ARC_EXPORT @interface ArcBrowserApplicationDebugProperty : NSObject
 @end
 
 @implementation ArcReference
-@synthesize referenceText = _referenceText;
-@synthesize minimumCharacterCount = _minimumCharacterCount;
 - (instancetype)initWithReferenceText:(NSString*)text
                minimumCharacterCount:(NSInteger)count {
   if ((self = [super init])) {
@@ -105,4 +106,6 @@ ARC_EXPORT @interface ArcBrowserApplicationDebugProperty : NSObject
   }
   return self;
 }
+- (NSString*)referenceText { return _referenceText; }
+- (NSInteger)minimumCharacterCount { return _minimumCharacterCount; }
 @end

@@ -66,15 +66,17 @@ class RendererProcessRegistry final
   }
 
   void OnRenderProcessHostCreated(content::RenderProcessHost* host) override {
+    ProcessWillLaunch(host);
+  }
+
+  void ProcessWillLaunch(content::RenderProcessHost* host) {
     Track(host);
     auto& entry = entries_.at(host->GetID());
-    entry.remote.reset();
-    entry.incarnation = ++incarnation_;
-    entry.bound_sequence = 0;
-    entry.frame_ready = false;
-    entry.retried = false;
-    entry.attempted = false;
-    Bind(host);
+    // The embedder launch hook precedes Created/Ready. Their fallback must not
+    // register the same incarnation twice or change its original sequence.
+    if (!entry.attempted) {
+      Bind(host);
+    }
   }
   void RenderProcessReady(content::RenderProcessHost* host) override {
     Track(host);
@@ -140,8 +142,12 @@ class RendererProcessRegistry final
     uint64_t attempt = 0;
     uint64_t bound_sequence = 0;
     bool attempted = false;
+    bool acknowledged = false;
     bool frame_ready = false;
     bool retried = false;
+    bool initial_configuration_captured = false;
+    bool has_exclusions = false;
+    ProfileRules pending;
   };
 
   void Track(content::RenderProcessHost* host) {
@@ -165,6 +171,10 @@ class RendererProcessRegistry final
     }
     entry.remote.reset();
     entry.attempted = true;
+    entry.acknowledged = false;
+    // Native registers/counters synchronously at the browser bind attempt,
+    // independently of renderer startup or Ping response ordering.
+    entry.bound_sequence = ++bound_sequence_;
     const auto id = host->GetID();
     const auto incarnation = entry.incarnation;
     const auto attempt = ++entry.attempt;
@@ -172,7 +182,8 @@ class RendererProcessRegistry final
     entry.remote.set_disconnect_handler(base::BindOnce(
         &RendererProcessRegistry::Disconnected, weak_factory_.GetWeakPtr(),
         id, incarnation, attempt));
-    SendInitialConfiguration(entry);
+    CaptureInitialConfiguration(entry);
+    SendPendingConfiguration(entry);
     entry.remote->Ping(base::BindOnce(&RendererProcessRegistry::Bound,
                                     weak_factory_.GetWeakPtr(), id, incarnation, attempt));
   }
@@ -183,7 +194,7 @@ class RendererProcessRegistry final
         it->second.attempt != attempt) {
       return;
     }
-    it->second.bound_sequence = ++bound_sequence_;
+    it->second.acknowledged = true;
   }
 
   void Disconnected(content::ChildProcessId id, uint64_t incarnation, uint64_t attempt) {
@@ -212,6 +223,7 @@ class RendererProcessRegistry final
     }
     auto& entry = it->second;
     entry.remote.reset();
+    ResetPending(entry);
     entry.incarnation = ++incarnation_;
     entry.bound_sequence = 0;
     entry.attempted = false;
@@ -244,17 +256,48 @@ class RendererProcessRegistry final
         rules.has_cosmetic_rules);
   }
 
-  void SendInitialConfiguration(Entry& entry) {
-    // A process bound while disabled receives neither retained profile rules nor
-    // exclusions. Later exclusion-only updates must not initialize its rules.
+  void CopyRules(ProfileRules& destination, const ProfileRules& source) {
+    ReleaseRendererRulesetFile(std::move(destination.file));
+    destination.file = source.file.IsValid() ? source.file.Duplicate() : base::File();
+    destination.has_ruleset_update = source.has_ruleset_update;
+    destination.ruleset_id = source.ruleset_id;
+    destination.has_cosmetic_rules = source.has_cosmetic_rules;
+  }
+
+  void ResetPending(Entry& entry) {
+    ReleaseRendererRulesetFile(std::move(entry.pending.file));
+    entry.pending.has_ruleset_update = false;
+    entry.pending.excluded_origins.clear();
+    entry.pending.exclusions_version = 0;
+    entry.has_exclusions = false;
+    entry.initial_configuration_captured = false;
+  }
+
+  void CaptureInitialConfiguration(Entry& entry) {
+    // Initialization eligibility is fixed per process incarnation. A fallback
+    // bind retry must not turn a disabled-born process into an enabled-born one.
+    if (entry.initial_configuration_captured) {
+      return;
+    }
+    entry.initial_configuration_captured = true;
     if (!GetAdBlockConfiguration().enabled || !entry.profile) {
       return;
     }
     auto* rules = Rules(entry.profile.get());
-    if (rules->has_ruleset_update) {
-      SendRules(entry, *rules);
+    CopyRules(entry.pending, *rules);
+    entry.pending.excluded_origins = rules->excluded_origins;
+    entry.pending.exclusions_version = rules->exclusions_version;
+    entry.has_exclusions = true;
+  }
+
+  void SendPendingConfiguration(Entry& entry) {
+    if (entry.pending.has_ruleset_update) {
+      SendRules(entry, entry.pending);
     }
-    entry.remote->SetAdBlockExcludedOrigins(rules->excluded_origins, rules->exclusions_version);
+    if (entry.has_exclusions) {
+      entry.remote->SetAdBlockExcludedOrigins(entry.pending.excluded_origins,
+                                              entry.pending.exclusions_version);
+    }
   }
 
   void ConfigurationChanged() {
@@ -271,15 +314,24 @@ class RendererProcessRegistry final
         rules->exclusions_version = configuration.config_version;
       }
       for (auto& [id, entry] : entries_) {
-        if (entry.profile.get() != weak_profile.get() || !entry.remote.is_bound()) {
+        if (entry.profile.get() != weak_profile.get() ||
+            !entry.initial_configuration_captured) {
           continue;
         }
         if (update_rules) {
-          SendRules(entry, *rules);
+          CopyRules(entry.pending, *rules);
+          if (entry.remote.is_bound()) {
+            SendRules(entry, entry.pending);
+          }
         }
         if (update_exclusions) {
-          entry.remote->SetAdBlockExcludedOrigins(rules->excluded_origins,
-                                                  rules->exclusions_version);
+          entry.pending.excluded_origins = rules->excluded_origins;
+          entry.pending.exclusions_version = rules->exclusions_version;
+          entry.has_exclusions = true;
+          if (entry.remote.is_bound()) {
+            entry.remote->SetAdBlockExcludedOrigins(entry.pending.excluded_origins,
+                                                    entry.pending.exclusions_version);
+          }
         }
       }
     }
@@ -303,6 +355,7 @@ RendererProcessRegistry& Registry() {
 
 void InitializeRendererProcessBridge() { Registry(); }
 void InitializeRendererProfile(Profile* profile) { Registry().InitializeProfile(profile); }
+void RendererProcessWillLaunch(content::RenderProcessHost* host) { Registry().ProcessWillLaunch(host); }
 void RendererProcessFrameReady(content::RenderProcessHost* host) { Registry().FrameReady(host); }
 void GetRendererAdBlockDebugInfo(Profile* profile, const GURL& url,
                                  base::OnceCallback<void(const std::string&)> completion) {

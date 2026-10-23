@@ -17,6 +17,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/extensions/commands/command_service.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -39,6 +40,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/load_error_reporter.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/permissions/active_tab_permission_granter.h"
 #include "extensions/browser/process_manager.h"
@@ -150,19 +152,47 @@ NSInteger ArcInstallResult(extensions::webstore_install::Result result) {
   return index < std::size(kResults) ? kResults[index] : 2;
 }
 
+// Native DelegateWrapper queues a weak bridge. Replacing a nonnil delegate
+// updates that bridge; clearing it invalidates already queued notifications.
+struct ExtensionCallbackTarget {
+  ExtensionCallbackTarget(id<ArcExtensionsContextCallbacks> target,
+                          ArcBrowserContext* owner)
+      : delegate(target), context(owner) {}
+  __weak id<ArcExtensionsContextCallbacks> delegate;
+  __weak ArcBrowserContext* context;
+};
+
+void PostExtensionCallback(
+    std::weak_ptr<ExtensionCallbackTarget> target,
+    void (^callback)(id<ArcExtensionsContextCallbacks>, ArcBrowserContext*)) {
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(
+          [](std::weak_ptr<ExtensionCallbackTarget> weak,
+             void (^notify)(id<ArcExtensionsContextCallbacks>, ArcBrowserContext*)) {
+            auto state = weak.lock();
+            if (!state) return;
+            id<ArcExtensionsContextCallbacks> delegate = state->delegate;
+            ArcBrowserContext* context = state->context;
+            if (delegate) notify(delegate, context);
+          }, std::move(target), [callback copy]));
+}
+
 class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
                                  public extensions::ErrorConsole::Observer,
+                                 public extensions::LoadErrorReporter::Observer,
                                  public ToolbarActionsModel::Observer {
  public:
-  ExtensionContextObserver(Profile* profile, ArcBrowserContextExtensions* owner,
-                           ArcBrowserContext* context,
+  ExtensionContextObserver(Profile* profile,
+                           std::shared_ptr<ExtensionCallbackTarget> callbacks,
                            std::shared_ptr<bool> order_suppression)
-      : owner_(owner), context_(context),
+      : callbacks_(callbacks),
         order_suppression_(std::move(order_suppression)), registry_(extensions::ExtensionRegistry::Get(profile)),
         errors_(extensions::ErrorConsole::Get(profile)),
         toolbar_(ToolbarActionsModel::Get(profile)) {
     if (registry_) registry_->AddObserver(this);
     if (errors_) errors_->AddObserver(this);
+    load_errors_ = extensions::LoadErrorReporter::GetInstance();
+    load_errors_->AddObserver(this);
     if (toolbar_) toolbar_->AddObserver(this);
     if (auto* system = extensions::ExtensionSystem::Get(profile)) {
       if (!system->is_ready())
@@ -176,9 +206,11 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
     weak_factory_.InvalidateWeakPtrs();
     if (registry_) registry_->RemoveObserver(this);
     if (errors_) errors_->RemoveObserver(this);
+    if (load_errors_) load_errors_->RemoveObserver(this);
     if (toolbar_) toolbar_->RemoveObserver(this);
     registry_ = nullptr;
     errors_ = nullptr;
+    load_errors_ = nullptr;
     toolbar_ = nullptr;
   }
   void OnShutdown(extensions::ExtensionRegistry*) override { Detach(); }
@@ -190,45 +222,62 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
   void OnExtensionLoaded(content::BrowserContext*,
                          const extensions::Extension* extension) override {
     if (extension->id() == arc::kInternalExtensionId) return;
-    ArcBrowserContextExtensions* wrapper = owner_;
-    id<ArcExtensionsContextCallbacks> delegate = [wrapper arc_delegate];
-    if ([delegate respondsToSelector:@selector(browserContext:didEnableExtension:)])
-      [delegate browserContext:context_ didEnableExtension:base::SysUTF8ToNSString(extension->id())];
+    NSString* identifier = base::SysUTF8ToNSString(extension->id());
+    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+                                       ArcBrowserContext* context) {
+      if ([delegate respondsToSelector:@selector(browserContext:didEnableExtension:)])
+        [delegate browserContext:context didEnableExtension:identifier];
+    });
   }
   void OnExtensionUnloaded(content::BrowserContext*,
                            const extensions::Extension* extension,
                            extensions::UnloadedExtensionReason) override {
     if (extension->id() == arc::kInternalExtensionId) return;
-    ArcBrowserContextExtensions* wrapper = owner_;
-    id<ArcExtensionsContextCallbacks> delegate = [wrapper arc_delegate];
-    if ([delegate respondsToSelector:@selector(browserContext:didDisableExtension:)])
-      [delegate browserContext:context_ didDisableExtension:base::SysUTF8ToNSString(extension->id())];
+    NSString* identifier = base::SysUTF8ToNSString(extension->id());
+    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+                                       ArcBrowserContext* context) {
+      if ([delegate respondsToSelector:@selector(browserContext:didDisableExtension:)])
+        [delegate browserContext:context didDisableExtension:identifier];
+    });
   }
   void OnExtensionInstalled(content::BrowserContext*,
                             const extensions::Extension* extension, bool) override {
     if (extension->id() == arc::kInternalExtensionId) return;
-    ArcBrowserContextExtensions* wrapper = owner_;
-    id<ArcExtensionsContextCallbacks> delegate = [wrapper arc_delegate];
-    if ([delegate respondsToSelector:@selector(browserContext:didInstallExtension:)])
-      [delegate browserContext:context_ didInstallExtension:base::SysUTF8ToNSString(extension->id())];
+    NSString* identifier = base::SysUTF8ToNSString(extension->id());
+    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+                                       ArcBrowserContext* context) {
+      if ([delegate respondsToSelector:@selector(browserContext:didInstallExtension:)])
+        [delegate browserContext:context didInstallExtension:identifier];
+    });
   }
   void OnExtensionUninstalled(content::BrowserContext*,
                               const extensions::Extension* extension,
                               extensions::UninstallReason) override {
     if (extension->id() == arc::kInternalExtensionId) return;
-    ArcBrowserContextExtensions* wrapper = owner_;
-    id<ArcExtensionsContextCallbacks> delegate = [wrapper arc_delegate];
-    if ([delegate respondsToSelector:@selector(browserContext:didUninstallExtension:)])
-      [delegate browserContext:context_ didUninstallExtension:base::SysUTF8ToNSString(extension->id())];
+    NSString* identifier = base::SysUTF8ToNSString(extension->id());
+    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+                                       ArcBrowserContext* context) {
+      if ([delegate respondsToSelector:@selector(browserContext:didUninstallExtension:)])
+        [delegate browserContext:context didUninstallExtension:identifier];
+    });
+  }
+  void OnLoadFailure(content::BrowserContext*, const base::FilePath& path,
+                     const std::u16string& error) override {
+    // Stock observes the global reporter without filtering its source profile.
+    NSString* filename = base::SysUTF8ToNSString(path.value());
+    NSString* message = base::SysUTF16ToNSString(error);
+    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+                                       ArcBrowserContext* context) {
+      if ([delegate respondsToSelector:@selector(browserContext:didFailLoadUnpacked:withManifestError:)])
+        [delegate browserContext:context didFailLoadUnpacked:filename
+              withManifestError:message];
+    });
   }
   void OnErrorAdded(const extensions::ExtensionError* error) override {
-    ArcBrowserContextExtensions* wrapper = owner_;
-    id<ArcExtensionsContextCallbacks> delegate = [wrapper arc_delegate];
     NSString* identifier = base::SysUTF8ToNSString(error->extension_id());
     NSString* message = base::SysUTF16ToNSString(error->message());
     switch (error->type()) {
       case extensions::ExtensionError::Type::kRuntimeError: {
-        if (![delegate respondsToSelector:@selector(browserContext:didFail:withRuntimeError:)]) return;
         const auto& runtime = *static_cast<const extensions::RuntimeError*>(error);
         arc::ExtensionRuntimeError snapshot;
         snapshot.extension_id = runtime.extension_id();
@@ -241,18 +290,30 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
           snapshot.stack_trace.push_back({frame.line_number, frame.column_number,
                                           frame.source, frame.function});
         }
-        [delegate browserContext:context_ didFail:identifier
-            withRuntimeError:[[ArcExtensionRuntimeError alloc] initWithExtensionRuntimeError:&snapshot]];
+        PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+                                           ArcBrowserContext* context) {
+          if ([delegate respondsToSelector:@selector(browserContext:didFail:withRuntimeError:)])
+            [delegate browserContext:context didFail:identifier
+                withRuntimeError:[[ArcExtensionRuntimeError alloc] initWithExtensionRuntimeError:&snapshot]];
+        });
         break;
       }
-      case extensions::ExtensionError::Type::kManifestError:
-        if ([delegate respondsToSelector:@selector(browserContext:didFail:withManifestError:)])
-          [delegate browserContext:context_ didFail:identifier withManifestError:message];
+      case extensions::ExtensionError::Type::kManifestError: {
+        PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+                                           ArcBrowserContext* context) {
+          if ([delegate respondsToSelector:@selector(browserContext:didFail:withManifestError:)])
+            [delegate browserContext:context didFail:identifier withManifestError:message];
+        });
         break;
-      case extensions::ExtensionError::Type::kInternalError:
-        if ([delegate respondsToSelector:@selector(browserContext:didFail:withInternalError:)])
-          [delegate browserContext:context_ didFail:identifier withInternalError:message];
+      }
+      case extensions::ExtensionError::Type::kInternalError: {
+        PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+                                           ArcBrowserContext* context) {
+          if ([delegate respondsToSelector:@selector(browserContext:didFail:withInternalError:)])
+            [delegate browserContext:context didFail:identifier withInternalError:message];
+        });
         break;
+      }
       case extensions::ExtensionError::Type::kNumErrorTypes:
         break;
     }
@@ -263,23 +324,26 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
   void OnToolbarModelInitialized() override {}
   void OnToolbarPinnedActionsChanged() override {
     if (*order_suppression_) return;
-    ArcBrowserContextExtensions* wrapper = owner_;
-    id<ArcExtensionsContextCallbacks> delegate = [wrapper arc_delegate];
-    if ([delegate respondsToSelector:@selector(browserContext:didChangePinnedExtensionOrder:)])
-      [delegate browserContext:context_ didChangePinnedExtensionOrder:PinnedOrder(toolbar_)];
+    NSArray* order = PinnedOrder(toolbar_);
+    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+                                       ArcBrowserContext* context) {
+      if ([delegate respondsToSelector:@selector(browserContext:didChangePinnedExtensionOrder:)])
+        [delegate browserContext:context didChangePinnedExtensionOrder:order];
+    });
   }
  private:
   void Ready() {
-    ArcBrowserContextExtensions* wrapper = owner_;
-    id<ArcExtensionsContextCallbacks> delegate = [wrapper arc_delegate];
-    if ([delegate respondsToSelector:@selector(browserContextDidExtensionSystemReady:)])
-      [delegate browserContextDidExtensionSystemReady:context_];
+    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+                                       ArcBrowserContext* context) {
+      if ([delegate respondsToSelector:@selector(browserContextDidExtensionSystemReady:)])
+        [delegate browserContextDidExtensionSystemReady:context];
+    });
   }
-  __weak ArcBrowserContextExtensions* owner_;
-  __weak ArcBrowserContext* context_;
+  const std::weak_ptr<ExtensionCallbackTarget> callbacks_;
   const std::shared_ptr<bool> order_suppression_;
   raw_ptr<extensions::ExtensionRegistry> registry_;
   raw_ptr<extensions::ErrorConsole> errors_;
+  raw_ptr<extensions::LoadErrorReporter> load_errors_;
   raw_ptr<ToolbarActionsModel> toolbar_;
   base::WeakPtrFactory<ExtensionContextObserver> weak_factory_{this};
 };
@@ -314,6 +378,7 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
   __weak id<ArcExtensionsContextCallbacks> _delegate;
   std::unique_ptr<ExtensionContextObserver> _observer;
   std::shared_ptr<bool> _orderSuppression;
+  std::shared_ptr<ExtensionCallbackTarget> _callbackTarget;
 }
 @synthesize owner = _owner;
 - (instancetype)initWithArcBrowserContext:(ArcBrowserContext*)context {
@@ -342,9 +407,16 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
 - (id<ArcExtensionsContextCallbacks>)arc_delegate { return _delegate; }
 - (void)setDelegate:(id)delegate {
   _delegate = delegate;
-  if (!delegate) _observer.reset();
-  else if (!_observer && _profile)
-    _observer = std::make_unique<ExtensionContextObserver>(_profile.get(), self, _owner, _orderSuppression);
+  if (!delegate) {
+    _observer.reset();
+    _callbackTarget.reset();
+    return;
+  }
+  if (_callbackTarget) _callbackTarget->delegate = delegate;
+  else _callbackTarget = std::make_shared<ExtensionCallbackTarget>(delegate, _owner);
+  if (!_observer && _profile)
+    _observer = std::make_unique<ExtensionContextObserver>(
+        _profile.get(), _callbackTarget, _orderSuppression);
 }
 - (BOOL)isExtensionSystemReady {
   auto* system = _profile ? extensions::ExtensionSystem::Get(_profile.get()) : nullptr;
@@ -405,23 +477,13 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
                             completion:(void (^)(NSString*, NSInteger))completion {
   void (^callback)(NSString*, NSInteger) = [completion copy];
   if (!_profile) { if (callback) callback(@"", 1); return; }
-  __weak ArcBrowserContextExtensions* weakSelf = self;
-  __weak ArcBrowserContext* weakContext = _owner;
   auto installer = extensions::UnpackedInstaller::Create(_profile.get());
   installer->set_be_noisy_on_failure(true);
   installer->set_completion_callback(base::BindOnce(
-      [](ArcBrowserContextExtensions* __weak weakWrapper,
-         ArcBrowserContext* __weak context, void (^done)(NSString*, NSInteger), const extensions::Extension* extension,
-         const base::FilePath& path, const std::u16string& error) {
-        ArcBrowserContextExtensions* wrapper = weakWrapper;
-        if (!extension) {
-          id<ArcExtensionsContextCallbacks> delegate = [wrapper arc_delegate];
-          if ([delegate respondsToSelector:@selector(browserContext:didFailLoadUnpacked:withManifestError:)])
-            [delegate browserContext:context didFailLoadUnpacked:base::SysUTF8ToNSString(path.value())
-                  withManifestError:base::SysUTF16ToNSString(error)];
-        }
+      [](void (^done)(NSString*, NSInteger), const extensions::Extension* extension,
+         const base::FilePath&, const std::u16string&) {
         if (done) done(extension ? base::SysUTF8ToNSString(extension->id()) : @"", extension ? 0 : 1);
-      }, weakSelf, weakContext, callback));
+      }, callback));
   installer->Load(base::FilePath(base::SysNSStringToUTF8(path)));
 }
 - (BOOL)runJSInExtensionBackgroundPage:(NSString*)extensionID js_code:(NSString*)code {
