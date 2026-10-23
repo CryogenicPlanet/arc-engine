@@ -26,3 +26,5 @@ for p in "$E"/patches/*.patch; do
   elif git -C "$E/chromium/src" apply "$p"; then step "patch applied: $(basename "$p")"
   else step "PATCH FAILED: $(basename "$p")"; exit 1; fi
 done
+# Our ArcCore layer lives in this repo (arc/) and is linked into the tree as //arc.
+ln -sfn ../../arc "$E/chromium/src/arc" && step "linked chromium/src/arc -> arc/"
