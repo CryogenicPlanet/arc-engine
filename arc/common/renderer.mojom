@@ -7,6 +7,12 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 interface RendererHost {
   // Blink calls ReportDisallowedLoad only for an actually disallowed load.
   ReportDisallowedLoad();
+  // The frame's focused element changed: `editable` for text fields and editable content, `password` for
+  // password fields (ArcWebContents undoable/freeform/passwordTextFieldActive).
+  FocusedFieldChanged(bool editable, bool password);
+  // A DOM input or click event, as ArcWebContents.inputEvent JSON: {"input":{"id":N,"value":…}} or
+  // {"click":{"id":N}}, N being the target's DOM node id. `text_edit` marks input events.
+  ReportUserInput(string event_json, bool text_edit);
 };
 
 struct EffectSource {

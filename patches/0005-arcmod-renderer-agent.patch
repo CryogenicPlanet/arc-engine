@@ -46,3 +46,80 @@ index d460c0fb69..7528d4e050 100644
  #if BUILDFLAG(ENABLE_EXTENSIONS_CORE)
    extensions::ExtensionsRendererClient::Get()->RunScriptsAtDocumentStart(
        render_frame);
+diff --git a/third_party/blink/public/web/web_dom_event.h b/third_party/blink/public/web/web_dom_event.h
+index 06f64de960..59fce13123 100644
+--- a/third_party/blink/public/web/web_dom_event.h
++++ b/third_party/blink/public/web/web_dom_event.h
+@@ -36,6 +36,8 @@
+ 
+ namespace blink {
+ 
++class WebNode;
++
+ class Event;
+ 
+ class BLINK_EXPORT WebDOMEvent {
+@@ -54,6 +56,9 @@ class BLINK_EXPORT WebDOMEvent {
+ 
+   bool IsNull() const { return private_.IsNull(); }
+ 
++  // The node the event was dispatched to, or a null node when the target isn't a node.
++  WebNode Target() const;
++
+ #if INSIDE_BLINK
+   WebDOMEvent(Event*);
+   operator Event*() const;
+diff --git a/third_party/blink/public/web/web_node.h b/third_party/blink/public/web/web_node.h
+index 51af56ccc9..4d4879dcbb 100644
+--- a/third_party/blink/public/web/web_node.h
++++ b/third_party/blink/public/web/web_node.h
+@@ -92,6 +92,7 @@ class BLINK_EXPORT WebNode {
+     kKeydown,
+     kKeyup,
+     kKeypress,
++    kClick,
+   };
+ 
+   static WebNode FromDomNodeId(int dom_node_id);
+diff --git a/third_party/blink/renderer/core/exported/web_dom_event.cc b/third_party/blink/renderer/core/exported/web_dom_event.cc
+index 2333b72a9a..2ad0e1adb0 100644
+--- a/third_party/blink/renderer/core/exported/web_dom_event.cc
++++ b/third_party/blink/renderer/core/exported/web_dom_event.cc
+@@ -30,8 +30,12 @@
+ 
+ #include "third_party/blink/public/web/web_dom_event.h"
+ 
++#include "third_party/blink/public/web/web_node.h"
++
+ #include "base/memory/scoped_refptr.h"
+ #include "third_party/blink/renderer/core/dom/events/event.h"
++#include "third_party/blink/renderer/core/dom/events/event_target.h"
++#include "third_party/blink/renderer/core/dom/node.h"
+ 
+ namespace blink {
+ 
+@@ -53,4 +57,11 @@ WebDOMEvent::operator Event*() const {
+   return private_.Get();
+ }
+ 
++WebNode WebDOMEvent::Target() const {
++  Node* node = private_.IsNull() || !private_->target()
++                   ? nullptr
++                   : private_->target()->ToNode();
++  return WebNode(node);
++}
++
+ }  // namespace blink
+diff --git a/third_party/blink/renderer/core/exported/web_node.cc b/third_party/blink/renderer/core/exported/web_node.cc
+index 3383e1d976..e85b20abcb 100644
+--- a/third_party/blink/renderer/core/exported/web_node.cc
++++ b/third_party/blink/renderer/core/exported/web_node.cc
+@@ -96,6 +96,8 @@ const AtomicString& GetEventTypeName(WebNode::EventType event_type) {
+       return event_type_names::kKeyup;
+     case WebNode::EventType::kKeypress:
+       return event_type_names::kKeypress;
++    case WebNode::EventType::kClick:
++      return event_type_names::kClick;
+   }
+   NOTREACHED();
+ }

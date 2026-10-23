@@ -128,7 +128,7 @@ diff --git a/chrome/common/chrome_paths_mac.mm b/chrome/common/chrome_paths_mac.
 index 6829c9cb92..fc651ca4c4 100644
 --- a/chrome/common/chrome_paths_mac.mm
 +++ b/chrome/common/chrome_paths_mac.mm
-@@ -160,9 +160,9 @@ base::FilePath GetFrameworkBundlePath() {
+@@ -160,9 +160,9 @@ bool GetUserVideosDirectory(base::FilePath* result) {
      path = path.Append("Frameworks")
                 .Append(kFrameworkName)
                 .Append("Versions")

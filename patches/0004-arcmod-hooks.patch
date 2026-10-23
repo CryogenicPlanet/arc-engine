@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/arcmod/arcmod_hooks.h b/chrome/browser/arcmod/arcmod_hooks.h
 new file mode 100644
-index 0000000000..dc9c5ec02f
+index 0000000000..c3a79db92c
 --- /dev/null
 +++ b/chrome/browser/arcmod/arcmod_hooks.h
-@@ -0,0 +1,236 @@
+@@ -0,0 +1,246 @@
 +// Copyright 2026 ArcMod. Hooks that ArcCore (Arc's engine interface, //arc, linked into the same framework)
 +// fills in when Arc's app hosts this engine (--arcmod-host-app). Chrome code calls them only when set, so
 +// Chrome itself does not depend on //arc. Header-only: function-local statics in inline functions are shared
@@ -141,6 +141,16 @@ index 0000000000..dc9c5ec02f
 +    content::JavaScriptDialogManager*(content::WebContents*)>;
 +inline JavaScriptDialogManagerHook& GetJavaScriptDialogManagerHook() {
 +  static base::NoDestructor<JavaScriptDialogManagerHook> hook;
++  return *hook;
++}
++
++// Password save/update offers shown by Arc's app (ArcLoginCredentialsSaveRequest) instead of Chrome's
++// bubble. Runs when ManagePasswordsUIController decides to pop up its save or update bubble; the offer is
++// answered through that tab's PasswordsModelDelegate.
++using PasswordSaveOfferHook =
++    base::RepeatingCallback<void(content::WebContents*, bool is_update)>;
++inline PasswordSaveOfferHook& GetPasswordSaveOfferHook() {
++  static base::NoDestructor<PasswordSaveOfferHook> hook;
 +  return *hook;
 +}
 +
@@ -579,7 +589,7 @@ index 10829d1e59..9e8278d167 100644
  #include <utility>
  
  #include "base/compiler_specific.h"
-@@ -75,6 +77,11 @@ RenderViewContextMenuMacCocoa::~RenderViewContextMenuMacCocoa() {
+@@ -75,6 +77,11 @@
  }
  
  void RenderViewContextMenuMacCocoa::Show() {
@@ -591,6 +601,40 @@ index 10829d1e59..9e8278d167 100644
    views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
        source_web_contents_->GetNativeView());
  
+diff --git a/chrome/browser/ui/passwords/manage_passwords_ui_controller.cc b/chrome/browser/ui/passwords/manage_passwords_ui_controller.cc
+index 0d2c0bbb5b..19378b09d7 100644
+--- a/chrome/browser/ui/passwords/manage_passwords_ui_controller.cc
++++ b/chrome/browser/ui/passwords/manage_passwords_ui_controller.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+ 
++#include "chrome/browser/arcmod/arcmod_hooks.h"
++
+ #include <algorithm>
+ #include <optional>
+ #include <string>
+@@ -251,6 +253,10 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
+           feature_engagement::kIPHPasswordsSaveRecoveryPromoFeature);
+     }
+   }
++  if (saving_prompt_status == SavingPromptStatus::kCanShow &&
++      arcmod::GetPasswordSaveOfferHook()) {
++    arcmod::GetPasswordSaveOfferHook().Run(web_contents(), /*is_update=*/false);
++  }
+ }
+ 
+ void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
+@@ -268,6 +274,9 @@ void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
+ 
+   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+   UpdateBubbleAndIconVisibility();
++  if (arcmod::GetPasswordSaveOfferHook()) {
++    arcmod::GetPasswordSaveOfferHook().Run(web_contents(), /*is_update=*/true);
++  }
+ }
+ 
+ void ManagePasswordsUIController::OnShowManualFallbackForSaving(
 diff --git a/chrome/browser/ui/tab_helpers.h b/chrome/browser/ui/tab_helpers.h
 index c6e05eb620..da0b91d382 100644
 --- a/chrome/browser/ui/tab_helpers.h

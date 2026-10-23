@@ -34,6 +34,9 @@
 #endif  //  !BUILDFLAG(IS_ANDROID)
 
 class LocationBarTesting;
+namespace autofill {
+class AutofillBubbleHandler;
+}  // namespace autofill
 class GlobalBrowserCollection;
 class OmniboxView;
 struct BrowserWindowCreateParams;
@@ -294,6 +297,8 @@ class ArcBrowserWindow : public BrowserWindow,
   base::ScopedObservation<GlobalBrowserCollection, BrowserCollectionObserver>
       browser_collection_observation_{this};
   base::WeakPtr<BrowserWindowInterface> browser_;
+  // Registered on the browser's unowned user data; Chrome's Browser deletes this window before that host.
+  std::unique_ptr<autofill::AutofillBubbleHandler> autofill_bubble_handler_;
   base::OnceClosure close_callback_;
   base::CallbackListSubscription close_subscription_;
   base::WeakPtrFactory<ArcBrowserWindow> weak_factory_{this};

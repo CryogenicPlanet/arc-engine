@@ -6,6 +6,28 @@ Facts, locations, procedures and the step-by-step runbook are in `ENGINE.md`.
 Static research is complete and reviewed: report `../arc/notes/engine-feasibility.md`, class and protocol
 index `specs/README.md` (146 classes, 1,964 declared methods, 26 protocols; declared coverage, not behavior).
 
+## Afternoon status (2026-10-23 ~13:30 PDT): lead implementing directly
+
+The Sol workers are stopped: every `codex exec` hit the ChatGPT usage limit ("try again at Oct 30th, 2026
+10:40 AM"). Their last changes are verified and committed (9a0d00d patches, 43e5792 evidence). Until Oct 30
+the lead implements directly; prompts for relaunching are in `logs/wp/*.prompt`.
+
+New scenarios (CDP-only, so they run with the screen locked) and what they found:
+- `password-save`: Arc's engine offers the save through `webContents:didSubmitCredentials:`
+  (ArcLoginCredentialsSaveRequest). Ours never did. Fixed: ManagePasswordsUIController hook (0004) + request
+  answered through PasswordsModelDelegate. Transcript now matches (init, callback, app reads isUpdate).
+- `autofill-save`: address/card offers (`didSubmitAddressEntry:`/`didSubmitCreditCardInfo:`). Ours CRASHED on
+  address submit: `BrowserWindow::FindBrowserWindowWithWebContents` only returns BrowserViews (null for every
+  Arc window). Fixed in 0003 (host mode returns the browser's own window) + `ArcBrowserWindow` now has an
+  AutofillBubbleHandler that forwards address/card offers to the app.
+- Same transcripts show more gaps, not yet fixed: focused-field KVO setters (`undoableFieldActive`,
+  `freeformTextFieldActive`, `passwordTextFieldActive`, `hasDirtyTextField`, `hadFormOrUserEdits`) never update
+  after creation; `setInputEvent:` JSON (`{"input":{"id":N,"value":…}}`, `{"click":{"id":N}}`) never sent;
+  ours asks `decidePolicyForNavigationAction:` for a form POST where Arc's engine doesn't.
+- Profile attributes: `userVisibleName` now reports the directory name while the profile has Chromium's
+  default name ("Default", as in every golden); `userColor` still differs (ours #1C1E22, Arc #A8C7FA in dark
+  mode): source being identified.
+
 ## Morning status (2026-10-23 ~07:00 PDT)
 
 Our ArcCore (Chromium 156 from source + arc/ layer + patches 0001-0006) runs Arc 1.168's unmodified app.

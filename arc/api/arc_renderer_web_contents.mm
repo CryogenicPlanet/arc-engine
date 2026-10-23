@@ -17,10 +17,20 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "base/strings/sys_string_conversions.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 @interface ArcWebContents (RendererCountAccessors)
 @property(nonatomic) int blockedResourceCount;
+@end
+
+@interface ArcWebContents (RendererFieldStateAccessors)
+@property(nonatomic) BOOL undoableFieldActive;
+@property(nonatomic) BOOL freeformTextFieldActive;
+@property(nonatomic) BOOL passwordTextFieldActive;
+@property(nonatomic) BOOL hasDirtyTextField;
+@property(nonatomic) BOOL hadFormOrUserEdits;
+@property(nonatomic, strong) NSString* inputEvent;
 @end
 
 namespace arc {
@@ -58,10 +68,14 @@ class RendererBridge : public content::WebContentsObserver,
     }
   }
 
-  void ReportDisallowedLoad() override {
+  // The message came from an active frame of this web contents.
+  bool CurrentFrameBelongsHere() {
     auto* frame = content::RenderFrameHost::FromID(hosts_.current_context());
-    if (!frame || !frame->IsActive() ||
-        content::WebContents::FromRenderFrameHost(frame) != web_contents()) {
+    return frame && frame->IsActive() && content::WebContents::FromRenderFrameHost(frame) == web_contents();
+  }
+
+  void ReportDisallowedLoad() override {
+    if (!CurrentFrameBelongsHere()) {
       return;
     }
     if (blocked_resource_count_ < std::numeric_limits<int>::max()) {
@@ -73,11 +87,40 @@ class RendererBridge : public content::WebContentsObserver,
   }
 
   void PrimaryPageChanged(content::Page&) override {
+    ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:web_contents()];
     if (blocked_resource_count_ != 0) {
       blocked_resource_count_ = 0;
-      ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:web_contents()];
       wrapper.blockedResourceCount = 0;
     }
+    // A new page starts without edits or a focused field (order as in Arc's engine).
+    if (wrapper.hadFormOrUserEdits) wrapper.hadFormOrUserEdits = NO;
+    if (wrapper.hasDirtyTextField) wrapper.hasDirtyTextField = NO;
+    if (wrapper.undoableFieldActive) wrapper.undoableFieldActive = NO;
+    if (wrapper.freeformTextFieldActive) wrapper.freeformTextFieldActive = NO;
+    if (wrapper.passwordTextFieldActive) wrapper.passwordTextFieldActive = NO;
+  }
+
+  // Field state setters change only on a change, like Arc's engine (the app observes them with KVO).
+  void FocusedFieldChanged(bool editable, bool password) override {
+    if (!CurrentFrameBelongsHere()) {
+      return;
+    }
+    ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:web_contents()];
+    if (wrapper.undoableFieldActive != editable) wrapper.undoableFieldActive = editable;
+    if (wrapper.freeformTextFieldActive != editable) wrapper.freeformTextFieldActive = editable;
+    if (wrapper.passwordTextFieldActive != password) wrapper.passwordTextFieldActive = password;
+  }
+
+  void ReportUserInput(const std::string& event_json, bool text_edit) override {
+    if (!CurrentFrameBelongsHere()) {
+      return;
+    }
+    ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:web_contents()];
+    if (text_edit) {
+      if (!wrapper.hasDirtyTextField) wrapper.hasDirtyTextField = YES;
+      if (!wrapper.hadFormOrUserEdits) wrapper.hadFormOrUserEdits = YES;
+    }
+    wrapper.inputEvent = base::SysUTF8ToNSString(event_json);
   }
 
 

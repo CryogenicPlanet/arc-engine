@@ -6,6 +6,11 @@
 #import <objc/message.h>
 
 #include "base/files/file_path.h"
+#include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/delete_profile_helper.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/functional/callback_helpers.h"
+#include "base/functional/bind.h"
 #include "base/supports_user_data.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
@@ -59,6 +64,13 @@ ARC_EXPORT @interface ArcBrowserContextAttributes : NSObject
 - (instancetype)initWithEntry:(ProfileAttributesEntry*)entry;
 @end
 
+// Arc's engine reports a profile that still has Chromium's default name ("Your Arc"/"Your Chromium") by its
+// directory name ("Default" in every golden); a name set through -setUserVisibleName: is reported as set.
+static NSString* ArcUserVisibleProfileName(ProfileAttributesEntry* entry) {
+  return entry->IsUsingDefaultName() ? base::SysUTF8ToNSString(entry->GetPath().BaseName().value())
+                                     : base::SysUTF16ToNSString(entry->GetLocalProfileName());
+}
+
 @implementation ArcBrowserContextAttributes {
   NSString* _directoryBasename;
   NSString* _userVisibleName;
@@ -67,8 +79,10 @@ ARC_EXPORT @interface ArcBrowserContextAttributes : NSObject
 - (instancetype)initWithEntry:(ProfileAttributesEntry*)entry {
   if ((self = [super init])) {
     _directoryBasename = base::SysUTF8ToNSString(entry->GetPath().BaseName().value());
-    _userVisibleName = base::SysUTF16ToNSString(entry->GetLocalProfileName());
-    _userColor = [ArcColor colorWithSkColor:entry->GetProfileThemeColors().profile_highlight_color];
+    _userVisibleName = ArcUserVisibleProfileName(entry);
+    // Arc's engine reports the profile's color seed (#A8C7FA for a default profile in dark mode, as in the
+    // goldens), not the highlight color.
+    _userColor = [ArcColor colorWithSkColor:entry->GetProfileThemeColors().profile_color_seed];
   }
   return self;
 }
@@ -217,7 +231,7 @@ id GetBrowserContextService(
       _profile ? g_browser_process->profile_manager()->GetProfileAttributesStorage().GetProfileAttributesWithPath(
                      _profile->GetOriginalProfile()->GetPath())
                : nullptr;
-  return entry ? base::SysUTF16ToNSString(entry->GetLocalProfileName()) : @"";
+  return entry ? ArcUserVisibleProfileName(entry) : @"";
 }
 - (BOOL)isEqual:(id)other {
   return [other isKindOfClass:[ArcBrowserContext class]] && [_id isEqual:((ArcBrowserContext*)other)->_id];
@@ -229,6 +243,35 @@ id GetBrowserContextService(
 
 @interface ArcBrowserApplication : NSObject
 @end
+
+namespace {
+
+// Profile directory |name| in the user data dir.
+base::FilePath ArcProfilePath(NSString* name) {
+  return g_browser_process->profile_manager()->user_data_dir().Append(base::SysNSStringToUTF8(name));
+}
+
+bool ArcValidProfileRequest(NSString* name, NSUInteger type, bool has_completion, NSError** error) {
+  const bool valid = name.length && has_completion &&
+                     (type == kBrowserContextTypeRegular || type == kBrowserContextTypeIncognito);
+  if (!valid && error) {
+    *error = [NSError errorWithDomain:@"company.thebrowser.Arc"
+                                 code:1
+                             userInfo:@{NSLocalizedDescriptionKey : @"Invalid browser context request"}];
+  }
+  return valid;
+}
+
+ArcBrowserContext* ArcContextForProfile(Profile* profile, NSUInteger type) {
+  if (!profile) {
+    return nil;
+  }
+  if (type == kBrowserContextTypeIncognito) {
+    profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  }
+  return [ArcBrowserContext wrapperForProfile:profile];
+}
+}  // namespace
 
 @implementation ArcBrowserApplication (Profiles)
 
@@ -257,6 +300,72 @@ id GetBrowserContextService(
     profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   }
   return [ArcBrowserContext wrapperForProfile:profile];
+}
+
+// Creates the profile directory |name| in the user data dir if needed, loads it and reports it (or nil) to
+// |completion| on the main thread. Arc's engine rejects an empty name, a missing completion and an unknown type.
+- (BOOL)createBrowserContext:(NSString*)name
+                    isHidden:(BOOL)isHidden
+                        type:(NSUInteger)type
+                  completion:(void (^)(ArcBrowserContext*))completion
+                       error:(NSError**)error {
+  if (!ArcValidProfileRequest(name, type, completion != nil, error)) {
+    return NO;
+  }
+  const base::FilePath path = ArcProfilePath(name);
+  g_browser_process->profile_manager()->CreateProfileAsync(
+      path, base::BindOnce(
+                [](void (^done)(ArcBrowserContext*), bool hidden, NSUInteger profile_type, Profile* profile) {
+                  if (profile && hidden) {
+                    if (ProfileAttributesEntry* entry = g_browser_process->profile_manager()
+                                                            ->GetProfileAttributesStorage()
+                                                            .GetProfileAttributesWithPath(profile->GetPath())) {
+                      entry->SetIsOmitted(true);
+                    }
+                  }
+                  done(ArcContextForProfile(profile, profile_type));
+                },
+                completion, isHidden, type));
+  return YES;
+}
+
+// Loads an existing profile directory |name| (no creation) and reports it, or nil, on the main thread.
+- (void)loadBrowserContext:(NSString*)name type:(NSUInteger)type completion:(void (^)(ArcBrowserContext*))completion {
+  if (!completion) {
+    return;
+  }
+  if (!ArcValidProfileRequest(name, type, true, nullptr) ||
+      !g_browser_process->profile_manager()->LoadProfileByPath(
+          ArcProfilePath(name), /*incognito=*/false,
+          base::BindOnce(
+              [](void (^done)(ArcBrowserContext*), NSUInteger profile_type, Profile* profile) {
+                done(ArcContextForProfile(profile, profile_type));
+              },
+              completion, type))) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
+                                                               completion(nil);
+                                                             }));
+  }
+}
+
+// Schedules deletion of profile directory |name| as Chrome's profile settings do (its browsers close first).
+- (BOOL)deleteBrowserContext:(NSString*)name error:(NSError**)error {
+  if (!ArcValidProfileRequest(name, kBrowserContextTypeRegular, true, error)) {
+    return NO;
+  }
+  ProfileManager* manager = g_browser_process->profile_manager();
+  const base::FilePath path = ArcProfilePath(name);
+  if (!manager->GetProfileAttributesStorage().GetProfileAttributesWithPath(path)) {
+    if (error) {
+      *error = [NSError errorWithDomain:@"company.thebrowser.Arc"
+                                   code:2
+                               userInfo:@{NSLocalizedDescriptionKey : @"No browser context with that name"}];
+    }
+    return NO;
+  }
+  manager->GetDeleteProfileHelper().MaybeScheduleProfileForDeletion(
+      path, base::DoNothing(), ProfileMetrics::DELETE_PROFILE_SETTINGS);
+  return YES;
 }
 
 @end

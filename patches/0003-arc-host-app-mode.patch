@@ -132,7 +132,7 @@ diff --git a/chrome/browser/chrome_browser_application_mac.mm b/chrome/browser/c
 index 823b03b27c..82de8160f3 100644
 --- a/chrome/browser/chrome_browser_application_mac.mm
 +++ b/chrome/browser/chrome_browser_application_mac.mm
-@@ -37,6 +37,12 @@ BASE_FEATURE(kForwardCmdKeyUpEventsToWindow, base::FEATURE_ENABLED_BY_DEFAULT);
+@@ -37,6 +37,12 @@
  namespace chrome_browser_application_mac {
  
  void RegisterBrowserCrApp() {
@@ -149,7 +149,7 @@ diff --git a/chrome/browser/chrome_browser_main_mac.mm b/chrome/browser/chrome_b
 index b269f1610a..712a1eb4d3 100644
 --- a/chrome/browser/chrome_browser_main_mac.mm
 +++ b/chrome/browser/chrome_browser_main_mac.mm
-@@ -116,7 +116,8 @@ void ChromeBrowserMainPartsMac::PreCreateMainMessageLoop() {
+@@ -116,7 +116,8 @@
    // before anything creating preferences like Local State in order for the
    // relaunched installed application to still consider itself as first-run.
    if (!first_run::IsFirstRunSuppressed(
@@ -159,7 +159,7 @@ index b269f1610a..712a1eb4d3 100644
      if (MaybeInstallFromDiskImage()) {
        // The application was installed and the installed copy has been
        // launched.  This process is now obsolete.  Exit.
-@@ -154,6 +155,11 @@ int ChromeBrowserMainPartsMac::PreCreateThreads() {
+@@ -154,6 +155,11 @@
      return ret;
    }
  
@@ -171,7 +171,7 @@ index b269f1610a..712a1eb4d3 100644
    // Create the app delegate by requesting the shared AppController.
    CHECK_EQ(nil, NSApp.delegate);
    AppController* app_controller = AppController.sharedController;
-@@ -182,5 +188,8 @@ void ChromeBrowserMainPartsMac::PostProfileInit(Profile* profile,
+@@ -182,5 +188,8 @@
  }
  
  void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {
@@ -213,6 +213,25 @@ index 07de580deb..57d61b0646 100644
    // A touch tab drag session may still be delivering OS touch events to this
    // window's native widget. Destroying it mid-gesture would strand the drag, so
    // let TabDragController take ownership of closing this browser once the drag
+diff --git a/chrome/browser/ui/views/frame/browser_view.cc b/chrome/browser/ui/views/frame/browser_view.cc
+index b68f089aeb..ba6c58c396 100644
+--- a/chrome/browser/ui/views/frame/browser_view.cc
++++ b/chrome/browser/ui/views/frame/browser_view.cc
+@@ -1184,8 +1184,13 @@ BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
+     return BrowserView::GetBrowserViewForNativeWindow(
+         widget->GetNativeWindow());
+   }
+-  const auto* browser =
++  auto* browser =
+       GlobalBrowserCollection::GetInstance()->FindBrowserWithTab(web_contents);
++  // ArcMod host: Arc-hosted browsers have their own BrowserWindow, no BrowserView.
++  if (browser && base::CommandLine::ForCurrentProcess()->HasSwitch(
++                     "arcmod-host-app")) {
++    return BrowserWindow::FromBrowser(browser);
++  }
+   return browser ? BrowserView::GetBrowserViewForBrowser(browser) : nullptr;
+ }
+ 
 diff --git a/content/app/content_main.cc b/content/app/content_main.cc
 index 0fd60fa820..3dd27e1c71 100644
 --- a/content/app/content_main.cc

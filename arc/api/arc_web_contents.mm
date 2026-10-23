@@ -232,10 +232,12 @@ void PostCoreUI(void (^callback)()) {
       FROM_HERE, base::BindOnce([](void (^work)()) { work(); }, callback));
 }
 
+// Arc's engine doesn't ask about form submissions, GET or POST (navigation-forms golden).
 bool NeedsNavigationPolicy(content::NavigationHandle* handle) {
   return handle->IsInPrimaryMainFrame() && handle->IsRendererInitiated() &&
       !handle->IsSameDocument() && handle->GetReloadType() == content::ReloadType::NONE &&
-      (handle->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK) == 0;
+      (handle->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK) == 0 &&
+      !ui::PageTransitionCoreTypeIs(handle->GetPageTransition(), ui::PAGE_TRANSITION_FORM_SUBMIT);
 }
 
 class CoreNavigationPolicyThrottle final : public content::NavigationThrottle {

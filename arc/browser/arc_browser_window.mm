@@ -4,6 +4,9 @@
 
 #include "arc/browser/arc_browser_window.h"
 
+#include "arc/api/arc_save_requests.h"
+#include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
+
 #import <AppKit/AppKit.h>
 
 #include <utility>
@@ -324,7 +327,7 @@ PinnedToolbarActions* ArcBrowserWindow::GetPinnedToolbarActions() {
 }
 
 autofill::AutofillBubbleHandler* ArcBrowserWindow::GetAutofillBubbleHandler() {
-  return nullptr;
+  return autofill_bubble_handler_.get();
 }
 
 content::KeyboardEventProcessingResult
@@ -458,6 +461,7 @@ void ArcBrowserWindow::OnBrowserCreated(BrowserWindowInterface* browser) {
   if (BrowserInitState::From(browser)->create_params().window == this) {
     browser_ = browser->GetWeakPtr();
     browser_collection_observation_.Reset();
+    autofill_bubble_handler_ = CreateAutofillBubbleHandler(browser);
     close_subscription_ = browser->RegisterBrowserDidClose(base::BindRepeating(
         [](ArcBrowserWindow* window, BrowserWindowInterface*) {
           window->is_closed_ = true;

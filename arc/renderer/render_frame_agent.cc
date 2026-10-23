@@ -11,6 +11,9 @@
 #include "arc/renderer/render_process_agent.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
+#include "base/json/json_writer.h"
+#include "base/values.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
@@ -23,6 +26,9 @@
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_dom_event.h"
+#include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_css_origin.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -174,7 +180,55 @@ class RenderFrameAgent final : public content::RenderFrameObserver,
   }
   void OnDestruct() override { delete this; }
 
+  // Arc's engine reports the focused field and each input/click on the page (ArcWebContents field state and
+  // inputEvent). Listeners live on the current document and go with it.
+  void DidCreateDocumentElement() override {
+    input_listeners_.clear();
+    last_focus_ = {false, false};
+    blink::WebDocument document = render_frame()->GetWebFrame()->GetDocument();
+    if (document.IsNull()) {
+      return;
+    }
+    input_listeners_.push_back(document.AddEventListener(
+        blink::WebNode::EventType::kInput,
+        base::BindRepeating(&RenderFrameAgent::OnDOMEvent, weak_ptr_factory_.GetWeakPtr(), true),
+        /*use_capture=*/true));
+    input_listeners_.push_back(document.AddEventListener(
+        blink::WebNode::EventType::kClick,
+        base::BindRepeating(&RenderFrameAgent::OnDOMEvent, weak_ptr_factory_.GetWeakPtr(), false),
+        /*use_capture=*/true));
+  }
+
+  void FocusedElementChanged(const blink::WebElement& element) override {
+    const bool editable = !element.IsNull() && element.IsEditable();
+    bool password = false;
+    if (editable && element.IsFormControlElement()) {
+      password = element.To<blink::WebFormControlElement>().FormControlType() ==
+                 blink::mojom::FormControlType::kInputPassword;
+    }
+    if (last_focus_ == std::make_pair(editable, password) || !host_.is_bound()) {
+      return;
+    }
+    last_focus_ = {editable, password};
+    host_->FocusedFieldChanged(editable, password);
+  }
+
  private:
+  void OnDOMEvent(bool is_input, blink::WebDOMEvent event) {
+    const blink::WebNode target = event.Target();
+    if (target.IsNull() || !host_.is_bound()) {
+      return;
+    }
+    base::DictValue details;
+    details.Set("id", target.GetDomNodeId());
+    if (is_input && target.IsElementNode() && target.To<blink::WebElement>().IsFormControlElement()) {
+      details.Set("value", target.To<blink::WebFormControlElement>().Value().Utf8());
+    }
+    base::DictValue payload;
+    payload.Set(is_input ? "input" : "click", std::move(details));
+    host_->ReportUserInput(base::WriteJson(payload).value_or(std::string()), is_input);
+  }
+
   void InstallAdBlockFilter() {
     auto* frame = render_frame()->GetWebFrame();
     auto* loader = frame->GetDocumentLoader();
@@ -222,6 +276,8 @@ class RenderFrameAgent final : public content::RenderFrameObserver,
   scoped_refptr<const subresource_filter::MemoryMappedRuleset> installed_filter_ruleset_;
   bool installed_ad_block_filter_ = false;
   mojo::AssociatedRemote<mojom::RendererHost> host_;
+  std::vector<base::ScopedClosureRunner> input_listeners_;
+  std::pair<bool, bool> last_focus_{false, false};
   mojo::AssociatedReceiverSet<mojom::RenderFrameAgent> receivers_;
   base::WeakPtrFactory<RenderFrameAgent> weak_ptr_factory_{this};
 };
