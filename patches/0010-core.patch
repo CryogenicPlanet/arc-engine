@@ -67,7 +67,7 @@ index 4ab8a9cf16..8df4b4f10e 100644
  #import <Cocoa/Cocoa.h>
  #include <stdint.h>
  
-@@ -72,6 +74,14 @@
+@@ -72,6 +74,14 @@ BrowserCompositorMac::~BrowserCompositorMac() {
    // Ensure that copy callbacks completed or cancelled during further tear-down
    // do not call back into this.
    weak_factory_.InvalidateWeakPtrs();
@@ -82,7 +82,7 @@ index 4ab8a9cf16..8df4b4f10e 100644
  
    TransitionToState(HasNoCompositor);
    delegated_frame_host_.reset();
-@@ -249,6 +259,12 @@
+@@ -249,6 +259,12 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
      root_layer_->parent()->Remove(root_layer_.get());
    }
    if (state_ == HasOwnCompositor) {
@@ -95,7 +95,7 @@ index 4ab8a9cf16..8df4b4f10e 100644
      recyclable_compositor_->widget()->ResetNSView();
      recyclable_compositor_->compositor()->SetRootLayer(nullptr);
      recyclable_compositor_.reset();
-@@ -283,6 +299,13 @@
+@@ -283,6 +299,13 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
      recyclable_compositor_->compositor()->SetBackgroundColor(background_color_);
      recyclable_compositor_->widget()->SetNSView(
          accelerated_widget_mac_ns_view_);
@@ -123,7 +123,7 @@ index f99512647a..797168fa77 100644
  #import <Carbon/Carbon.h>
  
  #include <limits>
-@@ -164,7 +167,19 @@ void SendVisibleTimeRequestToDelegatedFrameHost(
+@@ -164,7 +167,19 @@ SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor() const {
  void RenderWidgetHostViewMac::OnFrameTokenChanged(
      uint32_t frame_token,
      base::TimeTicks activation_time) {
@@ -143,7 +143,7 @@ index f99512647a..797168fa77 100644
  }
  
  void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
-@@ -625,8 +640,29 @@ void SendVisibleTimeRequestToDelegatedFrameHost(
+@@ -625,8 +640,29 @@ void RenderWidgetHostViewMac::WasOccluded() {
      return;
    }
  
@@ -174,7 +174,7 @@ index f99512647a..797168fa77 100644
  
    // Headless mode forces focus change propagation inside Focus(), since there
    // is no NSWindow to deliver the normal focus change notifications. As a
-@@ -1205,11 +1241,20 @@ void CombineTextNodesAndMakeCallback(SpeechCallback callback,
+@@ -1205,11 +1241,20 @@ void RenderWidgetHostViewMac::CopyFromSurface(
    }
    // TODO(crbug.com/40743791): Resolve potential differences between display
    // info caches in RenderWidgetHostViewMac and BrowserCompositorMac.

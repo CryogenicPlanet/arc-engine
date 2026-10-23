@@ -39,3 +39,129 @@ index 120cee0391..3ea6792551 100644
    AttemptExitInternal(true);
  }
  
+diff --git a/chrome/common/chrome_content_client.cc b/chrome/common/chrome_content_client.cc
+index 8b5f84e085..38bc3631e2 100644
+--- a/chrome/common/chrome_content_client.cc
++++ b/chrome/common/chrome_content_client.cc
+@@ -12,6 +12,7 @@
+ #include <utility>
+ 
+ #include "base/check.h"
++#include "base/command_line.h"
+ #include "base/containers/flat_set.h"
+ #include "base/functional/bind.h"
+ #include "base/json/json_reader.h"
+@@ -99,6 +100,15 @@
+ 
+ namespace {
+ 
++bool ShouldOmitArcHostedBrowserNavigationCrashKeys() {
++  if (!base::CommandLine::InitializedForCurrentProcess()) {
++    return false;
++  }
++  const auto* command_line = base::CommandLine::ForCurrentProcess();
++  return command_line->HasSwitch("arcmod-host-app") &&
++         command_line->GetSwitchValueASCII(switches::kProcessType).empty();
++}
++
+ }  // namespace
+ 
+ ChromeContentClient::ChromeContentClient() = default;
+@@ -107,6 +117,9 @@ ChromeContentClient::~ChromeContentClient() = default;
+ 
+ void ChromeContentClient::SetActiveURL(const GURL& url,
+                                        std::string top_origin) {
++  if (ShouldOmitArcHostedBrowserNavigationCrashKeys()) {
++    return;
++  }
+   static crash_reporter::CrashKeyString<1024> active_url("url-chunk");
+   active_url.Set(url.possibly_invalid_spec());
+ 
+diff --git a/components/variations/variations_crash_keys.cc b/components/variations/variations_crash_keys.cc
+index 692d192414..b2b068b567 100644
+--- a/components/variations/variations_crash_keys.cc
++++ b/components/variations/variations_crash_keys.cc
+@@ -345,22 +345,35 @@ void VariationsCrashKeys::UpdateCrashKeys() {
+   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+ 
+   ExperimentListInfo info = GetExperimentListInfo();
+-  g_num_variations_crash_key.Set(base::NumberToString(info.num_experiments));
++  // The hosted browser's observed boundary excludes these four diagnostics.
++  // Keep child processes, trial state, and the independent seed-version writer.
++  const base::CommandLine& process_command_line =
++      *base::CommandLine::ForCurrentProcess();
++  const bool is_arc_host_browser =
++      process_command_line.HasSwitch("arcmod-host-app") &&
++      process_command_line.GetSwitchValueASCII("type").empty();
++  if (!is_arc_host_browser) {
++    g_num_variations_crash_key.Set(base::NumberToString(info.num_experiments));
++  }
+ 
+   const size_t count_of_kbs = info.experiment_list.size() / 1024;
+   base::UmaHistogramExactLinear(kVariationKeySizeHistogram, count_of_kbs,
+                                 kVariationsKeySizeNumBuckets);
+   TruncateToSize(&info.experiment_list, kVariationsKeySize);
+ 
+-  g_variations_crash_key.Set(info.experiment_list);
++  if (!is_arc_host_browser) {
++    g_variations_crash_key.Set(info.experiment_list);
++  }
+ 
+   // Update runtime field trial overrides crash keys.
+   TruncateToSize(&runtime_field_trial_overrides_string_,
+                  kRuntimeFieldTrialOverridesKeySize);
+-  g_variations_runtime_field_trial_overrides_crash_key.Set(
+-      runtime_field_trial_overrides_string_);
+-  g_num_runtime_field_trial_overrides_crash_key.Set(
+-      base::NumberToString(num_total_runtime_field_trial_overrides_));
++  if (!is_arc_host_browser) {
++    g_variations_runtime_field_trial_overrides_crash_key.Set(
++        runtime_field_trial_overrides_string_);
++    g_num_runtime_field_trial_overrides_crash_key.Set(
++        base::NumberToString(num_total_runtime_field_trial_overrides_));
++  }
+ 
+   // If we're in the child process, set the variations seed version from the
+   // command line, which is passed from the browser process. In the browser
+diff --git a/content/browser/renderer_host/navigation_request.cc b/content/browser/renderer_host/navigation_request.cc
+index 6baf465bd2..9888495f16 100644
+--- a/content/browser/renderer_host/navigation_request.cc
++++ b/content/browser/renderer_host/navigation_request.cc
+@@ -716,19 +716,37 @@ blink::mojom::NavigationType ConvertToCrossDocumentType(
+   }
+ }
+ 
++bool ShouldOmitArcHostedBrowserNavigationCrashKeys() {
++  if (!base::CommandLine::InitializedForCurrentProcess()) {
++    return false;
++  }
++  const auto* command_line = base::CommandLine::ForCurrentProcess();
++  return command_line->HasSwitch("arcmod-host-app") &&
++         command_line->GetSwitchValueASCII(switches::kProcessType).empty();
++}
++
+ base::debug::CrashKeyString* GetNavigationRequestUrlCrashKey() {
++  if (ShouldOmitArcHostedBrowserNavigationCrashKeys()) {
++    return nullptr;
++  }
+   static auto* crash_key = base::debug::AllocateCrashKeyString(
+       "navigation_request_url", base::debug::CrashKeySize::Size256);
+   return crash_key;
+ }
+ 
+ base::debug::CrashKeyString* GetNavigationRequestInitiatorCrashKey() {
++  if (ShouldOmitArcHostedBrowserNavigationCrashKeys()) {
++    return nullptr;
++  }
+   static auto* crash_key = base::debug::AllocateCrashKeyString(
+       "navigation_request_initiator", base::debug::CrashKeySize::Size64);
+   return crash_key;
+ }
+ 
+ base::debug::CrashKeyString* GetNavigationRequestIsSameDocumentCrashKey() {
++  if (ShouldOmitArcHostedBrowserNavigationCrashKeys()) {
++    return nullptr;
++  }
+   static auto* crash_key = base::debug::AllocateCrashKeyString(
+       "navigation_request_is_same_document", base::debug::CrashKeySize::Size64);
+   return crash_key;

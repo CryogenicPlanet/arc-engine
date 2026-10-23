@@ -132,7 +132,7 @@ diff --git a/chrome/browser/chrome_browser_application_mac.mm b/chrome/browser/c
 index 823b03b27c..82de8160f3 100644
 --- a/chrome/browser/chrome_browser_application_mac.mm
 +++ b/chrome/browser/chrome_browser_application_mac.mm
-@@ -37,6 +37,12 @@
+@@ -37,6 +37,12 @@ BASE_FEATURE(kForwardCmdKeyUpEventsToWindow, base::FEATURE_ENABLED_BY_DEFAULT);
  namespace chrome_browser_application_mac {
  
  void RegisterBrowserCrApp() {
@@ -149,7 +149,7 @@ diff --git a/chrome/browser/chrome_browser_main_mac.mm b/chrome/browser/chrome_b
 index b269f1610a..712a1eb4d3 100644
 --- a/chrome/browser/chrome_browser_main_mac.mm
 +++ b/chrome/browser/chrome_browser_main_mac.mm
-@@ -116,7 +116,8 @@
+@@ -116,7 +116,8 @@ void ChromeBrowserMainPartsMac::PreCreateMainMessageLoop() {
    // before anything creating preferences like Local State in order for the
    // relaunched installed application to still consider itself as first-run.
    if (!first_run::IsFirstRunSuppressed(
@@ -159,7 +159,7 @@ index b269f1610a..712a1eb4d3 100644
      if (MaybeInstallFromDiskImage()) {
        // The application was installed and the installed copy has been
        // launched.  This process is now obsolete.  Exit.
-@@ -154,6 +155,11 @@
+@@ -154,6 +155,11 @@ int ChromeBrowserMainPartsMac::PreCreateThreads() {
      return ret;
    }
  
@@ -171,7 +171,7 @@ index b269f1610a..712a1eb4d3 100644
    // Create the app delegate by requesting the shared AppController.
    CHECK_EQ(nil, NSApp.delegate);
    AppController* app_controller = AppController.sharedController;
-@@ -182,5 +188,8 @@
+@@ -182,5 +188,8 @@ void ChromeBrowserMainPartsMac::PostProfileInit(Profile* profile,
  }
  
  void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {
