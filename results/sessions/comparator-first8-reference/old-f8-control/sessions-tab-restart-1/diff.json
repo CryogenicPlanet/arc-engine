@@ -1,0 +1,712 @@
+{
+ "internal": [],
+ "internal_ours": [
+  {
+   "method": "->engine -ArcBrowserContext serviceNamed:",
+   "our_calls": 18,
+   "example": {
+    "args": "[\"ArcBrowserContextPreferences\"]",
+    "ret": "\"<ArcBrowserContextPreferences#1>\""
+   }
+  }
+ ],
+ "missing": [
+  {
+   "method": "->engine -ArcColor4f a",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f b",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f g",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f r",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSample browserInSession",
+   "golden_calls": 6,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSample browserIsPlayingAudio",
+   "golden_calls": 6,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSample browserIsVisible",
+   "golden_calls": 6,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSample value",
+   "golden_calls": 6,
+   "example": {
+    "args": "[]",
+    "ret": "17"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples aiServiceMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples audioServiceMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageAIServiceCpuPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageBrowserCpuPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageExtensionEventProcessCpuPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageExtensionPersistentProcessCpuPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageGpuProcessCpuPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageNetworkProcessCpuPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageRendererProcessCpuPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageTotalCpuDuringFullscreenVideoPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageTotalCpuPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageTotalCpuWhenIdleForegroundPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageTotalCpuWhileInBackgroundPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageTotalCpuWithInteractionPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples averageTotalCpuWithNavigationPercent",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples batteryDischargeRate",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples batteryDischargeRateWhileInBackground",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples browserMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcHistogramSample#2>\""
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples extensionMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcHistogramSample#6>\""
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples gpuMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcHistogramSample#3>\""
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples idleWakeupsTotal",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples idleWakeupsTotalWhileInBackground",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples memoryPressureWindowDurationCriticalToModerate",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples memoryPressureWindowDurationCriticalToNone",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples memoryPressureWindowDurationModerateToCritical",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples memoryPressureWindowDurationModerateToNone",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples networkServiceMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcHistogramSample#5>\""
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples rendererMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcHistogramSample#4>\""
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples totalGpuMappedMemoryMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples totalMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples totalPrivateSwapFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples totalRendererMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples totalResidentSetMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples totalSharedMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples totalTileMemoryMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcHistogramSamples utilityMemoryFootprintMb",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcHistogramSample#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents ignoreDisablePiPAttribute:",
+   "golden_calls": 3,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.HistogramSamplesDelegateBridge periodicHistogramSamplesAvailable:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ArcHistogramSamples#1>\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "extra": [
+  {
+   "method": "->engine -ArcBrowserApplication ensureBasicAccessibilityEnabled",
+   "our_calls": 3,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.AccessibilityObserver accessibilityModeChanged:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"kNativeAPIs | kWebContents\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:thumbnailReady:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"image(501x341)\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContentsClosingImminent:withSessionID:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcWebContents#2>\", \"<ArcSessionID#10>\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "return_mismatch": [
+  {
+   "method": "->engine -ArcBrowser context",
+   "call": 0,
+   "args": "[]",
+   "golden": "\"<ArcBrowserContext#2>\"",
+   "ours": "\"<ArcBrowserContext#1>\""
+  },
+  {
+   "method": "->engine -ArcBrowserContext id",
+   "call": 1,
+   "args": "[]",
+   "golden": "\"<ArcBrowserContextID#2>\"",
+   "ours": "\"<ArcBrowserContextID#1>\""
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userVisibleName",
+   "call": 0,
+   "args": "[]",
+   "golden": "\"Default\"",
+   "ours": "\"Your Chromium\""
+  },
+  {
+   "method": "->engine -ArcColor b",
+   "call": 0,
+   "args": "[]",
+   "golden": "250",
+   "ours": "34"
+  },
+  {
+   "method": "->engine -ArcColor g",
+   "call": 0,
+   "args": "[]",
+   "golden": "199",
+   "ours": "30"
+  },
+  {
+   "method": "->engine -ArcColor r",
+   "call": 0,
+   "args": "[]",
+   "golden": "168",
+   "ours": "28"
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "call": 513,
+   "args": "[]",
+   "golden": "\"https://www.google.com/search?q=%7BsearchTerms%7D&sourceid=chrome&ie=UTF-8\"",
+   "ours": "\"https://drive.google.com/drive/search?q=%s\""
+  },
+  {
+   "method": "->engine -ArcSessionID identifier",
+   "call": 0,
+   "args": "[]",
+   "golden": "758441850",
+   "ours": "1764033427"
+  },
+  {
+   "method": "->engine -ArcWebContents isReadyToDisplay",
+   "call": 2,
+   "args": "[]",
+   "golden": "true",
+   "ours": "false"
+  },
+  {
+   "method": "->engine -ArcWebContents loadProgress",
+   "call": 5,
+   "args": "[]",
+   "golden": "1",
+   "ours": "0.7"
+  },
+  {
+   "method": "->engine -ArcWebContents nativeView",
+   "call": 0,
+   "args": "[]",
+   "golden": "\"<WebContentsHostView#1>\"",
+   "ours": "\"<WebContentsViewCocoa#1>\""
+  },
+  {
+   "method": "->engine -ArcWebContents navigationID",
+   "call": 2,
+   "args": "[]",
+   "golden": "0",
+   "ours": "1"
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "call": 5,
+   "args": "[]",
+   "golden": "\"<NSMutableIndexSet#6>\"",
+   "ours": "\"<NSMutableIndexSet#5>\""
+  },
+  {
+   "method": "->engine -ArcWebContents url",
+   "call": 2,
+   "args": "[]",
+   "golden": "\"url:http://*/arc-sessions-restart-7f3a/tab1/A\"",
+   "ours": "\"url:http://*/arc-sessions-restart-7f3a/sentinel/1\""
+  },
+  {
+   "method": "->engine -ArcWebContents visibility",
+   "call": 3,
+   "args": "[]",
+   "golden": "0",
+   "ours": "1"
+  }
+ ],
+ "arg_mismatch": [
+  {
+   "method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+   "call": 0,
+   "golden": "[\"<ArcBrowser#1>\", 758441850]",
+   "ours": "[\"<ArcBrowser#1>\", 1764033427]"
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "call": 0,
+   "golden": "[\"keep_alive_registry\", \"{registered_count_=1, restart_allowed_count_=0, KeepAlives=[APP_CONTROLLER (1)]}\"]",
+   "ours": "[\"keep_alive_registry\", \"{registered_count_=4, restart_allowed_count_=0, KeepAlives=[APP_CONTROLLER (1), REMOTE_DEBUGGING (1), BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS (1), BACKGROUND_MODE_MANAGER_STARTUP (1)]}\"]"
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didChangeAvailableMediaActions:",
+   "call": 1,
+   "golden": "[\"<ArcWebContents#2>\", \"<NSMutableIndexSet#5>\"]",
+   "ours": "[\"<ArcWebContents#2>\", \"<NSMutableIndexSet#6>\"]"
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didCloseWithSessionID:",
+   "call": 0,
+   "golden": "[\"<ArcWebContents#2>\", \"<ArcSessionID#10>\"]",
+   "ours": "[\"<ArcWebContents#2>\", \"<ArcSessionID#11>\"]"
+  },
+  {
+   "method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:",
+   "call": 0,
+   "golden": "[\"*\", \"https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany&size=24\", 200, {\"accept-ranges\": \"bytes\", \"age\": \"225354\", \"alt-svc\": \"h3=\\\":443\\\"; ma=2592000,h3-29=\\\":443\\\"; ma=2592000\", \"cache-control\": \"public, max-age=604800\", \"content-length\": \"346\", \"content-location\": \"https://www.youtube.com/s/desktop/f13793d9/img/favicon_144x144.png\", \"content-security-policy-report-only\": \"require-trusted-types-for 'script'; report-uri https://csp.withgoogle.com/csp/media-favicon\", \"content-type\": \"image/png\"}]",
+   "ours": "[\"*\", \"https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany&size=24\", 200, {\"accept-ranges\": \"bytes\", \"age\": \"242829\", \"alt-svc\": \"h3=\\\":443\\\"; ma=2592000,h3-29=\\\":443\\\"; ma=2592000\", \"cache-control\": \"public, max-age=604800\", \"content-length\": \"346\", \"content-location\": \"https://www.youtube.com/s/desktop/f13793d9/img/favicon_144x144.png\", \"content-security-policy-report-only\": \"require-trusted-types-for 'script'; report-uri https://csp.withgoogle.com/csp/media-favicon\", \"content-type\": \"image/png\"}]"
+  }
+ ],
+ "count_mismatch": [
+  {
+   "method": "->engine -ArcBrowserApplication availableBrowserContextAttributes",
+   "golden": 10,
+   "ours": 11
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes directoryBasename",
+   "golden": 10,
+   "ours": 11
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userColor",
+   "golden": 10,
+   "ours": 11
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userVisibleName",
+   "golden": 17,
+   "ours": 19
+  },
+  {
+   "method": "->engine -ArcColor a",
+   "golden": 10,
+   "ours": 11
+  },
+  {
+   "method": "->engine -ArcColor b",
+   "golden": 10,
+   "ours": 11
+  },
+  {
+   "method": "->engine -ArcColor g",
+   "golden": 10,
+   "ours": 11
+  },
+  {
+   "method": "->engine -ArcColor r",
+   "golden": 10,
+   "ours": 11
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "golden": 3096,
+   "ours": 3102
+  },
+  {
+   "method": "->engine -ArcWebContents backForwardList",
+   "golden": 18,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcWebContents favicon",
+   "golden": 13,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcWebContents isReadyToDisplay",
+   "golden": 6,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcWebContents navigationID",
+   "golden": 12,
+   "ours": 13
+  },
+  {
+   "method": "->engine -ArcWebContents setBackForwardList:",
+   "golden": 18,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcWebContents setFavicon:",
+   "golden": 15,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcWebContents setIsReadyToDisplay:",
+   "golden": 6,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcWebContents setNavigationID:",
+   "golden": 12,
+   "ours": 13
+  },
+  {
+   "method": "->engine -ArcWebContents setState:",
+   "golden": 4,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents setTabTraits:",
+   "golden": 15,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcWebContents setUrl:",
+   "golden": 12,
+   "ours": 13
+  },
+  {
+   "method": "->engine -ArcWebContents state",
+   "golden": 4,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "golden": 15,
+   "ours": 14
+  },
+  {
+   "method": "->engine -ArcWebContents url",
+   "golden": 12,
+   "ours": 13
+  },
+  {
+   "method": "engine->app -ADK.ADKApplication didConnectToNetworkProcess",
+   "golden": 1,
+   "ours": 2
+  },
+  {
+   "method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+   "golden": 25,
+   "ours": 29
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "golden": 43,
+   "ours": 57
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didCloseWithSessionID:",
+   "golden": 2,
+   "ours": 1
+  }
+ ],
+ "callback_sequence": {
+  "golden": 158,
+  "ours": 178,
+  "first_divergence": 1,
+  "golden_from": [
+   "ADK.ADKApplication didInitializeBrowserProcess",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ],
+  "ours_from": [
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ]
+ }
+}

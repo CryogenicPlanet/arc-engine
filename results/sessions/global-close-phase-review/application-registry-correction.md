@@ -1,0 +1,11 @@
+# Correction: application-registry absence is a trap
+
+The earlier shutdown audit's description of missing membership as a branch away/benign skip is incorrect. Fresh static extraction from original full B70 confirms **42bad18 `cbz x19, #0x42bb2f8`**. Target42bb2f8 loads `erase()`, `raw_hash_set.h` and **`%s called on end() iterator.`**, calls the diagnostic routine4b08ed0 at42bb31c, and then executes **42bb320 `brk #1`**. There is no successful-return or delegate-skip branch in this block. The literal addresses are d025011/d024ed9/d024fc8. Adjacent blocks distinguish default-constructed and invalid iterators; they are diagnostics too, not evidence for benign suppression.
+
+On the normal found-entry route,42bac80 compares the registry key with the producer's logical browser pointerx25 and42bac88 computes its slotx19. The receiver clears that slot at42bad54 and updates erase metadata through42bad98 (or the small-table42baccc..d8 branch). It then loads the application's observation token at42bad9c and unregisters from browser+0x260 via42c88b8 at42bada4, before the later direct application-delegate call42bafc0. Found-entry erase/unregister is the supported normal route.
+
+A repeated receiver delivery after the same key was erased, without re-registration, would therefore encounter the missing-entry diagnostic/trap. This is conditional static behavior, not proof that a supported upstream path actually delivers a duplicate, and not a native duplicate-no-op contract. No crash reproduction, arbitrary skip, once guard or production change is requested by this correction.
+
+The physical-destruction phase proof remains intact; this corrects only the application's missing-membership interpretation. The old sealed artifacts were not modified. `application-registry-correction.json` contains fresh bounded disassembly, literal extraction, prior artifact hashes and verification of the Core addendum seal. Full original binary SHA is b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d. All entries in the inspected Core seal matched at review time.
+
+No apps, builds, Git, queue/process actions, Chirp or source edits occurred. Only these two new correction artifacts were written.

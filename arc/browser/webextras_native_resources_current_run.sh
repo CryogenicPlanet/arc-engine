@@ -1,0 +1,113 @@
+#!/bin/bash
+# Distinct held resource-aware proposal; same runtime lane, resource proofs added.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$ROOT"
+locked=0
+if [ "${1:-}" = --locked ]; then
+  locked=1
+  shift
+fi
+run_number=4
+media_clock=0
+media_service_clock=0
+frontend_events=0
+seen_run_number=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --run-number)
+      [ "$seen_run_number" -eq 0 ] && [ "$#" -ge 2 ] && [[ "$2" =~ ^[1-9][0-9]*$ ]] || { echo "invalid or repeated --run-number" >&2; exit 2; }
+      run_number="$2"; seen_run_number=1; shift 2 ;;
+    --media-clock)
+      [ "$media_clock" -eq 0 ] || { echo "repeated --media-clock" >&2; exit 2; }
+      media_clock=1; shift ;;
+    --media-service-clock)
+      [ "$media_service_clock" -eq 0 ] || { echo "repeated --media-service-clock" >&2; exit 2; }
+      media_service_clock=1; shift ;;
+    --devtools-frontend-events)
+      [ "$frontend_events" -eq 0 ] || { echo "repeated --devtools-frontend-events" >&2; exit 2; }
+      frontend_events=1; shift ;;
+    *) echo "usage: $0 [--run-number N] [--media-clock | --media-service-clock | --devtools-frontend-events]" >&2; exit 2 ;;
+  esac
+done
+[ "$((media_clock + media_service_clock + frontend_events))" -le 1 ] || { echo "probe modes are mutually exclusive" >&2; exit 2; }
+clock_args=()
+[ "$media_clock" -eq 0 ] || clock_args=(--media-clock)
+[ "$media_service_clock" -eq 0 ] || clock_args=(--media-service-clock)
+[ "$frontend_events" -eq 0 ] || clock_args=(--devtools-frontend-events)
+if [ "$locked" -ne 1 ]; then
+  exec "$ROOT/arc/tools/locked.sh" bash "$0" --locked --run-number "$run_number" ${clock_args[@]+"${clock_args[@]}"}
+fi
+python3 - "$ROOT" <<'PY_LOCK'
+import os, pathlib, subprocess, sys
+owner = int((pathlib.Path(sys.argv[1])/'logs/arccore-build.lock/pid').read_text())
+ancestor = os.getppid()
+for _ in range(20):
+    if ancestor == owner:
+        break
+    assert ancestor > 1, '--locked requires an ancestor holding the shared lock'
+    ancestor = int(subprocess.check_output(['ps', '-p', str(ancestor), '-o', 'ppid='], text=True))
+assert ancestor == owner, '--locked requires an ancestor holding the shared lock'
+PY_LOCK
+stem="$ROOT/logs/wp/webextras.native.run$run_number"
+output="$ROOT/results/webextras/native-run$run_number"
+[ ! -e "$output" ] && [ ! -e "$stem.source-before.json" ] || { echo "Refusing prior native-run$run_number artifacts" >&2; exit 2; }
+source_snapshot() {
+  python3 - "$ROOT" "$stem" "$1" "$media_clock" "$media_service_clock" "$frontend_events" <<'PY'
+import datetime, hashlib, json, pathlib, sys
+root, stem, phase = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+assert sum(value == '1' for value in sys.argv[4:7]) <= 1, 'probe modes are mutually exclusive'
+mode = 'media-clock' if sys.argv[4] == '1' else 'media-service-clock' if sys.argv[5] == '1' else 'devtools-frontend-events' if sys.argv[6] == '1' else 'default'
+paths = sorted(root.glob('arc/api/arc_webextras_*.mm')) + [root/path for path in (
+    'arc/browser/webextras_media.h', 'arc/browser/webextras_values.h',
+    'arc/wp/webextras.gni', 'arc/browser/webextras_native_probe.m',
+    'arc/browser/webextras_native_probe.ts', 'arc/browser/webextras_native_probe.sh',
+    'arc/browser/webextras_fixture_inputs.py', 'arc/browser/webextras_fixture_projection.ts',
+    'arc/browser/webextras_native_current_run.sh',
+    'arc/browser/webextras_native_resources_current_run.sh',
+    'arc/browser/webextras_native_resources_probe.ts',
+    'arc/browser/webextras_native_resources_probe.sh',
+    'arc/browser/webextras_resource_identity.py', 'package-engine.sh')]
+paths += [root.parent/'arc/tools/build-mod.ts']
+# Both opt-in lanes freeze the same16 inventory; service-only does not load/serve these video assets.
+if mode == 'devtools-frontend-events':
+    paths += [root/'arc/browser/webextras_frontend_comparison.py']
+if mode in ('media-clock','media-service-clock'):
+    paths += [root/path for path in ('arc/browser/webextras_media_clock_fixture.webm',
+                                    'arc/browser/webextras_media_clock_fixture.json')]
+files = {}
+for path in paths:
+    before = path.stat()
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    after = path.stat()
+    assert (before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns) == (
+        after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns), 'source changed during snapshot'
+    label = str(path.relative_to(root)) if path.is_relative_to(root) else '../arc/tools/build-mod.ts'
+    files[label] = {'sha256': digest, 'size': after.st_size,
+                                        'mtimeNs': after.st_mtime_ns}
+state = {'capturedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+         'phase': phase, 'probeMode': mode, 'mediaResourceUsed': mode == 'media-clock', 'scope': 'selected owned production/probe/resource sources and packaging entry sources only', 'files': files}
+pathlib.Path(stem+'.source-'+phase+'.json').write_text(json.dumps(state, indent=2)+'\n')
+if phase != 'before':
+    original = json.loads(pathlib.Path(stem+'.source-before.json').read_text())
+    assert original['probeMode'] == mode and original['files'] == files, 'owned production/probe source drifted during build/package/run'
+PY
+}
+source_snapshot before
+python3 arc/tools/gen_api_table.py > "$stem.api-table.log" 2>&1
+ARC_BUILD_FAIL_FAST=1 ./build-babysit.sh > "$stem.engine-build.log" 2>&1
+resource_checker="$ROOT/arc/browser/webextras_resource_identity.py"
+built_resources="$ROOT/chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/Resources"
+packaged_resources="$ROOT/../arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/Resources"
+python3 "$resource_checker" capture built-ours156 "$built_resources" --out "$stem.resources-built.json" > "$stem.resources-built.log" 2>&1
+./package-engine.sh ours156 > "$stem.package.log" 2>&1
+python3 "$resource_checker" package-proof "$stem.resources-built.json" "$packaged_resources" "$ROOT/logs/arccore-build.lock/pid" --out "$stem.resources-package.json" > "$stem.resources-package.log" 2>&1
+bash arc/browser/webextras_native_resources_probe.sh build > "$stem.probe-build.log" 2>&1
+source_snapshot after-build
+set +e
+ARC_WEBEXTRAS_RESOURCE_PACKAGE_PROOF="$stem.resources-package.json" bash arc/browser/webextras_native_resources_probe.sh run --out "$output" ${clock_args[@]+"${clock_args[@]}"} > "$stem.log" 2>&1
+probe_status=$?
+set -e
+source_snapshot after-run
+python3 "$resource_checker" verify-proof "$stem.resources-package.json" > "$stem.resources-after-run.log" 2>&1
+exit "$probe_status"

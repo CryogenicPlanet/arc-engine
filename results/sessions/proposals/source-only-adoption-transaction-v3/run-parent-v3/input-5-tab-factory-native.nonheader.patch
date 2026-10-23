@@ -1,0 +1,74 @@
+--- a/components/sessions/core/tab_restore_service_helper.cc
++++ b/components/sessions/core/tab_restore_service_helper.cc
+@@ -948,10 +948,20 @@
+       LiveTab* restored_tab = nullptr;
+       context = RestoreTab(tab, context, disposition, entry.type, &restored_tab,
+                            /*is_restoring_group_or_window=*/false);
++      if (!weak_self) {
++        return std::nullopt;
++      }
++      if (!context) {
++        context_creation_cancelled = true;
++        break;
++      }
+       if (restored_tab) {
+         live_tabs.push_back(restored_tab->GetWeakPtr());
+       }
+       context->ShowBrowserWindow();
++      if (!weak_self) {
++        return std::nullopt;
++      }
+       break;
+     }
+     case tab_restore::Type::WINDOW: {
+@@ -1553,7 +1563,20 @@
+     sessions::tab_restore::Type session_restore_type,
+     LiveTab** live_tab,
+     bool is_restoring_group_or_window) {
+-  LiveTab* restored_tab;
++  const auto weak_self = weak_factory_.GetWeakPtr();
++  const SessionID source_id = tab.id;
++  // ROOT TAB application requests may enter embedder code during creation.
++  // Descendant/group/split routing remains native and outside this request scope.
++  const auto source_entry = GetEntryIteratorById(source_id);
++  const Tab* expected_root_tab =
++      session_restore_type == tab_restore::TAB && source_entry != entries_.end() &&
++              source_entry->get() == &tab && (*source_entry)->type == tab_restore::TAB
++          ? &tab
++          : nullptr;
++  if (live_tab) {
++    *live_tab = nullptr;
++  }
++  LiveTab* restored_tab = nullptr;
+   if (disposition == WindowOpenDisposition::CURRENT_TAB && context) {
+     restored_tab = context->ReplaceRestoredTab(tab);
+   } else {
+@@ -1587,6 +1610,18 @@
+           context, SessionWindow::TYPE_NORMAL, std::string(), gfx::Rect(),
+           ui::mojom::WindowShowState::kNormal, std::string(), std::string(),
+           std::map<std::string, std::string>());
++      // Match the full-WINDOW created-callback lifetime boundary. The factory
++      // returns null if its accepted host callback closed/deleted the browser.
++      if (!weak_self || !context) {
++        return nullptr;
++      }
++      if (expected_root_tab) {
++        auto current_entry = GetEntryIteratorById(source_id);
++        if (current_entry == entries_.end() ||
++            current_entry->get() != expected_root_tab) {
++          return nullptr;
++        }
++      }
+       if (tab.browser_id) {
+         UpdateTabBrowserIDs(tab.browser_id, context->GetSessionID());
+       }
+@@ -1605,6 +1640,9 @@
+         is_restoring_group_or_window, session_restore_type);
+   }
+ 
++  if (!weak_self) {
++    return nullptr;
++  }
+   client_->OnTabRestored(
+       tab.navigations.at(tab.current_navigation_index).virtual_url());
+   if (live_tab) {

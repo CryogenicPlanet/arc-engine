@@ -1,0 +1,118 @@
+{
+  "launch-slice": {
+    "all_steps_pass": true,
+    "exact_labels": true,
+    "exact_quit": true,
+    "harness_exit": 0,
+    "steps": [
+      {
+        "detail": "native ready, CDP target list available",
+        "outcome": "pass",
+        "step": "S1 launch"
+      },
+      {
+        "detail": "title=launch-slice A",
+        "outcome": "pass",
+        "step": "S2 open A"
+      },
+      {
+        "detail": "B=true (300 ms) frag=true back=true title=launch-slice B href=http://127.0.0.1:61147/b",
+        "outcome": "pass",
+        "step": "S3 navigate"
+      },
+      {
+        "detail": "ok",
+        "outcome": "pass",
+        "step": "S4 store"
+      },
+      {
+        "detail": "",
+        "outcome": "pass",
+        "step": "S5 close + new tab"
+      },
+      {
+        "detail": "Browser.close; browser + 8 helpers exited",
+        "outcome": "pass",
+        "step": "S6 quit"
+      },
+      {
+        "detail": "native ready, CDP target list available",
+        "outcome": "pass",
+        "step": "S7 relaunch"
+      },
+      {
+        "detail": "{\"cookie\":\"ls_cookie=c0ffee\",\"local\":\"v-41\",\"idb\":\"idb-93\"}",
+        "outcome": "pass",
+        "step": "S7 readback"
+      },
+      {
+        "detail": "Browser.close; browser + 6 helpers exited",
+        "outcome": "pass",
+        "step": "S8 quit"
+      }
+    ]
+  },
+  "tabs-navigation": {
+    "all_steps_pass": true,
+    "exact_labels": true,
+    "exact_quit": true,
+    "harness_exit": 0,
+    "steps": [
+      {
+        "detail": "native ready, CDP target list available",
+        "outcome": "pass",
+        "step": "T1 launch"
+      },
+      {
+        "detail": "",
+        "outcome": "pass",
+        "step": "T2 three tabs"
+      },
+      {
+        "detail": "",
+        "outcome": "pass",
+        "step": "T3 document navigation"
+      },
+      {
+        "detail": "",
+        "outcome": "pass",
+        "step": "T4 back"
+      },
+      {
+        "detail": "",
+        "outcome": "pass",
+        "step": "T5 forward"
+      },
+      {
+        "detail": "",
+        "outcome": "pass",
+        "step": "T6 reload"
+      },
+      {
+        "detail": "",
+        "outcome": "pass",
+        "step": "T7 same document"
+      },
+      {
+        "detail": "http://127.0.0.1:61270/b",
+        "outcome": "pass",
+        "step": "T8 redirect"
+      },
+      {
+        "detail": "",
+        "outcome": "pass",
+        "step": "T9 close exact tab"
+      },
+      {
+        "detail": "",
+        "outcome": "pass",
+        "step": "T10 open replacement tab"
+      },
+      {
+        "detail": "Browser.close; browser + 9 helpers exited",
+        "outcome": "pass",
+        "step": "T11 quit"
+      }
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "status": "HOLD_PRIVATE_PARTIAL_PHASE_PROTOTYPE_NOT_ACTIVATABLE",
+  "scope": "3 private staged source copies; no actual source/index/compiler/build/runtime/Git/regen/queue/Chirp actions",
+  "created_utc": "2026-10-23T18:13:14.639297+00:00",
+  "inputs": {
+    "arc/api/arc_sessions_restore.mm": "178091e65d07409a00eeeb86101a7234afd44f00a3597512c2b1be0095118978",
+    "chromium/src/chrome/browser/arcmod/arcmod_hooks.h": "2e38023bb82b5abe43fd20fd8d592152e8d5c9dbbc2e4a3444772df4acf8427d",
+    "chromium/src/chrome/browser/ui/browser.cc": "b1cb9dda88b6c54b97eb04f7f14d1f18f487edd068159bca2dfe2c19ccdcb37f",
+    "arc/api/arc_browser.mm": "cf20d597283ad0b817a47ab97021e9d30ce0a6f76b0442a1ec2c8ea68500c79c",
+    "arc/browser/arc_browser_window.h": "ab5c8ed063dd6f968669e7beb5107575fa9849f449f26f5aa3a564a0c9657fc3",
+    "arc/browser/arc_browser_window.mm": "8615c32234a29498c4b73ff50bbee78cdf87cb541424308bcaa109861795889a",
+    "chromium/src/chrome/browser/ui/browser.h": "dda1f53bfc495e51ff059e7d9cd1efc33e3710ae302a33ede025b8836046c421",
+    "chromium/src/chrome/browser/ui/browser_manager_service.cc": "492fbdf3867cddffe1c93ce83da91a3b8226635f8293640ebd89f792b2fa5d84",
+    "chromium/src/chrome/browser/ui/browser_window/public/browser_window_interface.h": "97dc7e368b29bd43bb0ce24bcbc2b9795b842bbdeb68aa58a2cfc85e20024c4a",
+    "chromium/src/ui/base/unowned_user_data/scoped_unowned_user_data.h": "c5639dbfe12b1ef499b7b0486fd9e501cefed65e3e2cd9a0f1f94725a7a437c6",
+    "chromium/src/ui/base/unowned_user_data/unowned_user_data_host.h": "2c45a1576f471fe780dabbe4b6238ec1c596bee7132137f090749e1d48b30ec9",
+    "chromium/src/ui/base/unowned_user_data/unowned_user_data_host.cc": "7c4f87c94dcef642a128669c00cfa6cd92d31da50f4ee065aedad7217a24f93a",
+    "chromium/src/base/supports_user_data.h": "14006c91e60640dd2a43889ecae12089d80d41a25f682cb307bc9c20b209fe30",
+    "chromium/src/base/supports_user_data.cc": "e5f924a8f385d1f7c057181391f9c1e5b0a5533f6c56237e9f658336aa8f9d74",
+    "results/sessions/global-close-phase-review/README.md": "ed8540d93bcc46ffeba8f9ffb44d1872451b9b98676ec6dedeb889919e65bb30",
+    "logs/wp/core.browser-close-publication-phase/README.md": "3a291c15be26df96a6cac520510f7cc4f220a25b0266871f1648742b8ee9ed63",
+    "chromium/src/chrome/browser/ui/browser_window_deleter.cc": "84cff1bd71785489701a8689da0253748f324656a1064c3e090ab6f85479a524"
+  },
+  "staged": {
+    "arc/api/arc_sessions_restore.mm": {
+      "before": "178091e65d07409a00eeeb86101a7234afd44f00a3597512c2b1be0095118978",
+      "after": "371479c6d6b8f88052d7eb245fe9cf681fa09bcc9827fbb7c15b9a14edfcdec3",
+      "current_manifest_assignment": "owned sessions"
+    },
+    "chromium/src/chrome/browser/arcmod/arcmod_hooks.h": {
+      "before": "2e38023bb82b5abe43fd20fd8d592152e8d5c9dbbc2e4a3444772df4acf8427d",
+      "after": "9a3774df703bfa4f242099e7cfa3351518ba9bd738302e0adbb94b6f7bdce23e",
+      "current_manifest_assignment": "0004"
+    },
+    "chromium/src/chrome/browser/ui/browser.cc": {
+      "before": "b1cb9dda88b6c54b97eb04f7f14d1f18f487edd068159bca2dfe2c19ccdcb37f",
+      "after": "a08f5bc400e637f2107cbbfb61b55a208632d9d1d4c75755193344f687102cee",
+      "current_manifest_assignment": "0003"
+    }
+  },
+  "required_missing_gates": [
+    "authoritative core logical deassociation and peer cleanup before global delivery",
+    "application registration/erase/selected weak delegate lifecycle proven and jointly reviewed",
+    "capture supported payload before cleanup and avoid queries/callouts against destructing native state",
+    "actual compiler/link checks and unchanged canonical/full-v5 raw runtime gates"
+  ],
+  "static_checks": {
+    "production_preimages_unchanged": true,
+    "payload_type_method_byte_identical": true,
+    "core_browser_source_not_modified": true,
+    "native_hook_before_destructor_fallback": true,
+    "sessions_inline_subscription_removed_from_candidate_only": true,
+    "no_post_task_in_added_code": true
+  },
+  "candidate-native.patch": "27678469f4437ce6a5639ea08e4e9b01a342435a4e5e7bd5aa4edfc014b688f2",
+  "candidate-owned.patch": "ea4ad9088f0e3d7581f76c387b17e31d074f5cd009d98e747d2c888c374c4eca",
+  "static-checks.json": "e4659bbe6a766d4d2f7fb4a5409aecf4fdaca7bb5aecfdc45f3b9242cbb8a78b"
+}

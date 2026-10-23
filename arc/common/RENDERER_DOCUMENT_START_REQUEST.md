@@ -1,6 +1,6 @@
 # Minimal document-start hook for accepted Boost lifecycle
 
-**APPROVED in Chirp142534; first locked attempt ROLLED BACK after canonical9/9 and functional Boost success, but failed raw helper gate. Actual source9db; cache-helper owner ACK142921 and fresh retry remain pending.** Apply the Chromium-root artifact
+**APPROVED in Chirp142534; first locked attempt ROLLED BACK after canonical9/9 and functional Boost success, but failed raw helper gate. Actual source9db; LEAD ACK143529 now approves cache bfcc then history01576092. A new combined run4 retry is being prepared; prior run3 remains frozen/unrun. Queue fairness preserves older waiting packages first.** Apply the Chromium-root artifact
 `renderer_document_start_hook_proposal.patch`, SHA256
 `7732bc58ec57ef2194b4270fca22895a42e12c47e1c59ab583413ef9d7bac767`,
 through the maintained Chromium patch workflow. No numbered slot is reserved.

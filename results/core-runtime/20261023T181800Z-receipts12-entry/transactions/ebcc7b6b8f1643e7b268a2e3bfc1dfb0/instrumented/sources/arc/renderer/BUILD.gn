@@ -1,0 +1,22 @@
+# Copyright 2026 ArcMod.
+source_set("renderer") {
+  sources = [
+    "ad_block_filter.cc",
+    "ad_block_filter.h",
+    "render_frame_agent.cc",
+    "render_frame_agent.h",
+    "render_process_agent.cc",
+    "render_process_agent.h",
+  ]
+  deps = [
+    "//arc/common:renderer_interfaces",
+    "//base",
+    "//components/subresource_filter/content/renderer",
+    "//components/subresource_filter/core/common",
+    "//content/public/renderer",
+    "//mojo/public/cpp/bindings",
+    "//net",
+    "//third_party/blink/public:blink_headers",
+    "//url",
+  ]
+}

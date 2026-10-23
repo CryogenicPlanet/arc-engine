@@ -1,0 +1,320 @@
+{
+  "decision": "PASS supplemental full normal-WINDOW functional improvement; NOT canonical acceptance",
+  "reviewedUTC": "2026-10-23T17:53:39.626404+00:00",
+  "scope": "Read-only selected result/observations/closed-window/log/status/archive audit; writes only this review folder; no executor/query/compiler/build/app/Chirp/source/index actions",
+  "checks": {
+    "resultAndContractPass": true,
+    "genuineActualWindowMapping": true,
+    "positiveHistoricalRootCallback": true,
+    "exactTwoSourceMatchedRestoreIDs": true,
+    "createdThenTwoRestoredThenFinished": true,
+    "restoredAndFinishedAsynchronousMain": true,
+    "createdSynchronousMain": true,
+    "sameNativeCreatedFinishedIdentity": true,
+    "newNativeIDsInitializedAtCorrectBURLs": true,
+    "exactABCBHistoryBothTabs": true,
+    "sentinelAliveAndRestorationVisibleAtCreated": true,
+    "appKitAckPidAbsenceNoSignalFallback": true,
+    "wrapperCacheAndProfileRootsVerified": true,
+    "appFatalMarkerScanEmpty": true,
+    "runtimeSourcePinsAndCleanupGates": true,
+    "frameworkRecordsStable": true
+  },
+  "comparison": {
+    "original": {
+      "pass": true,
+      "restores": 2,
+      "callbackIDs": [
+        "1886418472",
+        "1886418473"
+      ],
+      "sourceIDs": [
+        "1886418472",
+        "1886418473"
+      ],
+      "historyEqual": true,
+      "finishedSameObjCPointer": false,
+      "finishedSameNativeIdentity": true,
+      "finishedInsideAction": false,
+      "closedWindowInsideAction": false
+    },
+    "priorOurs": {
+      "pass": false,
+      "restores": 0,
+      "callbackIDs": [],
+      "sourceIDs": [
+        "1360691051",
+        "1360691052"
+      ],
+      "historyEqual": false,
+      "finishedSameObjCPointer": true,
+      "finishedSameNativeIdentity": true,
+      "finishedInsideAction": true,
+      "closedWindowInsideAction": true
+    },
+    "adoptedOurs": {
+      "pass": true,
+      "restores": 2,
+      "callbackIDs": [
+        "2130008818",
+        "2130008819"
+      ],
+      "sourceIDs": [
+        "2130008818",
+        "2130008819"
+      ],
+      "historyEqual": true,
+      "finishedSameObjCPointer": true,
+      "finishedSameNativeIdentity": true,
+      "finishedInsideAction": false,
+      "closedWindowInsideAction": true
+    }
+  },
+  "canonical": [
+    {
+      "name": "sessions-public-api",
+      "harnessExit": 1,
+      "passed": 10,
+      "failed": 1,
+      "inconclusive": 1,
+      "coverageAccepted": false,
+      "failedSteps": [
+        "public close produces one synchronous main-thread callback"
+      ],
+      "matchedPriorFailure": true
+    },
+    {
+      "name": "sessions-tab-restart",
+      "harnessExit": 1,
+      "passed": 13,
+      "failed": 1,
+      "inconclusive": 1,
+      "coverageAccepted": false,
+      "failedSteps": [
+        "individual close invokes exactly one inline main-thread callback tab1"
+      ],
+      "matchedPriorFailure": true
+    }
+  ],
+  "currentChildCloseIDsVerified": false,
+  "originalChildCloseIDs": [
+    "-1",
+    "-1"
+  ],
+  "currentBrowserNativeID": "2130008824",
+  "currentWindowUUID": "CF8D5F07-7518-4DB1-9D98-B7BD9F6A6BB4",
+  "currentHistoricalRootID": "2130008821",
+  "currentSourceIDs": [
+    "2130008818",
+    "2130008819"
+  ],
+  "currentRestoredLiveIDs": [
+    "2130008825",
+    "2130008826"
+  ],
+  "appKitCleanupElapsedMs": 315.0,
+  "frameworkRecords": {
+    "/Users/cryogenicplanet/general/arc-engine/chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore": {
+      "sha256": "7536f5e29fc879472956e96dc7042947ff6862a4e62c6a69ef922b1541207ddb",
+      "size": 645154528,
+      "mtimeNs": 1792777756583077000
+    },
+    "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore": {
+      "sha256": "dc446842d5f84dc02ab01da5528d7e85cff51629a8a14db06fa447e62a2f0060",
+      "size": 641421760,
+      "mtimeNs": 1792777763387529314
+    }
+  },
+  "archives": {
+    "/tmp/arccore-sessions-full-ours-v5.mm": {
+      "expectedSHA256": "8dadabd0e6508639cc7d6470b9d604b10afe938bb6d81662ba692707fb4cd909",
+      "archived": "inputs/8dadabd0e6508639cc7d6470b9d604b10afe938bb6d81662ba692707fb4cd909",
+      "archiveHashVerified": true
+    },
+    "/tmp/arccore-sessions-full-ours-v5.ts": {
+      "expectedSHA256": "3ffce724ab4a8f5429de96b658e49b52566ac43c53a7db471d37669346825e86",
+      "archived": "inputs/3ffce724ab4a8f5429de96b658e49b52566ac43c53a7db471d37669346825e86",
+      "archiveHashVerified": true
+    },
+    "/tmp/arccore-sessions-full-ours-v5.dylib": {
+      "expectedSHA256": "eb85052f726ed3c471157348f3b512e8b3d9e200f00d79acb37415fe652e22bb",
+      "archived": "inputs/eb85052f726ed3c471157348f3b512e8b3d9e200f00d79acb37415fe652e22bb",
+      "archiveHashVerified": true
+    },
+    "/tmp/arccore-sessions-isolate-cache-v10.py": {
+      "expectedSHA256": "0de81ab4f77a1bcb093bcd554b7e6d850b577c89b7ba9a971b07134eae97d1a5",
+      "archived": "inputs/0de81ab4f77a1bcb093bcd554b7e6d850b577c89b7ba9a971b07134eae97d1a5",
+      "archiveHashVerified": true
+    },
+    "/tmp/arccore-sessions-isolate-profiles-v10.py": {
+      "expectedSHA256": "b7c811271c6802fc32a754ba9d592cf0ffc07c65ab7e8682ee9b7a775529d01a",
+      "archived": "inputs/b7c811271c6802fc32a754ba9d592cf0ffc07c65ab7e8682ee9b7a775529d01a",
+      "archiveHashVerified": true
+    },
+    "/tmp/arccore-sessions-adoption-runtime-v1.py": {
+      "expectedSHA256": "0df88d889d64f38d46dc06216cc0c2ba87a04167854b05c1f566649a1a73a8a0",
+      "archived": "inputs/0df88d889d64f38d46dc06216cc0c2ba87a04167854b05c1f566649a1a73a8a0",
+      "archiveHashVerified": true
+    },
+    "arc/api/arc_sessions_restore.mm": {
+      "expectedSHA256": "178091e65d07409a00eeeb86101a7234afd44f00a3597512c2b1be0095118978",
+      "archived": "inputs/178091e65d07409a00eeeb86101a7234afd44f00a3597512c2b1be0095118978",
+      "archiveHashVerified": true
+    },
+    "chromium/src/chrome/browser/arcmod/arcmod_hooks.h": {
+      "expectedSHA256": "2e38023bb82b5abe43fd20fd8d592152e8d5c9dbbc2e4a3444772df4acf8427d",
+      "archived": "inputs/2e38023bb82b5abe43fd20fd8d592152e8d5c9dbbc2e4a3444772df4acf8427d",
+      "archiveHashVerified": true
+    },
+    "chromium/src/chrome/browser/ui/browser_live_tab_context.cc": {
+      "expectedSHA256": "934d1d49e2f04d2790ecfd4ad05c65f4195e31455aab6aedcd957d75068ee35f",
+      "archived": "inputs/934d1d49e2f04d2790ecfd4ad05c65f4195e31455aab6aedcd957d75068ee35f",
+      "archiveHashVerified": true
+    },
+    "chromium/src/chrome/browser/ui/browser_tabrestore.cc": {
+      "expectedSHA256": "f37fe417662955ca13ddbbe51ef88479b6843a90184a30752a75e23b3d74f827",
+      "archived": "inputs/f37fe417662955ca13ddbbe51ef88479b6843a90184a30752a75e23b3d74f827",
+      "archiveHashVerified": true
+    },
+    "chromium/src/chrome/browser/ui/browser_tabrestore.h": {
+      "expectedSHA256": "1e7d4f5d3f3435cf4ee2a7893c632d1f64e0c75092c6e624a0abf6e3445039b4",
+      "archived": "inputs/1e7d4f5d3f3435cf4ee2a7893c632d1f64e0c75092c6e624a0abf6e3445039b4",
+      "archiveHashVerified": true
+    },
+    "chromium/src/components/sessions/core/tab_restore_service_helper.cc": {
+      "expectedSHA256": "a3fdc9acb7906ad2e692574c7393baa551ac8ec5b9c94e1a015f547dc2b19bd0",
+      "archived": "inputs/a3fdc9acb7906ad2e692574c7393baa551ac8ec5b9c94e1a015f547dc2b19bd0",
+      "archiveHashVerified": true
+    },
+    "chromium/src/components/sessions/core/tab_restore_service_helper.h": {
+      "expectedSHA256": "5dd2e512e6b18e6015ff59b53b87dd6b1f11ab1c54dbc17ab549691714a8ed15",
+      "archived": "inputs/5dd2e512e6b18e6015ff59b53b87dd6b1f11ab1c54dbc17ab549691714a8ed15",
+      "archiveHashVerified": true
+    }
+  },
+  "evidenceFiles": {
+    "results/sessions/full-original-run3/result.json": {
+      "sha256": "33e2e6ee77c6ac83278b2a8bacd66f3639ae455a669b3aec8a7e1294e8ad7c24",
+      "size": 11001
+    },
+    "results/sessions/full-original-run3/observations.json": {
+      "sha256": "f9480c36cd39c3627f8700c25b55728385179829ceb2089357b4507f0ee27757",
+      "size": 36454
+    },
+    "results/sessions/full-original-run3/closed-window.json": {
+      "sha256": "2dabba972ebe90ccd329a9b348b14d5fa69593d5d37d9cb8c5628dbe7a139aaf",
+      "size": 691
+    },
+    "results/sessions/full-original-run3/launch-1/app.log": {
+      "sha256": "f15241559a7d2849fa256b0d42d8b47c8abf6db07d757e1ef57a24dcb4403fc5",
+      "size": 1114
+    },
+    "results/sessions/full-original-run3/launch-1/request.json": {
+      "sha256": "d1610c5bb9bdec8caeeaf9204f1a7b4d4e8b23a81935f09c6421d93ef167e581",
+      "size": 163
+    },
+    "results/sessions/full-original-run3/launch-1/request.json.ready.json": {
+      "sha256": "bd8c6e741c2a63b74ae808f89e268d58b977ba886f3da9241cbbdd99f92bf194",
+      "size": 195
+    },
+    "results/sessions/full-original-run3/launch-1/request.json.response.json": {
+      "sha256": "7675548633a39e5eea96181743501e89d38db2c6e4fbdca0e808cfbe77e00553",
+      "size": 6038
+    },
+    "results/sessions/full-ours-run2/result.json": {
+      "sha256": "ca8dd7c90ede0ffdb813aec278f0315228df231c4d4215fece8943fe8ee455d1",
+      "size": 4628
+    },
+    "results/sessions/full-ours-run2/observations.json": {
+      "sha256": "b4044b026b7b833a1adfa9e3287cbbdbc1a41038b1a7dc13581c56e5d8a7fd2e",
+      "size": 17216
+    },
+    "results/sessions/full-ours-run2/closed-window.json": {
+      "sha256": "956cfb02d20becec100f17d8b61f0f2e7d6089b56c2f183f63e944a75c246b57",
+      "size": 691
+    },
+    "results/sessions/full-ours-run2/launch-1/app.log": {
+      "sha256": "965550450392fd36a6867b192508d1bc6839172ace42efffa97e4bc3284c4a04",
+      "size": 2342
+    },
+    "results/sessions/full-ours-run2/launch-1/request.json": {
+      "sha256": "71ce0a71ce5ba3f8bdc1b8627ab0b5c04c9c5f2be178b9eb92840976fbb10ee8",
+      "size": 180
+    },
+    "results/sessions/full-ours-run2/launch-1/request.json.ready.json": {
+      "sha256": "66805d9a3157c71d5690d0e964d92f3a8520d60a74d5f0ca3fc5d87c3f51edbc",
+      "size": 194
+    },
+    "results/sessions/full-ours-run2/launch-1/request.json.response.json": {
+      "sha256": "549d4eb24d4ca147ca6406b165c9fec573539b078ca2d734516110f2a2ef4210",
+      "size": 2530
+    },
+    "results/sessions/adoption-source-only-parent-v4/full-supplemental/result.json": {
+      "sha256": "8f1d0321adf9590480dd43fca278881fd083d4b9e2c365e1508db97d37b0fa36",
+      "size": 5865
+    },
+    "results/sessions/adoption-source-only-parent-v4/full-supplemental/observations.json": {
+      "sha256": "34612835c284e5d19e4d2af65a71112231a202354b7b0e38e87d0b543d695f49",
+      "size": 19198
+    },
+    "results/sessions/adoption-source-only-parent-v4/full-supplemental/closed-window.json": {
+      "sha256": "092007d0b42a00dce21b14468876e9fc86d9595f9fce4afb7350de631f07ceb8",
+      "size": 691
+    },
+    "results/sessions/adoption-source-only-parent-v4/full-supplemental/launch-1/app.log": {
+      "sha256": "08b1660022c76f96eceaa4ef767e4418dc6baa120ebf57863ed00b432f79386f",
+      "size": 2100
+    },
+    "results/sessions/adoption-source-only-parent-v4/full-supplemental/launch-1/request.json": {
+      "sha256": "f317c9c9e6b5e104fabdccb90df2571bced8489e4679bd2ef544b94496edf312",
+      "size": 180
+    },
+    "results/sessions/adoption-source-only-parent-v4/full-supplemental/launch-1/request.json.ready.json": {
+      "sha256": "b4694cddba3601fae0ecd3bc9cdaa3827bf9bf429f67a82b8905bb99f099c422",
+      "size": 194
+    },
+    "results/sessions/adoption-source-only-parent-v4/full-supplemental/launch-1/request.json.response.json": {
+      "sha256": "04dc23b78742212b555be4509451cead9c0ada0cedf5cc9aa6ba517e144f7430",
+      "size": 3331
+    },
+    "results/sessions/adoption-source-only-parent-v4/status.json": {
+      "sha256": "2e02bace99c766edb1a2c20b08a0998bcecc96ad7559cd7a09b3dc041b4cb889",
+      "size": 16239
+    },
+    "results/sessions/adoption-source-only-parent-v4/full-supplemental.log": {
+      "sha256": "701b33419637561cb2dc9ba122a9e8ffdab6470e1772b51036b60a147bcfc794",
+      "size": 982
+    },
+    "results/sessions/adoption-source-only-parent-v4/inputs.expected.json": {
+      "sha256": "4caa2ee8ee993d2e1093abff47e17fa3fe676cb8729b51ed44fef9a6618dbbcc",
+      "size": 13149
+    },
+    "results/sessions/adoption-source-only-parent-v4/input-snapshots.json": {
+      "sha256": "116482a53b0d337d49613af2e62736b907777a7296a74aa67807f5cdeb6789f0",
+      "size": 25887
+    },
+    "results/sessions/adoption-source-only-parent-v4/frameworks.before.json": {
+      "sha256": "df2f390a0b940e6c38f20eccf3804af6336fa20b1697635b5b55a776be515c30",
+      "size": 563
+    },
+    "results/sessions/adoption-source-only-parent-v4/frameworks.after.json": {
+      "sha256": "df2f390a0b940e6c38f20eccf3804af6336fa20b1697635b5b55a776be515c30",
+      "size": 563
+    },
+    "results/sessions/proposals/source-only-adoption-transaction-v4/run-parent-v4/runtime-result.json": {
+      "sha256": "54c7c78eb5266d84de557e8036426fd06fb881cd04a736abf2264be6f1ce03fa",
+      "size": 2968
+    }
+  },
+  "limits": [
+    "Canonical sessions-public-api and sessions-tab-restart remain FAIL at the first synchronous/inline public close gate; no accepted restart or close/reopen parity.",
+    "Current frozen full-v5 supplemental has no closedTabCallbacks field, closed-tab events or standard record.jsonl; current child-close IDs -1 are NOT verified. Original-run3 separately observed both child IDs -1.",
+    "Original finishedSameBrowser=false while adopted ours=true: native identity matches, ObjC pointer identity is not one-to-one.",
+    "Original global closed-window callback insideAction=false; adopted ours=true, as in prior ours-run2. Supplemental contract does not resolve that existing callback-timing difference.",
+    "Full normal WINDOW only: ungrouped ROOT TAB factory path is not exercised because canonical fixtures stop at public close. Group/split/partial/app/popup cases remain uncovered.",
+    "Created-callback cancellation, profile/service/helper deletion, root reentry and safety-unwind policy are not exercised; no original cancellation parity is established.",
+    "One browser launch, not restart persistence. Foreign-tab DTO/profile metadata and discard/rebind/accounting/logical-peer ownership are outside this result.",
+    "AppKit ACK+PID/helper absence and no fatal markers do not prove OS normal exit status or a complete crash census. Root inode values are not persisted in status; restoration is supported by the pinned runner inode/absence comparison and its saved receipts.",
+    "Frozen source/framework records are scoped runtime evidence; not a full Chromium/toolchain build-input freeze."
+  ]
+}

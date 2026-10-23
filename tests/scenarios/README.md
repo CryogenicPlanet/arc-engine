@@ -57,6 +57,10 @@ stores its harness in a subdirectory and the paired diff in its parent, pinned b
 not prove exact build-source attribution. Preserved-profile renderer evidence is separate. `--summary`
 prints one line without starting a comparison. `--run-next` runs one least-recently-attempted scenario.
 The controller refreshes the current reporting source every minute, including lock waits/cooldowns.
+Run journals retain comparator/recorder hashes at start and end. New attempts also retain the three fixed
+comparator-helper hashes (`download_identity.py`, `google_q.py`, `omnibox_receivers.py`), with missing files
+explicitly `null`; older entries lack these pins. These endpoint checks do not prove continuous source
+stability or use of optional normalizers. Compare diff counts only with matching tools and scope.
 
 `bun tests/scenarios/integrator.ts` owns a separate kernel lease, runs one comparison at a time and
 waits at least 300 seconds after completion. Its optional `--chirp-helper <path>` invokes the enrolled
@@ -88,7 +92,7 @@ any SIGTERM fallback remains a failing step.
 
 `bookmarks-public-api` has an accepted40/40 original-engine golden (36engineclasses/231selectors/19callbackselectors), adapted from the separately reviewed frozen profile.batch11 fixture. It retains23 snapshot/mutation facts and raw measured date windows. `bookmarks-public-api-raw.ts` independently pairs exact driver-image calls/returns and enforces74bookmark calls/16selectors, DTO receivers, Unicode arguments and membership order. The default v2 comparison excludes these direct driver calls; acceptance comes from its own standard original run, not the archived combined-fixture passes.
 
-`history-public-api` is written and independently reviewed, with one canonical original queued after verified host-tolerance integration. Its separate raw gate requires exact public history calls/returns and genuine deletion forwarding; six completion receipts record actual scheduling without a universal queue assertion. Archived-operation checks are separate from new canonical acceptance. See REPORT.md for current recording state.
+`history-public-api` has an accepted55/55 original-engine golden. Its separate raw gate proves43 paired own public calls,23history-chain operations/16selectors and two genuine forwarded deletion callbacks; six completion receipts record actual scheduling without a universal queue assertion. Exact2→sentinel1→0 and status0/0/1 assertions pass. Numeric date/opaqueID and default-filtered directAPI parity remain unclaimed. First replacement comparison is54/55: all functional facts and ordinaryquit pass; the final raw whitelist rejects an extra private serviceNamed: call and leaves later raw checks unreached. No complete API parity claim; see REPORT.md and SCOREBOARD.md.
 
 The morning `arcmod-command-bar` uses a tests-owned public current-editor AX setter and independently requires a NEW app-origin autocomplete query/paired true return plus actual same-window suggestions. It is written/reviewed and unrecorded, with runtime unverified. Existing navigation coverage remains separate; neither navigation nor block completion follows from the archived autocomplete proof.
 

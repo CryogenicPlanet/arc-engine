@@ -1,0 +1,161 @@
+--- a/components/sessions/core/tab_restore_service_helper.cc
++++ b/components/sessions/core/tab_restore_service_helper.cc
+@@ -17,6 +17,7 @@
+ #include <vector>
+ 
+ #include "base/check_op.h"
++#include "base/command_line.h"
+ #include "base/containers/flat_set.h"
+ #include "base/metrics/histogram.h"
+ #include "base/metrics/histogram_macros.h"
+@@ -933,7 +934,12 @@
+   // can synchronously close restored tabs, or even the window they were
+   // restored into, before this method returns.
+   std::vector<base::WeakPtr<LiveTab>> live_tabs;
+-  const auto weak_self = weak_factory_.GetWeakPtr();
++  const bool is_host_app =
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app");
++  base::WeakPtr<TabRestoreServiceHelper> weak_self;
++  if (is_host_app) {
++    weak_self = weak_factory_.GetWeakPtr();
++  }
+   bool context_creation_cancelled = false;
+   switch (entry.type) {
+     case tab_restore::Type::TAB: {
+@@ -948,10 +954,10 @@
+       LiveTab* restored_tab = nullptr;
+       context = RestoreTab(tab, context, disposition, entry.type, &restored_tab,
+                            /*is_restoring_group_or_window=*/false);
+-      if (!weak_self) {
++      if (is_host_app && !weak_self) {
+         return std::nullopt;
+       }
+-      if (!context) {
++      if (is_host_app && !context) {
+         context_creation_cancelled = true;
+         break;
+       }
+@@ -959,7 +965,7 @@
+         live_tabs.push_back(restored_tab->GetWeakPtr());
+       }
+       context->ShowBrowserWindow();
+-      if (!weak_self) {
++      if (is_host_app && !weak_self) {
+         return std::nullopt;
+       }
+       break;
+@@ -1001,14 +1007,16 @@
+ 
+         // A host-created notification may destroy the profile/service or close
+         // the new browser. Never continue through a dangling helper/context.
+-        if (!weak_self) {
++        if (is_host_app && !weak_self) {
+           return std::nullopt;
+         }
+-        auto current_entry = GetEntryIteratorById(id);
+-        if (!context || current_entry == entries_.end() ||
+-            current_entry->get() != &entry) {
+-          context_creation_cancelled = true;
+-          break;
++        if (is_host_app) {
++          auto current_entry = GetEntryIteratorById(id);
++          if (!context || current_entry == entries_.end() ||
++              current_entry->get() != &entry) {
++            context_creation_cancelled = true;
++            break;
++          }
+         }
+ 
+         CHECK(!window.tabs.empty());
+@@ -1249,12 +1257,12 @@
+     RemoveEntryById(id);
+   }
+ 
+-  if (!weak_self) {
++  if (is_host_app && !weak_self) {
+     return std::nullopt;
+   }
+   restoring_ = false;
+   NotifyEntriesChanged();
+-  if (context_creation_cancelled) {
++  if (is_host_app && context_creation_cancelled) {
+     // Safety policy: a root restore consumes its entry just as the persistence
+     // observer's already-queued tombstone does. Original cancellation parity
+     // is unverified; this is an explicit host safety deviation.
+@@ -1563,20 +1571,29 @@
+     sessions::tab_restore::Type session_restore_type,
+     LiveTab** live_tab,
+     bool is_restoring_group_or_window) {
+-  const auto weak_self = weak_factory_.GetWeakPtr();
+-  const SessionID source_id = tab.id;
+-  // ROOT TAB application requests may enter embedder code during creation.
+-  // Descendant/group/split routing remains native and outside this request scope.
+-  const auto source_entry = GetEntryIteratorById(source_id);
+-  const Tab* expected_root_tab =
+-      session_restore_type == tab_restore::TAB && source_entry != entries_.end() &&
+-              source_entry->get() == &tab && (*source_entry)->type == tab_restore::TAB
+-          ? &tab
+-          : nullptr;
+-  if (live_tab) {
+-    *live_tab = nullptr;
+-  }
+-  LiveTab* restored_tab = nullptr;
++  const bool is_host_app =
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app");
++  base::WeakPtr<TabRestoreServiceHelper> weak_self;
++  if (is_host_app) {
++    weak_self = weak_factory_.GetWeakPtr();
++  }
++  std::optional<SessionID> source_id;
++  const Tab* expected_root_tab = nullptr;
++  if (is_host_app) {
++    source_id = tab.id;
++    // ROOT TAB application requests may enter embedder code during creation.
++    // Descendant/group/split routing remains native and outside this request scope.
++    const auto source_entry = GetEntryIteratorById(*source_id);
++    if (session_restore_type == tab_restore::TAB &&
++        source_entry != entries_.end() && source_entry->get() == &tab &&
++        (*source_entry)->type == tab_restore::TAB) {
++      expected_root_tab = &tab;
++    }
++    if (live_tab) {
++      *live_tab = nullptr;
++    }
++  }
++  LiveTab* restored_tab;
+   if (disposition == WindowOpenDisposition::CURRENT_TAB && context) {
+     restored_tab = context->ReplaceRestoredTab(tab);
+   } else {
+@@ -1612,14 +1629,16 @@
+           std::map<std::string, std::string>());
+       // Match the full-WINDOW created-callback lifetime boundary. The factory
+       // returns null if its accepted host callback closed/deleted the browser.
+-      if (!weak_self || !context) {
+-        return nullptr;
+-      }
+-      if (expected_root_tab) {
+-        auto current_entry = GetEntryIteratorById(source_id);
+-        if (current_entry == entries_.end() ||
+-            current_entry->get() != expected_root_tab) {
++      if (is_host_app) {
++        if (!weak_self || !context) {
+           return nullptr;
++        }
++        if (expected_root_tab) {
++          auto current_entry = GetEntryIteratorById(*source_id);
++          if (current_entry == entries_.end() ||
++              current_entry->get() != expected_root_tab) {
++            return nullptr;
++          }
+         }
+       }
+       if (tab.browser_id) {
+@@ -1640,7 +1659,7 @@
+         is_restoring_group_or_window, session_restore_type);
+   }
+ 
+-  if (!weak_self) {
++  if (is_host_app && !weak_self) {
+     return nullptr;
+   }
+   client_->OnTabRestored(

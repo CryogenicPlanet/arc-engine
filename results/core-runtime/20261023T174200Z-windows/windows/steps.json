@@ -1,0 +1,35 @@
+{
+  "scenario": "windows",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app",
+  "slug": "ours156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "initial browser window",
+      "outcome": "fail",
+      "detail": "count=0"
+    },
+    {
+      "step": "second native window",
+      "outcome": "fail",
+      "detail": ""
+    },
+    {
+      "step": "agent Little Arc redirect",
+      "outcome": "fail",
+      "detail": ""
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 8 helpers exited"
+    }
+  ]
+}

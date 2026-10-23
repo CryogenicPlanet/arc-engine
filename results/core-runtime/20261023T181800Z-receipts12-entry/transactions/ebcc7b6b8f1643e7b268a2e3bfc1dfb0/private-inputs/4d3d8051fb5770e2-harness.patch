@@ -1,0 +1,10 @@
+--- a/tests/launch-slice/run.ts
++++ b/tests/launch-slice/run.ts
+@@ -64,6 +64,7 @@
+   `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${chromiumData}`,
+   "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`,
+   ...(scenarioModule.chromiumArgs ?? []),
++  ...(argv.includes("--core-receipt-diagnostics") ? ["--arcmod-core-receipt-diagnostics"] : []),
+ ];
+ 
+ // Fixtures. Expected values are fixed here, never taken from another run.

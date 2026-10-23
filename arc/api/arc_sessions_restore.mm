@@ -12,9 +12,11 @@
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/scoped_observation.h"
+#include "base/supports_user_data.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/apps/app_service/web_contents_app_id_utils.h"
 #include "arc/browser/arc_browser_window.h"
+#include "chrome/browser/arcmod/arcmod_hooks.h"
 #include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -34,8 +36,6 @@
 #include "content/public/browser/web_contents.h"
 
 @interface SessionsRestoreIDs : NSObject
-@property(nonatomic, copy) NSArray<ArcSessionID*>* identifiers;
-@property(nonatomic) NSUInteger next;
 @property(nonatomic) NSUInteger pending;
 @property(nonatomic) BOOL sealed;
 @property(nonatomic) BOOL cancelled;
@@ -135,14 +135,12 @@ BOOL ArcSessionsHasPendingDiscard(ArcWebContents* contents) {
 }
 @end
 @implementation SessionsRestoreIDs
-@synthesize identifiers = _identifiers, next = _next, pending = _pending,
+@synthesize pending = _pending,
     sealed = _sealed, cancelled = _cancelled, completion = _completion;
 @end
 
 namespace {
 std::optional<SessionID> FindRestoreEntry(const sessions::tab_restore::Entry& entry, SessionID target);
-NSArray* RestorationIDsForEntry(const sessions::tab_restore::Entry& entry, SessionID target,
-                                std::optional<SessionID> explicitRequest = std::nullopt);
 const char kActiveBrowserRestore = 0;
 const char kFullRestoreIDs = 0;
 const char kFullBrowserRestoring = 0;
@@ -241,6 +239,8 @@ class SessionsLoadObserver : public sessions::TabRestoreServiceObserver {
 @interface SessionsRestoreRequest ()
 - (void)performRestore;
 - (void)retryAfterActiveRestore;
+- (void)performNativeCreatedBrowserRestore:(sessions::TabRestoreService*)service identifier:(SessionID)identifier;
+- (arcmod::SessionBrowserCreatedCallback)prepareFactory:(Profile*)profile params:(BrowserWindowCreateParams&)params;
 - (void)finish:(ArcBrowser*)browser;
 @end
 
@@ -255,6 +255,11 @@ class SessionsLoadObserver : public sessions::TabRestoreServiceObserver {
   BOOL _scheduled;
   BOOL _completed;
   BOOL _serviceDestroyed;
+  BOOL _factoryPending;
+  ArcBrowser* _factoryWrapper;
+  SessionsRestoreIDs* _factoryIDs;
+  base::WeakPtr<BrowserWindowInterface> _factoryNative;
+  std::unique_ptr<ScopedFullRestoreIDs> _factoryInsertion;
 }
 + (void)startWithContext:(ArcBrowserContext*)context identifier:(ArcSessionID*)identifier
     created:(void (^)(ArcBrowser*))created finished:(void (^)(ArcBrowser*))finished {
@@ -322,6 +327,64 @@ class SessionsLoadObserver : public sessions::TabRestoreServiceObserver {
   objc_setAssociatedObject(_restoringBrowser, &kFullBrowserRestoring, nil,
                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   _activeRestore.reset();
+  _factoryInsertion.reset();
+  _factoryIDs = nil;
+  _factoryWrapper = nil;
+}
+- (arcmod::SessionBrowserCreatedCallback)prepareFactory:(Profile*)profile params:(BrowserWindowCreateParams&)params {
+  if (!_factoryPending || ArcProfileFrom(_context) != profile || params.window) {
+    return {};
+  }
+  _factoryPending = NO; // Consume before any app callback can reenter.
+  params.window = new arc::ArcBrowserWindow();
+  params.should_trigger_session_restore = false;
+  params.creation_source = BrowserWindowCreateParams::CreationSource::kSessionRestore;
+  return base::BindOnce(^(base::WeakPtr<BrowserWindowInterface> native) {
+    if (!native || native->IsDeleteScheduled() || ArcProfileFrom(self->_context) != profile) {
+      return;
+    }
+    self->_factoryNative = native;
+    ArcBrowser* wrapper = [ArcBrowser wrapperForBrowser:native.get()];
+    self->_factoryWrapper = wrapper;
+    self->_restoringBrowser = wrapper;
+    objc_setAssociatedObject(wrapper, &kFullBrowserRestoring, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self->_factoryInsertion = std::make_unique<ScopedFullRestoreIDs>(wrapper, self->_factoryIDs);
+    if (self->_created) {
+      self->_created(wrapper);
+    }
+  });
+}
+- (void)performNativeCreatedBrowserRestore:(sessions::TabRestoreService*)service identifier:(SessionID)identifier {
+  static const bool installed = [] {
+    arcmod::GetSessionBrowserFactoryHook() = base::BindRepeating(
+        [](Profile* profile, BrowserWindowCreateParams& params) -> arcmod::SessionBrowserCreatedCallback {
+          ArcBrowserContext* owner = [ArcBrowserContext wrapperForProfile:profile];
+          SessionsRestoreRequest* request = objc_getAssociatedObject(owner, &kActiveBrowserRestore);
+          return request ? [request prepareFactory:profile params:params] : arcmod::SessionBrowserCreatedCallback();
+        });
+    return true;
+  }();
+  (void)installed;
+  __attribute__((objc_precise_lifetime)) SessionsRestoreRequest* keepAlive = self;
+  _activeRestore = std::make_unique<ScopedBrowserRestore>(_context, self);
+  _factoryIDs = [[SessionsRestoreIDs alloc] init];
+  _factoryPending = YES;
+  const auto result = service->RestoreEntryById(nullptr, identifier, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  _factoryPending = NO;
+  _factoryInsertion.reset();
+  _activeRestore.reset();
+  SessionsRestoreIDs* state = _factoryIDs;
+  ArcBrowser* wrapper = _factoryWrapper;
+  auto weakBrowser = _factoryNative;
+  const bool succeeded = result.has_value();
+  __weak SessionsRestoreIDs* weakState = state;
+  state.completion = ^{
+    [keepAlive finish:succeeded && !weakState.cancelled && weakBrowser &&
+        !weakBrowser->IsDeleteScheduled() ? wrapper : nil];
+  };
+  state.sealed = YES;
+  // Even zero-insertion/cancelled completions run after the API unwinds.
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{ CompleteFullRestore(state); }));
 }
 - (void)retryAfterActiveRestore {
   if (_scheduled || _completed) {
@@ -372,12 +435,23 @@ class SessionsLoadObserver : public sessions::TabRestoreServiceObserver {
     [keepAlive finish:nil];
     return;
   }
+  const bool matchesRoot = *matchedID == selected->id || *matchedID == selected->original_id;
+  const bool createsNativeTabBrowser = selected->type == sessions::tab_restore::TAB &&
+      !static_cast<const sessions::tab_restore::Tab&>(*selected).group.has_value();
+  if (matchesRoot && (selected->type == sessions::tab_restore::WINDOW || createsNativeTabBrowser)) {
+    // NEW_FOREGROUND_TAB + nil context ignores the old TAB browser_id; an
+    // ungrouped root TAB therefore reaches native creation/remapping. A grouped
+    // TAB may redirect into existing B and has different original completion
+    // behavior, so do not arm this request for that unresolved destination.
+    [keepAlive performNativeCreatedBrowserRestore:service identifier:*matchedID];
+    return;
+  }
+  // Grouped TAB/GROUP/partial WINDOW paths remain preexisting and uncovered.
   // Reserve the profile before creating the browser or invoking app code.
   // A nested request must not consume the native entry that this request uses.
   _activeRestore = std::make_unique<ScopedBrowserRestore>(_context, self);
   const SessionID restoreID = *matchedID;
   SessionsRestoreIDs* callbackIDs = [[SessionsRestoreIDs alloc] init];
-  callbackIDs.identifiers = RestorationIDsForEntry(*selected, restoreID);
   BrowserWindowCreateParams params(profile, true);
   if (selected->type == sessions::tab_restore::WINDOW) {
     const auto& window = static_cast<const sessions::tab_restore::Window&>(*selected);
@@ -651,15 +725,40 @@ ARC_EXPORT @interface ArcSessionWindow : NSObject
 // its absence leaves core's normal new-tab notification unchanged.
 @interface SessionsInsertionState : NSObject
 @property(nonatomic, strong) ArcSessionID* session;
-@property(nonatomic, copy) NSArray* identifiers;
-@property(nonatomic) NSUInteger next;
 @end
 @implementation SessionsInsertionState
-@synthesize session = _session, identifiers = _identifiers, next = _next;
+@synthesize session = _session;
 @end
 
 namespace {
 const char kSessionInsertionState = 0;
+const char kNativeRestorationSource = 0;
+
+struct SessionsInsertionSource : public base::SupportsUserData::Data {
+  int32_t historical;
+  int32_t original;
+};
+
+base::ScopedClosureRunner NativeRestorationSourceScope(content::WebContents* contents,
+                                                      int32_t historical, int32_t original) {
+  auto previous = contents->TakeUserData(&kNativeRestorationSource);
+  auto source = std::make_unique<SessionsInsertionSource>();
+  source->historical = historical;
+  source->original = original;
+  contents->SetUserData(&kNativeRestorationSource, std::move(source));
+  return base::ScopedClosureRunner(base::BindOnce(
+      [](base::WeakPtr<content::WebContents> native,
+         std::unique_ptr<base::SupportsUserData::Data> previous) {
+        if (!native) {
+          return;
+        }
+        if (previous) {
+          native->SetUserData(&kNativeRestorationSource, std::move(previous));
+        } else {
+          native->RemoveUserData(&kNativeRestorationSource);
+        }
+      }, contents->GetWeakPtr(), std::move(previous)));
+}
 
 void QueueRestorationCallback(ArcBrowser* browser, content::WebContents* contents,
                               ArcSessionID* identifier, SessionsRestoreIDs* full) {
@@ -691,13 +790,11 @@ void QueueRestorationCallback(ArcBrowser* browser, content::WebContents* content
 
 class ScopedSessionInsertion {
  public:
-  ScopedSessionInsertion(ArcBrowser* browser, ArcSessionID* session,
-                         NSArray* identifiers = nil) {
+  ScopedSessionInsertion(ArcBrowser* browser, ArcSessionID* session) {
     owner_ = browser;
     previous_ = objc_getAssociatedObject(owner_, &kSessionInsertionState);
     SessionsInsertionState* state = [[SessionsInsertionState alloc] init];
     state.session = session;
-    state.identifiers = identifiers;
     objc_setAssociatedObject(owner_, &kSessionInsertionState, state, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
   ~ScopedSessionInsertion() {
@@ -753,69 +850,6 @@ std::optional<SessionID> FindRestoreEntry(const sessions::tab_restore::Entry& en
     }
   }
   return std::nullopt;
-}
-
-NSArray* RestorationIDsForEntry(const sessions::tab_restore::Entry& entry, SessionID target,
-                                std::optional<SessionID> explicitRequest) {
-  NSMutableArray* result = [NSMutableArray array];
-  auto append = [&](const sessions::tab_restore::Tab& tab) {
-    if (explicitRequest) {
-      // Native tag2 matches this browser's requested ID against historical
-      // first, then original; unmatched children retain ordinary didCreate.
-      [result addObject:tab.id == *explicitRequest || tab.original_id == *explicitRequest
-          ? [[ArcSessionID alloc] initWithID:explicitRequest->id()] : NSNull.null];
-    } else {
-      [result addObject:[[ArcSessionID alloc] initWithID:tab.original_id.id()]];
-    }
-  };
-  bool whole = entry.id == target || entry.original_id == target;
-  const std::vector<std::unique_ptr<sessions::tab_restore::Tab>>* tabs = nullptr;
-  std::optional<tab_groups::TabGroupId> selectedGroup;
-  std::optional<split_tabs::SplitTabId> selectedSplit;
-  switch (entry.type) {
-    case sessions::tab_restore::TAB: {
-      const auto& tab = static_cast<const sessions::tab_restore::Tab&>(entry);
-      append(tab);
-      return result;
-    }
-    case sessions::tab_restore::WINDOW: {
-      const auto& window = static_cast<const sessions::tab_restore::Window&>(entry);
-      whole = whole || !window.app_name.empty();
-      tabs = &window.tabs;
-      if (!whole) {
-        for (const auto& [id, group] : window.tab_groups) {
-          if (group->id == target || group->original_id == target) { selectedGroup = id; }
-        }
-        for (const auto& [id, split] : window.split_tabs) {
-          if (split->id == target || split->original_id == target) { selectedSplit = id; }
-        }
-      }
-      break;
-    }
-    case sessions::tab_restore::GROUP: {
-      const auto& group = static_cast<const sessions::tab_restore::Group&>(entry);
-      tabs = &group.tabs;
-      if (!whole) {
-        for (const auto& [id, split] : group.split_tabs) {
-          if (split->id == target || split->original_id == target) { selectedSplit = id; }
-        }
-      }
-      break;
-    }
-    case sessions::tab_restore::SPLIT:
-      tabs = &static_cast<const sessions::tab_restore::Split&>(entry).tabs;
-      break;
-  }
-  for (const auto& tab : *tabs) {
-    if (whole || tab->id == target || tab->original_id == target ||
-        (selectedGroup && tab->group == selectedGroup) ||
-        (selectedSplit && tab->split_id == selectedSplit)) {
-      // Original AddRestoredTab passes Tab.original_id as the optional ID
-      // consumed by the full-restoration didRestore callback, including -1.
-      append(*tab);
-    }
-  }
-  return result;
 }
 
 std::optional<SessionID> RestoreID(sessions::TabRestoreService* service, ArcSessionID* identifier) {
@@ -1005,6 +1039,11 @@ class SessionsServiceObserver : public sessions::TabRestoreServiceObserver {
 @end
 
 void ArcSessionsBrowserCreated(ArcBrowser* browser) {
+  static const bool sourceHookInstalled = [] {
+    arcmod::GetSessionTabRestoreScopeHook() = base::BindRepeating(&NativeRestorationSourceScope);
+    return true;
+  }();
+  (void)sourceHookInstalled;
   static const char kObservation = 0;
   if ([browser browser] && !objc_getAssociatedObject(browser, &kObservation)) {
     objc_setAssociatedObject(browser, &kObservation,
@@ -1024,30 +1063,31 @@ BOOL ArcSessionsDidInsertWebContents(ArcBrowser* browser, content::WebContents* 
     return NO;
   }
   SessionsInsertionState* state = objc_getAssociatedObject(browser, &kSessionInsertionState);
-  if (!state) {
-    SessionsRestoreIDs* full = objc_getAssociatedObject(browser, &kFullRestoreIDs);
-    if (!full || full.next >= full.identifiers.count) {
-      return NO;
-    }
-    ArcSessionID* identifier = full.identifiers[full.next];
-    full.next += 1;
-    QueueRestorationCallback(browser, contents, identifier, full);
+  if (state && !state.session) {
+    // Foreign restoration explicitly suppresses every insertion notification.
     return YES;
   }
-  if (state.session) {
-    ArcSessionID* identifier = state.session;
-    if (state.next < state.identifiers.count) {
-      id matched = state.identifiers[state.next];
-      state.next += 1;
-      if (matched == NSNull.null) {
-        return NO;
-      }
-      identifier = matched;
-    }
-    // Only this requesting browser's matching inserted record is a restore;
-    // native group redirection into another browser retains ordinary creation.
-    QueueRestorationCallback(browser, contents, identifier, nil);
+  const auto* source = static_cast<SessionsInsertionSource*>(
+      contents->GetUserData(&kNativeRestorationSource));
+  if (!source) {
+    // Saved-group expansion/movement and unrelated app-created tabs carry no
+    // historical source optional, even during full restoration.
+    return NO;
   }
+  SessionsRestoreIDs* full = objc_getAssociatedObject(browser, &kFullRestoreIDs);
+  ArcSessionID* identifier = nil;
+  if (full) {
+    // Full tag1 uses original_id even when the present optional contains -1.
+    identifier = [[ArcSessionID alloc] initWithID:source->original];
+  } else if (state.session && (state.session.identifier == source->historical ||
+                              state.session.identifier == source->original)) {
+    // Explicit tag2 chooses the matched requested ID, historical before
+    // original. State belongs to this destination browser, not its profile.
+    identifier = state.session;
+  } else {
+    return NO;
+  }
+  QueueRestorationCallback(browser, contents, identifier, full);
   return YES;
 }
 
@@ -1083,15 +1123,7 @@ BOOL ArcSessionsDidInsertWebContents(ArcBrowser* browser, content::WebContents* 
   if (!restore_id || !context) {
     return;
   }
-  NSArray* callbackIDs = nil;
-  for (const auto& entry : service->entries()) {
-    if (FindRestoreEntry(*entry, *restore_id)) {
-      callbackIDs = RestorationIDsForEntry(*entry, *restore_id,
-          SessionID::FromSerializedValue(static_cast<int32_t>(identifier.identifier)));
-      break;
-    }
-  }
-  ScopedSessionInsertion insertion(self, identifier, callbackIDs);
+  ScopedSessionInsertion insertion(self, identifier);
   service->RestoreEntryById(context, *restore_id, WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 - (ArcWebContents*)restoreForeignTab:(ArcSessionTab*)tab {

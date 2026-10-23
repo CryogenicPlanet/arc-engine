@@ -1,0 +1,644 @@
+--- a/arc/browser/webextras_initial_integration.py
++++ b/arc/browser/webextras_initial_integration.py
+@@ -14,6 +14,7 @@
+ import stat
+ import subprocess
+ import sys
++import tempfile
+ import time
+ import types
+ import uuid
+@@ -44,6 +45,7 @@
+     'logs/wp/webextras-frontend-resource-sanity-review-worker/review.json': '2d22fc23ea5ed6027dde80f792c6c1be2b8453f472ccf428f9b82807d0f8fef5',
+ }
+ CANCELLED = False
++REGEN_TOOLS = {'arc/tools/regen-patches.sh': 0o755, 'arc/tools/regen-chromium-patches.py': 0o644}
+ 
+ 
+ def source_module(path, expected):
+@@ -73,12 +75,34 @@
+     return request
+ 
+ 
+-def git_environment(index=None):
++def git_environment():
+     env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+     env.update(GIT_OPTIONAL_LOCKS='0', GIT_CONFIG_GLOBAL='/dev/null', GIT_CONFIG_NOSYSTEM='1')
+-    if index is not None:
+-        env['GIT_INDEX_FILE'] = str(index)
+     return env
++
++
++def patch_changed_paths(path, cwd, expected):
++    """Use Git's metadata reader in disposable space, never an actual checkout."""
++    data = path.read_bytes()
++    require(hashlib.sha256(data).hexdigest() == expected, 'engine patch differs from sealed image')
++    with tempfile.TemporaryDirectory(prefix='webextras-patch-paths-') as private:
++        result = subprocess.run(['git', 'apply', '--numstat', '-z', '-'], input=data,
++                                cwd=private, env=git_environment(), capture_output=True)
++        summary = subprocess.run(['git', 'apply', '--summary', '-'], input=data,
++                                 cwd=private, env=git_environment(), capture_output=True)
++    require(result.returncode == 0 and result.stdout, 'unreadable/empty engine patch metadata')
++    # apply --numstat reports only the destination for a rename. Refuse these
++    # operations rather than accidentally admitting a renamed baseline source.
++    require(summary.returncode == 0 and not any(line.lstrip().startswith((b'rename ', b'copy '))
++            for line in summary.stdout.splitlines()), 'engine patch rename/copy is unsupported')
++    paths = set()
++    for row in result.stdout.split(b'\0')[:-1]:
++        fields = row.decode().split('\t', 2)
++        require(len(fields) == 3 and fields[2], 'unsupported engine patch rename metadata')
++        name = Path(fields[2])
++        require(not name.is_absolute() and '..' not in name.parts, 'unsafe engine patch path')
++        paths.add(str(Path(cwd) / name))
++    return paths
+ 
+ 
+ def require(value, message):
+@@ -148,7 +172,8 @@
+             'acknowledgments': {'hostGate': '', 'regenerationInterface': ''},
+             'pins': dict(RESOURCE_POLICY), 'inventory': {}, 'patches': [], 'targets': {},
+             'manifest': {}, 'patchOutputs': {}, 'gitRepos': [],
+-            'regeneration': {'argv': [], 'cwd': '.', 'env': {}},
++            'regeneration': {'argv': ['./arc/tools/regen-patches.sh'], 'cwd': '.', 'env': {},
++                             'toolModes': dict(REGEN_TOOLS)},
+             'observationTool': {}, 'resourceChecks': {role: {'argv': [str(PYTHON), '-B', RESOURCE_CHECKER,
+                 '--expect-host-gate', mode, '--output', '{resource_output}'], 'cwd': '.', 'expectHostGate': mode}
+                 for role, mode in [('candidate', 'present'), ('recovery', 'absent')]},
+@@ -172,6 +197,7 @@
+     require(isinstance(config.get('targets'), dict) and config['targets'], 'empty targets')
+     require('patches/MANIFEST' not in config['targets'], 'MANIFEST must use its separate journal')
+     images = {**config['targets'], 'patches/MANIFEST': config.get('manifest', {})}
++    require(not set(REGEN_TOOLS) & set(images), 'shared regeneration baseline cannot be an engine target')
+     observation_path = 'arc/browser/webextras_scenario_current_run.py'
+     observation = config.get('observationTool', {})
+     require(set(observation) == {'before', 'after', 'blob', 'patch'} and observation_path not in images,
+@@ -204,6 +230,8 @@
+         require(set(patch) == {'path', 'sha256', 'cwd'}, 'invalid patch inventory')
+         relative(root, patch['path']); relative(root, patch['cwd'])
+         require(config['pins'].get(patch['path']) == patch['sha256'], 'patch not pinned')
++        require(not set(REGEN_TOOLS) & patch_changed_paths(relative(root, patch['path']), patch['cwd'], patch['sha256']),
++                'engine patch changes shared regeneration baseline')
+     require(config.get('inventory'), 'missing production inventory')
+     require(set(config['inventory']) == {'arc/api', 'arc/browser', 'arc/wp'}, 'incomplete Arc production inventory')
+     for folder, names in config['inventory'].items():
+@@ -212,35 +240,20 @@
+                 'production content not pinned')
+     require(config.get('gitRepos'), 'missing index protection')
+     for repo in config['gitRepos']:
+-        require(set(repo) == {'path', 'index', 'sha256', 'head', 'environmentKey', 'intentToAdd', 'existingIntentToAdd'},
++        require(set(repo) == {'path', 'index', 'sha256', 'head'},
+                 'invalid Git repository contract')
+         relative(root, repo['path']); relative(root, repo['index'])
+-        require(digest.fullmatch(repo['sha256']) and re.fullmatch(r'(?:GIT_INDEX_FILE|ARC[A-Z0-9_]*INDEX_FILE)', repo['environmentKey']),
+-                'invalid sealed alternate-index interface')
+-        require(isinstance(repo['intentToAdd'], list), 'invalid intent-to-add inventory')
+-        for name in repo['intentToAdd']:
+-            target = str(Path(repo['path']) / name)
+-            relative(root, target)
+-            require(target in config['targets'] and config['targets'][target]['before'] is None,
+-                    'intent-to-add is not an exact newly owned target')
+-        require(isinstance(repo['existingIntentToAdd'], dict), 'invalid existing leaf bookkeeping')
+-        for name, entry in repo['existingIntentToAdd'].items():
+-            target = str(Path(repo['path']) / name); relative(root, target)
+-            require(target.startswith('chromium/src/') and set(entry) == {'sha256', 'owner'}
+-                    and target in config['pins'] and entry['sha256'] == config['pins'][target] and target not in images
+-                    and isinstance(entry['owner'], str), 'existing ITA is not an immutable sealed native leaf')
+-    require(len({r['environmentKey'] for r in config['gitRepos']}) == len(config['gitRepos']),
+-            'duplicate alternate-index environment interface')
+-    require(sum(r['path'] == 'chromium/src' and r['environmentKey'] == 'GIT_INDEX_FILE' for r in config['gitRepos']) == 1,
+-            'explicit outer Chromium alternate index required')
++        require(isinstance(repo['sha256'], str) and digest.fullmatch(repo['sha256']) and
++                isinstance(repo['head'], str) and repo['head'], 'invalid guard-only Git identity')
++    require(len({r['path'] for r in config['gitRepos']}) == len(config['gitRepos']) and
++            sum(r['path'] == 'chromium/src' for r in config['gitRepos']) == 1, 'unique outer Chromium guard required')
+     regeneration = config.get('regeneration', {})
+-    require(set(regeneration) == {'argv', 'cwd', 'env'} and regeneration['argv']
+-            and all(isinstance(x, str) and x for x in regeneration['argv']), 'unsealed regeneration argv')
+-    relative(root, regeneration['cwd'])
+-    require(isinstance(regeneration['env'], dict) and all(isinstance(k, str) and isinstance(v, str)
+-            for k, v in regeneration['env'].items()), 'invalid sealed regeneration environment')
+-    require(not any(k.startswith('GIT_') for k in regeneration['env']),
+-            'unreviewed Git repository routing environment')
++    require(set(regeneration) == {'argv', 'cwd', 'env', 'toolModes'} and
++            regeneration['argv'] == ['./arc/tools/regen-patches.sh'] and regeneration['cwd'] == '.' and
++            regeneration['env'] == {}, 'regeneration must invoke fixed baseline wrapper from root without overrides')
++    require(regeneration['toolModes'] == REGEN_TOOLS and
++            all(type(v) is int for v in regeneration['toolModes'].values()) and
++            all(name in config['pins'] for name in REGEN_TOOLS), 'shared regeneration baseline hashes/modes not sealed')
+     numbers = config.get('runNumbers', {})
+     require(set(numbers) == {*SCENARIOS, 'recovery-launch-slice'}, 'incomplete runtime inventory')
+     values = [numbers[k] for k in (*SCENARIOS, 'recovery-launch-slice')]
+@@ -449,7 +462,6 @@
+         self.phase = 0
+         self.current = 'before'
+         self.lock = None
+-        self.indexes = {}
+         self.roots = {}
+         receipt = self.output / 'observation-tool.json'
+         self.tool_adopted = (receipt.is_file() and json.loads(receipt.read_text()).get('status') == 'PERSISTENT_OBSERVATION_TOOL_ADOPTED')
+@@ -589,6 +601,8 @@
+         observation = self.config['observationTool']
+         require(sha(self.root / 'arc/browser/webextras_scenario_current_run.py') == observation['after' if self.tool_adopted else 'before'],
+                 'persistent observation-tool drift')
++        require(all(image_state(relative(self.root, name)) == (self.config['pins'][name], mode)
++                    for name, mode in self.config['regeneration']['toolModes'].items()), 'shared regeneration baseline mode drift')
+         for folder, expected in self.config['inventory'].items():
+             base = relative(self.root, folder)
+             actual = sorted(str(p.relative_to(self.root)) for p in base.rglob('*')
+@@ -673,14 +687,6 @@
+             if prior_ownership is not None:
+                 require(all(ownership.get(n) == p for n, p in prior_ownership.items()), 'existing MANIFEST ownership changed')
+             prior_ownership = ownership
+-            if phase == 'before':
+-                for repo in self.config['gitRepos']:
+-                    for name, entry in repo['existingIntentToAdd'].items():
+-                        target = str(Path(repo['path']) / name)
+-                        leaf = target.removeprefix('chromium/src/')
+-                        require(ownership.get(leaf) == entry['owner'] and
+-                                sha(relative(self.root, target)) == entry['sha256'],
+-                                'existing ITA lacks exact entry MANIFEST owner/source')
+             for name in self.config['targets']:
+                 if name.startswith('chromium/src/'):
+                     leaf = name.removeprefix('chromium/src/')
+@@ -698,10 +704,6 @@
+                 require(mode == image['beforeMode'], 'journal mode differs from sealed preimage')
+                 write(self.output / 'modes' / (name.replace('/', '_') + '.json'), mode)
+             require(sha(relative(self.root, image['blob'])) == image['after'], 'private postimage drift')
+-        for repo in self.config['gitRepos']:
+-            target = self.output / ('alternate-index-' + str(len(self.indexes)))
+-            atomic_bytes(target, relative(self.root, repo['index']).read_bytes())
+-            self.indexes[repo['environmentKey']] = str(target)
+         write(self.output / 'journal.json', {'images': self.images, 'outputs': self.config['patchOutputs'],
+                                             'realIndexesNeverRestored': True})
+         # Reconstruct the reviewed patch chain privately from the exact preimages.
+@@ -767,14 +769,7 @@
+ 
+     def regenerate(self, rollback=False):
+         command = self.config['regeneration']
+-        env = {**git_environment(), **command['env'], **self.indexes, 'GIT_OPTIONAL_LOCKS': '0'}
+-        for repo in self.config['gitRepos']:
+-            paths = [*repo['existingIntentToAdd'], *([] if rollback else repo['intentToAdd'])]
+-            if paths:
+-                add_env = git_environment(self.indexes[repo['environmentKey']])
+-                require(self.command(['git', 'add', '-N', '--', *paths], 'private-index-add-' + str(self.phase),
+-                        relative(self.root, repo['path']), add_env, rollback=rollback) == 0,
+-                        'alternate-index intent-to-add failed')
++        env = git_environment()
+         require(self.command(command['argv'], 'rollback-regen' if rollback else 'regen',
+                              relative(self.root, command['cwd']), env, rollback) == 0, 'regeneration failed')
+ 
+@@ -867,10 +862,6 @@
+                 mode = json.loads((self.output / 'modes' / (name.replace('/', '_') + '.json')).read_text())
+                 require(mode == image['beforeMode'], 'rollback journal mode differs from sealed preimage')
+                 atomic_bytes(path, (self.output / 'before' / name).read_bytes(), mode)
+-        # Remove candidate-only intent-to-add from PRIVATE indexes before the
+-        # restored MANIFEST is regenerated. The real indexes remain untouched.
+-        for repo in self.config['gitRepos']:
+-            atomic_bytes(Path(self.indexes[repo['environmentKey']]), relative(self.root, repo['index']).read_bytes())
+         self.regenerate(rollback=True)
+         # Regen cannot remove an originally absent, now unreferenced own patch.
+         for name, image in self.config['patchOutputs'].items():
+--- a/arc/browser/webextras_initial_integration_test.py
++++ b/arc/browser/webextras_initial_integration_test.py
+@@ -5,6 +5,7 @@
+ import json
+ import os
+ from pathlib import Path
++import shutil
+ import subprocess
+ import tempfile
+ import types
+@@ -37,13 +38,8 @@
+             return 0
+         if argv[0] == 'git' and argv[1] in ('init', 'apply'):
+             return subprocess.run(argv, cwd=cwd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE).returncode
+-        if argv[0] == 'git' and argv[1:3] == ['add', '-N']:
+-            assert env['GIT_INDEX_FILE'] != str(self.root / 'chromium/src/.git/index')
+-            Path(env['GIT_INDEX_FILE']).write_bytes(('PRIVATE INDEX ITA ' + ' '.join(argv[4:])).encode())
+-            return 0
+-        if argv == ['reviewed-regen']:
+-            if getattr(self, 'required_existing_ita', None):
+-                assert self.required_existing_ita.encode() in Path(env['GIT_INDEX_FILE']).read_bytes()
++        if argv == ['./arc/tools/regen-patches.sh']:
++            assert not any(k.startswith('GIT_') and k not in ('GIT_OPTIONAL_LOCKS', 'GIT_CONFIG_GLOBAL', 'GIT_CONFIG_NOSYSTEM') for k in env)
+             after = (self.root / 'arc/api/test.mm').read_text() == 'new\n'
+             for name, values in self.blobs.items():
+                 value = values[1 if after else 0]
+@@ -140,9 +136,11 @@
+             for role, mode in [('candidate', 'present'), ('recovery', 'absent')]}
+         self.put('chromium/src/.git/index', b'PRIVATE INDEX\n')
+         self.config['gitRepos'] = [{'path': 'chromium/src', 'index': 'chromium/src/.git/index',
+-            'sha256': M.sha(self.root / 'chromium/src/.git/index'), 'head': 'private-head',
+-            'environmentKey': 'GIT_INDEX_FILE', 'intentToAdd': ['new.h'], 'existingIntentToAdd': {}}]
+-        self.config['regeneration'] = {'argv': ['reviewed-regen'], 'cwd': '.', 'env': {}}
++            'sha256': M.sha(self.root / 'chromium/src/.git/index'), 'head': 'private-head'}]
++        for name, mode in M.REGEN_TOOLS.items():
++            self.put(name, b'private already-adopted generator fixture\n'); (self.root/name).chmod(mode)
++            self.config['pins'][name] = M.sha(self.root/name)
++        self.config['regeneration'] = {'argv': ['./arc/tools/regen-patches.sh'], 'cwd': '.', 'env': {}, 'toolModes': dict(M.REGEN_TOOLS)}
+         self.config['inventory'] = {'arc/api': ['arc/api/test.mm'], 'arc/browser': [], 'arc/wp': []}
+         (self.root / 'arc/wp').mkdir()
+         self.config['runNumbers'] = {k: i + 2 for i, k in enumerate((*M.SCENARIOS, 'recovery-launch-slice'))}
+@@ -233,13 +231,15 @@
+             M.validate(M.template(), self.root)
+         self.assertEqual(self.backend.commands, [])
+ 
+-    def test_complete_private_success_and_alternate_index(self):
++    def test_complete_private_success_and_guard_only_indexes(self):
+         tx = self.tx(); self.assertEqual(tx.execute(), 0)
+         self.assertEqual([r[0] for r in tx.seen], list(M.SCENARIOS))
+         self.assertEqual(M.sha(self.root / 'chromium/src/.git/index'), self.config['gitRepos'][0]['sha256'])
+-        regeneration = [e for e in self.backend.commands if e[0] == ['reviewed-regen']]
++        regeneration = [e for e in self.backend.commands if e[0] == ['./arc/tools/regen-patches.sh']]
+         self.assertEqual(len(regeneration), 1)
+-        self.assertNotEqual(regeneration[0][2]['GIT_INDEX_FILE'], str(self.root / 'chromium/src/.git/index'))
++        self.assertNotIn('GIT_INDEX_FILE', regeneration[0][2])
++        self.assertFalse(any(e[0][:3] == ['git', 'add', '-N'] for e in self.backend.commands))
++        self.assertFalse(list(self.output.glob('alternate-index-*')))
+ 
+     def test_candidate_failure_restores_absence_then_recovers_package(self):
+         tx = self.tx(); tx.fail_scenario = 'devtools'; self.assertEqual(tx.execute(), 1)
+@@ -249,7 +249,9 @@
+         self.assertFalse((self.root / 'patches/0010-webextras.patch').exists())
+         self.assertEqual(tx.seen[-1], ('launch-slice', 7, True))
+         self.assertEqual(json.loads((self.output / 'completion.json').read_text())['status'], 'ROLLED_BACK')
+-        self.assertEqual(Path(tx.indexes['GIT_INDEX_FILE']).read_bytes(), b'PRIVATE INDEX\n')
++        self.assertEqual((self.root/'chromium/src/.git/index').read_bytes(), b'PRIVATE INDEX\n')
++        for name, mode in M.REGEN_TOOLS.items():
++            self.assertEqual(M.image_state(self.root/name), (self.config['pins'][name], mode))
+         self.assertEqual(M.sha(self.root / 'arc/browser/webextras_scenario_current_run.py'), self.config['observationTool']['after'])
+         self.assertTrue(json.loads((self.output / 'completion.json').read_text())['persistentObservationToolRetained'])
+ 
+@@ -279,7 +281,7 @@
+         original = self.backend.command
+         def command(*args, **kwargs):
+             result = original(*args, **kwargs)
+-            if args[0] == ['reviewed-regen'] and not (self.root / 'arc/api/test.mm').read_text().startswith('old'):
++            if args[0] == ['./arc/tools/regen-patches.sh'] and not (self.root / 'arc/api/test.mm').read_text().startswith('old'):
+                 (self.output / 'cancel.request').touch()
+             return result
+         self.backend.command = command
+@@ -406,7 +408,10 @@
+             pid = 123456; returncode = -9
+             def wait(self): return self.returncode
+         argv = ['executor', '_guardian', '--config', str(config), '--config-sha', M.sha(config), '--out', str(self.output)]
+-        with patch.object(M.sys, 'argv', argv), patch.object(M.subprocess, 'Popen', return_value=Child()), \
++        original_popen = M.subprocess.Popen
++        def popen(argv, *args, **kwargs):
++            return Child() if '_worker' in argv else original_popen(argv, *args, **kwargs)
++        with patch.object(M.sys, 'argv', argv), patch.object(M.subprocess, 'Popen', side_effect=popen), \
+              patch.object(M, 'process_inventory', side_effect=self.backend.inventory), patch.object(M, 'Transaction', PrivateTransaction):
+             with self.assertRaisesRegex(Held, 'guardian cannot certify release'): M.main()
+ 
+@@ -508,8 +513,8 @@
+         with patch.dict(M.os.environ, {'GIT_INDEX_FILE': '/private/foreign-index', 'GIT_DIR': '/private/foreign-git',
+                                        'GIT_WORK_TREE': '/private/foreign-worktree', 'GIT_CONFIG_PARAMETERS': "'core.worktree=/private/foreign'",
+                                        'GIT_CONFIG_COUNT': '1', 'GIT_CONFIG_KEY_0': 'core.worktree', 'GIT_CONFIG_VALUE_0': '/private/foreign'}):
+-            env = M.git_environment(self.output / 'approved-alternate-index')
+-        self.assertEqual(env['GIT_INDEX_FILE'], str(self.output / 'approved-alternate-index'))
++            env = M.git_environment()
++        self.assertNotIn('GIT_INDEX_FILE', env)
+         self.assertNotIn('GIT_DIR', env); self.assertNotIn('GIT_WORK_TREE', env)
+         self.assertNotIn('GIT_CONFIG_PARAMETERS', env); self.assertNotIn('GIT_CONFIG_COUNT', env)
+         self.assertNotIn('GIT_CONFIG_KEY_0', env); self.assertNotIn('GIT_CONFIG_VALUE_0', env)
+@@ -530,7 +535,7 @@
+                 M.validate(config, self.root)
+ 
+     def executable_regen_target(self):
+-        name = 'arc/tools/regen-patches.sh'
++        name = 'arc/browser/owned-executable-fixture.sh'
+         before, after = b'#!/bin/sh\n# old private fixture\n', b'#!/bin/sh\n# reviewed private fixture\n'
+         self.put(name, before); (self.root / name).chmod(0o755)
+         blob = 'private-images/regen-patches.sh'; self.put(blob, after)
+@@ -550,7 +555,7 @@
+         self.assertEqual(path.read_bytes(), after); self.assertEqual(path.stat().st_mode & 0o777, 0o755)
+         self.assertEqual((self.root / 'chromium/src/new.h').stat().st_mode & 0o777, 0o644)
+         self.assertEqual((self.root / 'patches/MANIFEST').stat().st_mode & 0o777, 0o644)
+-        self.assertEqual(json.loads((self.output / 'modes/arc_tools_regen-patches.sh.json').read_text()), 0o755)
++        self.assertEqual(json.loads((self.output / 'modes/arc_browser_owned-executable-fixture.sh.json').read_text()), 0o755)
+ 
+     def test_real_0755_candidate_failure_rolls_back_script_bytes_and_mode(self):
+         path, before, after = self.executable_regen_target()
+@@ -572,7 +577,7 @@
+         path, before, after = self.executable_regen_target()
+         for mutate in [lambda image: image.pop('beforeMode'), lambda image: image.update(afterMode=0o644),
+                        lambda image: image.update(beforeMode=True, afterMode=True)]:
+-            config = copy.deepcopy(self.config); mutate(config['targets']['arc/tools/regen-patches.sh'])
++            config = copy.deepcopy(self.config); mutate(config['targets']['arc/browser/owned-executable-fixture.sh'])
+             with self.assertRaises(RuntimeError): M.validate(config, self.root)
+ 
+     def worker_for_guardian(self):
+@@ -588,10 +593,10 @@
+             with self.assertRaisesRegex(RuntimeError, 'persistent observation-tool drift'):
+                 guardian.file_state(phase)
+         stamp = guardian.lock; groups = guardian.backend.groups
+-        digest = guardian.config_digest; indexes = guardian.indexes
++        digest = guardian.config_digest
+         guardian.stopped(); guardian.refresh_observation_tool_after_worker(completion)
+         self.assertIs(guardian.lock, stamp); self.assertIs(guardian.backend.groups, groups)
+-        self.assertEqual(guardian.config_digest, digest); self.assertIs(guardian.indexes, indexes)
++        self.assertEqual(guardian.config_digest, digest)
+         self.assertIs(guardian.tool_adopted, retained)
+         guardian.file_state(phase)
+ 
+@@ -870,49 +875,135 @@
+         cache.mkdir()
+         with self.assertRaisesRegex(RuntimeError, 'profile/cache'): guardian.certify_refused_without_writes(completion, child)
+ 
+-    def test_existing_foreign_manifest_leaf_bookkeeping_candidate_and_rollback(self):
+-        leaf = 'foreign_hooks.h'; name = 'chromium/src/' + leaf
+-        self.put(name, b'foreign entry source stays exact\n'); digest = M.sha(self.root / name)
+-        self.config['pins'][name] = digest
+-        manifest = self.root / 'patches/MANIFEST'; before = manifest.read_bytes() + b'0004-arcmod-hooks.patch foreign_hooks.h\n'
+-        manifest.write_bytes(before)
+-        self.put('private-images/MANIFEST', before + b'0010-webextras.patch new.h\n')
+-        self.config['manifest']['before'] = M.sha(manifest)
+-        self.config['manifest']['after'] = M.sha(self.root / 'private-images/MANIFEST')
+-        self.config['pins']['private-images/MANIFEST'] = self.config['manifest']['after']
+-        self.config['gitRepos'][0]['existingIntentToAdd'] = {leaf: {'sha256': digest, 'owner': '0004-arcmod-hooks.patch'}}
+-        self.backend.required_existing_ita = leaf
+-        tx = self.tx(); tx.fail_scenario = 'devtools'; self.assertEqual(tx.execute(), 1)
+-        additions = [x[0][4:] for x in self.backend.commands if x[0][:3] == ['git', 'add', '-N']]
+-        self.assertEqual(additions, [[leaf, 'new.h'], [leaf]])
+-        self.assertEqual(M.sha(self.root / name), digest)
+-        self.assertEqual(M.sha(self.root / 'chromium/src/.git/index'), self.config['gitRepos'][0]['sha256'])
+-
+-    def test_real_private_git_index_tracks_existing_leaf_without_touching_real_index(self):
+-        repo = self.root / 'private-real-git'; repo.mkdir()
+-        subprocess.run(['git', 'init', '--quiet', str(repo)], check=True, env=M.git_environment(), capture_output=True)
+-        subprocess.run(['git', 'read-tree', '--empty'], cwd=repo, check=True, env=M.git_environment(), capture_output=True)
+-        real = repo / '.git/index'; before = real.read_bytes()
+-        (repo / 'foreign_hooks.h').write_bytes(b'entry foreign unchanged\n'); foreign = M.sha(repo / 'foreign_hooks.h')
+-        (repo / 'own_new.h').write_bytes(b'own new\n')
+-        alternate = self.output / 'real-private-alternate'; alternate.write_bytes(before)
+-        env = M.git_environment(alternate)
+-        subprocess.run(['git', 'add', '-N', '--', 'foreign_hooks.h', 'own_new.h'], cwd=repo, check=True, env=env, capture_output=True)
+-        subprocess.run(['git', 'ls-files', '--error-unmatch', '--', 'foreign_hooks.h', 'own_new.h'], cwd=repo,
+-                       check=True, env=env, capture_output=True)
+-        (repo / 'own_new.h').unlink(); alternate.write_bytes(before)
+-        subprocess.run(['git', 'add', '-N', '--', 'foreign_hooks.h'], cwd=repo, check=True, env=env, capture_output=True)
+-        subprocess.run(['git', 'ls-files', '--error-unmatch', '--', 'foreign_hooks.h'], cwd=repo, check=True, env=env, capture_output=True)
+-        self.assertNotEqual(subprocess.run(['git', 'ls-files', '--error-unmatch', '--', 'own_new.h'], cwd=repo,
+-                           env=env, capture_output=True).returncode, 0)
+-        self.assertEqual(real.read_bytes(), before); self.assertEqual(M.sha(repo / 'foreign_hooks.h'), foreign)
+-
+-    def test_existing_foreign_bookkeeping_requires_exact_entry_owner(self):
+-        name = 'chromium/src/foreign_hooks.h'; self.put(name, b'foreign\n')
+-        self.config['pins'][name] = M.sha(self.root / name)
+-        self.config['gitRepos'][0]['existingIntentToAdd'] = {'foreign_hooks.h': {
+-            'sha256': self.config['pins'][name], 'owner': '0010-webextras.patch'}}
+-        with self.assertRaisesRegex(RuntimeError, 'exact entry MANIFEST owner'): self.tx().prepare()
++    def test_guard_only_contract_rejects_old_caller_index_and_override_interfaces(self):
++        for key, value in [('environmentKey', 'GIT_INDEX_FILE'), ('intentToAdd', ['new.h']), ('existingIntentToAdd', {})]:
++            config=copy.deepcopy(self.config); config['gitRepos'][0][key]=value
++            with self.assertRaisesRegex(RuntimeError, 'Git repository contract'): M.validate(config, self.root)
++        for key, value in [('argv', ['bash', 'unreviewed-generator']), ('cwd', 'chromium/src'),
++                           ('env', {'GIT_INDEX_FILE':'ignored'}), ('env', {'CUSTOM_GENERATOR_ROOT':'ignored'}),
++                           ('toolModes', {**M.REGEN_TOOLS, 'arc/tools/regen-patches.sh':0o644})]:
++            config=copy.deepcopy(self.config); config['regeneration'][key]=value
++            with self.assertRaises(RuntimeError): M.validate(config, self.root)
++
++    def test_baseline_tool_target_and_disguised_patch_changed_paths_are_rejected(self):
++        for name in M.REGEN_TOOLS:
++            config=copy.deepcopy(self.config)
++            config['targets'][name]=copy.deepcopy(config['targets']['arc/api/test.mm'])
++            with self.assertRaisesRegex(RuntimeError, 'cannot be an engine target'): M.validate(config, self.root)
++            for cwd, leaf in [('.',name),('arc','tools/'+Path(name).name)]:
++                text=''.join(difflib.unified_diff(['old\n'],['new\n'],fromfile='a/'+leaf,tofile='b/'+leaf))
++                path='proposals/innocent-name.patch'; self.put(path,text.encode())
++                config=copy.deepcopy(self.config); digest=M.sha(self.root/path); config['pins'][path]=digest
++                config['patches'].append(dict(path=path,sha256=digest,cwd=cwd))
++                with self.assertRaisesRegex(RuntimeError, 'patch changes shared regeneration'): M.validate(config,self.root)
++            path='proposals/renamed-baseline.patch'
++            self.put(path,('diff --git a/'+name+' b/arc/browser/disguised.sh\nsimilarity index 100%\nrename from '+name+
++                           '\nrename to arc/browser/disguised.sh\n').encode())
++            config=copy.deepcopy(self.config); digest=M.sha(self.root/path); config['pins'][path]=digest
++            config['patches'].append(dict(path=path,sha256=digest,cwd='.'))
++            with self.assertRaisesRegex(RuntimeError, 'rename/copy is unsupported'): M.validate(config,self.root)
++
++    def test_immutable_tool_hash_mode_and_retention_survive_engine_recovery(self):
++        before={n:M.image_state(self.root/n) for n in M.REGEN_TOOLS}
++        tx=self.tx(); tx.fail_scenario='devtools'; self.assertEqual(tx.execute(),1)
++        self.assertEqual({n:M.image_state(self.root/n) for n in M.REGEN_TOOLS},before)
++        self.assertFalse(any(n in json.loads((self.output/'journal.json').read_text())['images'] for n in M.REGEN_TOOLS))
++        regeneration=[entry for entry in self.backend.commands if entry[0]==['./arc/tools/regen-patches.sh']]
++        self.assertEqual(len(regeneration),2)
++        self.assertTrue(all(not any(k.endswith('INDEX_FILE') for k in entry[2]) for entry in regeneration))
++        for name in M.REGEN_TOOLS:
++            path=self.root/name; oldmode=path.stat().st_mode&0o777
++            path.chmod(0o600)
++            with self.assertRaisesRegex(RuntimeError,'baseline mode drift'): tx.pin_check()
++            path.chmod(oldmode)
++            data=path.read_bytes(); path.write_bytes(data+b'foreign\n')
++            with self.assertRaisesRegex(RuntimeError,'immutable input drift'): tx.rollback()
++            self.assertEqual(path.read_bytes(),data+b'foreign\n'); path.write_bytes(data)
++
++    def test_real_copied_generator_candidate_and_recovery_use_persistent_baseline(self):
++        # This test executes only a copied reviewed helper in a disposable checkout.
++        source=self.root/'chromium/src'; nested=source/'third_party/devtools-frontend/src'
++        shutil.rmtree(source/'.git'); nested.mkdir(parents=True)
++        commands=[]
++        def git(repo,*args):
++            result=subprocess.run(['git','-C',str(repo),*args],env=M.git_environment(),capture_output=True)
++            commands.append(dict(argv=['git', '-C', str(repo), *args],exit=result.returncode,
++                                 stdout=result.stdout.decode(),stderr=result.stderr.decode()))
++            self.assertEqual(result.returncode,0,result.stderr.decode()); return result.stdout.decode().strip()
++        for repo in (source,nested):
++            git(repo,'init','--quiet'); git(repo,'config','user.name','Private integration fixture')
++            git(repo,'config','user.email','fixture@example.invalid'); git(repo,'config','commit.gpgsign','false')
++        (nested/'frontend.ts').write_bytes(b'original frontend\n')
++        git(nested,'add','frontend.ts'); git(nested,'commit','-qm','nested base')
++        (source/'native.cc').write_bytes(b'original native\n')
++        git(source,'add','--all'); git(source,'commit','-qm','outer base')
++        self.put('chromium/src/native.cc',b'old native\n')
++        (nested/'frontend.ts').write_bytes(b'old frontend\n')
++        foreign='chromium/src/foreign_hooks.h'; self.put(foreign,b'immutable unindexed manifest leaf\n')
++        self.config['pins'][foreign]=M.sha(self.root/foreign)
++        name='chromium/src/third_party/devtools-frontend/src/frontend.ts'; blob='private-images/frontend.ts'
++        self.put(blob,b'new frontend\n'); self.config['pins'][blob]=M.sha(self.root/blob)
++        self.config['targets'][name]=dict(before=M.sha(self.root/name),after=M.sha(self.root/blob),blob=blob,beforeMode=0o644,afterMode=0o644)
++        proposal='proposals/frontend.patch'; self.put(proposal,b'--- a/frontend.ts\n+++ b/frontend.ts\n@@ -1 +1 @@\n-old frontend\n+new frontend\n')
++        self.config['pins'][proposal]=M.sha(self.root/proposal)
++        self.config['patches'].append(dict(path=proposal,sha256=M.sha(self.root/proposal),cwd='chromium/src/third_party/devtools-frontend/src'))
++        before=b'0004-arcmod-hooks.patch native.cc\n0004-arcmod-hooks.patch foreign_hooks.h\n0004-arcmod-hooks.patch third_party/devtools-frontend/src/frontend.ts\n'
++        self.put('patches/MANIFEST',before); self.put('private-images/MANIFEST',before+b'0010-webextras.patch new.h\n')
++        self.config['manifest'].update(before=M.sha(self.root/'patches/MANIFEST'),after=M.sha(self.root/'private-images/MANIFEST'))
++        self.config['pins']['private-images/MANIFEST']=self.config['manifest']['after']
++        evidence=MODULE_PATH.resolve().parents[2]/'logs/wp/webextras-nested-regeneration-lead-rebase-reviewed'
++        frozen=json.loads((evidence/'freeze.json').read_text())
++        for name,mode in M.REGEN_TOOLS.items():
++            data=(evidence/'staged'/name).read_bytes()
++            self.assertEqual(__import__('hashlib').sha256(data).hexdigest(),frozen['adoptionFiles'][name])
++            self.put(name,data); (self.root/name).chmod(mode); self.config['pins'][name]=M.sha(self.root/name)
++        tools={n:M.file_identity(self.root/n) for n in M.REGEN_TOOLS}
++        indices={str(repo/'.git/index'):M.file_identity(repo/'.git/index') for repo in (source,nested)}
++        def real_regen():
++            r=subprocess.run(['./arc/tools/regen-patches.sh'],cwd=self.root,env=M.git_environment(),capture_output=True)
++            commands.append(dict(argv=['./arc/tools/regen-patches.sh'],cwd=str(self.root),exit=r.returncode,
++                                 stdout=r.stdout.decode(),stderr=r.stderr.decode()))
++            self.assertEqual(r.returncode,0,r.stderr.decode())
++        real_regen(); old_outputs={str(p.relative_to(self.root)):p.read_bytes() for p in (self.root/'patches').glob('*.patch')}
++        before_images={n:(self.root/n).read_bytes() if image['before'] else None for n,image in self.config['targets'].items()}
++        for name,image in self.config['targets'].items(): self.put(name,(self.root/image['blob']).read_bytes())
++        self.put('patches/MANIFEST',(self.root/self.config['manifest']['blob']).read_bytes()); real_regen()
++        after_outputs={str(p.relative_to(self.root)):p.read_bytes() for p in (self.root/'patches').glob('*.patch')}
++        for name,data in before_images.items():
++            if data is None: (self.root/name).unlink()
++            else: self.put(name,data)
++        self.put('patches/MANIFEST',before); (self.root/'patches/0010-webextras.patch').unlink(); real_regen()
++        self.assertEqual({str(p.relative_to(self.root)):p.read_bytes() for p in (self.root/'patches').glob('*.patch')},old_outputs)
++        self.config['patchOutputs']={name:dict(before=__import__('hashlib').sha256(old_outputs[name]).hexdigest() if name in old_outputs else None,
++            after=__import__('hashlib').sha256(data).hexdigest()) for name,data in after_outputs.items()}
++        self.config['gitRepos']=[dict(path=str(repo.relative_to(self.root)),index=str((repo/'.git/index').relative_to(self.root)),
++            sha256=M.sha(repo/'.git/index'),head=git(repo,'rev-parse','HEAD')) for repo in (source,nested)]
++        self.head.stop()  # All remaining Git discovery stays inside these real PRIVATE repos.
++        original=self.backend.command
++        def command(argv,label,cwd=None,env=None):
++            if argv==['./arc/tools/regen-patches.sh']:
++                self.backend.commands.append((argv,label,env)); r=subprocess.run(argv,cwd=cwd,env=env,capture_output=True)
++                commands.append(dict(argv=argv,cwd=str(cwd),label=label,exit=r.returncode,
++                                     stdout=r.stdout.decode(),stderr=r.stderr.decode()))
++                (self.output/(label+'.log')).write_bytes(r.stdout+r.stderr); return r.returncode
++            return original(argv,label,cwd,env)
++        self.backend.command=command
++        tx=self.tx(); tx.fail_scenario='devtools'; self.assertEqual(tx.execute(),1)
++        self.assertEqual({str(p.relative_to(self.root)):p.read_bytes() for p in (self.root/'patches').glob('*.patch')},old_outputs)
++        self.assertEqual({n:M.file_identity(Path(n)) for n in indices},indices)
++        self.assertEqual({n:M.file_identity(self.root/n) for n in tools},tools)
++        self.assertEqual(M.sha(self.root/foreign),self.config['pins'][foreign])
++        self.assertEqual(tx.seen[-1],('launch-slice',7,True))
++        if os.environ.get('WEBEXTRAS_INTEGRATION_TEST_EVIDENCE'):
++            destination=Path(os.environ['WEBEXTRAS_INTEGRATION_TEST_EVIDENCE'])
++            M.write(destination/'copied-generator-proof.json',dict(privateOnly=True,productionToolInvoked=False,
++                toolHashes={n:v['sha256'] for n,v in tools.items()},toolIdentitiesPreserved=True,
++                realFixtureIndicesBefore=indices,realFixtureIndicesAfter={n:M.file_identity(Path(n)) for n in indices},
++                outerAndNestedRepositories=True,unindexedForeignManifestLeafUnchanged=True,
++                candidateAndRecoveryRealHelper=True,originalOutputsRestored=True,
++                expectedBefore={n:__import__('hashlib').sha256(v).hexdigest() for n,v in old_outputs.items()},
++                expectedCandidate={n:__import__('hashlib').sha256(v).hexdigest() for n,v in after_outputs.items()},commands=commands))
++
+ 
+ 
+ if __name__ == '__main__':
+--- a/arc/browser/webextras_initial_integration_notes.md
++++ b/arc/browser/webextras_initial_integration_notes.md
+@@ -43,7 +43,8 @@
+ - `targets`: each source's `before` hash or null (original absence), `after` hash
+   and pinned private postimage `blob`, plus explicit `beforeMode/afterMode`.
+   Absence has null beforeMode; every new file has a sealed permission mode.
+-  Existing-file modes must remain equal (notably regen-patches.sh0755).
++  Existing-file modes must remain equal. Shared regeneration tools are immutable
++  baseline inputs and cannot be engine targets.
+   `manifest` has the same shape and is
+   journalled separately. No source deletion is currently supported.
+ - `patchOutputs`: every existing `patches/*.patch`, every pre/post MANIFEST owner,
+@@ -51,22 +52,22 @@
+   absence. Full output inventories are checked at phase boundaries. Ownership
+   must remain unique; existing assignments are preserved; newly owned native
+   files use `0010-webextras.patch`.
+-- `gitRepos`: `path`, actual `index` path, raw index SHA256, `head`, sealed
+-  `environmentKey`, exact `intentToAdd` new-owned relative paths and separate
+-  `existingIntentToAdd` records. The latter are ONLY entry-existing regular native
+-  leaves with immutable source hash pins and exact entry MANIFEST owners; they
+-  may belong to another package already accepted through an alternate index.
+-  This is read-only bookkeeping in a COPIED index, not foreign source authority.
+-  Unknown/unassigned/unpinned paths are refused, never inferred. Each actual
+-  index path is independently discovered. Index copies are private. Only those
+-  copies can receive `git add -N`: candidate stages sealed existing leaves plus
+-  own new targets; rollback resets to the guarded entry image and stages only
+-  existing leaves, skipping absent candidate-only targets. The real indexes are
+-  never written/restored.
+-- `regeneration`: exact reviewed `argv`, `cwd`, `env`. Alternate-index environment
+-  names are explicit configuration, not guessed frontend tool interfaces.
+-  The pending helper must correctly scope outer versus nested repository index
+-  handling. An inherited outer `GIT_INDEX_FILE` is not a valid nested index.
++- `gitRepos`: only `path`, independently discovered actual `index` path, raw
++  index `sha256`, and `head`. These are guards, never staging authority. Old
++  environmentKey/ITA fields are rejected. The executor neither copies indices
++  nor invokes add-N, and never restores a real index.
++- `regeneration`: exactly argv `./arc/tools/regen-patches.sh`, cwd `.`, empty env
++  overrides and `toolModes` for the two already-adopted immutable tools:
++  wrapper0755, helper0644. Both source hashes must be pins. No adoption command
++  exists. The separately approved303f8e07 baseline is wrapper4663d76c/helperc77d0180;
++  its owner grant/adoption oracle must precede config sealing. Both candidate
++  and recovery use this same baseline. Engine targets AND actual engine patch
++  changed paths cannot include either tool. Trusted Git metadata is read in
++  disposable directories; rename/copy operations are refused because apply's
++  numstat alone reports only their destination. No handwritten diff-body parser
++  or actual checkout Git command is used for this check. The helper discovers
++  sanitized actual owning indices, makes its own internal copies, and performs
++  exact manifest-only add-N there. Caller-selected ALT/ITA behavior is removed.
+ - `observationTool`: distinct `before/after/blob/patch` for ONLY the owned
+   `webextras_scenario_current_run.py` resource/comparator-observation update. It is not an
+   engine target or generic persistent-tool privilege. The tool patch is strictly
+@@ -140,8 +141,9 @@
+ and match the sealed source/tool inputs, including sibling native helper files.
+ Inherited `GIT_*` routing/config-injection environment is stripped for Git
+ operations; global/system Git configuration is disabled, optional locks are off,
+-and only explicit private alternate-index paths are supplied. Local repo config
+-and HEAD/index identity remain guarded as part of the reviewed checkout.
++and no caller index is supplied. Local repo config and HEAD/index identity
++remain guarded as part of the reviewed checkout. The generator owns its internal
++private-copy isolation independently.
+ 
+ Raw index byte drift always fails closed. A bounded read-only `ls-files
+ --stage -v --debug` diagnostic is retained where detected, with optional Git locks
+@@ -152,8 +154,8 @@
+ On candidate failure, the executor first requires quiet command/app/helper
+ processes and confirmed original-profile restoration for every started scenario.
+ Only exact journalled before/after source and patch bytes can be restored. Unknown
+-or foreign edits cause HOLD. Sources/MANIFEST are restored, private indexes reset,
+-patches regenerated, and an originally absent now-unreferenced own patch removed
++or foreign edits cause HOLD. Sources/MANIFEST are restored and patches regenerated
++with the same immutable generator baseline, and an originally absent now-unreferenced own patch removed
+ only if its bytes are the sealed candidate image. Baseline package recovery then
+ calls the existing runner: rebuild, package, and exact accepted launch9/9. A failed
+ or ambiguous recovery HOLDs rather than releasing a stale candidate package.
+@@ -206,16 +208,20 @@
+ 
+ ## Private checks and remaining review
+ 
+-The unit suite covers successful private reconstruction, alternate-index-only
+-regeneration, absent-file/orphan-patch rollback, baseline package-recovery phase,
++The unit suite covers successful private reconstruction, guard-only-index
++regeneration dispatch, absent-file/orphan-patch rollback, baseline package-recovery phase,
+ partial publication, regeneration failure, cancellation, child/group drainage
+ after bookkeeping failure, worker-death guardian HOLD, unknown profile/helper
+ recovery, foreign source/patch/index preservation, output and new-header
+ inventory, strict unsealed/ACK/pin/run-number/CLI refusal, known DevTools failure
+ and genuine seven-row improvement, dirty global diff handling, missing or changed
+ runtime evidence, actual binary drift, duplicate coverage, and eleven fatal
+-marker negatives. Runtime commands and the Git host index are mocked; no real
+-engine/tool interface has been executed.
++marker negatives. Runtime commands and basic fixture index guards are mocked.
++A separate test executes only COPIED reviewed303 tools against disposable real
++outer/nested repositories, including an immutable unindexed manifest leaf. It
++proves candidate output, exact recovery outputs, unchanged actual fixture index
++identities and unchanged baseline tool bytes/modes. No production tool or engine
++runtime has been executed.
+ 
+ Four separate resource-observation tests extract the ACTUAL held runner's
+ identity functions into a private framework fixture. They prove stable five-key
+@@ -284,3 +290,22 @@
+ regeneration proposal and stale11611 packet are historical HOLD after the lead
+ changed the accepted tool/HEAD epoch. Actual production/shared sources, tools,
+ real Git indices, apps and profiles were not modified during these private tests.
++
++
++The distinct generator-baseline adaptation archives exact a80 source/test/notes,
++its no-write increment and all review links before editing. It introduces no
++shared-tool adoption path. The old current-config packets and earlier c6/d90
++assumptions stay historical UNSEALED/HOLD; all11 entry and12 prospective output
++images, current source/HEAD/index pins and exact owner grant must be independently
++refreshed after older owners finish. Private tests model an already-adopted303
++baseline; they neither claim actual adoption nor capture the current live epoch.
++The generator's separate52-group private evidence remains pinned and was not
++rerun as part of this adapter. Native all-artifact adoption proof remains outside
++this executor increment.
++
++Raw-index byte guards deliberately remain strict. Build/query Git activity may
++refresh index stat metadata while full logical entries and flags remain equal;
++that can still HOLD candidate or recovery and requires explicit parent review.
++This adaptation adds no logical-equivalence parser, metadata refresh acceptance,
++real-index rewrite, or destructive recovery. Guardian and early no-write refusal
++semantics remain unchanged; neither supplies a baseline-validity/parity claim.

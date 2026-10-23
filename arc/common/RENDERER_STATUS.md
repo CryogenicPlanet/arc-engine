@@ -1,19 +1,39 @@
 # Renderer work package checkpoint, 2026-10-23
 
-CURRENT ATTEMPT OUTCOME: lead142534 approved7732. First locked transaction98097
-applied it, regenerated0005 and passed canonical9/9. Boost all five fixed DOM/
-CSS/isolated-JS/unregister states passed (63pass), then raw gate rejected nested
-ArcBrowserContext serviceNamed call4245 absentnative. One inconclusive; acceptance
-false. Child reaped/profile restored/prioroutputs unchanged; ONLY7732 reversed+
-regen before unlock. ActualChrome9db and patches restored, tx43438ec2. Package
-was stale/unvalidated after source rollback; next use requires freshbuild/package.
-No own lock/waiter. Exact C++ cache-helper patchbfcc (lead-ownedprimary) syntax0,
-freshreview6a302f10; owner ACK requested142921. Run3 private prep is separate;
-old Boost run/source seal/outputs are immutable and single-use. Adblocknative
-157/157 accepted9e4428a4; firstours39eb stops on emptyCDP errorText after actual
-CSS/scriptblock/count1. Real URL-loader -90 cutover is separately bounded27paths,
-app feature11 ownerACK requested142826. No Inspector string/fixture workaround.
+CURRENT CHECKPOINT: APPLIED144688, parenttool38628 REAPED0. Exact lead-approved
+cachebfcc→history0157 is retained (primarycontextfd6); document-start7732 is
+retained (Chromeabb/000549b790). Header7a, entryMANIFESTd29 and all10 foreign
+patches remain exact. Copied-indexregen0/mainstagedcatalog+rawindex unchanged.
+Exact COMMON build/package/launch9 passed and completed output was copied inside
+the lock. Unchanged Boost wrapper separately build/package0 then64/64/all5fixed
+states/rawgate passed. Same final package history61/61 passed,43pairs/23ops/
+16selectors/2genuine callbacks. Native55 absent-profile branch is retained
+separately from ours61 fresh-existing-profile safety branch; no normalization.
+Final source/release/profile/runtime/prior-output guards pass, signals[].
+Globaldiff41/41 canonical,37Boost,33history; no global parity/OSnormalexit claim.
+Parent checkpoint: logs/wp/renderer-run4-parent-checkpoint.md. Independent
+completed-run audit099660 is CLEAN. No own lock/waiter now.
 
+NEXT RUNTIME BLOCKERS: network generated-family contract must use23 legitimate
+URLRequest outputs and exact6 official actions; new private baseline1150 matches
+actual, candidate changes14 URLRequest-only outputs. Corrected maps/affected-TU
+checks are pending. Lead144766 hardened regen tooldabc supersedes d90 after this
+completed run; a reviewed existing-index guard successor is being prepared, no
+shared-tool edits. Unlocked Ninja query incident144853 deleted .ninja_log;
+receipt525c preserves known limits, all23/RPC14 official bytes unchanged, queries
+stopped and ordinary locked-build reconciliation pending. No own queue.
+
+Renderer acceptance remains incomplete. Adblock native157 is accepted; firstours
+failed emptyCDP errorText despite real blocking/count1. Real URL-loader -90
+network27 remains PRIVATE/UNAPPLIED: corrected055/currentheader0f3 + Session
+headerd9dd reviewbda990 are static-clean; integration packet reviewed. Late LIVE
+comparator f8df pin is being reconciled explicitly to accepted24437 +3helper
+releasepins; frozenoracle/native maps stay unchanged. No error/count workaround.
+CSS/extraction37 has not been rerun here; historical app CSS3/5 remains under
+producer investigation. b036f694 proves projected app-model ID, not navigationID
+relation. No renderer suppression. PiP9/effects/gradient/TopBand remain separate.
+Historical entries below preserve old source/runtime scope and are not current
+integration authority.
 
 CURRENT INTEGRATION GATE: current WC475/source reconciliation is complete and
 independently reviewed (4bb5c387). The unchanged nativef67 + Arca044 pair strictly

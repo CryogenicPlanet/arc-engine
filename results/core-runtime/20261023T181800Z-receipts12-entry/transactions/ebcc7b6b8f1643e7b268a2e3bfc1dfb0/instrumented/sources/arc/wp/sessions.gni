@@ -1,0 +1,8 @@
+# Work package "sessions": sources and deps (absolute //arc/... paths). Owned by that package.
+wp_sessions_sources = [ "//arc/api/arc_sessions_restore.mm" ]
+wp_sessions_deps = [
+  "//chrome/browser/performance_manager",
+  "//components/performance_manager",
+  "//components/sessions",
+  "//components/tab_groups",
+]

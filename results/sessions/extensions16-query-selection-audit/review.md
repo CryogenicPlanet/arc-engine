@@ -1,0 +1,11 @@
+# Fresh saved-query selection review — PASS
+
+Independent reviewer `/root/sessions_factory_compat` verified all eight input hashes/sizes and preserved the four recon packet files. Saved stdout has115,673 lines; its sole source+object candidate is line115673,10,447 bytes, SHA **f90e56f9be7dd5bdb2060b02e29d89bd042b6deaea56faba77dadcd5cfcfa978**. It strictly UTF-8 decodes and shlex parses386 argv, beginning with the saved clang++ compiler, with exactly one `-c` and one `-o` and the configured exact object target.
+
+Controller262–273 canonicalizes expected_source before making its byte regex. At current recorded cwd, it allows only canonical-relative `../../../../arc/api/arc_browser_application.mm` and canonical-absolute source spellings, with optional whole-operand quotes. The saved source operand is instead `../../arc/api/arc_browser_application.mm`, through chromium/src/arc. Independent predicates reproduce **source0 / object1 / combined0** query matches. Refusal273 therefore occurs before strict UTF-8/shlex parsing274 and canonical operand equality276. This is a source spelling false rejection, not UTF-8 failure, quoting failure, ambiguous selected command or compiler failure.
+
+The later identity predicate **would accept this candidate's source/object operands under the observed alias resolution**, and its flag-count checks pass. The selected-line strict decoding is correctly separate from unrelated graph bytes. This review does not approve generic selector changes or weaken unique-line, unique-flag, canonical source/object, target or UTF-8 requirements. Current symlink resolution corroborates saved spelling; it is not an independently sealed historical query-time alias snapshot.
+
+Query command031 recorded exit0; syntax603–614 calls select_compile before creating its syntax argv/command, so this refusal is not a bootstrap clang invocation failure. RECOVERY_REQUIRED.json separately records rollback's `real index drift across working-tree observation`. No real index was inspected or reconciled; no drift cause, rollback safety, retry or release is inferred. GUARDIAN_HOLD/recovery remain with the owner.
+
+Only review.md and review.json were written. No controller import/execution, selector implementation, Git/index, compiler/query, app, signal, queue, source/tool change or actual continuation occurred.

@@ -1,0 +1,219 @@
+--- a/arc/browser/webextras_initial_integration.py
++++ b/arc/browser/webextras_initial_integration.py
+@@ -450,6 +450,33 @@
+     def cancelled(self):
+         require(not CANCELLED and not self.cancel.exists(), 'cancellation requested; stop before next candidate phase')
+ 
++    def refresh_observation_tool_after_worker(self, completion):
++        """Validate the worker's durable handoff without replacing this guardian."""
++        require(sha(self.output / 'config.json') == self.config_digest, 'sealed config evidence drift')
++        require(completion.get('status') in ('APPLIED', 'ROLLED_BACK', 'REFUSED_BEFORE_PUBLICATION'),
++                'unknown worker completion')
++        retained = completion.get('persistentObservationToolRetained')
++        require(type(retained) is bool, 'missing worker observation-tool disposition')
++        require(retained or completion.get('status') == 'REFUSED_BEFORE_PUBLICATION',
++                'completed engine phase must retain the observation tool')
++        image = self.config['observationTool']
++        path = self.output / 'observation-tool.json'
++        require(not path.is_symlink(), 'symlink observation-tool handoff')
++        if not path.exists():
++            require(not retained, 'retained tool lacks durable adoption receipt')
++        else:
++            receipt = json.loads(path.read_text())
++            require(isinstance(receipt, dict) and all(receipt.get(k) == value for k, value in image.items()),
++                    'observation-tool receipt differs from sealed images')
++            expected = 'PERSISTENT_OBSERVATION_TOOL_ADOPTED' if retained else 'REVERTED_BEFORE_ENGINE_PUBLICATION'
++            require(receipt.get('status') == expected, 'incomplete/unknown observation-tool handoff')
++            if retained:
++                require(receipt.get('engineRollbackRetainsThisOwnedReadOnlyTool') is True,
++                        'observation-tool retention policy mismatch')
++        runner = self.root / 'arc/browser/webextras_scenario_current_run.py'
++        require(sha(runner) == image['after' if retained else 'before'], 'observation-tool handoff source mismatch')
++        self.tool_adopted = retained
++
+     def hold(self, reason):
+         # Parent owns process reaping/reconciliation. Never release uncertainty.
+         while True:
+@@ -873,6 +900,8 @@
+             require(child.returncode == (0 if state == 'APPLIED' else 1), 'worker/completion mismatch')
+             transaction.backend.groups = {json.loads(p.read_text())['pgid'] for p in output.glob('*.child.json')}
+             transaction.backend.groups.add(child.pid)
++            transaction.stopped()
++            transaction.refresh_observation_tool_after_worker(completion)
+             transaction.file_state('after' if state == 'APPLIED' else 'before')
+             transaction.stopped()
+             roots = output / 'directory-identities.json'
+--- a/arc/browser/webextras_initial_integration_test.py
++++ b/arc/browser/webextras_initial_integration_test.py
+@@ -575,6 +575,150 @@
+             config = copy.deepcopy(self.config); mutate(config['targets']['arc/tools/regen-patches.sh'])
+             with self.assertRaises(RuntimeError): M.validate(config, self.root)
+ 
++    def worker_for_guardian(self):
++        worker = PrivateTransaction(copy.deepcopy(self.config), self.output, self.backend)
++        worker.seen = []; worker.fail_scenario = None
++        return worker
++
++    def assert_same_guardian_handoff(self, guardian, phase, retained):
++        completion = json.loads((self.output / 'completion.json').read_text())
++        self.assertEqual(completion['persistentObservationToolRetained'], retained)
++        if retained:
++            # Actual old path: this pre-worker instance still expects before570.
++            with self.assertRaisesRegex(RuntimeError, 'persistent observation-tool drift'):
++                guardian.file_state(phase)
++        stamp = guardian.lock; groups = guardian.backend.groups
++        digest = guardian.config_digest; indexes = guardian.indexes
++        guardian.stopped(); guardian.refresh_observation_tool_after_worker(completion)
++        self.assertIs(guardian.lock, stamp); self.assertIs(guardian.backend.groups, groups)
++        self.assertEqual(guardian.config_digest, digest); self.assertIs(guardian.indexes, indexes)
++        self.assertIs(guardian.tool_adopted, retained)
++        guardian.file_state(phase)
++
++    def test_same_preworker_guardian_accepts_applied_persistent_tool(self):
++        guardian = self.tx(); guardian.lock_check(); self.assertFalse(guardian.tool_adopted)
++        worker = self.worker_for_guardian(); self.assertEqual(worker.execute(), 0)
++        self.assertFalse(guardian.tool_adopted)
++        self.assert_same_guardian_handoff(guardian, 'after', True)
++
++    def test_same_preworker_guardian_accepts_rollback_retaining_tool(self):
++        guardian = self.tx(); guardian.lock_check(); worker = self.worker_for_guardian()
++        worker.fail_scenario = 'devtools'; self.assertEqual(worker.execute(), 1)
++        self.assertEqual(json.loads((self.output / 'completion.json').read_text())['status'], 'ROLLED_BACK')
++        self.assert_same_guardian_handoff(guardian, 'before', True)
++
++    def test_same_preworker_guardian_accepts_refused_engine_retaining_tool(self):
++        guardian = self.tx(); guardian.lock_check(); worker = self.worker_for_guardian()
++        with patch.object(worker, 'prepare', side_effect=RuntimeError('private prepublication failure')):
++            self.assertEqual(worker.execute(), 1)
++        self.assert_same_guardian_handoff(guardian, 'before', True)
++
++    def test_same_preworker_guardian_accepts_refused_reverted_tool(self):
++        guardian = self.tx(); guardian.lock_check(); worker = self.worker_for_guardian()
++        original = M.atomic_bytes; failed = False
++        def interrupted(path, data, mode=0o644):
++            nonlocal failed
++            original(path, data, mode)
++            if path == self.root / 'arc/browser/webextras_scenario_current_run.py' and not failed:
++                failed = True; raise OSError('private post-rename failure')
++        with patch.object(M, 'atomic_bytes', side_effect=interrupted):
++            self.assertEqual(worker.execute(), 1)
++        self.assertEqual(json.loads((self.output / 'observation-tool.json').read_text())['status'],
++                         'REVERTED_BEFORE_ENGINE_PUBLICATION')
++        self.assert_same_guardian_handoff(guardian, 'before', False)
++
++    def test_same_preworker_guardian_accepts_refused_before_any_tool_receipt(self):
++        guardian = self.tx(); guardian.lock_check(); worker = self.worker_for_guardian()
++        with patch.object(worker, 'adopt_observation_tool', side_effect=RuntimeError('private refusal before tool')):
++            self.assertEqual(worker.execute(), 1)
++        self.assertFalse((self.output / 'observation-tool.json').exists())
++        self.assert_same_guardian_handoff(guardian, 'before', False)
++
++    def test_guardian_receipt_refresh_rejects_uncertain_or_inconsistent_handoffs(self):
++        guardian = self.tx(); guardian.lock_check(); worker = self.worker_for_guardian()
++        worker.adopt_observation_tool()
++        path = self.output / 'observation-tool.json'; good = json.loads(path.read_text())
++        completion = dict(status='REFUSED_BEFORE_PUBLICATION', persistentObservationToolRetained=True)
++        cases = [None, {**good, 'status': 'ADOPTING'}, {**good, 'status': 'unknown'},
++                 {**good, 'before': '0' * 64}, {**good, 'after': '0' * 64},
++                 {**good, 'patch': 'other'}, {**good, 'blob': 'other'},
++                 {**good, 'engineRollbackRetainsThisOwnedReadOnlyTool': False},
++                 {**good, 'status': 'REVERTED_BEFORE_ENGINE_PUBLICATION'}]
++        for receipt in cases:
++            with self.subTest(receipt=receipt):
++                M.write(path, receipt)
++                with self.assertRaises(RuntimeError): guardian.refresh_observation_tool_after_worker(completion)
++                self.assertFalse(guardian.tool_adopted)
++        M.write(path, good)
++        for bad in [dict(status='APPLIED', persistentObservationToolRetained=False),
++                    dict(status='ROLLED_BACK', persistentObservationToolRetained=False),
++                    dict(status='unknown', persistentObservationToolRetained=True), dict(status='APPLIED'),
++                    dict(status='APPLIED', persistentObservationToolRetained=1),
++                    dict(status='REFUSED_BEFORE_PUBLICATION', persistentObservationToolRetained=False)]:
++            with self.assertRaises(RuntimeError): guardian.refresh_observation_tool_after_worker(bad)
++            self.assertFalse(guardian.tool_adopted)
++        runner = self.root / 'arc/browser/webextras_scenario_current_run.py'; after = runner.read_bytes()
++        runner.write_bytes(b'unknown private runner\n')
++        with self.assertRaisesRegex(RuntimeError, 'handoff source mismatch'):
++            guardian.refresh_observation_tool_after_worker(completion)
++        runner.write_bytes(after); path.unlink()
++        with self.assertRaisesRegex(RuntimeError, 'lacks durable adoption'):
++            guardian.refresh_observation_tool_after_worker(completion)
++
++    def test_actual_main_reuses_preworker_guardian_after_worker_drain(self):
++        guardian = self.tx(); self.assertFalse(guardian.tool_adopted)
++        digest = M.sha(self.output / 'config.json')
++        M.write(self.output / 'launch.json', {'configSHA256': digest, 'nonce': 'private-main'})
++        fixture = self
++        class Child:
++            pid = 424242
++            returncode = None
++            def wait(self):
++                fixture.assertFalse(guardian.tool_adopted)
++                self.returncode = fixture.worker_for_guardian().execute()
++                fixture.assertFalse(guardian.tool_adopted)
++                return self.returncode
++        argv = ['executor', '_guardian', '--config', str(self.output / 'config.json'),
++                '--config-sha', digest, '--out', str(self.output)]
++        original_popen = M.subprocess.Popen
++        def popen(argv, *args, **kwargs):
++            return Child() if '_worker' in argv else original_popen(argv, *args, **kwargs)
++        with patch.object(M, 'Transaction', return_value=guardian) as factory, \
++             patch.object(M.subprocess, 'Popen', side_effect=popen), patch.object(M.sys, 'argv', argv), \
++             patch.object(M.signal, 'signal'):
++            self.assertEqual(M.main(), 0)
++        factory.assert_called_once(); self.assertTrue(guardian.tool_adopted)
++        self.assertEqual(guardian.backend.groups, {424242})
++        self.assertEqual(json.loads((self.output / 'release-safe.json').read_text())['state'], 'APPLIED')
++
++    def test_actual_main_does_not_refresh_handoff_before_known_groups_are_quiet(self):
++        guardian = self.tx(); digest = M.sha(self.output / 'config.json')
++        M.write(self.output / 'launch.json', {'configSHA256': digest, 'nonce': 'private-live-group'})
++        fixture = self; completed = False
++        class Child:
++            pid = 424242
++            returncode = None
++            def wait(self):
++                nonlocal completed
++                self.returncode = fixture.worker_for_guardian().execute()
++                completed = True
++                return self.returncode
++        original_inventory = self.backend.inventory
++        def inventory():
++            return original_inventory() + ([dict(pid=424242, ppid=os.getpid(), pgid=424242,
++                    state='S', command='private-surviving-phase')] if completed else [])
++        original_popen = M.subprocess.Popen
++        def popen(argv, *args, **kwargs):
++            return Child() if '_worker' in argv else original_popen(argv, *args, **kwargs)
++        argv = ['executor', '_guardian', '--config', str(self.output / 'config.json'),
++                '--config-sha', digest, '--out', str(self.output)]
++        with patch.object(M, 'Transaction', return_value=guardian), patch.object(self.backend, 'inventory', side_effect=inventory), \
++             patch.object(M.subprocess, 'Popen', side_effect=popen), patch.object(M.sys, 'argv', argv), \
++             patch.object(M.signal, 'signal'):
++            with self.assertRaisesRegex(Held, 'survivors'): M.main()
++        self.assertFalse(guardian.tool_adopted)
++        self.assertFalse((self.output / 'release-safe.json').exists())
++
+     def test_existing_foreign_manifest_leaf_bookkeeping_candidate_and_rollback(self):
+         leaf = 'foreign_hooks.h'; name = 'chromium/src/' + leaf
+         self.put(name, b'foreign entry source stays exact\n'); digest = M.sha(self.root / name)
+--- a/arc/browser/webextras_initial_integration_notes.md
++++ b/arc/browser/webextras_initial_integration_notes.md
+@@ -117,6 +117,18 @@
+ profile/cache root identity HOLDs the protected lock. SIGKILL, reboot and arbitrary
+ descendants escaping into unrelated new sessions are outside this protection.
+ 
++After worker reap and known child/app/helper drainage, the SAME guardian validates
++the worker's durable observation-tool handoff before source phase checks. Receipt
++image fields must match sealed before/after/blob/patch values and actual runner
++SHA; persistent adoption must agree with the completion retention bit and policy.
++A refused-before-attempt completion may have no receipt only with retained=false
++and the original runner bytes. Reverted refusal requires its exact durable receipt.
++ADOPTING, unknown, missing adopted, mismatched or nonboolean evidence HOLDs. The
++refresh changes only the validated tool flag; lock stamp, groups and config digest
++are not reset by constructing a new guardian. This is a separate correction after
++immutable09de/1b7, whose cached pre-worker false flag would otherwise falsely HOLD
++successful persistent adoption. It does not relax foreign source/index guards.
++
+ Entry preimages include absent state and sealed file modes. Publication is journalled
+ BEFORE the first atomic source replacement. Phase receipts freeze image hashes
+ and immutable input pins. Phase checks and each publication/rollback compare-and-

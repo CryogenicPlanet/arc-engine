@@ -1,0 +1,210 @@
+--- a/arc/browser/webextras_initial_integration.py
++++ b/arc/browser/webextras_initial_integration.py
+@@ -56,6 +56,10 @@
+     exec(compile(source, str(path), 'exec'), module.__dict__)
+     require(sha(path) == expected, 'module changed while executing source')
+     return module
++
++
++def image_state(path):
++    return sha(path), stat.S_IMODE(path.stat().st_mode) if path.exists() else None
+ 
+ 
+ def cancel_handler(path):
+@@ -179,10 +183,14 @@
+     require(observation_path not in config['pins'], 'persistent tool must use its separate two-phase image')
+     for name, image in images.items():
+         relative(root, name)
+-        require(set(image) == {'before', 'after', 'blob'}, 'invalid image: ' + name)
++        require(set(image) == {'before', 'after', 'blob', 'beforeMode', 'afterMode'}, 'invalid image: ' + name)
+         require(image['before'] is None or digest.fullmatch(image['before']), 'invalid preimage')
+         require(isinstance(image['after'], str) and digest.fullmatch(image['after']), 'invalid postimage')
+         require(image['before'] != image['after'], 'unchanged publication target')
++        require(type(image['afterMode']) is int and 0 <= image['afterMode'] <= 0o777 and
++                ((image['before'] is None and image['beforeMode'] is None) or
++                 (type(image['beforeMode']) is int and image['beforeMode'] == image['afterMode'])),
++                'existing target mode must be preserved; new target mode must be sealed')
+         relative(root, image['blob'])
+     outputs = config.get('patchOutputs')
+     require(isinstance(outputs, dict) and outputs, 'missing all regeneration output images')
+@@ -503,6 +511,8 @@
+         paths = {**self.images, **self.config['patchOutputs']}
+         actual = {name: sha(relative(self.root, name)) for name in paths}
+         require(all(actual[n] == v[phase] for n, v in paths.items()), 'source/patch phase drift')
++        require(all(image_state(relative(self.root, n)) == (v[phase], v[phase + 'Mode'])
++                    for n, v in self.images.items()), 'target/MANIFEST mode phase drift')
+         require({str(p.relative_to(self.root)) for p in (self.root / 'patches').glob('*.patch')} ==
+                 {n for n, image in self.config['patchOutputs'].items() if image[phase] is not None},
+                 'all-patch-output inventory drift')
+@@ -593,7 +603,9 @@
+                 destination = self.output / 'before' / name
+                 destination.parent.mkdir(parents=True, exist_ok=True)
+                 destination.write_bytes(path.read_bytes())
+-                write(self.output / 'modes' / (name.replace('/', '_') + '.json'), stat.S_IMODE(path.stat().st_mode))
++                mode = stat.S_IMODE(path.stat().st_mode)
++                require(mode == image['beforeMode'], 'journal mode differs from sealed preimage')
++                write(self.output / 'modes' / (name.replace('/', '_') + '.json'), mode)
+             require(sha(relative(self.root, image['blob'])) == image['after'], 'private postimage drift')
+         for repo in self.config['gitRepos']:
+             target = self.output / ('alternate-index-' + str(len(self.indexes)))
+@@ -627,8 +639,9 @@
+         write(self.output / 'publication.json', {'state': 'PUBLISHING', 'images': self.images})
+         for name, image in self.images.items():
+             path = relative(self.root, name)
+-            require(sha(path) == image['before'], 'foreign edit before publication')
+-            atomic_bytes(path, relative(self.root, image['blob']).read_bytes())
++            require(image_state(path) == (image['before'], image['beforeMode']), 'foreign bytes/mode before publication')
++            atomic_bytes(path, relative(self.root, image['blob']).read_bytes(), image['afterMode'])
++            require(image_state(path) == (image['after'], image['afterMode']), 'publication bytes/mode mismatch')
+         self.current = 'after'
+ 
+     def adopt_observation_tool(self):
+@@ -735,7 +748,9 @@
+         for repo in self.config['gitRepos']:
+             require(sha(relative(self.root, repo['index'])) == repo['sha256'], 'index drift before rollback')
+         for name, image in self.images.items():
+-            require(sha(relative(self.root, name)) in (image['before'], image['after']), 'foreign target edit at rollback')
++            require(image_state(relative(self.root, name)) in
++                    ((image['before'], image['beforeMode']), (image['after'], image['afterMode'])),
++                    'foreign target bytes/mode at rollback')
+         for name, image in self.config['patchOutputs'].items():
+             require(sha(relative(self.root, name)) in (image['before'], image['after']), 'foreign patch output at rollback')
+         require({str(p.relative_to(self.root)) for p in (self.root / 'patches').glob('*.patch')} <=
+@@ -750,12 +765,16 @@
+                         'profile restoration unconfirmed; parent recovery required')
+         for name, image in self.images.items():
+             path = relative(self.root, name)
+-            if sha(path) == image['before']:
++            state = image_state(path)
++            require(state in ((image['before'], image['beforeMode']), (image['after'], image['afterMode'])),
++                    'foreign target bytes/mode before rollback write')
++            if state == (image['before'], image['beforeMode']):
+                 continue
+             if image['before'] is None:
+                 path.unlink()
+             else:
+                 mode = json.loads((self.output / 'modes' / (name.replace('/', '_') + '.json')).read_text())
++                require(mode == image['beforeMode'], 'rollback journal mode differs from sealed preimage')
+                 atomic_bytes(path, (self.output / 'before' / name).read_bytes(), mode)
+         # Remove candidate-only intent-to-add from PRIVATE indexes before the
+         # restored MANIFEST is regenerated. The real indexes remain untouched.
+--- a/arc/browser/webextras_initial_integration_test.py
++++ b/arc/browser/webextras_initial_integration_test.py
+@@ -88,12 +88,14 @@
+             if values[0] is not None: self.put(name, values[0])
+             blob = 'private-images/' + name
+             self.put(blob, values[1]); self.config['pins'][blob] = M.sha(self.root / blob)
+-            self.config['targets'][name] = {'before': M.sha(self.root / name), 'after': M.sha(self.root / blob), 'blob': blob}
++            self.config['targets'][name] = {'before': M.sha(self.root / name), 'after': M.sha(self.root / blob), 'blob': blob,
++                'beforeMode': 0o644 if values[0] is not None else None, 'afterMode': 0o644}
+         before = b'0004-arcmod-hooks.patch native.cc\n'
+         after = before + b'0010-webextras.patch new.h\n'
+         self.put('patches/MANIFEST', before); self.put('private-images/MANIFEST', after)
+         self.config['manifest'] = {'before': M.sha(self.root / 'patches/MANIFEST'),
+-            'after': M.sha(self.root / 'private-images/MANIFEST'), 'blob': 'private-images/MANIFEST'}
++            'after': M.sha(self.root / 'private-images/MANIFEST'), 'blob': 'private-images/MANIFEST',
++            'beforeMode': 0o644, 'afterMode': 0o644}
+         self.config['pins']['private-images/MANIFEST'] = self.config['manifest']['after']
+         self.outputs = {'patches/0004-arcmod-hooks.patch': (b'old patch\n', b'new patch\n'),
+                         'patches/0010-webextras.patch': (None, b'new own patch\n')}
+@@ -428,6 +430,7 @@
+         name = 'arc/browser/new_peer.h'; blob = 'private-images/' + name
+         self.put(blob, b'private new header\n')
+         image = {'before': None, 'after': M.sha(self.root / blob), 'blob': blob}
++        image.update(beforeMode=None, afterMode=0o644)
+         self.config['targets'][name] = image; self.config['pins'][blob] = image['after']
+         tx = self.tx(); tx.pin_check()
+         self.put(name, b'private new header\n'); tx.pin_check()
+@@ -526,6 +529,52 @@
+             with self.assertRaisesRegex(RuntimeError, 'candidate-present/recovery-absent'):
+                 M.validate(config, self.root)
+ 
++    def executable_regen_target(self):
++        name = 'arc/tools/regen-patches.sh'
++        before, after = b'#!/bin/sh\n# old private fixture\n', b'#!/bin/sh\n# reviewed private fixture\n'
++        self.put(name, before); (self.root / name).chmod(0o755)
++        blob = 'private-images/regen-patches.sh'; self.put(blob, after)
++        self.config['targets'][name] = dict(before=M.sha(self.root / name), after=M.sha(self.root / blob),
++            blob=blob, beforeMode=0o755, afterMode=0o755)
++        self.config['pins'][blob] = M.sha(self.root / blob)
++        proposal = 'proposals/executable-regen.patch'
++        self.put(proposal, ''.join(difflib.unified_diff(before.decode().splitlines(True), after.decode().splitlines(True),
++                 fromfile='a/' + name, tofile='b/' + name)).encode())
++        digest = M.sha(self.root / proposal); self.config['pins'][proposal] = digest
++        self.config['patches'].append(dict(path=proposal, sha256=digest, cwd='.'))
++        return self.root / name, before, after
++
++    def test_real_0755_publication_preserves_script_and_new_0644_helper(self):
++        path, before, after = self.executable_regen_target()
++        tx = self.tx(); self.assertEqual(tx.execute(), 0)
++        self.assertEqual(path.read_bytes(), after); self.assertEqual(path.stat().st_mode & 0o777, 0o755)
++        self.assertEqual((self.root / 'chromium/src/new.h').stat().st_mode & 0o777, 0o644)
++        self.assertEqual((self.root / 'patches/MANIFEST').stat().st_mode & 0o777, 0o644)
++        self.assertEqual(json.loads((self.output / 'modes/arc_tools_regen-patches.sh.json').read_text()), 0o755)
++
++    def test_real_0755_candidate_failure_rolls_back_script_bytes_and_mode(self):
++        path, before, after = self.executable_regen_target()
++        tx = self.tx(); tx.fail_scenario = 'devtools'; self.assertEqual(tx.execute(), 1)
++        self.assertEqual(path.read_bytes(), before); self.assertEqual(path.stat().st_mode & 0o777, 0o755)
++        self.assertEqual(json.loads((self.output / 'completion.json').read_text())['status'], 'ROLLED_BACK')
++
++    def test_mode_drift_blocks_publication_phase_acceptance_and_rollback_CAS(self):
++        path, before, after = self.executable_regen_target()
++        tx = self.tx(); tx.prepare(); path.chmod(0o644)
++        with self.assertRaisesRegex(RuntimeError, 'mode phase drift'): tx.publish()
++        self.assertEqual(path.read_bytes(), before); self.assertFalse(tx.mutated)
++        path.chmod(0o755); tx.publish(); tx.regenerate(); path.chmod(0o644)
++        with self.assertRaisesRegex(RuntimeError, 'mode phase drift'): tx.file_state('after')
++        with self.assertRaisesRegex(RuntimeError, 'bytes/mode at rollback'): tx.rollback()
++        self.assertEqual(path.read_bytes(), after); self.assertEqual(path.stat().st_mode & 0o777, 0o644)
++
++    def test_missing_or_changed_sealed_mode_is_rejected(self):
++        path, before, after = self.executable_regen_target()
++        for mutate in [lambda image: image.pop('beforeMode'), lambda image: image.update(afterMode=0o644),
++                       lambda image: image.update(beforeMode=True, afterMode=True)]:
++            config = copy.deepcopy(self.config); mutate(config['targets']['arc/tools/regen-patches.sh'])
++            with self.assertRaises(RuntimeError): M.validate(config, self.root)
++
+     def test_existing_foreign_manifest_leaf_bookkeeping_candidate_and_rollback(self):
+         leaf = 'foreign_hooks.h'; name = 'chromium/src/' + leaf
+         self.put(name, b'foreign entry source stays exact\n'); digest = M.sha(self.root / name)
+--- a/arc/browser/webextras_initial_integration_notes.md
++++ b/arc/browser/webextras_initial_integration_notes.md
+@@ -41,7 +41,10 @@
+   postimage before publication. Each private working directory is initialized as
+   a Git repository so `git apply` cannot discover the live checkout above it.
+ - `targets`: each source's `before` hash or null (original absence), `after` hash
+-  and pinned private postimage `blob`. `manifest` has the same shape and is
++  and pinned private postimage `blob`, plus explicit `beforeMode/afterMode`.
++  Absence has null beforeMode; every new file has a sealed permission mode.
++  Existing-file modes must remain equal (notably regen-patches.sh0755).
++  `manifest` has the same shape and is
+   journalled separately. No source deletion is currently supported.
+ - `patchOutputs`: every existing `patches/*.patch`, every pre/post MANIFEST owner,
+   plus prospective `0010-webextras.patch`, with exact `before/after` hashes or
+@@ -114,9 +117,13 @@
+ profile/cache root identity HOLDs the protected lock. SIGKILL, reboot and arbitrary
+ descendants escaping into unrelated new sessions are outside this protection.
+ 
+-Entry preimages include absent state and file modes. Publication is journalled
++Entry preimages include absent state and sealed file modes. Publication is journalled
+ BEFORE the first atomic source replacement. Phase receipts freeze image hashes
+-and immutable input pins. All MANIFEST native inputs are guarded. Before each
++and immutable input pins. Phase checks and each publication/rollback compare-and-
++swap verify BOTH source bytes and sealed modes for changed targets/MANIFEST.
++Journalled rollback modes must agree with sealed beforeMode; publication uses
++sealed afterMode, preserving existing executable bits. All MANIFEST native inputs
++are guarded. Before each
+ build the pinned canonical runner's actual dependency closure must be declared
+ and match the sealed source/tool inputs, including sibling native helper files.
+ Inherited `GIT_*` routing/config-injection environment is stripped for Git
+@@ -232,3 +239,9 @@
+ missing helper, during-comparison tamper, unchecked source bytecode substitution,
+ and snapshot bytecode rejection. Reviewed freezer closure tests are replayed
+ separately. Actual existing runner/source bytes remain guarded unchanged.
++
++The f39dc85e executor snapshot is historical: its default publication permission
++0644 would have removed regen-patches.sh's0755 mode. The distinct mode correction
++archives exact f39 source/test/notes before editing, adds explicit sealed image
++modes and guards, and tests real temporary0755 publication/rollback and foreign
++chmod refusal. No production tool/source mode was changed or repaired here.

@@ -1,0 +1,94 @@
+{
+  "scope": "PRIVATE tiny Git root; exact isolated AST regen methods and copied official tool; no executor import/constructor/entrypoint/livecode/liveindex/real lock/runtime/build/queue",
+  "scriptSHA256": "b3627435ecb682d2221a7f64fc85df50c2373abb0bc9f381f90b938ad57391c0",
+  "officialRegenSHA256": "d90b45cd225c14324df1fdf5661a38db338662a1efa0ff9da2c7bb4e0acf94be",
+  "root": "/tmp/sessions-v3-private-index-control-5ty_tacw",
+  "actualIndexSHA256": "2d226fdfb71db5d0fb7d9b86f59e69551bb4d186cd11d257d3b88e587f6e54aa",
+  "privateIndexAfterApplySHA256": "5270e7015401960c3b2f269855363bf21ab7c43f602b76eb6048cd96382034eb",
+  "privateIndexAfterRollbackSHA256": "8987bbae40f47903d8c399a3b07152162c2707728be479e5403f120ee55b43c4",
+  "checks": [
+    {
+      "name": "assigned foreign header stays untracked in real index",
+      "pass": true
+    },
+    {
+      "name": "expected new-header patch generated via private add-N",
+      "pass": true
+    },
+    {
+      "name": "apply owned patch generated",
+      "pass": true
+    },
+    {
+      "name": "rollback owned patch empty",
+      "pass": true
+    },
+    {
+      "name": "foreign patch identical across phases",
+      "pass": true
+    },
+    {
+      "name": "real index byte exact both phases",
+      "pass": true
+    },
+    {
+      "name": "private index copied once and reused",
+      "pass": true
+    },
+    {
+      "name": "private index contains assigned untracked entry",
+      "pass": true
+    },
+    {
+      "name": "ambient environment unchanged",
+      "pass": true
+    },
+    {
+      "name": "official tool pin matches; changed bytes rejected by same digest comparison",
+      "pass": true
+    }
+  ],
+  "state": {
+    "chromiumPrivateIndex": {
+      "actualPath": "/private/tmp/sessions-v3-private-index-control-5ty_tacw/chromium/src/.git/index",
+      "entrySHA256": "2d226fdfb71db5d0fb7d9b86f59e69551bb4d186cd11d257d3b88e587f6e54aa",
+      "privatePath": "/tmp/sessions-v3-private-index-control-5ty_tacw/evidence/chromium-private.index",
+      "regenerations": [
+        {
+          "phase": "apply",
+          "actualBeforeSHA256": "2d226fdfb71db5d0fb7d9b86f59e69551bb4d186cd11d257d3b88e587f6e54aa",
+          "actualAfterSHA256": "2d226fdfb71db5d0fb7d9b86f59e69551bb4d186cd11d257d3b88e587f6e54aa",
+          "privateSHA256": "5270e7015401960c3b2f269855363bf21ab7c43f602b76eb6048cd96382034eb",
+          "actualDiffersFromEntryBeforeInvocation": false
+        },
+        {
+          "phase": "rollback",
+          "actualBeforeSHA256": "2d226fdfb71db5d0fb7d9b86f59e69551bb4d186cd11d257d3b88e587f6e54aa",
+          "actualAfterSHA256": "2d226fdfb71db5d0fb7d9b86f59e69551bb4d186cd11d257d3b88e587f6e54aa",
+          "privateSHA256": "8987bbae40f47903d8c399a3b07152162c2707728be479e5403f120ee55b43c4",
+          "actualDiffersFromEntryBeforeInvocation": false
+        }
+      ]
+    }
+  },
+  "events": [
+    {
+      "label": "apply-regen",
+      "exit": 0,
+      "env": {
+        "GIT_INDEX_FILE": "/tmp/sessions-v3-private-index-control-5ty_tacw/evidence/chromium-private.index",
+        "GIT_OPTIONAL_LOCKS": "0"
+      },
+      "logSHA256": "4c56cc6aa930cca280d7325b2ca2db2ed23cd1ed987e5ba55a176e75248b794b"
+    },
+    {
+      "label": "rollback-regen",
+      "exit": 0,
+      "env": {
+        "GIT_INDEX_FILE": "/tmp/sessions-v3-private-index-control-5ty_tacw/evidence/chromium-private.index",
+        "GIT_OPTIONAL_LOCKS": "0"
+      },
+      "logSHA256": "b72c63a2859c9d2f8639c31f4a587954a8f9b78645e5de2baabbf90b50b3528f"
+    }
+  ]
+}

@@ -1,0 +1,334 @@
+// Isolated public ours156 full-window-only session probe; no restart support.
+#import <AppKit/AppKit.h>
+#import <objc/message.h>
+#import <objc/runtime.h>
+#include <unistd.h>
+
+static NSHashTable *gContents, *gBrowsers;
+static NSMapTable *gOwners, *gWindows, *gBrowserMeta, *gContexts;
+static NSMutableSet *gHooks;
+static NSMutableArray *gEvents, *gRestoredContents, *gRestoredIDs;
+static NSString *gRequest, *gNonce, *gLastID, *gWindowUUID, *gError;
+static __weak id gApp, gContext, gSourceBrowser;
+static id gActiveContext, gSourceContextID, gClosedID, gCreatedBrowser, gFinishedBrowser;
+static NSArray *gSourceIDs;
+static NSWindow *gSentinelWindow, *gCreatedWindow;
+static id gSentinelBrowser, gSentinelDelegate, gCreatedDelegate;
+static NSUInteger gActionDepth, gCloseCallbackDepth, gCreatedCount, gFinishedCount;
+static BOOL gShutdown, gInstalled, gCloseHooked, gCreatedCanRestore, gSentinelCanRestore;
+
+static id Get(id o, NSString *s) { return ((id(*)(id,SEL))objc_msgSend)(o,NSSelectorFromString(s)); }
+static BOOL Flag(id o, NSString *s) { return ((BOOL(*)(id,SEL))objc_msgSend)(o,NSSelectorFromString(s)); }
+// Metadata encoding q: do not truncate this getter to int.
+static NSNumber *IDNumber(id o) { return o ? @(((NSInteger(*)(id,SEL))objc_msgSend)(o,NSSelectorFromString(@"identifier"))) : nil; }
+static NSString *IDString(id o) { return o ? [IDNumber(o) stringValue] : nil; }
+static void Set(id o, NSString *s, id v) { ((void(*)(id,SEL,id))objc_msgSend)(o,NSSelectorFromString(s),v); }
+static BOOL CanRestore(id browser) {
+  return browser && gClosedID && Flag(browser,@"isInitialized") &&
+    ((BOOL(*)(id,SEL,id))objc_msgSend)(browser,NSSelectorFromString(@"canRestoreWebContentsWithSessionId:"),gClosedID);
+}
+static void WriteJSON(id v, NSString *p) {
+  NSError *error=nil;
+  NSData *data=[NSJSONSerialization dataWithJSONObject:v options:NSJSONWritingPrettyPrinted|NSJSONWritingSortedKeys error:&error];
+  if (!data || ![data writeToFile:p options:NSDataWritingAtomic error:&error]) NSLog(@"SessionsFullProbe write failed: %@",error);
+}
+static NSString *ContextKey(id identifier) {
+  if (!identifier) return nil;
+  NSString *basename=Get(identifier,@"directoryBasename");
+  return [basename isKindOfClass:NSString.class] ? [NSString stringWithFormat:@"%@/%d",basename,Flag(identifier,@"isIncognito")] : nil;
+}
+static void Event(NSString *type, NSDictionary *values) {
+  NSMutableDictionary *event=[@{@"type":type,@"main":@(NSThread.isMainThread),
+    @"insideAction":@(gActionDepth!=0),@"insideCloseCallback":@(gCloseCallbackDepth!=0)} mutableCopy];
+  [event addEntriesFromDictionary:values?:@{}]; [gEvents addObject:event];
+}
+static void Require(BOOL pass, NSString *why) {
+  if (!pass) @throw [NSException exceptionWithName:@"SessionsFullProbe" reason:why userInfo:nil];
+}
+static void Register(id browser,id contents) {
+  if (contents) { [gContents addObject:contents]; if (browser) [gOwners setObject:browser forKey:contents]; }
+  if (browser) [gBrowsers addObject:browser];
+}
+static BOOL Install(Class cls,NSString *name,id(^make)(IMP)) {
+  if (!cls) return NO;
+  NSString *key=[NSString stringWithFormat:@"%@/%@",NSStringFromClass(cls),name];
+  if ([gHooks containsObject:key]) return YES;
+  SEL sel=NSSelectorFromString(name); Method method=class_getInstanceMethod(cls,sel); if (!method) return NO;
+  IMP replacement=imp_implementationWithBlock(make(method_getImplementation(method)));
+  if (!class_addMethod(cls,sel,replacement,method_getTypeEncoding(method))) method_setImplementation(class_getInstanceMethod(cls,sel),replacement);
+  [gHooks addObject:key]; return YES;
+}
+
+// Own complete 19-method ArcBrowserDelegate. Never reuse a Swift browser delegate.
+@interface SessionsFullBrowserDelegate : NSObject
+@end
+@implementation SessionsFullBrowserDelegate
+- (void)browser:(id)b didOpenExtensionPopup:(NSString*)s webContents:(id)c { Register(b,c); }
+- (void)browser:(id)b didResizeExtensionPopup:(NSString*)s size:(CGSize)size {}
+- (void)browser:(id)b didCloseExtensionPopup:(NSString*)s {}
+- (void)browser:(id)b didUpdateExtensionToolbarAction:(id)a {}
+- (void)browser:(id)b didUpdateExtensionToolbarActions:(NSArray*)a {}
+- (void)browser:(id)b didCreateNewWebContents:(id)c isActive:(BOOL)active {
+  Register(b,c); if (b==gCreatedBrowser) Event(@"unexpected-create",@{@"active":@(active)});
+}
+- (void)browser:(id)b didRestoreWebContents:(id)c withSessionId:(id)identifier {
+  Register(b,c);
+  if (b==gCreatedBrowser) {
+    [gRestoredContents addObject:c]; [gRestoredIDs addObject:IDString(identifier)?:NSNull.null];
+    Event(@"restored",@{@"id":IDString(identifier)?:NSNull.null,@"initialized":@(Flag(c,@"isInitialized"))});
+  }
+}
+- (void)browser:(id)b didChangeFullscreenState:(BOOL)state initiatedBy:(int64_t)by {}
+- (void)browser:(id)b didAskAbout:(NSString*)s {}
+- (void)browser:(id)b didAskAboutImage:(NSURL*)u {}
+- (void)browser:(id)b didRequestExtensionPermissions:(id)i completion:(void(^)(BOOL))completion { if(completion) completion(NO); }
+- (void)browser:(id)b createTabGroupWithSessionIds:(NSArray*)ids properties:(id)p completion:(void(^)(id))completion {
+  if(completion) completion(nil);
+}
+- (void)browser:(id)b addTabsToGroupWithId:(NSString*)s sessionIds:(NSArray*)ids completion:(void(^)(id))completion { if(completion) completion(nil); }
+- (void)browser:(id)b removeTabsFromGroupWithSessionIds:(NSArray*)ids completion:(void(^)(id))completion { if(completion) completion(nil); }
+- (void)browser:(id)b updateTabGroupWithId:(NSString*)s properties:(id)p completion:(void(^)(id))completion { if(completion) completion(nil); }
+- (void)browser:(id)b moveTabGroupWithId:(NSString*)s toNewIndex:(int64_t)i completion:(void(^)(id))completion { if(completion) completion(nil); }
+- (void)browser:(id)b getTabGroupWithId:(NSString*)s completion:(void(^)(id))completion { if(completion) completion(nil); }
+- (void)browser:(id)b getAllTabGroupsWithCompletion:(void(^)(NSArray*))completion { if(completion) completion(@[]); }
+- (int64_t)browser:(id)b extensionGroupIdForTabWithSessionId:(int64_t)i { return -1; }
+@end
+
+static void HookBrowserDelegate(id delegate) {
+  if ([delegate isKindOfClass:SessionsFullBrowserDelegate.class]) return;
+  Class cls=object_getClass(delegate);
+  Install(cls,@"browser:didCreateNewWebContents:isActive:",^id(IMP original) {
+    return ^(id o,id browser,id contents,BOOL active) {
+      Register(browser,contents);
+      ((void(*)(id,SEL,id,id,BOOL))original)(o,NSSelectorFromString(@"browser:didCreateNewWebContents:isActive:"),browser,contents,active);
+    };
+  });
+  Install(cls,@"browser:didRestoreWebContents:withSessionId:",^id(IMP original) {
+    return ^(id o,id browser,id contents,id identifier) {
+      Register(browser,contents);
+      ((void(*)(id,SEL,id,id,id))original)(o,NSSelectorFromString(@"browser:didRestoreWebContents:withSessionId:"),browser,contents,identifier);
+    };
+  });
+}
+static NSWindow *HiddenWindow(void) {
+  NSWindow *w=[[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,640,480)
+      styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable backing:NSBackingStoreBuffered defer:NO];
+  w.releasedWhenClosed=NO; // Never order, activate, or use this window to close the source.
+  return w;
+}
+static void Sentinel(void) {
+  Require(gApp && gActiveContext,@"missing retained active application/context");
+  if (gSentinelBrowser) return;
+  gSentinelDelegate=[SessionsFullBrowserDelegate new]; gSentinelWindow=HiddenWindow();
+  NSString *uuid=NSUUID.UUID.UUIDString;
+  gSentinelBrowser=((id(*)(id,SEL,id,id,id))objc_msgSend)(gApp,
+    NSSelectorFromString(@"createBrowser:withDelegate:forWindow:"),gActiveContext,gSentinelDelegate,uuid);
+  Require(gSentinelBrowser && Flag(gSentinelBrowser,@"isInitialized"),@"sentinel creation failed");
+  Set(gSentinelBrowser,@"setWindow:",gSentinelWindow);
+  Require([gWindows objectForKey:gSentinelBrowser]==gSentinelWindow,@"sentinel first window association missing");
+  Event(@"sentinel-created",@{});
+}
+static NSArray *CurrentRestored(void) {
+  NSMutableArray *array=[NSMutableArray array];
+  for (id c in gRestoredContents) {
+    BOOL initialized=Flag(c,@"isInitialized");
+    [array addObject:@{@"id":initialized ? IDString(Get(c,@"sessionId"))?:NSNull.null : NSNull.null,
+      @"initialized":@(initialized),@"url":initialized ? [Get(c,@"url") absoluteString]?:NSNull.null : NSNull.null}];
+  }
+  return array;
+}
+static NSDictionary *State(void) {
+  BOOL finishedInitialized=[gFinishedBrowser isKindOfClass:NSClassFromString(@"ArcBrowser")] && Flag(gFinishedBrowser,@"isInitialized");
+  NSString *createdUUID=gCreatedBrowser && Flag(gCreatedBrowser,@"isInitialized") ? Get(gCreatedBrowser,@"windowIdentifier") : nil;
+  NSString *finishedUUID=finishedInitialized ? Get(gFinishedBrowser,@"windowIdentifier") : nil;
+  NSString *createdContext=gCreatedBrowser && Flag(gCreatedBrowser,@"isInitialized") ? ContextKey(Get(Get(gCreatedBrowser,@"context"),@"id")) : nil;
+  NSString *finishedContext=finishedInitialized ? ContextKey(Get(Get(gFinishedBrowser,@"context"),@"id")) : nil;
+  NSString *createdBrowserID=gCreatedBrowser && Flag(gCreatedBrowser,@"isInitialized") ? IDString(Get(gCreatedBrowser,@"sessionId")) : nil;
+  NSString *finishedBrowserID=finishedInitialized ? IDString(Get(gFinishedBrowser,@"sessionId")) : nil;
+  BOOL identity=finishedInitialized && createdBrowserID && [createdBrowserID isEqual:finishedBrowserID] && createdUUID && [createdUUID isEqual:finishedUUID] && createdContext && [createdContext isEqual:finishedContext];
+  return @{@"events":[gEvents copy],@"sourceIDs":gSourceIDs?:@[],@"windowUUID":gWindowUUID?:NSNull.null,
+    @"contextKey":ContextKey(gSourceContextID)?:NSNull.null,@"restorationID":IDString(gClosedID)?:NSNull.null,
+    @"createdCount":@(gCreatedCount),@"finishedCount":@(gFinishedCount),@"restores":@(gRestoredIDs.count),
+    @"callbackIDs":[gRestoredIDs copy],@"restored":CurrentRestored(),
+    @"finishedSameBrowser":@(gCreatedBrowser && gCreatedBrowser==gFinishedBrowser),
+    @"finishedMatchesIdentity":@(identity),@"finishedInitialized":@(finishedInitialized),
+    @"createdBrowserSessionID":createdBrowserID?:NSNull.null,@"finishedBrowserSessionID":finishedBrowserID?:NSNull.null,
+    @"finishedIsEqualCreated":@(finishedInitialized && [gFinishedBrowser isEqual:gCreatedBrowser]),
+    @"createdWindowIdentifier":createdUUID?:NSNull.null,@"finishedWindowIdentifier":finishedUUID?:NSNull.null,
+    @"createdContextKey":createdContext?:NSNull.null,@"finishedContextKey":finishedContext?:NSNull.null,
+    @"finishedClass":gFinishedBrowser ? NSStringFromClass([gFinishedBrowser class]) : NSNull.null,
+    @"oldInitialized":@(gSourceBrowser && Flag(gSourceBrowser,@"isInitialized")),
+    @"createdInitialized":@(gCreatedBrowser && Flag(gCreatedBrowser,@"isInitialized")),
+    @"createdCanRestore":@(gCreatedCanRestore),@"sentinelCanRestoreAtCreated":@(gSentinelCanRestore),
+    @"sentinelInitialized":@(gSentinelBrowser && Flag(gSentinelBrowser,@"isInitialized")),
+    @"closedCallbackUnwound":@(gCloseCallbackDepth==0),@"error":gError?:NSNull.null};
+}
+static void StartRestore(void) {
+  Require(gCloseCallbackDepth==0,@"restore requested inside close callback");
+  Require(gClosedID && IDNumber(gClosedID).longLongValue>0,@"missing captured positive historical window ID");
+  Require(!gCreatedCount && !gFinishedCount,@"restore already requested");
+  Sentinel();
+  Event(@"restore-request",@{@"id":IDString(gClosedID)});
+  void (^created)(id)=^(id browser) {
+    @try {
+      Require(NSThread.isMainThread,@"created callback not main");
+      ++gCreatedCount; gCreatedBrowser=browser;
+      Require(browser!=nil,@"created callback nil");
+      gCreatedDelegate=[SessionsFullBrowserDelegate new]; gCreatedWindow=HiddenWindow();
+      // Client assigns a fresh canonical ID; source UUID remains separately captured.
+      Set(browser,@"setWindowIdentifier:",NSUUID.UUID.UUIDString);
+      // First association for the new native browser; no old Swift delegate.
+      Set(browser,@"setDelegate:",gCreatedDelegate); Set(browser,@"setWindow:",gCreatedWindow);
+      gCreatedCanRestore=CanRestore(browser); gSentinelCanRestore=CanRestore(gSentinelBrowser);
+      Event(@"created",@{@"canRestore":@(gCreatedCanRestore),@"sentinelCanRestore":@(gSentinelCanRestore)});
+    } @catch(NSException *e) { gError=e.reason?:e.name; Event(@"callback-error",@{@"error":gError}); }
+  };
+  void (^finished)(id)=^(id browser) {
+    ++gFinishedCount; gFinishedBrowser=browser;
+    Event(@"finished",@{@"sameBrowser":@(browser && browser==gCreatedBrowser),@"nil":@(browser==nil)});
+  };
+  ++gActionDepth;
+  @try { ((void(*)(id,SEL,id,id,id,id))objc_msgSend)(gApp,
+    NSSelectorFromString(@"restoreBrowser:withSessionID:browserCreatedCallback:finishedCallback:"),gActiveContext,gClosedID,created,finished); }
+  @finally { --gActionDepth; }
+}
+static void SetupHooks(void) {
+  Class browser=NSClassFromString(@"ArcBrowser"),app=NSClassFromString(@"ArcBrowserApplication"),wc=NSClassFromString(@"ArcWebContents");
+  Class adk=NSClassFromString(@"_TtC3ADK14ADKApplication");
+  if (!browser || !app || !wc || !adk) return;
+  if (!gCloseHooked) gCloseHooked=Install(adk,@"didCloseBrowser:forBrowserContextID:ofType:withRestorationSessionID:",^id(IMP original) {
+    return ^(id o,NSString *uuid,id contextID,int64_t type,id historicalID) {
+      ++gCloseCallbackDepth;
+      @try {
+        if (gWindowUUID && [gWindowUUID isEqual:uuid] && [ContextKey(gSourceContextID) isEqual:ContextKey(contextID)]) {
+          gClosedID=historicalID;
+          Event(@"closed-window",@{@"id":IDString(historicalID)?:NSNull.null,@"uuid":uuid,@"contextKey":ContextKey(contextID),@"browserType":@(type)});
+        }
+        ((void(*)(id,SEL,id,id,int64_t,id))original)(o,
+          NSSelectorFromString(@"didCloseBrowser:forBrowserContextID:ofType:withRestorationSessionID:"),uuid,contextID,type,historicalID);
+      } @finally { --gCloseCallbackDepth; }
+    };
+  });
+  if (gInstalled || !gCloseHooked) return;
+  BOOL ok=Install(app,@"getBrowserContext:type:",^id(IMP original) {
+    return ^id(id o,id identifier,NSUInteger type) {
+      id context=((id(*)(id,SEL,id,NSUInteger))original)(o,NSSelectorFromString(@"getBrowserContext:type:"),identifier,type);
+      if(context){NSString *key=ContextKey(Get(context,@"id"));if(key){[gContexts setObject:context forKey:key];gApp=o;}}
+      return context;
+    };
+  });
+  ok &= Install(app,@"createBrowser:withDelegate:forWindow:",^id(IMP original) {
+    return ^id(id o,id context,id delegate,NSString *uuid) {
+      HookBrowserDelegate(delegate);
+      id browser=((id(*)(id,SEL,id,id,id))original)(o,NSSelectorFromString(@"createBrowser:withDelegate:forWindow:"),context,delegate,uuid);
+      if (browser) {
+        [gBrowsers addObject:browser];
+        [gBrowserMeta setObject:@{@"uuid":uuid?:NSNull.null,@"contextKey":ContextKey(Get(context,@"id"))?:NSNull.null} forKey:browser];
+        if (![delegate isKindOfClass:SessionsFullBrowserDelegate.class]) { gApp=o; gContext=context; }
+      }
+      return browser;
+    };
+  });
+  ok &= Install(browser,@"setWindow:",^id(IMP original) {
+    return ^(id o,NSWindow *window) {
+      if (window && ![gWindows objectForKey:o]) [gWindows setObject:window forKey:o];
+      ((void(*)(id,SEL,id))original)(o,NSSelectorFromString(@"setWindow:"),window);
+    };
+  });
+  ok &= Install(browser,@"setDelegate:",^id(IMP original) {
+    return ^(id o,id delegate) { [gBrowsers addObject:o]; HookBrowserDelegate(delegate);
+      ((void(*)(id,SEL,id))original)(o,NSSelectorFromString(@"setDelegate:"),delegate); };
+  });
+  ok &= Install(wc,@"setUIDelegate:",^id(IMP original) {
+    return ^(id o,id delegate) { Register(nil,o);
+      ((void(*)(id,SEL,id))original)(o,NSSelectorFromString(@"setUIDelegate:"),delegate); };
+  });
+  gInstalled=ok;
+  if (gInstalled) WriteJSON(@{@"pid":@(getpid()),@"installed":@YES,@"nonce":gNonce,
+    @"closeHook":@YES,@"bundle":NSBundle.mainBundle.bundleIdentifier?:@""},[gRequest stringByAppendingString:@".ready.json"]);
+}
+static void Poll(void) {
+  SetupHooks(); if (!gInstalled) return;
+  NSData *bytes=[NSData dataWithContentsOfFile:gRequest];
+  NSDictionary *request=bytes ? [NSJSONSerialization JSONObjectWithData:bytes options:0 error:nullptr] : nil;
+  if (![request isKindOfClass:NSDictionary.class]) return;
+  NSString *rid=request[@"id"],*operation=request[@"operation"];
+  if (![rid isKindOfClass:NSString.class] || [rid isEqual:gLastID] ||
+      ![request[@"nonce"] isEqual:gNonce] || [request[@"pid"] intValue]!=getpid() ||
+      ![operation isKindOfClass:NSString.class]) return;
+  gLastID=rid;
+  NSMutableDictionary *response=[@{@"id":rid,@"operation":operation,@"pid":@(getpid()),@"nonce":gNonce,@"main":@(NSThread.isMainThread)} mutableCopy];
+  @try {
+    if ([operation isEqual:@"inspect"] || [operation isEqual:@"close-window"]) {
+      NSArray *urls=request[@"urls"]; Require([urls isKindOfClass:NSArray.class] && urls.count==2,@"two fixture URLs required");
+      NSMutableArray *fixtures=[NSMutableArray array];
+      id owner=nil;
+      for (NSString *url in urls) {
+        NSURL *parsed=[NSURL URLWithString:url];
+        Require([parsed.scheme isEqual:@"http"] && [parsed.host isEqual:@"127.0.0.1"] &&
+          [parsed.path hasPrefix:[NSString stringWithFormat:@"/%@/",gNonce]],@"fixture URL nonce/loopback mismatch");
+        NSMutableArray *matches=[NSMutableArray array];
+        for (id candidate in gContents) if (Flag(candidate,@"isInitialized") && [[Get(candidate,@"url") absoluteString] isEqual:url]) [matches addObject:candidate];
+        Require(matches.count==1,@"expected exactly one initialized wrapper for each fixture URL");
+        id content=matches.firstObject, browser=[gOwners objectForKey:content];
+        Require(browser && Flag(browser,@"isInitialized"),@"missing fixture browser owner");
+        Require(!owner || owner==browser,@"fixture tabs belong to different native browsers");
+        owner=browser; [fixtures addObject:content];
+      }
+      NSWindow *window=[gWindows objectForKey:owner]; NSDictionary *meta=[gBrowserMeta objectForKey:owner];
+      Require([window isKindOfClass:NSWindow.class] && window.delegate!=nil,@"actual app NSWindow/delegate was not captured");
+      Require([meta[@"uuid"] isKindOfClass:NSString.class],@"actual browser window UUID was not captured");
+      id context=Get(owner,@"context");
+      Require([meta[@"contextKey"] isEqual:ContextKey(Get(context,@"id"))],@"captured browser context changed");
+      NSUInteger observedOwnedTabs=0;
+      for (id c in gContents) if ([gOwners objectForKey:c]==owner && Flag(c,@"isInitialized")) ++observedOwnedTabs;
+      Require(observedOwnedTabs==2,@"source window has extra observed native tabs; refusing close");
+      response[@"observedOwnedTabs"]=@(observedOwnedTabs);
+      response[@"fixtureMatches"]=@2; response[@"mappedWindow"]=@YES;
+      response[@"windowClass"]=NSStringFromClass(window.class); response[@"windowDelegateClass"]=NSStringFromClass([window.delegate class]);
+      response[@"capturedUUID"]=meta[@"uuid"];
+      if ([operation isEqual:@"close-window"]) {
+        Require(!gWindowUUID,@"source window already selected");
+        gSourceBrowser=owner; gContext=context; gActiveContext=context; gSourceContextID=Get(context,@"id"); gWindowUUID=meta[@"uuid"];
+        NSMutableArray *ids=[NSMutableArray array]; for (id c in fixtures) [ids addObject:IDString(Get(c,@"sessionId"))?:NSNull.null]; gSourceIDs=[ids copy];
+        Require([NSSet setWithArray:gSourceIDs].count==2 && ![gSourceIDs containsObject:NSNull.null],@"fixture source IDs invalid");
+        Sentinel();
+        Event(@"perform-close",@{@"uuid":gWindowUUID});
+        ++gActionDepth;
+        @try { [window performClose:nil]; } @finally { --gActionDepth; }
+      }
+    } else if ([operation isEqual:@"restore-window"]) StartRestore();
+    else if ([operation isEqual:@"shutdown"]) {
+      // Queue after this Poll writes its response; preserve the actual NSApp delegate.
+      if (!gShutdown) { gShutdown=YES; dispatch_async(dispatch_get_main_queue(),^{ [NSApp terminate:nil]; }); }
+    } else Require([operation isEqual:@"status"],@"unknown operation (full mode only)");
+    response[@"ok"]=@YES;
+  } @catch(NSException *e) { response[@"error"]=e.reason?:e.name; }
+  response[@"state"]=State();
+  WriteJSON(response,[gRequest stringByAppendingString:@".response.json"]);
+}
+__attribute__((constructor)) static void Start(void) {
+  @autoreleasepool {
+    const char *request=getenv("ARC_SESSIONS_FULL_REQUEST"),*nonce=getenv("ARC_SESSIONS_FULL_NONCE");
+    NSString *exe=NSProcessInfo.processInfo.arguments.firstObject;
+    NSString *app=[[[exe stringByDeletingLastPathComponent] stringByDeletingLastPathComponent] stringByDeletingLastPathComponent];
+    if (!request || !nonce || ![exe.lastPathComponent isEqual:@"Arc"] ||
+        ![app.lastPathComponent isEqual:@"ArcModAgent-ours156.app"] ||
+        ![[exe stringByStandardizingPath] isEqual:@"/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/MacOS/Arc"] ||
+        ![NSBundle.mainBundle.bundleIdentifier isEqual:@"company.thebrowser.Browser.mod.agent.ours156"]) return;
+    gRequest=@(request); gNonce=@(nonce);
+    if (![gNonce hasPrefix:@"arc-sessions-full-"] || ![gRequest isAbsolutePath]) return;
+    unsetenv("DYLD_INSERT_LIBRARIES");
+    gContents=[NSHashTable weakObjectsHashTable]; gBrowsers=[NSHashTable weakObjectsHashTable];
+    gOwners=[NSMapTable weakToWeakObjectsMapTable]; gWindows=[NSMapTable weakToWeakObjectsMapTable];
+    gBrowserMeta=[NSMapTable weakToStrongObjectsMapTable]; gContexts=[NSMapTable strongToWeakObjectsMapTable]; gHooks=[NSMutableSet set];
+    gEvents=[NSMutableArray array]; gRestoredContents=[NSMutableArray array]; gRestoredIDs=[NSMutableArray array];
+    dispatch_async(dispatch_get_main_queue(),^{
+      SetupHooks();
+      dispatch_source_t timer=dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER,0,0,dispatch_get_main_queue());
+      dispatch_source_set_timer(timer,DISPATCH_TIME_NOW,25*NSEC_PER_MSEC,5*NSEC_PER_MSEC);
+      dispatch_source_set_event_handler(timer,^{ @autoreleasepool { Poll(); } }); dispatch_resume(timer);
+      dispatch_after(dispatch_time(DISPATCH_TIME_NOW,300*NSEC_PER_SEC),dispatch_get_main_queue(),^{ dispatch_source_cancel(timer); });
+    });
+  }
+}

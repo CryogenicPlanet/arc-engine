@@ -1,23 +1,38 @@
-# Current core integration queue — proposals UNAPPLIED
+# Current core integration state and held follow-ons
 
-Latest actual transaction: integration10 was ROLLED_BACK and parent-reaped exit1.
+Latest actual transaction: integration11 is APPLIED_PARENT_ACCEPTED and
+parent-reaped exit0 (Chirp143629). Seven-only native/owned transport is retained:
+2f423, footer41/6f4c, 95c46, ac1b, e87f, b222, e57cc. Actual WC9610fb9d and
+render8dca48ec preserve 4973732, progress and quit guards. Accepted extensions
+hooks remain in shared header e0fde960; internal header remains7a7e50cf.
+Fresh build/package passed, exact launch9/9 and tabs11/11 passed, with natural
+Browser.close receipts and stable source/runtime/native/binary inputs. Raw
+global43/43/61, core17/18/23: acceptance is NOT met. Relaunch has an extra real
+URL receipt; progress/readiness/state/history/TAB/CSS/PiP differences remain.
+Evidence: `results/core-runtime/20261023T172900Z-seven-integration11/`,
+`logs/wp/core.run11-raw-recompute/`. Source hold ended; no own waiter.
+
+Historical integration10 was ROLLED_BACK and parent-reaped exit1.
 Its candidate passed launch9/9 and tabs11/11, but an index guard rejected a
 validated UNTR cache-only change. Source/MANIFEST and the exact maintained patch
 output set were restored, then the baseline was rebuilt/packaged and passed
 launch9/9. None of those seven patches is retained. Evidence:
 `results/core-runtime/20261023T170241Z-seven-integration/` and
 `logs/wp/core.run10-candidate-review/`. Candidate raw43/61/61 and core17/16/21
-are historical evidence, not current-source acceptance. Current owned WC stays
-47534304; shared peer integration state must be read on the live board.
+are historical evidence, not current-source acceptance. Its rollback baseline
+was WC47534304; subsequent shared peer state must be read on the live board.
 
-Retry preparation is private: strict validated UNTR-only index guard with no
+Integration11 used the strict validated UNTR-only index guard with no
 index writes, and footer-placement variant of close transport41 preserving
 every original added byte and foreign hooks. Conditional E preflight and all
-eight actual syntax checks pass; peer retention, fresh base checks and reviewed
-new pins are required before queueing. See
+eight actual syntax checks passed; fresh base/patch/MANIFEST checks passed under
+the acquired lock, followed by build/runtime and fresh parent evidence review. See
 `logs/wp/core.integration-run11-index-guard/`,
 `logs/wp/core.shared-header-seven-preflight/`, and
-`logs/wp/core.integration-run11-currentE/`. These are not adoption receipts.
+`logs/wp/core.integration-run11-currentE/`. Those preflight artifacts establish
+source checks; the transaction completion above establishes actual retention.
+Raw index bytes changed only in validated auxiliary UNTR data; tracked entries,
+TREE and HEAD stayed exact, and the runner wrote no real index.
 
 ACCOUNTING ADAPTER bec65249 is now HOLD for newly proved selected UI registration
 eligibility and functional logical-self/outer dispatcher guard (board141516).
@@ -25,10 +40,10 @@ The strict11-route reconstruction remains valid evidence of composition ONLY,
 not adoption readiness for that adapter. See core_ui_registration_plan.md and
 logs/wp/core.ui-registration/. Earlier READY11 wording is superseded for order8.
 
-CURRENT production47534304 includes the APPLIED progress-only repair0e8cd518.
-Use logs/wp/core.progress-publication/manifest.json for current bases, route variants
-and exact reconstructed16file target. logs/wp/core.integration-current/manifest.json
-is the historical ff957 composition, not the current production starting point.
+Historical production47534304 included the APPLIED progress-only repair0e8cd518,
+which integration11 retains. logs/wp/core.progress-publication/manifest.json
+documents that earlier base/route reconstruction. It is not today's production
+starting point; neither is the older ff957 core.integration-current manifest.
 The historical first TEN-patch composition strictly reconstructed the reviewed
 16-file target. Later shared-header integrations require a fresh context rebase;
 that historical proof does not establish applicability to today's shared tree.
@@ -63,7 +78,7 @@ separate bounded work. The native close transport is EMPTY by default; it neithe
 fixes logical binding nor invents a bulk Busy gate. Tab traits991106 and attachment
 consumer remain HOLD for their source seams; keyboard weak seam separate.
 
-Current production runtime evidence: core run9 launch9/9+tabs11/11 PASS with source,
+Historical pre-seven runtime evidence: core run9 launch9/9+tabs11/11 PASS with source,
 input and separate output/package binary seals; raw106/57/56, core77/20/29, callback
 first divergence1, acceptance NOT met. Frozen review: logs/wp/core.run9-review/.
 Windows replay deferred for unchanged AX exposure/lock evidence; pane candidate

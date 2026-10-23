@@ -1,0 +1,70 @@
+{
+  "scenario": "sessions-public-api",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app",
+  "slug": "ours156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "public API scenario requires standard boundary recording",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "public API scenario uses disposable engine test agent",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "public API driver compiles with strict warnings",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "public API agent launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "public API launch exposes an owned PID",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "public API driver ready with current PID and recorder aliases",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "fixture B history entry is unique",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "fixture has exact A B C history with B selected",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "driver observes exact fixture/sentinel and opaque source ID",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "public close produces one synchronous main-thread callback",
+      "outcome": "fail",
+      "detail": ""
+    },
+    {
+      "step": "public API agent quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 9 helpers exited"
+    },
+    {
+      "step": "scenario",
+      "outcome": "inconclusive",
+      "detail": "Error: public close produces one synchronous main-thread callback"
+    }
+  ]
+}

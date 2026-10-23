@@ -1,0 +1,110 @@
+--- a/chrome/browser/ui/browser_live_tab_context.cc
++++ b/chrome/browser/ui/browser_live_tab_context.cc
+@@ -380,7 +380,8 @@
+         tab.extension_app_id, group_id, select, tab.pinned, base::TimeTicks(),
+         base::Time(), storage_namespace, tab.user_agent_override,
+         tab.extra_data,
+-        /*from_session_restore=*/false, /*is_active_browser=*/std::nullopt);
++        /*from_session_restore=*/false, /*is_active_browser=*/std::nullopt,
++        /*restore_source=*/&tab);
+ 
+     if (group_id.has_value() &&
+         !tab_group_service->GetGroup(group_id.value()).has_value()) {
+@@ -439,7 +440,8 @@
+         tab.normalized_navigation_index(), tab.extension_app_id, group_id,
+         select, tab.pinned, base::TimeTicks(), base::Time(), storage_namespace,
+         tab.user_agent_override, tab.extra_data,
+-        /*from_session_restore=*/false, /*is_active_browser=*/std::nullopt);
++        /*from_session_restore=*/false, /*is_active_browser=*/std::nullopt,
++        /*restore_source=*/&tab);
+   }
+ 
+   CHECK(web_contents);
+--- a/chrome/browser/ui/browser_tabrestore.h
++++ b/chrome/browser/ui/browser_tabrestore.h
+@@ -23,6 +23,9 @@
+ namespace sessions {
+ class SerializedNavigationEntry;
+ struct SerializedUserAgentOverride;
++namespace tab_restore {
++struct Tab;
++}  // namespace tab_restore
+ }  // namespace sessions
+ 
+ namespace chrome {
+@@ -58,7 +61,8 @@
+     const sessions::SerializedUserAgentOverride& user_agent_override,
+     const std::map<std::string, std::string>& extra_data,
+     bool from_session_restore,
+-    std::optional<bool> is_active_browser);
++    std::optional<bool> is_active_browser,
++    const sessions::tab_restore::Tab* restore_source = nullptr);
+ 
+ // Replaces the state of the currently selected tab with the session
+ // history restored from the SessionRestore and TabRestoreService systems.
+--- a/chrome/browser/ui/browser_tabrestore.cc
++++ b/chrome/browser/ui/browser_tabrestore.cc
+@@ -3,6 +3,10 @@
+ // found in the LICENSE file.
+ 
+ #include "chrome/browser/ui/browser_tabrestore.h"
++
++#include "base/command_line.h"
++#include "chrome/browser/arcmod/arcmod_hooks.h"
++#include "components/sessions/core/tab_restore_types.h"
+ 
+ #include <map>
+ #include <memory>
+@@ -140,7 +144,8 @@
+                                 bool select,
+                                 bool pin,
+                                 bool from_session_restore,
+-                                std::optional<bool> is_active_browser) {
++                                std::optional<bool> is_active_browser,
++                                const sessions::tab_restore::Tab* restore_source) {
+   TabStripModel* const tab_strip_model = browser->tab_strip_model();
+ 
+   int add_types = select ? AddTabTypes::ADD_ACTIVE : AddTabTypes::ADD_NONE;
+@@ -175,6 +180,14 @@
+   }
+ 
+   WebContents* raw_web_contents = web_contents.get();
++  base::ScopedClosureRunner source_scope;
++  if (restore_source &&
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++      arcmod::GetSessionTabRestoreScopeHook()) {
++    source_scope = arcmod::GetSessionTabRestoreScopeHook().Run(
++        raw_web_contents, restore_source->id.id(),
++        restore_source->original_id.id());
++  }
+ 
+   // The two cases we could run into are -
+   // 1. Tab was a part of a group that is no longer present.
+@@ -190,6 +203,8 @@
+     tab_strip_model->InsertWebContentsAt(tab_index, std::move(web_contents),
+                                          add_types, group);
+   }
++
++  source_scope.RunAndReset();
+ 
+   if (from_session_restore) {
+     // Indicate that the tab is created by session restore. This is used to hide
+@@ -280,7 +295,8 @@
+     const sessions::SerializedUserAgentOverride& user_agent_override,
+     const std::map<std::string, std::string>& extra_data,
+     bool from_session_restore,
+-    std::optional<bool> is_active_browser) {
++    std::optional<bool> is_active_browser,
++    const sessions::tab_restore::Tab* restore_source) {
+   const bool initially_hidden = !select || browser->GetWindow()->IsMinimized();
+   std::unique_ptr<WebContents> web_contents = CreateRestoredTab(
+       browser, navigations, selected_navigation, extension_app_id,
+@@ -289,7 +305,7 @@
+ 
+   return AddRestoredTabImpl(std::move(web_contents), browser, tab_index, group,
+                             select, pin, from_session_restore,
+-                            is_active_browser);
++                            is_active_browser, restore_source);
+ }
+ 
+ WebContents* ReplaceRestoredTab(

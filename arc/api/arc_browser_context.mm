@@ -120,6 +120,29 @@ struct ArcBrowserContextHolder : public base::SupportsUserData::Data {
 };
 const char kArcBrowserContextKey[] = "ArcBrowserContext";
 
+// Shares the existing context cache without exposing another Objective-C dispatch.
+id GetBrowserContextService(
+    ArcBrowserContext* context,
+    NSMutableDictionary<NSString*, id>* __strong& services,
+    NSString* class_name) {
+  if (!services) {
+    services = [NSMutableDictionary dictionary];
+  }
+  id service = services[class_name];
+  if (!service) {
+    // Implemented services take their profile wrapper; shell classes (stubs) get plain init.
+    Class cls = NSClassFromString(class_name);
+    SEL withContext = NSSelectorFromString(@"initWithArcBrowserContext:");
+    service = [cls instancesRespondToSelector:withContext]
+                  ? ((id (*)(id, SEL, id))objc_msgSend)([cls alloc], withContext, context)
+                  : [[cls alloc] init];
+    if (service) {
+      services[class_name] = service;
+    }
+  }
+  return service;
+}
+
 }  // namespace
 
 @interface ArcBrowserContext ()
@@ -136,28 +159,13 @@ const char kArcBrowserContextKey[] = "ArcBrowserContext";
 // Per-profile service wrappers (preferences, history, ...). Until a wrapper is implemented, this is an
 // instance of its shell class, whose methods are logging stubs; the app needs a non-nil object.
 - (id)serviceNamed:(NSString*)className {
-  if (!_services) {
-    _services = [NSMutableDictionary dictionary];
-  }
-  id service = _services[className];
-  if (!service) {
-    // Implemented services take their profile wrapper; shell classes (stubs) get plain init.
-    Class cls = NSClassFromString(className);
-    SEL withContext = NSSelectorFromString(@"initWithArcBrowserContext:");
-    service = [cls instancesRespondToSelector:withContext]
-                  ? ((id (*)(id, SEL, id))objc_msgSend)([cls alloc], withContext, self)
-                  : [[cls alloc] init];
-    if (service) {
-      _services[className] = service;
-    }
-  }
-  return service;
+  return GetBrowserContextService(self, _services, className);
 }
 - (id)preferences {
   return [self serviceNamed:@"ArcBrowserContextPreferences"];
 }
 - (id)history {
-  return [self serviceNamed:@"ArcBrowserContextHistory"];
+  return GetBrowserContextService(self, _services, @"ArcBrowserContextHistory");
 }
 - (id)downloads {
   return [self serviceNamed:@"ArcBrowserContextDownloads"];
@@ -166,7 +174,7 @@ const char kArcBrowserContextKey[] = "ArcBrowserContext";
   return [self serviceNamed:@"ArcBrowserContextExtensions"];
 }
 - (id)effects {
-  return [self serviceNamed:@"ArcBrowserContextEffects"];
+  return GetBrowserContextService(self, _services, @"ArcBrowserContextEffects");
 }
 - (id)pageContentExtraction {
   return [self serviceNamed:@"ArcBrowserContextPageContentExtraction"];

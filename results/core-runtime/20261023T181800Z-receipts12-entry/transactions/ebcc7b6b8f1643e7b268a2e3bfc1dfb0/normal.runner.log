@@ -1,0 +1,19 @@
+RUN generator.log
+generator.log exit 0
+RUN build.log
+build.log exit 0
+RUN package.log
+package.log exit 0
+RUN launch-slice.log
+launch-slice.log exit 0
+RUN launch-slice/diff-launch-1.txt
+launch-slice/diff-launch-1.txt exit 0
+launch-slice launch-1 ['methods differing: 41 (missing 5, extra 1, returns 10, callback args 3, counts 22; internal-only 0, ours-internal 1)', 'callback sequence: {"golden": 106, "ours": 134, "first_divergence": 1, "golden_from": ["ADK.ADKApplication didInitializeBrowserProcess", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"], "ours_from": ["ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObser']
+RUN launch-slice/diff-launch-2.txt
+launch-slice/diff-launch-2.txt exit 0
+launch-slice launch-2 ['methods differing: 50 (missing 6, extra 0, returns 10, callback args 2, counts 32; internal-only 0, ours-internal 1)', 'callback sequence: {"golden": 47, "ours": 62, "first_divergence": 1, "golden_from": ["ADK.ADKApplication didInitializeBrowserProcess", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"], "ours_from": ["ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserve']
+RUN tabs-navigation.log
+tabs-navigation.log exit 0
+RUN tabs-navigation/diff-launch-1.txt
+tabs-navigation/diff-launch-1.txt exit 0
+tabs-navigation launch-1 ['methods differing: 65 (missing 5, extra 1, returns 16, callback args 4, counts 39; internal-only 0, ours-internal 1)', 'callback sequence: {"golden": 162, "ours": 196, "first_divergence": 1, "golden_from": ["ADK.ADKApplication didInitializeBrowserProcess", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"], "ours_from": ["ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObser']

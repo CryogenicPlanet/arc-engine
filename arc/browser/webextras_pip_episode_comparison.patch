@@ -1,0 +1,247 @@
+diff --git a/tests/recorder/diff.py b/tests/recorder/diff.py
+--- a/tests/recorder/diff.py
++++ b/tests/recorder/diff.py
+@@ -36,6 +36,11 @@
+         if '"from":' in line:
+             return True
+     return False
++
++
++def caller_field_valid(event):
++    return (isinstance(event.get("from"), str) and bool(event["from"]) and
++            event["from"].strip() == event["from"] and not any(ord(c) < 32 for c in event["from"]))
+ 
+ 
+ def fixture_image(value):
+@@ -132,7 +137,7 @@
+             if e.get("ev") in ("call", "ret"):
+                 boundary_rows += 1
+                 attributed_calls += e["ev"] == "call"
+-                if not isinstance(e.get("from"), str) or not e["from"] or e["from"].strip() != e["from"] or any(ord(c) < 32 for c in e["from"]):
++                if not caller_field_valid(e):
+                     mode = "boundary-argument mode" if require_callers else "fixture mode"
+                     raise ValueError(f"{path}: {mode} requires caller attribution on every call and return")
+         if google_q and not isinstance(e, dict):
+@@ -328,6 +333,9 @@
+             g, o, receiver_scope = align(golden, ours, g, o, partial(load, google_q=effective_google_q, require_callers=args.compare_boundary_arguments))
+         except ValueError as error:
+             receiver_scope = {"status": "rejected", "reason": str(error), "baselineDiffRetained": True}
++    if by_caller and not fixture_images:
++        from pip_episode import align as align_pip_episode
++        g, o = align_pip_episode(golden, ours, g, o, caller_field_valid)
+     boundary = boundary_methods()
+     report = {"internal": [], "internal_ours": [], "missing": [], "extra": [], "return_mismatch": [], "arg_mismatch": [], "count_mismatch": []}
+     for key in sorted(set(g) | set(o)):
+diff --git a/tests/recorder/pip_episode.py b/tests/recorder/pip_episode.py
+new file mode 100644
+--- /dev/null
++++ b/tests/recorder/pip_episode.py
+@@ -0,0 +1,208 @@
++"""Bounded public PiP episode proof; unsupported pairs retain the exact baseline.
++
++This is logical owner/episode correspondence, not native pointer recovery. Only
++the sole proved Show-contained media-session getter return may change. Work on
++already-normalized values so no unrelated first-appearance ordinal changes.
++"""
++import collections
++import json
++import re
++
++
++WC = 'ArcWebContents'
++MS = 'ArcWebContentsMediaSession'
++CONTROLLER = 'ArcWebContentsMediaSessionPiPController'
++BROWSER_BRIDGES = frozenset({'ADK.ChromiumBrowser', '_TtC3ADK15ChromiumBrowser'})
++MEDIA_BRIDGES = frozenset({'ADK.WebContentChromium', '_TtC3ADK18WebContentChromium'})
++NEW_WC = 'browser:didCreateNewWebContents:isActive:'
++CREATED = 'webContents:pipControllerCreated:'
++SHOW = 'webContentsShowPiP:'
++HIDE = 'webContentsHidePiP:'
++DESTROYED = 'webContentsPiPControllerDestroyed:'
++GETTER = ('->engine', '-', MS, 'pipController')
++SIGNATURE = ('thread', 'depth', 'from', 'dir', 'kind', 'cls', 'sel', 'self')
++
++
++def require(condition):
++    if not condition:
++        raise ValueError('unsupported PiP owner/episode proof')
++
++
++def reference(value, cls):
++    return type(value) is str and re.fullmatch(r'<' + re.escape(cls) + r'#[0-9]+>', value) is not None
++
++
++def method(event):
++    return tuple(event.get(k) for k in ('dir', 'kind', 'cls', 'sel'))
++
++
++def frames(path, caller_valid):
++    rows = [json.loads(line) for line in open(path)]
++    stacks = collections.defaultdict(list)
++    complete = []
++    seen_seq = set()
++    previous_seq = collections.defaultdict(lambda: -1)
++    for event in rows:
++        require(type(event) is dict)
++        seq = event.get('seq')
++        require(type(seq) is int and seq >= 0 and seq not in seen_seq)
++        seen_seq.add(seq)
++        phase = event.get('ev')
++        if phase not in ('call', 'ret'):
++            require(not any(k in event for k in SIGNATURE))
++            continue
++        require(caller_valid(event))  # The comparator's existing field policy.
++        require(type(event.get('thread')) is str and bool(event['thread']))
++        require(seq > previous_seq[event['thread']])
++        previous_seq[event['thread']] = seq
++        require(type(event.get('depth')) is int and event['depth'] >= 0)
++        require(all(type(event.get(k)) is str and bool(event[k]) for k in ('dir', 'kind', 'cls', 'sel')))
++        require(event['dir'] in ('->engine', 'engine->app') and event['kind'] in ('-', '+'))
++        require((type(event.get('self')) is str and bool(event['self'])) or
++                (event['kind'] == '+' and event.get('self') is None))
++        stack = stacks[event['thread']]
++        if phase == 'call':
++            require(type(event.get('args')) is list and event['depth'] == len(stack))
++            frame = {'call': event, 'parent': stack[-1] if stack else None}
++            stack.append(frame)
++        else:
++            require('ret' in event and bool(stack))
++            frame = stack.pop()
++            require(all(frame['call'][k] == event[k] for k in SIGNATURE))
++            frame['ret'] = event
++            complete.append(frame)
++    open_frames = [f for stack in stacks.values() for f in stack]
++    require(not open_frames or (len(open_frames) == 1 and
++            method(open_frames[0]['call']) == ('->engine', '-', 'ArcBrowserApplication', 'run') and
++            open_frames[0]['call']['from'] == 'app' and
++            open_frames[0]['call']['thread'] == 'main' and
++            open_frames[0]['call']['depth'] == 0 and open_frames[0]['call']['args'] == []))
++    return sorted(complete, key=lambda f: f['call']['seq'])
++
++
++def proof(path, normalized, caller_valid):
++    fs = frames(path, caller_valid)
++
++    def app(cls, selector=None):
++        return [f for f in fs if f['call']['from'] == 'app' and
++                f['call']['dir'] == '->engine' and f['call']['kind'] == '-' and
++                f['call']['cls'] == cls and (selector is None or f['call']['sel'] == selector)]
++
++    def callback(selector, classes, nargs):
++        # A lifecycle-shaped frame in another lane is unsupported evidence,
++        # even when ordinary caller admission would exclude that frame.
++        found = [f for f in fs if f['call']['sel'] == selector]
++        require(len(found) == 1)
++        f = found[0]
++        require(f['call']['dir'] == 'engine->app' and f['call']['cls'] in classes and f['call']['kind'] == '-' and
++                f['call']['from'] == 'engine' and f['call']['thread'] == 'main' and
++                len(f['call']['args']) == nargs and f['ret']['ret'] is None)
++        return f
++
++    def one(values):
++        require(len(values) == 1)
++        return next(iter(values))
++
++    def ended_before(a, b):
++        require(a['ret']['seq'] < b['call']['seq'])
++
++    def empty_getters(values, receiver):
++        require(bool(values))
++        require(all(f['call']['self'] == receiver and f['call']['args'] == [] and
++                    f['call']['thread'] == 'main' for f in values))
++
++    browser = one(app('ArcBrowserApplication', 'createBrowser:withDelegate:forWindow:'))
++    require(len(browser['call']['args']) == 3 and reference(browser['ret']['ret'], 'ArcBrowser'))
++    new = callback(NEW_WC, BROWSER_BRIDGES, 3)
++    require(new['call']['args'][0] == browser['ret']['ret'] and
++            type(new['call']['args'][2]) is bool)
++    owner = new['call']['args'][1]
++    require(reference(owner, WC))
++    ended_before(browser, new)
++    # Reject other public owners, rather than guessing a fixture by its class.
++    require(all(f['call']['self'] == owner for f in app(WC)))
++    sessions = app(WC, 'mediaSession')
++    empty_getters(sessions, owner)
++    media = one({f['ret']['ret'] for f in sessions})
++    require(reference(media, MS) and all(f['call']['self'] == media for f in app(MS)))
++    registration = one(app(MS, 'setDelegate:'))
++    require(registration['parent'] is new and len(registration['call']['args']) == 1 and
++            registration['ret']['ret'] is None and registration['call']['thread'] == 'main')
++    delegate = registration['call']['args'][0]
++    require(any(reference(delegate, cls) for cls in MEDIA_BRIDGES))
++    require(any(f['parent'] is new and f['ret']['seq'] < registration['call']['seq'] for f in sessions))
++    created = callback(CREATED, MEDIA_BRIDGES, 2)
++    shown = callback(SHOW, MEDIA_BRIDGES, 1)
++    hidden = callback(HIDE, MEDIA_BRIDGES, 1)
++    require(not any(f['call']['sel'] == DESTROYED for f in fs))
++    require(all(f['call']['self'] == delegate and f['call']['args'][0] == owner
++                for f in (created, shown, hidden)))
++    initial = created['call']['args'][1]
++    require(reference(initial, CONTROLLER))
++    ended_before(new, created)
++    ended_before(created, shown)
++    ended_before(shown, hidden)  # Hide bounds this proof; it is not destruction.
++    getter = one(app(MS, 'pipController'))
++    empty_getters([getter], media)
++    require(getter['parent'] is shown and reference(getter['ret']['ret'], CONTROLLER))
++    require(any(f['parent'] is shown and f['ret']['seq'] < getter['call']['seq'] for f in sessions))
++    require(all(f['parent'] is shown and f['call']['self'] == getter['ret']['ret']
++                and f['call']['thread'] == 'main' for f in app(CONTROLLER)))
++
++    urls = app(WC, 'url')
++    empty_getters(urls, owner)
++    require(all(type(f['ret']['ret']) is str and f['ret']['ret'].startswith('url:') and
++                len(f['ret']['ret']) > 4 for f in urls))
++    require(len({f['ret']['ret'] for f in urls}) == 1)
++    sid_getters = app(WC, 'sessionId')
++    empty_getters(sid_getters, owner)
++    sid_refs = {f['ret']['ret'] for f in sid_getters}
++    require(all(reference(ref, 'ArcSessionID') for ref in sid_refs))
++    identifiers = app('ArcSessionID', 'identifier')
++    require(bool(identifiers) and {f['call']['self'] for f in identifiers} == sid_refs)
++    require(all(f['call']['args'] == [] and f['call']['thread'] == 'main' and
++                type(f['ret']['ret']) is int and 0 < f['ret']['ret'] <= 0x7fffffff for f in identifiers))
++    require(len({f['ret']['ret'] for f in identifiers}) == 1)
++    # Every SID read must precede its public identifier proof; no raw-ID join.
++    require(all(any(i['call']['self'] == s['ret']['ret'] and s['ret']['seq'] < i['call']['seq']
++                    for i in identifiers) for s in sid_getters))
++
++    def normalized_rows(key, expected_count):
++        values = normalized.get(key, [])
++        require(len(values) == expected_count)
++        return values
++
++    normalized_url = one({v['ret'] for v in normalized_rows(('->engine', '-', WC, 'url'), len(urls))})
++    normalized_sid = one({v['ret'] for v in normalized_rows(('->engine', '-', 'ArcSessionID', 'identifier'), len(identifiers))})
++    parsed_sid = json.loads(normalized_sid)
++    require(type(parsed_sid) is dict and set(parsed_sid) == {'native_session_id'} and
++            type(parsed_sid['native_session_id']) is int and parsed_sid['native_session_id'] > 0)
++    new_args = json.loads(normalized_rows(method(new['call']), 1)[0]['args'])
++    created_args = json.loads(normalized_rows(method(created['call']), 1)[0]['args'])
++    getter_row = normalized_rows(GETTER, 1)[0]
++    require(type(new_args) is list and len(new_args) == 3 and reference(new_args[1], WC))
++    require(type(created_args) is list and len(created_args) == 2 and created_args[0] == new_args[1] and
++            reference(created_args[1], CONTROLLER))
++    require(getter_row['args'] == '[]' and reference(json.loads(getter_row['ret']), CONTROLLER))
++    # The normalized values were produced by the existing loader. No new URL,
++    # SessionID, object-number or scalar normalization policy is introduced.
++    return (normalized_url, normalized_sid, new_args[2]), json.dumps(created_args[1])
++
++
++def align(golden_path, ours_path, golden, ours, caller_valid):
++    """Return unchanged inputs on any unsupported pair; never alter raw events."""
++    if not golden.get(GETTER) or not ours.get(GETTER):
++        return golden, ours
++    try:
++        g_owner, g_ret = proof(golden_path, golden, caller_valid)
++        o_owner, o_ret = proof(ours_path, ours, caller_valid)
++        require(g_owner == o_owner)
++    except (ValueError, TypeError, KeyError, OSError):
++        return golden, ours
++
++    def updated(calls, ret):
++        result = calls.copy()
++        result[GETTER] = [dict(calls[GETTER][0], ret=ret)]
++        return result
++
++    return updated(golden, g_ret), updated(ours, o_ret)

@@ -7,8 +7,11 @@ host gate, nested frontend regeneration tool/ACK, preserved current shared-heade
 bytes, final patch chain and all exact images must be sealed and freshly reviewed
 by the parent before any real invocation. Existing wrappers are unchanged.
 
-Only `webextras_initial_integration.py`, its test, these notes and distinct
-preparation logs were written. Tests use temporary checkouts, mocked runtime
+Only `webextras_initial_integration.py`, its test, these notes, the DISTINCT held
+`webextras_scenario_resources_held.patch` and its test, the distinct comparator
+closure increment/aggregate observation patch and test, and distinct preparation
+logs were written. The actual existing scenario runner is unchanged.
+Tests use temporary checkouts, mocked runtime
 commands, real private `git init/apply`, and extracted execution/gate functions.
 No real build, app, profile/cache, source publication, shared lock or board write
 was performed. These tests are not runtime acceptance.
@@ -24,7 +27,11 @@ Required fields are:
 - `pins`: immutable source/tool/proposal/private-image/harness/golden dependencies.
   Ordinary keys are safe checkout-relative paths. Read-only absolute pins may
   point into this checkout or the sibling Arc checkout, for the existing native
-  harness helper. This does not grant any sibling write authority.
+  harness helper, or to the fixed resolved Node/Python interpreters. This does
+  not grant any sibling write authority. Resource checker/test/notes, reviewed
+  freeze/review receipts, actual native DataPack cc/h/encoding header, official
+  Grit `data_pack.py`/`constants.py`, and interpreters are mandatory pins. The
+  UNSEALED template seeds the exact reviewed corrected-helper policy hashes.
 - `inventory`: exact BEFORE production file lists for `arc/api`, `arc/browser`
   and `arc/wp` (`.mm/.cc/.h/.gn/.gni`). Every listed member has an immutable pin or
   exact mutable image. Only exact newly owned targets are excluded from the
@@ -34,22 +41,48 @@ Required fields are:
   postimage before publication. Each private working directory is initialized as
   a Git repository so `git apply` cannot discover the live checkout above it.
 - `targets`: each source's `before` hash or null (original absence), `after` hash
-  and pinned private postimage `blob`. `manifest` has the same shape and is
+  and pinned private postimage `blob`, plus explicit `beforeMode/afterMode`.
+  Absence has null beforeMode; every new file has a sealed permission mode.
+  Existing-file modes must remain equal. Shared regeneration tools are immutable
+  baseline inputs and cannot be engine targets.
+  `manifest` has the same shape and is
   journalled separately. No source deletion is currently supported.
 - `patchOutputs`: every existing `patches/*.patch`, every pre/post MANIFEST owner,
   plus prospective `0010-webextras.patch`, with exact `before/after` hashes or
   absence. Full output inventories are checked at phase boundaries. Ownership
   must remain unique; existing assignments are preserved; newly owned native
   files use `0010-webextras.patch`.
-- `gitRepos`: `path`, actual `index` path, raw index SHA256, `head`, sealed
-  `environmentKey` and exact `intentToAdd` new-owned relative paths. Each actual
-  index path is independently discovered. Index copies are private. Only those
-  copies can receive `git add -N`, and they reset to the guarded entry image
-  before rollback regeneration. The real indexes are never written/restored.
-- `regeneration`: exact reviewed `argv`, `cwd`, `env`. Alternate-index environment
-  names are explicit configuration, not guessed frontend tool interfaces.
-  The pending helper must correctly scope outer versus nested repository index
-  handling. An inherited outer `GIT_INDEX_FILE` is not a valid nested index.
+- `gitRepos`: only `path`, independently discovered actual `index` path, raw
+  index `sha256`, and `head`. These are guards, never staging authority. Old
+  environmentKey/ITA fields are rejected. The executor neither copies indices
+  nor invokes add-N, and never restores a real index.
+- `regeneration`: exactly argv `./arc/tools/regen-patches.sh`, cwd `.`, empty env
+  overrides and `toolModes` for the two already-adopted immutable tools:
+  wrapper0755, helper0644. Both source hashes must be pins. No adoption command
+  exists. The separately approved303f8e07 baseline is wrapper4663d76c/helperc77d0180;
+  its owner grant/adoption oracle must precede config sealing. Both candidate
+  and recovery use this same baseline. Engine targets AND actual engine patch
+  changed paths cannot include either tool. Trusted Git metadata is read in
+  disposable directories; rename/copy operations are refused because apply's
+  numstat alone reports only their destination. No handwritten diff-body parser
+  or actual checkout Git command is used for this check. The helper discovers
+  sanitized actual owning indices, makes its own internal copies, and performs
+  exact manifest-only add-N there. Caller-selected ALT/ITA behavior is removed.
+- `observationTool`: distinct `before/after/blob/patch` for ONLY the owned
+  `webextras_scenario_current_run.py` resource/comparator-observation update. It is not an
+  engine target or generic persistent-tool privilege. The tool patch is strictly
+  reconstructed and adopted under the protected lock BEFORE the engine journal.
+  Apply/post-proof failure restores it before any engine publication. Once
+  independently adopted, engine rollback retains its five-key observation proof;
+  completion receipts explicitly say so. This does not authorize retaining any
+  global regeneration/sync tool without the lead's separate exact decision.
+- `resourceChecks`: separately sealed candidate/recovery `argv/cwd/expectHostGate`.
+  The exact CLI is resolved pinned Python, `-B`, the pinned helper path,
+  `--expect-host-gate present|absent --output {resource_output}`, with cwd `.`.
+  No `-c`, duplicate flag or unrelated program can hide the helper as an argument.
+  Initial candidate uses `present`, pre-integration recovery uses `absent`;
+  validate enforces those exact initial role modes, never an inferred skip.
+  A future already-host-gated batch needs a separate reviewed policy change.
 - `baselineFiles`: independently frozen current-run1 artifacts for each scenario;
   at minimum steps, coverage, runner summary, recovery, input manifest and both
   binary identity records. These baselines used different engine binaries and
@@ -85,11 +118,32 @@ worker exit, changed source/index/config, live phase/app/helper or un-restored
 profile/cache root identity HOLDs the protected lock. SIGKILL, reboot and arbitrary
 descendants escaping into unrelated new sessions are outside this protection.
 
-Entry preimages include absent state and file modes. Publication is journalled
+After worker reap and known child/app/helper drainage, the SAME guardian validates
+the worker's durable observation-tool handoff before source phase checks. Receipt
+image fields must match sealed before/after/blob/patch values and actual runner
+SHA; persistent adoption must agree with the completion retention bit and policy.
+A refused-before-attempt completion may have no receipt only with retained=false
+and the original runner bytes. Reverted refusal requires its exact durable receipt.
+ADOPTING, unknown, missing adopted, mismatched or nonboolean evidence HOLDs. The
+refresh changes only the validated tool flag; lock stamp, groups and config digest
+are not reset by constructing a new guardian. This is a separate correction after
+immutable09de/1b7, whose cached pre-worker false flag would otherwise falsely HOLD
+successful persistent adoption. It does not relax foreign source/index guards.
+
+Entry preimages include absent state and sealed file modes. Publication is journalled
 BEFORE the first atomic source replacement. Phase receipts freeze image hashes
-and immutable input pins. All MANIFEST native inputs are guarded. Before each
+and immutable input pins. Phase checks and each publication/rollback compare-and-
+swap verify BOTH source bytes and sealed modes for changed targets/MANIFEST.
+Journalled rollback modes must agree with sealed beforeMode; publication uses
+sealed afterMode, preserving existing executable bits. All MANIFEST native inputs
+are guarded. Before each
 build the pinned canonical runner's actual dependency closure must be declared
 and match the sealed source/tool inputs, including sibling native helper files.
+Inherited `GIT_*` routing/config-injection environment is stripped for Git
+operations; global/system Git configuration is disabled, optional locks are off,
+and no caller index is supplied. Local repo config and HEAD/index identity
+remain guarded as part of the reviewed checkout. The generator owns its internal
+private-copy isolation independently.
 
 Raw index byte drift always fails closed. A bounded read-only `ls-files
 --stage -v --debug` diagnostic is retained where detected, with optional Git locks
@@ -100,11 +154,13 @@ the real index or overwrites actual staging.
 On candidate failure, the executor first requires quiet command/app/helper
 processes and confirmed original-profile restoration for every started scenario.
 Only exact journalled before/after source and patch bytes can be restored. Unknown
-or foreign edits cause HOLD. Sources/MANIFEST are restored, private indexes reset,
-patches regenerated, and an originally absent now-unreferenced own patch removed
+or foreign edits cause HOLD. Sources/MANIFEST are restored and patches regenerated
+with the same immutable generator baseline, and an originally absent now-unreferenced own patch removed
 only if its bytes are the sealed candidate image. Baseline package recovery then
 calls the existing runner: rebuild, package, and exact accepted launch9/9. A failed
 or ambiguous recovery HOLDs rather than releasing a stale candidate package.
+The separately adopted owned observation tool stays installed; `ROLLED_BACK`
+does not mean that every tool file was reverted to its pre-tool image.
 
 ## Independent runtime gates
 
@@ -124,10 +180,20 @@ cannot be waived by a known-failing baseline.
 - All runs require correct ours156 app/recorded receipts, exact ordered unique
   launch inventory, natural Browser.close receipts, nonempty hooked raw traces,
   complete raw default comparator JSON/text, immutable source phase receipts,
-  actual packaged executable/helper/recorder identities, and verified profile
+  actual packaged executable/helper/recorder/**resources.pak** identities, and verified profile
   root restoration. Profile/cache dev+ino roots must match transaction entry;
   cache contents are not restored or claimed isolated. An unexpected new cache
   root HOLDs for parent preservation/recovery instead of deleting it.
+- Every successful scenario gate, including recovery launch, is followed BEFORE
+  the next scenario by the exact pinned resource checker. CLI0 alone is not a
+  proof. Receipt mode and passed/match booleans, all three exact textual resource
+  identities, native/Grit/decoder source pins, and built/package SHA must agree with
+  BOTH runtime resource identities and current packaged bytes. Receipts and raw
+  decoded/generated archives are retained. Historical run1 four-key identities
+  remain historical; new candidate/recovery outputs must contain the fifth key.
+  `nativePackSanity` must contain exactly intermediate/built/packaged records,
+  each version5 with native-loader and writer-determinism checks true. This is a
+  post-runtime proof before the next scenario, not a prelaunch interception.
 - Fatal markers include standard Chromium FATAL/DFATAL prefixes, Check/Assertion
   failure, EXC_BAD_ACCESS/INSTRUCTION, SIGABRT/SIGSEGV, relevant Received signal,
   crash-thread and fatal-error markers. This is an app-log audit, not a complete
@@ -142,17 +208,104 @@ normal OS exit status.
 
 ## Private checks and remaining review
 
-The unit suite covers successful private reconstruction, alternate-index-only
-regeneration, absent-file/orphan-patch rollback, baseline package-recovery phase,
+The unit suite covers successful private reconstruction, guard-only-index
+regeneration dispatch, absent-file/orphan-patch rollback, baseline package-recovery phase,
 partial publication, regeneration failure, cancellation, child/group drainage
 after bookkeeping failure, worker-death guardian HOLD, unknown profile/helper
 recovery, foreign source/patch/index preservation, output and new-header
 inventory, strict unsealed/ACK/pin/run-number/CLI refusal, known DevTools failure
 and genuine seven-row improvement, dirty global diff handling, missing or changed
 runtime evidence, actual binary drift, duplicate coverage, and eleven fatal
-marker negatives. Runtime commands and the Git host index are mocked; no real
-engine/tool interface has been executed.
+marker negatives. Runtime commands and basic fixture index guards are mocked.
+A separate test executes only COPIED reviewed303 tools against disposable real
+outer/nested repositories, including an immutable unindexed manifest leaf. It
+proves candidate output, exact recovery outputs, unchanged actual fixture index
+identities and unchanged baseline tool bytes/modes. No production tool or engine
+runtime has been executed.
+
+Four separate resource-observation tests extract the ACTUAL held runner's
+identity functions into a private framework fixture. They prove stable five-key
+identity, exact fixed PAK path, changed-PAK rejection, absent/symlink rejection,
+and the old four-key false-negative control. The actual runner is hash-guarded
+unchanged throughout. These are observation tests, not native PAK validity tests.
 
 No actual integration configuration is ready. Fresh independent source/test
 review, host-gate review, corrected regeneration helper/ACK, current-base staging
 and exact config sealing remain mandatory before the parent queues anything.
+Resource checker ca14402b remains historical HOLD: its permissive original Grit
+reader alone does not prove PAK validity. The only supported helper is corrected
+`webextras_frontend_resource_checked.py` aee01b90, freeze18c51bd6 and fresh review
+2d22fc23. These exact reviewed policy/source pins are explicit; no automatic
+version selection or actual generated-resource/PAK access was performed here.
+
+The frozen resource-only patch d14b121b is unchanged. A distinct
+`webextras_scenario_comparator_closure_held.patch` applies after it, and
+`webextras_scenario_observation_held.patch` provides the byte-identical aggregate
+for the one-patch persistent observation-tool interface. Both are proposals only.
+The comparator increment source-loads reviewed f60537a3 freezer bytes, includes
+its actual `comparison_files(ROOT)` closure in every phase inventory, and freezes
+an isolated `canonical-comparator` root. The broader source archive contains
+production headers and is never used as an executable comparator import root.
+Every comparison verifies that closed snapshot before and after execution. Its
+independent fixture canary can honestly be pending on a legacy comparator;
+canonical comparisons always execute the unchanged DEFAULT policy, without
+`--fixture-image`. This diagnostic is never runtime acceptance. The executor also
+loads the sealed runner from checked source bytes, bypassing Python bytecode.
+
+Nine private comparator-observation tests exercise exact aggregate composition,
+legacy-four/current-seven input default reports, source dependency inventory,
+missing helper, during-comparison tamper, unchecked source bytecode substitution,
+and snapshot bytecode rejection. Reviewed freezer closure tests are replayed
+separately. Actual existing runner/source bytes remain guarded unchanged.
+
+The f39dc85e executor snapshot is historical: its default publication permission
+0644 would have removed regen-patches.sh's0755 mode. The distinct mode correction
+archives exact f39 source/test/notes before editing, adds explicit sealed image
+modes and guards, and tests real temporary0755 publication/rollback and foreign
+chmod refusal. No production tool/source mode was changed or repaired here.
+
+
+The distinct post23dec no-write refusal increment does not validate a new
+baseline. Before spawning the worker, the SAME guardian records sealed config,
+launch/protected receipt identity, lock identity, genuine profile/cache root
+identities (including absence), and the runner/trusted executor SHA, mode,
+device/inode and file timestamps. Equal-byte replacement or chmod is uncertain.
+The durable snapshot is also held in guardian memory and checked after reaping.
+
+Only exact worker exit1, REFUSED_BEFORE_PUBLICATION, retained false, and an exact
+false failure.sourcePublished may use this path. The entire output inventory
+must contain only startup/failure/completion evidence and bounded read-only
+index diagnostics; any observation attempt, phase input/child/log, publication,
+journal, unknown file, directory or symlink blocks this exception. A reverted
+observation receipt uses the existing strict handoff/source/index checks.
+Matched worker PID/nonce, config, lock, trusted files and root identities and a
+quiet owned worker/phase/app/helper census remain mandatory. Foreign source,
+HEAD, staging and index bytes are not certified or overwritten by this path.
+
+The release classification is REFUSED_WITHOUT_WRITES_NOT_CURRENT_BASELINE with
+currentBaselineAsserted false, boundaryParity NOT ASSERTED and no normal OS exit
+claim. Missing/ambiguous evidence retains the lock. This exception supplies no
+runtime acceptance or authority to apply a stale config. Core integration and
+regeneration proposals remain independently unsealed; the earlier c6/d90
+regeneration proposal and stale11611 packet are historical HOLD after the lead
+changed the accepted tool/HEAD epoch. Actual production/shared sources, tools,
+real Git indices, apps and profiles were not modified during these private tests.
+
+
+The distinct generator-baseline adaptation archives exact a80 source/test/notes,
+its no-write increment and all review links before editing. It introduces no
+shared-tool adoption path. The old current-config packets and earlier c6/d90
+assumptions stay historical UNSEALED/HOLD; all11 entry and12 prospective output
+images, current source/HEAD/index pins and exact owner grant must be independently
+refreshed after older owners finish. Private tests model an already-adopted303
+baseline; they neither claim actual adoption nor capture the current live epoch.
+The generator's separate52-group private evidence remains pinned and was not
+rerun as part of this adapter. Native all-artifact adoption proof remains outside
+this executor increment.
+
+Raw-index byte guards deliberately remain strict. Build/query Git activity may
+refresh index stat metadata while full logical entries and flags remain equal;
+that can still HOLD candidate or recovery and requires explicit parent review.
+This adaptation adds no logical-equivalence parser, metadata refresh acceptance,
+real-index rewrite, or destructive recovery. Guardian and early no-write refusal
+semantics remain unchanged; neither supplies a baseline-validity/parity claim.

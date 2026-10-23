@@ -15,7 +15,7 @@ engine failure. No script synthesizes global input or touches a human profile.
 | Agent MCP tools | `arcmod-agent-mcp` | ready-to-record | Actual stdio initialize/list plus all 15 tools. Attach to exact harness PID/slug/port; separate pages, redacted fixture password, trusted text/click, stale element/native/page rejection, navigate/back/forward, PNG, PID-bound observed native New Window, exact close, detach preserves externally launched app. |
 | Profiles create/switch | `arcmod-profiles` | ready-to-record; runtime unverified | Exact owned name field; guarded Create-only or Next/sole-Space selection; exact destination warning and Switch it up. Observe assignment, select exact profile names, prove independent A markers, return old marker, then new-PID/same-profile persistence for both. No private state mutation or action retry. |
 | Spaces create/switch | `arcmod-spaces` | ready-to-record; runtime unverified | Checked one initial Space; one exact owned Space-name setter and Create button; require two Space entries and fixed new name. Previous/Next must restore exact A/B selection, then repeat in a new PID with the same no-symlink disposable profile. Static identifiers/bindings are recovered; live editor behavior, placement and persistence remain unverified. |
-| Single Little Arc | `arcmod-little-arc` | blocked; full WRITE-only script | Reviewed full profile setup, exact-PID external A/B reuse, native profile replacement, close/reopen and new-PID restart checks are written. Missing approved isolated opt-in/default-build proof stops before launch/actions. Actual AX/menu/delivery behavior remains unverified; ordinary agent redirects are separate coverage. |
+| Single Little Arc | `arcmod-little-arc` | blocked; full WRITE-only script | Reviewed full profile setup, exact-PID external A/B reuse, native profile replacement, close/reopen and new-PID restart checks are written. Lead#143529 holds all executed native mod changes for Rahul’s live check. Missing approved opt-in/default-build proof stops before launch/actions. Actual AX/menu/delivery behavior remains unverified; ordinary agent redirects are separate coverage. |
 | App-event key shortcuts | `arcmod-key-shortcuts` | ready-to-record; unrecorded until morning | Tests-owned `arcmod-key-driver.m` sends only seven whitelisted keyDown/keyUp pairs through public NSApplication.sendEvent inside the exact disposable PID and already-key observed window. Fixed native outcomes cover Cmd+T/L/comma/W/Shift+T/N/Option+N; optional local-monitor observations are retained in receipts. This tests app-event/key-equivalent routing, not OS hardware/WindowServer delivery or keyboard layouts. |
 | Import from disposable fixture | `arcmod-disposable-import` | ready-to-record; runtime unverified | One explicit directory/HTML, native13/public12 descriptor and bookmark mask2, two live dedicated targets, one import, five own-delegate sidecar events, exact folder/leaf result and new-PID/same-profile persistence. Static route and code reviewed; no ADK callback/date/parity claim. |
 
@@ -104,7 +104,10 @@ names are saved under outDir for review; stdout remains JSON-RPC only.
    action. Independent review is CLEAN; frozen SHA and validation receipt are
    `logs/wp/scenarios-profiles-freeze.json`. No native run has occurred.
 
-2. Single Little Arc: provide an explicitly isolated disposable bundle/harness
+2. Single Little Arc is **HELD by lead#143529 for Rahul’s live check**. The
+   following isolated-bundle proposal is historical/unapplied; no agent may
+   implement the executed native variant under the tools-only exception. It would
+   require an explicitly isolated disposable bundle/harness
    retaining the human policy, without touching ArcMod's human app/data or
    removing the ordinary agent safety isolation. Its profile replacement and
    repeated external URL delivery need exact PID/window ownership evidence.
@@ -142,8 +145,10 @@ names are saved under outDir for review; stdout remains JSON-RPC only.
    this is not native runtime proof. Source/inverse/proofs and the unapproved
    receipt schema are in `logs/wp/scenarios-little-arc-full-static/`.
    Lead#142534 approved a tools-only isolated switch preserving the default
-   build. Clarification#142744 for the concrete generated native variant remains
-   pending. No approved receipt or native variant exists; the case stays blocked.
+   build. Lead#143529 resolved clarification#142744 by holding all changes to
+   executed native mod code for Rahul. Proposal work stopped; no approved receipt
+   or native variant exists. The complete WRITE-only case stays blocked, and the
+   other nine flows remain written/unrecorded under the current task.
 3. Key shortcuts now have a tests-owned in-process AppKit driver. It constructs
    public NSEvent keyDown/keyUp objects and calls NSApplication.sendEvent for an
    exact observed agent window, refusing dispatch if that window is no longer key.
@@ -206,3 +211,9 @@ selector coverage only from accepted recorder transcripts after morning runs.
 The agent Little Arc redirect is documented behavior in
 `../arc/notes/agent-sessions.md`, so claiming singleton coverage from it would
 contradict that source. No architecture/spec change is made here.
+
+## Separate legacy command-bar golden upgrade plan
+
+The accepted `command-bar-autocomplete` v1 golden remains unchanged. Omnibox Run3 is genuine supplementary current-editor AX proof, but its private Python runner does not produce standard scenario steps and its compared raw artifact stops before quit. It cannot be promoted as a recorder-only upgrade. The offline audit and seven byte-exact comparison reproductions are retained in `logs/wp/scenarios-commandbar-v2-route/` (audit SHA478fa08f); all 167 legacy owned calls remain unattributed.
+
+After separate native-recording authorization, adapt the existing scenario to the public current-editor-only AX route, retain its fixed input and local-suggestion checks, use standard launch/quit and require complete caller-aware causal/raw and actual-visit epoch checks. Exclude the private helper’s owned-cell fallback. Preserve v1 immutably and accept only a complete canonical candidate with every fixed step and full transcript gate passing. The latest reviewed private four-file adaptation and unapplied patch are archived at `logs/wp/scenarios-commandbar-canonical-v2-private-r4/` (patch6324ba24; parenta02e7b13; freshreview1b0e6241). Independent raw64 and actual filesystem12 controls pass, and consumer145524 closes the earlier P2/P3 findings. The final snapshot is archived with exclusive creation before prefix validation. Compiler/Bun/fullTS proof is explicitly historical R3 with identical product files; prior packets remain immutable. No scenario source has been published or recorded, and runtime integration remains unverified. It is separate from the ten requested ArcMod scripts and the additional termination case. No navigation or completion-block delivery coverage is implied.

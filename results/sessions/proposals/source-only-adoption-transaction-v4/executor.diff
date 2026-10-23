@@ -1,0 +1,68 @@
+--- v3-b362.py
++++ v4.py
+@@ -32,6 +32,25 @@
+ def file_sha(path):return digest(Path(path).read_bytes())
+ def stamp():return datetime.datetime.now(datetime.timezone.utc).isoformat()
+ class Abort(RuntimeError):pass
++
++def failure_text(error):return type(error).__name__+': '+str(error)[:4096]
++def select_compile_command(raw,target,source):
++ # Recursive Siso output may contain unrelated binary data. Filter BYTES using
++ # exact output and source tokens; decode ONLY one uniquely selected argv line.
++ def argument(line,flag):
++  pattern=rb'(?:^|[ \t])'+re.escape(flag)+rb'[ \t]+("[^"\r\n]*"|\'[^\'\r\n]*\'|[^ \t\r\n]+)'
++  values=re.findall(pattern,line)
++  return [v[1:-1]if len(v)>=2 and v[:1]==v[-1:]and v[:1]in [b'"',b"'"]else v for v in values]
++ expected_output=target.encode('utf-8');expected_source=source.encode('utf-8');selected=[]
++ for line in raw.splitlines():
++  if b'clang'not in line:continue
++  outputs=argument(line,b'-o');sources=argument(line,b'-c')
++  if outputs==[expected_output]and len(sources)==1 and(sources[0]==expected_source or sources[0].endswith(b'/'+expected_source)):selected.append(line)
++ assert len(selected)==1,'Expected one exact Siso compile command for '+target+'; found '+str(len(selected))
++ argv=shlex.split(selected[0].decode('utf-8',errors='strict'))
++ assert argv.count('-o')==1 and argv[argv.index('-o')+1]==target
++ assert argv.count('-c')==1 and(argv[argv.index('-c')+1]==source or argv[argv.index('-c')+1].endswith('/'+source))
++ return argv
+ 
+ class Transaction:
+  def __init__(self,args):
+@@ -222,13 +241,13 @@
+   overlay=self.evidence/'overlay.json';overlay.write_text(json.dumps({'version':0,'case-sensitive':'true','roots':mappings},indent=2)+'\n');self.state['compiler']={};env={**os.environ,'PATH':str(self.root/'depot_tools')+':'+os.environ['PATH']};cwd=self.root/'chromium/src/out/Base'
+   for key,(target,n)in COMPILERS.items():
+    querylog=self.evidence/(key+'-query.log');code,_=self.run(['siso','query','commands','-C','.',target],key+'-query',cwd=cwd,env=env);assert code==0
+-   original=shlex.split(next(x for x in reversed(querylog.read_text().splitlines())if 'clang'in x and ' -c 'in x and n in x));clean=[];removed=[];skip=False
++   original=select_compile_command(querylog.read_bytes(),target,n);clean=[];removed=[];skip=False
+    for a in original:
+     if skip:removed.append(a);skip=False;continue
+     if a in ['-o','-MF','-MT','-MQ','-serialize-diagnostics','-dependency-file']:removed.append(a);skip=True;continue
+     if a in ['-c','-MMD','-MD','-MP']or a.startswith('-fcrash-diagnostics-dir='):removed.append(a);continue
+     clean.append(a)
+-   clean+=['-ivfsoverlay',str(overlay),'-fsyntax-only','-Wno-unused-command-line-argument','-fcrash-diagnostics-dir='+str(self.evidence/('crash-'+key))];assert '-Werror'in clean and all(x not in clean for x in ['-c','-o','-MF','-MD','-MMD']);code,log=self.run(clean,key+'-syntax',cwd=cwd,env=env);self.state['compiler'][key]={'original':original,'command':clean,'removedFlags':removed,'exit':code,'logSHA256':file_sha(log)};self.save();assert code==0 and log.stat().st_size==0,(key,'syntax failed/diagnostics')
++   clean+=['-ivfsoverlay',str(overlay),'-fsyntax-only','-Wno-unused-command-line-argument','-fcrash-diagnostics-dir='+str(self.evidence/('crash-'+key))];assert '-Werror'in clean and all(x not in clean for x in ['-c','-o','-MF','-MD','-MMD']);code,log=self.run(clean,key+'-syntax',cwd=cwd,env=env);self.state['compiler'][key]={'queryLogSHA256':file_sha(querylog),'original':original,'command':clean,'removedFlags':removed,'exit':code,'logSHA256':file_sha(log)};self.save();assert code==0 and log.stat().st_size==0,(key,'syntax failed/diagnostics')
+  def make_manifest(self):
+   text=self.manifest_before.decode();entries=self.parse_manifest(self.manifest_before);added=[]
+   for n in NATIVE:
+@@ -333,7 +352,7 @@
+   while True:
+    try:self.regenerate(rollback=True);break
+    except Exception as error:
+-    self.state['status']='ROLLBACK_REGEN_HOLD';self.state['rollbackError']=repr(error);self.save();print('HOLDING LOCK: rollback regen failed; retrying; inspect evidence',flush=True);time.sleep(5)
++    self.state['status']='ROLLBACK_REGEN_HOLD';self.state['rollbackError']=failure_text(error);self.save();print('HOLDING LOCK: rollback regen failed; retrying; inspect evidence',flush=True);time.sleep(5)
+   assert all(self.read_safe(self.current(n))==v for n,v in self.backup.items());assert self.read_safe(self.root/'patches/MANIFEST')==self.manifest_before
+   recovered={n:(self.read_safe(self.root/'patches'/n)if(self.root/'patches'/n).exists()else None)for n in self.patch_backup}
+   deltas={n:{'beforeSHA256':digest(self.patch_backup[n])if self.patch_backup[n]is not None else None,'afterSHA256':digest(v)if v is not None else None}for n,v in recovered.items()if v!=self.patch_backup[n]}
+@@ -351,12 +370,12 @@
+   try:
+    self.capture();self.stage_changes();self.syntax();self.make_manifest();self.publish();self.regenerate();self.official_check();self.runtime();self.verify_postimages();self.check_signal();self.state['status']='MOCK_APPLIED'if self.mock else'APPLIED';self.state['finishedUTC']=stamp();self.save();self.check_signal();return 0
+   except BaseException as error:
+-   self.state['failure']=repr(error);self.state['deferredSignals']=self.pending[:];self.best_effort_save()
++   self.state['failure']=failure_text(error);self.state['deferredSignals']=self.pending[:];self.best_effort_save()
+    while True:
+     try:self.rollback();self.verify_cleanup_or_hold();break
+     except BaseException as rollback_error:
+      # Keep the process/lock alive and retry after external repair.
+-     self.state['status']='ROLLBACK_HOLD';self.state['rollbackError']=repr(rollback_error);self.best_effort_save();time.sleep(2)
++     self.state['status']='ROLLBACK_HOLD';self.state['rollbackError']=failure_text(rollback_error);self.best_effort_save();time.sleep(2)
+    self.state['status']='ROLLED_BACK'if self.ever_published else'ABORTED_NO_WRITES';self.state['finishedUTC']=stamp();self.best_effort_save();return 1
+  def verify_postimages(self):
+   self.check_signal();self.verify_frozen_runtime_pins();assert all(file_sha(self.root/n)==h for n,h in self.broad_entry_pins.items()if n!=OWN),'broad entry source drift after runtime';assert self.patches_match(self.generated_patch_images),'post-runtime maintained-patch drift';assert all(self.read_safe(self.current(n))==v for n,v in self.expected.items()),'post-runtime source drift';assert self.read_safe(self.root/'patches/MANIFEST')==self.manifest_after,'post-runtime MANIFEST drift';self.lock_check();self.state['postimages']={n:file_sha(self.current(n))for n in TARGETS};self.state['maintainedPatchPostimages']={p.name:file_sha(p)for p in(self.root/'patches').glob('*.patch')};self.save()

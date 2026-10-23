@@ -1,0 +1,45 @@
+--- a/arc/api/arc_sessions_restore.mm
++++ b/arc/api/arc_sessions_restore.mm
+@@ -238,7 +238,7 @@
+ @interface SessionsRestoreRequest ()
+ - (void)performRestore;
+ - (void)retryAfterActiveRestore;
+-- (void)performNativeWindowRestore:(sessions::TabRestoreService*)service identifier:(SessionID)identifier;
++- (void)performNativeCreatedBrowserRestore:(sessions::TabRestoreService*)service identifier:(SessionID)identifier;
+ - (arcmod::SessionBrowserCreatedCallback)prepareFactory:(Profile*)profile params:(BrowserWindowCreateParams&)params;
+ - (void)finish:(ArcBrowser*)browser;
+ @end
+@@ -353,7 +353,7 @@
+     }
+   });
+ }
+-- (void)performNativeWindowRestore:(sessions::TabRestoreService*)service identifier:(SessionID)identifier {
++- (void)performNativeCreatedBrowserRestore:(sessions::TabRestoreService*)service identifier:(SessionID)identifier {
+   static const bool installed = [] {
+     arcmod::GetSessionBrowserFactoryHook() = base::BindRepeating(
+         [](Profile* profile, BrowserWindowCreateParams& params) -> arcmod::SessionBrowserCreatedCallback {
+@@ -434,12 +434,18 @@
+     [keepAlive finish:nil];
+     return;
+   }
+-  if (selected->type == sessions::tab_restore::WINDOW &&
+-      (*matchedID == selected->id || *matchedID == selected->original_id)) {
+-    [keepAlive performNativeWindowRestore:service identifier:*matchedID];
+-    return;
+-  }
+-  // Non-root WINDOW/TAB/GROUP paths remain the preexisting, uncovered route.
++  const bool matchesRoot = *matchedID == selected->id || *matchedID == selected->original_id;
++  const bool createsNativeTabBrowser = selected->type == sessions::tab_restore::TAB &&
++      !static_cast<const sessions::tab_restore::Tab&>(*selected).group.has_value();
++  if (matchesRoot && (selected->type == sessions::tab_restore::WINDOW || createsNativeTabBrowser)) {
++    // NEW_FOREGROUND_TAB + nil context ignores the old TAB browser_id; an
++    // ungrouped root TAB therefore reaches native creation/remapping. A grouped
++    // TAB may redirect into existing B and has different original completion
++    // behavior, so do not arm this request for that unresolved destination.
++    [keepAlive performNativeCreatedBrowserRestore:service identifier:*matchedID];
++    return;
++  }
++  // Grouped TAB/GROUP/partial WINDOW paths remain preexisting and uncovered.
+   // Reserve the profile before creating the browser or invoking app code.
+   // A nested request must not consume the native entry that this request uses.
+   _activeRestore = std::make_unique<ScopedBrowserRestore>(_context, self);

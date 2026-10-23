@@ -1,0 +1,16 @@
+{
+  "manifest": "results/sessions/batch6/fixtures.sha256.json",
+  "source": "/tmp/arccore-sessions-tab-restart-v6.mm",
+  "sha256": "26f3fcf448a9271400b67d00d43c9e42095caea6605945cb51a929e469fcd617",
+  "runner": "/tmp/arccore-sessions-tab-restart-v6.ts",
+  "runnerSHA256": "c6504e3a51dede8d35837c5fdd9dbeb70d0677eef07316cfe401ee98d3381fc7",
+  "dylib": "/tmp/arccore-sessions-tab-restart-v6.dylib",
+  "dylibSHA256": "27c95a13797463327a306379d26dbdaaf7b962d6c9046dcb989044850131ccf1",
+  "storage": "/tmp/arccore-sessions-storage-snapshot.ts",
+  "storageSHA256": "c07dbd0feb9a429ac39994aa936020ac0aa6c5dcf2457fd511abd0ff903824a2",
+  "observations": [
+    "results/sessions/tab-restart-original-run1",
+    "results/sessions/tab-restart-ours-run1"
+  ],
+  "scope": "Two individually closed tabs across a same-profile/new-PID restart; excludes full-window/open-session startup parity. Standard harness Browser.close shutdown is required and any SIGTERM fallback fails acceptance. Driver-origin calls remain in raw transcripts; default boundary diff excludes them, so exact driver-call/return gates and fixed sidecar assertions are independently required."
+}

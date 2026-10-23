@@ -6,7 +6,6 @@ apps, restores a Git index, accepts global boundary parity, or releases a HOLD.
 """
 import argparse
 import hashlib
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -15,16 +14,54 @@ import signal
 import stat
 import subprocess
 import sys
+import tempfile
 import time
+import types
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
+NODE = Path('/opt/homebrew/bin/node').resolve()
+PYTHON = Path(sys.executable).resolve()
 SCENARIOS = ('launch-slice', 'devtools', 'media', 'pdf', 'media-pip')
 SIGNALS = (signal.SIGINT, signal.SIGTERM, signal.SIGHUP)
 LAUNCH = ('S1 launch', 'S2 open A', 'S3 navigate', 'S4 store', 'S5 close + new tab',
           'S6 quit', 'S7 relaunch', 'S7 readback', 'S8 quit')
 SECTIONS = ('missing', 'extra', 'return_mismatch', 'arg_mismatch', 'count_mismatch')
+RESOURCE_IDS = {'DEVTOOLS_COMPATIBILITY_JS', 'PANELS_ELEMENTS_ELEMENTS_JS', 'UI_LEGACY_LEGACY_JS'}
+RESOURCE_CHECKER = 'arc/browser/webextras_frontend_resource_checked.py'
+RESOURCE_INPUTS = (RESOURCE_CHECKER, 'chromium/src/ui/base/resource/data_pack.cc',
+                   'chromium/src/ui/base/resource/data_pack.h', 'chromium/src/ui/base/resource/resource_handle.h',
+                   'chromium/src/tools/grit/grit/format/data_pack.py', 'chromium/src/tools/grit/grit/constants.py')
+RESOURCE_POLICY = {
+    RESOURCE_CHECKER: 'aee01b900c0bfaa527995f893167a525a1a9984f2f5e5e8f76370dc98ce99b74',
+    'arc/browser/webextras_frontend_resource_checked_test.py': '0c887aa79737c142c78a5c1252ef2e44cdbc14f059bf7c78328ba24a858a455c',
+    'arc/browser/webextras_frontend_resource_checked_notes.md': 'e8716c369c658c544c2c29b1adf5e76848e04198d3ae4f97160c8c3834b9a4e3',
+    'chromium/src/ui/base/resource/data_pack.cc': '11dcac3de60b8f007c6cc1b1f4be4ca420e6e347bb825ebdcacb9c08405e1c57',
+    'chromium/src/ui/base/resource/data_pack.h': '97e9285a0b748b673fd586c88d1b6a1c8ad8e5294aa27e3ab9eb58925d6bd8ef',
+    'chromium/src/ui/base/resource/resource_handle.h': '3e18062fb8452ac6a0177e3e66ec434945caa9d0d2315a2df21bb8ac673b7e20',
+    'chromium/src/tools/grit/grit/format/data_pack.py': '323cc5492ec6037a65408f0ea0413bd9d098a06b7c0216067e8abf7b64f09d4e',
+    'chromium/src/tools/grit/grit/constants.py': '143062b300d5a64b0ba9f8bebc1b3e88ef880fe1e9298edd3b80f786a451d443',
+    'logs/wp/webextras-frontend-resource-native-sanity/freeze.json': '18c51bd6d8832404cb35c34662ddc4baea349951ebd26cf5a95de8e9c082e960',
+    'logs/wp/webextras-frontend-resource-sanity-review-worker/review.json': '2d22fc23ea5ed6027dde80f792c6c1be2b8453f472ccf428f9b82807d0f8fef5',
+}
 CANCELLED = False
+REGEN_TOOLS = {'arc/tools/regen-patches.sh': 0o755, 'arc/tools/regen-chromium-patches.py': 0o644}
+
+
+def source_module(path, expected):
+    """Load the exact sealed source image without consulting Python bytecode."""
+    require(sha(path) == expected, 'module source differs from sealed image')
+    source = path.read_bytes()
+    require(hashlib.sha256(source).hexdigest() == expected, 'module changed while reading')
+    module = types.ModuleType('webextras_checked_source')
+    module.__file__ = str(path)
+    exec(compile(source, str(path), 'exec'), module.__dict__)
+    require(sha(path) == expected, 'module changed while executing source')
+    return module
+
+
+def image_state(path):
+    return sha(path), stat.S_IMODE(path.stat().st_mode) if path.exists() else None
 
 
 def cancel_handler(path):
@@ -36,6 +73,36 @@ def cancel_handler(path):
         except OSError:
             pass
     return request
+
+
+def git_environment():
+    env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+    env.update(GIT_OPTIONAL_LOCKS='0', GIT_CONFIG_GLOBAL='/dev/null', GIT_CONFIG_NOSYSTEM='1')
+    return env
+
+
+def patch_changed_paths(path, cwd, expected):
+    """Use Git's metadata reader in disposable space, never an actual checkout."""
+    data = path.read_bytes()
+    require(hashlib.sha256(data).hexdigest() == expected, 'engine patch differs from sealed image')
+    with tempfile.TemporaryDirectory(prefix='webextras-patch-paths-') as private:
+        result = subprocess.run(['git', 'apply', '--numstat', '-z', '-'], input=data,
+                                cwd=private, env=git_environment(), capture_output=True)
+        summary = subprocess.run(['git', 'apply', '--summary', '-'], input=data,
+                                 cwd=private, env=git_environment(), capture_output=True)
+    require(result.returncode == 0 and result.stdout, 'unreadable/empty engine patch metadata')
+    # apply --numstat reports only the destination for a rename. Refuse these
+    # operations rather than accidentally admitting a renamed baseline source.
+    require(summary.returncode == 0 and not any(line.lstrip().startswith((b'rename ', b'copy '))
+            for line in summary.stdout.splitlines()), 'engine patch rename/copy is unsupported')
+    paths = set()
+    for row in result.stdout.split(b'\0')[:-1]:
+        fields = row.decode().split('\t', 2)
+        require(len(fields) == 3 and fields[2], 'unsupported engine patch rename metadata')
+        name = Path(fields[2])
+        require(not name.is_absolute() and '..' not in name.parts, 'unsafe engine patch path')
+        paths.add(str(Path(cwd) / name))
+    return paths
 
 
 def require(value, message):
@@ -83,7 +150,8 @@ def pin_path(root, name):
     if not path.is_absolute():
         return relative(root, name)
     require(path.resolve().is_relative_to(root.resolve()) or
-            path.resolve().is_relative_to((root.parent / 'arc').resolve()), 'external pin outside checkout/sibling Arc')
+            path.resolve().is_relative_to((root.parent / 'arc').resolve()) or
+            path in (NODE, PYTHON), 'external pin outside checkout/sibling Arc/fixed interpreters')
     require(not path.is_symlink(), 'symlink external pin')
     return path
 
@@ -102,10 +170,13 @@ def atomic_bytes(path, data, mode=0o644):
 def template():
     return {'schema': 1, 'status': 'UNSEALED', 'repo': str(ROOT),
             'acknowledgments': {'hostGate': '', 'regenerationInterface': ''},
-            'pins': {}, 'inventory': {}, 'patches': [], 'targets': {},
+            'pins': dict(RESOURCE_POLICY), 'inventory': {}, 'patches': [], 'targets': {},
             'manifest': {}, 'patchOutputs': {}, 'gitRepos': [],
-            'regeneration': {'argv': [], 'cwd': '.', 'env': {}},
-            'observationTool': {}, 'resourceChecks': {'candidate': {}, 'recovery': {}},
+            'regeneration': {'argv': ['./arc/tools/regen-patches.sh'], 'cwd': '.', 'env': {},
+                             'toolModes': dict(REGEN_TOOLS)},
+            'observationTool': {}, 'resourceChecks': {role: {'argv': [str(PYTHON), '-B', RESOURCE_CHECKER,
+                '--expect-host-gate', mode, '--output', '{resource_output}'], 'cwd': '.', 'expectHostGate': mode}
+                for role, mode in [('candidate', 'present'), ('recovery', 'absent')]},
             'baselineFiles': {}, 'runNumbers': {},
             'note': 'No execution until parent seals reviewed exact images, tools and ACK evidence.'}
 
@@ -126,6 +197,7 @@ def validate(config, root):
     require(isinstance(config.get('targets'), dict) and config['targets'], 'empty targets')
     require('patches/MANIFEST' not in config['targets'], 'MANIFEST must use its separate journal')
     images = {**config['targets'], 'patches/MANIFEST': config.get('manifest', {})}
+    require(not set(REGEN_TOOLS) & set(images), 'shared regeneration baseline cannot be an engine target')
     observation_path = 'arc/browser/webextras_scenario_current_run.py'
     observation = config.get('observationTool', {})
     require(set(observation) == {'before', 'after', 'blob', 'patch'} and observation_path not in images,
@@ -137,10 +209,14 @@ def validate(config, root):
     require(observation_path not in config['pins'], 'persistent tool must use its separate two-phase image')
     for name, image in images.items():
         relative(root, name)
-        require(set(image) == {'before', 'after', 'blob'}, 'invalid image: ' + name)
+        require(set(image) == {'before', 'after', 'blob', 'beforeMode', 'afterMode'}, 'invalid image: ' + name)
         require(image['before'] is None or digest.fullmatch(image['before']), 'invalid preimage')
         require(isinstance(image['after'], str) and digest.fullmatch(image['after']), 'invalid postimage')
         require(image['before'] != image['after'], 'unchanged publication target')
+        require(type(image['afterMode']) is int and 0 <= image['afterMode'] <= 0o777 and
+                ((image['before'] is None and image['beforeMode'] is None) or
+                 (type(image['beforeMode']) is int and image['beforeMode'] == image['afterMode'])),
+                'existing target mode must be preserved; new target mode must be sealed')
         relative(root, image['blob'])
     outputs = config.get('patchOutputs')
     require(isinstance(outputs, dict) and outputs, 'missing all regeneration output images')
@@ -154,6 +230,8 @@ def validate(config, root):
         require(set(patch) == {'path', 'sha256', 'cwd'}, 'invalid patch inventory')
         relative(root, patch['path']); relative(root, patch['cwd'])
         require(config['pins'].get(patch['path']) == patch['sha256'], 'patch not pinned')
+        require(not set(REGEN_TOOLS) & patch_changed_paths(relative(root, patch['path']), patch['cwd'], patch['sha256']),
+                'engine patch changes shared regeneration baseline')
     require(config.get('inventory'), 'missing production inventory')
     require(set(config['inventory']) == {'arc/api', 'arc/browser', 'arc/wp'}, 'incomplete Arc production inventory')
     for folder, names in config['inventory'].items():
@@ -162,24 +240,20 @@ def validate(config, root):
                 'production content not pinned')
     require(config.get('gitRepos'), 'missing index protection')
     for repo in config['gitRepos']:
-        require(set(repo) == {'path', 'index', 'sha256', 'head', 'environmentKey', 'intentToAdd'}, 'invalid Git repository contract')
+        require(set(repo) == {'path', 'index', 'sha256', 'head'},
+                'invalid Git repository contract')
         relative(root, repo['path']); relative(root, repo['index'])
-        require(digest.fullmatch(repo['sha256']) and re.fullmatch(r'[A-Z_][A-Z0-9_]*', repo['environmentKey'])
-                and repo['environmentKey'] not in ('HOME', 'PATH', 'PWD', 'CODEX_HOME'), 'invalid sealed alternate-index interface')
-        require(isinstance(repo['intentToAdd'], list), 'invalid intent-to-add inventory')
-        for name in repo['intentToAdd']:
-            target = str(Path(repo['path']) / name)
-            relative(root, target)
-            require(target in config['targets'] and config['targets'][target]['before'] is None,
-                    'intent-to-add is not an exact newly owned target')
-    require(len({r['environmentKey'] for r in config['gitRepos']}) == len(config['gitRepos']),
-            'duplicate alternate-index environment interface')
+        require(isinstance(repo['sha256'], str) and digest.fullmatch(repo['sha256']) and
+                isinstance(repo['head'], str) and repo['head'], 'invalid guard-only Git identity')
+    require(len({r['path'] for r in config['gitRepos']}) == len(config['gitRepos']) and
+            sum(r['path'] == 'chromium/src' for r in config['gitRepos']) == 1, 'unique outer Chromium guard required')
     regeneration = config.get('regeneration', {})
-    require(set(regeneration) == {'argv', 'cwd', 'env'} and regeneration['argv']
-            and all(isinstance(x, str) and x for x in regeneration['argv']), 'unsealed regeneration argv')
-    relative(root, regeneration['cwd'])
-    require(isinstance(regeneration['env'], dict) and all(isinstance(k, str) and isinstance(v, str)
-            for k, v in regeneration['env'].items()), 'invalid sealed regeneration environment')
+    require(set(regeneration) == {'argv', 'cwd', 'env', 'toolModes'} and
+            regeneration['argv'] == ['./arc/tools/regen-patches.sh'] and regeneration['cwd'] == '.' and
+            regeneration['env'] == {}, 'regeneration must invoke fixed baseline wrapper from root without overrides')
+    require(regeneration['toolModes'] == REGEN_TOOLS and
+            all(type(v) is int for v in regeneration['toolModes'].values()) and
+            all(name in config['pins'] for name in REGEN_TOOLS), 'shared regeneration baseline hashes/modes not sealed')
     numbers = config.get('runNumbers', {})
     require(set(numbers) == {*SCENARIOS, 'recovery-launch-slice'}, 'incomplete runtime inventory')
     values = [numbers[k] for k in (*SCENARIOS, 'recovery-launch-slice')]
@@ -204,16 +278,19 @@ def validate(config, root):
                 'accepted golden artifacts not pinned: ' + scenario)
     checks = config.get('resourceChecks', {})
     require(set(checks) == {'candidate', 'recovery'}, 'both resource-check roles must be sealed')
-    checker = 'arc/browser/webextras_frontend_resource_check.py'
-    require(checker in config['pins'], 'resource checker not pinned')
+    checker = RESOURCE_CHECKER
+    require(all(config['pins'].get(n) == digest for n, digest in RESOURCE_POLICY.items())
+            and all(n in config['pins'] for n in RESOURCE_INPUTS), 'reviewed native resource policy not exactly pinned')
+    require(str(NODE) in config['pins'], 'fixed resource decoder Node binary not pinned')
+    require(str(PYTHON) in config['pins'], 'resource checker Python interpreter not pinned')
     for role, check in checks.items():
         require(set(check) == {'argv', 'cwd', 'expectHostGate'} and check['expectHostGate'] in ('present', 'absent'),
                 'invalid role-specific resource check')
+        require(check['expectHostGate'] == ('present' if role == 'candidate' else 'absent'),
+                'initial integration requires candidate-present/recovery-absent resources')
         argv = check['argv']; relative(root, check['cwd'])
-        require(isinstance(argv, list) and all(isinstance(a, str) for a in argv) and argv.count('{resource_output}') == 1
-                and (checker in argv or str(root / checker) in argv), 'unsealed resource-check argv')
-        require('--expect-host-gate' in argv and argv[argv.index('--expect-host-gate') + 1] == check['expectHostGate']
-                and '--output' in argv and argv[argv.index('--output') + 1] == '{resource_output}', 'resource CLI/mode mismatch')
+        require(check['cwd'] == '.' and argv == [str(PYTHON), '-B', checker, '--expect-host-gate',
+                check['expectHostGate'], '--output', '{resource_output}'], 'resource CLI/mode mismatch')
     return config
 
 
@@ -366,6 +443,15 @@ def directory_id(path):
     return {'dev': value.st_dev, 'ino': value.st_ino}
 
 
+def file_identity(path):
+    """Content plus replacement/chmod identity, including across the hash read."""
+    require(not path.is_symlink() and path.is_file(), 'missing regular identity file')
+    fields = ('st_dev', 'st_ino', 'st_size', 'st_mtime_ns', 'st_ctime_ns', 'st_mode')
+    before = path.stat(); digest = sha(path); after = path.stat()
+    require(all(getattr(before, key) == getattr(after, key) for key in fields), 'identity changed while hashing')
+    return {'sha256': digest, **{key: getattr(after, key) for key in fields}}
+
+
 class Transaction:
     def __init__(self, config, output, backend=None):
         self.root, self.output, self.config = ROOT, Path(output), validate(config, ROOT)
@@ -376,7 +462,6 @@ class Transaction:
         self.phase = 0
         self.current = 'before'
         self.lock = None
-        self.indexes = {}
         self.roots = {}
         receipt = self.output / 'observation-tool.json'
         self.tool_adopted = (receipt.is_file() and json.loads(receipt.read_text()).get('status') == 'PERSISTENT_OBSERVATION_TOOL_ADOPTED')
@@ -385,6 +470,88 @@ class Transaction:
 
     def cancelled(self):
         require(not CANCELLED and not self.cancel.exists(), 'cancellation requested; stop before next candidate phase')
+
+    def capture_preworker_release_state(self, config_path, config_sha):
+        """Guardian-only evidence before the worker can attempt any phase."""
+        self.lock_check(); self.stopped()
+        runner = self.root / 'arc/browser/webextras_scenario_current_run.py'
+        own = self.root / 'arc/browser/webextras_initial_integration.py'
+        require(sha(own) == self.config['pins']['arc/browser/webextras_initial_integration.py'], 'guardian source is not sealed')
+        require(sha(config_path) == config_sha, 'parent config drift before worker')
+        evidence = {'configPath': str(config_path), 'configSHA256': config_sha,
+                    'configEvidenceSHA256': self.config_digest, 'lock': list(self.lock),
+                    'launch': file_identity(self.output / 'launch.json'),
+                    'protected': file_identity(self.output / 'protected.json'),
+                    'own': file_identity(own), 'runner': file_identity(runner),
+                    'roots': {str(p): directory_id(p) for p in (
+                        Path.home() / 'Library/Application Support/ArcModAgent-ours156',
+                        Path.home() / 'Library/Caches/ArcModAgent-ours156')}}
+        require(evidence['own']['sha256'] == self.config['pins']['arc/browser/webextras_initial_integration.py'],
+                'guardian source changed during preworker capture')
+        require(evidence['runner']['sha256'] == self.config['observationTool']['before'], 'preworker runner is not before image')
+        write(self.output / 'guardian-preworker.json', evidence)
+        self.preworker = (evidence, file_identity(self.output / 'guardian-preworker.json'))
+
+    def certify_refused_without_writes(self, completion, child):
+        """An early refusal releases no claim about the now-foreign baseline."""
+        require(type(child.returncode) is int and child.returncode == 1 and
+                completion.get('status') == 'REFUSED_BEFORE_PUBLICATION' and
+                completion.get('persistentObservationToolRetained') is False, 'not an exact early refusal')
+        # Attempted/reverted observation phases keep the ordinary strict path.
+        allowed = {'config.json', 'launch.json', 'protected.json', 'worker.json', 'guardian-preworker.json',
+                   'failure.json', 'completion.json', 'index-drift.json', 'index-semantic-diagnostic.txt'}
+        require(all(p.name in allowed and p.is_file() and not p.is_symlink() for p in self.output.iterdir()),
+                'early refusal contains attempted/unknown phase evidence')
+        evidence, identity = self.preworker
+        require(file_identity(self.output / 'guardian-preworker.json') == identity and
+                json.loads((self.output / 'guardian-preworker.json').read_text()) == evidence, 'preworker evidence drift')
+        require(sha(Path(evidence['configPath'])) == evidence['configSHA256'] and
+                sha(self.output / 'config.json') == self.config_digest == evidence['configEvidenceSHA256'], 'refusal config drift')
+        for key in ('launch', 'protected'):
+            require(file_identity(self.output / (key + '.json')) == evidence[key], 'refusal launch identity drift')
+        launch = json.loads((self.output / 'launch.json').read_text())
+        require(launch.get('configSHA256') == evidence['configSHA256'] and
+                isinstance(launch.get('nonce'), str) and launch['nonce'], 'refusal launch mismatch')
+        require(json.loads((self.output / 'worker.json').read_text()) == {'pid': child.pid, 'nonce': launch['nonce']},
+                'refusal worker identity mismatch')
+        failure = json.loads((self.output / 'failure.json').read_text())
+        require(isinstance(failure, dict) and failure.get('sourcePublished') is False, 'refusal publication is uncertain')
+        for name, key in [('webextras_initial_integration.py', 'own'), ('webextras_scenario_current_run.py', 'runner')]:
+            require(file_identity(self.root / 'arc/browser' / name) == evidence[key], 'refusal trusted tool identity drift')
+        require(all(directory_id(Path(p)) == value for p, value in evidence['roots'].items()), 'refusal profile/cache identity drift')
+        self.lock_check(); require(self.lock == evidence['lock'], 'refusal lock drift'); self.stopped()
+        return {'workerExit': 1, 'state': 'REFUSED_WITHOUT_WRITES_NOT_CURRENT_BASELINE',
+                'workerState': completion['status'], 'persistentObservationToolRetained': False,
+                'sourcePublished': False, 'currentBaselineAsserted': False, 'boundaryParity': 'NOT ASSERTED',
+                'normalOSExitStatusCaptured': False, 'nonce': launch['nonce'],
+                'preworkerEvidenceSHA256': identity['sha256']}
+
+    def refresh_observation_tool_after_worker(self, completion):
+        """Validate the worker's durable handoff without replacing this guardian."""
+        require(sha(self.output / 'config.json') == self.config_digest, 'sealed config evidence drift')
+        require(completion.get('status') in ('APPLIED', 'ROLLED_BACK', 'REFUSED_BEFORE_PUBLICATION'),
+                'unknown worker completion')
+        retained = completion.get('persistentObservationToolRetained')
+        require(type(retained) is bool, 'missing worker observation-tool disposition')
+        require(retained or completion.get('status') == 'REFUSED_BEFORE_PUBLICATION',
+                'completed engine phase must retain the observation tool')
+        image = self.config['observationTool']
+        path = self.output / 'observation-tool.json'
+        require(not path.is_symlink(), 'symlink observation-tool handoff')
+        if not path.exists():
+            require(not retained, 'retained tool lacks durable adoption receipt')
+        else:
+            receipt = json.loads(path.read_text())
+            require(isinstance(receipt, dict) and all(receipt.get(k) == value for k, value in image.items()),
+                    'observation-tool receipt differs from sealed images')
+            expected = 'PERSISTENT_OBSERVATION_TOOL_ADOPTED' if retained else 'REVERTED_BEFORE_ENGINE_PUBLICATION'
+            require(receipt.get('status') == expected, 'incomplete/unknown observation-tool handoff')
+            if retained:
+                require(receipt.get('engineRollbackRetainsThisOwnedReadOnlyTool') is True,
+                        'observation-tool retention policy mismatch')
+        runner = self.root / 'arc/browser/webextras_scenario_current_run.py'
+        require(sha(runner) == image['after' if retained else 'before'], 'observation-tool handoff source mismatch')
+        self.tool_adopted = retained
 
     def hold(self, reason):
         # Parent owns process reaping/reconciliation. Never release uncertainty.
@@ -434,6 +601,8 @@ class Transaction:
         observation = self.config['observationTool']
         require(sha(self.root / 'arc/browser/webextras_scenario_current_run.py') == observation['after' if self.tool_adopted else 'before'],
                 'persistent observation-tool drift')
+        require(all(image_state(relative(self.root, name)) == (self.config['pins'][name], mode)
+                    for name, mode in self.config['regeneration']['toolModes'].items()), 'shared regeneration baseline mode drift')
         for folder, expected in self.config['inventory'].items():
             base = relative(self.root, folder)
             actual = sorted(str(p.relative_to(self.root)) for p in base.rglob('*')
@@ -447,13 +616,14 @@ class Transaction:
         paths = {**self.images, **self.config['patchOutputs']}
         actual = {name: sha(relative(self.root, name)) for name in paths}
         require(all(actual[n] == v[phase] for n, v in paths.items()), 'source/patch phase drift')
+        require(all(image_state(relative(self.root, n)) == (v[phase], v[phase + 'Mode'])
+                    for n, v in self.images.items()), 'target/MANIFEST mode phase drift')
         require({str(p.relative_to(self.root)) for p in (self.root / 'patches').glob('*.patch')} ==
                 {n for n, image in self.config['patchOutputs'].items() if image[phase] is not None},
                 'all-patch-output inventory drift')
         for repo in self.config['gitRepos']:
             index = relative(self.root, repo['index'])
-            git_env = {k: v for k, v in os.environ.items() if k != 'GIT_INDEX_FILE'}
-            git_env['GIT_OPTIONAL_LOCKS'] = '0'
+            git_env = git_environment()
             actual_index = subprocess.check_output(['git', 'rev-parse', '--git-path', 'index'],
                 cwd=relative(self.root, repo['path']), env=git_env, text=True).strip()
             actual_index = Path(actual_index) if Path(actual_index).is_absolute() else relative(self.root, repo['path']) / actual_index
@@ -463,12 +633,12 @@ class Transaction:
                 write(self.output / 'index-drift.json', {'path': repo['index'], 'before': repo['sha256'],
                        'actual': sha(index), 'policy': 'HOLD; never restore real index'})
                 diagnostic = subprocess.run(['git', 'ls-files', '--stage', '-v', '--debug'],
-                    cwd=relative(self.root, repo['path']), env={**os.environ, 'GIT_OPTIONAL_LOCKS': '0'},
+                    cwd=relative(self.root, repo['path']), env=git_environment(),
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 (self.output / 'index-semantic-diagnostic.txt').write_bytes(diagnostic.stdout[:65536])
                 raise RuntimeError('real index drift; semantic review required')
             head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=relative(self.root, repo['path']),
-                                           env={**os.environ, 'GIT_OPTIONAL_LOCKS': '0'}, text=True).strip()
+                                           env=git_environment(), text=True).strip()
             require(head == repo['head'], 'Git HEAD drift')
         return actual
 
@@ -530,12 +700,10 @@ class Transaction:
                 destination = self.output / 'before' / name
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 destination.write_bytes(path.read_bytes())
-                write(self.output / 'modes' / (name.replace('/', '_') + '.json'), stat.S_IMODE(path.stat().st_mode))
+                mode = stat.S_IMODE(path.stat().st_mode)
+                require(mode == image['beforeMode'], 'journal mode differs from sealed preimage')
+                write(self.output / 'modes' / (name.replace('/', '_') + '.json'), mode)
             require(sha(relative(self.root, image['blob'])) == image['after'], 'private postimage drift')
-        for repo in self.config['gitRepos']:
-            target = self.output / ('alternate-index-' + str(len(self.indexes)))
-            atomic_bytes(target, relative(self.root, repo['index']).read_bytes())
-            self.indexes[repo['environmentKey']] = str(target)
         write(self.output / 'journal.json', {'images': self.images, 'outputs': self.config['patchOutputs'],
                                             'realIndexesNeverRestored': True})
         # Reconstruct the reviewed patch chain privately from the exact preimages.
@@ -549,11 +717,11 @@ class Transaction:
             # A nested private repository prevents git apply discovering the live
             # checkout above the evidence directory and escaping the stage.
             if not (cwd / '.git').exists():
-                require(self.command(['git', 'init', '--quiet', str(cwd)], f'private-init-{i}') == 0,
+                require(self.command(['git', 'init', '--quiet', str(cwd)], f'private-init-{i}', env=git_environment()) == 0,
                         'private repository initialization failed')
             for check in (True, False):
                 argv = ['git', 'apply', '--whitespace=error'] + (['--check'] if check else []) + [str(relative(self.root, patch['path']))]
-                require(self.command(argv, f'private-{i}-{check}', cwd, {**os.environ, 'GIT_OPTIONAL_LOCKS': '0'}) == 0,
+                require(self.command(argv, f'private-{i}-{check}', cwd, git_environment()) == 0,
                         'private patch reconstruction failed')
         require(all(sha(stage / n) == image['after'] for n, image in self.config['targets'].items()),
                 'ordered patches do not reconstruct reviewed target images')
@@ -564,13 +732,14 @@ class Transaction:
         write(self.output / 'publication.json', {'state': 'PUBLISHING', 'images': self.images})
         for name, image in self.images.items():
             path = relative(self.root, name)
-            require(sha(path) == image['before'], 'foreign edit before publication')
-            atomic_bytes(path, relative(self.root, image['blob']).read_bytes())
+            require(image_state(path) == (image['before'], image['beforeMode']), 'foreign bytes/mode before publication')
+            atomic_bytes(path, relative(self.root, image['blob']).read_bytes(), image['afterMode'])
+            require(image_state(path) == (image['after'], image['afterMode']), 'publication bytes/mode mismatch')
         self.current = 'after'
 
     def adopt_observation_tool(self):
         """Separately approved provenance tool survives an engine rollback."""
-        self.file_state('before'); self.cancelled()
+        self.file_state('before'); self.stopped(); self.cancelled()
         image = self.config['observationTool']; path = self.root / 'arc/browser/webextras_scenario_current_run.py'
         before = path.read_bytes(); mode = stat.S_IMODE(path.stat().st_mode)
         private = self.output / 'observation-stage'; (private / 'arc/browser').mkdir(parents=True)
@@ -578,7 +747,7 @@ class Transaction:
         for argv, label in [(['git', 'init', '--quiet', str(private)], 'observation-private-init'),
                             (['git', 'apply', '--check', '--whitespace=error', str(relative(self.root, image['patch']))], 'observation-check'),
                             (['git', 'apply', '--whitespace=error', str(relative(self.root, image['patch']))], 'observation-reconstruct')]:
-            require(self.command(argv, label, private) == 0, 'observation tool strict reconstruction failed')
+            require(self.command(argv, label, private, git_environment()) == 0, 'observation tool strict reconstruction failed')
         require(sha(private / 'arc/browser/webextras_scenario_current_run.py') == image['after'], 'observation tool postimage mismatch')
         (self.output / 'observation-tool.before').write_bytes(before)
         try:
@@ -600,21 +769,14 @@ class Transaction:
 
     def regenerate(self, rollback=False):
         command = self.config['regeneration']
-        env = {**os.environ, **command['env'], **self.indexes, 'GIT_OPTIONAL_LOCKS': '0'}
-        if not rollback:
-            for repo in self.config['gitRepos']:
-                if repo['intentToAdd']:
-                    add_env = {**os.environ, 'GIT_OPTIONAL_LOCKS': '0', 'GIT_INDEX_FILE': self.indexes[repo['environmentKey']]}
-                    require(self.command(['git', 'add', '-N', '--', *repo['intentToAdd']], 'private-index-add-' + str(self.phase),
-                            relative(self.root, repo['path']), add_env) == 0, 'alternate-index intent-to-add failed')
+        env = git_environment()
         require(self.command(command['argv'], 'rollback-regen' if rollback else 'regen',
                              relative(self.root, command['cwd']), env, rollback) == 0, 'regeneration failed')
 
     def scenario(self, scenario, number, recovery=False):
         self.file_state('before' if recovery else 'after')
         script = self.root / 'arc/browser/webextras_scenario_current_run.py'
-        spec = importlib.util.spec_from_file_location('webextras_checked_runner', script)
-        module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+        module = source_module(script, self.config['observationTool']['after'])
         expected = {pin_path(self.root, n).resolve(): h for n, h in self.config['pins'].items()}
         expected.update({relative(self.root, n).resolve(): image['before' if recovery else 'after']
                          for n, image in self.images.items()})
@@ -651,9 +813,18 @@ class Transaction:
                 and receipt.get('builtPakSHA256') == receipt.get('runtimePakSHA256') == before['sha256'] == after['sha256']
                 and sha(before['path']) == before['sha256'], 'resource proof not tied to runtime package')
         resources = receipt.get('resources', [])
-        require(len(resources) == 3 and len({x.get('textualId') for x in resources}) == 3 and all(
+        require(len(resources) == 3 and {x.get('textualId') for x in resources} == RESOURCE_IDS and all(
             all(x.get(k) is True for k in ('generatedExactMatch', 'grdInputExactMatch', 'intermediateExactMatch'))
             for x in resources), 'incomplete decoded/generated resource proof')
+        sanity = receipt.get('nativePackSanity', {})
+        require(set(sanity) == {'intermediate', 'built', 'packaged'} and all(
+                type(s.get('version')) is int and s['version'] == 5 and s.get('nativeLoaderChecksPassed') is True
+                and s.get('writerLookupDeterminismPolicyPassed') is True for s in sanity.values()),
+                'missing native V5 DataPack sanity proof')
+        for name in (*RESOURCE_INPUTS, str(NODE)):
+            path = pin_path(self.root, name)
+            require(receipt.get('inputs', {}).get(str(path), {}).get('sha256') == self.config['pins'][name],
+                    'resource receipt used unsealed parser/decoder bytes')
         return {'receipt': str(directory / 'receipt.json'), 'sha256': sha(directory / 'receipt.json'),
                 'runtimePakSHA256': before['sha256'], 'expectHostGate': check['expectHostGate']}
 
@@ -663,7 +834,9 @@ class Transaction:
         for repo in self.config['gitRepos']:
             require(sha(relative(self.root, repo['index'])) == repo['sha256'], 'index drift before rollback')
         for name, image in self.images.items():
-            require(sha(relative(self.root, name)) in (image['before'], image['after']), 'foreign target edit at rollback')
+            require(image_state(relative(self.root, name)) in
+                    ((image['before'], image['beforeMode']), (image['after'], image['afterMode'])),
+                    'foreign target bytes/mode at rollback')
         for name, image in self.config['patchOutputs'].items():
             require(sha(relative(self.root, name)) in (image['before'], image['after']), 'foreign patch output at rollback')
         require({str(p.relative_to(self.root)) for p in (self.root / 'patches').glob('*.patch')} <=
@@ -678,17 +851,17 @@ class Transaction:
                         'profile restoration unconfirmed; parent recovery required')
         for name, image in self.images.items():
             path = relative(self.root, name)
-            if sha(path) == image['before']:
+            state = image_state(path)
+            require(state in ((image['before'], image['beforeMode']), (image['after'], image['afterMode'])),
+                    'foreign target bytes/mode before rollback write')
+            if state == (image['before'], image['beforeMode']):
                 continue
             if image['before'] is None:
                 path.unlink()
             else:
                 mode = json.loads((self.output / 'modes' / (name.replace('/', '_') + '.json')).read_text())
+                require(mode == image['beforeMode'], 'rollback journal mode differs from sealed preimage')
                 atomic_bytes(path, (self.output / 'before' / name).read_bytes(), mode)
-        # Remove candidate-only intent-to-add from PRIVATE indexes before the
-        # restored MANIFEST is regenerated. The real indexes remain untouched.
-        for repo in self.config['gitRepos']:
-            atomic_bytes(Path(self.indexes[repo['environmentKey']]), relative(self.root, repo['index']).read_bytes())
         self.regenerate(rollback=True)
         # Regen cannot remove an originally absent, now unreferenced own patch.
         for name, image in self.config['patchOutputs'].items():
@@ -702,7 +875,7 @@ class Transaction:
 
     def execute(self):
         try:
-            self.prepare(); self.adopt_observation_tool(); self.publish(); self.regenerate()
+            self.adopt_observation_tool(); self.prepare(); self.publish(); self.regenerate()
             self.file_state('after')
             results = [self.scenario(s, self.config['runNumbers'][s]) for s in SCENARIOS]
             self.file_state('after'); self.stopped(); self.cancelled()
@@ -768,6 +941,7 @@ def main():
         transaction = Transaction(config, output)
         try:
             transaction.lock_check()
+            transaction.capture_preworker_release_state(args.config.resolve(), args.config_sha)
             argv = [sys.executable, str(Path(__file__).resolve()), '_worker', '--config', str(args.config.resolve()),
                     '--config-sha', args.config_sha, '--out', str(output)]
             child = subprocess.Popen(argv, stdin=subprocess.DEVNULL, start_new_session=True)
@@ -782,6 +956,13 @@ def main():
             require(child.returncode == (0 if state == 'APPLIED' else 1), 'worker/completion mismatch')
             transaction.backend.groups = {json.loads(p.read_text())['pgid'] for p in output.glob('*.child.json')}
             transaction.backend.groups.add(child.pid)
+            transaction.stopped()
+            if (state == 'REFUSED_BEFORE_PUBLICATION' and
+                    completion.get('persistentObservationToolRetained') is False and
+                    not os.path.lexists(output / 'observation-tool.json')):
+                write(output / 'release-safe.json', transaction.certify_refused_without_writes(completion, child))
+                return child.returncode
+            transaction.refresh_observation_tool_after_worker(completion)
             transaction.file_state('after' if state == 'APPLIED' else 'before')
             transaction.stopped()
             roots = output / 'directory-identities.json'

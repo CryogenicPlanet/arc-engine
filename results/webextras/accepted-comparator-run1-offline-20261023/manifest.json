@@ -1,0 +1,166 @@
+{
+  "at": "2026-10-23T18:04:05.313991+00:00",
+  "scope": "OFFLINE recompare of historical frozen current-run1 records using accepted shared comparator144325; NO new engine/runtime/app/lock/source adoption and NOT current source behavior/acceptance",
+  "comparatorFiles": {
+    "tests/recorder/diff.py": "24437bed30fddc8b94ab5c9dcc7cd20e755b06c0b05a4d8620e487d3c7f612cf",
+    "arc/tools/arccore-1.170.0-objc.tsv": "9ba3d4750f15e80ca6836966af5ec50523ccfe5e0ed3c22faa31f8b347492cf5",
+    "tests/recorder/app_callbacks.inc": "52b3687bd7f574acb34f8c3c5fcf6750e0fc044c9bf159a6971531a952830748",
+    "arc/browser/webextras_fixture_inputs.py": "f60537a31119b2b50f802f0ce0b9257ee12a09dd0f1edc3a639c03a3e5a64fd9",
+    "tests/recorder/download_identity.py": "5318e64f44d9f7549227ab893185c083a34dd835b01be0ba5552d0940631ccea",
+    "tests/recorder/google_q.py": "67fb19cf77f3903461543e1be18b7352c7b3999552cfd672f629f8699eaea28c",
+    "tests/recorder/omnibox_receivers.py": "3af958f677a96eb982f8ede4486e272a1f2bc928a87cd2455f75fef0c55bcd86"
+  },
+  "fixtureCanaryDiagnostic": "verified",
+  "rawInputs": {
+    "results/golden/arc-1.170-launch-slice/launch-1/record.jsonl": "3cdfe7c8b597f3c497016fb82a3fc3bb71de10e9f365c224785c801ec270fa8d",
+    "results/webextras/launch-slice-current-run1/launch-1/record.jsonl": "ca1dc41fe95664520fddc8dcc05259d363c6011cfd0a297fafda6b56a8402f56",
+    "results/golden/arc-1.170-launch-slice/launch-2/record.jsonl": "71760b4eb189bf6669135c60bfe1a921dca672c29e273f482b2aecd97d0f7b70",
+    "results/webextras/launch-slice-current-run1/launch-2/record.jsonl": "3bca3d489fc405d52169f4b0e8ab3f84ac2648a332199ddaba69587cc77de0fd",
+    "results/golden/arc-1.170-devtools/launch-1/record.jsonl": "198f0288a9dd6c626df861d05a7a104b71ff18d5919cc0bbb83d3512caf4c0f6",
+    "results/webextras/devtools-current-run1/launch-1/record.jsonl": "7bcff38a02d4b86cd68d33a13cecc65198f8494b75a7028ad0b7abdf0673af4d",
+    "results/golden/arc-1.170-devtools/launch-2/record.jsonl": "83db69d5fa32c6296f6349872b62bccab2f99e95153b3e6cc44b0ac1105cceae",
+    "results/webextras/devtools-current-run1/launch-2/record.jsonl": "6600ca6530b700b07ee5eb665a8c447795fa432e67fe04f52b94549c0de76601",
+    "results/golden/arc-1.170-media/launch-1/record.jsonl": "b608fb68e0b4f9c401c13e7499226541ccf96bf8cea9cd3d7388f3835308f43c",
+    "results/webextras/media-current-run1/launch-1/record.jsonl": "d507c4279533b07fe4961f063a60aaf8830165e80a2d8827f9ab146487cda1ea",
+    "results/golden/arc-1.170-pdf/launch-1/record.jsonl": "192a1a73987d57d0aa79f010fa82cb61f61a07ea6c01969690436e8b3c06f9ee",
+    "results/webextras/pdf-current-run1/launch-1/record.jsonl": "06687a111077d94466b944773a9757d3be757376975fa20b4543bef9c409917e",
+    "results/golden/arc-1.170-media-pip/launch-1/record.jsonl": "672f405866b7904b0ae0b996de12ef6496c0121b495450fede4a92acdb1d954f",
+    "results/webextras/media-pip-current-run1/launch-1/record.jsonl": "5760c41eef96ce0bfd05477cc86477fda80f687fc20a66e3952c207472696ff1"
+  },
+  "unchangedAfter": true,
+  "results": [
+    {
+      "scenario": "launch-slice",
+      "launch": "launch-1",
+      "argv": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "-B",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/comparator/tests/recorder/diff.py",
+        "/Users/cryogenicplanet/general/arc-engine/results/golden/arc-1.170-launch-slice/launch-1/record.jsonl",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/launch-slice-current-run1/launch-1/record.jsonl",
+        "--json",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/launch-slice-launch-1.json"
+      ],
+      "exit": 0,
+      "firstTwoLines": [
+        "methods differing: 103 (missing 5, extra 3, returns 12, callback args 3, counts 80; internal-only 0, ours-internal 1)",
+        "callback sequence: {\"golden\": 106, \"ours\": 127, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObser"
+      ],
+      "report": "results/webextras/accepted-comparator-run1-offline-20261023/launch-slice-launch-1.json"
+    },
+    {
+      "scenario": "launch-slice",
+      "launch": "launch-2",
+      "argv": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "-B",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/comparator/tests/recorder/diff.py",
+        "/Users/cryogenicplanet/general/arc-engine/results/golden/arc-1.170-launch-slice/launch-2/record.jsonl",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/launch-slice-current-run1/launch-2/record.jsonl",
+        "--json",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/launch-slice-launch-2.json"
+      ],
+      "exit": 0,
+      "firstTwoLines": [
+        "methods differing: 55 (missing 6, extra 0, returns 11, callback args 3, counts 35; internal-only 0, ours-internal 1)",
+        "callback sequence: {\"golden\": 47, \"ours\": 62, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserve"
+      ],
+      "report": "results/webextras/accepted-comparator-run1-offline-20261023/launch-slice-launch-2.json"
+    },
+    {
+      "scenario": "devtools",
+      "launch": "launch-1",
+      "argv": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "-B",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/comparator/tests/recorder/diff.py",
+        "/Users/cryogenicplanet/general/arc-engine/results/golden/arc-1.170-devtools/launch-1/record.jsonl",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/devtools-current-run1/launch-1/record.jsonl",
+        "--json",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/devtools-launch-1.json"
+      ],
+      "exit": 0,
+      "firstTwoLines": [
+        "methods differing: 104 (missing 22, extra 2, returns 11, callback args 3, counts 66; internal-only 10, ours-internal 20)",
+        "callback sequence: {\"golden\": 56, \"ours\": 61, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserve"
+      ],
+      "report": "results/webextras/accepted-comparator-run1-offline-20261023/devtools-launch-1.json"
+    },
+    {
+      "scenario": "devtools",
+      "launch": "launch-2",
+      "argv": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "-B",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/comparator/tests/recorder/diff.py",
+        "/Users/cryogenicplanet/general/arc-engine/results/golden/arc-1.170-devtools/launch-2/record.jsonl",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/devtools-current-run1/launch-2/record.jsonl",
+        "--json",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/devtools-launch-2.json"
+      ],
+      "exit": 0,
+      "firstTwoLines": [
+        "methods differing: 107 (missing 25, extra 2, returns 14, callback args 3, counts 63; internal-only 9, ours-internal 20)",
+        "callback sequence: {\"golden\": 58, \"ours\": 62, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserve"
+      ],
+      "report": "results/webextras/accepted-comparator-run1-offline-20261023/devtools-launch-2.json"
+    },
+    {
+      "scenario": "media",
+      "launch": "launch-1",
+      "argv": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "-B",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/comparator/tests/recorder/diff.py",
+        "/Users/cryogenicplanet/general/arc-engine/results/golden/arc-1.170-media/launch-1/record.jsonl",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/media-current-run1/launch-1/record.jsonl",
+        "--json",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/media-launch-1.json"
+      ],
+      "exit": 0,
+      "firstTwoLines": [
+        "methods differing: 54 (missing 6, extra 1, returns 10, callback args 3, counts 34; internal-only 0, ours-internal 1)",
+        "callback sequence: {\"golden\": 49, \"ours\": 69, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserve"
+      ],
+      "report": "results/webextras/accepted-comparator-run1-offline-20261023/media-launch-1.json"
+    },
+    {
+      "scenario": "pdf",
+      "launch": "launch-1",
+      "argv": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "-B",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/comparator/tests/recorder/diff.py",
+        "/Users/cryogenicplanet/general/arc-engine/results/golden/arc-1.170-pdf/launch-1/record.jsonl",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/pdf-current-run1/launch-1/record.jsonl",
+        "--json",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/pdf-launch-1.json"
+      ],
+      "exit": 0,
+      "firstTwoLines": [
+        "methods differing: 63 (missing 5, extra 3, returns 9, callback args 2, counts 44; internal-only 0, ours-internal 1)",
+        "callback sequence: {\"golden\": 64, \"ours\": 85, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserve"
+      ],
+      "report": "results/webextras/accepted-comparator-run1-offline-20261023/pdf-launch-1.json"
+    },
+    {
+      "scenario": "media-pip",
+      "launch": "launch-1",
+      "argv": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "-B",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/comparator/tests/recorder/diff.py",
+        "/Users/cryogenicplanet/general/arc-engine/results/golden/arc-1.170-media-pip/launch-1/record.jsonl",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/media-pip-current-run1/launch-1/record.jsonl",
+        "--json",
+        "/Users/cryogenicplanet/general/arc-engine/results/webextras/accepted-comparator-run1-offline-20261023/media-pip-launch-1.json"
+      ],
+      "exit": 0,
+      "firstTwoLines": [
+        "methods differing: 48 (missing 8, extra 1, returns 11, callback args 3, counts 25; internal-only 0, ours-internal 1)",
+        "callback sequence: {\"golden\": 172, \"ours\": 170, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObser"
+      ],
+      "report": "results/webextras/accepted-comparator-run1-offline-20261023/media-pip-launch-1.json"
+    }
+  ]
+}

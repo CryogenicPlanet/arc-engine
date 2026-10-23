@@ -1,0 +1,139 @@
+--- a/arc/browser/webextras_native13_reference_control_held.py
++++ b/arc/browser/webextras_native13_reference_control_held.py
+@@ -8,6 +8,9 @@
+ import hashlib
+ import json
+ import os
++import re
++import time
++import uuid
+ from pathlib import Path
+ import subprocess
+ import sys
+@@ -68,11 +71,71 @@
+     require(set(sanity)=={'intermediate','built','packaged'} and all(x.get('version')==5 and x.get('nativeLoaderChecksPassed') is True and x.get('writerLookupDeterminismPolicyPassed') is True for x in sanity.values()),'missing native V5 lookup proof')
+     return runtime
+ 
++def parse_actor_inventory(text, root):
++    # Exact existing TS executable-prefix policy; strict parsing adds no
++    # silent skipped rows. Never persist unrelated process commands.
++    prefixes=[]
++    for agent in ('trace156','ours156'):
++        app=root.parent/f'arc/build/ArcModAgent-{agent}.app'
++        prefixes.append((str(app/'Contents/MacOS/Arc'),str(app/'Contents/Frameworks')+'/'))
++    found=[]
++    for index,line in enumerate(text.splitlines()):
++        if not line.strip():continue
++        match=re.fullmatch(r'\s*(\d+)\s+(\d+)\s+(\S+\s+\S+\s+\d+\s+\d{2}:\d{2}:\d{2}\s+\d{4})\s+(.+)',line)
++        require(match is not None,'unparsed process inventory row '+str(index))
++        pid,ppid,born,command=match.groups()
++        if any(command==main or command.startswith(main+' ') or command.startswith(framework) for main,framework in prefixes):
++            found.append({'pid':int(pid),'ppid':int(ppid),'born':born,'command':command})
++    return found
++
++def actor_inventory():
++    result=subprocess.run(['/bin/ps','-ww','-axo','pid=,ppid=,lstart=,command='],check=True,capture_output=True,text=True)
++    return parse_actor_inventory(result.stdout,ROOT)
++
++def cleanup_release_gate(owner, inventory=None, pause=None, ack_reader=None, emit=None, control_sha=None):
++    # Pure dependencies are injectable for private controls. Production uses
++    # only snapshots and parent-created acknowledgement; never process signals.
++    inventory=inventory or actor_inventory
++    pause=pause or (lambda:time.sleep(30))
++    ack=Path(str(STEM)+'.cleanup-release.json')
++    ack_reader=ack_reader or (lambda:json.loads(ack.read_text()))
++    emit=emit or (lambda suffix,value:write_new(str(STEM)+suffix,value))
++    token=uuid.uuid4().hex;rounds=0;held=False;first=True
++    control_sha=control_sha or file_pin(__file__)['sha256']
++    while True:
++        snapshot={'lockOwnerPID':owner,'holdToken':token,'round':rounds,'controlSHA256':control_sha}
++        try:
++            require(ancestor_owner()==owner,'cleanup gate ancestor lock changed')
++            actors=inventory();snapshot['actors']=actors;snapshot['inventoryComplete']=True
++        except (OSError,ValueError,RuntimeError,subprocess.SubprocessError,KeyboardInterrupt) as error:
++            actors=None;snapshot['inventoryComplete']=False;snapshot['error']=str(error)
++        if not held and actors==[]:
++            snapshot['status']='NO_MATCHING_DISPOSABLE_ACTORS_OBSERVED'
++            try:emit('.cleanup-release-verified.json',snapshot);return
++            except (OSError,ValueError,RuntimeError) as error:
++                actors=None;snapshot['error']='cleanup release receipt unavailable: '+str(error)
++        held=True;snapshot['status']='HOLD_PARENT_RECONCILIATION_REQUIRED'
++        if first:
++            try:emit('.cleanup-hold.json',snapshot);first=False
++            except (OSError,ValueError,RuntimeError):pass
++        # Once HOLD has latched, disappearance alone never releases the slot.
++        if actors==[]:
++            try:
++                approval=ack_reader()
++                require(approval=={'controlSHA256':snapshot['controlSHA256'],'lockOwnerPID':owner,'holdToken':token,'releaseWhenGone':True},'parent cleanup-release acknowledgment mismatch')
++                snapshot['status']='PARENT_ACKNOWLEDGED_AND_NO_MATCHING_ACTORS_OBSERVED'
++                emit('.cleanup-release-verified.json',snapshot);return
++            except (OSError,ValueError,RuntimeError):pass
++        rounds+=1
++        try:pause()
++        except KeyboardInterrupt:continue
++
+ def main():
+     require(len(sys.argv)==1,'fixed Native13 control accepts no arguments')
+     config_pin=file_pin(CONFIG);config=json.loads(CONFIG.read_text());check_config(config)
+     require(file_pin(CONFIG)==config_pin,'config changed')
+     owner=ancestor_owner();os.chdir(ROOT)
++    require(actor_inventory()==[],'disposable main/framework actors already running before Native13; no launch/build authorized')
+     resource_output=ROOT/'logs/wp/webextras.native.run13.resource-check'
+     fresh=[OUTPUT,Path(str(STEM)+'.source-before.json'),Path(str(STEM)+'.native-reference-pin.json'),Path(str(STEM)+'.resource-tie.json'),resource_output]
+     require(all(not p.exists() and not p.is_symlink() for p in fresh),'Native13 output namespace already exists')
+@@ -81,28 +144,32 @@
+     write_new(str(STEM)+'.native-reference-pin.json',{'capturedUTC':datetime.datetime.now(datetime.timezone.utc).isoformat(),'reference':pin,'config':config_pin,'command':file_pin(__file__),'lockOwnerPID':owner,'contract':'ancestor-verified ordinary shared slot; parent sole queue/reap authority'})
+     # Do not use check=True: ordinary measurement exit1 must still collect the
+     # fixed reviewed resource proof before this child returns to the lock owner.
+-    probe=subprocess.run(['/bin/bash',WRAPPER,'--locked','--run-number','13','--devtools-frontend-events']).returncode
+-    require(ancestor_owner()==owner,'ancestor lock changed after wrapper')
+-    check_config(config);require(file_pin(CONFIG)==config_pin,'config changed after wrapper')
+-    with Path(str(STEM)+'.resource-check.log').open('x') as log:
+-        checker=subprocess.run([sys.executable,'-B',CHECKER,'--output',str(resource_output),'--expect-host-gate','present'],stdout=log,stderr=subprocess.STDOUT).returncode
+-    require(ancestor_owner()==owner,'ancestor lock changed after resource proof')
+-    require(checker==0,'resource checker failed; inspect receipt/log before parent reaping')
+-    receipt=json.loads((resource_output/'receipt.json').read_text())
+-    proof=json.loads(Path(str(STEM)+'.resources-package.json').read_text())
+-    before=json.loads((OUTPUT/'ours156/binary-identity.json').read_text())['resources']
+-    after=json.loads((OUTPUT/'ours156/resources-after-cleanup.json').read_text())
+-    runtime=bind_resource_receipt(receipt,proof,before,after)
+-    # Reuse the reviewed actual resource verifier, not a second PAK decoder.
+-    verified_proof=subprocess.run([sys.executable,'-B','arc/browser/webextras_resource_identity.py','verify-proof',str(STEM)+'.resources-package.json'],check=True,capture_output=True,text=True)
+-    verified_journal=subprocess.run([sys.executable,'-B','arc/browser/webextras_resource_identity.py','verify-journal',str(OUTPUT/'ours156/binary-identity.json')],check=True,capture_output=True,text=True)
+-    require(json.loads(verified_proof.stdout)==proof and json.loads(verified_journal.stdout)==before,'final actual resource verifier returned different identity')
+-    require(file_pin(reference)==pin,'original B70 changed after pin')
+-    original=json.loads((OUTPUT/'trace156/binary-identity.json').read_text())['engine']
+-    require(original['sha256']==REFERENCE_SHA and original['size']==REFERENCE_SIZE and Path(original['realpath'])==Path(pin['realpath']),'runtime original engine differs from B70 pin')
+-    check_config(config);require(file_pin(CONFIG)==config_pin and ancestor_owner()==owner,'final config/slot drift')
+-    write_new(str(STEM)+'.resource-tie.json',{'status':'OURS_RESOURCE_BYTES_TIED_TO_LAUNCH_AND_CLEANUP','runtimePakSHA256':runtime,'receipt':file_pin(resource_output/'receipt.json'),'probeExitCode':probe,'resourceCheckerExitCode':checker,'originalReference':pin,'scope':'resources proof only; no acceptance/OS-exit/cleanup guarantee'})
+-    return probe
++    cleanup_control_sha=file_pin(__file__)['sha256']
++    try:
++        probe=subprocess.run(['/bin/bash',WRAPPER,'--locked','--run-number','13','--devtools-frontend-events']).returncode
++        require(ancestor_owner()==owner,'ancestor lock changed after wrapper')
++        check_config(config);require(file_pin(CONFIG)==config_pin,'config changed after wrapper')
++        with Path(str(STEM)+'.resource-check.log').open('x') as log:
++            checker=subprocess.run([sys.executable,'-B',CHECKER,'--output',str(resource_output),'--expect-host-gate','present'],stdout=log,stderr=subprocess.STDOUT).returncode
++        require(ancestor_owner()==owner,'ancestor lock changed after resource proof')
++        require(checker==0,'resource checker failed; inspect receipt/log before parent reaping')
++        receipt=json.loads((resource_output/'receipt.json').read_text())
++        proof=json.loads(Path(str(STEM)+'.resources-package.json').read_text())
++        before=json.loads((OUTPUT/'ours156/binary-identity.json').read_text())['resources']
++        after=json.loads((OUTPUT/'ours156/resources-after-cleanup.json').read_text())
++        runtime=bind_resource_receipt(receipt,proof,before,after)
++        # Reuse the reviewed actual resource verifier, not a second PAK decoder.
++        verified_proof=subprocess.run([sys.executable,'-B','arc/browser/webextras_resource_identity.py','verify-proof',str(STEM)+'.resources-package.json'],check=True,capture_output=True,text=True)
++        verified_journal=subprocess.run([sys.executable,'-B','arc/browser/webextras_resource_identity.py','verify-journal',str(OUTPUT/'ours156/binary-identity.json')],check=True,capture_output=True,text=True)
++        require(json.loads(verified_proof.stdout)==proof and json.loads(verified_journal.stdout)==before,'final actual resource verifier returned different identity')
++        require(file_pin(reference)==pin,'original B70 changed after pin')
++        original=json.loads((OUTPUT/'trace156/binary-identity.json').read_text())['engine']
++        require(original['sha256']==REFERENCE_SHA and original['size']==REFERENCE_SIZE and Path(original['realpath'])==Path(pin['realpath']),'runtime original engine differs from B70 pin')
++        check_config(config);require(file_pin(CONFIG)==config_pin and ancestor_owner()==owner,'final config/slot drift')
++        write_new(str(STEM)+'.resource-tie.json',{'status':'OURS_RESOURCE_BYTES_TIED_TO_LAUNCH_AND_CLEANUP','runtimePakSHA256':runtime,'receipt':file_pin(resource_output/'receipt.json'),'probeExitCode':probe,'resourceCheckerExitCode':checker,'originalReference':pin,'scope':'resources proof only; no acceptance/OS-exit/cleanup guarantee'})
++        return probe
++    finally:
++        cleanup_release_gate(owner,control_sha=cleanup_control_sha)
+ 
+ if __name__=='__main__':
+     try:sys.exit(main())
