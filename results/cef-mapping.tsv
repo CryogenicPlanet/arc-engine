@@ -1,0 +1,147 @@
+class	imported_by_app_1.168.0	methods	app_selector_refs	classification	confidence	purpose	cef_mapping	notes
+ArcAccessibilityActionData	N	6	2	CEF partial / workaround	M	AX action + value to perform on a node	CDP DOM.resolveNode + Runtime.callFunctionOn / Input.* (cef_browser.h:649)	
+ArcAccessibilityTreeNode	Y	13	5	CEF partial / workaround	M	AX tree node snapshot for the AI agent (role, name, value, actionable flags, child tree)	CDP Accessibility.getFullAXTree via ExecuteDevToolsMethod (cef_browser.h:649); SetAccessibilityState (987)	
+ArcAddressEntrySaveRequest	Y	4	2	Needs Chrome internals	H	Autofill 'save address?' request	None	
+ArcAdhocHistogramSample	Y	5	4	Arc-only logic	M	Ad-hoc histogram sample (type, value)	As ArcHistogramSample	
+ArcAdhocHistogramSamples	N	2	1	Arc-only logic	M	Batch of ad-hoc samples	As ArcHistogramSample	
+ArcAIDistilBertClassifier	Y	9	1	Arc-only logic	H	DistilBERT + LoRA classifier descriptor	None	
+ArcAIInferenceConfiguration	Y	6	2	Arc-only logic	H	Inference config (max tokens, stream cadence)	None	
+ArcAIInferenceModel	Y	6	1	Arc-only logic	H	Inference model descriptor	None	
+ArcAIService	N	22	18	Arc-only logic	H	AI service: embeddings, LLM inference streaming, classifiers, Nomic embeddings, command-bar ranking/training, DataDog tracing	None; host the native library in our own XPC/helper process	
+ArcAIServiceConfiguration	Y	11	5	Arc-only logic	H	AI service config (library path/version, env, retries, timeout)	None	
+ArcAnnotatedVisit	N	61	8	Needs Chrome internals	H	History visit with annotations/clusters/sync originator fields	None	App 1.168.0 does not call the visit-level history methods (selector scan)
+ArcAutocompleteMatch	Y	25	9	Needs Chrome internals	H	AutocompleteMatch (destination, relevance, type, provider, inline text, keyword, ...)	None	
+ArcAutocompleteMatchAdditionalData	Y	6	2	Needs Chrome internals	H	Key/value extra data on a match	None	
+ArcAutocompleteResult	N	3	2	Needs Chrome internals	H	Combined and per-provider matches	None	
+ArcBackForwardList	N	8	5	CEF public API	H	Back/forward list (back/current/forward items and lists)	GetNavigationEntries + CefNavigationEntryVisitor (cef_browser.h:669,224)	
+ArcBackForwardListItem	Y	6	3	CEF public API	H	Back/forward item (title, url)	CefNavigationEntry::GetURL/GetTitle (cef_navigation_entry.h:64,83)	
+ArcBookmarkImportTargets	N	5	0	Needs Chrome internals	H	Bookmark-bar / other-bookmarks target nodes for import	None	
+ArcBookmarkTreeNode	Y	17	12	Needs Chrome internals	H	BookmarkModel node (folder/url, ids, uuid, dates, children)	None; workaround = own bookmark store	Arc uses it for imports; extensions' chrome.bookmarks is moot without extensions
+ArcBreadcrumb	N	8	5	Arc-only logic	M	Engine breadcrumb (category, message, file/line) delivered to Sentry	None (cef_log, internal/cef_logging_internal.h:59, is output-only)	Telemetry; can drop
+ArcBrowser	N	38	32	Needs Chrome internals	H	Chrome Browser bound to an Arc window: tab ownership, cookies, omnibox, extension actions, session restore, side panel	Partly CEF: CreateBrowser (cef_browser.h:301), CefCookieManager; rest none	Arc's model (one Browser per window, many tabs) has no CEF counterpart; see spot check
+ArcBrowserApplication	Y	59	50	CEF partial / workaround	M	Process singleton: Chromium startup/run loop/quit, profiles, browsers, URL loader, flags, tracing, import, a11y, diagnostics	CefInitialize/CefRunMessageLoop/CefQuitMessageLoop/CefShutdown (cef_app.h:80,132,140,103); CefRequestContext::CreateContext (cef_request_context.h:121); CefURLRequest (cef_urlrequest.h:78); CefBeginTracing (cef_trace.h:83); CefTaskManager (cef_task_manager.h:60)	Import, feature flags at runtime, GPU log, histograms, encryption key, enterprise ID, block lists are own code or Chrome internals; see spot check
+ArcBrowserApplicationConfiguration	Y	10	1	CEF partial / workaround	H	Startup config: argc/argv, profile path, app ID, production flag, session-restore policy, user-defaults suite	CefMainArgs + CefSettings.root_cache_path/cache_path (internal/cef_types.h:296,324); OnBeforeCommandLineProcessing (cef_app.h:208)	sessionRestorationPolicy has no CEF equivalent (no navigation-history restore)
+ArcBrowserApplicationDebugProperty	Y	5	2	CEF partial / workaround	M	Name/value diagnostics row (versions, GPU, flags) shown in Arc's debug UI	cef_version_info (cef_version_info.h:60); CDP SystemInfo.getInfo via ExecuteDevToolsMethod (cef_browser.h:649)	Own code; content of rows will differ
+ArcBrowserContext	Y	55	45	CEF partial / workaround	M	Profile: sub-object hub plus cookies, content settings, bookmarks, favicons, import, localStorage, ad-block debug, URL loads	CefRequestContext (cef_request_context.h:108): GetCookieManager 174, Get/SetContentSetting 301/321, Get/SetWebsiteSetting 267/288, RegisterSchemeHandlerFactory 191; CreateBrowser with request_context (cef_browser.h:301)	Bookmarks, favicon DB, localStorage, import need own code or Chrome internals; see spot check
+ArcBrowserContextAttributes	Y	6	3	CEF partial / workaround	H	Profile attributes (dir, user-visible name, colour)	Own store; CefRequestContext::SetChromeColorScheme (cef_request_context.h:345) for theme only	ProfileAttributesStorage replaced by our JSON
+ArcBrowserContextAutocomplete	N	3	1	Needs Chrome internals	H	Omnibox AutocompleteController with selectable providers	None	Reimplementation = new product (ranking, providers, search suggest)
+ArcBrowserContextDevTools	N	6	4	CEF partial / workaround	L	Profile-level DevTools window (for non-tab targets such as workers/extension pages)	CDP + DevTools frontend loaded in a CEF browser; remote_debugging_port (internal/cef_types.h:427)	No CEF API to open DevTools for a non-browser target
+ArcBrowserContextDownloads	N	11	4	CEF partial / workaround	H	Download manager per profile: delegate (created/updated/removed/filename), startDownload	CefDownloadHandler::CanDownload/OnBeforeDownload/OnDownloadUpdated (cef_download_handler.h:102,120,135); StartDownload (cef_browser.h:512)	No persisted download history (downloadManagerInitializedWithItems) or remove; keep our own list
+ArcBrowserContextEffects	N	17	12	Arc-only logic	M	Per-host-pattern injected CSS/JS, colour filter, colour scheme, zoom (Arc 'Boosts')	Renderer: CefRenderProcessHandler::OnContextCreated + CefV8Context::Eval (cef_render_process_handler.h:98, cef_v8.h:220), SendProcessMessage (cef_frame.h:257); zoom: SetZoomLevel (cef_browser.h:482)	Arc's EffectsAgent is renderer mojo; colour-filter matrix becomes CSS filter (lossy, guess)
+ArcBrowserContextExtensions	N	23	17	Needs Chrome internals	H	Extensions: list/enable/disable/reload/uninstall/install (Web Store, unpacked), info, commands, pinned order, run JS in background page	None: no extension API in CEF 156 headers (grep: only cef_browser.h:128 mentions extension tabIds)	Blocker; see summary
+ArcBrowserContextHistory	N	27	8	Needs Chrome internals	H	History service: search, top sites, add/delete/expire, visits (sync-style annotated visits)	None; workaround = own SQLite store fed by OnLoadEnd/OnAddressChange (cef_load_handler.h:97, cef_display_handler.h:57)	Own store loses Chrome-history integrations (omnibox, chrome://history, chrome.history)
+ArcBrowserContextID	N	4	3	CEF partial / workaround	H	Profile identity (incognito flag, directory basename)	CefRequestContext::GetCachePath (cef_request_context.h:166); empty cache_path = incognito (internal/cef_types.h:543-552)	Trivial
+ArcBrowserContextPageContentExtraction	N	8	3	CEF partial / workaround	L	Extract structured page content (Chrome AIPageContent-style tree) for AI features	Renderer DOM walk: CefFrame::VisitDOM/CefDOMNode (cef_frame.h:226, cef_dom.h:166) or V8; or CDP DOMSnapshot/Accessibility via ExecuteDevToolsMethod (cef_browser.h:649)	Chrome's blink AIPageContent agent is hidden; reimplementation will not match byte-for-byte
+ArcBrowserContextPreferences	N	40	26	CEF partial / workaround	M	Profile prefs: downloads dir/prompt, search suggest, password/credit-card saving, notification requests, auto-open, search engines, paste-and-go	CefRequestContext is a CefPreferenceManager: Get/SetPreference/CanSetPreference/AddPreferenceObserver (cef_preference.h:169,201,190,215)	Search engines (TemplateURLService) and classifyPasteAndGoInput need Chrome internals; password/card toggles are moot without those features
+ArcBrowserCreateParams	N	10	3	CEF partial / workaround	M	Browser::CreateParams for popups/PiP windows (title, resizable, bounds, PiP size)	OnBeforePopup windowInfo/popupFeatures (cef_life_span_handler.h:100)	
+ArcBrowserSidePanel	N	11	4	Needs Chrome internals	H	Extension side panel (chrome.sidePanel): title, web contents, close	None	
+ArcBrowserSidePanelEntryInfo	N	6	0	Needs Chrome internals	H	Side-panel entry for a tab	None	
+ArcColor	Y	8	8	CEF public API	H	SkColor value	cef_color_t (internal/cef_types.h:56)	Value type
+ArcColor4f	N	8	5	CEF public API	H	SkColor4f value	cef_color_t (internal/cef_types.h:56)	Value type
+ArcCommandBarRankingCandidate	Y	17	6	Arc-only logic	H	Command-bar ranking candidate features (recency, frequency, typed, engagement, matches, embedding)	None	
+ArcCommandBarRankingEvaluation	N	7	3	Arc-only logic	H	Ranking model evaluation result	None	
+ArcCommandBarRankingExample	Y	7	1	Arc-only logic	H	Training example (input, candidates, selected index)	None	
+ArcCommandBarRankingInput	Y	5	1	Arc-only logic	H	Ranking query input (query embedding)	None	
+ArcCommandBarRankingModel	Y	6	2	Arc-only logic	H	Ranking model descriptor (directory, version)	None	
+ArcCommandBarRankingResult	Y	6	2	Arc-only logic	H	Ranking result (candidate, score)	None	
+ArcCommandBarRankingTensor	Y	7	3	Arc-only logic	H	Tensor (name, shape, data)	None	
+ArcCommandBarRankingTrainingResult	N	16	12	Arc-only logic	H	On-device training result (losses, gradient norms, delta)	None	
+ArcConfirmInfobar	N	4	2	Needs Chrome internals	H	Chrome confirm infobar (message, accept)	None	Low importance
+ArcContentConversionService	N	6	3	Arc-only logic	H	HTML-to-Markdown conversion service backed by a TBC library	None; run the library in our layer	
+ArcContentNode	N	15	3	CEF partial / workaround	L	AIPageContent node (type, text, emphasis, size, colour, link, image alt, iframe, form, table)	As ArcBrowserContextPageContentExtraction	
+ArcContextMenuElementInfo	N	15	2	CEF public API	H	Context-menu target info (link/src/selection/misspelling/suggestions/input type)	CefContextMenuParams (cef_context_menu_handler.h:212-344)	
+ArcCookie	Y	24	19	CEF public API	H	Cookie value object	CefCookie (internal/cef_types.h:867); CefCookieManager Visit/Set/Delete/Flush (cef_cookie.h:75,99,116,126)	
+ArcCpuInfo	Y	28	27	CEF partial / workaround	H	base::CPU snapshot (brand, vendor, ARM part, feature bits)	None needed: sysctlbyname in our layer	Engine-independent utility
+ArcCrashKeysReporter	Y	1	1	Arc-only logic	M	Static hook forwarding crash keys to Arc's Sentry observer	CefSetCrashKeyValue (cef_crash_util.h:143) sets keys; no observer API	Sentry integration is TBC-specific; can drop
+ArcCreditCardInfoSaveRequest	Y	4	2	Needs Chrome internals	H	Autofill 'save card?' request	None	
+ArcDevToolsConnectionDialog	N	6	3	Needs Chrome internals	L	Approve/deny/disable an incoming DevTools remote-debugging connection	None (remote debugging is a static port, internal/cef_types.h:427)	Purpose inferred from selectors only
+ArcDisplayNameOrOrigin	N	5	2	CEF partial / workaround	H	Prompt subject: display name or origin	CefFormatUrlForSecurityDisplay (cef_parser.h:81)	Trivial
+ArcDownloadItem	Y	19	15	CEF partial / workaround	H	Download item: bytes, speed, path, URL, state, ETA; pause/resume/cancel/remove	CefDownloadItem getters (cef_download_item.h:54-171); CefDownloadItemCallback Pause/Resume/Cancel (cef_download_handler.h:71-83)	Callback only valid inside OnDownloadUpdated; keep latest callback per id. remove = our list
+ArcErrorStatus	N	5	2	CEF public API	H	Renderer termination status + error code	OnRenderProcessTerminated (cef_request_handler.h:270)	
+ArcExtensionCommand	Y	8	0	Needs Chrome internals	H	Extension keyboard command	None	
+ArcExtensionInfo	Y	17	11	Needs Chrome internals	H	Extension metadata (id, name, icon, permissions, enabled, omnibox keyword)	None	
+ArcExtensionRuntimeError	N	9	4	Needs Chrome internals	H	Extension runtime error report	None	
+ArcExtensionRuntimeErrorStackFrame	N	6	4	Needs Chrome internals	H	Stack frame of an extension error	None	
+ArcExtensionToolbarAction	Y	9	6	Needs Chrome internals	H	Extension toolbar action (icon, tooltip, enabled, pinned position)	None	
+ArcExternalProtocolDialog	N	7	5	CEF partial / workaround	H	External protocol launch dialog (program name, origin, accept/cancel)	OnProtocolExecution (cef_resource_request_handler.h:203); launch via NSWorkspace	
+ArcExtractedPageContent	Y	6	2	CEF partial / workaround	L	Extracted page content (url, title, root node, time)	As ArcBrowserContextPageContentExtraction	
+ArcFindResult	N	3	2	CEF public API	H	Find-in-page result (matches, active ordinal)	Find/StopFinding (cef_browser.h:560,569); CefFindHandler::OnFindResult (cef_find_handler.h:60)	
+ArcFindTextWithDirectiveResult	N	5	0	Needs Chrome internals	L	Text-fragment (#:~:text=) find result	None; workaround: navigate same-document to a text-fragment URL (guess)	
+ArcFormControlInfo	N	10	1	CEF partial / workaround	L	Form control in extracted content (type, name, value, placeholder, checked, required, redacted)	As ArcBrowserContextPageContentExtraction	
+ArcFreezingVoteToken	N	3	1	CEF partial / workaround	L	performance_manager freezing vote (prevent/allow freezing)	CDP Page.setWebLifecycleState via ExecuteDevToolsMethod (cef_browser.h:649)	Semantics differ: no Chrome freezing policy to vote on
+ArcGPULogMessage	Y	6	3	Needs Chrome internals	M	GPU process log message (severity/header/message)	None (GpuDataManager hidden); CDP SystemInfo.getInfo gives GPU info, not logs	Diagnostics; can stub
+ArcHistogramSample	N	5	4	Arc-only logic	M	One perf histogram sample with browser state flags	Partial data: CDP Browser.getHistograms via ExecuteDevToolsMethod (cef_browser.h:649)	TBC telemetry; endpoints gone after shutdown
+ArcHistogramSamples	N	38	36	Arc-only logic	M	Periodic perf sample: memory footprint per process type, CPU %, wakeups, battery drain, memory-pressure windows	Partial: CefTaskManager::GetTaskInfo cpu/memory per process (cef_task_manager.h:89); no power/battery metrics	Arc's histograms_observer over performance_manager/power metrics
+ArcHistoryDeletion	N	11	3	Needs Chrome internals	H	History deletion info (all/expired/time range/urls/visit ids)	None; own store	
+ArcHistoryItem	Y	10	6	Needs Chrome internals	H	History URL row (id, url, title, visit/typed counts, times)	None; own store	
+ArcHistoryQueryOptions	Y	14	10	Needs Chrome internals	H	History query options (text, time range, max, dedupe, matching)	None; own store	
+ArcHSLAMatrix	Y	23	1	Arc-only logic	M	20-float colour matrix for Effects colour filter	None; CSS filter approximation in renderer	
+ArcHtmlToMarkdownResult	N	7	1	Arc-only logic	H	Conversion result (body, title, references, selectors, meta tags)	None	
+ArcHungRendererDialog	N	5	0	CEF public API	H	Hung renderer dialog (wait, kill)	OnRenderProcessUnresponsive/Responsive (cef_request_handler.h:247,259); CefUnresponsiveProcessCallback Wait/Terminate (cef_unresponsive_process_callback.h:53,59)	
+ArcImage	N	11	4	CEF partial / workaround	M	gfx::Image + sandboxed image decode helpers	CefImage AddPNG/AddJPEG/GetAsPNG (cef_image.h:97,107,171); decode via ImageIO	Loses the out-of-process (sandboxed) decoder
+ArcImageRep	Y	15	3	CEF partial / workaround	M	Single image representation (pixels, PNG/JPEG encode, decode)	CefImage AddBitmap/GetAsBitmap/GetAsJPEG (cef_image.h:83,156,186)	
+ArcImportSource	Y	3	2	Arc-only logic	H	Importable browser (id, type)	None; reimplement importers in our layer	Arc's importer reads Chrome/Safari data
+ArcImportSourceProfile	Y	12	9	Arc-only logic	H	Importable browser profile (paths, categories, Safari export)	None; cookies can be written via CefCookieManager::SetCookie (cef_cookie.h:99)	
+ArcKeyboardAccelerator	N	3	1	CEF partial / workaround	H	ui::Accelerator (key, modifiers)	CefMenuModel::GetAccelerator (cef_menu_model.h:396)	
+ArcKeyEventData	Y	5	2	CEF partial / workaround	M	Synthetic key event (type, DOM code, key, VK)	CefKeyEvent via SendKeyEvent (cef_browser.h:751) or CDP Input.dispatchKeyEvent	
+ArcLocalState	N	10	2	CEF public API	H	Local State prefs: typed getters, change callbacks, browser policy lookup	CefPreferenceManager::GetGlobalPreferenceManager/GetPreference/AddPreferenceObserver (cef_preference.h:152,169,215); custom prefs via OnRegisterCustomPreferences (cef_browser_process_handler.h:78)	getBrowserPolicy: no API; chrome_policy_id is Chrome-style only (internal/cef_types.h:479-487); read managed CFPreferences ourselves
+ArcLoginCredentials	N	5	3	Needs Chrome internals	H	Credential (url, username, password) from import / password store	None (PasswordStore hidden)	
+ArcLoginCredentialsSaveRequest	Y	6	4	Needs Chrome internals	H	Password-manager 'save/update password?' request (save/cancel/never)	None	Blocker for password manager parity
+ArcMediaImage	N	6	1	Needs Chrome internals	H	Media-session artwork	None	
+ArcMediaPosition	Y	6	3	Needs Chrome internals	H	Media-session position (rate, duration, time)	None	
+ArcMemoryDumpMetric	N	4	2	Needs Chrome internals	M	Metric the app contributes to memory-infra dumps	None (MemoryDumpManager hidden)	Debug only; can stub
+ArcMemoryDumpProvider	N	1	0	Needs Chrome internals	M	App-registered memory-infra dump provider	None	Debug only; can stub
+ArcMenuItemModel	N	19	6	CEF partial / workaround	M	Menu item (type, label, state, icon, accelerator, submenu, activate)	CefMenuModel GetLabelAt/IsEnabled/IsChecked/GetSubMenuAt/GetAccelerator (cef_menu_model.h:201,292,319,261,396)	
+ArcMenuModel	N	5	1	CEF partial / workaround	M	ui::MenuModel wrapper (context menus, extension action menus)	CefMenuModel (cef_menu_model.h:51) in RunContextMenu (cef_context_menu_handler.h:120)	Extension menu items absent
+ArcMetaTagEntry	N	3	2	Arc-only logic	H	Captured meta tag	None	
+ArcMetaTagSelector	N	3	1	Arc-only logic	H	Meta tag selector	None	
+ArcMetrics	N	3	1	Needs Chrome internals	M	Profile metrics accessor: all site-engagement scores	Partial: per-URL SITE_ENGAGEMENT website setting via GetWebsiteSetting (cef_request_context.h:267, internal/cef_types_content_settings.h:77); no enumeration	Whether Alloy browsers feed engagement is unknown (guess: no)
+ArcMostVisitedURL	Y	5	2	Needs Chrome internals	H	TopSites entry	None; derive from own history store	
+ArcNavigation	Y	8	7	CEF partial / workaround	M	Navigation handle snapshot (url, status code, headers, redirected-to-other-tab)	OnLoadStart/End/Error (cef_load_handler.h:82,97,110); OnResourceResponse (cef_resource_request_handler.h:145)	No NavigationHandle identity; correlate ourselves
+ArcNavigationAction	N	7	4	CEF partial / workaround	H	Navigation policy request (url, referrer, type, disposition)	OnBeforeBrowse (cef_request_handler.h:92), OnOpenURLFromTab (117), CefRequest::GetTransitionType (cef_request.h:213)	
+ArcNetworkActivityMonitor	N	6	3	CEF partial / workaround	M	Start a NetLog capture for a duration	No runtime NetLog API; --log-net-log via OnBeforeCommandLineProcessing (cef_app.h:208) needs relaunch; CDP Network domain as substitute	Debug feature
+ArcNetworkLoggingConfiguration	N	8	2	CEF partial / workaround	M	NetLog file path + duration	As ArcNetworkActivityMonitor	
+ArcNomicEmbedTextItem	Y	6	2	Arc-only logic	H	Nomic embedding input (text, task)	None	
+ArcNomicEmbedTextModel	Y	6	2	Arc-only logic	H	Nomic text-embedding model descriptor	None	
+ArcNotification	Y	32	29	Needs Chrome internals	M	Web notification bridged to the app's notification centre (click/close/settings/reply)	None (no notification API); workaround: renderer polyfill of window.Notification via CefRenderProcessHandler + process messages	Polyfill misses service-worker/push notifications
+ArcNotificationButton	Y	8	6	Needs Chrome internals	M	Notification action button	As ArcNotification	
+ArcNotificationItem	Y	4	4	Needs Chrome internals	M	Notification list item	As ArcNotification	
+ArcOverscrollBehavior	N	5	2	CEF partial / workaround	L	Page overscroll-behavior x/y (for swipe navigation)	Renderer JS/computed style via CefRenderProcessHandler (cef_render_process_handler.h:98)	
+ArcOverscrollParams	N	3	1	CEF partial / workaround	L	Overscroll params wrapper	As ArcOverscrollBehavior	
+ArcPasteAndGoClassification	N	4	0	Needs Chrome internals	H	AutocompleteClassifier result for paste-and-go	None; workaround = URL heuristics (CefParseURL, cef_parser.h:60)	
+ArcPerformanceController	Y	6	2	Needs Chrome internals	H	Battery Saver / Memory Saver (high-efficiency) mode control and observer	None; Chrome's performance_manager user_tuning is not exposed	Alloy-style browsers are not TabStripModel tabs, so Chrome's discarding would not apply anyway (guess)
+ArcPermissionRequest	Y	5	3	CEF public API	M	Permission prompt request (type, origin, extra data)	OnShowPermissionPrompt / OnRequestMediaAccessPermission / OnDismissPermissionPrompt (cef_permission_handler.h:124,103,143)	Device choosers (USB/HID/Bluetooth/serial) and quiet-UI reasons not exposed (guess)
+ArcRedirectEntry	N	6	2	Needs Chrome internals	H	Redirect chain entry for visits	None	
+ArcReference	N	3	0	Arc-only logic	H	Conversion reference (text, min chars)	None	
+ArcSearchEngine	Y	12	9	Needs Chrome internals	H	TemplateURL (name, keyword, URL, favicon, prepopulated)	None; workaround = own engine list in our layer	
+ArcSecureContext	N	4	3	CEF partial / workaround	M	Visible security state of the page	CefSSLStatus via GetVisibleNavigationEntry (cef_ssl_status.h:55-80, cef_browser.h:958)	No Safe Browsing/DANGEROUS level; no change event
+ArcSelectOption	N	6	3	CEF partial / workaround	L	<select> option in extracted content	As ArcBrowserContextPageContentExtraction	
+ArcSessionID	Y	7	5	CEF partial / workaround	M	SessionID used as tab/window identity across the API	CefBrowser::GetIdentifier (cef_browser.h:131); persistence across launches is ours	
+ArcSessionNavigation	N	10	2	Needs Chrome internals	H	Serialized navigation entry	None (GetNavigationEntries is read-only, cef_browser.h:669)	
+ArcSessionTab	Y	9	0	Needs Chrome internals	H	sessions::SessionTab	None	
+ArcSessionTabGroup	N	7	2	Needs Chrome internals	H	sessions::SessionTabGroup	None	
+ArcSessionWindow	N	9	0	Needs Chrome internals	H	sessions::SessionWindow (import / foreign-session restore)	None; no API to restore navigation entries	
+ArcSiteEngagementDetails	Y	4	2	Needs Chrome internals	M	Site engagement (url, score)	As ArcMetrics	
+ArcSiteSettingInfo	Y	11	5	CEF public API	H	Per-origin content setting / permission value	Get/SetContentSetting, AddSettingObserver (cef_request_context.h:301,321,333)	Listing all changed settings for an origin = iterate the content-type enum
+ArcSpake2Context	N	3	0	CEF partial / workaround	M	BoringSSL SPAKE2 password-authenticated key exchange	None in CEF; link our own BoringSSL/SPAKE2	No app call sites found by selector scan
+ArcTabGroupInfo	Y	13	10	Needs Chrome internals	H	chrome.tabGroups bridge: group info	None (needs extension system)	
+ArcTabGroupProperties	N	10	7	Needs Chrome internals	H	chrome.tabGroups bridge: properties	None	
+ArcTabGroupResult	Y	9	7	Needs Chrome internals	H	chrome.tabGroups bridge: result	None	
+ArcTracingConfiguration	Y	9	4	CEF public API	M	Trace config: categories string, file path, duration, privacy filtering	CefBeginTracing categories string (cef_trace.h:71-83)	Privacy filtering flag has no CEF knob; duration = our timer
+ArcTracingController	N	11	9	CEF public API	H	Start/stop/abort a Chromium trace to file, with delegate callbacks	CefBeginTracing/CefEndTracing + CefEndTracingCallback (cef_trace.h:83,100,52)	No abort-without-writing distinct from EndTracing with empty callback
+ArcURLLoadCancellationToken	Y	3	2	CEF public API	H	Cancel handle for an app URL load	CefURLRequest::Cancel (cef_urlrequest.h:128)	
+ArcURLLoadConfiguration	Y	27	18	CEF public API	H	App-initiated URL load (method, body/file, headers, redirects, streaming, timeout, cache, block-local)	CefURLRequest::Create + CefRequest (cef_urlrequest.h:78; cef_request.h:83-184)	blockLocalRequest = our check
+ArcURLUtilities	Y	2	2	CEF partial / workaround	H	eTLD+1 from host; host formatting for display	CefFormatUrlForSecurityDisplay (cef_parser.h:81); eTLD+1 needs own Public Suffix List	
+ArcVisitCategory	N	6	1	Needs Chrome internals	H	Visit content category (id, weight)	None	
+ArcWebContents	N	160	110	CEF partial / workaround	M	Tab: view hosting, state, find, zoom, capture, print, JS, a11y, translate, effects, freezing, delegates	CefBrowser/CefBrowserHost (cef_browser.h) + CefClient handlers + CDP	See spot check §4.4: of ~109 app-facing selectors, ~24 map directly, ~68 need a workaround (CDP, renderer code, own code), ~17 need Chrome internals or are Arc-only
+ArcWebContentsAIAgent	N	4	2	CEF partial / workaround	M	AI agent input into page (text input, key press)	CDP Input.insertText/dispatchKeyEvent via ExecuteDevToolsMethod (cef_browser.h:649); SendKeyEvent (751)	
+ArcWebContentsBoostIDE	N	8	4	Arc-only logic	M	Boost IDE WebUI <-> app JSON channel (responses/events)	CefMessageRouterBrowserSide/RendererSide (wrapper/cef_message_router.h:258,445) + scheme handler (cef_scheme.h:65)	
+ArcWebContentsConfiguration	Y	24	12	CEF partial / workaround	M	Creation options (foreground, hidden, muted, transparent, no downloads/context menus, autoplay, forced size)	CefWindowInfo.hidden (internal/cef_types_mac.h:110), CefBrowserSettings.background_color (internal/cef_types.h:728), SetAudioMuted (cef_browser.h:1003), CanDownload (cef_download_handler.h:102), OnBeforeContextMenu (cef_context_menu_handler.h:106)	Per-tab autoplay policy: no API (global --autoplay-policy switch or AUTOPLAY content setting, internal/cef_types_content_settings.h:86)
+ArcWebContentsDevTools	N	22	18	CEF partial / workaround	M	Per-tab DevTools: open/close/panels, inspect, in-process CDP sessions	ShowDevTools/CloseDevTools/HasDevTools (cef_browser.h:582,591,598); ExecuteDevToolsMethod/SendDevToolsMessage/AddDevToolsMessageObserver (649,633,660)	Docked-in-Arc toolbox, panel switching and confirmation prompts are not in CEF
+ArcWebContentsMediaSession	N	30	19	Needs Chrome internals	H	Media controls: play/pause/next/prev/seek/volume/mute, camera/mic/hang-up, PiP request/exit, auto-PiP	Only SetAudioMuted (cef_browser.h:1003) and OnMediaAccessChange (cef_display_handler.h:163); rest via injected JS (lossy)	
+ArcWebContentsMediaSessionPiPController	N	4	2	Needs Chrome internals	H	Arc's custom video PiP (video NSView + source bounds)	None; Arc replaced Chrome's PiP window controller	
+ArcWebContentsNavigationController	N	17	12	CEF partial / workaround	H	Load (with initiator/transition/typed flags), back/forward/go-to-item, reload, observers	LoadURL/LoadRequest (cef_frame.h:152,146), GoBack/GoForward/Reload/ReloadIgnoreCache (cef_browser.h:88,100,112,118); go-to-item via CDP Page.navigateToHistoryEntry	
+ArcWebContentsPDFController	N	7	2	Needs Chrome internals	H	PDF viewer: bookmarks/outline, available/visible pages, page text	None	Workaround via scripting the PDF viewer frame is speculative
+ArcWebContentsThumbnailsGenerator	N	11	8	CEF partial / workaround	M	Tab thumbnails with observers	CDP Page.captureScreenshot via ExecuteDevToolsMethod (cef_browser.h:649)	Cost/latency higher than Chrome's ThumbnailTabHelper (guess)
+ArcWebDialog	N	8	3	Needs Chrome internals	H	WebUI constrained dialog (title, sizes, web contents)	None	
+ArcWebLoginDialog	N	9	5	CEF public API	H	HTTP/proxy auth dialog (authority, accept with credentials, cancel)	CefRequestHandler::GetAuthCredentials + CefAuthCallback (cef_request_handler.h:165)	Password-manager autofill of the dialog absent

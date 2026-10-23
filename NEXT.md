@@ -28,7 +28,7 @@ Sol (Rahul's sub-agents) owns the agent review and spec work from 2026-10-23.
 
 ## 2. Choose the engine route
 
-- [ ] CEF mapping: sort the app's 834 engine methods (63 classes) into three groups: maps to CEF's
+- [x] (done 2026-10-23: compile wins; results/cef-mapping.md) CEF mapping: sort the app's 834 engine methods (63 classes) into three groups: maps to CEF's
       public API, needs Chrome internals, or Arc-only feature.
 - [ ] Write `notes/engine-feasibility.md` in the ArcMod repo: measured size, CEF vs compile-with-our-layer,
       effort, risks and a recommendation. Commit it, then ask before pushing.

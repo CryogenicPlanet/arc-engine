@@ -12,6 +12,11 @@ The task list is `NEXT.md`. Facts here were measured on 2026-10-22/23 unless mar
 - A stock prebuilt Chromium can't host Arc's app. It has no Arc API, and its internals are hidden and
   have no stable ABI. CEF (prebuilt embedding framework) is the cheaper alternative: a shim on its
   public API, losing Chrome-only features. The route is decided by the CEF mapping (NEXT.md §2).
+- **Route decided 2026-10-23: compile Chromium with our own `arc/` layer.** CEF was rejected (`results/cef-mapping.md`).
+  On macOS, embedding in the app's own NSView forces CEF's Alloy style. That means no extensions (CEF removed the
+  API in M128), no autofill, password manager, history, omnibox or bookmarks, no Chrome dialogs, and no tab
+  history restore. Of 1,701 methods: 167 are covered by CEF, 681 partly or by workaround, 572 need Chrome
+  internals, and 281 are Arc-only. CEF's source is still useful as reference code.
 - macOS builds need a Mac (this M4 Max, 48 GB). Heavy analysis runs on the exe.dev VM `arcmod-engine`.
 
 ## 2. What Arc's engine is
