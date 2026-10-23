@@ -64,3 +64,15 @@ Finish with a report (your final message) containing:
   `logs/wp/<package>.report.md` and the current state of your files.
 - Builds share one tree: keep your files compiling at all times (check-file before every save you leave in
   place); if a build fails in a file you own, fixing it is your top priority.
+
+## Standing rules learned overnight
+
+- Private ObjC helper classes must NOT start with `Arc` (the framework exports `_OBJC_CLASS_$_Arc*`, so a hidden
+  Arc-prefixed helper breaks the link). Use a package prefix (`ExtensionsMenuTarget`, `OmniboxState`, ...).
+- Before adding a gn dep, check the target's `visibility` (`gn desc out/Base <target> visibility`); private
+  targets break gn for everyone. Prefer the public target; headers don't need deps (check_includes is off).
+- Cross-package calls go through entry points declared by the lead in `arc_internal.h` (or hooks in
+  `chrome/browser/arcmod/arcmod_hooks.h`); callers keep a weak no-op default when the callee may be absent.
+- Hooks available (patches/0004): navigation throttles, hosted tab helpers, download filename, extension tab
+  group id and permission prompt, JavaScript dialog manager, context menu, video PiP window, DevTools show,
+  permission prompt, HTTP auth (LoginHandler), crashpad annotation observer (crash keys).
