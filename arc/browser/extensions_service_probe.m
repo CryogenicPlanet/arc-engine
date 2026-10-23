@@ -46,6 +46,9 @@ static NSString* gRequest;
 static NSString* gFixtures;
 static NSString* gToken;
 static NSString* gFixtureMode;
+static BOOL gBrowserPinsEnabled;
+static BOOL gBrowserOmniboxEnabled;
+static NSString* gFixtureURL;
 static NSMutableSet* gStartupPending;
 static NSString* gRecord;
 static NSString* gLastID;
@@ -299,7 +302,7 @@ static NSArray* MatchingBrowsers(id service, id targetContext, NSMutableArray* i
 static NSDictionary* Metadata(id service, id browser) {
   NSMutableDictionary* result = [NSMutableDictionary dictionary];
   NSDictionary* classes = @{@"ArcBrowserContextExtensions":@[@"owner",@"isEqual:",@"hash",@"setDelegate:",@"isExtensionSystemReady",@"listExtensions",@"getExtensionInfo:",@"enableExtension:",@"disableExtension:",@"reloadExtension:",@"uninstallExtension:",@"installExtensionFromUnpackedPath:completion:",@"runJSInExtensionBackgroundPage:js_code:",@"getAllExtensionCommands",@"executeExtensionCommand:commandName:",@"getPinnedExtensionOrder",@"setPinnedExtensionOrder:"],
-      @"ArcBrowser":@[@"executeExtensionAction:",@"pinExtension:",@"unpinExtension:",@"moveExtension:targetIndex:"]};
+      @"ArcBrowser":@[@"executeExtensionAction:",@"pinExtension:",@"unpinExtension:",@"moveExtension:targetIndex:",@"triggerExtensionOmniboxInput:inputText:disposition:"]};
   for (NSString* className in classes) {
     NSMutableDictionary* methods = [NSMutableDictionary dictionary];
     Class cls = [className isEqual:@"ArcBrowser"] ? (browser ? [browser class] : NSClassFromString(@"ArcBrowser")) : [service class];
@@ -319,6 +322,127 @@ static BOOL Proven(id service, NSString* label, NSString* identifier) {
   if (matches && [gFixtureMode isEqual:@"command-line"])
     matches = [Get(info,@"version") isEqual:@"1.2.3"] && [PropertyValue(info,@"fromWebstore") isEqual:@NO];
   return matches;
+}
+// Browser pin probes are opt-in, CLI-only, and restricted to both enabled,
+// nonce-proven fixtures. Every absolute move index comes from a current owned
+// anchor in the actual visible pin order; no request may supply an arbitrary ID
+// or index. This helper records real arguments/snapshots, never callback results.
+static NSString* BrowserPinRequest(id service, id browser, NSString* operation,
+                                   NSDictionary* request, ExtensionsProbeWork* work) {
+  if (!gBrowserPinsEnabled || ![gFixtureMode isEqual:@"command-line"])
+    return @"browser pin phase not explicitly enabled in command-line mode";
+  if (!service || !browser || work.entry.service != service || work.browser != browser ||
+      ![gBrowserDelegates objectForKey:browser]) return @"browser pin identity entry missing";
+  NSMutableArray* inventory = [NSMutableArray array];
+  NSArray* matches = MatchingBrowsers(service,work.entry.context,inventory);
+  work.response[@"browserPinIdentityCandidates"] = inventory;
+  if (matches.count != 1 || matches.firstObject != browser)
+    return @"browser pin service/browser identity is ambiguous or changed";
+  work.response[@"browserPinIdentityVerified"] = @YES;
+  if (gOutstandingInstalls.count || gStartupPending.count || !gBaseline || gOwned.count != 2 ||
+      [gOwned[@"A"] isEqual:gOwned[@"B"]]) return @"browser pin ownership/baseline unresolved";
+  for (NSString* label in @[@"A",@"B"]) {
+    NSString* identifier = gOwned[label];
+    if (!Proven(service,label,identifier)) return @"browser pin target not a proven nonce fixture";
+    id info = Get1(service,@"getExtensionInfo:",identifier);
+    if (![PropertyValue(info,@"enabled") isEqual:@YES] || ![PropertyValue(info,@"hasAction") isEqual:@YES])
+      return @"browser pin fixtures must both be enabled and action-bearing";
+  }
+  NSString* label = request[@"label"];
+  if (![@[@"A",@"B"] containsObject:label] || request[@"targetIndex"] || request[@"extensionID"])
+    return @"browser pin request must use only fixture labels, not raw IDs or indices";
+  NSString* selector = [@{@"browser-pin":@"pinExtension:",@"browser-unpin":@"unpinExtension:",
+                        @"browser-move":@"moveExtension:targetIndex:"} objectForKey:operation];
+  if (!selector) return @"unsupported browser pin operation";
+  Method method = class_getInstanceMethod([browser class],NSSelectorFromString(selector));
+  if (!ABI(method,[operation isEqual:@"browser-move"] ? 4 : 3,@"v"))
+    return @"browser pin selector return/count ABI mismatch";
+  NSMethodSignature* signature = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(method)];
+  if (strcmp([signature getArgumentTypeAtIndex:2],"@") ||
+      ([operation isEqual:@"browser-move"] && (strcmp([signature getArgumentTypeAtIndex:3],"Q") || sizeof(NSUInteger) != 8)))
+    return @"browser pin selector argument ABI mismatch (move requires native Q)";
+  NSArray* before = [Get(service,@"getPinnedExtensionOrder") copy];
+  if (![before isKindOfClass:NSArray.class] || [NSSet setWithArray:before].count != before.count)
+    return @"browser pin visible order is missing or duplicated";
+  NSMutableArray* baseline = [NSMutableArray array];
+  for (id identifier in before) {
+    if (![identifier isKindOfClass:NSString.class]) return @"browser pin order contains a non-string";
+    if (![gOwned.allValues containsObject:identifier]) [baseline addObject:identifier];
+  }
+  work.response[@"pinsBefore"] = Value(before);
+  work.response[@"browserPinBaselineBeforePreserved"] = JSONBool([baseline isEqual:gBaseline]);
+  if (![baseline isEqual:gBaseline]) return @"browser pin baseline changed before mutation";
+  NSString* identifier = gOwned[label];
+  NSUInteger targetIndex = NSNotFound;
+  if ([operation isEqual:@"browser-move"]) {
+    NSString* anchor = request[@"anchorLabel"];
+    if (![@[@"A",@"B"] containsObject:anchor] || ![before containsObject:identifier])
+      return @"browser move requires a pinned fixture and owned anchor label";
+    targetIndex = [before indexOfObject:gOwned[anchor]];
+    if (targetIndex == NSNotFound || targetIndex >= before.count)
+      return @"browser move anchor is not currently pinned";
+    work.response[@"browserPinAnchorLabel"] = anchor;
+  } else if (request[@"anchorLabel"]) return @"anchor label is only valid for browser move";
+  work.response[@"browserPinSelector"] = selector;
+  work.response[@"browserPinABI"] = [NSString stringWithUTF8String:method_getTypeEncoding(method)];
+  work.response[@"browserPinLabel"] = label;
+  work.response[@"browserPinArguments"] = targetIndex == NSNotFound ? @[identifier] : @[identifier,@(targetIndex)];
+  if (targetIndex == NSNotFound) Put(browser,selector,identifier);
+  else ((void (*)(id,SEL,id,NSUInteger))objc_msgSend)(browser,NSSelectorFromString(selector),identifier,targetIndex);
+  return nil;
+}
+// Omnibox is a separate explicit CLI phase. The runner must additionally prove
+// the sole active tab/window's nonce URL through genuine B-action listener data
+// immediately before this call; ArcBrowser has no public active-tab getter.
+static NSString* BrowserOmniboxRequest(id service, id browser, NSDictionary* request,
+                                       ExtensionsProbeWork* work) {
+  if (!gBrowserOmniboxEnabled || ![gFixtureMode isEqual:@"command-line"])
+    return @"browser omnibox phase not explicitly enabled in command-line mode";
+  if (!service || !browser || work.entry.service != service || work.browser != browser ||
+      ![gBrowserDelegates objectForKey:browser]) return @"browser omnibox identity entry missing";
+  NSMutableArray* inventory = [NSMutableArray array];
+  NSArray* matches = MatchingBrowsers(service,work.entry.context,inventory);
+  work.response[@"browserOmniboxIdentityCandidates"] = inventory;
+  if (matches.count != 1 || matches.firstObject != browser)
+    return @"browser omnibox service/browser identity is ambiguous or changed";
+  if (gOutstandingInstalls.count || gStartupPending.count || !gBaseline || gOwned.count != 2 ||
+      [gOwned[@"A"] isEqual:gOwned[@"B"]]) return @"browser omnibox ownership unresolved";
+  for (NSString* label in @[@"A",@"B"]) {
+    NSString* identifier = gOwned[label];
+    if (!Proven(service,label,identifier)) return @"browser omnibox target not a proven nonce fixture";
+    id info = Get1(service,@"getExtensionInfo:",identifier);
+    if (![PropertyValue(info,@"enabled") isEqual:@YES] || ![PropertyValue(info,@"hasAction") isEqual:@YES])
+      return @"browser omnibox fixtures must both be enabled and action-bearing";
+  }
+  if (![request[@"label"] isEqual:@"A"] || request[@"extensionID"])
+    return @"browser omnibox request must use only owned fixture A";
+  NSNumber* raw = request[@"disposition"];
+  if (![raw isKindOfClass:NSNumber.class] || CFGetTypeID((__bridge CFTypeRef)raw) == CFBooleanGetTypeID())
+    return @"browser omnibox disposition must be an integer ordinal";
+  double number = raw.doubleValue;
+  if (!(number >= 0 && number <= 11) || number != (long long)number)
+    return @"browser omnibox disposition outside proven native 0..11 range";
+  long long disposition = (long long)number;
+  NSString* input = request[@"inputText"];
+  NSString* expected = [NSString stringWithFormat:@"%@/omnibox/%lld/π 東京 🧭",gToken,disposition];
+  if (![input isKindOfClass:NSString.class] || ![input isEqual:expected] ||
+      !gFixtureURL || ![request[@"fixtureURL"] isEqual:gFixtureURL])
+    return @"browser omnibox input/fixture URL is not this phase's nonce";
+  NSString* selector = @"triggerExtensionOmniboxInput:inputText:disposition:";
+  Method method = class_getInstanceMethod([browser class],NSSelectorFromString(selector));
+  if (!ABI(method,5,@"v")) return @"browser omnibox selector return/count ABI mismatch";
+  NSMethodSignature* signature = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(method)];
+  if (strcmp([signature getArgumentTypeAtIndex:2],"@") ||
+      strcmp([signature getArgumentTypeAtIndex:3],"@") ||
+      strcmp([signature getArgumentTypeAtIndex:4],"q") || sizeof(long long) != 8)
+    return @"browser omnibox selector argument ABI mismatch (requires native q)";
+  work.response[@"browserOmniboxIdentityVerified"] = @YES;
+  work.response[@"browserOmniboxFixtureURL"] = gFixtureURL;
+  work.response[@"browserOmniboxSelector"] = selector;
+  work.response[@"browserOmniboxABI"] = [NSString stringWithUTF8String:method_getTypeEncoding(method)];
+  work.response[@"browserOmniboxArguments"] = @[gOwned[@"A"],input,@(disposition)];
+  ((void (*)(id,SEL,id,id,long long))objc_msgSend)(browser,NSSelectorFromString(selector),gOwned[@"A"],input,disposition);
+  return nil;
 }
 static void OwnershipJournal(void) {
   WriteJSON(@{@"fixtureMode":gFixtureMode,@"startupPending":[gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)],@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy]},[gRequest stringByAppendingString:@".owned.json"]);
@@ -381,6 +505,14 @@ static void Finish(NSString* error) {
     work.response[@"outstandingInstalls"] = gOutstandingInstalls.allObjects;
     work.response[@"startupPending"] = [gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)];
     work.response[@"fixtureMode"] = gFixtureMode;
+    if ([@[@"browser-pin",@"browser-unpin",@"browser-move"] containsObject:work.response[@"operation"]]) {
+      NSMutableArray* baseline = [NSMutableArray array];
+      for (NSString* identifier in work.response[@"pinsAfter"])
+        if (![gOwned.allValues containsObject:identifier]) [baseline addObject:identifier];
+      BOOL preserved = gBaseline && [baseline isEqual:gBaseline];
+      work.response[@"browserPinBaselineAfterPreserved"] = JSONBool(preserved);
+      if (!preserved && !error) error = @"browser pin baseline changed after mutation";
+    }
     if ([work.response[@"operation"] isEqual:@"cleanup"]) {
       BOOL absent = YES;
       for (id value in infos.allValues) if (value != NSNull.null) absent = NO;
@@ -524,6 +656,12 @@ static void Poll(void) {
         [order addObject:gOwned[item]];
       }
       Put(service,@"setPinnedExtensionOrder:",order);
+    } else if ([@[@"browser-pin",@"browser-unpin",@"browser-move"] containsObject:operation]) {
+      NSString* error = BrowserPinRequest(service,browser,operation,request,gWork);
+      if (error) { Finish(error); return; }
+    } else if ([operation isEqual:@"browser-omnibox"]) {
+      NSString* error = BrowserOmniboxRequest(service,browser,request,gWork);
+      if (error) { Finish(error); return; }
     } else if ([operation isEqual:@"cleanup"]) {
       // Wait for every attempted install, including timed-out requests, before
       // reconciling actual installed nonce fixtures and mutating cleanup state.
@@ -562,6 +700,22 @@ __attribute__((constructor)) static void StartExtensionsServiceProbe(void) {
     const char* mode = getenv("ARC_EXTENSIONS_PROBE_FIXTURE_MODE");
     if (!request || !fixtures || !token || !record) return;
     gFixtureMode = mode ? @(mode) : @"public-install";
+    const char* browserPins = getenv("ARC_EXTENSIONS_PROBE_BROWSER_PINS");
+    gBrowserPinsEnabled = browserPins && !strcmp(browserPins,"1");
+    if (gBrowserPinsEnabled && ![gFixtureMode isEqual:@"command-line"]) return;
+    const char* browserOmnibox = getenv("ARC_EXTENSIONS_PROBE_BROWSER_OMNIBOX");
+    gBrowserOmniboxEnabled = browserOmnibox && !strcmp(browserOmnibox,"1");
+    if (gBrowserOmniboxEnabled && ![gFixtureMode isEqual:@"command-line"]) return;
+    const char* fixtureURL = getenv("ARC_EXTENSIONS_PROBE_FIXTURE_URL");
+    gFixtureURL = fixtureURL ? @(fixtureURL) : nil;
+    if (gBrowserOmniboxEnabled) {
+      if (!gFixtureURL) return;
+      NSURL* url = [NSURL URLWithString:gFixtureURL];
+      NSString* expectedPath = [NSString stringWithFormat:@"/%@/page",@(token)];
+      if (![url.scheme isEqual:@"http"] || ![url.host isEqual:@"127.0.0.1"] ||
+          !url.port || url.port.integerValue < 1024 || url.port.integerValue > 65535 ||
+          ![url.path isEqual:expectedPath] || url.query || url.fragment || url.user || url.password) return;
+    }
     if (![@[@"public-install",@"command-line"] containsObject:gFixtureMode]) return;
     gRequest = @(request); gFixtures = @(fixtures); gToken = @(token); gRecord = @(record);
     if (!gRequest.isAbsolutePath || !gFixtures.isAbsolutePath || !gRecord.isAbsolutePath ||

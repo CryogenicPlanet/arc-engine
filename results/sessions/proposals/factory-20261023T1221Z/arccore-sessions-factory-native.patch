@@ -1,0 +1,136 @@
+--- a/chrome/browser/arcmod/arcmod_hooks.h
++++ b/chrome/browser/arcmod/arcmod_hooks.h
+@@ -14,9 +14,12 @@
+ #include "base/functional/callback.h"
+ #include "base/functional/callback_helpers.h"
+ #include "base/no_destructor.h"
++#include "base/memory/weak_ptr.h"
+ #include "chrome/browser/ui/tab_helpers.h"
+ #include "net/base/auth.h"
+ 
++class BrowserWindowInterface;
++struct BrowserWindowCreateParams;
+ class LoginHandler;
+ class Profile;
+ namespace net {
+@@ -45,6 +48,19 @@
+ }  // namespace download
+ 
+ namespace arcmod {
++
++// Runs after Chrome computes all native restoration params. A scoped embedder
++// request may supply its BrowserWindow and return a one-shot notification that
++// runs after native creation and before tab insertion. Empty means no override.
++using SessionBrowserCreatedCallback =
++    base::OnceCallback<void(base::WeakPtr<BrowserWindowInterface>)>;
++using SessionBrowserFactoryHook = base::RepeatingCallback<
++    SessionBrowserCreatedCallback(Profile*, BrowserWindowCreateParams&)>;
++inline SessionBrowserFactoryHook& GetSessionBrowserFactoryHook() {
++  static base::NoDestructor<SessionBrowserFactoryHook> hook;
++  return *hook;
++}
++
+ 
+ // Marks one actual historical WebContents insertion, preserving both source
+ // IDs and optional presence. The returned scope clears its exact WC marker.
+--- a/chrome/browser/ui/browser_live_tab_context.cc
++++ b/chrome/browser/ui/browser_live_tab_context.cc
+@@ -11,6 +11,8 @@
+ #include <utility>
+ 
+ #include "base/check_deref.h"
++#include "base/command_line.h"
++#include "chrome/browser/arcmod/arcmod_hooks.h"
+ #include "base/strings/string_number_conversions.h"
+ #include "base/strings/to_string.h"
+ #include "base/token.h"
+@@ -563,10 +565,27 @@
+     }
+   }
+ 
++  arcmod::SessionBrowserCreatedCallback created;
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++      arcmod::GetSessionBrowserFactoryHook()) {
++    created = arcmod::GetSessionBrowserFactoryHook().Run(profile, *create_params);
++  }
+   BrowserWindowInterface* browser =
+       CreateBrowserWindow(std::move(*create_params));
+-
+-  return BrowserLiveTabContext::From(browser);
++  if (!created) {
++    // Declined hooks preserve Chrome's existing factory contract unchanged.
++    return BrowserLiveTabContext::From(browser);
++  }
++  auto weak_browser = browser ? browser->GetWeakPtr()
++                              : base::WeakPtr<BrowserWindowInterface>();
++  if (created) {
++    std::move(created).Run(weak_browser);
++  }
++  // The embedder notification is deletion-capable. Full WINDOW restoration
++  // explicitly unwinds a null result; do not return a dangling context.
++  return weak_browser && !weak_browser->IsDeleteScheduled()
++             ? BrowserLiveTabContext::From(weak_browser.get())
++             : nullptr;
+ }
+ 
+ // static
+--- a/components/sessions/core/tab_restore_service_helper.cc
++++ b/components/sessions/core/tab_restore_service_helper.cc
+@@ -933,6 +933,8 @@
+   // can synchronously close restored tabs, or even the window they were
+   // restored into, before this method returns.
+   std::vector<base::WeakPtr<LiveTab>> live_tabs;
++  const auto weak_self = weak_factory_.GetWeakPtr();
++  bool context_creation_cancelled = false;
+   switch (entry.type) {
+     case tab_restore::Type::TAB: {
+       auto& tab = static_cast<const Tab&>(entry);
+@@ -986,6 +988,18 @@
+             context, window.window_type, window.app_name, window.bounds,
+             window.show_state, window.workspace, window.user_title,
+             window.extra_data);
++
++        // A host-created notification may destroy the profile/service or close
++        // the new browser. Never continue through a dangling helper/context.
++        if (!weak_self) {
++          return std::nullopt;
++        }
++        auto current_entry = GetEntryIteratorById(id);
++        if (!context || current_entry == entries_.end() ||
++            current_entry->get() != &entry) {
++          context_creation_cancelled = true;
++          break;
++        }
+ 
+         CHECK(!window.tabs.empty());
+         const int selected_tab_index =
+@@ -1225,8 +1239,17 @@
+     RemoveEntryById(id);
+   }
+ 
++  if (!weak_self) {
++    return std::nullopt;
++  }
+   restoring_ = false;
+   NotifyEntriesChanged();
++  if (context_creation_cancelled) {
++    // Safety policy: a root restore consumes its entry just as the persistence
++    // observer's already-queued tombstone does. Original cancellation parity
++    // is unverified; this is an explicit host safety deviation.
++    return std::nullopt;
++  }
+ 
+   std::vector<LiveTab*> result;
+   result.reserve(live_tabs.size());
+--- a/components/sessions/core/tab_restore_service_helper.h
++++ b/components/sessions/core/tab_restore_service_helper.h
+@@ -312,6 +312,9 @@
+   std::map<split_tabs::SplitTabId, std::set<SessionID>> closing_split_tabs_;
+ 
+   const raw_ptr<TimeFactory> time_factory_;
++
++  // Must be last: invalidate before members become inaccessible on teardown.
++  base::WeakPtrFactory<TabRestoreServiceHelper> weak_factory_{this};
+ };
+ 
+ }  // namespace sessions

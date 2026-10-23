@@ -1,0 +1,237 @@
+{
+ "internal": [
+  {
+   "method": "->engine -ArcSiteSettingInfo initWithSiteSettingInfo:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcSiteSettingInfo#1>\""
+   }
+  }
+ ],
+ "internal_ours": [],
+ "missing": [
+  {
+   "method": "->engine -ArcBrowser isCastEnabled",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowser isJavaScriptFromAppleEventsAllowed",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContext getContentSettingForOrigin:withContentSettingType:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"url:http://*/a\", 29]",
+    "ret": "\"<ArcSiteSettingInfo#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcSiteSettingInfo siteSetting",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents isScaleFactorOne",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  }
+ ],
+ "extra": [],
+ "return_mismatch": [
+  {
+   "method": "->engine -ArcBrowserContext loadUrl:withDelegate:",
+   "call": 0,
+   "args": "[\"<ArcURLLoadConfiguration#5>\", \"<_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate#5>\"]",
+   "golden": "\"<ArcURLLoadCancellationToken#5>\"",
+   "ours": "\"<ArcURLLoadCancellationToken#4>\""
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "call": 535,
+   "args": "[]",
+   "golden": "\"chrome://history/?q=%7BsearchTerms%7D\"",
+   "ours": "\"https://drive.google.com/drive/search?q=%s\""
+  },
+  {
+   "method": "->engine -ArcSessionID identifier",
+   "call": 0,
+   "args": "[]",
+   "golden": "2113537285",
+   "ours": "1397090502"
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "call": 4,
+   "args": "[]",
+   "golden": "\"<NSMutableIndexSet#1>\"",
+   "ours": "\"<NSMutableIndexSet#3>\""
+  }
+ ],
+ "arg_mismatch": [
+  {
+   "method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+   "call": 0,
+   "golden": "[\"<ArcBrowser#1>\", 2113537285]",
+   "ours": "[\"<ArcBrowser#1>\", 1397090502]"
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "call": 20,
+   "golden": "[\"ax_focus_top_frame\", \"id=1 rootWebArea FOCUSABLE name=launch-slice A name_from=relatedElement url=http://*/a clips_children child_ids=2 unignored_child_ids=6\"]",
+   "ours": "[\"nav_reentrancy_caller1-Reload_type\", \"1\"]"
+  },
+  {
+   "method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:",
+   "call": 0,
+   "golden": "[\"*\", \"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany&size=24\", 200, {\"accept-ranges\": \"bytes\", \"age\": \"536927\", \"alt-svc\": \"h3=\\\":443\\\"; ma=2592000,h3-29=\\\":443\\\"; ma=2592000\", \"cache-control\": \"public, max-age=604800\", \"content-length\": \"346\", \"content-location\": \"https://www.youtube.com/s/desktop/d57c41d2/img/favicon_144x144.png\", \"content-security-policy-report-only\": \"require-trusted-types-for 'script'; report-uri https://csp.withgoogle.com/csp/media-favicon\", \"content-type\": \"image/png\"}]",
+   "ours": "[\"*\", \"https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany&size=24\", 200, {\"accept-ranges\": \"bytes\", \"age\": \"225354\", \"alt-svc\": \"h3=\\\":443\\\"; ma=2592000,h3-29=\\\":443\\\"; ma=2592000\", \"cache-control\": \"public, max-age=604800\", \"content-length\": \"346\", \"content-location\": \"https://www.youtube.com/s/desktop/f13793d9/img/favicon_144x144.png\", \"content-security-policy-report-only\": \"require-trusted-types-for 'script'; report-uri https://csp.withgoogle.com/csp/media-favicon\", \"content-type\": \"image/png\"}]"
+  }
+ ],
+ "count_mismatch": [
+  {
+   "method": "->engine -ArcBrowserApplication ensureBasicAccessibilityEnabled",
+   "golden": 12,
+   "ours": 8
+  },
+  {
+   "method": "->engine -ArcBrowserApplication loadUrl:withDelegate:",
+   "golden": 4,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "golden": 1924,
+   "ours": 1693
+  },
+  {
+   "method": "->engine -ArcURLLoadCancellationToken initWithToken:",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setBlockLocalRequest:",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setCachePolicy:",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setFollowRedirects:",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setHeaders:",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setMethod:",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setStreamResponseData:",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setTimeout:",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setUrl:",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcWebContents hasFocus",
+   "golden": 6,
+   "ours": 2
+  },
+  {
+   "method": "->engine -ArcWebContents insertStylesheet:stylesheet:",
+   "golden": 5,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents mediaSession",
+   "golden": 7,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents setHasFocus:",
+   "golden": 3,
+   "ours": 1
+  },
+  {
+   "method": "->engine -ArcWebContents setVisibility:",
+   "golden": 2,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "golden": 14,
+   "ours": 10
+  },
+  {
+   "method": "->engine -ArcWebContents visibility",
+   "golden": 4,
+   "ours": 6
+  },
+  {
+   "method": "->engine -ArcWebContentsMediaSession getMediaContentTypes:",
+   "golden": 6,
+   "ours": 2
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "golden": 42,
+   "ours": 37
+  },
+  {
+   "method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:",
+   "golden": 4,
+   "ours": 3
+  }
+ ],
+ "callback_sequence": {
+  "golden": 79,
+  "ours": 73,
+  "first_divergence": 13,
+  "golden_from": [
+   "_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:",
+   "ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:",
+   "ADK.ADKApplication didConnectToNetworkProcess",
+   "ADK.ADKApplication didReceiveGPUInfoUpdate:",
+   "ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:"
+  ],
+  "ours_from": [
+   "ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:",
+   "ADK.ADKApplication didConnectToNetworkProcess",
+   "ADK.ADKApplication didReceiveGPUInfoUpdate:",
+   "ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ]
+ }
+}

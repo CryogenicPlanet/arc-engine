@@ -1,0 +1,287 @@
+{
+ "internal": [
+  {
+   "method": "->engine -ArcSiteSettingInfo initWithSiteSettingInfo:",
+   "golden_calls": 4,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcSiteSettingInfo#1>\""
+   }
+  }
+ ],
+ "internal_ours": [],
+ "missing": [
+  {
+   "method": "->engine -ArcBrowser isCastEnabled",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowser isJavaScriptFromAppleEventsAllowed",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserApplication ensureBasicAccessibilityEnabled",
+   "golden_calls": 24,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContext getContentSettingForOrigin:withContentSettingType:",
+   "golden_calls": 4,
+   "example": {
+    "args": "[\"url:http://*/a\", 29]",
+    "ret": "\"<ArcSiteSettingInfo#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcSiteSettingInfo siteSetting",
+   "golden_calls": 4,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents isScaleFactorOne",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  },
+  {
+   "method": "engine->app -ADK.AccessibilityObserver accessibilityModeChanged:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"kNativeAPIs | kWebContents\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "extra": [],
+ "return_mismatch": [
+  {
+   "method": "->engine -ArcBrowserContext loadUrl:withDelegate:",
+   "call": 0,
+   "args": "[\"<ArcURLLoadConfiguration#4>\", \"<_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate#4>\"]",
+   "golden": "\"<ArcURLLoadCancellationToken#4>\"",
+   "ours": "\"<ArcURLLoadCancellationToken#5>\""
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "call": 532,
+   "args": "[]",
+   "golden": "\"chrome://bookmarks/?q=%7BsearchTerms%7D\"",
+   "ours": "\"chrome://history/?q=%7BsearchTerms%7D\""
+  },
+  {
+   "method": "->engine -ArcSessionID identifier",
+   "call": 0,
+   "args": "[]",
+   "golden": "1133983710",
+   "ours": "691105169"
+  },
+  {
+   "method": "->engine -ArcWebContents inputEvent",
+   "call": 2,
+   "args": "[]",
+   "golden": "\"{\\\"click\\\":{\\\"id\\\":9}}\"",
+   "ours": "\"{\\\"click\\\":{\\\"id\\\":3}}\""
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "call": 4,
+   "args": "[]",
+   "golden": "\"<NSMutableIndexSet#1>\"",
+   "ours": "\"<NSMutableIndexSet#3>\""
+  },
+  {
+   "method": "->engine -ArcWebContents url",
+   "call": 14,
+   "args": "[]",
+   "golden": "\"url:http://*/b\"",
+   "ours": "\"url:http://*/a\""
+  }
+ ],
+ "arg_mismatch": [
+  {
+   "method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+   "call": 0,
+   "golden": "[\"<ArcBrowser#1>\", 1133983710]",
+   "ours": "[\"<ArcBrowser#1>\", 691105169]"
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "call": 19,
+   "golden": "[\"ax_mode\", \"kNativeAPIs | kWebContents\"]",
+   "ours": "[\"BFCacheMismatch-did_replace\", \"false\"]"
+  },
+  {
+   "method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:",
+   "call": 0,
+   "golden": "[\"*\", \"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany&size=24\", 200, {\"accept-ranges\": \"bytes\", \"age\": \"536927\", \"alt-svc\": \"h3=\\\":443\\\"; ma=2592000,h3-29=\\\":443\\\"; ma=2592000\", \"cache-control\": \"public, max-age=604800\", \"content-length\": \"346\", \"content-location\": \"https://www.youtube.com/s/desktop/d57c41d2/img/favicon_144x144.png\", \"content-security-policy-report-only\": \"require-trusted-types-for 'script'; report-uri https://csp.withgoogle.com/csp/media-favicon\", \"content-type\": \"image/png\"}]",
+   "ours": "[\"*\", \"https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany&size=24\", 200, {\"accept-ranges\": \"bytes\", \"age\": \"524634\", \"alt-svc\": \"h3=\\\":443\\\"; ma=2592000,h3-29=\\\":443\\\"; ma=2592000\", \"cache-control\": \"public, max-age=604800\", \"content-length\": \"346\", \"content-location\": \"https://www.youtube.com/s/desktop/d57c41d2/img/favicon_144x144.png\", \"content-security-policy-report-only\": \"require-trusted-types-for 'script'; report-uri https://csp.withgoogle.com/csp/media-favicon\", \"content-type\": \"image/png\"}]"
+  }
+ ],
+ "count_mismatch": [
+  {
+   "method": "->engine -ArcBrowserApplication loadUrl:withDelegate:",
+   "golden": 3,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcBrowserContext extensions",
+   "golden": 7,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcBrowserContextExtensions listExtensions",
+   "golden": 6,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "golden": 2431,
+   "ours": 1956
+  },
+  {
+   "method": "->engine -ArcURLLoadCancellationToken initWithToken:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setBlockLocalRequest:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setCachePolicy:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setFollowRedirects:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setHeaders:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setMethod:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setStreamResponseData:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setTimeout:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setUrl:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcWebContents hasFocus",
+   "golden": 14,
+   "ours": 2
+  },
+  {
+   "method": "->engine -ArcWebContents mediaSession",
+   "golden": 11,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents navigationID",
+   "golden": 16,
+   "ours": 18
+  },
+  {
+   "method": "->engine -ArcWebContents setHasFocus:",
+   "golden": 7,
+   "ours": 1
+  },
+  {
+   "method": "->engine -ArcWebContents setNavigationID:",
+   "golden": 8,
+   "ours": 9
+  },
+  {
+   "method": "->engine -ArcWebContents setUrl:",
+   "golden": 8,
+   "ours": 9
+  },
+  {
+   "method": "->engine -ArcWebContents setVisibility:",
+   "golden": 2,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "golden": 20,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcWebContents url",
+   "golden": 16,
+   "ours": 18
+  },
+  {
+   "method": "->engine -ArcWebContents visibility",
+   "golden": 4,
+   "ours": 6
+  },
+  {
+   "method": "->engine -ArcWebContentsMediaSession getMediaContentTypes:",
+   "golden": 10,
+   "ours": 2
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "golden": 24,
+   "ours": 21
+  },
+  {
+   "method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:",
+   "golden": 3,
+   "ours": 4
+  }
+ ],
+ "callback_sequence": {
+  "golden": 67,
+  "ours": 64,
+  "first_divergence": 13,
+  "golden_from": [
+   "ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:",
+   "ADK.ADKApplication didConnectToNetworkProcess",
+   "ADK.ADKApplication didReceiveGPUInfoUpdate:",
+   "ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ],
+  "ours_from": [
+   "_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:",
+   "ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:",
+   "ADK.ADKApplication didConnectToNetworkProcess",
+   "ADK.ADKApplication didReceiveGPUInfoUpdate:",
+   "ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:"
+  ]
+ }
+}

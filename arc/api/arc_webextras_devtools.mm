@@ -12,9 +12,11 @@
 #include "base/supports_user_data.h"
 #include "net/base/auth.h"
 #include "chrome/browser/arcmod/arcmod_hooks.h"
+#include "chrome/browser/devtools/devtools_settings.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -41,6 +43,48 @@ using ProtocolNotification = void (^)(NSString*, NSError*);
 using SubscriptionNotification = void (^)(NSNumber*, NSString*, NSError*);
 
 @class ArcWebContentsDevTools;
+
+// BEGIN WEBEXTRAS_DEVTOOLS_DISPLAY
+// A queued native notification owns its bridge, whose delegate and service stay
+// weak. Non-nil delegate replacement updates that same bridge; nil drops only
+// the current bridge and does not invalidate already queued bridge captures.
+@interface WebextrasDevToolsDelegateBridge : NSObject
+@property(nonatomic, weak) id<WebExtrasDevToolsDelegate> delegate;
+@property(nonatomic, weak) ArcWebContentsDevTools* owner;
+@end
+@implementation WebextrasDevToolsDelegateBridge
+@synthesize delegate = _delegate, owner = _owner;
+@end
+
+static NSUInteger DevToolsDisplayMode(content::WebContents* frontend, bool docked) {
+  if (!docked) { return 1; }
+  auto* profile = Profile::FromBrowserContext(frontend->GetBrowserContext());
+  switch (DevToolsSettings::GetDockSide(profile)) {
+    case devtools::DockSide::kLeft: return 2;
+    case devtools::DockSide::kRight: return 3;
+    case devtools::DockSide::kBottom: return 4;
+    case devtools::DockSide::kNone: return 1;
+  }
+  return 0;
+}
+
+static void PostDevToolsDisplay(WebextrasDevToolsDelegateBridge* bridge,
+                               base::WeakPtr<content::WebContents> native_lifetime,
+                               NSUInteger mode) {
+  if (!bridge) { return; }
+  // This owner-WebContents anchor approximates the native Impl guard. It is
+  // deliberately independent of frontend identity, navigation and close state.
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(^{
+    if (!native_lifetime) { return; }
+    id<WebExtrasDevToolsDelegate> delegate = bridge.delegate;
+    ArcWebContentsDevTools* owner = bridge.owner;
+    if ([delegate respondsToSelector:@selector(webContentsDevTools:displayAs:)]) {
+      [delegate webContentsDevTools:owner displayAs:mode];
+    }
+  }));
+}
+// END WEBEXTRAS_DEVTOOLS_DISPLAY
+
 @interface NSObject (WebExtrasDevToolsInternal)
 - (void)didShowFrontend:(content::WebContents*)frontend docked:(BOOL)docked;
 @end
@@ -155,6 +199,13 @@ class ProtocolClient final : public content::DevToolsAgentHostClient,
   bool closing_ = false;
 };
 
+// Keep retired blocks/wrappers alive until state reset and close notification
+// finish. Releasing them during reset could reenter the service halfway through.
+struct FrontendRetiredState {
+  ArcWebContents* toolbox;
+  NSArray<ProtocolNotification>* panel_queries;
+};
+
 void FrontendClosed(ArcWebContentsDevTools* owner);
 
 class FrontendObserver final : public content::WebContentsObserver {
@@ -181,6 +232,8 @@ void QueryPanel(content::WebContents* frontend, ProtocolNotification completion)
 ARC_EXPORT @interface ArcWebContentsDevTools : NSObject {
   __weak ArcWebContents* _owner;
   __weak id<WebExtrasDevToolsDelegate> _delegate;
+  WebextrasDevToolsDelegateBridge* _delegateBridge;
+  __weak WebextrasDevToolsDelegateBridge* _registeredDelegateBridge;
   std::map<int, std::shared_ptr<ProtocolClient>> _connections;
   std::shared_ptr<ProtocolClient> _commands;
   NSMutableDictionary<NSNumber*, ProtocolNotification>* _pending;
@@ -200,6 +253,8 @@ ARC_EXPORT @interface ArcWebContentsDevTools : NSObject {
 - (void)receiveMessage:(NSString*)message error:(NSError*)error __attribute__((objc_direct));
 - (void)didShowFrontend:(content::WebContents*)frontend docked:(BOOL)docked;
 - (void)frontendClosed __attribute__((objc_direct));
+- (void)resetFrontendState __attribute__((objc_direct));
+- (void)notifyFrontendClosed __attribute__((objc_direct));
 - (BOOL)ensureCommandClient:(NSError**)error __attribute__((objc_direct));
 - (BOOL)sendCommand:(NSString*)method params:(const base::DictValue&)params
         completion:(ProtocolNotification)completion error:(NSError**)error __attribute__((objc_direct));
@@ -228,12 +283,22 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
   }
   return self;
 }
-- (void)setDelegate:(id<WebExtrasDevToolsDelegate>)delegate { _delegate = delegate; }
+- (void)setDelegate:(id<WebExtrasDevToolsDelegate>)delegate {
+  _delegate = delegate;
+  if (!delegate) { _delegateBridge = nil; return; }
+  if (!_delegateBridge) {
+    _delegateBridge = [WebextrasDevToolsDelegateBridge new];
+    _delegateBridge.owner = self;
+    _registeredDelegateBridge = _delegateBridge;
+  }
+  _delegateBridge.delegate = delegate;
+}
 - (ArcWebContents*)webContents {
   return _frontend ? [ArcWebContents wrapperForWebContents:_frontend.get()] : nil;
 }
 - (ArcWebContents*)toolboxWebContents { return _toolboxWebContents; }
 - (void)didShowFrontend:(content::WebContents*)frontend docked:(BOOL)docked {
+  const NSUInteger mode = DevToolsDisplayMode(frontend, docked);
   _opening = NO;
   _shown = YES;
   _frontend = frontend->GetWeakPtr();
@@ -248,22 +313,33 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
   NSArray* queries = [_panelQueries copy];
   [_panelQueries removeAllObjects];
   for (ProtocolNotification callback in queries) { QueryPanel(frontend, callback); }
-  id<WebExtrasDevToolsDelegate> delegate = _delegate;
-  if ([delegate respondsToSelector:@selector(webContentsDevTools:displayAs:)]) {
-    [delegate webContentsDevTools:self displayAs:docked ? 3 : 4];
-  }
+  auto* contents = [_owner webContents];
+  PostDevToolsDisplay(_registeredDelegateBridge,
+      contents ? contents->GetWeakPtr() : base::WeakPtr<content::WebContents>(), mode);
 }
-- (void)frontendClosed {
+- (void)resetFrontendState {
   _toolboxWebContents = nil;
   _frontend.reset();
   _opening = NO;
-  [_panelQueries removeAllObjects];
-  if (!_shown) { return; }
   _shown = NO;
-  id<WebExtrasDevToolsDelegate> delegate = _delegate;
+  _requestedPanel = nil;
+  _panelQueries = [NSMutableArray array];
+  // A retired frontend's delayed destruction must not close a replacement.
+  _frontendObserver.reset();
+}
+- (void)notifyFrontendClosed {
+  WebextrasDevToolsDelegateBridge* bridge = _registeredDelegateBridge;
+  id<WebExtrasDevToolsDelegate> delegate = bridge.delegate;
+  ArcWebContentsDevTools* owner = bridge.owner;
   if ([delegate respondsToSelector:@selector(webContentsDevToolsDidClose:)]) {
-    [delegate webContentsDevToolsDidClose:self];
+    [delegate webContentsDevToolsDidClose:owner];
   }
+}
+- (void)frontendClosed {
+  const BOOL notify = _shown;
+  [[maybe_unused]] FrontendRetiredState retired{_toolboxWebContents, _panelQueries};
+  [self resetFrontendState];
+  if (notify) { [self notifyFrontendClosed]; }
 }
 - (void)openWithAction:(const DevToolsToggleAction&)action {
   auto* contents = [_owner webContents];
@@ -295,9 +371,20 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
   }
 }
 - (void)close {
+  ArcWebContentsDevTools* retainedSelf = self;
   base::WeakPtr<content::WebContents> frontend = _frontend;
-  [self frontendClosed];
-  if (frontend) { frontend->ClosePage(); }
+  auto* contents = [_owner webContents];
+  auto* window = frontend ? DevToolsWindow::AsDevToolsWindow(frontend.get()) : nullptr;
+  if (!window && contents) { window = DevToolsWindow::GetInstanceForInspectedWebContents(contents); }
+  const BOOL notify = _shown || window;
+  [[maybe_unused]] FrontendRetiredState retired{_toolboxWebContents, _panelQueries};
+  [self resetFrontendState];
+  // Use the public delegate interface: docked close enters Chromium's normal
+  // before-unload path. Native close precedes the synchronous app notification.
+  if (window) { static_cast<DevToolsUIBindings::Delegate*>(window)->CloseWindow(); }
+  else if (frontend) { frontend->ClosePage(); }
+  if (notify) { [retainedSelf notifyFrontendClosed]; }
+  // No state cleanup here: native/app reentry may already have opened a new UI.
 }
 - (BOOL)currentPanel:(ProtocolNotification)completion error:(NSError**)error {
   auto* frontend = _frontend.get();

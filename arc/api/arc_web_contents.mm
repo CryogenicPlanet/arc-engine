@@ -145,6 +145,7 @@ static_assert(sizeof(CoreWebContentsConfiguration) == 24);
 - (id)uiDelegate;
 - (void)nativeContentsClosing __attribute__((objc_direct));
 - (void)nativeContentsClosingWithRestorationID:(ArcSessionID*)identifier __attribute__((objc_direct));
+- (NSNumber*)coreDiagnosticID __attribute__((objc_direct));
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, strong) NSURL* url;
 @property(nonatomic, copy) NSString* selectedText;
@@ -779,6 +780,7 @@ uint64_t NextDiagnosticID() {
   return _navigationController;
 }
 - (NSNumber*)diagnosticId { return _diagnosticId; }
+- (NSNumber*)coreDiagnosticID { return _diagnosticId; }
 - (ArcSessionID*)sessionId {
   if (!_contents) {
     return nil;
@@ -831,6 +833,13 @@ uint64_t NextDiagnosticID() {
 }
 - (void)stop { if (_contents) { _contents->Stop(); } }
 - (void)close {
+  // Native 4410bac and the accepted sessions golden forward the nonzero
+  // timing value. The older spec's default-zero description is incorrect.
+  [self closeWithForegroundCommitTiming:1];
+}
+- (void)closeWithForegroundCommitTiming:(NSInteger)timing {
+  // Dispatch accounting and the timing-zero native continuation are still
+  // pending; preserve the existing destruction deferral in either mode.
   if (_ownedContents) {
     // Native observers invoke app KVO callbacks. Destruction must wait until
     // Chromium has finished notifying every observer.
@@ -838,11 +847,12 @@ uint64_t NextDiagnosticID() {
   } else if (_contents) {
     content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(
         [](base::WeakPtr<content::WebContents> contents) {
-          if (contents) { contents->ClosePage(); }
+          // Arc's idle native route is WebContents::Close, including the Mac
+          // event-tracking check and delegate CloseContents dispatch.
+          if (contents) { contents->Close(); }
         }, _contents));
   }
 }
-- (void)closeWithForegroundCommitTiming:(NSInteger)timing { [self close]; }
 - (BOOL)muted { return _contents && _contents->IsAudioMuted(); }
 - (void)setMuted:(BOOL)muted { if (_contents) { _contents->SetAudioMuted(muted); } }
 - (BOOL)audible { return _contents && _contents->IsCurrentlyAudible(); }
@@ -908,3 +918,19 @@ bool HasCoreWebContentsData(content::WebContents* contents) {
   return contents && ArcContentsData::FromWebContents(contents);
 }
 }  // namespace arc
+
+// Existing-only lookup for app consumers. The ID belongs to the canonical
+// wrapper; userdata can outlive an expired weak wrapper without retaining its ID.
+bool ArcExistingWebContentsDiagnosticID(content::WebContents* contents,
+                                        uint64_t* output) {
+  if (!contents) { return false; }
+  auto* data = ArcContentsData::FromWebContents(contents);
+  if (!data) { return false; }
+  ArcWebContents* wrapper __attribute__((objc_precise_lifetime)) =
+      data->wrapper ?: data->weak_wrapper;
+  if (!wrapper || [wrapper webContents] != contents) { return false; }
+  NSNumber* identifier = [wrapper coreDiagnosticID];
+  if (!identifier) { return false; }
+  if (output) { *output = identifier.unsignedLongLongValue; }
+  return true;
+}

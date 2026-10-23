@@ -1,0 +1,82 @@
+{
+  "1": {
+    "firstTwoLines": [
+      "methods differing: 116 (missing 5, extra 3, returns 14, callback args 4, counts 90; internal-only 0, ours-internal 1)",
+      "callback sequence: {\"golden\": 106, \"ours\": 126, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObser"
+    ],
+    "webextrasRows": {
+      "missing": [],
+      "extra": [
+        {
+          "method": "engine->app -ADK.WebContentChromium webContents:thumbnailReady:",
+          "our_calls": 1,
+          "example": {
+            "args": "[\"<ArcWebContents#1>\", \"image(501x341)\"]",
+            "ret": "null"
+          }
+        }
+      ],
+      "return_mismatch": [],
+      "arg_mismatch": [
+        {
+          "method": "engine->app -ADK.WebContentChromium webContents:didChangeAvailableMediaActions:",
+          "call": 0,
+          "golden": "[\"<ArcWebContents#1>\", \"<NSMutableIndexSet#2>\"]",
+          "ours": "[\"<ArcWebContents#1>\", \"<NSMutableIndexSet#3>\"]"
+        }
+      ],
+      "count_mismatch": [
+        {
+          "method": "->engine -ArcWebContentsBoostIDE setDelegate:",
+          "golden": 2,
+          "ours": 1
+        },
+        {
+          "method": "->engine -ArcWebContentsDevTools setDelegate:",
+          "golden": 2,
+          "ours": 1
+        },
+        {
+          "method": "->engine -ArcWebContentsMediaSession getMediaContentTypes:",
+          "golden": 4,
+          "ours": 2
+        },
+        {
+          "method": "->engine -ArcWebContentsMediaSession setDelegate:",
+          "golden": 2,
+          "ours": 1
+        },
+        {
+          "method": "->engine -ArcWebContentsThumbnailsGenerator addObserver:",
+          "golden": 2,
+          "ours": 1
+        },
+        {
+          "method": "engine->app -ADK.WebContentChromium webContents:didChangeAvailableMediaActions:",
+          "golden": 2,
+          "ours": 1
+        }
+      ]
+    }
+  },
+  "2": {
+    "firstTwoLines": [
+      "methods differing: 57 (missing 6, extra 0, returns 12, callback args 4, counts 35; internal-only 0, ours-internal 1)",
+      "callback sequence: {\"golden\": 47, \"ours\": 62, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserve"
+    ],
+    "webextrasRows": {
+      "missing": [],
+      "extra": [],
+      "return_mismatch": [],
+      "arg_mismatch": [
+        {
+          "method": "engine->app -ADK.WebContentChromium webContents:didChangeAvailableMediaActions:",
+          "call": 0,
+          "golden": "[\"<ArcWebContents#1>\", \"<NSMutableIndexSet#2>\"]",
+          "ours": "[\"<ArcWebContents#1>\", \"<NSMutableIndexSet#3>\"]"
+        }
+      ],
+      "count_mismatch": []
+    }
+  }
+}

@@ -1,10 +1,12 @@
 // Copyright 2026 ArcMod. Native profile bookmarks with immutable value snapshots.
 #import "arc/api/arc_internal.h"
 
+#include <algorithm>
 #include <optional>
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/functional/bind.h"
 #include "base/location.h"
@@ -12,6 +14,7 @@
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/supports_user_data.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/uuid.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -111,12 +114,16 @@ ARC_EXPORT @interface ArcBookmarkTreeNode : NSObject
 @end
 
 namespace {
+struct BookmarkObserverRegistration {
+  BookmarkObserverRegistration(ArcBrowserContext* owner, id<ArcProfileBookmarkObserver> target)
+      : context(owner), observer(target) {}
+  __weak ArcBrowserContext* context;
+  __weak id<ArcProfileBookmarkObserver> observer;
+};
 class BookmarkState final : public bookmarks::BookmarkModelObserver,
                             public std::enable_shared_from_this<BookmarkState> {
  public:
   explicit BookmarkState(bookmarks::BookmarkModel* model) : model_(model->AsWeakPtr()) {
-    removing_ = [NSMutableDictionary dictionary];
-    observers_ = [NSMapTable weakToStrongObjectsMapTable];
     observation_.Observe(model);
   }
   bookmarks::BookmarkModel* model() const { return model_.get(); }
@@ -143,33 +150,26 @@ class BookmarkState final : public bookmarks::BookmarkModelObserver,
   }
   void AddObserver(ArcBrowserContext* context, id<ArcProfileBookmarkObserver> observer) {
     if (!context || !observer) return;
-    NSHashTable* targets = [observers_ objectForKey:context];
-    if (!targets) {
-      targets = [NSHashTable weakObjectsHashTable];
-      [observers_ setObject:targets forKey:context];
+    PruneObservers();
+    for (const auto& entry : observers_) {
+      if (entry->context == context && entry->observer == observer) return;
     }
-    [targets addObject:observer];
+    observers_.push_back(std::make_shared<BookmarkObserverRegistration>(context, observer));
   }
   void RemoveObserver(ArcBrowserContext* context, id<ArcProfileBookmarkObserver> observer) {
-    [[observers_ objectForKey:context] removeObject:observer];
-  }
-  NSArray* Observers() {
-    NSMutableArray* targets = [NSMutableArray array];
-    for (ArcBrowserContext* context in observers_.keyEnumerator) {
-      if (ArcProfileFrom(context))
-        [targets addObjectsFromArray:[[observers_ objectForKey:context] allObjects]];
-    }
-    return targets;
+    std::erase_if(observers_, [context, observer](const auto& entry) {
+      return !entry->context || !entry->observer ||
+          (entry->context == context && entry->observer == observer);
+    });
   }
   void BookmarkModelLoaded(bool ids_reassigned) override {
     auto alive = shared_from_this();
-    for (id<ArcProfileBookmarkObserver> observer in Observers()) {
+    Notify(^(id<ArcProfileBookmarkObserver> observer) {
       if ([observer respondsToSelector:@selector(bookmarkModelLoaded)]) { [observer bookmarkModelLoaded]; }
-    }
+    });
   }
   void BookmarkModelBeingDeleted() override {
     auto alive = shared_from_this();
-    [removing_ removeAllObjects];
     observation_.Reset();
     model_.reset();
   }
@@ -178,48 +178,41 @@ class BookmarkState final : public bookmarks::BookmarkModelObserver,
     auto alive = shared_from_this();
     ArcBookmarkTreeNode* old_wrapper = Wrap(old_parent);
     ArcBookmarkTreeNode* new_wrapper = Wrap(new_parent);
-    for (id<ArcProfileBookmarkObserver> observer in Observers()) {
+    Notify(^(id<ArcProfileBookmarkObserver> observer) {
       if ([observer respondsToSelector:@selector(bookmarkNodeMovedFromParent:oldIndex:toParent:newIndex:)]) {
         [observer bookmarkNodeMovedFromParent:old_wrapper oldIndex:old_index
                                     toParent:new_wrapper newIndex:new_index];
       }
-    }
+    });
   }
   void BookmarkNodeAdded(const bookmarks::BookmarkNode* parent, size_t index, bool added_by_user) override {
     auto alive = shared_from_this();
     ArcBookmarkTreeNode* wrapper = Wrap(parent);
-    for (id<ArcProfileBookmarkObserver> observer in Observers()) {
+    Notify(^(id<ArcProfileBookmarkObserver> observer) {
       if ([observer respondsToSelector:@selector(bookmarkNodeAddedToParent:atIndex:addedByUser:)]) {
         [observer bookmarkNodeAddedToParent:wrapper atIndex:index addedByUser:added_by_user];
       }
-    }
-  }
-  void OnWillRemoveBookmarks(const bookmarks::BookmarkNode* parent, size_t index,
-                            const bookmarks::BookmarkNode* node, const base::Location& location) override {
-    // Preserve the pre-removal value payload without permanently detaching
-    // retained snapshots. isValid follows current model membership; whether an
-    // undo can restore validity is intentionally left to native model identity.
-    removing_[@(node->id())] = Wrap(node);
+    });
   }
   void BookmarkNodeRemoved(const bookmarks::BookmarkNode* parent, size_t index,
                            const bookmarks::BookmarkNode* node, const std::set<GURL>& urls,
                            const base::Location& location) override {
     auto alive = shared_from_this();
     ArcBookmarkTreeNode* parent_wrapper = Wrap(parent);
-    ArcBookmarkTreeNode* removed_wrapper = removing_[@(node->id())];
-    if (!removed_wrapper) {
-      removed_wrapper = [[ArcBookmarkTreeNode alloc] initWithBookmarkState:alive node:node];
-    }
-    [removing_ removeObjectForKey:@(node->id())];
+    // Native 0x42cea00 creates the removed-node value during this callback,
+    // after detachment. The node is still alive for the observer invocation;
+    // copying now preserves its native nil parent and index -1 payload.
+    ArcBookmarkTreeNode* removed_wrapper = Wrap(node);
     NSMutableSet* strings = [NSMutableSet setWithCapacity:urls.size()];
     for (const GURL& url : urls) { [strings addObject:ArcNSString(url.spec())]; }
-    for (id<ArcProfileBookmarkObserver> observer in Observers()) {
+    NSSet* removed_urls = [strings copy];
+    Notify(^(id<ArcProfileBookmarkObserver> observer) {
       if ([observer respondsToSelector:
           @selector(bookmarkNodeRemovedFromParent:oldIndex:node:noLongerBookmarkedURLs:)]) {
         [observer bookmarkNodeRemovedFromParent:parent_wrapper oldIndex:index node:removed_wrapper
-                         noLongerBookmarkedURLs:strings];
+                         noLongerBookmarkedURLs:removed_urls];
       }
-    }
+    });
   }
   void BookmarkNodeChanged(const bookmarks::BookmarkNode* node) override {
     NotifyNode(node, @selector(bookmarkNodeChanged:));
@@ -238,20 +231,41 @@ class BookmarkState final : public bookmarks::BookmarkModelObserver,
     // Arc's recovered ObjC bridge has no bulk-removal callback selector.
   }
  private:
+  void PruneObservers() {
+    std::erase_if(observers_, [](const auto& entry) {
+      return !entry->context || !entry->observer;
+    });
+  }
+  void Notify(void (^callback)(id<ArcProfileBookmarkObserver>)) {
+    PruneObservers();
+    for (const auto& entry : observers_) {
+      // Native posts a zero-delay task which weak-locks the registration bridge.
+      // A new registration must not revive notifications from a removed bridge.
+      std::weak_ptr<BookmarkObserverRegistration> weak = entry;
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce([](std::weak_ptr<BookmarkObserverRegistration> weak,
+                                      void (^callback)(id<ArcProfileBookmarkObserver>)) {
+            auto registration = weak.lock();
+            if (!registration) return;
+            ArcBrowserContext* context = registration->context;
+            id<ArcProfileBookmarkObserver> observer = registration->observer;
+            if (context && observer && ArcProfileFrom(context)) callback(observer);
+          }, weak, callback));
+    }
+  }
   void NotifyNode(const bookmarks::BookmarkNode* node, SEL selector) {
     auto alive = shared_from_this();
     ArcBookmarkTreeNode* wrapper = Wrap(node);
-    for (id<ArcProfileBookmarkObserver> observer in Observers()) {
-      if (![observer respondsToSelector:selector]) { continue; }
+    Notify(^(id<ArcProfileBookmarkObserver> observer) {
+      if (![observer respondsToSelector:selector]) { return; }
       if (selector == @selector(bookmarkNodeChanged:)) { [observer bookmarkNodeChanged:wrapper]; }
       else if (selector == @selector(bookmarkMetaInfoChanged:)) { [observer bookmarkMetaInfoChanged:wrapper]; }
       else if (selector == @selector(bookmarkNodeFaviconChanged:)) { [observer bookmarkNodeFaviconChanged:wrapper]; }
       else { [observer bookmarkNodeChildrenReordered:wrapper]; }
-    }
+    });
   }
   base::WeakPtr<bookmarks::BookmarkModel> model_;
-  NSMutableDictionary<NSNumber*, ArcBookmarkTreeNode*>* __strong removing_;
-  NSMapTable<ArcBrowserContext*, NSHashTable<id<ArcProfileBookmarkObserver>>*>* __strong observers_;
+  std::vector<std::shared_ptr<BookmarkObserverRegistration>> observers_;
   base::ScopedObservation<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver> observation_{this};
 };
 
@@ -363,7 +377,8 @@ bool UUIDAvailable(bookmarks::BookmarkModel* model, const bookmarks::BookmarkNod
 - (NSArray*)liveChildren {
   return BookmarkMain([&]() -> NSArray* {
     auto state = _state.lock();
-    return state ? state->Children([self nativeNodeForState:state]) : @[];
+    const auto* node = [self nativeNodeForState:state];
+    return node ? state->Children(node) : nil;
   });
 }
 @end

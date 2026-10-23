@@ -1,0 +1,84 @@
+{
+  "inputs": {
+    "current-canonical-observation/tests/scenarios/bookmarks-public-api.ts": {
+      "source": "tests/scenarios/bookmarks-public-api.ts",
+      "sha256": "709ab9e7b5e2eff4821566cd6adbcbfa2de673b9fbbecc9832bb6e050e5ac829",
+      "size": 8280,
+      "mtime_ns": 1792761138205718536,
+      "mtime_utc": "2026-10-23T13:12:18.205719+00:00"
+    },
+    "current-canonical-observation/tests/scenarios/bookmarks-public-api-driver.m": {
+      "source": "tests/scenarios/bookmarks-public-api-driver.m",
+      "sha256": "ce7b4e4b5d63db417fdcebc4abca4294f84ef66cef9fcbf60d82b2dc7e2b9f85",
+      "size": 15872,
+      "mtime_ns": 1792760185441319931,
+      "mtime_utc": "2026-10-23T12:56:25.441320+00:00"
+    },
+    "current-canonical-observation/tests/scenarios/bookmarks-public-api-raw.ts": {
+      "source": "tests/scenarios/bookmarks-public-api-raw.ts",
+      "sha256": "649567ba0f980e6874ce9ec82bc7611c71a92d1202409cb98ced4b2731095a6b",
+      "size": 8643,
+      "mtime_ns": 1792760233108112422,
+      "mtime_utc": "2026-10-23T12:57:13.108112+00:00"
+    },
+    "peer-driver-binaries/golden/BookmarksPublicAPIDriver.dylib": {
+      "source": "results/golden/arc-1.170-bookmarks-public-api/bookmarks-public-api-driver/BookmarksPublicAPIDriver.dylib",
+      "sha256": "c29904422e1d83784e845abb6d278af33a46a933fa2c8c9128aee914f0b76a84",
+      "size": 93056,
+      "mtime_ns": 1792761006382601952,
+      "mtime_utc": "2026-10-23T13:10:06.382602+00:00"
+    },
+    "peer-driver-binaries/ours/BookmarksPublicAPIDriver.dylib": {
+      "source": "results/ours/bookmarks-public-api/bookmarks-public-api-driver/BookmarksPublicAPIDriver.dylib",
+      "sha256": "c5361c06594659c5d84a4aef29281c5db5c51aa348daa33ee38a7ff59970a2e3",
+      "size": 93056,
+      "mtime_ns": 1792761522748104141,
+      "mtime_utc": "2026-10-23T13:18:42.748104+00:00"
+    },
+    "ancestor-fixture-metadata/manifest.json": {
+      "source": "logs/wp/profile.batch11/bookmark-fixture/manifest.json",
+      "sha256": "b52a0a36a083c746886afae8e7fc3ceff88121fda2c08aff63a42e505ff350a2",
+      "size": 2090,
+      "mtime_ns": 1792757554517504422,
+      "mtime_utc": "2026-10-23T12:12:34.517504+00:00"
+    },
+    "ancestor-fixture-metadata/build.py": {
+      "source": "logs/wp/profile.batch11/bookmark-fixture/build.py",
+      "sha256": "c63e4379c55a9dca4cadb1b8f4718a8a2f3a6df21076d21b876b25d1759f2270",
+      "size": 991,
+      "mtime_ns": 1792757553746648806,
+      "mtime_utc": "2026-10-23T12:12:33.746649+00:00"
+    },
+    "ancestor-fixture-metadata/compile.log": {
+      "source": "logs/wp/profile.batch11/bookmark-fixture/compile.log",
+      "sha256": "76dbfaa05dc69af7a13c268aec4ef06a55bbaf6d55563da094ccd4ecd0385340",
+      "size": 260,
+      "mtime_ns": 1792757554209390904,
+      "mtime_utc": "2026-10-23T12:12:34.209391+00:00"
+    }
+  },
+  "all_sources_and_copies_reverified": true,
+  "official_reproduction_command": [
+    "/opt/homebrew/opt/python@3.15/bin/python3.15",
+    "-B",
+    "/Users/cryogenicplanet/general/arc-engine/results/extensions-peer-bookmarks-audit/current-shared-policy/tests/recorder/diff.py",
+    "/Users/cryogenicplanet/general/arc-engine/results/extensions-peer-bookmarks-audit/inputs/golden/launch-1/record.jsonl",
+    "/Users/cryogenicplanet/general/arc-engine/results/extensions-peer-bookmarks-audit/inputs/ours/launch-1/record.jsonl",
+    "--json",
+    "/Users/cryogenicplanet/general/arc-engine/results/extensions-peer-bookmarks-audit/official-policy-reproduction.json"
+  ],
+  "official_reproduction_exit": 0,
+  "official_json_equal": true,
+  "official_first_two_lines_equal": true,
+  "official_reproduction_comparator_sha256": "f8df579e6ea23b4eb531f357fdfe0460fa57b563daf44f9d6858c73abf84b184",
+  "compiler_policy_observation": {
+    "canonical_current_command": "xcrun clang -dynamiclib -fobjc-arc -Wall -Wextra -Werror -framework Foundation -framework AppKit tests/scenarios/bookmarks-public-api-driver.m -o <run-owned library>",
+    "run_compile_logs_empty": true,
+    "run_steps_record_compile_pass": true,
+    "exact_run_compile_argv_or_compiler_identity_recorded": false,
+    "ancestor_fixture_compile_log_is_not_canonical_run_compile_log": true,
+    "run_provenance_source_fields_are_ancestor_fixture_references": true,
+    "current_canonical_sources_are_observation_only_not_historical_source_freeze": true,
+    "extension_TU_framework_source_epoch_proven": false
+  }
+}

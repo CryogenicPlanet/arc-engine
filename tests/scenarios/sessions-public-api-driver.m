@@ -75,7 +75,7 @@ static void Register(id browser, id contents) {
 }
 static void Event(NSString *type) {
   [gEvents addObject:@{@"type":type, @"main":@(NSThread.isMainThread),
-    @"insideAction":@(gActionDepth != 0)}];
+    @"insideAction":@((BOOL)(gActionDepth != 0))}];
 }
 static NSArray *CallbackHooks(void) {
   return @[
@@ -181,10 +181,10 @@ static void RestoredSnapshot(void) {
   id url = Get(gRestored, @"url");
   [gSnapshots addEntriesFromDictionary:@{@"oldInitializedAfterRestore":@(oldInitialized),
     @"browserInitializedAfterRestore":@(browserInitialized), @"sentinelInitializedAfterRestore":@(sentinelInitialized),
-    @"restoredInitialized":@(initialized), @"restoredIsNewWrapper":@(gRestored != gSelected),
+    @"restoredInitialized":@(initialized), @"restoredIsNewWrapper":@((BOOL)(gRestored != gSelected)),
     @"restoredURL":[url isKindOfClass:NSURL.class] ? [url absoluteString] : NSNull.null,
-    @"callbackIDPresent":@(gCallbackID != nil), @"callbackUsesSourceID":@(gCallbackID && [gCallbackID isEqual:gSourceID]),
-    @"callbackUsesRestorationID":@(gCallbackID && [gCallbackID isEqual:gClosedID]),
+    @"callbackIDPresent":@((BOOL)(gCallbackID != nil)), @"callbackUsesSourceID":@((BOOL)(gCallbackID && [gCallbackID isEqual:gSourceID])),
+    @"callbackUsesRestorationID":@((BOOL)(gCallbackID && [gCallbackID isEqual:gClosedID])),
     @"canRestoreAfterRestore":@(CanRestore()), @"recorderForwardingAfter":@(AllAliasesReady())}];
   gRestoredSnapshot = YES;
 }
@@ -216,7 +216,7 @@ static void Poll(void) {
       gRestoreRequested = YES; ++gActionDepth;
       @try { ((void (*)(id, SEL, id))objc_msgSend)(gBrowser, NSSelectorFromString(@"restoreWebContentsWithSessionId:"), gClosedID); }
       @finally { --gActionDepth; }
-      gSnapshots[@"restoreCallbackInline"] = @(gRestoreCount != 0);
+      gSnapshots[@"restoreCallbackInline"] = @((BOOL)(gRestoreCount != 0));
     } else if ([operation isEqual:@"restored-snapshot"]) RestoredSnapshot();
     else Require([operation isEqual:@"status"], @"unsupported operation");
     response[@"ok"] = @YES;

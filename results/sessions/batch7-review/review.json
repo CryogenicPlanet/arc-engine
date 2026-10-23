@@ -1,0 +1,410 @@
+{
+  "reviewedAt": "2026-10-23T13:15:34.501431+00:00",
+  "scope": "Read-only batch7 monitoring and independent raw/evidence review; no apps, builds, process actions, or production edits performed by reviewer.",
+  "batchStatus": "preflight=0\nbuild=0\npackage=0\nrestart=1\ndiscard=0\nstable=0\n",
+  "runtimeFixtureFindings": [],
+  "restart": {
+    "accepted": false,
+    "coverageErrors": [],
+    "steps": [
+      {
+        "step": "restart scenario requires caller-aware standard recording",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "restart scenario requires exact disposable engine agent",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "restart scenario begins with empty disposable browser storage",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "restart driver compiles with strict warnings",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "restart launch 1",
+        "outcome": "pass",
+        "detail": "native ready, CDP target list available"
+      },
+      {
+        "step": "restart launch 1 exposes owned PID",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "restart launch 1 driver has genuine recorder aliases",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "tab1 has one exact B history entry",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "tab1 has exact A B C history with B selected",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "tab2 has one exact B history entry",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "tab2 has exact A B C history with B selected",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "two source tabs have distinct generated public IDs in one live browser",
+        "outcome": "pass",
+        "detail": ""
+      },
+      {
+        "step": "individual close invokes exactly one inline main-thread callback tab1",
+        "outcome": "fail",
+        "detail": ""
+      },
+      {
+        "step": "restart launch 1 graceful quit",
+        "outcome": "pass",
+        "detail": "Browser.close; browser + 9 helpers exited"
+      },
+      {
+        "step": "scenario",
+        "outcome": "inconclusive",
+        "detail": "Error: individual close invokes exactly one inline main-thread callback tab1"
+      }
+    ],
+    "pid": 50265,
+    "rawClose": {
+      "seq": 8796,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "SessionsTabRestartDriver.dylib",
+      "dir": "->engine",
+      "cls": "ArcWebContents",
+      "kind": "-",
+      "sel": "close",
+      "self": "<ArcWebContents#129>",
+      "args": []
+    },
+    "rawCloseReturn": {
+      "seq": 8799,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "SessionsTabRestartDriver.dylib",
+      "dir": "->engine",
+      "cls": "ArcWebContents",
+      "kind": "-",
+      "sel": "close",
+      "self": "<ArcWebContents#129>",
+      "ret": null
+    },
+    "rawCloseCallback": {
+      "seq": 8858,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "engine",
+      "dir": "engine->app",
+      "cls": "ADK.WebContentChromium",
+      "kind": "-",
+      "sel": "webContents:didCloseWithSessionID:",
+      "self": "<ADK.WebContentChromium#137>",
+      "args": [
+        "<ArcWebContents#129>",
+        "<ArcSessionID#258>"
+      ]
+    },
+    "rawCloseCallbackReturn": {
+      "seq": 9205,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "engine",
+      "dir": "engine->app",
+      "cls": "ADK.WebContentChromium",
+      "kind": "-",
+      "sel": "webContents:didCloseWithSessionID:",
+      "self": "<ADK.WebContentChromium#137>",
+      "ret": null
+    },
+    "rawRestoreRequestCount": 0,
+    "launch2Exists": false,
+    "interpretation": "Observed asynchronous close mismatch against accepted original inline callback. Fixture aborts at first close; persistence/relaunch/restore is not reached and cannot be graded from this run.",
+    "closeImmediateSnapshot": {
+      "id": "sessions-tab-restart-7903358a-022c-4583-8336-fc34f5a97a44-1-2",
+      "main": true,
+      "nonce": "sessions-tab-restart-7903358a-022c-4583-8336-fc34f5a97a44",
+      "ok": true,
+      "operation": "close",
+      "pid": 50265,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "type": "captured"
+          }
+        ],
+        "recorderAliases": true,
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": false,
+            "closeRequested": true,
+            "closes": [],
+            "oldInitialized": true,
+            "restorationID": null,
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "187627387",
+            "url": "http://127.0.0.1:51391/arc-sessions-restart-7f3a/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": true,
+            "restorationID": null,
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "187627388",
+            "url": "http://127.0.0.1:51391/arc-sessions-restart-7f3a/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:51391/arc-sessions-restart-7f3a/sentinel/1",
+        "simultaneousRestoredDistinct": false
+      }
+    },
+    "defaultDiffFirstTwoLines": [
+      "methods differing: 99 (missing 46, extra 2, returns 15, callback args 6, counts 30; internal-only 0, ours-internal 1)",
+      "callback sequence: {\"golden\": 158, \"ours\": 166, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObser"
+    ]
+  },
+  "discard": {
+    "contractPass": true,
+    "actualDiscarded": true,
+    "rawGateVerified": true,
+    "rawDiscard": {
+      "seq": 6670,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "arccore-sessions-discard-ours-v8.dylib",
+      "dir": "->engine",
+      "cls": "ArcWebContents",
+      "kind": "-",
+      "sel": "discard",
+      "self": "<ArcWebContents#121>",
+      "args": []
+    },
+    "rawDiscardReturn": {
+      "seq": 6681,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "arccore-sessions-discard-ours-v8.dylib",
+      "dir": "->engine",
+      "cls": "ArcWebContents",
+      "kind": "-",
+      "sel": "discard",
+      "self": "<ArcWebContents#121>",
+      "ret": null
+    },
+    "rawFinalize": {
+      "seq": 6738,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "arccore-sessions-discard-ours-v8.dylib",
+      "dir": "engine->app",
+      "cls": "ADK.WebContentChromium",
+      "kind": "-",
+      "sel": "webContents:finalizeDiscardRequest:",
+      "self": "<ADK.WebContentChromium#130>",
+      "args": [
+        "<ArcWebContents#121>",
+        true
+      ]
+    },
+    "rawFinalizeReturn": {
+      "seq": 6739,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "arccore-sessions-discard-ours-v8.dylib",
+      "dir": "engine->app",
+      "cls": "ADK.WebContentChromium",
+      "kind": "-",
+      "sel": "webContents:finalizeDiscardRequest:",
+      "self": "<ADK.WebContentChromium#130>",
+      "ret": null
+    },
+    "callback": {
+      "discarded": true,
+      "count": 1,
+      "main": true,
+      "async": true,
+      "sameCallbackWrapper": true,
+      "before": {
+        "initialized": true,
+        "sessionID": "1555513126",
+        "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+        "wrapper": "0x11c0fc44880"
+      },
+      "selected": {
+        "initialized": true,
+        "sessionID": "1555513126",
+        "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+        "wrapper": "0x11c0fc44880"
+      },
+      "callbackContents": {
+        "initialized": true,
+        "sessionID": "1555513126",
+        "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+        "wrapper": "0x11c0fc44880"
+      },
+      "matchingLive": [
+        {
+          "initialized": true,
+          "sessionID": "1555513126",
+          "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+          "wrapper": "0x11c0fc44880"
+        }
+      ]
+    },
+    "identityAfterFinalize": {
+      "beforeSessionID": "1555513126",
+      "selectedAfterSessionID": "1555513126",
+      "callbackAfterSessionID": "1555513126",
+      "matchingLiveCount": 1,
+      "liveSessionID": "1555513126",
+      "liveWrapperSameAsSelected": true,
+      "liveSessionIDSameAsBefore": true
+    },
+    "identityAfterReload": {
+      "beforeSessionID": "1555513126",
+      "selectedAfterSessionID": "1555513126",
+      "callbackAfterSessionID": "1555513126",
+      "matchingLiveCount": 1,
+      "liveSessionID": "1555513126",
+      "liveWrapperSameAsSelected": true,
+      "liveSessionIDSameAsBefore": true
+    },
+    "historyExactBeforeDiscardAfterReload": true,
+    "history": {
+      "index": 1,
+      "pages": [
+        "FIXTURE/A",
+        "FIXTURE/B",
+        "FIXTURE/C"
+      ],
+      "titles": [
+        "Discard A",
+        "Discard B",
+        "Discard C"
+      ]
+    },
+    "cleanup": {
+      "pid": 50633,
+      "birth": "Fri Oct 23 06:12:59 2026",
+      "graceful": true,
+      "term": false,
+      "mode": "real AppKit terminate via owned main queue",
+      "appKitAcknowledged": true
+    },
+    "exactShutdownResponseMatchesRequest": true,
+    "frameworkBeforeAfterStable": true,
+    "inputsBefore": {
+      "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore": "6b6f7cd5e50a88f2f2c09e0fc46ce33dd1b30e539a609eff66695ff298557ad5",
+      "/tmp/arccore-sessions-discard-ours-v8.dylib": "00971656721829ea7425aa67202b955e9b5a9c949472afb98dbe998f81404025",
+      "/Users/cryogenicplanet/general/arc-engine/tests/recorder/ArcEngineRecorder.dylib": "fee95e1339e8c1aa2ecf1fcb0e9ebf1137efe64193031b60ead9c110677bba9a",
+      "/private/tmp/arccore-sessions-discard-ours-v8.ts": "703933c77bd67daf1b2acf9f457a8218a4d36c43096840d58a1fdf49507cfe11",
+      "/Users/cryogenicplanet/general/arc/tools/agent-cdp.ts": "13ef30c08abc728aa3a27917f7ae652c17943e4d1020df59a669c0d8a7dca60c"
+    },
+    "originalSupplementalObservedIdentity": {
+      "beforeSessionID": "2138339481",
+      "selectedAfterSessionID": "2138339482",
+      "callbackAfterSessionID": "2138339482",
+      "matchingLiveCount": 1,
+      "liveSessionID": "2138339482",
+      "liveWrapperSameAsSelected": true,
+      "liveSessionIDSameAsBefore": false
+    },
+    "interpretation": "Current replacement preserves same wrapper and live SessionID 1555513126 after true discard and reload. Earlier original supplemental observation preserves wrapper but changes live SessionID 2138339481\u21922138339482. This is an observed identity difference, not a formal paired canonical discard diff."
+  },
+  "batchInputHashesStable": true,
+  "batchInputs": {
+    "../arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore": {
+      "sha256": "6b6f7cd5e50a88f2f2c09e0fc46ce33dd1b30e539a609eff66695ff298557ad5",
+      "matchesReviewTime": true
+    },
+    "arc/api/arc_sessions_restore.mm": {
+      "sha256": "6e8f6484e501ea1a37142955d7074dcd1511176adce7ca0e5302e7c14efacc17",
+      "matchesReviewTime": true
+    },
+    "tests/recorder/ArcEngineRecorder.dylib": {
+      "sha256": "fee95e1339e8c1aa2ecf1fcb0e9ebf1137efe64193031b60ead9c110677bba9a",
+      "matchesReviewTime": true
+    },
+    "tests/recorder/diff.py": {
+      "sha256": "f8df579e6ea23b4eb531f357fdfe0460fa57b563daf44f9d6858c73abf84b184",
+      "matchesReviewTime": true
+    },
+    "tests/scenarios/sessions-tab-restart.ts": {
+      "sha256": "a7fb9c5aa8f139845f6447e0c3f8195bad472ea35cdb008c9677af546201771c",
+      "matchesReviewTime": true
+    },
+    "tests/scenarios/sessions-tab-restart-driver.m": {
+      "sha256": "e55fa473285af839eff9c5688cdad9eb0e93c5c3d2ec890f3abed8e5835e5f92",
+      "matchesReviewTime": true
+    },
+    "tests/scenarios/sessions-tab-restart-storage.ts": {
+      "sha256": "6fe2fc946ff82fcf77d50ffe6d8d70b9734d5589020a091142fb2294ae9d319f",
+      "matchesReviewTime": true
+    }
+  },
+  "frozenDiscardArtifactHashesMatch": {
+    "/tmp/arccore-sessions-discard-ours-v8.mm": true,
+    "/tmp/arccore-sessions-discard-ours-v8.ts": true,
+    "/tmp/arccore-sessions-discard-ours-v8.dylib": true,
+    "/tmp/arccore-sessions-discard-ours-v8.check.js": true,
+    "/tmp/arccore-sessions-discard-ours-v8-checks.json": true,
+    "/tmp/arccore-sessions-discard-ours-v8-README.md": true
+  },
+  "rawHashes": {
+    "results/sessions/canonical-restart-ours-run1/launch-1/record.jsonl": "cdb0cd2e508acec93bf5953200769dc7494a26a3e35a88696c37920e43945a40",
+    "results/sessions/discard-recorded-ours-run1/record.jsonl": "27be3d9226a041c909a6b92fa2072c4dce8a2edc3dabca8def4bfcb37f2db63e"
+  },
+  "limits": [
+    "Restart cutoff is a real close-timing failure, not evidence of a failed restoration that was never requested.",
+    "Default diff compares a partial first launch against a completed original first launch, so missing selector/count differences are affected by cutoff.",
+    "Discard is replacement-only supplemental contract coverage; true Boolean, async/main/cardinality, identity and exact history are verified, but service lifecycle/migration, physical resource reclamation and canonical parity are not established.",
+    "Discard finalize raw attribution is the probe dylib: it wraps the real callback then forwards the captured canonical recorder IMP exactly once; do not relabel it as an unwrapped engine-origin callback.",
+    "Cleanup success here confirms recorded main-queue AppKit shutdown acknowledgement and parent-app exit; this supplemental probe does not independently enumerate helper process exits.",
+    "No sources or accepted golden were modified."
+  ]
+}

@@ -93,6 +93,7 @@ const fixture = (kind: string) => {
   else if (kind === "fullbleed") content = `<div id="band" style="${band};left:0;right:0"></div>`;
   else if (kind === "image") content = `<img id="band" src="${redImage}" style="${band};width:calc(100% - 2px)">`;
   else if (kind === "gradient") content = `<div id="band" style="${band};background:linear-gradient(red,red)"></div>`;
+  else if (kind === "split-gradient") content = `<div id="band" style="${band};background:linear-gradient(90deg,red,blue)"></div>`;
   else if (kind === "canvas") content = `<canvas id="band" width="400" height="64" style="${band};background:transparent;width:calc(100% - 2px)"></canvas>
     <script>const c=document.getElementById('band').getContext('2d');c.fillStyle='red';c.fillRect(0,0,400,64);</script>`;
   if (kind === "scroll") content += "<div style='position:absolute;left:1px;right:1px;top:64px;height:2900px;background:green'></div>";
@@ -183,18 +184,26 @@ try {
       if (["arc", "both"].includes(mode) && !arm.arc36SetBeforeFirstObservedContextCall) throw new Error("requested pre-profile Arc36 injection was not observed");
       const sample = async (name: string) => {
         const start = Date.now();
+        // Background pages can suspend requestAnimationFrame indefinitely.
+        // Observe on the host clock; screenshot capture may itself cause paint.
         await sleep(observeMs);
-        await evaluate("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))");
+        const captureRequestedMs = Date.now();
+        const capture = await cdp!.targetCommand(target!, "Page.captureScreenshot", { format: "png" });
+        const captureCompletedMs = Date.now();
+        if (typeof capture.data !== "string") throw new Error("missing screenshot");
+        const filename = `${String(run.stages.length + 1).padStart(2, "0")}-${name}.png`;
+        writeFileSync(join(dir, filename), Buffer.from(capture.data, "base64"));
+        const postCaptureObserveMs = 250;
+        await sleep(postCaptureObserveMs);
         const geometry = await evaluate(`({href:location.href,dpr:devicePixelRatio,width:innerWidth,height:innerHeight,scrollY,
           paints:__paints,lcp:__lcp,visibility:document.visibilityState,htmlBackground:getComputedStyle(document.documentElement).backgroundColor,
           band:(()=>{const e=document.getElementById('band');if(!e)return null;const r=e.getBoundingClientRect();const s=getComputedStyle(e);
             return {x:r.x,y:r.y,width:r.width,height:r.height,position:s.position,background:s.backgroundColor,backgroundImage:s.backgroundImage};})()})`);
-        const capture = await cdp!.targetCommand(target!, "Page.captureScreenshot", { format: "png" });
-        if (typeof capture.data !== "string") throw new Error("missing screenshot");
-        const filename = `${String(run.stages.length + 1).padStart(2, "0")}-${name}.png`;
-        writeFileSync(join(dir, filename), Buffer.from(capture.data, "base64"));
         const state = await action("drain");
-        run.stages.push({ name, observationStartedMs: start, observationEndedMs: Date.now(), geometry, screenshot: filename, eventCount: state.eventCount, interference: state.interference });
+        run.stages.push({ name, observationStartedMs: start, observationEndedMs: Date.now(),
+          captureRequestedMs, captureCompletedMs, postCaptureObserveMs,
+          synchronization: "bounded host observation and screenshot; no frame/presentation guarantee",
+          geometry, screenshot: filename, eventCount: state.eventCount, interference: state.interference });
         save(join(dir, "observations.json"), run);
         console.log(`${agent}: ${name}, callbacks=${state.eventCount}, interference=${state.interference}`);
       };
@@ -210,7 +219,7 @@ try {
       await evaluate("document.documentElement.style.backgroundColor='rgb(255,0,0)'");
       await sample("same-red");
       await navigate("root-blue");
-      for (const name of ["interior", "fullbleed", "image", "gradient", "canvas", "scroll"]) await navigate(name);
+      for (const name of ["interior", "fullbleed", "image", "gradient", "split-gradient", "canvas", "scroll"]) await navigate(name);
       await action("stage", { stage: "scroll-document-top" });
       await evaluate("scrollTo(0,400)");
       await wait(async () => (await evaluate("scrollY")) >= 300);

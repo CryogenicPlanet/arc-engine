@@ -1,0 +1,321 @@
+{
+  "golden": {
+    "step": "install-invalid",
+    "operation": "install-invalid",
+    "basis": "actual helper-returned observations, not ArcEngineRecorder rows",
+    "complete": true,
+    "rows": [
+      {
+        "path": "operation",
+        "present": true,
+        "valid": true,
+        "value": "install-invalid"
+      },
+      {
+        "path": "ok",
+        "present": true,
+        "valid": true,
+        "value": true
+      },
+      {
+        "path": "matches",
+        "present": true,
+        "valid": true,
+        "value": 1
+      },
+      {
+        "path": "mainThread",
+        "present": true,
+        "valid": true,
+        "value": true
+      },
+      {
+        "path": "infosAfter",
+        "present": true,
+        "valid": true,
+        "value": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": false,
+            "icon": null,
+            "id": "edlmgkodhjdbfjbniiaalaepkgipemfo",
+            "name": "ArcCore service probe arc-extensions-service-probe-6d6ac0f4-3a79-4075-b4b0-d2977f8d977d A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://edlmgkodhjdbfjbniiaalaepkgipemfo/",
+            "version": "1.2.3"
+          },
+          "B": {
+            "description": "Local fixture B π 東京",
+            "enabled": true,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "cfhjcngpaocdgmlcnaendllkldjnblgh",
+            "name": "ArcCore service probe arc-extensions-service-probe-6d6ac0f4-3a79-4075-b4b0-d2977f8d977d B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://cfhjcngpaocdgmlcnaendllkldjnblgh/",
+            "version": "1.2.3"
+          }
+        }
+      },
+      {
+        "path": "pinsAfter",
+        "present": true,
+        "valid": true,
+        "value": []
+      },
+      {
+        "path": "owned",
+        "present": true,
+        "valid": true,
+        "value": {
+          "A": "edlmgkodhjdbfjbniiaalaepkgipemfo",
+          "B": "cfhjcngpaocdgmlcnaendllkldjnblgh"
+        }
+      },
+      {
+        "path": "callbacks",
+        "present": true,
+        "valid": true,
+        "value": [
+          {
+            "selector": "browserContext:didFailLoadUnpacked:withManifestError:",
+            "payload": [
+              "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation6-cli/fixtures/invalid",
+              "Manifest is not valid JSON.  EOF while parsing a value at line 1 column 29"
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        ]
+      },
+      {
+        "path": "events",
+        "present": true,
+        "valid": true,
+        "value": [
+          {
+            "type": "completion",
+            "value": {
+              "id": "",
+              "mainThread": true,
+              "result": 1,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browserContext:didFailLoadUnpacked:withManifestError:",
+              "payload": [
+                "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation6-cli/fixtures/invalid",
+                "Manifest is not valid JSON.  EOF while parsing a value at line 1 column 29"
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          }
+        ]
+      },
+      {
+        "path": "completion",
+        "present": true,
+        "valid": true,
+        "value": {
+          "id": "",
+          "mainThread": true,
+          "result": 1,
+          "synchronous": false
+        }
+      },
+      {
+        "path": "completions",
+        "present": true,
+        "valid": true,
+        "value": [
+          {
+            "id": "",
+            "mainThread": true,
+            "result": 1,
+            "synchronous": false
+          }
+        ]
+      }
+    ]
+  },
+  "ours": {
+    "step": "install-invalid",
+    "operation": "install-invalid",
+    "basis": "actual helper-returned observations, not ArcEngineRecorder rows",
+    "complete": false,
+    "rows": [
+      {
+        "path": "operation",
+        "present": true,
+        "valid": true,
+        "value": "install-invalid"
+      },
+      {
+        "path": "ok",
+        "present": true,
+        "valid": true,
+        "value": false
+      },
+      {
+        "path": "matches",
+        "present": true,
+        "valid": true,
+        "value": 1
+      },
+      {
+        "path": "mainThread",
+        "present": true,
+        "valid": true,
+        "value": true
+      },
+      {
+        "path": "infosAfter",
+        "present": true,
+        "valid": true,
+        "value": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "edlmgkodhjdbfjbniiaalaepkgipemfo",
+            "name": "ArcCore service probe arc-extensions-service-probe-6d6ac0f4-3a79-4075-b4b0-d2977f8d977d A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://edlmgkodhjdbfjbniiaalaepkgipemfo/",
+            "version": "1.2.3"
+          },
+          "B": {
+            "description": "Local fixture B π 東京",
+            "enabled": true,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "cfhjcngpaocdgmlcnaendllkldjnblgh",
+            "name": "ArcCore service probe arc-extensions-service-probe-6d6ac0f4-3a79-4075-b4b0-d2977f8d977d B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://cfhjcngpaocdgmlcnaendllkldjnblgh/",
+            "version": "1.2.3"
+          }
+        }
+      },
+      {
+        "path": "pinsAfter",
+        "present": true,
+        "valid": true,
+        "value": []
+      },
+      {
+        "path": "owned",
+        "present": true,
+        "valid": true,
+        "value": {
+          "A": "edlmgkodhjdbfjbniiaalaepkgipemfo",
+          "B": "cfhjcngpaocdgmlcnaendllkldjnblgh"
+        }
+      },
+      {
+        "path": "callbacks",
+        "present": true,
+        "valid": true,
+        "value": []
+      },
+      {
+        "path": "events",
+        "present": true,
+        "valid": true,
+        "value": []
+      },
+      {
+        "path": "completion",
+        "present": false,
+        "valid": false
+      },
+      {
+        "path": "completions",
+        "present": true,
+        "valid": true,
+        "value": []
+      }
+    ]
+  }
+}

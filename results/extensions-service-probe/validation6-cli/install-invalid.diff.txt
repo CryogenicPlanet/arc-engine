@@ -1,0 +1,14 @@
+methods differing: 11 (missing 11, extra 0, returns 0, callback args 0, counts 0; internal-only 0, ours-internal 0)
+callback sequence: {"golden": 1, "ours": 0, "first_divergence": 0, "golden_from": ["ADKClientLive.BrowserExtensionsLifeCycleManager browserContext:didFailLoadUnpacked:withManifestError:"], "ours_from": []}
+caller attribution: on (app calls + engine setters)
+missing {"method": "->engine -ArcBrowserContextExtensions listExtensions", "golden_calls": 1, "example": {"args": "[]", "ret": "[\"<ArcExtensionInfo#1>\", \"<ArcExtensionInfo#2>\"]"}}
+missing {"method": "->engine -ArcExtensionInfo enabled", "golden_calls": 2, "example": {"args": "[]", "ret": "true"}}
+missing {"method": "->engine -ArcExtensionInfo fromWebstore", "golden_calls": 2, "example": {"args": "[]", "ret": "false"}}
+missing {"method": "->engine -ArcExtensionInfo hasAction", "golden_calls": 2, "example": {"args": "[]", "ret": "true"}}
+missing {"method": "->engine -ArcExtensionInfo icon", "golden_calls": 2, "example": {"args": "[]", "ret": "\"image(32x32)\""}}
+missing {"method": "->engine -ArcExtensionInfo id", "golden_calls": 4, "example": {"args": "[]", "ret": "\"cfhjcngpaocdgmlcnaendllkldjnblgh\""}}
+missing {"method": "->engine -ArcExtensionInfo name", "golden_calls": 2, "example": {"args": "[]", "ret": "\"ArcCore service probe arc-extensions-service-probe-* B\""}}
+missing {"method": "->engine -ArcExtensionInfo permissions", "golden_calls": 2, "example": {"args": "[]", "ret": "[\"Read and change your data on 127.0.0.1\", \"Read your browsing history\"]"}}
+missing {"method": "->engine -ArcExtensionInfo url", "golden_calls": 2, "example": {"args": "[]", "ret": "\"url:chrome-extension://cfhjcngpaocdgmlcnaendllkldjnblgh/\""}}
+missing {"method": "->engine -ArcExtensionInfo version", "golden_calls": 2, "example": {"args": "[]", "ret": "\"1.2.3\""}}
+missing {"method": "engine->app -ADKClientLive.BrowserExtensionsLifeCycleManager browserContext:didFailLoadUnpacked:withManifestError:", "golden_calls": 1, "example": {"args": "[\"<ArcBrowserContext#1>\", \"/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation6-cli/fixtures/i

@@ -1,6 +1,6 @@
 // Read-only artifact integration. Never trusts diff-run's exit code as a scenario pass.
 import { appendFileSync, closeSync, existsSync, openSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { createHash } from "node:crypto";
 const root = resolve(import.meta.dir, "../..");
 const journal = join(root, "logs/wp/scenarios-scoreboard.jsonl");
@@ -34,33 +34,57 @@ const provenance = (path:string) => {
     return {label:calls.length===0?"no calls":attributed===0?"v1":attributed===calls.length?"v2":`mixed ${attributed}/${calls.length}`,at:record.at};
   }catch{return {label:"incomplete JSON",at:record.at};}
 };
+const comparisonState=(name:string,directory:string,launch:string,comparisonDirectory=directory)=>{
+  const golden=join(root,"results/golden",`arc-1.170-${name}`);
+  const g=provenance(join(golden,launch,"record.jsonl")),o=provenance(join(directory,launch,"record.jsonl"));
+  const diff=artifact(join(comparisonDirectory,`diff-${launch}.txt`));
+  const scope=diff?.text.split("\n").find(line=>line.startsWith("caller attribution:"));
+  const stale=diff&&[g.at,o.at].some(at=>at&&at>diff.at);
+  return `${launch}: current files golden ${g.label}; ours ${o.label}<br>Saved diff scope: ${escape(scope??(diff?"scope not recorded by older comparator":"no comparison"))}${stale?"<br>STALE: transcript newer than diff":""}`;
+};
+// Explicitly reviewed fresh-profile standard-harness peers. Never scan arbitrary
+// copies or promote their outcomes into golden acceptance. Renderer preserved-
+// profile evidence remains separate below.
+type Source={directory:string;label:string;comparisonDirectory?:string};
+const peers:Record<string,Source[]>={
+  "launch-slice":[{directory:"results/extensions-validation7/launch-slice",label:"fresh-profile peer, extensions validation7"},{directory:"logs/wp/profile.batch11/launch-slice-ours156",label:"fresh-profile peer, profile batch11"},{directory:"results/core-runtime/20261023T125302Z/launch-slice",label:"fresh isolated peer, core run6"}],
+  "extensions-page-actions":[{directory:"results/extensions-validation7/extensions-page-actions",label:"fresh-profile peer, extensions validation7"}],
+  "sessions-public-api":[{directory:"results/sessions/canonical-public-api-run1",label:"fresh isolated peer, sessions owner"}],
+  "sessions-tab-restart":[{directory:"results/sessions/canonical-restart-ours-run1",label:"fresh isolated peer, sessions batch7"}],
+  "tabs-navigation":[{directory:"results/core-runtime/20261023T125302Z/tabs-navigation",label:"fresh isolated peer, core run6"}],
+  "renderer-public-api":[{directory:"results/ui-renderer-public-replay/run4-20261023T123944Z/harness",comparisonDirectory:"results/ui-renderer-public-replay/run4-20261023T123944Z",label:"fresh isolated standard peer, UI run4"}],
+};
+export function latestObservation(name:string) {
+  const sources:Source[]=[{directory:`results/ours/${name}`,label:"diff-run output"},...(peers[name]??[])];
+  return sources.flatMap(source=>{
+    const directory=join(root,source.directory),stepsArtifact=artifact(join(directory,"steps.json"));
+    if(!stepsArtifact)return[];
+    let result:any;try{result=JSON.parse(stepsArtifact.text);}catch{return[];}
+    if(result.scenario!==name||result.slug!=="ours156"||result.app!==resolve(root,"../arc/build/ArcModAgent-ours156.app")||result.recorded!==true||result.traced!==false||
+      !Array.isArray(result.steps)||!result.steps.length||!result.steps.every((s:any)=>["pass","fail","inconclusive"].includes(s.outcome)))return[];
+    return[{...source,directory,comparisonDirectory:join(root,source.comparisonDirectory??source.directory),stepsArtifact,result}];
+  }).sort((a,b)=>a.stepsArtifact.at.localeCompare(b.stepsArtifact.at)).at(-1);
+}
 export function refresh() {
   const history = attempts();
   const lines = ["# Scenario scoreboard", "", `Updated ${new Date().toISOString()}. Accepted original-engine goldens only; candidates excluded.`, "",
-    "Step passes are the latest completed replacement-engine harness artifact, including failed/inconclusive steps in the denominator. Diff lines are exact, escaped for Markdown, for every available launch. Dates expose older artifacts. A newer build failure does not refresh those artifacts. Passing steps alone do not establish boundary parity. Missing diffs are explicit.", "",
+    "Step passes are the latest completed fresh-profile replacement-engine harness observation, including failed/inconclusive steps in the denominator. Sources are canonical diff-run output and explicitly reviewed peers in scoreboard.ts; each selected source is labeled. Reset provenance: extensions validation7 disposable-data-resets.jsonl; profile batch11 archived batch.sh rename without seed; core run6 frozen runner's per-scenario disposable reset; sessions isolated standard runs (#137813/#138778); UI run4 profile-isolation.json plus empty-directory helper. Standard fields/source/tool hashes and paired captured-run diffs were independently reviewed. Renderer UI run4 stores steps/transcript under harness and its diff in the parent; report.json pins that relationship, with raw SHA independently verified. File dates choose the latest observation, not a claimed exact whole-build source attribution. Recorder labels describe current files; saved diff scope is the historical literal header. Exact first two lines are escaped for Markdown, for every available launch. A newer build failure does not refresh artifacts. Passing steps alone do not establish boundary parity. Missing diffs are explicit. Older preserved-profile renderer evidence remains separate.", "",
     "Overnight desktop state: LOCKED (loginwindow). Native UI and background media failures may be environmental; a difference against an unlocked golden alone does not establish a replacement-only defect. Morning ArcMod scripts remain unrecorded.", "",
     "Recorder migration: v1 lacks caller attribution; v2 records it. The new comparator narrows app-to-engine calls only when both transcripts carry attribution, while retaining callbacks and engine setters. It excludes direct test-driver API calls; those scenarios also require raw transcript gates and sidecar assertions. Compare counts only with the same scope. Older diffs are preserved verbatim and explicitly flagged when a newer golden or transcript makes them stale.", "",
     "| Scenario | Latest ours steps | Latest integrator attempt | Recorder / comparison scope per launch | First two diff lines per launch |", "| --- | --- | --- | --- | --- |"];
   for (const name of acceptedScenarios()) {
-    const dir = join(root, "results/ours", name), stepsArtifact = artifact(join(dir,"steps.json"));
-    let result: any;
-    try { result=stepsArtifact && JSON.parse(stepsArtifact.text); } catch { /* harness has not finished its write */ }
+    const observation=latestObservation(name),dir=observation?.directory??join(root,"results/ours",name),comparisonDirectory=observation?.comparisonDirectory??dir;
+    const stepsArtifact=observation?.stepsArtifact,result=observation?.result;
     const steps = result?.steps as {outcome: string}[] | undefined;
     const pass = steps?.filter(s => s.outcome === "pass").length;
-    const stepText = steps ? `${pass}/${steps.length} pass; ${steps.filter(s=>s.outcome === "fail").length} fail, ${steps.filter(s=>s.outcome === "inconclusive").length} inconclusive (${stepsArtifact!.at})` : "no completed harness artifact";
+    const stepText = steps ? `${pass}/${steps.length} pass; ${steps.filter(s=>s.outcome === "fail").length} fail, ${steps.filter(s=>s.outcome === "inconclusive").length} inconclusive (${stepsArtifact!.at})<br>[${escape(observation!.label)}](../../${relative(root,dir)}/steps.json)` : "no completed harness artifact";
     const latest = history.filter(a => a.scenario === name).at(-1);
     const attempt = latest ? `${latest.finished ?? latest.started}: ${latest.finished ? `exit ${latest.exit}; inspect log` : "queued/running"} [log](../../${latest.log})` : "not yet attempted by integrator";
     const golden = join(root, "results/golden", `arc-1.170-${name}`);
     const launches = files(golden).filter(n=>/^launch-\d+$/.test(n)).sort();
-    const scopes = launches.map(l=>{
-      const g=provenance(join(golden,l,"record.jsonl")),o=provenance(join(dir,l,"record.jsonl"));
-      const diff=artifact(join(dir,`diff-${l}.txt`));
-      const scope=diff?.text.split("\n").find(line=>line.startsWith("caller attribution:"));
-      const stale=diff&&[g.at,o.at].some(at=>at&&at>diff.at);
-      return `${l}: golden ${g.label}; ours ${o.label}<br>${escape(scope??(diff?"scope not recorded by older comparator":"no comparison"))}${stale?"<br>STALE: transcript newer than diff":""}`;
-    }).join("<br><br>");
+    const scopes = launches.map(l=>comparisonState(name,dir,l,comparisonDirectory)).join("<br><br>");
     const diffText = launches.map(l => {
-      const diff = artifact(join(dir,`diff-${l}.txt`));
+      const diff = artifact(join(comparisonDirectory,`diff-${l}.txt`));
       return diff ? `${l} (${diff.at}):<br>${diff.text.split("\n").slice(0,2).map(escape).join("<br>")}` : `${l}: no diff`;
     }).join("<br><br>");
     lines.push(`| [${name}](../../results/golden/arc-1.170-${name}/steps.json) | ${stepText} | ${attempt} | ${scopes} | ${diffText} |`);
@@ -74,7 +98,19 @@ export function refresh() {
       `[${extraSteps.filter((s:any)=>s.outcome==="pass").length}/${extraSteps.length} steps pass](../../results/renderer-canonical-run2/steps.json); functional checks ${functional?"pass":"include failures/inconclusives"}; shutdown ${escape(quit?.outcome??"missing")} (${escape(quit?.detail??"no shutdown artifact")}). `+
       "The ten fixture CSS request/return gates are separate from the owner's eight-class/136-row metadata probe. No whole-engine parity claim. " +
       `[Harness](../../logs/wp/renderer.canonical.run2.harness.log), [source freeze](../../logs/wp/renderer.canonical.source.freeze.run2.json).`, "",
-      diff?`Supplemental diff (${diff.at}), exact first two lines:<br>${diff.text.split("\n").slice(0,2).map(escape).join("<br>")}`:"Supplemental diff missing.");
+      diff?`Supplemental diff (${diff.at}), exact first two lines:<br>${diff.text.split("\n").slice(0,2).map(escape).join("<br>")}`:"Supplemental diff missing.",
+      `Supplemental comparison state: ${comparisonState("renderer-public-api",supplemental,"launch-1")}.`);
+  }
+  const sessions=join(root,"results/sessions/canonical-public-api-run1"), sessionSteps=json(join(sessions,"steps.json"))?.steps;
+  if(sessionSteps?.length) {
+    const diff=artifact(join(sessions,"diff-launch-1.txt")),quit=sessionSteps.find((s:any)=>s.step==="public API agent quit");
+    const stoppedAtClose=sessionSteps.some((s:any)=>s.step==="public close produces one synchronous main-thread callback"&&s.outcome!=="pass");
+    lines.push("", "Sessions peer detail (Chirp #137813; counted once above if it is the latest fresh-profile observation): the sessions owner replayed the standard scenario in a fresh isolated disposable profile and retained its separate output directory. " +
+      `[${sessionSteps.filter((s:any)=>s.outcome==="pass").length}/${sessionSteps.length} steps pass](../../results/sessions/canonical-public-api-run1/steps.json); shutdown ${escape(quit?.outcome??"missing")} (${escape(quit?.detail??"no shutdown artifact")}). `+
+      (stoppedAtClose?"The synchronous-close assertion fails before restore is exercised; this is not evidence of a missing restore implementation. ":"Consult the step artifact for the exercised phases. ")+
+      "[Raw timing comparison](../../results/sessions/canonical-public-api-run1/close-timing-comparison.json) distinguishes original inline close callbacks from the replacement's deferred callback. Direct driver calls remain outside default v2 diff scope; fixed sidecar/raw gates supply independent proof.", "",
+      diff?`Supplemental sessions diff (${diff.at}), exact first two lines:<br>${diff.text.split("\n").slice(0,2).map(escape).join("<br>")}`:"Supplemental sessions diff missing.",
+      `Sessions peer comparison state: ${comparisonState("sessions-public-api",sessions,"launch-1")}.`);
   }
   const path = join(import.meta.dir,"SCOREBOARD.md");
   const temporary = `${path}.${process.pid}.${crypto.randomUUID()}.tmp`;
@@ -85,11 +121,11 @@ export function summary() {
   const names = acceptedScenarios();
   let measured = 0, passing = 0, diffs = 0;
   for (const name of names) {
-    const dir = join(root,"results/ours",name), steps = json(join(dir,"steps.json"))?.steps;
+    const observation=latestObservation(name),dir=observation?.comparisonDirectory??join(root,"results/ours",name),steps=observation?.result.steps;
     if (steps?.length) { measured++; if (steps.every((s: any)=>s.outcome === "pass")) passing++; }
     if (files(dir).some(n=>/^diff-launch-\d+\.txt$/.test(n))) diffs++;
   }
-  return `scenarios INTEGRATOR /Users/cryogenicplanet/general/arc-engine: ${names.length} accepted goldens; ours harness artifacts ${measured}/${names.length}, all-steps-pass ${passing}/${names.length}, diff artifacts ${diffs}/${names.length}; ${attempts().filter(a=>a.finished).length} integrator attempts completed. Exact lines/dates/build failures: tests/scenarios/SCOREBOARD.md. Rotation uses shared diff-run lock with >=300s between runs; native recording deferred until unlocked desktop. No boundary parity claim.`;
+  return `scenarios INTEGRATOR /Users/cryogenicplanet/general/arc-engine: ${names.length} accepted goldens; latest fresh-profile ours artifacts ${measured}/${names.length}, all-steps-pass ${passing}/${names.length}, diff artifacts ${diffs}/${names.length}; ${attempts().filter(a=>a.finished).length} integrator attempts completed. Verified peer sources labeled alongside diff-run outputs; exact lines/dates/build failures: tests/scenarios/SCOREBOARD.md. Shared diff-run lock +>=300s gaps; native recording deferred. No boundary parity claim.`;
 }
 if (import.meta.main) {
   if(Bun.argv.includes("--summary")) { console.log(summary()); process.exit(0); }

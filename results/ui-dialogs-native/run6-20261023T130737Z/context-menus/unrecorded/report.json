@@ -1,0 +1,75 @@
+{
+  "nonce": "arc-ui-context-d256dc2f-9b39-4d49-83f1-b72c5c24afde",
+  "scenario": "context-menus",
+  "backend": "actual local AppKit controls",
+  "recorded": false,
+  "acceptedGoldenModified": false,
+  "visualAcceptance": false,
+  "runs": [
+    {
+      "agent": "trace156",
+      "pid": 38554,
+      "errors": [
+        "launch: Error: bounded wait expired: Error: ENOENT: no such file or directory, open '/Users/cryogenicplanet/general/arc-engine/results/ui-dialogs-native/run6-20261023T130737Z/context-menus/unrecorded/trace156/launch-1/ui-context-request.json.ready.json'"
+      ],
+      "steps": [
+        {
+          "step": "launch",
+          "outcome": "inconclusive",
+          "detail": "Error: bounded wait expired: Error: ENOENT: no such file or directory, open '/Users/cryogenicplanet/general/arc-engine/results/ui-dialogs-native/run6-20261023T130737Z/context-menus/unrecorded/trace156/launch-1/ui-context-request.json.ready.json'"
+        },
+        {
+          "step": "quit",
+          "outcome": "pass",
+          "detail": "Captured browser/helpers exited; close request acknowledged"
+        }
+      ],
+      "phase": "launch",
+      "completedStages": [],
+      "uncertainMutation": null,
+      "coverage": null,
+      "profileIsolation": {
+        "nonce": "arc-ui-profile-b64b4e3ff9f34cbd9ef145ecc627897f",
+        "device": 16777233,
+        "inode": 243548251
+      },
+      "browserAliveOnFailure": true,
+      "artifactsStable": true,
+      "cleanup": "Captured browser/helpers exited; close request acknowledged",
+      "elapsedMs": 22732
+    },
+    {
+      "agent": "ours156",
+      "pid": 39250,
+      "errors": [
+        "launch: Error: bounded wait expired: Error: ENOENT: no such file or directory, open '/Users/cryogenicplanet/general/arc-engine/results/ui-dialogs-native/run6-20261023T130737Z/context-menus/unrecorded/ours156/launch-1/ui-context-request.json.ready.json'"
+      ],
+      "steps": [
+        {
+          "step": "launch",
+          "outcome": "inconclusive",
+          "detail": "Error: bounded wait expired: Error: ENOENT: no such file or directory, open '/Users/cryogenicplanet/general/arc-engine/results/ui-dialogs-native/run6-20261023T130737Z/context-menus/unrecorded/ours156/launch-1/ui-context-request.json.ready.json'"
+        },
+        {
+          "step": "quit",
+          "outcome": "pass",
+          "detail": "Captured browser/helpers exited; close request acknowledged"
+        }
+      ],
+      "phase": "launch",
+      "completedStages": [],
+      "uncertainMutation": null,
+      "coverage": null,
+      "profileIsolation": {
+        "nonce": "arc-ui-profile-b64b4e3ff9f34cbd9ef145ecc627897f",
+        "device": 16777233,
+        "inode": 243548258
+      },
+      "browserAliveOnFailure": true,
+      "artifactsStable": true,
+      "cleanup": "Captured browser/helpers exited; close request acknowledged",
+      "elapsedMs": 25619
+    }
+  ],
+  "limitation": "Only canonical native page-context menu Reload is exercised through a tracked actual NSMenuItem. A matching end-tracking event plus complete local AX postcheck establishes lifecycle evidence, not visual dismissal. Page reload is checked independently. Boundary diff and recorder noninterference are separate required checks; external AX and visual acceptance remain unverified."
+}

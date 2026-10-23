@@ -27,8 +27,8 @@ const adblockReadinessMs = Number(option("--adblock-readiness-ms", "60000"));
 if (!Number.isInteger(adblockReadinessMs) || adblockReadinessMs < 1000 || adblockReadinessMs > 240000) {
   throw new Error("adblock-readiness-ms must be an integer from 1000 through 240000");
 }
-if (args.includes("--adblock-queue-edges") && !args.includes("--adblock-toggle")) {
-  throw new Error("adblock-queue-edges requires adblock-toggle");
+if (args.includes("--adblock-queue-edges") && (!args.includes("--adblock-toggle") || !args.includes("--adblock"))) {
+  throw new Error("adblock-queue-edges requires adblock and adblock-toggle");
 }
 const lockPID = Number(readFileSync(join(root, "logs/arccore-build.lock/pid"), "utf8").trim());
 let ancestor = process.pid;

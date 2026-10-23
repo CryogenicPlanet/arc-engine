@@ -30,7 +30,8 @@ Native actions use ArcMod's PID-verified NativeController; page actions use agen
 foreground input or selector dispatch is used. With lead authorization (Chirp #133436), the sibling native adapter now supports `NativeController.action(handle, "perform", actionName)`.
 It accepts only currently advertised actions, checks the current fingerprint and enabled state, and binds
 handles to the snapshot PID so a restart cannot reuse them. AXWindows is inspected explicitly during menu
-tracking. Keyboard/mouse synthesis and selector fallback remain unavailable. Observed AXCancel/AXRaise are
+tracking. NativeController/global keyboard and mouse synthesis and selector fallback remain unavailable;
+the unrecorded morning key driver separately supports scoped in-process app events. Observed AXCancel/AXRaise are
 used only on exact agent elements when a key window is required. Native action receipts are recorded in
 `native-actions.jsonl`. The stdio MCP schema remains backward compatible (press/set).
 
@@ -47,8 +48,13 @@ route, which does not establish Arc's app-level unpacked-install selector behavi
 
 `bun tests/scenarios/scoreboard.ts` refreshes every accepted canonical golden's latest completed
 fresh-profile replacement steps and exact first two diff lines. It labels recorder versions, literal
-comparator scope and stale diffs; preserved-profile supplemental evidence is separate. `--summary`
+comparator scope and stale diffs. Latest observation means the newest valid steps artifact in the canonical
+diff-run directory or explicitly reviewed fresh-profile peers listed in `scoreboard.ts`;
+steps and diffs stay paired within one reviewed captured run, labeled in the table. The UI renderer
+stores its harness in a subdirectory and the paired diff in its parent, pinned by report.json and raw hashes. File dates do
+not prove exact build-source attribution. Preserved-profile renderer evidence is separate. `--summary`
 prints one line without starting a comparison. `--run-next` runs one least-recently-attempted scenario.
+The controller refreshes the current reporting source every minute, including lock waits/cooldowns.
 
 `bun tests/scenarios/integrator.ts` owns a separate kernel lease, runs one comparison at a time and
 waits at least 300 seconds after completion. Its optional `--chirp-helper <path>` invokes the enrolled
@@ -67,11 +73,18 @@ leave canonical untouched. `bun tests/scenarios/upgrade-recorder-check.ts` check
 recovery paths using isolated dummy artifacts, without an app or real profile. The ordinary recorder's
 launch-slice guard remains in force.
 
-`renderer-public-api` and `sessions-public-api` use tests-owned, PID/nonce-bound public ObjC drivers.
+`renderer-public-api`, `sessions-public-api` and `sessions-tab-restart` use tests-owned, PID/nonce-bound public ObjC drivers.
 Their raw required-call/value/order gates and callback sidecars are independent evidence: the default
 caller-aware comparator excludes calls originating in injected fixture images. An empty default diff
 cannot establish their API parity. The standard recorder remains first in DYLD_INSERT_LIBRARIES; extra
 libraries must resolve inside the current output directory and extra environment keys use ARC_SCENARIO_.
+`sessions-tab-restart` has an accepted39/39 original-engine golden (37engineclasses/262selectors/24callbackselectors): two individually closed tabs restore after
+a genuine same-profile/new-PID restart, with a bounded opaque Tabs-file presence barrier and exact
+ABC/B histories. It never decrypts payloads or flushes storage to force persistence. Its standard
+Browser.close shutdown uses a different required path from the source supplemental AppKit-termination probe;
+any SIGTERM fallback remains a failing step.
+
+`bookmarks-public-api` has an accepted40/40 original-engine golden (36engineclasses/231selectors/19callbackselectors), adapted from the separately reviewed frozen profile.batch11 fixture. It retains23 snapshot/mutation facts and raw measured date windows. `bookmarks-public-api-raw.ts` independently pairs exact driver-image calls/returns and enforces74bookmark calls/16selectors, DTO receivers, Unicode arguments and membership order. The default v2 comparison excludes these direct driver calls; acceptance comes from its own standard original run, not the archived combined-fixture passes.
 
 See [MORNING.md](MORNING.md) for six ready-to-record-after-unlock scripts and four incomplete plans/probes.
 All `arcmod-*` scripts remain unrecorded overnight. The new in-process key driver tests seven whitelisted

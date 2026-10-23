@@ -8,7 +8,7 @@
  #include "content/public/browser/navigation_handle.h"
  #include "content/public/browser/favicon_status.h"
  #include "content/public/browser/host_app_hooks.h"
-@@ -188,20 +189,22 @@
+@@ -189,20 +190,22 @@
  @property(nonatomic, readonly) NSUInteger state;
  @end
  
@@ -41,7 +41,7 @@
  @end
  
  @protocol CoreContentsDelegate <NSObject>
-@@ -274,7 +277,7 @@
+@@ -275,7 +278,7 @@
   public:
    ArcContentsObserver(content::WebContents* contents, ArcWebContents* wrapper)
        : content::WebContentsObserver(contents), wrapper_(wrapper),
@@ -50,7 +50,7 @@
    void DidStartNavigation(content::NavigationHandle* handle) override {
      if (!handle->IsInPrimaryMainFrame()) { return; }
      ArcWebContents* wrapper = wrapper_;
-@@ -384,48 +387,70 @@
+@@ -392,48 +395,70 @@
      }
    }
    void NavigationEntryCommitted(const content::LoadCommittedDetails&) override {
@@ -154,7 +154,7 @@
    void WebContentsDestroyed() override {
      ArcWebContents* wrapper = wrapper_;
      Observe(nullptr);
-@@ -472,17 +497,30 @@
+@@ -480,17 +505,30 @@
      }
      return state;
    }

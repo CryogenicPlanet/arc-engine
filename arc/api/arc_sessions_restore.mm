@@ -529,6 +529,8 @@ ARC_EXPORT @interface ArcSessionTab : NSObject
 }
 - (void)setNavigations:(NSArray<ArcSessionNavigation*>*)navigations {
   CHECK(_tab);
+  // Native SetNavigations rejects an empty history before replacing its vector.
+  CHECK_GT(navigations.count, 0u);
   std::vector<sessions::SerializedNavigationEntry> entries;
   entries.reserve(navigations.count);
   for (ArcSessionNavigation* navigation in navigations) {
@@ -662,16 +664,16 @@ void QueueRestorationCallback(ArcBrowser* browser, content::WebContents* content
                               ArcSessionID* identifier, SessionsRestoreIDs* full) {
   __weak ArcBrowser* weakBrowser = browser;
   auto nativeBrowser = [browser browser]->GetWeakPtr();
-  auto nativeContents = contents->GetWeakPtr();
   ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:contents];
   if (full) {
     full.pending += 1;
   }
   // Native OnTabStripModelChanged posts the dispatcher; it retains the Arc
   // contents peer, but neither the Chrome browser nor Chrome WebContents.
+  // Delivery tests that peer's current binding, including a completed rebind.
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
     ArcBrowser* liveBrowser = weakBrowser;
-    if (liveBrowser && nativeBrowser && nativeContents) {
+    if (liveBrowser && nativeBrowser && [wrapper webContents]) {
       id<SessionsBrowserDelegate> delegate = [liveBrowser delegate];
       if ([delegate respondsToSelector:@selector(browser:didRestoreWebContents:withSessionId:)]) {
         [delegate browser:liveBrowser didRestoreWebContents:wrapper withSessionId:identifier];

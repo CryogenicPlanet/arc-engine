@@ -1,0 +1,46 @@
+--- a/arc/api/arc_extensions_browser.mm
++++ b/arc/api/arc_extensions_browser.mm
+@@ -197,7 +197,6 @@
+     tab_list_ = nullptr;
+     scoped_data_.reset();
+     typed_data_.reset();
+-    icon_subscriptions_.clear();
+     action_updates_.clear();
+     if (model_) model_->RemoveObserver(this);
+     model_ = nullptr;
+@@ -218,7 +217,6 @@
+     const uint64_t generation = ++delegate_generation_;
+     ++popup_serial_;
+     auto weak = weak_factory_.GetWeakPtr();
+-    icon_subscriptions_.clear();
+     action_updates_.clear();
+     auto actions = std::move(actions_);
+     for (auto& [id, action] : actions) {
+@@ -255,11 +253,6 @@
+           std::make_unique<ActionDelegate>(wrapper_, delegate_, weak_factory_.GetWeakPtr()));
+       if (!action) return nullptr;
+       found = actions_.emplace(id, std::move(action)).first;
+-      icon_subscriptions_.emplace(id, found->second->RegisterIconUpdateObserver(
+-          base::BindRepeating([](base::WeakPtr<BrowserExtensions> self, std::string identifier) {
+-            if (!self) return;
+-            self->OnToolbarActionUpdated(identifier);
+-          }, weak_factory_.GetWeakPtr(), id)));
+     }
+     return found->second.get();
+   }
+@@ -293,7 +286,6 @@
+   }
+   void OnToolbarActionRemoved(const std::string& id) override {
+     auto weak = weak_factory_.GetWeakPtr();
+-    icon_subscriptions_.erase(id);
+     action_updates_.erase(id);
+     auto removed = actions_.extract(id);
+     if (!removed.empty()) removed.mapped()->HidePopup();
+@@ -416,7 +408,6 @@
+   raw_ptr<ToolbarActionsModel> model_ = nullptr;
+   raw_ptr<TabListInterface> tab_list_ = nullptr;
+   std::map<std::string, std::unique_ptr<ExtensionActionViewModel>> actions_;
+-  std::map<std::string, base::CallbackListSubscription> icon_subscriptions_;
+   struct ActionUpdateThrottle {
+     base::TimeTicks last_fired;
+     base::OneShotTimer timer;

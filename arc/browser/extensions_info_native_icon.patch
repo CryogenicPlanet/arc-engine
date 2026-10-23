@@ -1,0 +1,151 @@
+diff --git a/chromium/src/extensions/browser/extension_action.cc b/chromium/src/extensions/browser/extension_action.cc
+--- a/chromium/src/extensions/browser/extension_action.cc
++++ b/chromium/src/extensions/browser/extension_action.cc
+@@ -9,6 +9,7 @@
+ #include <utility>
+ 
+ #include "base/check_op.h"
++#include "base/command_line.h"
+ #include "base/strings/string_number_conversions.h"
+ #include "extensions/browser/extension_icon_image.h"
+ #include "extensions/browser/extension_icon_placeholder.h"
+@@ -72,6 +73,11 @@
+ // static
+ // LINT.IfChange(ActionIconSize)
+ extension_misc::ExtensionIcons ExtensionAction::ActionIconSize() {
++  // Arc's hosted engine uses 32-DIP default action icons and placeholders.
++  if (base::CommandLine::InitializedForCurrentProcess() &&
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    return extension_misc::EXTENSION_ICON_SMALL;
++  }
+ #if BUILDFLAG(IS_ANDROID)
+   return extension_misc::EXTENSION_ICON_MINI;
+ #else
+diff --git a/arc/api/arc_extensions_context.mm b/arc/api/arc_extensions_context.mm
+--- a/arc/api/arc_extensions_context.mm
++++ b/arc/api/arc_extensions_context.mm
+@@ -4,7 +4,6 @@
+ 
+ #include <algorithm>
+ #include <array>
+-#include <map>
+ #include <set>
+ #include <utility>
+ 
+@@ -15,7 +14,6 @@
+ #include "base/one_shot_event.h"
+ #include "base/strings/sys_string_conversions.h"
+ #include "base/strings/utf_string_conversions.h"
+-#include "base/supports_user_data.h"
+ #include "base/task/sequenced_task_runner.h"
+ #include "chrome/browser/extensions/commands/command_service.h"
+ #include "chrome/browser/extensions/error_console/error_console.h"
+@@ -28,9 +26,9 @@
+ #include "content/public/common/isolated_world_ids.h"
+ #include "extensions/browser/event_router.h"
+ #include "extensions/browser/extension_error.h"
++#include "extensions/browser/extension_action.h"
+ #include "extensions/browser/extension_action_manager.h"
+ #include "extensions/browser/extension_host.h"
+-#include "extensions/browser/extension_icon_image.h"
+ #include "extensions/browser/extension_registrar.h"
+ #include "extensions/browser/extension_registry.h"
+ #include "extensions/browser/extension_registry_observer.h"
+@@ -45,7 +43,6 @@
+ #include "extensions/browser/unpacked_installer.h"
+ #include "extensions/browser/webstore_install_result.h"
+ #include "extensions/common/extension.h"
+-#include "extensions/common/manifest_handlers/icons_handler.h"
+ #include "extensions/common/manifest_handlers/description_info.h"
+ #include "extensions/common/manifest_handlers/manifest_url_handlers.h"
+ #include "extensions/common/permissions/permissions_data.h"
+@@ -76,31 +73,6 @@
+ constexpr int kInstalledMask = extensions::ExtensionRegistry::ENABLED |
+                                extensions::ExtensionRegistry::DISABLED |
+                                extensions::ExtensionRegistry::TERMINATED;
+-
+-// IconImage owns its asynchronous load and unregisters from the registry on
+-// shutdown. Retain it on the profile so a later snapshot sees the loaded icon.
+-class ExtensionIcons : public base::SupportsUserData::Data {
+- public:
+-  std::map<std::string, std::unique_ptr<extensions::IconImage>> icons;
+-};
+-constexpr char kIconsKey[] = "ArcExtensionsSnapshotIcons";
+-
+-arc::Image ExtensionIcon(Profile* profile, const extensions::Extension& extension) {
+-  auto* cache = static_cast<ExtensionIcons*>(profile->GetUserData(kIconsKey));
+-  if (!cache) {
+-    auto data = std::make_unique<ExtensionIcons>();
+-    cache = data.get();
+-    profile->SetUserData(kIconsKey, std::move(data));
+-  }
+-  auto& icon = cache->icons[extension.id()];
+-  if (!icon || !icon->is_valid()) {
+-    icon = std::make_unique<extensions::IconImage>(
+-        profile, &extension, extensions::IconsInfo::GetIcons(&extension), 32,
+-        extensions::util::GetDefaultExtensionIcon(), nullptr);
+-  }
+-  icon->image_skia().GetRepresentation(1.0f);
+-  return arc::Image(icon->image());
+-}
+ 
+ NSArray<NSString*>* PinnedOrder(ToolbarActionsModel* model) {
+   NSMutableArray<NSString*>* result = [NSMutableArray array];
+@@ -346,7 +318,7 @@
+     auto* manager = extensions::ExtensionActionManager::Get(profile);
+     auto* action = manager ? manager->GetExtensionAction(extension) : nullptr;
+     result.has_action = action != nullptr;
+-    if (action) result.icon = ExtensionIcon(profile, extension);
++    if (action) result.icon = Image(action->GetDefaultIconImage());
+     if (auto* registry = extensions::ExtensionRegistry::Get(profile))
+       result.enabled = registry->enabled_extensions().Contains(extension.id());
+   }
+diff --git a/chromium/src/extensions/browser/icon_util.cc b/chromium/src/extensions/browser/icon_util.cc
+--- a/chromium/src/extensions/browser/icon_util.cc
++++ b/chromium/src/extensions/browser/icon_util.cc
+@@ -6,6 +6,7 @@
+ 
+ #include "base/base64.h"
+ #include "base/memory/ref_counted_memory.h"
++#include "extensions/browser/extension_action.h"
+ #include "extensions/browser/extension_icon_placeholder.h"
+ #include "extensions/common/constants.h"
+ #include "skia/public/mojom/bitmap.mojom.h"
+@@ -17,18 +18,12 @@
+ 
+ namespace extensions {
+ 
+-// The icon size parsed should always be the same as the icon size of the
+-// extension action.
+-// LINT.IfChange(ActionIconSize)
+-#if BUILDFLAG(IS_ANDROID)
+-constexpr int kActionIconSize = extension_misc::EXTENSION_ICON_MINI;
+-#else
+-constexpr int kActionIconSize = extension_misc::EXTENSION_ICON_BITTY;
+-#endif
+-// LINT.ThenChange(/extensions/browser/extension_action.cc:ActionIconSize)
+-
+ IconParseResult ParseIconFromCanvasDictionary(const base::DictValue& dict,
+                                               gfx::ImageSkia* icon) {
++  // Parsed and default action icons must have the same DIP size.
++  // LINT.IfChange(ActionIconSize)
++  const int action_icon_size = ExtensionAction::ActionIconSize();
++  // LINT.ThenChange(/extensions/browser/extension_action.cc:ActionIconSize)
+   for (const auto item : dict) {
+     std::string byte_string;
+     const void* bytes = nullptr;
+@@ -53,12 +48,12 @@
+     CHECK(!bitmap.isNull());
+ 
+     // Chrome helpfully scales the provided icon(s), but let's not go overboard.
+-    const int kActionIconMaxSize = 10 * kActionIconSize;
++    const int kActionIconMaxSize = 10 * action_icon_size;
+     if (bitmap.drawsNothing() || bitmap.width() > kActionIconMaxSize) {
+       continue;
+     }
+ 
+-    float scale = static_cast<float>(bitmap.width()) / kActionIconSize;
++    float scale = static_cast<float>(bitmap.width()) / action_icon_size;
+     icon->AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
+   }
+   return IconParseResult::kSuccess;

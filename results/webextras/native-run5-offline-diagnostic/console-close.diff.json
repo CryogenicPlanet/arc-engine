@@ -1,0 +1,63 @@
+{
+ "internal": [],
+ "internal_ours": [],
+ "missing": [
+  {
+   "method": "->engine -ArcWebContents isReadyToDisplay",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setIsReadyToDisplay:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[true]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"ProfileKeepAlive-origin\", \"kDevToolsWindow\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "extra": [],
+ "return_mismatch": [],
+ "arg_mismatch": [],
+ "count_mismatch": [],
+ "callback_sequence": {
+  "golden": 2,
+  "ours": 1,
+  "first_divergence": 1,
+  "golden_from": [
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ],
+  "ours_from": []
+ },
+ "fixture_comparison": {
+  "mode": "exact-image",
+  "admitted_images": [
+   "WebextrasNativeProbe.dylib"
+  ],
+  "retained_fixture_events": {
+   "golden": {
+    "WebextrasNativeProbe.dylib": {
+     "call": 1,
+     "ret": 1
+    }
+   },
+   "ours": {
+    "WebextrasNativeProbe.dylib": {
+     "call": 1,
+     "ret": 1
+    }
+   }
+  }
+ }
+}

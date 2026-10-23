@@ -1,4 +1,6 @@
 // Copyright 2026 ArcMod. Chrome owns extension execution; Arc's app owns its UI.
+#import <AppKit/AppKit.h>
+
 #import "arc/browser/extensions_bridge.h"
 #import "arc/browser/extensions_values.h"
 #import "arc/browser/extensions_context.h"
@@ -8,6 +10,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
@@ -33,6 +36,7 @@
 #include "chrome/browser/tab_list/tab_list_interface.h"
 #include "chrome/browser/tab_list/tab_list_interface_observer.h"
 #include "components/tabs/public/tab_interface.h"
+#include "components/input/native_web_keyboard_event.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -89,11 +93,14 @@ class ActionDelegate : public ExtensionActionDelegate,
     ++popup_generation_;
     ShowPopupCallback pending = std::move(pending_callback_);
     NSString* identifier = ArcNSString(model_->GetId());
+    // Native queues the event-time close payload before detaching the host.
+    QueuePopupCallback(^(id<ArcExtensionsBrowserDelegate> delegate,
+                         ArcBrowser* browser) {
+      if ([delegate respondsToSelector:@selector(browser:didCloseExtensionPopup:)])
+        [delegate browser:browser didCloseExtensionPopup:identifier];
+    });
     host_->set_view(nullptr);
     host_.reset();
-    id<ArcExtensionsBrowserDelegate> delegate = delegate_;
-    if ([delegate respondsToSelector:@selector(browser:didCloseExtensionPopup:)])
-      [delegate browser:browser_ didCloseExtensionPopup:identifier];
     if (pending) std::move(pending).Run(nullptr);
   }
   void TriggerPopup(std::unique_ptr<extensions::ExtensionViewHost> host,
@@ -103,17 +110,30 @@ class ActionDelegate : public ExtensionActionDelegate,
   void CloseExtensionsMenuIfOpen() override {}
   void ResizeDueToAutoResize(content::WebContents* contents,
                              const gfx::Size& size) override {
-    id<ArcExtensionsBrowserDelegate> delegate = delegate_;
-    if ([delegate respondsToSelector:@selector(browser:didResizeExtensionPopup:size:)])
-      [delegate browser:browser_ didResizeExtensionPopup:ArcNSString(model_->GetId())
-                   size:CGSizeMake(size.width(), size.height())];
+    NSString* identifier = ArcNSString(model_->GetId());
+    const CGSize snapshot_size = CGSizeMake(size.width(), size.height());
+    QueuePopupCallback(^(id<ArcExtensionsBrowserDelegate> delegate,
+                         ArcBrowser* browser) {
+      if ([delegate respondsToSelector:@selector(browser:didResizeExtensionPopup:size:)])
+        [delegate browser:browser didResizeExtensionPopup:identifier
+                     size:snapshot_size];
+    });
   }
   void RenderFrameCreated(content::RenderFrameHost* frame) override {
     if (auto* view = frame->GetView())
       view->EnableAutoResize(extensions::kExtensionPopupMinSize,
                             extensions::kExtensionPopupMaxSize);
   }
-  bool HandleKeyboardEvent(content::WebContents*, const input::NativeWebKeyboardEvent&) override { return false; }
+  bool HandleKeyboardEvent(content::WebContents*,
+                           const input::NativeWebKeyboardEvent& event) override {
+    NSEvent* native_event = event.os_event.Get();
+    if (!native_event || native_event.type != NSEventTypeKeyDown ||
+        !(native_event.modifierFlags & NSEventModifierFlagDeviceIndependentFlagsMask) ||
+        !NSApp || !NSApp.mainMenu) {
+      return false;
+    }
+    return [NSApp.mainMenu performKeyEquivalent:native_event];
+  }
   void OnLoaded() override {
     if (!host_) return;
     host_->host_contents()->Focus();
@@ -129,6 +149,18 @@ class ActionDelegate : public ExtensionActionDelegate,
   base::WeakPtr<ActionDelegate> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
   void SuppressDelegate() { delegate_ = nil; }
  private:
+  void QueuePopupCallback(
+      void (^callback)(id<ArcExtensionsBrowserDelegate>, ArcBrowser*)) {
+    // SuppressDelegate and destruction intentionally suppress new events.
+    // Already queued events use the browser bridge's own weak/epoch policy.
+    if (!delegate_) return;
+    ArcBrowser* browser = browser_;
+    __weak ArcBrowser* weak_browser = browser;
+    DispatchBrowserExtensionRequest(browser, ^(id target) {
+      ArcBrowser* callback_browser = weak_browser;
+      if (callback_browser) callback(target, callback_browser);
+    });
+  }
   __weak ArcBrowser* browser_;
   __weak id<ArcExtensionsBrowserDelegate> delegate_;
   base::WeakPtr<BrowserExtensions> container_;
@@ -178,7 +210,6 @@ class BrowserExtensions : public base::SupportsUserData::Data,
     tab_list_ = nullptr;
     scoped_data_.reset();
     typed_data_.reset();
-    icon_subscriptions_.clear();
     action_updates_.clear();
     if (model_) model_->RemoveObserver(this);
     model_ = nullptr;
@@ -199,7 +230,6 @@ class BrowserExtensions : public base::SupportsUserData::Data,
     const uint64_t generation = ++delegate_generation_;
     ++popup_serial_;
     auto weak = weak_factory_.GetWeakPtr();
-    icon_subscriptions_.clear();
     action_updates_.clear();
     auto actions = std::move(actions_);
     for (auto& [id, action] : actions) {
@@ -236,11 +266,6 @@ class BrowserExtensions : public base::SupportsUserData::Data,
           std::make_unique<ActionDelegate>(wrapper_, delegate_, weak_factory_.GetWeakPtr()));
       if (!action) return nullptr;
       found = actions_.emplace(id, std::move(action)).first;
-      icon_subscriptions_.emplace(id, found->second->RegisterIconUpdateObserver(
-          base::BindRepeating([](base::WeakPtr<BrowserExtensions> self, std::string identifier) {
-            if (!self) return;
-            self->OnToolbarActionUpdated(identifier);
-          }, weak_factory_.GetWeakPtr(), id)));
     }
     return found->second.get();
   }
@@ -274,7 +299,6 @@ class BrowserExtensions : public base::SupportsUserData::Data,
   }
   void OnToolbarActionRemoved(const std::string& id) override {
     auto weak = weak_factory_.GetWeakPtr();
-    icon_subscriptions_.erase(id);
     action_updates_.erase(id);
     auto removed = actions_.extract(id);
     if (!removed.empty()) removed.mapped()->HidePopup();
@@ -397,7 +421,6 @@ class BrowserExtensions : public base::SupportsUserData::Data,
   raw_ptr<ToolbarActionsModel> model_ = nullptr;
   raw_ptr<TabListInterface> tab_list_ = nullptr;
   std::map<std::string, std::unique_ptr<ExtensionActionViewModel>> actions_;
-  std::map<std::string, base::CallbackListSubscription> icon_subscriptions_;
   struct ActionUpdateThrottle {
     base::TimeTicks last_fired;
     base::OneShotTimer timer;
@@ -468,10 +491,17 @@ void ActionDelegate::TriggerPopup(std::unique_ptr<extensions::ExtensionViewHost>
   }, weak_factory_.GetWeakPtr(), generation));
   host_->CreateRendererSoon();
   auto weak = weak_factory_.GetWeakPtr();
-  id<ArcExtensionsBrowserDelegate> delegate = delegate_;
-  if ([delegate respondsToSelector:@selector(browser:didOpenExtensionPopup:webContents:)])
-    [delegate browser:browser_ didOpenExtensionPopup:ArcNSString(model_->GetId())
-              webContents:[ArcWebContents wrapperForWebContents:host_->host_contents()]];
+  // Native starts the real renderer, then queues DidOpen. Loading/OnLoaded
+  // remains a separate path; the queued payload owns only event-time values.
+  NSString* identifier = ArcNSString(model_->GetId());
+  ArcWebContents* contents =
+      [ArcWebContents wrapperForWebContents:host_->host_contents()];
+  QueuePopupCallback(^(id<ArcExtensionsBrowserDelegate> delegate,
+                       ArcBrowser* browser) {
+    if ([delegate respondsToSelector:@selector(browser:didOpenExtensionPopup:webContents:)])
+      [delegate browser:browser didOpenExtensionPopup:identifier
+                webContents:contents];
+  });
   if (weak && weak->popup_generation_ == generation && weak->host_ &&
       weak->host_->has_loaded_once()) weak->OnLoaded();
 }
@@ -647,6 +677,8 @@ ArcBrowser* BrowserForHostedExtensions(BrowserWindowInterface* browser) {
       static_cast<arc::ActionDelegate*>(static_cast<ExtensionActionViewModel*>(action)->delegate())->ShowContextMenu();
 }
 - (void)triggerExtensionOmniboxInput:(NSString*)identifier inputText:(NSString*)input disposition:(long long)disposition {
+  // Native compares the public q value as unsigned before browser liveness.
+  CHECK_LT(static_cast<unsigned long long>(disposition), 12ULL);
   if (auto* browser = [self browser]) {
     auto* contents = browser->GetTabStripModel()->GetActiveWebContents();
     if (contents) extensions::ExtensionOmniboxEventRouter::OnInputEntered(

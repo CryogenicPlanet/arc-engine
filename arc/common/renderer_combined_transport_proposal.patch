@@ -1,6 +1,6 @@
 --- a/arc/api/arc_renderer_ad_block.mm
 +++ b/arc/api/arc_renderer_ad_block.mm
-@@ -118,7 +118,8 @@
+@@ -126,7 +126,8 @@
  };
  
  base::File CompileRules(std::vector<std::string> lists, uint64_t ruleset_id,
@@ -10,7 +10,7 @@
    if (lists.empty()) {
      *success = true;
      return {};
-@@ -165,6 +166,7 @@
+@@ -173,6 +174,7 @@
      return {};
    }
    indexer.Finish();
@@ -18,7 +18,7 @@
  
    base::FilePath temp_dir;
    base::FilePath path;
-@@ -192,6 +194,7 @@
+@@ -200,6 +202,7 @@
    DeferredRulesetFile file;
    bool success;
    bool has_cosmetic_rules;
@@ -26,7 +26,7 @@
  };
  
  CompiledRules CompileRulesForReply(
-@@ -200,10 +203,12 @@
+@@ -208,10 +211,12 @@
      scoped_refptr<base::SequencedTaskRunner> close_runner) {
    bool success = false;
    bool has_cosmetic_rules = false;
@@ -41,7 +41,7 @@
  }
  
  void PublishRules(uint64_t generation, CompiledRules result) {
-@@ -217,6 +222,7 @@
+@@ -225,6 +230,7 @@
        new base::File(std::move(state.configuration.indexed_ruleset)),
        base::OnTaskRunnerDeleter(result.file.get_deleter().task_runner_));
    state.configuration.indexed_ruleset = std::move(*result.file);
@@ -49,7 +49,7 @@
    state.configuration.ruleset_id = generation;
    state.configuration.has_ruleset_update = true;
    state.configuration.has_cosmetic_rules = result.has_cosmetic_rules;
-@@ -246,7 +252,7 @@
+@@ -254,7 +260,7 @@
  }
  
  bool RendererAdBlockFeatureEnabled() {
@@ -58,7 +58,7 @@
  }
  
  void RefreshRendererAdBlockFeature() {
-@@ -256,12 +262,13 @@
+@@ -264,12 +270,13 @@
      return;
    }
    auto& state = State();

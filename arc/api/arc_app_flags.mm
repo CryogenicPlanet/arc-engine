@@ -6,6 +6,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "components/webui/flags/flags_storage.h"
 
@@ -32,11 +33,22 @@ struct RuntimeFeatures {
     values[28] = std::string();
   }
   base::Lock lock;
-  std::map<NSUInteger, Value> values;
+  std::map<uint32_t, Value> values;
 };
 RuntimeFeatures& Features() {
   static base::NoDestructor<RuntimeFeatures> features;
   return *features;
+}
+
+[[noreturn]] void TrapMissingRuntimeFeature() {
+#if defined(ARCH_CPU_ARM64)
+  // Native unknown Boolean IDs use BRK #0 without CHECK/logging side effects.
+  asm volatile("brk #0");
+  __builtin_unreachable();
+#else
+  // Native behavior was recovered only for arm64; this fallback is unverified.
+  __builtin_trap();
+#endif
 }
 }
 
@@ -47,10 +59,11 @@ bool ArcRuntimeFeatureEnabled(NSUInteger identifier) {
     return base::FeatureList::IsEnabled(kArcMacCoalescedResizing);
   auto& features = Features();
   base::AutoLock hold(features.lock);
-  auto entry = features.values.find(identifier);
-  if (entry == features.values.end()) return NO;
-  const bool* enabled = std::get_if<bool>(&entry->second);
-  return enabled && *enabled;
+  auto entry = features.values.find(static_cast<uint32_t>(identifier));
+  if (entry == features.values.end()) TrapMissingRuntimeFeature();
+  // std::get preserves the native wrong-alternative/valueless fatal path in
+  // Chromium's no-exceptions build, distinct from an unknown-key BRK #0.
+  return std::get<bool>(entry->second);
 }
 
 ARC_EXPORT @interface ArcBrowserApplication : NSObject
@@ -62,17 +75,21 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
 - (void)setFeatureEnabled:(NSUInteger)identifier enabled:(BOOL)enabled {
   auto& features = Features();
   base::AutoLock hold(features.lock);
-  features.values[identifier] = bool{enabled};
+  auto entry = features.values.find(static_cast<uint32_t>(identifier));
+  if (entry == features.values.end()) TrapMissingRuntimeFeature();
+  bool& current = std::get<bool>(entry->second);
+  if (current == bool{enabled}) return;
+  current = enabled;
 }
 - (void)setStringFeatureValue:(NSUInteger)identifier value:(NSString*)value {
   auto& features = Features();
   base::AutoLock hold(features.lock);
-  features.values[identifier] = ArcUTF8(value);
+  features.values[static_cast<uint32_t>(identifier)] = ArcUTF8(value);
 }
 - (void)setIntFeatureValue:(NSUInteger)identifier value:(NSInteger)value {
   auto& features = Features();
   base::AutoLock hold(features.lock);
-  features.values[identifier] = int64_t{value};
+  features.values[static_cast<uint32_t>(identifier)] = int64_t{value};
 }
 - (void)getNonDefaultFlags:(void (^)(NSArray<NSString*>*))completion {
   if (!completion) return;

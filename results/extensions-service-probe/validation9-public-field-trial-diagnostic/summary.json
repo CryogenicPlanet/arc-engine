@@ -1,0 +1,3122 @@
+{
+  "complete": false,
+  "parity": false,
+  "observedParity": true,
+  "standardBoundaryParity": null,
+  "boundaryMethodParity": null,
+  "comparedOperationCount": 9,
+  "operationParity": [
+    {
+      "step": "registry",
+      "observedInBoth": true,
+      "semanticEqual": true,
+      "requiredRowsEqual": true,
+      "scopedBoundaryEqual": null,
+      "boundaryMethodParity": null
+    },
+    {
+      "step": "install-A",
+      "observedInBoth": true,
+      "semanticEqual": true,
+      "requiredRowsEqual": true,
+      "scopedBoundaryEqual": null,
+      "boundaryMethodParity": null
+    },
+    {
+      "step": "install-B",
+      "observedInBoth": true,
+      "semanticEqual": true,
+      "requiredRowsEqual": true,
+      "scopedBoundaryEqual": null,
+      "boundaryMethodParity": null
+    },
+    {
+      "step": "snapshot-loaded",
+      "observedInBoth": true,
+      "semanticEqual": true,
+      "requiredRowsEqual": true,
+      "scopedBoundaryEqual": null,
+      "boundaryMethodParity": null
+    },
+    {
+      "step": "install-invalid",
+      "observedInBoth": true,
+      "semanticEqual": true,
+      "requiredRowsEqual": true,
+      "scopedBoundaryEqual": null,
+      "boundaryMethodParity": null
+    },
+    {
+      "step": "enable-A-initial",
+      "observedInBoth": true,
+      "semanticEqual": true,
+      "requiredRowsEqual": true,
+      "scopedBoundaryEqual": null,
+      "boundaryMethodParity": null
+    },
+    {
+      "step": "enable-B-initial",
+      "observedInBoth": true,
+      "semanticEqual": true,
+      "requiredRowsEqual": true,
+      "scopedBoundaryEqual": null,
+      "boundaryMethodParity": null
+    },
+    {
+      "step": "snapshot-enabled-initial",
+      "observedInBoth": true,
+      "semanticEqual": true,
+      "requiredRowsEqual": true,
+      "scopedBoundaryEqual": null,
+      "boundaryMethodParity": null
+    },
+    {
+      "step": "cleanup-after-error",
+      "observedInBoth": true,
+      "semanticEqual": true,
+      "requiredRowsEqual": true,
+      "scopedBoundaryEqual": null,
+      "boundaryMethodParity": null
+    }
+  ],
+  "differences": [],
+  "requiredRowDifferences": [],
+  "boundaryDiffs": [],
+  "boundaryUnavailable": [
+    {
+      "step": "registry",
+      "reason": "no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"
+    },
+    {
+      "step": "install-A",
+      "reason": "no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"
+    },
+    {
+      "step": "install-B",
+      "reason": "no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"
+    },
+    {
+      "step": "snapshot-loaded",
+      "reason": "no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"
+    },
+    {
+      "step": "install-invalid",
+      "reason": "no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"
+    },
+    {
+      "step": "enable-A-initial",
+      "reason": "no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"
+    },
+    {
+      "step": "enable-B-initial",
+      "reason": "no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"
+    },
+    {
+      "step": "snapshot-enabled-initial",
+      "reason": "no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"
+    },
+    {
+      "step": "cleanup-after-error",
+      "reason": "no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"
+    }
+  ],
+  "fixtureMode": "public-install",
+  "fixtureInputs": [
+    {
+      "label": "A",
+      "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A",
+      "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+      "version": "1.2.3",
+      "files": [
+        {
+          "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/manifest.json",
+          "sha256": "b907bd4f86c4a021875bd7dd20177b30dc1b7b9ac2d0afead4e1bcee3db0cbd5",
+          "size": 690,
+          "mtimeMs": 1792760736588.1072
+        },
+        {
+          "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/background.js",
+          "sha256": "5c66206eae061cb18caab562f6e5c34f1059f751580d9162e4345e92d6a5e225",
+          "size": 710,
+          "mtimeMs": 1792760736588.2888
+        },
+        {
+          "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/popup.html",
+          "sha256": "863bca4510e1cb1262865b67a6d92e65ad3c1edb12c62e646483737e500e735d",
+          "size": 223,
+          "mtimeMs": 1792760736588.3418
+        },
+        {
+          "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/popup.js",
+          "sha256": "3e63a7c0e90e92cf5e718360ff41ee8950ca64e6aae47f6470313155ac4672ee",
+          "size": 459,
+          "mtimeMs": 1792760736588.3938
+        },
+        {
+          "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/icon.png",
+          "sha256": "933311165005f0fa9874832c36316110dba1fd1e038fd2d0e9af4803b253187f",
+          "size": 77,
+          "mtimeMs": 1792760736588.2217
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B",
+      "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+      "version": "1.2.3",
+      "files": [
+        {
+          "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/manifest.json",
+          "sha256": "3bd4e0c42d0cdfd9e5c6458a76912f862c541d209654e9482c6f51f2091475b7",
+          "size": 661,
+          "mtimeMs": 1792760736588.5198
+        },
+        {
+          "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/background.js",
+          "sha256": "b7e012f831a665ee7e0195412691a0254ecea0a14403357652f9b86c8a8c603d",
+          "size": 710,
+          "mtimeMs": 1792760736588.6733
+        },
+        {
+          "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/popup.html",
+          "sha256": "863bca4510e1cb1262865b67a6d92e65ad3c1edb12c62e646483737e500e735d",
+          "size": 223,
+          "mtimeMs": 1792760736588.7817
+        },
+        {
+          "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/popup.js",
+          "sha256": "1c54fec4778e2a75e0a814c27d7fbaa88249983b6383af5c173501af9b424d6a",
+          "size": 459,
+          "mtimeMs": 1792760736588.8955
+        },
+        {
+          "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/icon.png",
+          "sha256": "933311165005f0fa9874832c36316110dba1fd1e038fd2d0e9af4803b253187f",
+          "size": 77,
+          "mtimeMs": 1792760736588.5981
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "capturedAt": "2026-10-23T13:05:36.587Z",
+    "fixtureMode": "public-install",
+    "diagnosticDisableFieldTrialConfig": true,
+    "fixtureEnvironmentArguments": [
+      "--use-mock-keychain",
+      "--no-default-browser-check",
+      "--disable-sync",
+      "--disable-background-networking",
+      "--noerrdialogs",
+      "--disable-field-trial-config"
+    ],
+    "builtEngine": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+      "sha256": "f4d81586c383bd3df6609de21d3c0436b40e05707776ba1796b7c28b6f67f259",
+      "size": 645072576,
+      "mtimeMs": 1792760720542.694,
+      "image": {
+        "imageSHA256": "2d40b18fe6b58f57d216c7782a87ada47c5ca1a35f8328545ebf76ee10b71b7c",
+        "normalizedFields": {
+          "LC_CODE_SIGNATURE.dataoff_datasize": 10312,
+          "__LINKEDIT.filesize": 3728,
+          "__LINKEDIT.vmsize": 3712
+        },
+        "rawSHA256": "f4d81586c383bd3df6609de21d3c0436b40e05707776ba1796b7c28b6f67f259",
+        "scope": "All bytes before trailing code signature, excluding only its locator and signature-dependent linkedit sizes",
+        "signatureOffset": 640071872,
+        "signatureSize": 5000704
+      }
+    },
+    "packagedEngines": {
+      "trace156": {
+        "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+        "sha256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d",
+        "size": 501736176,
+        "mtimeMs": 1792740257176.9219
+      },
+      "ours156": {
+        "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+        "sha256": "15b41cbab37c0f6f66e73093a5eba6190a9b2e26b9867ae2f011d9f1da25e8ae",
+        "size": 641340288,
+        "mtimeMs": 1792760727319.0684,
+        "image": {
+          "imageSHA256": "2d40b18fe6b58f57d216c7782a87ada47c5ca1a35f8328545ebf76ee10b71b7c",
+          "normalizedFields": {
+            "LC_CODE_SIGNATURE.dataoff_datasize": 10312,
+            "__LINKEDIT.filesize": 3728,
+            "__LINKEDIT.vmsize": 3712
+          },
+          "rawSHA256": "15b41cbab37c0f6f66e73093a5eba6190a9b2e26b9867ae2f011d9f1da25e8ae",
+          "scope": "All bytes before trailing code signature, excluding only its locator and signature-dependent linkedit sizes",
+          "signatureOffset": 640071872,
+          "signatureSize": 1268416
+        }
+      }
+    },
+    "probeBinary": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/logs/wp/extensions-service-probe-build/ExtensionsServiceProbe.dylib",
+      "sha256": "5bc6c9e0f62fd5a1e1f131c0b9030d30c74b7d8c698dcce91433c8d61f754aa9",
+      "size": 150448,
+      "mtimeMs": 1792756078041.022
+    },
+    "recorderBinary": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/tests/recorder/ArcEngineRecorder.dylib",
+      "sha256": "fee95e1339e8c1aa2ecf1fcb0e9ebf1137efe64193031b60ead9c110677bba9a",
+      "size": 92224,
+      "mtimeMs": 1792754648280.6172
+    },
+    "frameworkMetadata": {
+      "trace156": {
+        "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/Resources/Info.plist",
+        "sha256": "2994f7303cf7a6c24ef976dc8421929e7ccb1d70e102044399fd8886c9a7fe75",
+        "size": 1067,
+        "mtimeMs": 1792616318000,
+        "values": {
+          "CFBundleIdentifier": "company.thebrowser.browser.framework",
+          "CFBundleShortVersionString": "156.0.8078.48",
+          "CFBundleVersion": "8078.48"
+        }
+      },
+      "ours156": {
+        "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/Resources/Info.plist",
+        "sha256": "0c1b1c8a8452d415abb4ac9ca77131e841a6388f8604f16b513b984088b5c272",
+        "size": 1064,
+        "mtimeMs": 1792760720542.694,
+        "values": {
+          "CFBundleIdentifier": "org.chromium.Chromium.framework",
+          "CFBundleShortVersionString": "156.0.8078.48",
+          "CFBundleVersion": "8078.48"
+        }
+      },
+      "built": {
+        "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/Resources/Info.plist",
+        "sha256": "0c1b1c8a8452d415abb4ac9ca77131e841a6388f8604f16b513b984088b5c272",
+        "size": 1064,
+        "mtimeMs": 1792760720542.694,
+        "values": {
+          "CFBundleIdentifier": "org.chromium.Chromium.framework",
+          "CFBundleShortVersionString": "156.0.8078.48",
+          "CFBundleVersion": "8078.48"
+        }
+      }
+    },
+    "imageFingerprintTool": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_macho_fingerprint.py",
+      "sha256": "0828a85965721b9a6cfcb349d783c9e8c076b8555828cd3c09077c9e8eb1010c",
+      "size": 5105,
+      "mtimeMs": 1792751269410.3079
+    },
+    "sources": [
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_extensions_browser.mm",
+        "sha256": "84d532be49b5123068ed33ff340d741ef346a02234f3f58c43205b930f992b1e",
+        "size": 32877,
+        "mtimeMs": 1792760671907.529
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_extensions_context.mm",
+        "sha256": "475fedd79f2433006fd6d173ff18cdb411eb8247ac38a4832abc0e2fdc0dc30d",
+        "size": 29003,
+        "mtimeMs": 1792760671907.548
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_extensions_internal.mm",
+        "sha256": "cf61b5c5baeb28691229b5f4c61ed60a0f2993d3a9c383be1952e2d305793db3",
+        "size": 2645,
+        "mtimeMs": 1792760671907.561
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_extensions_values.mm",
+        "sha256": "1a3994ea1ff0a38b7cf696a3d467b14da948479eb9ae418fcbb06db0dee33845",
+        "size": 6793,
+        "mtimeMs": 1792760671907.574
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_bridge.h",
+        "sha256": "b541fadc210b57d9fdfc18205181904ce4344051182ac32fad5fd89811fba39f",
+        "size": 798,
+        "mtimeMs": 1792755912066.006
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_context.h",
+        "sha256": "9a77800fb0751b6322b982df5a6f5a215a82c1f2e9c347b19a786fe14b3d5894",
+        "size": 1922,
+        "mtimeMs": 1792749273357.487
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_groups.mm",
+        "sha256": "4779348d2122a9f811f42474de2df1c8a60ad3ec0ea1689c44c6ab3f586812ab",
+        "size": 37599,
+        "mtimeMs": 1792760671907.584
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_internal/BUILD.gn",
+        "sha256": "3846d4debc646efd0d543c1ca7172624eaec3d8d2f1c90cf845f492f3fdf2988",
+        "size": 343,
+        "mtimeMs": 1792749294005.2222
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_internal/background.js",
+        "sha256": "eef3ebab7af63e3a72df06882a8185732d3c6bf71c9575bd7a4ea9785baf01fd",
+        "size": 3301,
+        "mtimeMs": 1792749217121.28
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_internal/manifest.json",
+        "sha256": "0badd5b743eaf75d894b8abf1a8ac29ba4233123bd48217bf9ebf6b2ed6f6bd9",
+        "size": 762,
+        "mtimeMs": 1792749217121.016
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_internal_manifest.h",
+        "sha256": "5044b52a016b9b47ea2fab9b74ec9105c0dfed811d47c1b6cf4aba40360cb7e6",
+        "size": 1280,
+        "mtimeMs": 1792749273358.1736
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_values.h",
+        "sha256": "0626fc241700feebf62592b86e1659c644e7cf2a6a90f8d28e19187a484d2d74",
+        "size": 5134,
+        "mtimeMs": 1792746539080.6416
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/wp/extensions.gni",
+        "sha256": "9b7531a27300061d5b67aa9cc35371f078ef2e7ad8578a18fc2338f7d5368a8a",
+        "size": 756,
+        "mtimeMs": 1792749294005.0881
+      }
+    ],
+    "exportPreflight": {
+      "expectedClassCount": 146,
+      "missingClasses": [],
+      "metadata": {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/tools/arccore-1.170.0-objc.tsv",
+        "sha256": "9ba3d4750f15e80ca6836966af5ec50523ccfe5e0ed3c22faa31f8b347492cf5",
+        "size": 313666,
+        "mtimeMs": 1792742248409.2395
+      },
+      "packagedOursSHA256": "15b41cbab37c0f6f66e73093a5eba6190a9b2e26b9867ae2f011d9f1da25e8ae"
+    },
+    "expectedStockSHA256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d",
+    "independentStockSibling": {
+      "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-swap156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+      "sha256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d",
+      "size": 501736176,
+      "mtimeMs": 1792731612324.267
+    },
+    "traceMatchesVerifiedStock": true,
+    "siblingMatchesVerifiedStock": true,
+    "sourcesUnchangedDuringFingerprint": true,
+    "packagedOursRawMatchesBuilt": false,
+    "packagedOursMatchesBuilt": true,
+    "ownProductSourcesNotNewerThanBuilt": true,
+    "scope": "Actual packaged binaries and extension-package sources/assets only. ArcMod re-signs nested binaries: raw hashes are retained, build/package equality hashes every pre-signature Mach-O byte except the signature locator and signature-dependent linkedit sizes. Mtime freshness is snapshot-specific and does not prove other concurrent packages are included."
+  },
+  "notes": [
+    "DIAGNOSTIC environment: both engines explicitly receive --disable-field-trial-config. This tests an explicit launch condition; it does not establish default startup behavior or integrate the lead-owned bootstrap policy.",
+    "Both disposable launches include Chromium's --noerrdialogs (base::switches::kNoErrorDialogs) as an explicit fixture environment precondition, suppressing modal install-error presentation while preserving native LoadErrorReporter errors/callbacks. This does not establish default hosted warning-presentation parity.",
+    "Command-line mode is a separate fixture phase using explicit --load-extension paths, not public-install success evidence. Startup intents and exact fixture file hashes are recorded before launch; all real callbacks entering before adoption are independently retained as startup-observation diagnostics, including callbacks during incomplete discovery requests and compared separately without reassigning them to later requests; adopted IDs/names/versions come only from actual public native info. Readiness alone never resolves a missing startup fixture. CLI baseline pins exclude only adopted IDs. Positive command/pin/popup probes precede reload; the returned reload enabled state is preserved exactly because current Chromium may convert command-line loading to normal unpacked policy.",
+    "Default public-install retains malformed-manifest installation before public enable. Separate CLI mode moves this error diagnostic after positive command/pin/popup and reload observations; the same ordering applies to both engines. Failed install requests trigger a bounded passive one-second sample only after exact owned PID/executable/endpoint verification, before cleanup. Sample failure remains a diagnostic; native completion/ownership assertions are unchanged.",
+    "Supplemental probe only; canonical extensions scenario acceptance remains separate.",
+    "Native metadata encodings and fixture DTO scalar/string/ordered-array observations compare exactly; image observations include NSImage dimensions and representation sizes, not pixel equivalence.",
+    "Semantic comparison omits transport PID/request IDs, recorder offsets and engine labels; callback and pin arrays are scoped to proven fixture IDs. Each baseline pin order is independently restored and asserted.",
+    "Recorder v2 excludes probe-image calls. Exact helper semantic and required-row sidecars are a separate evidence stream, not synthetic recorder rows. Without a verified paired fixture-call/return inventory, standardBoundaryParity and boundaryMethodParity remain null even if retained app/engine rows compare cleanly. Known mismatches remain false and dominate unavailable coverage. At least one valid paired helper observation is required for observedParity.",
+    "Scoped boundary records preserve true caller labels and may include real app callbacks or app/engine calls. V2 excludes probe-image DTO getters/public calls; no fake app attribution or caller-label removal is used.",
+    "Existing diff.py renumbers recording object identities and masks loopback ports, temporary folders and UUID strings. The exact supplemental semantic comparison applies none of those string masks.",
+    "ArcBrowser pinExtension:, unpinExtension:, moveExtension:targetIndex: are metadata-only here; their executable behavior is uncovered. Context setPinnedExtensionOrder: is exercised separately when the native enable precondition permits it.",
+    "MV3 background-page JavaScript negative path only; positive legacy background-page execution is uncovered and no legacy fixture is enabled.",
+    "Browser captures retain all weak live browser/delegate entries per context; ambiguous selection fails a probe precondition. Action-B onClicked effects must prove a real numeric tab ID and the exact nonce fixture URL; no activation is attempted.",
+    "Context command dispatch targets an enabled extension, supplies only its command string, sets user gesture, and has no target-tab or independent activeTab permission-grant coverage. Listener argumentCount/types and noTab are retained exactly; optional undefined binding padding is observed rather than invented or normalized.",
+    "provenance.json requires all original metadata class exports and records raw engine/probe/recorder/source hashes plus framework versions. Build/package equality compares every pre-signature Mach-O byte except its signature locator and signature-dependent __LINKEDIT sizes; ArcMod ad-hoc re-signing changes those fields and the trailing signature. The guarded read-only fingerprint helper and its hash are recorded. All owned product sources must precede the build; this is snapshot-specific.",
+    "Install attempts are journaled before invocation. Cleanup waits for all outstanding completions, reconciles exact nonce names/verified IDs from the actual installed-extension list, then certifies fixture absence and baseline pin restoration. Timeouts leave explicit unresolved ownership evidence rather than claiming cleanup.",
+    "Callback operation attribution is captured under a synchronization lock at callback entry. Deferred late/unassigned/outside-context deliveries are retained in diagnostics; fixture-related diagnostics fail completion rather than being reassigned to a future request.",
+    "PID-bound helper, actual app-window readiness (including agent identity), recorder and verified CDP process must all agree within 120 seconds before any probe request or CDP mutation. Current stage observations are persisted to readiness.json; startup failure issues no cleanup mutation when no install was attempted.",
+    "Helper Boolean expressions emit Foundation Boolean singletons; DTO Boolean getters are invoked using their declared B/c metadata and reject unexpected encodings/noncanonical char values. The runner rejects numeric substitutes for Boolean fields; native false remains false.",
+    "Initial installed enabled flags are retained exactly. Explicit public enable operations precede enabled-dependent exercise; policy blockage keeps per-operation observations/diffs but marks the overall probe incomplete and downstream coverage uncovered.",
+    "Callbacks are observed within 800ms after method return/completion; popup actions use 3 seconds. Absence beyond those windows is not a synthesized callback result."
+  ],
+  "runs": [
+    {
+      "agent": "trace156",
+      "fixtureMode": "public-install",
+      "actions": [
+        {
+          "step": "registry",
+          "baselinePins": [],
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 10539663853158138000,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 10539663853158138000
+            }
+          ],
+          "browserMatches": 1,
+          "browserPresent": true,
+          "callbacks": [],
+          "completions": [],
+          "events": [],
+          "fixtureMode": "public-install",
+          "hashStable": true,
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-1",
+          "identity": true,
+          "infosAfter": {},
+          "mainThread": true,
+          "matches": 1,
+          "metadata": {
+            "ArcBrowser": {
+              "executeExtensionAction:": "v24@0:8@16",
+              "moveExtension:targetIndex:": "v32@0:8@16Q24",
+              "pinExtension:": "v24@0:8@16",
+              "unpinExtension:": "v24@0:8@16"
+            },
+            "ArcBrowserContextExtensions": {
+              "disableExtension:": "v24@0:8@16",
+              "enableExtension:": "v24@0:8@16",
+              "executeExtensionCommand:commandName:": "v32@0:8@16@24",
+              "getAllExtensionCommands": "@16@0:8",
+              "getExtensionInfo:": "@24@0:8@16",
+              "getPinnedExtensionOrder": "@16@0:8",
+              "hash": "Q16@0:8",
+              "installExtensionFromUnpackedPath:completion:": "v32@0:8@16@?24",
+              "isEqual:": "B24@0:8@16",
+              "isExtensionSystemReady": "B16@0:8",
+              "listExtensions": "@16@0:8",
+              "owner": "@16@0:8",
+              "reloadExtension:": "v24@0:8@16",
+              "runJSInExtensionBackgroundPage:js_code:": "B32@0:8@16@24",
+              "setDelegate:": "v24@0:8@16",
+              "setPinnedExtensionOrder:": "v24@0:8@16",
+              "uninstallExtension:": "v24@0:8@16"
+            }
+          },
+          "ok": true,
+          "operation": "registry",
+          "outstandingInstalls": [],
+          "owned": {},
+          "pid": 33159,
+          "pinsAfter": [],
+          "ready": true,
+          "recordAfterReturn": 775652,
+          "recordBegin": 768588,
+          "recordEnd": 785068,
+          "startupPending": []
+        },
+        {
+          "step": "install-A",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 10539663853158138000,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 10539663853158138000
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [
+            {
+              "mainThread": true,
+              "payload": [
+                "mbabnngnhgoeochmgenifjnjpdlgokdo"
+              ],
+              "recordOffset": 794493,
+              "selector": "browserContext:didInstallExtension:",
+              "synchronous": false
+            }
+          ],
+          "completion": {
+            "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "mainThread": true,
+            "result": 0,
+            "synchronous": false
+          },
+          "completions": [
+            {
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "mainThread": true,
+              "result": 0,
+              "synchronous": false
+            }
+          ],
+          "events": [
+            {
+              "type": "completion",
+              "value": {
+                "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+                "mainThread": true,
+                "result": 0,
+                "synchronous": false
+              }
+            },
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "mbabnngnhgoeochmgenifjnjpdlgokdo"
+                ],
+                "recordOffset": 794493,
+                "selector": "browserContext:didInstallExtension:",
+                "synchronous": false
+              }
+            }
+          ],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-2",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "install",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo"
+          },
+          "pid": 33159,
+          "pinsAfter": [],
+          "recordAfterReturn": 792663,
+          "recordBegin": 786775,
+          "recordEnd": 813761,
+          "startupPending": []
+        },
+        {
+          "step": "install-B",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 10539663853158138000,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 10539663853158138000
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [
+            {
+              "mainThread": true,
+              "payload": [
+                "nadkemhdenmggjajafpbfciffpmdffig"
+              ],
+              "recordOffset": 823186,
+              "selector": "browserContext:didInstallExtension:",
+              "synchronous": false
+            }
+          ],
+          "completion": {
+            "id": "nadkemhdenmggjajafpbfciffpmdffig",
+            "mainThread": true,
+            "result": 0,
+            "synchronous": false
+          },
+          "completions": [
+            {
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "mainThread": true,
+              "result": 0,
+              "synchronous": false
+            }
+          ],
+          "events": [
+            {
+              "type": "completion",
+              "value": {
+                "id": "nadkemhdenmggjajafpbfciffpmdffig",
+                "mainThread": true,
+                "result": 0,
+                "synchronous": false
+              }
+            },
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "nadkemhdenmggjajafpbfciffpmdffig"
+                ],
+                "recordOffset": 823186,
+                "selector": "browserContext:didInstallExtension:",
+                "synchronous": false
+              }
+            }
+          ],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-3",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "install",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33159,
+          "pinsAfter": [],
+          "recordAfterReturn": 821356,
+          "recordBegin": 815468,
+          "recordEnd": 859816,
+          "startupPending": []
+        },
+        {
+          "step": "snapshot-loaded",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 10539663853158138000,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 10539663853158138000
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [],
+          "commands": [],
+          "completions": [],
+          "events": [],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-4",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "list": [
+            {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          ],
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "snapshot",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33159,
+          "pinsAfter": [],
+          "recordAfterReturn": 879518,
+          "recordBegin": 861523,
+          "recordEnd": 893082,
+          "startupPending": []
+        },
+        {
+          "step": "install-invalid",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 10539663853158138000,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 10539663853158138000
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [
+            {
+              "mainThread": true,
+              "payload": [
+                "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/invalid",
+                "Manifest is not valid JSON.  EOF while parsing a value at line 1 column 29"
+              ],
+              "recordOffset": 900683,
+              "selector": "browserContext:didFailLoadUnpacked:withManifestError:",
+              "synchronous": false
+            }
+          ],
+          "completion": {
+            "id": "",
+            "mainThread": true,
+            "result": 1,
+            "synchronous": false
+          },
+          "completions": [
+            {
+              "id": "",
+              "mainThread": true,
+              "result": 1,
+              "synchronous": false
+            }
+          ],
+          "events": [
+            {
+              "type": "completion",
+              "value": {
+                "id": "",
+                "mainThread": true,
+                "result": 1,
+                "synchronous": false
+              }
+            },
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/invalid",
+                  "Manifest is not valid JSON.  EOF while parsing a value at line 1 column 29"
+                ],
+                "recordOffset": 900683,
+                "selector": "browserContext:didFailLoadUnpacked:withManifestError:",
+                "synchronous": false
+              }
+            }
+          ],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-5",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "install-invalid",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33159,
+          "pinsAfter": [],
+          "recordAfterReturn": 900683,
+          "recordBegin": 894789,
+          "recordEnd": 930365,
+          "startupPending": []
+        },
+        {
+          "step": "enable-A-initial",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 10539663853158138000,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 10539663853158138000
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [],
+          "completions": [],
+          "events": [],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-6",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "enable",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33159,
+          "pinsAfter": [],
+          "recordAfterReturn": 939620,
+          "recordBegin": 932072,
+          "recordEnd": 952080,
+          "startupPending": []
+        },
+        {
+          "step": "enable-B-initial",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 10539663853158138000,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 10539663853158138000
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [],
+          "completions": [],
+          "events": [],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-7",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "enable",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33159,
+          "pinsAfter": [],
+          "recordAfterReturn": 961335,
+          "recordBegin": 953787,
+          "recordEnd": 973795,
+          "startupPending": []
+        },
+        {
+          "step": "snapshot-enabled-initial",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 10539663853158138000,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 10539663853158138000
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [],
+          "commands": [],
+          "completions": [],
+          "events": [],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-8",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "list": [
+            {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          ],
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "snapshot",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33159,
+          "pinsAfter": [],
+          "recordAfterReturn": 993497,
+          "recordBegin": 975502,
+          "recordEnd": 1005957,
+          "startupPending": []
+        },
+        {
+          "step": "cleanup-after-error",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 10539663853158138000,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 10539663853158138000
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [
+            {
+              "mainThread": true,
+              "payload": [
+                "mbabnngnhgoeochmgenifjnjpdlgokdo"
+              ],
+              "recordOffset": 1025779,
+              "selector": "browserContext:didUninstallExtension:",
+              "synchronous": false
+            },
+            {
+              "mainThread": true,
+              "payload": [
+                "nadkemhdenmggjajafpbfciffpmdffig"
+              ],
+              "recordOffset": 1035181,
+              "selector": "browserContext:didUninstallExtension:",
+              "synchronous": false
+            }
+          ],
+          "cleanupCertified": true,
+          "completions": [],
+          "events": [
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "mbabnngnhgoeochmgenifjnjpdlgokdo"
+                ],
+                "recordOffset": 1025779,
+                "selector": "browserContext:didUninstallExtension:",
+                "synchronous": false
+              }
+            },
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "nadkemhdenmggjajafpbfciffpmdffig"
+                ],
+                "recordOffset": 1035181,
+                "selector": "browserContext:didUninstallExtension:",
+                "synchronous": false
+              }
+            }
+          ],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-9",
+          "infosAfter": {
+            "A": null,
+            "B": null
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "cleanup",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33159,
+          "pinsAfter": [],
+          "recordAfterReturn": 1012888,
+          "recordBegin": 1007664,
+          "recordEnd": 1046047,
+          "startupPending": []
+        }
+      ],
+      "errors": [
+        "Error: probe policy precondition failed: public enable left a fixture disabled; initial and enable observations retained for per-operation parity"
+      ],
+      "uncovered": [
+        "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered",
+        "Positive legacy background-page JavaScript uncovered; MV3 negative path only",
+        "commands, action effects, pin order and popup: public enable left fixture disabled; native policy precondition blocked further exercise"
+      ],
+      "startupIntent": {
+        "fixtureMode": "public-install",
+        "agent": "trace156",
+        "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app",
+        "executable": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/MacOS/Arc",
+        "startupArguments": [],
+        "fixtures": [
+          {
+            "label": "A",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A",
+            "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+            "version": "1.2.3",
+            "files": [
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/manifest.json",
+                "sha256": "b907bd4f86c4a021875bd7dd20177b30dc1b7b9ac2d0afead4e1bcee3db0cbd5",
+                "size": 690,
+                "mtimeMs": 1792760736588.1072
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/background.js",
+                "sha256": "5c66206eae061cb18caab562f6e5c34f1059f751580d9162e4345e92d6a5e225",
+                "size": 710,
+                "mtimeMs": 1792760736588.2888
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/popup.html",
+                "sha256": "863bca4510e1cb1262865b67a6d92e65ad3c1edb12c62e646483737e500e735d",
+                "size": 223,
+                "mtimeMs": 1792760736588.3418
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/popup.js",
+                "sha256": "3e63a7c0e90e92cf5e718360ff41ee8950ca64e6aae47f6470313155ac4672ee",
+                "size": 459,
+                "mtimeMs": 1792760736588.3938
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/icon.png",
+                "sha256": "933311165005f0fa9874832c36316110dba1fd1e038fd2d0e9af4803b253187f",
+                "size": 77,
+                "mtimeMs": 1792760736588.2217
+              }
+            ]
+          },
+          {
+            "label": "B",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B",
+            "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+            "version": "1.2.3",
+            "files": [
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/manifest.json",
+                "sha256": "3bd4e0c42d0cdfd9e5c6458a76912f862c541d209654e9482c6f51f2091475b7",
+                "size": 661,
+                "mtimeMs": 1792760736588.5198
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/background.js",
+                "sha256": "b7e012f831a665ee7e0195412691a0254ecea0a14403357652f9b86c8a8c603d",
+                "size": 710,
+                "mtimeMs": 1792760736588.6733
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/popup.html",
+                "sha256": "863bca4510e1cb1262865b67a6d92e65ad3c1edb12c62e646483737e500e735d",
+                "size": 223,
+                "mtimeMs": 1792760736588.7817
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/popup.js",
+                "sha256": "1c54fec4778e2a75e0a814c27d7fbaa88249983b6383af5c173501af9b424d6a",
+                "size": 459,
+                "mtimeMs": 1792760736588.8955
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/icon.png",
+                "sha256": "933311165005f0fa9874832c36316110dba1fd1e038fd2d0e9af4803b253187f",
+                "size": 77,
+                "mtimeMs": 1792760736588.5981
+              }
+            ]
+          }
+        ],
+        "state": "public-install-not-issued",
+        "pid": 33159
+      },
+      "pid": 33159,
+      "readiness": {
+        "pid": 33159,
+        "agent": "trace156",
+        "timeoutMs": 120000,
+        "satisfied": true,
+        "elapsedMs": 2770,
+        "events": [
+          {
+            "elapsedMs": 49,
+            "processPIDs": [
+              33159
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/trace156/extensions-service-request.json.ready.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/trace156/extensions-service-request.json.ready.json'"
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": false,
+              "size": 0
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 347,
+            "processPIDs": [
+              33159
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/trace156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792760736967.9663,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 33159
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": true,
+              "size": 8288
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 1535,
+            "processPIDs": [
+              33159
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/trace156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792760736967.9663,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 33159
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": true,
+              "size": 373568
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 2770,
+            "processPIDs": [
+              33159
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/trace156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792760736967.9663,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 33159
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json",
+              "exists": true,
+              "mtimeMs": 1792760739493.3005,
+              "data": {
+                "pid": 33159,
+                "agent": "trace156",
+                "ready": true
+              }
+            },
+            "recorder": {
+              "exists": true,
+              "size": 567685
+            },
+            "endpoint": {
+              "checked": true,
+              "pid": 33159
+            },
+            "satisfied": true
+          }
+        ]
+      },
+      "policyPrecondition": {
+        "step": "snapshot-enabled-initial",
+        "reason": "public enable did not produce two enabled fixtures",
+        "observed": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": false,
+            "icon": null,
+            "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+            "version": "1.2.3"
+          },
+          "B": {
+            "description": "Local fixture B π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": false,
+            "icon": null,
+            "id": "nadkemhdenmggjajafpbfciffpmdffig",
+            "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+            "version": "1.2.3"
+          }
+        }
+      },
+      "cleanup": "reconciled nonce fixtures absent; no outstanding installs; baseline pins restored",
+      "ownership": {
+        "attempts": [
+          {
+            "label": "A",
+            "operationID": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-2",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A"
+          },
+          {
+            "label": "B",
+            "operationID": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-3",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B"
+          },
+          {
+            "label": "invalid",
+            "operationID": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-5",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/invalid"
+          }
+        ],
+        "fixtureMode": "public-install",
+        "outstandingInstalls": [],
+        "owned": {
+          "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+          "B": "nadkemhdenmggjajafpbfciffpmdffig"
+        },
+        "startupPending": []
+      },
+      "diagnostics": [
+        {
+          "event": {
+            "mainThread": true,
+            "payload": [
+              []
+            ],
+            "recordOffset": 543291,
+            "selector": "browser:didUpdateExtensionToolbarActions:",
+            "synchronous": null
+          },
+          "kind": "unassigned",
+          "operationID": null
+        }
+      ],
+      "startupCallbacks": []
+    },
+    {
+      "agent": "ours156",
+      "fixtureMode": "public-install",
+      "actions": [
+        {
+          "step": "registry",
+          "baselinePins": [],
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 1288635818432,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 1288635818432
+            }
+          ],
+          "browserMatches": 1,
+          "browserPresent": true,
+          "callbacks": [],
+          "completions": [],
+          "events": [],
+          "fixtureMode": "public-install",
+          "hashStable": true,
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-1",
+          "identity": true,
+          "infosAfter": {},
+          "mainThread": true,
+          "matches": 1,
+          "metadata": {
+            "ArcBrowser": {
+              "executeExtensionAction:": "v24@0:8@16",
+              "moveExtension:targetIndex:": "v32@0:8@16Q24",
+              "pinExtension:": "v24@0:8@16",
+              "unpinExtension:": "v24@0:8@16"
+            },
+            "ArcBrowserContextExtensions": {
+              "disableExtension:": "v24@0:8@16",
+              "enableExtension:": "v24@0:8@16",
+              "executeExtensionCommand:commandName:": "v32@0:8@16@24",
+              "getAllExtensionCommands": "@16@0:8",
+              "getExtensionInfo:": "@24@0:8@16",
+              "getPinnedExtensionOrder": "@16@0:8",
+              "hash": "Q16@0:8",
+              "installExtensionFromUnpackedPath:completion:": "v32@0:8@16@?24",
+              "isEqual:": "B24@0:8@16",
+              "isExtensionSystemReady": "B16@0:8",
+              "listExtensions": "@16@0:8",
+              "owner": "@16@0:8",
+              "reloadExtension:": "v24@0:8@16",
+              "runJSInExtensionBackgroundPage:js_code:": "B32@0:8@16@24",
+              "setDelegate:": "v24@0:8@16",
+              "setPinnedExtensionOrder:": "v24@0:8@16",
+              "uninstallExtension:": "v24@0:8@16"
+            }
+          },
+          "ok": true,
+          "operation": "registry",
+          "outstandingInstalls": [],
+          "owned": {},
+          "pid": 33553,
+          "pinsAfter": [],
+          "ready": true,
+          "recordAfterReturn": 820564,
+          "recordBegin": 814410,
+          "recordEnd": 828676,
+          "startupPending": []
+        },
+        {
+          "step": "install-A",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 1288635818432,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 1288635818432
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [
+            {
+              "mainThread": true,
+              "payload": [
+                "mbabnngnhgoeochmgenifjnjpdlgokdo"
+              ],
+              "recordOffset": 836279,
+              "selector": "browserContext:didInstallExtension:",
+              "synchronous": false
+            }
+          ],
+          "completion": {
+            "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "mainThread": true,
+            "result": 0,
+            "synchronous": false
+          },
+          "completions": [
+            {
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "mainThread": true,
+              "result": 0,
+              "synchronous": false
+            }
+          ],
+          "events": [
+            {
+              "type": "completion",
+              "value": {
+                "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+                "mainThread": true,
+                "result": 0,
+                "synchronous": false
+              }
+            },
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "mbabnngnhgoeochmgenifjnjpdlgokdo"
+                ],
+                "recordOffset": 836279,
+                "selector": "browserContext:didInstallExtension:",
+                "synchronous": false
+              }
+            }
+          ],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-2",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "install",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo"
+          },
+          "pid": 33553,
+          "pinsAfter": [],
+          "recordAfterReturn": 834449,
+          "recordBegin": 829944,
+          "recordEnd": 864670,
+          "startupPending": []
+        },
+        {
+          "step": "install-B",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 1288635818432,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 1288635818432
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [
+            {
+              "mainThread": true,
+              "payload": [
+                "nadkemhdenmggjajafpbfciffpmdffig"
+              ],
+              "recordOffset": 872273,
+              "selector": "browserContext:didInstallExtension:",
+              "synchronous": false
+            }
+          ],
+          "completion": {
+            "id": "nadkemhdenmggjajafpbfciffpmdffig",
+            "mainThread": true,
+            "result": 0,
+            "synchronous": false
+          },
+          "completions": [
+            {
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "mainThread": true,
+              "result": 0,
+              "synchronous": false
+            }
+          ],
+          "events": [
+            {
+              "type": "completion",
+              "value": {
+                "id": "nadkemhdenmggjajafpbfciffpmdffig",
+                "mainThread": true,
+                "result": 0,
+                "synchronous": false
+              }
+            },
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "nadkemhdenmggjajafpbfciffpmdffig"
+                ],
+                "recordOffset": 872273,
+                "selector": "browserContext:didInstallExtension:",
+                "synchronous": false
+              }
+            }
+          ],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-3",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "install",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33553,
+          "pinsAfter": [],
+          "recordAfterReturn": 870443,
+          "recordBegin": 865938,
+          "recordEnd": 902205,
+          "startupPending": []
+        },
+        {
+          "step": "snapshot-loaded",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 1288635818432,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 1288635818432
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [],
+          "commands": [],
+          "completions": [],
+          "events": [],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-4",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "list": [
+            {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          ],
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "snapshot",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33553,
+          "pinsAfter": [],
+          "recordAfterReturn": 920085,
+          "recordBegin": 903473,
+          "recordEnd": 932545,
+          "startupPending": []
+        },
+        {
+          "step": "install-invalid",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 1288635818432,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 1288635818432
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [
+            {
+              "mainThread": true,
+              "payload": [
+                "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/invalid",
+                "Manifest is not valid JSON.  EOF while parsing a value at line 1 column 29"
+              ],
+              "recordOffset": 938324,
+              "selector": "browserContext:didFailLoadUnpacked:withManifestError:",
+              "synchronous": false
+            }
+          ],
+          "completion": {
+            "id": "",
+            "mainThread": true,
+            "result": 1,
+            "synchronous": false
+          },
+          "completions": [
+            {
+              "id": "",
+              "mainThread": true,
+              "result": 1,
+              "synchronous": false
+            }
+          ],
+          "events": [
+            {
+              "type": "completion",
+              "value": {
+                "id": "",
+                "mainThread": true,
+                "result": 1,
+                "synchronous": false
+              }
+            },
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/invalid",
+                  "Manifest is not valid JSON.  EOF while parsing a value at line 1 column 29"
+                ],
+                "recordOffset": 938324,
+                "selector": "browserContext:didFailLoadUnpacked:withManifestError:",
+                "synchronous": false
+              }
+            }
+          ],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-5",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "install-invalid",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33553,
+          "pinsAfter": [],
+          "recordAfterReturn": 938324,
+          "recordBegin": 933813,
+          "recordEnd": 968479,
+          "startupPending": []
+        },
+        {
+          "step": "enable-A-initial",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 1288635818432,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 1288635818432
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [],
+          "completions": [],
+          "events": [],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-6",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "enable",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33553,
+          "pinsAfter": [],
+          "recordAfterReturn": 975912,
+          "recordBegin": 969747,
+          "recordEnd": 988372,
+          "startupPending": []
+        },
+        {
+          "step": "enable-B-initial",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 1288635818432,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 1288635818432
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [],
+          "completions": [],
+          "events": [],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-7",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "enable",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33553,
+          "pinsAfter": [],
+          "recordAfterReturn": 995805,
+          "recordBegin": 989640,
+          "recordEnd": 1008265,
+          "startupPending": []
+        },
+        {
+          "step": "snapshot-enabled-initial",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 1288635818432,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 1288635818432
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [],
+          "commands": [],
+          "completions": [],
+          "events": [],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-8",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          },
+          "list": [
+            {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+              "version": "1.2.3"
+            },
+            {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": false,
+              "icon": null,
+              "id": "nadkemhdenmggjajafpbfciffpmdffig",
+              "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+              "version": "1.2.3"
+            }
+          ],
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "snapshot",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33553,
+          "pinsAfter": [],
+          "recordAfterReturn": 1026145,
+          "recordBegin": 1009533,
+          "recordEnd": 1038605,
+          "startupPending": []
+        },
+        {
+          "step": "cleanup-after-error",
+          "browserCandidates": [
+            {
+              "browserClass": "ArcBrowser",
+              "candidateContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "candidateServiceHash": 1288635818432,
+              "candidateServicePresent": true,
+              "contextIDFieldsEqual": true,
+              "contextPresent": true,
+              "delegateClass": "ADK.ChromiumBrowser",
+              "identityABI": true,
+              "matchesService": true,
+              "reverseServiceEqual": true,
+              "serviceEqual": true,
+              "serviceHashEqual": true,
+              "targetContextID": {
+                "directoryBasename": "Default",
+                "isIncognito": false,
+                "present": true
+              },
+              "targetServiceHash": 1288635818432
+            }
+          ],
+          "browserMatches": 1,
+          "callbacks": [
+            {
+              "mainThread": true,
+              "payload": [
+                "mbabnngnhgoeochmgenifjnjpdlgokdo"
+              ],
+              "recordOffset": 1056605,
+              "selector": "browserContext:didUninstallExtension:",
+              "synchronous": false
+            },
+            {
+              "mainThread": true,
+              "payload": [
+                "nadkemhdenmggjajafpbfciffpmdffig"
+              ],
+              "recordOffset": 1066953,
+              "selector": "browserContext:didUninstallExtension:",
+              "synchronous": false
+            }
+          ],
+          "cleanupCertified": true,
+          "completions": [],
+          "events": [
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "mbabnngnhgoeochmgenifjnjpdlgokdo"
+                ],
+                "recordOffset": 1056605,
+                "selector": "browserContext:didUninstallExtension:",
+                "synchronous": false
+              }
+            },
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "nadkemhdenmggjajafpbfciffpmdffig"
+                ],
+                "recordOffset": 1066953,
+                "selector": "browserContext:didUninstallExtension:",
+                "synchronous": false
+              }
+            }
+          ],
+          "fixtureMode": "public-install",
+          "id": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-9",
+          "infosAfter": {
+            "A": null,
+            "B": null
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "cleanup",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "B": "nadkemhdenmggjajafpbfciffpmdffig"
+          },
+          "pid": 33553,
+          "pinsAfter": [],
+          "recordAfterReturn": 1043714,
+          "recordBegin": 1039873,
+          "recordEnd": 1078765,
+          "startupPending": []
+        }
+      ],
+      "errors": [
+        "Error: probe policy precondition failed: public enable left a fixture disabled; initial and enable observations retained for per-operation parity"
+      ],
+      "uncovered": [
+        "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered",
+        "Positive legacy background-page JavaScript uncovered; MV3 negative path only",
+        "commands, action effects, pin order and popup: public enable left fixture disabled; native policy precondition blocked further exercise"
+      ],
+      "startupIntent": {
+        "fixtureMode": "public-install",
+        "agent": "ours156",
+        "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app",
+        "executable": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/MacOS/Arc",
+        "startupArguments": [],
+        "fixtures": [
+          {
+            "label": "A",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A",
+            "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+            "version": "1.2.3",
+            "files": [
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/manifest.json",
+                "sha256": "b907bd4f86c4a021875bd7dd20177b30dc1b7b9ac2d0afead4e1bcee3db0cbd5",
+                "size": 690,
+                "mtimeMs": 1792760736588.1072
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/background.js",
+                "sha256": "5c66206eae061cb18caab562f6e5c34f1059f751580d9162e4345e92d6a5e225",
+                "size": 710,
+                "mtimeMs": 1792760736588.2888
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/popup.html",
+                "sha256": "863bca4510e1cb1262865b67a6d92e65ad3c1edb12c62e646483737e500e735d",
+                "size": 223,
+                "mtimeMs": 1792760736588.3418
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/popup.js",
+                "sha256": "3e63a7c0e90e92cf5e718360ff41ee8950ca64e6aae47f6470313155ac4672ee",
+                "size": 459,
+                "mtimeMs": 1792760736588.3938
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A/icon.png",
+                "sha256": "933311165005f0fa9874832c36316110dba1fd1e038fd2d0e9af4803b253187f",
+                "size": 77,
+                "mtimeMs": 1792760736588.2217
+              }
+            ]
+          },
+          {
+            "label": "B",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B",
+            "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+            "version": "1.2.3",
+            "files": [
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/manifest.json",
+                "sha256": "3bd4e0c42d0cdfd9e5c6458a76912f862c541d209654e9482c6f51f2091475b7",
+                "size": 661,
+                "mtimeMs": 1792760736588.5198
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/background.js",
+                "sha256": "b7e012f831a665ee7e0195412691a0254ecea0a14403357652f9b86c8a8c603d",
+                "size": 710,
+                "mtimeMs": 1792760736588.6733
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/popup.html",
+                "sha256": "863bca4510e1cb1262865b67a6d92e65ad3c1edb12c62e646483737e500e735d",
+                "size": 223,
+                "mtimeMs": 1792760736588.7817
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/popup.js",
+                "sha256": "1c54fec4778e2a75e0a814c27d7fbaa88249983b6383af5c173501af9b424d6a",
+                "size": 459,
+                "mtimeMs": 1792760736588.8955
+              },
+              {
+                "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B/icon.png",
+                "sha256": "933311165005f0fa9874832c36316110dba1fd1e038fd2d0e9af4803b253187f",
+                "size": 77,
+                "mtimeMs": 1792760736588.5981
+              }
+            ]
+          }
+        ],
+        "state": "public-install-not-issued",
+        "pid": 33553
+      },
+      "pid": 33553,
+      "readiness": {
+        "pid": 33553,
+        "agent": "ours156",
+        "timeoutMs": 120000,
+        "satisfied": true,
+        "elapsedMs": 6792,
+        "events": [
+          {
+            "elapsedMs": 42,
+            "processPIDs": [
+              33553
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json'"
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": false,
+              "size": 0
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 1300,
+            "processPIDs": [
+              33553
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json'"
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": false,
+              "size": 0
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 2480,
+            "processPIDs": [
+              33553
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json'"
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": false,
+              "size": 0
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 3662,
+            "processPIDs": [
+              33553
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json'"
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": false,
+              "size": 0
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 4268,
+            "processPIDs": [
+              33553
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792760754342.4788,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 33553
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": true,
+              "size": 15957
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 5517,
+            "processPIDs": [
+              33553
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792760754342.4788,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 33553
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": true,
+              "size": 416467
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 6792,
+            "processPIDs": [
+              33553
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/ours156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792760754342.4788,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 33553
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": true,
+              "mtimeMs": 1792760756857.4458,
+              "data": {
+                "pid": 33553,
+                "agent": "ours156",
+                "ready": true
+              }
+            },
+            "recorder": {
+              "exists": true,
+              "size": 603232
+            },
+            "endpoint": {
+              "checked": true,
+              "pid": 33553
+            },
+            "satisfied": true
+          }
+        ]
+      },
+      "policyPrecondition": {
+        "step": "snapshot-enabled-initial",
+        "reason": "public enable did not produce two enabled fixtures",
+        "observed": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": false,
+            "icon": null,
+            "id": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+            "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://mbabnngnhgoeochmgenifjnjpdlgokdo/",
+            "version": "1.2.3"
+          },
+          "B": {
+            "description": "Local fixture B π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": false,
+            "icon": null,
+            "id": "nadkemhdenmggjajafpbfciffpmdffig",
+            "name": "ArcCore service probe arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8 B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://nadkemhdenmggjajafpbfciffpmdffig/",
+            "version": "1.2.3"
+          }
+        }
+      },
+      "cleanup": "reconciled nonce fixtures absent; no outstanding installs; baseline pins restored",
+      "ownership": {
+        "attempts": [
+          {
+            "label": "A",
+            "operationID": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-2",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/A"
+          },
+          {
+            "label": "B",
+            "operationID": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-3",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/B"
+          },
+          {
+            "label": "invalid",
+            "operationID": "arc-extensions-service-probe-b121436d-17cc-47d0-80af-aae7dbc787b8-5",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation9-public-field-trial-diagnostic/fixtures/invalid"
+          }
+        ],
+        "fixtureMode": "public-install",
+        "outstandingInstalls": [],
+        "owned": {
+          "A": "mbabnngnhgoeochmgenifjnjpdlgokdo",
+          "B": "nadkemhdenmggjajafpbfciffpmdffig"
+        },
+        "startupPending": []
+      },
+      "diagnostics": [
+        {
+          "event": {
+            "mainThread": true,
+            "payload": [
+              []
+            ],
+            "recordOffset": 570361,
+            "selector": "browser:didUpdateExtensionToolbarActions:",
+            "synchronous": null
+          },
+          "kind": "unassigned",
+          "operationID": null
+        }
+      ],
+      "startupCallbacks": []
+    }
+  ]
+}

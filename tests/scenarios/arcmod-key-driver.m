@@ -43,7 +43,7 @@ static void Install(void) {
   }];
   gInstalled = YES;
   WriteJSON(@{@"pid":@(getpid()), @"nonce":gNonce, @"agent":gAgent, @"installed":@YES,
-    @"localMonitorInstalled":@(gMonitor != nil), @"scope":@"in-process NSApplication.sendEvent; no OS hardware delivery"},
+    @"localMonitorInstalled":@((BOOL)(gMonitor != nil)), @"scope":@"in-process NSApplication.sendEvent; no OS hardware delivery"},
     [gDirectory stringByAppendingPathComponent:@"ready.json"]);
 }
 static NSWindow *ObservedWindow(NSString *identifier) {
@@ -82,7 +82,7 @@ static NSDictionary *Dispatch(NSString *shortcut, NSString *identifier) {
     @"windowIdentifier":identifier, @"windowNumber":@(number), @"keyCode":@(keyCode), @"modifierFlags":@(flags),
     @"mainThread":@(NSThread.isMainThread), @"keyWindowMatchedBefore":@YES,
     @"downReturned":@(downReturned), @"upReturned":@(upReturned),
-    @"localMonitorInstalled":@(gMonitor != nil), @"localMonitorSawDown":@(gDownSeen), @"localMonitorSawUp":@(gUpSeen),
+    @"localMonitorInstalled":@((BOOL)(gMonitor != nil)), @"localMonitorSawDown":@(gDownSeen), @"localMonitorSawUp":@(gUpSeen),
     @"appActiveBefore":@(activeBefore), @"appActiveAfter":@(NSApp.isActive),
     @"scope":@"app-event routing; not WindowServer/hardware delivery"};
   gDown = nil; gUp = nil;

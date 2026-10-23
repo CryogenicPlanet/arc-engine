@@ -1,8 +1,50 @@
 # Native filter and top-band integration gaps
 
-Read-only audit of the pristine ArcCore 1.170.0 arm64 image, 2026-10-23.
-These paths are uncovered by the existing accepted golden transcripts. They
-must not be replaced by guessed CSS filters or root/background-color reads.
+CURRENT RELEASE: corrected UNAPPLIED TopBandd106f59e replaces withdrawn88.
+Dependency order ALL e07 → gradient661 → TopBandd106.19actual-flags checks0/empty;
+38fixtures compiled NOT executed; native-contract and canonical replay reviews pass.
+Native geometry and active-pending/no-area findings are closed. Historical88 is
+archived; dependent723 remains HELD while privately rebasing. Count-only discard21a
+remains independently HELD for core global phases. Production is unchanged.
+Public TopBand flag is31 (36 is Snapshot); startup relay is proved but not integrated.
+Native live propagation, commit refresh activation and private ABI remain open.
+
+
+## Current handoff, 2026-10-23
+
+Production remains unchanged since the checked exclusion/compiler-sequence fixes.
+Published unapplied order is ALL `e07d1b39` → gradient `66179056` → TopBand
+`d106f59e`. TopBand canonical manifest `6a5aefce` pins19real-flags checks and
+38compile-only fixtures, canonical29-file replay and fresh native-contract review.
+Geometry now admits edge/fullbleed directly, while strict interior needs coalescing
+and all three quarter points. Active timer/pending/no-area entersmode3+empty;
+missingView staysquiet. Earlier88 is withdrawn in held-88/.
+
+Native public flag31 is TopBand;36 is Snapshot. A reviewed native startup hook reads
+31 and adds enable-blink-features=TopBandColorSampling for renderer children. That
+startup integration is privately preparing; live propagation remains unproved.
+Commit refresh remains unwired. Native attachment proof establishes refresh before
+queued ObjC commit on ordinary NONNESTED UI dispatch; unconditional nested order
+is unproved. Shared adoption/GN/link/runtime and private C++ABI remain pending.
+
+Count-only discard `21a83075` is HELD: SAME Impl/backend count survives replacement,
+old count read before teardown, seeded before new publication, wrapper KVO sync last.
+Core must implement canonical ownership/global retirement→attachment phases.
+Full-stack current weak TopBand-holder transfer is privately rebasing onto d106;
+no old document sampler/cache/capture migration, no setter replay/activation.
+
+Native retry1:4×14stages, integrity/restoration/natural quit pass; callbacks0/9/0/9
+(default/base/index36/both), all18non-nil/main/crossfadefalse. Callbacks precede
+hostobservation by21–31ms and screenshots by1.53s; not a final-painted-color oracle.
+Those index36 controls tested Snapshot, not TopBand relay. Parent inspected actual
+interior/splitgradient/fixedblue screenshots. Next private probe covers31/new renderer,
+same-document geometry and genuine nullable/crossfade opportunities; not queued.
+
+Peer UIrun4 fresh-profile37/37steps/natural quit pass.10strict fixture CSScalls each
+match both preservedv1 and current attributednative. Current-native vs historical
+UI global57 is a diagnostic, old84 remains pinned tooldv1. Twoextra theme calls are
+app-origin invocations; upstream scheduling unproved, no renderer hack. Official
+results/ours/renderer-public-api remains absent. Acceptance is in progress.
 
 ## HSLA filters
 
@@ -36,15 +78,19 @@ corresponding constructor and exact insertion point. A second native inlined
 instance exists in rectangular color drawing at `0xfa1040`..`0xfa11d8`.
 
 This is paint-flags filtering, not a root compositor layer effect. Drawing
-paths using DarkModeFlags and the native rectangle path are proven; image-
-specific inclusion/exclusion remains unestablished.
+paths using DarkModeFlags and the native rectangle path are proven. Bounded native
+fixtures leave ordinary canvas/PNG/SVG images unchanged while filtering generated
+linear/radial/conic gradients; removal restores all9swatch histograms exactly.
+ImageDrawOptions/Gradient fallback/cache propagation is source-mapped in
+renderer_filter_image_evidence.md. Arbitrary image-path parity remains uncovered.
 
 Profile `registerColorFilter` backend `0x42e25ec` stores the optional matrix
 at host configuration +48/presence +72 and posts an update. Document-start
 application `0x43a9290` forwards it to the same renderer endpoint.
 
-Request to lead: add serializable cc::ColorFilter HSLA and composition
-variants; Page filter setter/getter with local-frame paint invalidation;
+Request to lead: adopt the concrete unapplied renderer ALL and incremental
+gradient proposals (current exact dependency hashes in RENDERER_INTEGRATION.md).
+They add serializable cc::ColorFilter HSLA and composition variants; Page filter setter/getter with local-frame paint invalidation;
 WebView forwarding setter; retained GraphicsContext filter; initialize it
 from Page immediately after constructing the context in PaintTree; prepend
 the native copy/compose/return branch to DarkModeFlags. Worker ownership
@@ -94,9 +140,14 @@ Current `RenderWidgetHostView::CopyFromSurface` can provide fallback pixels.
 It cannot provide the custom tracker's selected-color path, chosen-state
 transitions, sampling-token gating or crossfade decisions.
 
-Request to lead: recover/port the Blink tracker and expose its browser
-notification hook. A screenshot-only producer cannot establish full parity.
-Core owns the weak delegate slot; renderer must not duplicate its setter.
+The complete native producer/browser contract has now been recovered in
+renderer_contract_evidence.md:1038 onward, including later refinements. A separate
+29-file incremental port is staged under logs/wp/renderer-top-band-proposal,
+with19successful actual-flags syntax checks and compile-only fixtures; final
+composition review is finishing. It does not establish runtime parity.
+Core owns the weak delegate slot and proposed selector forwarding. Committed-
+navigation refresh remains unwired pending observer-order proof, and Arc36 relay/
+live updates plus the private C++ shared-handle ABI remain uncovered.
 
 ## Color scheme
 
@@ -137,11 +188,17 @@ The producer performs layout hit-testing and CSS-background candidate analysis,
 including actual image-pixel analysis through the recovered sampler. Canvas and
 video candidates are explicitly excluded; IMG has a separate path. A CSS class
 `ytd-masthead` candidate is skipped only on `youtube.com` and `.youtube.com`
-hosts. It is not a tag-name rule. Fullbleed document background is separate from
-strict interior candidate admission. Geometry uses a positive reference width W;
-its upstream getter identity remains unproved, so modern viewport APIs must not
-be substituted by assumption.
+hosts. It is not a tag-name rule. Root background voting is separate from
+element admission: style/size-qualified edge/fullbleed elements admit directly;
+strict interiors require enabled coalescing and all three quarter points.
+Geometry uses LayoutView.GetScrollableArea.VisibleContentRect(kExcludeScrollbars)
+integer width. Coordinate policy is selected once per pass from the first eligible
+list hit: fixed/nonzero-sticky uses raw points, otherwise DocumentToFrame. The
+full hit traversal, background/image admission,1.5s cache and state transitions
+are now source-mapped; current evidence supersedes the earlier unknown-getter note.
 
-The precise scroll point adjustment, complete image-drawing branch admission,
-byte132 and remaining mode transitions still need recovery. There is no complete
-producer port or runtime top-band parity claim.
+Remaining gaps are integration/coverage: committed-navigation refresh order,
+public Arc36 relay/live updates, private shared-handle ABI and runtime validation
+after actual adoption. The separate native default/base/Arc/both public callback
+diagnostic is queued, waiter52933/tool64062; silence is not treated as nil/parity.
+No production TopBand producer is active from this worker's unapplied proposal.

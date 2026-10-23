@@ -209,12 +209,13 @@ try {
       };
       const blankURLs = new Set(["", "about:blank", "chrome://newtab/", "chrome://new-tab-page/", "arc://newtab/"]);
       const baseline = scenario === "dialogs" ? [] : await inventoryTargets();
-      // Built-in Hangouts (native Arc) and Contextual Tasks (our C156 build)
+      // Built-in Hangouts, Contextual Tasks and Arc Internal Extension
       // can have these startup targets in a fresh profile. Only exact baseline
       // identities are allowed, never new/replaced extension targets or pages.
       const components = new Map([
         ["chrome-extension://nkeimhogjdpnpccoofpliimaahmaaome/background.html", "background_page"],
         ["chrome-extension://glbjnfimcajjenihimblfaponejbkoph/background.js", "service_worker"],
+        ["chrome-extension://ldciclpbkaobfbicjebamaapbfplfjen/background.js", "service_worker"],
       ]);
       const isComponent = (row: TargetInfo) => components.get(row.url) === row.type;
       writeFileSync(join(dir, "target-baseline.json"), JSON.stringify(baseline, null, 2), {mode: 0o600});

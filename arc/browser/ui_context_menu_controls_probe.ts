@@ -184,8 +184,13 @@ try {
         return matches.length === 1 ? matches[0] : undefined;
       }, 20000); run.pid = browser.pid;
       await wait(() => {
-        const ready = json<{installed: boolean; pid: number; nonce: string; mainThread: boolean; actionCapabilityEnabled?: boolean; causalProfileIsolated?: boolean}>(requestPath + ".ready.json");
-        return ready.installed && ready.pid === browser!.pid && ready.nonce === nonce && ready.mainThread && ready.actionCapabilityEnabled === true && (ready.causalProfileIsolated === true);
+        const ready = json<{installed: boolean; pid: number; nonce: string; mainThread: boolean; actionCapabilityEnabled?: boolean; causalProfileIsolated?: boolean; trackingObserverInstalled?: boolean; trackingComplete?: boolean}>(requestPath + ".ready.json");
+        const predicates = {installed: ready.installed === true, pidMatches: ready.pid === browser!.pid,
+          nonceMatches: ready.nonce === nonce, mainThread: ready.mainThread === true,
+          actionCapabilityEnabled: ready.actionCapabilityEnabled === true, causalProfileIsolated: ready.causalProfileIsolated === true,
+          trackingObserverInstalled: ready.trackingObserverInstalled === true, trackingComplete: ready.trackingComplete === true};
+        if (!Object.values(predicates).every(value => value)) throw new Error(`helper ready predicates rejected: ${JSON.stringify(predicates)}`);
+        return true;
       }, 20000);
       await wait(() => {
         const ready = json<{ready: boolean; pid: number}>(join(applicationData, "ArcModAgentReady.json"));
@@ -209,12 +214,13 @@ try {
       };
       const blankURLs = new Set(["", "about:blank", "chrome://newtab/", "chrome://new-tab-page/", "arc://newtab/"]);
       const baseline = await inventoryTargets();
-      // Built-in Hangouts (native Arc) and Contextual Tasks (our C156 build)
+      // Built-in Hangouts, Contextual Tasks and Arc Internal Extension
       // can have these startup targets in a fresh profile. Only exact baseline
       // identities are allowed, never new/replaced extension targets or pages.
       const components = new Map([
         ["chrome-extension://nkeimhogjdpnpccoofpliimaahmaaome/background.html", "background_page"],
         ["chrome-extension://glbjnfimcajjenihimblfaponejbkoph/background.js", "service_worker"],
+        ["chrome-extension://ldciclpbkaobfbicjebamaapbfplfjen/background.js", "service_worker"],
       ]);
       const isComponent = (row: TargetInfo) => components.get(row.url) === row.type;
       writeFileSync(join(dir, "target-baseline.json"), JSON.stringify(baseline, null, 2), {mode: 0o600});
@@ -281,13 +287,15 @@ try {
         }, 2000);
         run.receipts.push(response);
         writeFileSync(join(dir, `${id}.response.json`), JSON.stringify(response, null, 2), {mode: 0o600});
-        if (response.nonce !== nonce || response.pid !== browser.pid || response.mainThread !== true || response.functionalAcceptance !== false) throw new Error("native response identity/semantics mismatch");
+        if (response.nonce !== nonce || response.pid !== browser.pid || response.mainThread !== true || response.functionalAcceptance !== false || response.visualAcceptance !== false) throw new Error("native response identity/semantics mismatch");
         if (causalFixtureVerified && (response.causalProfileIsolated !== true || response.causalFixtureVerified !== true)) throw new Error("helper causal ownership verification missing");
         return response;
       };
       run.phase = "canonical context menu baseline";
       const menuBaseline = await rpc("context", "snapshot-baseline");
-      if (menuBaseline.truncated !== false || menuBaseline.baselineCaptured !== true || menuBaseline.baselineOutsideMenuCount !== 0) throw new Error("native context baseline incomplete");
+      if (menuBaseline.truncated !== false || menuBaseline.baselineCaptured !== true || menuBaseline.baselineComplete !== true ||
+          menuBaseline.baselineOutsideMenuCount !== 0 || menuBaseline.baselineTrackingMenuCount !== 0 ||
+          menuBaseline.trackingObserverInstalled !== true || menuBaseline.trackingComplete !== true || menuBaseline.activeTrackingMenuCount !== 0) throw new Error("native AX/tracking context baseline incomplete or tracking menu already open");
       run.phase = "canonical page right-click";
       await withTargetFocus(client, target, async () => {
         for (const type of ["mousePressed", "mouseReleased"]) await client!.targetCommand(target, "Input.dispatchMouseEvent", {
@@ -296,21 +304,38 @@ try {
       });
       await wait(async () => {
         const row = await rpc("context", "inventory");
-        return row.truncated === false && row.newContextMenuCount === 1 && row.reloadControlCount === 1;
+        return row.truncated === false && row.trackingComplete === true && row.trackingObserverInstalled === true &&
+            row.newTrackingMenuCount === 1 && row.trackingReloadControlCount === 1 && row.newTrackingBeginCount === 1 &&
+            row.activeTrackingMenuCount === 1 && row.trackingMenuReady === true;
       }, 5000);
-      run.steps.push({step: "new native page context menu outside menu bar", outcome: "pass", detail: "new bounded local menu scope and unique Reload"});
+      run.steps.push({step: "new native page context menu outside menu bar", outcome: "pass", detail: "one new actual NSMenu begin-tracking lifecycle, bounded public supermenu ancestry and unique enabled visible Reload; parallel AX inventory retained"});
       run.phase = "canonical contextual Reload";
       const action = await rpc("context", "press-reload");
-      if (action.actionAttempted !== true || action.actionAttemptCount !== 1 || action.nativeActionsPerformed !== 1 || action.refusalReason) throw new Error("actual context Reload refused or unconfirmed");
-      delete run.uncertainMutation;
+      const beginSequence = action.attemptedTrackingMenuBeginSequence;
+      const attemptSequence = action.nativeAttemptSequence;
+      if (action.actionAttempted !== true || action.actionAttemptCount !== 1 || action.nativeActionsPerformed !== 1 ||
+          action.nativeActionKind !== "NSMenuItem.accessibilityPerformPress" || action.nativeMethodReturned !== true ||
+          typeof action.accessibilityPressReturn !== "boolean" || action.trackingComplete !== true ||
+          typeof beginSequence !== "number" || !Number.isSafeInteger(beginSequence) || beginSequence <= 0 ||
+          typeof attemptSequence !== "number" || !Number.isSafeInteger(attemptSequence) || attemptSequence <= beginSequence ||
+          action.refusalReason) throw new Error("actual tracked NSMenuItem Reload refused, uncertain or unconfirmed");
       await wait(async () => await evaluate("performance.getEntriesByType('navigation')[0]?.type") === "reload", 8000);
       if (!await pageIdentity()) throw new Error("fixture identity changed after context Reload");
       run.steps.push({step: "contextual reload commits", outcome: "pass", detail: "actual native menu action followed by page navigation performance assertion"});
       await wait(async () => {
         const row = await rpc("context", "inspect-dismissed");
-        return row.truncated === false && row.contextMenuDismissed === true;
+        const endSequence = row.matchingTrackingEndSequence;
+        return row.truncated === false && row.trackingComplete === true && row.trackingObserverInstalled === true &&
+            row.actionAttemptCount === 1 && row.nativeActionsPerformed === 1 && row.activeTrackingMenuCount === 0 &&
+            row.newTrackingMenuCount === 0 && row.newTrackingBeginCount === 1 && row.trackingReloadControlCount === 0 &&
+            row.matchingTrackingEndObserved === true && row.trackingEndedAfterAttempt === true &&
+            row.nativeAttemptSequence === attemptSequence && row.attemptedTrackingMenuBeginSequence === beginSequence &&
+            typeof endSequence === "number" && Number.isSafeInteger(endSequence) && endSequence > attemptSequence &&
+            row.postAXComplete === true && row.postAXNoExtras === true &&
+            row.newContextMenuCount === 0 && row.reloadControlCount === 0 && row.newNativeWindowCount === 0;
       }, 4000);
-      run.steps.push({step: "context menu dismissed", outcome: "pass", detail: "actual native menu no longer exposed"});
+      run.steps.push({step: "context menu tracking ended", outcome: "pass", detail: "matching actual NSMenu end-tracking occurred after the one native attempt; complete local AX inventory has no new menu/control/window extras. Visual dismissal is unverified."});
+      delete run.uncertainMutation;
       run.completedStages.push("context-reload");
     } catch (error) {
       run.errors.push(`${run.phase}: ${String(error)}`);
@@ -389,7 +414,7 @@ const report = {nonce, scenario, backend: "actual local AppKit controls", record
   runs: runs.map(run => ({agent: run.agent, pid: run.pid, errors: run.errors, steps: run.steps,
     phase: run.phase, completedStages: run.completedStages, uncertainMutation: run.uncertainMutation ?? null,
     coverage: run.coverage ?? null, profileIsolation: run.profileIsolation ?? null, browserAliveOnFailure: run.browserAliveOnFailure, artifactsStable: run.artifactsStable ?? false, cleanup: run.cleanup, elapsedMs: run.elapsedMs})),
-  limitation: "Only the canonical native page-context menu Reload is exercised. Boundary diff and recorder noninterference are separate required checks; local controls do not establish external AX or visual acceptance."};
+  limitation: "Only canonical native page-context menu Reload is exercised through a tracked actual NSMenuItem. A matching end-tracking event plus complete local AX postcheck establishes lifecycle evidence, not visual dismissal. Page reload is checked independently. Boundary diff and recorder noninterference are separate required checks; external AX and visual acceptance remain unverified."};
 writeFileSync(join(out, "report.json"), JSON.stringify(report, null, 2), {mode: 0o600});
 console.log(JSON.stringify(report, null, 2));
 process.exitCode = runs.some(run => run.errors.length > 0 || JSON.stringify(run.completedStages) !== JSON.stringify(expectedStages) || run.steps.some(step => step.outcome !== "pass")) ? 1 : 0;

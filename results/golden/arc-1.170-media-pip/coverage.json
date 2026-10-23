@@ -1,6 +1,6 @@
 {
-  "engineClassCount": 38,
-  "engineSelectorCount": 228,
+  "engineClassCount": 37,
+  "engineSelectorCount": 223,
   "callbackSelectorCount": 32,
   "scenario": "media-pip",
   "accepted": true,
@@ -8,9 +8,9 @@
   "launches": [
     "launch-1"
   ],
-  "classCount": 46,
-  "selectorCount": 260,
-  "callCount": 3064,
+  "classCount": 45,
+  "selectorCount": 255,
+  "callCount": 2823,
   "classes": {
     "ADK.ADKApplication": {
       "calls": 3,
@@ -52,14 +52,14 @@
       ]
     },
     "ADK.CrashKeysObserverBridge": {
-      "calls": 26,
+      "calls": 27,
       "selectorCount": 1,
       "selectors": [
         "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]"
       ]
     },
     "ADK.WebContentChromium": {
-      "calls": 133,
+      "calls": 127,
       "selectorCount": 18,
       "selectors": [
         "engine->app -[ADK.WebContentChromium webContents:didChangeAvailableMediaActions:]",
@@ -97,12 +97,10 @@
       ]
     },
     "ArcBrowser": {
-      "calls": 10,
-      "selectorCount": 8,
+      "calls": 8,
+      "selectorCount": 6,
       "selectors": [
         "->engine -[ArcBrowser context]",
-        "->engine -[ArcBrowser isCastEnabled]",
-        "->engine -[ArcBrowser isJavaScriptFromAppleEventsAllowed]",
         "->engine -[ArcBrowser setDelegate:]",
         "->engine -[ArcBrowser setWindow:]",
         "->engine -[ArcBrowser setWindowIdentifier:]",
@@ -111,7 +109,7 @@
       ]
     },
     "ArcBrowserApplication": {
-      "calls": 55,
+      "calls": 51,
       "selectorCount": 21,
       "selectors": [
         "->engine -[ArcBrowserApplication availableBrowserContextAttributes]",
@@ -154,12 +152,11 @@
       ]
     },
     "ArcBrowserContext": {
-      "calls": 30,
-      "selectorCount": 9,
+      "calls": 28,
+      "selectorCount": 8,
       "selectors": [
         "->engine -[ArcBrowserContext downloads]",
         "->engine -[ArcBrowserContext extensions]",
-        "->engine -[ArcBrowserContext getContentSettingForOrigin:withContentSettingType:]",
         "->engine -[ArcBrowserContext history]",
         "->engine -[ArcBrowserContext id]",
         "->engine -[ArcBrowserContext initWithBrowserContext:]",
@@ -337,9 +334,10 @@
       ]
     },
     "ArcMediaPosition": {
-      "calls": 12,
-      "selectorCount": 1,
+      "calls": 10,
+      "selectorCount": 2,
       "selectors": [
+        "->engine -[ArcMediaPosition currentTime]",
         "->engine -[ArcMediaPosition initWithMediaPosition:]"
       ]
     },
@@ -351,7 +349,7 @@
       ]
     },
     "ArcSearchEngine": {
-      "calls": 2271,
+      "calls": 2065,
       "selectorCount": 8,
       "selectors": [
         "->engine -[ArcSearchEngine faviconUrl]",
@@ -377,14 +375,6 @@
       "selectorCount": 1,
       "selectors": [
         "->engine -[ArcSessionID identifier]"
-      ]
-    },
-    "ArcSiteSettingInfo": {
-      "calls": 4,
-      "selectorCount": 2,
-      "selectors": [
-        "->engine -[ArcSiteSettingInfo initWithSiteSettingInfo:]",
-        "->engine -[ArcSiteSettingInfo siteSetting]"
       ]
     },
     "ArcTracingController": {
@@ -416,8 +406,8 @@
       ]
     },
     "ArcWebContents": {
-      "calls": 209,
-      "selectorCount": 68,
+      "calls": 197,
+      "selectorCount": 67,
       "selectors": [
         "->engine -[ArcWebContents backForwardList]",
         "->engine -[ArcWebContents blockedResourceCount]",
@@ -437,7 +427,6 @@
         "->engine -[ArcWebContents insertStylesheet:stylesheet:]",
         "->engine -[ArcWebContents isLoading]",
         "->engine -[ArcWebContents isReadyToDisplay]",
-        "->engine -[ArcWebContents isScaleFactorOne]",
         "->engine -[ArcWebContents loadProgress]",
         "->engine -[ArcWebContents mediaSession]",
         "->engine -[ArcWebContents nativeView]",
@@ -505,7 +494,7 @@
       ]
     },
     "ArcWebContentsMediaSession": {
-      "calls": 13,
+      "calls": 9,
       "selectorCount": 5,
       "selectors": [
         "->engine -[ArcWebContentsMediaSession getMediaContentTypes:]",
@@ -557,8 +546,6 @@
     "->engine -[ArcBackForwardList initWithBackForwardList:]": 2,
     "->engine -[ArcBackForwardListItem initWithBackForwardListItem:]": 6,
     "->engine -[ArcBrowser context]": 2,
-    "->engine -[ArcBrowser isCastEnabled]": 1,
-    "->engine -[ArcBrowser isJavaScriptFromAppleEventsAllowed]": 1,
     "->engine -[ArcBrowser setDelegate:]": 2,
     "->engine -[ArcBrowser setWindow:]": 1,
     "->engine -[ArcBrowser setWindowIdentifier:]": 1,
@@ -568,7 +555,7 @@
     "->engine -[ArcBrowserApplication availableImportSourceProfiles:]": 1,
     "->engine -[ArcBrowserApplication createBrowser:withDelegate:forWindow:]": 1,
     "->engine -[ArcBrowserApplication disableAccessibility]": 1,
-    "->engine -[ArcBrowserApplication ensureBasicAccessibilityEnabled]": 7,
+    "->engine -[ArcBrowserApplication ensureBasicAccessibilityEnabled]": 3,
     "->engine -[ArcBrowserApplication getBrowserContext:type:]": 1,
     "->engine -[ArcBrowserApplication getNonDefaultFlags:]": 1,
     "->engine -[ArcBrowserApplication init:]": 1,
@@ -597,7 +584,6 @@
     "->engine -[ArcBrowserApplicationConfiguration userDefaultsSuiteName]": 1,
     "->engine -[ArcBrowserContext downloads]": 1,
     "->engine -[ArcBrowserContext extensions]": 5,
-    "->engine -[ArcBrowserContext getContentSettingForOrigin:withContentSettingType:]": 2,
     "->engine -[ArcBrowserContext history]": 1,
     "->engine -[ArcBrowserContext id]": 4,
     "->engine -[ArcBrowserContext initWithBrowserContext:]": 3,
@@ -673,7 +659,8 @@
     "->engine -[ArcImportSourceProfile initWithImportSourceProfile:]": 4,
     "->engine -[ArcImportSourceProfile type]": 36,
     "->engine -[ArcLocalState initWithLocalState:]": 1,
-    "->engine -[ArcMediaPosition initWithMediaPosition:]": 12,
+    "->engine -[ArcMediaPosition currentTime]": 1,
+    "->engine -[ArcMediaPosition initWithMediaPosition:]": 9,
     "->engine -[ArcSearchEngine faviconUrl]": 12,
     "->engine -[ArcSearchEngine init:keyword:url:faviconUrl:]": 19,
     "->engine -[ArcSearchEngine initWithSearchEngineTemplateURL:]": 25,
@@ -681,12 +668,10 @@
     "->engine -[ArcSearchEngine keyword]": 30,
     "->engine -[ArcSearchEngine name]": 12,
     "->engine -[ArcSearchEngine status]": 36,
-    "->engine -[ArcSearchEngine url]": 2092,
+    "->engine -[ArcSearchEngine url]": 1886,
     "->engine -[ArcSecureContext initWithSecureContext:]": 1,
     "->engine -[ArcSecureContext state]": 1,
     "->engine -[ArcSessionID identifier]": 3,
-    "->engine -[ArcSiteSettingInfo initWithSiteSettingInfo:]": 2,
-    "->engine -[ArcSiteSettingInfo siteSetting]": 2,
     "->engine -[ArcTracingController setDelegate:]": 1,
     "->engine -[ArcURLLoadCancellationToken initWithToken:]": 5,
     "->engine -[ArcURLLoadConfiguration setBlockLocalRequest:]": 5,
@@ -708,16 +693,15 @@
     "->engine -[ArcWebContents freeformTextFieldActive]": 2,
     "->engine -[ArcWebContents hadFormOrUserEdits]": 2,
     "->engine -[ArcWebContents hasDirtyTextField]": 2,
-    "->engine -[ArcWebContents hasFocus]": 4,
+    "->engine -[ArcWebContents hasFocus]": 2,
     "->engine -[ArcWebContents ignoreDisablePiPAttribute:]": 1,
     "->engine -[ArcWebContents initWithWebContents:]": 1,
     "->engine -[ArcWebContents inputEvent]": 4,
     "->engine -[ArcWebContents insertStylesheet:stylesheet:]": 3,
     "->engine -[ArcWebContents isLoading]": 6,
     "->engine -[ArcWebContents isReadyToDisplay]": 8,
-    "->engine -[ArcWebContents isScaleFactorOne]": 1,
     "->engine -[ArcWebContents loadProgress]": 8,
-    "->engine -[ArcWebContents mediaSession]": 9,
+    "->engine -[ArcWebContents mediaSession]": 5,
     "->engine -[ArcWebContents nativeView]": 1,
     "->engine -[ArcWebContents navigationController]": 1,
     "->engine -[ArcWebContents navigationID]": 4,
@@ -734,7 +718,7 @@
     "->engine -[ArcWebContents setFreeformTextFieldActive:]": 1,
     "->engine -[ArcWebContents setHadFormOrUserEdits:]": 1,
     "->engine -[ArcWebContents setHasDirtyTextField:]": 1,
-    "->engine -[ArcWebContents setHasFocus:]": 2,
+    "->engine -[ArcWebContents setHasFocus:]": 1,
     "->engine -[ArcWebContents setInputEvent:]": 1,
     "->engine -[ArcWebContents setIsLoading:]": 3,
     "->engine -[ArcWebContents setIsReadyToDisplay:]": 4,
@@ -757,7 +741,7 @@
     "->engine -[ArcWebContents setZoomLevel:]": 2,
     "->engine -[ArcWebContents skipUserActivationForPiP:]": 2,
     "->engine -[ArcWebContents state]": 4,
-    "->engine -[ArcWebContents tabTraits]": 17,
+    "->engine -[ArcWebContents tabTraits]": 13,
     "->engine -[ArcWebContents themeColor]": 2,
     "->engine -[ArcWebContents thumbnailsGenerator]": 1,
     "->engine -[ArcWebContents title]": 6,
@@ -768,7 +752,7 @@
     "->engine -[ArcWebContentsBoostIDE initWithBoostIDE:]": 1,
     "->engine -[ArcWebContentsBoostIDE setDelegate:]": 1,
     "->engine -[ArcWebContentsDevTools setDelegate:]": 1,
-    "->engine -[ArcWebContentsMediaSession getMediaContentTypes:]": 6,
+    "->engine -[ArcWebContentsMediaSession getMediaContentTypes:]": 2,
     "->engine -[ArcWebContentsMediaSession pipController]": 1,
     "->engine -[ArcWebContentsMediaSession play:]": 1,
     "->engine -[ArcWebContentsMediaSession position]": 4,
@@ -787,9 +771,9 @@
     "engine->app -[ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:]": 1,
     "engine->app -[ADK.ChromiumBrowser browser:didUpdateExtensionToolbarActions:]": 1,
     "engine->app -[ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:]": 3,
-    "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]": 26,
+    "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]": 27,
     "engine->app -[ADK.WebContentChromium webContents:didChangeAvailableMediaActions:]": 4,
-    "engine->app -[ADK.WebContentChromium webContents:didChangeMediaPosition:]": 6,
+    "engine->app -[ADK.WebContentChromium webContents:didChangeMediaPosition:]": 4,
     "engine->app -[ADK.WebContentChromium webContents:didChangeMediaSessionState:]": 2,
     "engine->app -[ADK.WebContentChromium webContents:didChangeStatusText:]": 3,
     "engine->app -[ADK.WebContentChromium webContents:didChangeVisibleSecurityState:]": 1,
@@ -800,8 +784,8 @@
     "engine->app -[ADK.WebContentChromium webContents:pipControllerCreated:]": 1,
     "engine->app -[ADK.WebContentChromium webContents:pipFaviconImagesChanged:]": 1,
     "engine->app -[ADK.WebContentChromium webContents:pipFeatureStateChanged:turnedOn:]": 92,
-    "engine->app -[ADK.WebContentChromium webContents:pipMediaPositionChanged:]": 6,
-    "engine->app -[ADK.WebContentChromium webContents:pipPlaybackStateChanged:]": 8,
+    "engine->app -[ADK.WebContentChromium webContents:pipMediaPositionChanged:]": 4,
+    "engine->app -[ADK.WebContentChromium webContents:pipPlaybackStateChanged:]": 6,
     "engine->app -[ADK.WebContentChromium webContents:pipSourceTitleChanged:]": 2,
     "engine->app -[ADK.WebContentChromium webContents:pipVideoResolutionChanged:]": 1,
     "engine->app -[ADK.WebContentChromium webContentsHidePiP:]": 1,

@@ -1,0 +1,60 @@
+{
+  "scope": "actual projection receiver ordinal provenance, no remapping/suppression",
+  "runs": {
+    "trace156": {
+      "consoleOpenMediaSetters": [],
+      "laterFixtureMediaCall": {
+        "seq": 4466,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "WebextrasNativeProbe.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContentsMediaSession",
+        "kind": "-",
+        "sel": "getMediaContentTypes:",
+        "self": "<ArcWebContentsMediaSession#128>",
+        "args": [
+          "<ptr>"
+        ]
+      },
+      "projectedLaterFixtureReceiver": "<ArcWebContentsMediaSession#1>"
+    },
+    "ours156": {
+      "consoleOpenMediaSetters": [
+        {
+          "seq": 3987,
+          "ev": "call",
+          "thread": "main",
+          "depth": 2,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcWebContentsMediaSession",
+          "kind": "-",
+          "sel": "setDelegate:",
+          "self": "<ArcWebContentsMediaSession#119>",
+          "args": [
+            "<ADK.WebContentChromium#117>"
+          ]
+        }
+      ],
+      "laterFixtureMediaCall": {
+        "seq": 4376,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "WebextrasNativeProbe.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContentsMediaSession",
+        "kind": "-",
+        "sel": "getMediaContentTypes:",
+        "self": "<ArcWebContentsMediaSession#91>",
+        "args": [
+          "<ptr>"
+        ]
+      },
+      "projectedLaterFixtureReceiver": "<ArcWebContentsMediaSession#2>"
+    }
+  },
+  "conclusion": "ours extra console-open media delegate registration consumes first projected media identity; later same fixture media receiver is ordinal2 versus original1. Actual media value/error/timeline outcomes match; extra setup remains a public-shape difference linked to separate console-open mode1 versus3; mode correction causal runtime not yet proved."
+}

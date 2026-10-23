@@ -1,0 +1,30 @@
+{
+  "scenario": "fullscreen",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app",
+  "slug": "trace156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "page enters fullscreen through delegate",
+      "outcome": "fail",
+      "detail": "undefined"
+    },
+    {
+      "step": "scenario actions",
+      "outcome": "inconclusive",
+      "detail": "Error: agent-cdp evaluate: page evaluation failed: {\"exceptionId\":1,\"text\":\"Uncaught (in promise) TypeError: Failed to execute 'exitFullscreen' on 'Document': Document not active\",\"lineNumber\":0,\"columnNumber\":0,\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"TypeError\",\"description\":\"TypeError: Failed to execute 'exitFullscreen' on 'Document': Document not active\\n    at <anonymous>:1:10\",\"objectId\":\"9090307009120941643.1.1\"}}"
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 7 helpers exited"
+    }
+  ]
+}

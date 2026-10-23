@@ -1,0 +1,25 @@
+{
+  "return_mismatch": {
+    "official_target": [
+      {
+        "method": "->engine -ArcSessionID identifier",
+        "call": 0,
+        "args": "[]",
+        "golden": "1720849009",
+        "ours": "2040340652"
+      }
+    ],
+    "private_target": []
+  },
+  "arg_mismatch": {
+    "official_target": [
+      {
+        "method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+        "call": 0,
+        "golden": "[\"<ArcBrowser#1>\", 1720849009]",
+        "ours": "[\"<ArcBrowser#1>\", 2040340652]"
+      }
+    ],
+    "private_target": []
+  }
+}

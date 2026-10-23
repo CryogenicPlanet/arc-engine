@@ -17,14 +17,13 @@ for _ in range(24):
 else:
     raise SystemExit('shared build/run lock owner not in ancestry')
 PY
-OUT="results/extensions-validation6"
-SERVICE_PUBLIC_OUT="results/extensions-service-probe/validation6-public"
-SERVICE_CLI_OUT="results/extensions-service-probe/validation6-cli"
+OUT="results/extensions-validation11"
+SERVICE_CLI_OUT="results/extensions-service-probe/validation11-omnibox-field-trial-diagnostic"
 if [ -e "$OUT" ]; then
   echo "refusing to overwrite $OUT" >&2
   exit 2
 fi
-for path in "$SERVICE_PUBLIC_OUT" "$SERVICE_CLI_OUT"; do
+for path in "$SERVICE_CLI_OUT"; do
   if [ -e "$path" ]; then
     echo "refusing to overwrite $path" >&2
     exit 2
@@ -43,6 +42,8 @@ paths += [Path(p) for p in (
     'arc/browser/extensions_bridge.h', 'arc/browser/extensions_verify.sh',
     'arc/browser/extensions_service_probe.ts', 'arc/browser/extensions_service_probe.m',
     'arc/browser/extensions_service_probe.sh',
+    'arc/browser/extensions_macho_fingerprint.py',
+    'logs/wp/extensions-service-probe-build/ExtensionsServiceProbe.dylib',
     'tests/recorder/ArcEngineRecorder.dylib', 'tests/recorder/diff.py',
     'tests/launch-slice/run.ts', 'tests/scenarios/extensions-page-actions.ts')]
 paths += list(Path('arc/browser/extensions_internal').glob('*'))
@@ -69,6 +70,7 @@ if stage != 'before' and changed:
     raise SystemExit(1)
 PY
 }
+arc/browser/extensions_service_probe.sh build > "$OUT/helper-build.log" 2>&1 || exit $?
 snapshot before || exit $?
 reset_disposable_data() {
   python3 - "$OUT" "$1" "$2" <<'PY'
@@ -104,15 +106,12 @@ python3 arc/tools/gen_api_table.py || exit $?
 touch arc/api/arc_extensions_*.mm arc/browser/extensions_groups.mm || exit $?
 ARC_BUILD_FAIL_FAST=1 ./build-babysit.sh > "$OUT/build.log" 2>&1 || exit $?
 ./package-engine.sh ours156 > "$OUT/package.log" 2>&1 || exit $?
-arc/browser/extensions_service_probe.sh run --out "$SERVICE_PUBLIC_OUT" --agents trace156,ours156 --port 9458 > "$OUT/service-public.log" 2>&1
-service_status=$?
-echo "public service exit $service_status"
-# A failed public error-path callback can leave fixtures registered. Start the
-# separate CLI environment from fresh disposable state, after every app/helper
-# has exited. The journal distinguishes this from API cleanup certification.
+# No public-install operation changed; batch9 already retains its matching
+# enable-policy restriction. This batch targets the new valid omnibox range.
+service_status=0
 reset_disposable_data trace156 before-command-line-phase || exit $?
 reset_disposable_data ours156 before-command-line-phase || exit $?
-arc/browser/extensions_service_probe.sh run --out "$SERVICE_CLI_OUT" --fixture-mode=command-line --agents trace156,ours156 --port 9458 > "$OUT/service-cli.log" 2>&1
+arc/browser/extensions_service_probe.sh run --out "$SERVICE_CLI_OUT" --diagnostic-disable-field-trial-config --fixture-mode=command-line --browser-omnibox --agents trace156,ours156 --port 9458 > "$OUT/service-cli.log" 2>&1
 cli_status=$?
 echo "command-line service exit $cli_status"
 scenario_status=0

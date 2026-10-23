@@ -1,0 +1,212 @@
+{
+  "golden": {
+    "step": "install-invalid",
+    "operation": "install-invalid",
+    "ok": true,
+    "matches": 1,
+    "mainThread": true,
+    "browserMatches": 1,
+    "completion": {
+      "id": "",
+      "mainThread": true,
+      "result": 1,
+      "synchronous": false
+    },
+    "completions": [
+      {
+        "id": "",
+        "mainThread": true,
+        "result": 1,
+        "synchronous": false
+      }
+    ],
+    "outstandingInstalls": [],
+    "fixtureMode": "command-line",
+    "startupPending": [],
+    "infosAfter": {
+      "A": {
+        "description": "Local fixture A π 東京",
+        "enabled": false,
+        "fromWebstore": false,
+        "hasAction": false,
+        "icon": null,
+        "id": "edlmgkodhjdbfjbniiaalaepkgipemfo",
+        "name": "ArcCore service probe arc-extensions-service-probe-6d6ac0f4-3a79-4075-b4b0-d2977f8d977d A",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobea",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://edlmgkodhjdbfjbniiaalaepkgipemfo/",
+        "version": "1.2.3"
+      },
+      "B": {
+        "description": "Local fixture B π 東京",
+        "enabled": true,
+        "fromWebstore": false,
+        "hasAction": true,
+        "icon": {
+          "present": true,
+          "representations": [
+            {
+              "height": 32,
+              "width": 32
+            },
+            {
+              "height": 64,
+              "width": 64
+            }
+          ],
+          "size": [
+            32,
+            32
+          ]
+        },
+        "id": "cfhjcngpaocdgmlcnaendllkldjnblgh",
+        "name": "ArcCore service probe arc-extensions-service-probe-6d6ac0f4-3a79-4075-b4b0-d2977f8d977d B",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobeb",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://cfhjcngpaocdgmlcnaendllkldjnblgh/",
+        "version": "1.2.3"
+      }
+    },
+    "owned": {
+      "A": "edlmgkodhjdbfjbniiaalaepkgipemfo",
+      "B": "cfhjcngpaocdgmlcnaendllkldjnblgh"
+    },
+    "callbacks": [
+      {
+        "selector": "browserContext:didFailLoadUnpacked:withManifestError:",
+        "payload": [
+          "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation6-cli/fixtures/invalid",
+          "Manifest is not valid JSON.  EOF while parsing a value at line 1 column 29"
+        ],
+        "mainThread": true,
+        "synchronous": false
+      }
+    ],
+    "eventOrder": [
+      {
+        "type": "completion",
+        "value": {
+          "id": "",
+          "mainThread": true,
+          "result": 1,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browserContext:didFailLoadUnpacked:withManifestError:",
+          "payload": [
+            "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation6-cli/fixtures/invalid",
+            "Manifest is not valid JSON.  EOF while parsing a value at line 1 column 29"
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      }
+    ],
+    "fixturePinsAfter": []
+  },
+  "ours": {
+    "step": "install-invalid",
+    "operation": "install-invalid",
+    "ok": false,
+    "probeError": "bounded operation timeout; installs outstanding; cleanup not certified",
+    "matches": 1,
+    "mainThread": true,
+    "browserMatches": 1,
+    "completions": [],
+    "outstandingInstalls": [
+      "arc-extensions-service-probe-6d6ac0f4-3a79-4075-b4b0-d2977f8d977d-17"
+    ],
+    "fixtureMode": "command-line",
+    "startupPending": [],
+    "infosAfter": {
+      "A": {
+        "description": "Local fixture A π 東京",
+        "enabled": false,
+        "fromWebstore": false,
+        "hasAction": true,
+        "icon": {
+          "present": true,
+          "representations": [
+            {
+              "height": 32,
+              "width": 32
+            },
+            {
+              "height": 64,
+              "width": 64
+            }
+          ],
+          "size": [
+            32,
+            32
+          ]
+        },
+        "id": "edlmgkodhjdbfjbniiaalaepkgipemfo",
+        "name": "ArcCore service probe arc-extensions-service-probe-6d6ac0f4-3a79-4075-b4b0-d2977f8d977d A",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobea",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://edlmgkodhjdbfjbniiaalaepkgipemfo/",
+        "version": "1.2.3"
+      },
+      "B": {
+        "description": "Local fixture B π 東京",
+        "enabled": true,
+        "fromWebstore": false,
+        "hasAction": true,
+        "icon": {
+          "present": true,
+          "representations": [
+            {
+              "height": 32,
+              "width": 32
+            },
+            {
+              "height": 64,
+              "width": 64
+            }
+          ],
+          "size": [
+            32,
+            32
+          ]
+        },
+        "id": "cfhjcngpaocdgmlcnaendllkldjnblgh",
+        "name": "ArcCore service probe arc-extensions-service-probe-6d6ac0f4-3a79-4075-b4b0-d2977f8d977d B",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobeb",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://cfhjcngpaocdgmlcnaendllkldjnblgh/",
+        "version": "1.2.3"
+      }
+    },
+    "owned": {
+      "A": "edlmgkodhjdbfjbniiaalaepkgipemfo",
+      "B": "cfhjcngpaocdgmlcnaendllkldjnblgh"
+    },
+    "callbacks": [],
+    "eventOrder": [],
+    "fixturePinsAfter": []
+  }
+}

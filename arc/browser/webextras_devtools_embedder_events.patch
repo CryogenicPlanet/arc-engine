@@ -1,0 +1,260 @@
+diff --git a/chrome/browser/arcmod/arcmod_hooks.h b/chrome/browser/arcmod/arcmod_hooks.h
+--- a/chrome/browser/arcmod/arcmod_hooks.h
++++ b/chrome/browser/arcmod/arcmod_hooks.h
+@@ -8,6 +8,7 @@
+ 
+ #include <memory>
+ #include <optional>
++#include <string>
+ 
+ #include "base/files/file_path.h"
+ #include "base/functional/callback.h"
+@@ -143,6 +144,28 @@
+   return *hook;
+ }
+ 
++// Frontend association runs after construction, before agent attachment/show.
++// Consumers must only establish native state here; frontend UI events are separate.
++using DevToolsFrontendCreatedHook = base::RepeatingCallback<void(
++    content::WebContents* inspected, content::WebContents* frontend)>;
++inline DevToolsFrontendCreatedHook& GetDevToolsFrontendCreatedHook() {
++  static base::NoDestructor<DevToolsFrontendCreatedHook> hook;
++  return *hook;
++}
++
++// Exact one-string frontend embedder notifications, independent of CDP traffic.
++using DevToolsFrontendStringHook = base::RepeatingCallback<void(
++    content::WebContents* inspected, content::WebContents* frontend,
++    const std::string& value)>;
++inline DevToolsFrontendStringHook& GetDevToolsInspectModeHook() {
++  static base::NoDestructor<DevToolsFrontendStringHook> hook;
++  return *hook;
++}
++inline DevToolsFrontendStringHook& GetDevToolsDockPositionHook() {
++  static base::NoDestructor<DevToolsFrontendStringHook> hook;
++  return *hook;
++}
++
+ // Permission prompts shown by Arc's app (same shape as
+ // permissions::PermissionPrompt::Factory). nullptr: Chrome's prompt.
+ using PermissionPromptHook = base::RepeatingCallback<
+diff --git a/chrome/browser/devtools/devtools_window.cc b/chrome/browser/devtools/devtools_window.cc
+--- a/chrome/browser/devtools/devtools_window.cc
++++ b/chrome/browser/devtools/devtools_window.cc
+@@ -912,12 +912,15 @@
+       case DevToolsToggleAction::kNoOp:
+         break;
+     }
++    auto weak_inspected = inspected_web_contents->GetWeakPtr();
+     window = Create(profile, inspected_web_contents, kFrontendDefault,
+                     std::string(), true, settings, panel, agent->IsAttached(),
+                     /* browser_connection */ false, toggled_by);
+     if (!window) {
+ #if !BUILDFLAG(IS_ANDROID)
+-      DevToolsPolicyDialog::Show(inspected_web_contents);
++      if (weak_inspected) {
++        DevToolsPolicyDialog::Show(weak_inspected.get());
++      }
+ #endif
+       return;
+     }
+@@ -1448,10 +1451,34 @@
+   if (!settings.empty()) {
+     SetPreferencesFromJson(profile, settings);
+   }
+-  return new DevToolsWindow(frontend_type, profile,
++  auto weak_inspected = inspected_web_contents
++                            ? inspected_web_contents->GetWeakPtr()
++                            : base::WeakPtr<content::WebContents>();
++  auto* window = new DevToolsWindow(frontend_type, profile,
+                             std::move(main_web_contents), bindings,
+                             inspected_web_contents, can_dock, opened_by,
+                             inspected_browser_session_id);
++  auto weak_window = window->weak_factory_.GetWeakPtr();
++  if (!weak_window || weak_window->life_stage_ == kClosing) {
++    return nullptr;
++  }
++  if (inspected_web_contents && !weak_inspected) {
++    // Retire through the native target-detach path; it may destroy the window.
++    weak_window->InspectedContentsClosing();
++    return nullptr;
++  }
++  if (auto hook = arcmod::GetDevToolsFrontendCreatedHook(); !hook.is_null()) {
++    hook.Run(weak_inspected.get(), weak_window->main_web_contents_);
++  }
++  if (!weak_window || weak_window->life_stage_ == kClosing) {
++    return nullptr;
++  }
++  if (inspected_web_contents && !weak_inspected) {
++    // Retire through the native target-detach path; it may destroy the window.
++    weak_window->InspectedContentsClosing();
++    return nullptr;
++  }
++  return weak_window.get();
+ }
+ 
+ // static
+diff --git a/chrome/browser/devtools/devtools_ui_bindings.cc b/chrome/browser/devtools/devtools_ui_bindings.cc
+--- a/chrome/browser/devtools/devtools_ui_bindings.cc
++++ b/chrome/browser/devtools/devtools_ui_bindings.cc
+@@ -3,6 +3,8 @@
+ // found in the LICENSE file.
+ 
+ #include "chrome/browser/devtools/devtools_ui_bindings.h"
++
++#include "chrome/browser/arcmod/arcmod_hooks.h"
+ 
+ #include <stddef.h>
+ 
+@@ -1036,6 +1038,20 @@
+   delegate_->SetInspectedPageBounds(rect);
+ }
+ 
++void DevToolsUIBindings::InspectModeChanged(const std::string& mode) {
++  if (auto hook = arcmod::GetDevToolsInspectModeHook(); !hook.is_null()) {
++    hook.Run(delegate_->GetInspectedWebContents(), web_contents_, mode);
++  }
++  // The hook may destroy these bindings. Do not access members after it runs.
++}
++
++void DevToolsUIBindings::RequestDockPosition(const std::string& side) {
++  if (auto hook = arcmod::GetDevToolsDockPositionHook(); !hook.is_null()) {
++    hook.Run(delegate_->GetInspectedWebContents(), web_contents_, side);
++  }
++  // Association is already established by the construction hook; no Show needed.
++}
++
+ void DevToolsUIBindings::SetIsDocked(DispatchCallback callback,
+                                      bool dock_requested) {
+   delegate_->SetIsDocked(dock_requested);
+diff --git a/chrome/browser/devtools/devtools_ui_bindings.h b/chrome/browser/devtools/devtools_ui_bindings.h
+--- a/chrome/browser/devtools/devtools_ui_bindings.h
++++ b/chrome/browser/devtools/devtools_ui_bindings.h
+@@ -212,6 +212,8 @@
+   void SetInspectedPageBounds(const gfx::Rect& rect) override;
+   void InspectElementCompleted() override;
+   void InspectedURLChanged(const std::string& url) override;
++  void InspectModeChanged(const std::string& mode) override;
++  void RequestDockPosition(const std::string& side) override;
+   void LoadNetworkResource(DispatchCallback callback,
+                            const std::string& url,
+                            const std::string& headers,
+diff --git a/chrome/browser/devtools/devtools_embedder_message_dispatcher.cc b/chrome/browser/devtools/devtools_embedder_message_dispatcher.cc
+--- a/chrome/browser/devtools/devtools_embedder_message_dispatcher.cc
++++ b/chrome/browser/devtools/devtools_embedder_message_dispatcher.cc
+@@ -353,6 +353,10 @@
+                      &Delegate::InspectElementCompleted, delegate);
+   d->RegisterHandler("inspectedURLChanged",
+                      &Delegate::InspectedURLChanged, delegate);
++  d->RegisterHandler("inspectModeChanged", &Delegate::InspectModeChanged,
++                     delegate);
++  d->RegisterHandler("requestDockPosition", &Delegate::RequestDockPosition,
++                     delegate);
+   d->RegisterHandlerWithCallback("setIsDocked",
+                                  &Delegate::SetIsDocked, delegate);
+   d->RegisterHandler("openInNewTab", &Delegate::OpenInNewTab, delegate);
+diff --git a/chrome/browser/devtools/devtools_embedder_message_dispatcher.h b/chrome/browser/devtools/devtools_embedder_message_dispatcher.h
+--- a/chrome/browser/devtools/devtools_embedder_message_dispatcher.h
++++ b/chrome/browser/devtools/devtools_embedder_message_dispatcher.h
+@@ -46,6 +46,8 @@
+     virtual void SetInspectedPageBounds(const gfx::Rect& rect) = 0;
+     virtual void InspectElementCompleted() = 0;
+     virtual void InspectedURLChanged(const std::string& url) = 0;
++    virtual void InspectModeChanged(const std::string& mode) = 0;
++    virtual void RequestDockPosition(const std::string& side) = 0;
+     virtual void SetIsDocked(DispatchCallback callback, bool is_docked) = 0;
+     virtual void OpenInNewTab(const std::string& url) = 0;
+     virtual void OpenSearchResultsInNewTab(const std::string& query) = 0;
+diff --git a/third_party/devtools-frontend/src/front_end/core/host/InspectorFrontendHostAPI.ts b/third_party/devtools-frontend/src/front_end/core/host/InspectorFrontendHostAPI.ts
+--- a/third_party/devtools-frontend/src/front_end/core/host/InspectorFrontendHostAPI.ts
++++ b/third_party/devtools-frontend/src/front_end/core/host/InspectorFrontendHostAPI.ts
+@@ -364,6 +364,10 @@
+   bringToFront(): void;
+ 
+   closeWindow(): void;
++
++  inspectModeChanged(mode: string): void;
++
++  requestDockPosition(side: string): void;
+ 
+   /**
+    * If you need to alert to the user after copying use {@link UIUtils.copyTextToClipboard}.
+diff --git a/third_party/devtools-frontend/src/front_end/core/host/InspectorFrontendHostStub.ts b/third_party/devtools-frontend/src/front_end/core/host/InspectorFrontendHostStub.ts
+--- a/third_party/devtools-frontend/src/front_end/core/host/InspectorFrontendHostStub.ts
++++ b/third_party/devtools-frontend/src/front_end/core/host/InspectorFrontendHostStub.ts
+@@ -118,6 +118,12 @@
+   closeWindow(): void {
+   }
+ 
++  inspectModeChanged(_mode: string): void {
++  }
++
++  requestDockPosition(_side: string): void {
++  }
++
+   setIsDocked(_isDocked: boolean, callback: () => void): void {
+     globalThis.setTimeout(callback, 0);
+   }
+diff --git a/third_party/devtools-frontend/src/front_end/devtools_compatibility.js b/third_party/devtools-frontend/src/front_end/devtools_compatibility.js
+--- a/third_party/devtools-frontend/src/front_end/devtools_compatibility.js
++++ b/third_party/devtools-frontend/src/front_end/devtools_compatibility.js
+@@ -1396,6 +1396,20 @@
+     }
+ 
+     /**
++     * @param mode
++     */
++    inspectModeChanged(mode) {
++      DevToolsAPI.sendMessageToEmbedder('inspectModeChanged', [mode], null);
++    }
++
++    /**
++     * @param side
++     */
++    requestDockPosition(side) {
++      DevToolsAPI.sendMessageToEmbedder('requestDockPosition', [side]);
++    }
++
++    /**
+      * @param isDocked
+      * @param callback
+      */
+diff --git a/third_party/devtools-frontend/src/front_end/panels/elements/InspectElementModeController.ts b/third_party/devtools-frontend/src/front_end/panels/elements/InspectElementModeController.ts
+--- a/third_party/devtools-frontend/src/front_end/panels/elements/InspectElementModeController.ts
++++ b/third_party/devtools-frontend/src/front_end/panels/elements/InspectElementModeController.ts
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ import * as Common from '../../core/common/common.js';
++import * as Host from '../../core/host/host.js';
+ import * as Root from '../../core/root/root.js';
+ import * as SDK from '../../core/sdk/sdk.js';
+ import * as Protocol from '../../generated/protocol.js';
+@@ -98,6 +99,7 @@
+       void overlayModel.setInspectMode(mode, this.showDetailedInspectTooltipSetting.get());
+     }
+     this.toggleSearchAction.setToggled(this.isInInspectElementMode());
++    Host.InspectorFrontendHost.InspectorFrontendHostInstance.inspectModeChanged(mode);
+   }
+ 
+   private suspendStateChanged(): void {
+diff --git a/third_party/devtools-frontend/src/front_end/ui/legacy/DockController.ts b/third_party/devtools-frontend/src/front_end/ui/legacy/DockController.ts
+--- a/third_party/devtools-frontend/src/front_end/ui/legacy/DockController.ts
++++ b/third_party/devtools-frontend/src/front_end/ui/legacy/DockController.ts
+@@ -85,6 +85,7 @@
+ 
+   initialize(): void {
+     if (!this.#canDock) {
++      Host.InspectorFrontendHost.InspectorFrontendHostInstance.requestDockPosition(DockState.UNDOCKED);
+       return;
+     }
+ 
+@@ -122,6 +123,8 @@
+     if (this.#dockSide === dockSide) {
+       return;
+     }
++
++    Host.InspectorFrontendHost.InspectorFrontendHostInstance.requestDockPosition(dockSide);
+ 
+     if (this.#dockSide !== undefined) {
+       document.body.classList.remove(this.#dockSide);

@@ -1,0 +1,269 @@
+--- a/arc/browser/extensions_service_probe.m
++++ b/arc/browser/extensions_service_probe.m
+@@ -46,6 +46,7 @@
+ static NSString* gFixtures;
+ static NSString* gToken;
+ static NSString* gFixtureMode;
++static BOOL gBrowserPinsEnabled;
+ static NSMutableSet* gStartupPending;
+ static NSString* gRecord;
+ static NSString* gLastID;
+@@ -320,6 +321,74 @@
+     matches = [Get(info,@"version") isEqual:@"1.2.3"] && [PropertyValue(info,@"fromWebstore") isEqual:@NO];
+   return matches;
+ }
++// Browser pin probes are opt-in, CLI-only, and restricted to both enabled,
++// nonce-proven fixtures. Every absolute move index comes from a current owned
++// anchor in the actual visible pin order; no request may supply an arbitrary ID
++// or index. This helper records real arguments/snapshots, never callback results.
++static NSString* BrowserPinRequest(id service, id browser, NSString* operation,
++                                   NSDictionary* request, ExtensionsProbeWork* work) {
++  if (!gBrowserPinsEnabled || ![gFixtureMode isEqual:@"command-line"])
++    return @"browser pin phase not explicitly enabled in command-line mode";
++  if (!service || !browser || work.entry.service != service || work.browser != browser ||
++      ![gBrowserDelegates objectForKey:browser]) return @"browser pin identity entry missing";
++  NSMutableArray* inventory = [NSMutableArray array];
++  NSArray* matches = MatchingBrowsers(service,work.entry.context,inventory);
++  work.response[@"browserPinIdentityCandidates"] = inventory;
++  if (matches.count != 1 || matches.firstObject != browser)
++    return @"browser pin service/browser identity is ambiguous or changed";
++  work.response[@"browserPinIdentityVerified"] = @YES;
++  if (gOutstandingInstalls.count || gStartupPending.count || !gBaseline || gOwned.count != 2 ||
++      [gOwned[@"A"] isEqual:gOwned[@"B"]]) return @"browser pin ownership/baseline unresolved";
++  for (NSString* label in @[@"A",@"B"]) {
++    NSString* identifier = gOwned[label];
++    if (!Proven(service,label,identifier)) return @"browser pin target not a proven nonce fixture";
++    id info = Get1(service,@"getExtensionInfo:",identifier);
++    if (![PropertyValue(info,@"enabled") isEqual:@YES] || ![PropertyValue(info,@"hasAction") isEqual:@YES])
++      return @"browser pin fixtures must both be enabled and action-bearing";
++  }
++  NSString* label = request[@"label"];
++  if (![@[@"A",@"B"] containsObject:label] || request[@"targetIndex"] || request[@"extensionID"])
++    return @"browser pin request must use only fixture labels, not raw IDs or indices";
++  NSString* selector = [@{@"browser-pin":@"pinExtension:",@"browser-unpin":@"unpinExtension:",
++                        @"browser-move":@"moveExtension:targetIndex:"} objectForKey:operation];
++  if (!selector) return @"unsupported browser pin operation";
++  Method method = class_getInstanceMethod([browser class],NSSelectorFromString(selector));
++  if (!ABI(method,[operation isEqual:@"browser-move"] ? 4 : 3,@"v"))
++    return @"browser pin selector return/count ABI mismatch";
++  NSMethodSignature* signature = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(method)];
++  if (strcmp([signature getArgumentTypeAtIndex:2],"@") ||
++      ([operation isEqual:@"browser-move"] && (strcmp([signature getArgumentTypeAtIndex:3],"Q") || sizeof(NSUInteger) != 8)))
++    return @"browser pin selector argument ABI mismatch (move requires native Q)";
++  NSArray* before = [Get(service,@"getPinnedExtensionOrder") copy];
++  if (![before isKindOfClass:NSArray.class] || [NSSet setWithArray:before].count != before.count)
++    return @"browser pin visible order is missing or duplicated";
++  NSMutableArray* baseline = [NSMutableArray array];
++  for (id identifier in before) {
++    if (![identifier isKindOfClass:NSString.class]) return @"browser pin order contains a non-string";
++    if (![gOwned.allValues containsObject:identifier]) [baseline addObject:identifier];
++  }
++  work.response[@"pinsBefore"] = Value(before);
++  work.response[@"browserPinBaselineBeforePreserved"] = JSONBool([baseline isEqual:gBaseline]);
++  if (![baseline isEqual:gBaseline]) return @"browser pin baseline changed before mutation";
++  NSString* identifier = gOwned[label];
++  NSUInteger targetIndex = NSNotFound;
++  if ([operation isEqual:@"browser-move"]) {
++    NSString* anchor = request[@"anchorLabel"];
++    if (![@[@"A",@"B"] containsObject:anchor] || ![before containsObject:identifier])
++      return @"browser move requires a pinned fixture and owned anchor label";
++    targetIndex = [before indexOfObject:gOwned[anchor]];
++    if (targetIndex == NSNotFound || targetIndex >= before.count)
++      return @"browser move anchor is not currently pinned";
++    work.response[@"browserPinAnchorLabel"] = anchor;
++  } else if (request[@"anchorLabel"]) return @"anchor label is only valid for browser move";
++  work.response[@"browserPinSelector"] = selector;
++  work.response[@"browserPinABI"] = [NSString stringWithUTF8String:method_getTypeEncoding(method)];
++  work.response[@"browserPinLabel"] = label;
++  work.response[@"browserPinArguments"] = targetIndex == NSNotFound ? @[identifier] : @[identifier,@(targetIndex)];
++  if (targetIndex == NSNotFound) Put(browser,selector,identifier);
++  else ((void (*)(id,SEL,id,NSUInteger))objc_msgSend)(browser,NSSelectorFromString(selector),identifier,targetIndex);
++  return nil;
++}
+ static void OwnershipJournal(void) {
+   WriteJSON(@{@"fixtureMode":gFixtureMode,@"startupPending":[gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)],@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy]},[gRequest stringByAppendingString:@".owned.json"]);
+ }
+@@ -381,6 +450,14 @@
+     work.response[@"outstandingInstalls"] = gOutstandingInstalls.allObjects;
+     work.response[@"startupPending"] = [gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)];
+     work.response[@"fixtureMode"] = gFixtureMode;
++    if ([work.response[@"operation"] hasPrefix:@"browser-"]) {
++      NSMutableArray* baseline = [NSMutableArray array];
++      for (NSString* identifier in work.response[@"pinsAfter"])
++        if (![gOwned.allValues containsObject:identifier]) [baseline addObject:identifier];
++      BOOL preserved = gBaseline && [baseline isEqual:gBaseline];
++      work.response[@"browserPinBaselineAfterPreserved"] = JSONBool(preserved);
++      if (!preserved && !error) error = @"browser pin baseline changed after mutation";
++    }
+     if ([work.response[@"operation"] isEqual:@"cleanup"]) {
+       BOOL absent = YES;
+       for (id value in infos.allValues) if (value != NSNull.null) absent = NO;
+@@ -524,6 +601,9 @@
+         [order addObject:gOwned[item]];
+       }
+       Put(service,@"setPinnedExtensionOrder:",order);
++    } else if ([@[@"browser-pin",@"browser-unpin",@"browser-move"] containsObject:operation]) {
++      NSString* error = BrowserPinRequest(service,browser,operation,request,gWork);
++      if (error) { Finish(error); return; }
+     } else if ([operation isEqual:@"cleanup"]) {
+       // Wait for every attempted install, including timed-out requests, before
+       // reconciling actual installed nonce fixtures and mutating cleanup state.
+@@ -562,6 +642,9 @@
+     const char* mode = getenv("ARC_EXTENSIONS_PROBE_FIXTURE_MODE");
+     if (!request || !fixtures || !token || !record) return;
+     gFixtureMode = mode ? @(mode) : @"public-install";
++    const char* browserPins = getenv("ARC_EXTENSIONS_PROBE_BROWSER_PINS");
++    gBrowserPinsEnabled = browserPins && !strcmp(browserPins,"1");
++    if (gBrowserPinsEnabled && ![gFixtureMode isEqual:@"command-line"]) return;
+     if (![@[@"public-install",@"command-line"] containsObject:gFixtureMode]) return;
+     gRequest = @(request); gFixtures = @(fixtures); gToken = @(token); gRecord = @(record);
+     if (!gRequest.isAbsolutePath || !gFixtures.isAbsolutePath || !gRecord.isAbsolutePath ||
+--- a/arc/browser/extensions_service_probe.ts
++++ b/arc/browser/extensions_service_probe.ts
+@@ -21,6 +21,8 @@
+ if (!agents.length || new Set(agents).size !== agents.length || agents.some(agent => !["trace156", "ours156"].includes(agent))) throw Error("only trace156/ours156, once each");
+ const fixtureMode = args.find(arg => arg.startsWith("--fixture-mode="))?.slice("--fixture-mode=".length) ?? option("--fixture-mode", "public-install")!;
+ if (!["public-install", "command-line"].includes(fixtureMode)) throw Error("fixture-mode must be public-install or command-line");
++const browserPins = args.includes("--browser-pins");
++if (browserPins && fixtureMode !== "command-line") throw Error("--browser-pins requires explicit --fixture-mode command-line");
+ const diagnosticDisableFieldTrialConfig = args.includes("--diagnostic-disable-field-trial-config");
+ const fixtureEnvironmentArguments = ["--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking", "--noerrdialogs",
+   ...(diagnosticDisableFieldTrialConfig ? ["--disable-field-trial-config"] : [])];
+@@ -108,7 +110,7 @@
+   const current = statSync(file.path); return current.size === file.size && current.mtimeMs === file.mtimeMs;
+ };
+ const provenance = {
+-  capturedAt: new Date().toISOString(), fixtureMode, diagnosticDisableFieldTrialConfig, fixtureEnvironmentArguments, builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
++  capturedAt: new Date().toISOString(), fixtureMode, browserPins, diagnosticDisableFieldTrialConfig, fixtureEnvironmentArguments, builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
+   expectedStockSHA256, independentStockSibling,
+   traceMatchesVerifiedStock: packagedEngines.trace156.sha256 === expectedStockSHA256,
+   siblingMatchesVerifiedStock: independentStockSibling ? independentStockSibling.sha256 === expectedStockSHA256 : null,
+@@ -254,17 +256,23 @@
+   registry:["metadata","ready","identity","hashStable","baselinePins"],
+   "adopt-command-line":["metadata","ready","identity","hashStable","baselinePins","adopted","adoptionComplete","startupPending"],
+   install:["completion","completions"], "install-invalid":["completion","completions"],
+-  snapshot:["list","commands"], pins:[], command:["effects"], action:["callbacks"],
++  snapshot:["list","commands"], pins:[],
++  "browser-pin":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
++  "browser-unpin":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
++  "browser-move":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinAnchorLabel","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
++  command:["effects"], action:["callbacks"],
+   "background-js":["value"], disable:[], enable:[], reload:[], uninstall:[], cleanup:["cleanupCertified","outstandingInstalls","startupPending"],
+ };
+ function validRequiredValue(path: string, value: any): boolean {
+   const dictionary = (item: any): boolean => !!item && typeof item === "object" && !Array.isArray(item);
+   const completion = (item: any): boolean => dictionary(item) && typeof item.id === "string" && Number.isInteger(item.result) && typeof item.mainThread === "boolean" && typeof item.synchronous === "boolean";
+   const callback = (item: any): boolean => dictionary(item) && typeof item.selector === "string" && Array.isArray(item.payload) && typeof item.mainThread === "boolean" && (item.synchronous === null || typeof item.synchronous === "boolean");
+-  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified"].includes(path)) return typeof value === "boolean";
++  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"].includes(path)) return typeof value === "boolean";
++  if (["browserPinSelector","browserPinABI","browserPinLabel","browserPinAnchorLabel"].includes(path)) return typeof value === "string" && value.length > 0;
++  if (path === "browserPinArguments") return Array.isArray(value) && (value.length === 1 || value.length === 2) && typeof value[0] === "string" && (value.length === 1 || (Number.isSafeInteger(value[1]) && value[1] >= 0));
+   if (path === "operation") return typeof value === "string" && Object.hasOwn(requiredPaths,value);
+   if (path === "matches") return Number.isInteger(value) && value >= 0;
+-  if (["pinsAfter","baselinePins","outstandingInstalls","startupPending"].includes(path)) return Array.isArray(value) && value.every(item=>typeof item === "string");
++  if (["pinsBefore","pinsAfter","baselinePins","outstandingInstalls","startupPending"].includes(path)) return Array.isArray(value) && value.every(item=>typeof item === "string");
+   if (["metadata","infosAfter","owned","adopted"].includes(path)) return dictionary(value);
+   if (["list","commands","effects"].includes(path)) return Array.isArray(value);
+   if (path === "callbacks") return Array.isArray(value) && value.every(callback);
+@@ -280,7 +288,7 @@
+   // Pins are scoped to fixture IDs in semantic comparison; the full native
+   // baseline-preservation check is independently asserted during the run.
+   const rows = paths.map(path => {
+-    const semanticPath = path === "pinsAfter" ? "fixturePinsAfter" : path === "events" ? "eventOrder" : path === "baselinePins" ? "fixtureBaselinePins" : path;
++    const semanticPath = path === "pinsBefore" ? "fixturePinsBefore" : path === "pinsAfter" ? "fixturePinsAfter" : path === "events" ? "eventOrder" : path === "baselinePins" ? "fixtureBaselinePins" : path;
+     const present = Object.prototype.hasOwnProperty.call(action,path);
+     return {path, present, valid:present && validRequiredValue(path,action[path]), value:measured[semanticPath]};
+   });
+@@ -290,7 +298,7 @@
+ try {
+   for (const agent of agents) {
+     currentAgent = agent;
+-    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: ["ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only"] }; runs.push(run);
++    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: [browserPins ? "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only"] }; runs.push(run);
+     const dir = join(out, agent); mkdirSync(dir);
+     const app = resolve(root, `../arc/build/ArcModAgent-${agent}.app`), exe = join(app, "Contents/MacOS/Arc");
+     const plist = (key: string) => exec(["/usr/libexec/PlistBuddy", "-c", `Print :${key}`, join(app, "Contents/Info.plist")]);
+@@ -354,7 +362,7 @@
+       startupLoadIssued = fixtureMode === "command-line";
+       exec(["open", "-n", "-g", "-a", app,
+         "--env", `DYLD_INSERT_LIBRARIES=${dylib}:${recorder}`, "--env", `ARC_RECORD_PATH=${recordPath}`,
+-        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`,
++        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_PINS=${browserPins ? "1" : "0"}`,
+         "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args", ...fixtureEnvironmentArguments,
+         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${data}`, "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`, ...startupArguments]);
+       pid = await wait(() => pids(exe)[0], 30000); run.pid = pid;
+@@ -416,6 +424,48 @@
+       checkPins(await action("pins-AB-dedup", "pins", { labels: ["A", "B", "A"] }), ["A", "B"]);
+       checkPins(await action("pins-BA", "pins", { labels: ["B", "A"] }), ["B", "A"]);
+       checkPins(await action("pins-A", "pins", { labels: ["A"] }), ["A"]);
++      if (browserPins) {
++        const phase = async (step: string, operation: string, label: string, expected: string[], anchorLabel?: string) => {
++          const value = await action(step,operation,{label,...(anchorLabel ? {anchorLabel} : {})});
++          assert(value.browserMatches === 1 && value.browserPinIdentityVerified === true &&
++            value.browserPinBaselineBeforePreserved === true && value.browserPinBaselineAfterPreserved === true,
++            `${step}: browser identity/baseline guard did not pass`);
++          checkPins(value,expected);
++          assert(Array.isArray(value.pinsBefore) && Array.isArray(value.browserPinArguments) &&
++            value.browserPinArguments[0] === value.owned[label], `${step}: real browser arguments missing`);
++          if (operation === "browser-move") {
++            const index = value.browserPinArguments[1];
++            assert(Number.isSafeInteger(index) && index >= 0 && index < value.pinsBefore.length &&
++              value.pinsBefore[index] === value.owned[anchorLabel!], `${step}: target index is not the actual owned anchor`);
++            const expectedFull = [...value.pinsBefore];
++            const source = expectedFull.indexOf(value.owned[label]);
++            assert(source >= 0,`${step}: moved fixture was not pinned`);
++            expectedFull.splice(source,1); expectedFull.splice(index,0,value.owned[label]);
++            assert(JSON.stringify(value.pinsAfter) === JSON.stringify(expectedFull),`${step}: full visible pin splice differs`);
++          }
++          return value;
++        };
++        const entryPins = await phase("browser-unpin-A-start","browser-unpin","A",[]);
++        await phase("browser-pin-A","browser-pin","A",["A"]);
++        await phase("browser-pin-A-again","browser-pin","A",["A"]);
++        const both = await phase("browser-pin-B","browser-pin","B",["A","B"]);
++        assert(both.pinsAfter.indexOf(both.owned.B) === both.pinsAfter.indexOf(both.owned.A) + 1,
++          "browser pin fixtures are not adjacent; move precondition unproved");
++        const observedToolbarIDs = both.callbacks.flatMap((event: any) => event.selector === "browser:didUpdateExtensionToolbarActions:" ? event.payload[0].map((item: any) => item.id) : event.selector === "browser:didUpdateExtensionToolbarAction:" ? [event.payload[0]?.id] : []);
++        assert([both.owned.A,both.owned.B].every(id => observedToolbarIDs.includes(id)),
++          "browser move precondition failed: no actual toolbar snapshots prove both fixture action models");
++        await phase("browser-move-B-left","browser-move","B",["B","A"],"A");
++        await phase("browser-move-B-same","browser-move","B",["B","A"],"B");
++        await phase("browser-move-B-right","browser-move","B",["A","B"],"A");
++        await phase("browser-unpin-A","browser-unpin","A",["B"]);
++        await phase("browser-unpin-A-again","browser-unpin","A",["B"]);
++        await phase("browser-unpin-B","browser-unpin","B",[]);
++        const restoredPins = await phase("browser-pin-A-restore","browser-pin","A",["A"]);
++        assert(JSON.stringify(restoredPins.pinsAfter) === JSON.stringify(entryPins.pinsBefore),
++          "browser pin phase did not restore its full entry order");
++        run.uncovered = run.uncovered.filter(value => !value.startsWith("ArcBrowser pinExtension:"));
++        run.uncovered.push("Browser pin/unpin/move exercised only for enabled nonce-owned A/B; disabled/OTR/force-pinned/invalid-ID/index paths remain uncovered");
++      }
+       const beforeCommand = effects.length;
+       const command = await action("command-A", "command", { label: "A", command: "probe-command" });
+       command.effects = await wait(() => { const events = effects.slice(beforeCommand).filter(event => event.agent === agent && event.label === "A" && event.value.kind === "command"); return events.length ? events : undefined; }, 8000);
+@@ -552,7 +602,7 @@
+     return { selector: event.selector, payload, mainThread: event.mainThread, synchronous: event.synchronous };
+   };
+   const callbacks = (action.callbacks ?? []).map(scopeCallback).filter(Boolean);
+-  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value"];
++  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value", "browserPinSelector", "browserPinABI", "browserPinLabel", "browserPinArguments", "browserPinAnchorLabel", "browserPinIdentityVerified", "browserPinBaselineBeforePreserved", "browserPinBaselineAfterPreserved"];
+   const result: Record<string, any> = Object.fromEntries(keep.filter(key => key in action).map(key => [key, action[key]]));
+   result.callbacks = callbacks;
+   result.eventOrder = (action.events ?? []).flatMap((event: any) => {
+@@ -560,6 +610,7 @@
+     const callback = scopeCallback(event.value);
+     return callback ? [{ type: "delegate", value: callback }] : [];
+   });
++  if ("pinsBefore" in action) result.fixturePinsBefore = action.pinsBefore.filter(own);
+   result.fixturePinsAfter = (action.pinsAfter ?? []).filter(own);
+   if ("baselinePins" in action) result.fixtureBaselinePins = action.baselinePins === null ? null : action.baselinePins.filter(own);
+   if (action.effects) result.effects = action.effects.map(({ label, value }: any) => ({ label, value }));
+@@ -631,7 +682,7 @@
+   "Recorder v2 excludes probe-image calls. Exact helper semantic and required-row sidecars are a separate evidence stream, not synthetic recorder rows. Without a verified paired fixture-call/return inventory, standardBoundaryParity and boundaryMethodParity remain null even if retained app/engine rows compare cleanly. Known mismatches remain false and dominate unavailable coverage. At least one valid paired helper observation is required for observedParity.",
+   "Scoped boundary records preserve true caller labels and may include real app callbacks or app/engine calls. V2 excludes probe-image DTO getters/public calls; no fake app attribution or caller-label removal is used.",
+   "Existing diff.py renumbers recording object identities and masks loopback ports, temporary folders and UUID strings. The exact supplemental semantic comparison applies none of those string masks.",
+-  "ArcBrowser pinExtension:, unpinExtension:, moveExtension:targetIndex: are metadata-only here; their executable behavior is uncovered. Context setPinnedExtensionOrder: is exercised separately when the native enable precondition permits it.",
++  browserPins ? "Explicit --browser-pins CLI phase calls real browser pin/unpin/move selectors only on enabled nonce-owned A/B, with exact service/browser identity, Q target ABI, actual before/after ordered snapshots, untouched baseline assertions, and no synthetic callbacks; default sequence and original cleanup remain. Invalid/disabled/OTR/force-pinned paths remain uncovered." : "ArcBrowser pinExtension:, unpinExtension:, moveExtension:targetIndex: are metadata-only here; their executable behavior is uncovered. Context setPinnedExtensionOrder: is exercised separately when the native enable precondition permits it.",
+   "MV3 background-page JavaScript negative path only; positive legacy background-page execution is uncovered and no legacy fixture is enabled.",
+   "Browser captures retain all weak live browser/delegate entries per context; ambiguous selection fails a probe precondition. Action-B onClicked effects must prove a real numeric tab ID and the exact nonce fixture URL; no activation is attempted.",
+   "Context command dispatch targets an enabled extension, supplies only its command string, sets user gesture, and has no target-tab or independent activeTab permission-grant coverage. Listener argumentCount/types and noTab are retained exactly; optional undefined binding padding is observed rather than invented or normalized.",

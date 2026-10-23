@@ -1,0 +1,1763 @@
+{
+  "agent": "trace156",
+  "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+  "base": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+  "scope": "Two individually closed tabs persisted across a clean app quit and relaunch; excludes full-window and open-session startup parity; supplemental public API evidence, not canonical golden.",
+  "phases": [
+    {
+      "phase": "launch-1",
+      "time": "2026-10-23T12:09:39.771Z"
+    },
+    {
+      "phase": "ready-1",
+      "time": "2026-10-23T12:09:42.732Z",
+      "pid": 91869
+    },
+    {
+      "phase": "create-two-history-tabs",
+      "time": "2026-10-23T12:09:42.968Z",
+      "pid": 91869
+    },
+    {
+      "phase": "capture-source-fixtures",
+      "time": "2026-10-23T12:09:44.463Z",
+      "pid": 91869
+    },
+    {
+      "phase": "close-tab1",
+      "time": "2026-10-23T12:09:44.649Z",
+      "pid": 91869
+    },
+    {
+      "phase": "close-tab2",
+      "time": "2026-10-23T12:09:45.029Z",
+      "pid": 91869
+    },
+    {
+      "phase": "await-natural-storage-file",
+      "time": "2026-10-23T12:09:45.578Z",
+      "pid": 91869
+    },
+    {
+      "phase": "appkit-shutdown-1",
+      "time": "2026-10-23T12:09:47.393Z",
+      "pid": 91869
+    },
+    {
+      "phase": "exited-1",
+      "time": "2026-10-23T12:09:47.635Z"
+    },
+    {
+      "phase": "launch-2",
+      "time": "2026-10-23T12:09:47.734Z"
+    },
+    {
+      "phase": "ready-2",
+      "time": "2026-10-23T12:09:50.405Z",
+      "pid": 92333
+    },
+    {
+      "phase": "resume-tab1",
+      "time": "2026-10-23T12:09:50.642Z",
+      "pid": 92333
+    },
+    {
+      "phase": "resume-tab2",
+      "time": "2026-10-23T12:09:50.823Z",
+      "pid": 92333
+    },
+    {
+      "phase": "await-persisted-ID-eligibility",
+      "time": "2026-10-23T12:09:51.010Z",
+      "pid": 92333
+    },
+    {
+      "phase": "restore-tab1",
+      "time": "2026-10-23T12:09:51.196Z",
+      "pid": 92333
+    },
+    {
+      "phase": "restore-tab2",
+      "time": "2026-10-23T12:09:51.774Z",
+      "pid": 92333
+    },
+    {
+      "phase": "closed-tab-restart-contract-pass",
+      "time": "2026-10-23T12:09:52.532Z",
+      "pid": 92333
+    },
+    {
+      "phase": "appkit-shutdown-2",
+      "time": "2026-10-23T12:09:52.587Z",
+      "pid": 92333
+    },
+    {
+      "phase": "exited-2",
+      "time": "2026-10-23T12:09:52.826Z"
+    },
+    {
+      "phase": "complete",
+      "time": "2026-10-23T12:09:52.826Z"
+    }
+  ],
+  "observations": [
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-1",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "capture",
+      "pid": 91869,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "type": "captured"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": true,
+            "restorationID": null,
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": true,
+            "restorationID": null,
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/1"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-2",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "close",
+      "pid": 91869,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "type": "captured"
+          },
+          {
+            "id": "1508786197",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 1,
+            "sourceID": "1508786195",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": true,
+            "closes": [
+              {
+                "id": "1508786197",
+                "insideAction": true,
+                "main": true,
+                "nilID": false,
+                "order": 1,
+                "sourceID": "1508786195",
+                "type": "closed",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+              }
+            ],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": true,
+            "restorationID": null,
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/1"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-3",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "status",
+      "pid": 91869,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "type": "captured"
+          },
+          {
+            "id": "1508786197",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 1,
+            "sourceID": "1508786195",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": true,
+            "closes": [
+              {
+                "id": "1508786197",
+                "insideAction": true,
+                "main": true,
+                "nilID": false,
+                "order": 1,
+                "sourceID": "1508786195",
+                "type": "closed",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+              }
+            ],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": true,
+            "restorationID": null,
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/1"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-4",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "close",
+      "pid": 91869,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "type": "captured"
+          },
+          {
+            "id": "1508786197",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 1,
+            "sourceID": "1508786195",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 2,
+            "sourceID": "1508786196",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": true,
+            "closes": [
+              {
+                "id": "1508786197",
+                "insideAction": true,
+                "main": true,
+                "nilID": false,
+                "order": 1,
+                "sourceID": "1508786195",
+                "type": "closed",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+              }
+            ],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": true,
+            "closes": [
+              {
+                "id": "1508786198",
+                "insideAction": true,
+                "main": true,
+                "nilID": false,
+                "order": 2,
+                "sourceID": "1508786196",
+                "type": "closed",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+              }
+            ],
+            "oldInitialized": false,
+            "restorationID": "1508786198",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/1"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-5",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "status",
+      "pid": 91869,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "type": "captured"
+          },
+          {
+            "id": "1508786197",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 1,
+            "sourceID": "1508786195",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 2,
+            "sourceID": "1508786196",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": true,
+            "closes": [
+              {
+                "id": "1508786197",
+                "insideAction": true,
+                "main": true,
+                "nilID": false,
+                "order": 1,
+                "sourceID": "1508786195",
+                "type": "closed",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+              }
+            ],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": true,
+            "closes": [
+              {
+                "id": "1508786198",
+                "insideAction": true,
+                "main": true,
+                "nilID": false,
+                "order": 2,
+                "sourceID": "1508786196",
+                "type": "closed",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+              }
+            ],
+            "oldInitialized": false,
+            "restorationID": "1508786198",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/1"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-6",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "status",
+      "pid": 91869,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "type": "captured"
+          },
+          {
+            "id": "1508786197",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 1,
+            "sourceID": "1508786195",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 2,
+            "sourceID": "1508786196",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": true,
+            "closes": [
+              {
+                "id": "1508786197",
+                "insideAction": true,
+                "main": true,
+                "nilID": false,
+                "order": 1,
+                "sourceID": "1508786195",
+                "type": "closed",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+              }
+            ],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": true,
+            "closes": [
+              {
+                "id": "1508786198",
+                "insideAction": true,
+                "main": true,
+                "nilID": false,
+                "order": 2,
+                "sourceID": "1508786196",
+                "type": "closed",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+              }
+            ],
+            "oldInitialized": false,
+            "restorationID": "1508786198",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/1"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-8",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "resume",
+      "pid": 92333,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "id": "1508786197",
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "sourceID": "1508786195",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-9",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "resume",
+      "pid": 92333,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "id": "1508786197",
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "sourceID": "1508786195",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "insideAction": false,
+            "main": true,
+            "order": 1,
+            "sourceID": "1508786196",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786198",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-10",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "status",
+      "pid": 92333,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "id": "1508786197",
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "sourceID": "1508786195",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "insideAction": false,
+            "main": true,
+            "order": 1,
+            "sourceID": "1508786196",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786198",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-11",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "restore",
+      "pid": 92333,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "id": "1508786197",
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "sourceID": "1508786195",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "insideAction": false,
+            "main": true,
+            "order": 1,
+            "sourceID": "1508786196",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": null,
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": true,
+            "restores": [],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786198",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-12",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "status",
+      "pid": 92333,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "id": "1508786197",
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "sourceID": "1508786195",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "insideAction": false,
+            "main": true,
+            "order": 1,
+            "sourceID": "1508786196",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          },
+          {
+            "id": "1508786197",
+            "initialized": true,
+            "insideAction": false,
+            "main": true,
+            "order": 2,
+            "type": "restored",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": "1508786197",
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": true,
+            "restoredLiveID": "1508786250",
+            "restoredURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B",
+            "restoreRequested": true,
+            "restores": [
+              {
+                "id": "1508786197",
+                "initialized": true,
+                "insideAction": false,
+                "main": true,
+                "order": 2,
+                "type": "restored",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+              }
+            ],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": true,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786198",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": false,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-13",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "restore",
+      "pid": 92333,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "id": "1508786197",
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "sourceID": "1508786195",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "insideAction": false,
+            "main": true,
+            "order": 1,
+            "sourceID": "1508786196",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          },
+          {
+            "id": "1508786197",
+            "initialized": true,
+            "insideAction": false,
+            "main": true,
+            "order": 2,
+            "type": "restored",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": "1508786197",
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": true,
+            "restoredLiveID": "1508786250",
+            "restoredURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B",
+            "restoreRequested": true,
+            "restores": [
+              {
+                "id": "1508786197",
+                "initialized": true,
+                "insideAction": false,
+                "main": true,
+                "order": 2,
+                "type": "restored",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+              }
+            ],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": null,
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786198",
+            "restoredInitialized": false,
+            "restoredLiveID": null,
+            "restoredURL": null,
+            "restoreRequested": true,
+            "restores": [],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-14",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "status",
+      "pid": 92333,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "id": "1508786197",
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "sourceID": "1508786195",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "insideAction": false,
+            "main": true,
+            "order": 1,
+            "sourceID": "1508786196",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          },
+          {
+            "id": "1508786197",
+            "initialized": true,
+            "insideAction": false,
+            "main": true,
+            "order": 2,
+            "type": "restored",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "initialized": true,
+            "insideAction": false,
+            "main": true,
+            "order": 3,
+            "type": "restored",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": "1508786197",
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": true,
+            "restoredLiveID": "1508786250",
+            "restoredURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B",
+            "restoreRequested": true,
+            "restores": [
+              {
+                "id": "1508786197",
+                "initialized": true,
+                "insideAction": false,
+                "main": true,
+                "order": 2,
+                "type": "restored",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+              }
+            ],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": "1508786198",
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786198",
+            "restoredInitialized": true,
+            "restoredLiveID": "1508786251",
+            "restoredURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B",
+            "restoreRequested": true,
+            "restores": [
+              {
+                "id": "1508786198",
+                "initialized": true,
+                "insideAction": false,
+                "main": true,
+                "order": 3,
+                "type": "restored",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+              }
+            ],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+      }
+    },
+    {
+      "id": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db-15",
+      "nonce": "arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db",
+      "ok": true,
+      "operation": "status",
+      "pid": 92333,
+      "state": {
+        "browserInitialized": true,
+        "contextKey": "Default/0",
+        "error": null,
+        "events": [
+          {
+            "id": "1508786197",
+            "insideAction": false,
+            "main": true,
+            "order": 0,
+            "sourceID": "1508786195",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "insideAction": false,
+            "main": true,
+            "order": 1,
+            "sourceID": "1508786196",
+            "type": "resumed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          },
+          {
+            "id": "1508786197",
+            "initialized": true,
+            "insideAction": false,
+            "main": true,
+            "order": 2,
+            "type": "restored",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "id": "1508786198",
+            "initialized": true,
+            "insideAction": false,
+            "main": true,
+            "order": 3,
+            "type": "restored",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "records": [
+          {
+            "callbackID": "1508786197",
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786197",
+            "restoredInitialized": true,
+            "restoredLiveID": "1508786250",
+            "restoredURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B",
+            "restoreRequested": true,
+            "restores": [
+              {
+                "id": "1508786197",
+                "initialized": true,
+                "insideAction": false,
+                "main": true,
+                "order": 2,
+                "type": "restored",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+              }
+            ],
+            "sourceID": "1508786195",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          },
+          {
+            "callbackID": "1508786198",
+            "canRestore": false,
+            "closeRequested": false,
+            "closes": [],
+            "oldInitialized": false,
+            "restorationID": "1508786198",
+            "restoredInitialized": true,
+            "restoredLiveID": "1508786251",
+            "restoredURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B",
+            "restoreRequested": true,
+            "restores": [
+              {
+                "id": "1508786198",
+                "initialized": true,
+                "insideAction": false,
+                "main": true,
+                "order": 3,
+                "type": "restored",
+                "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+              }
+            ],
+            "sourceID": "1508786196",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sentinelInitialized": true,
+        "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+      }
+    }
+  ],
+  "shutdowns": [
+    {
+      "pid": 91869,
+      "launch": 1,
+      "acknowledged": true,
+      "exited": true,
+      "method": "NSApp terminate on main GCD"
+    },
+    {
+      "pid": 92333,
+      "launch": 2,
+      "acknowledged": true,
+      "exited": true,
+      "method": "NSApp terminate on main GCD"
+    }
+  ],
+  "pass": true,
+  "phase": "complete",
+  "pid1": 91869,
+  "before": {
+    "tab1": {
+      "index": 1,
+      "pages": [
+        "FIXTURE/tab1/A",
+        "FIXTURE/tab1/B",
+        "FIXTURE/tab1/C"
+      ],
+      "titles": [
+        "Sessions tab1 A",
+        "Sessions tab1 B",
+        "Sessions tab1 C"
+      ]
+    },
+    "tab2": {
+      "index": 1,
+      "pages": [
+        "FIXTURE/tab2/A",
+        "FIXTURE/tab2/B",
+        "FIXTURE/tab2/C"
+      ],
+      "titles": [
+        "Sessions tab2 A",
+        "Sessions tab2 B",
+        "Sessions tab2 C"
+      ]
+    }
+  },
+  "captured": {
+    "browserInitialized": true,
+    "contextKey": "Default/0",
+    "error": null,
+    "events": [
+      {
+        "insideAction": false,
+        "main": true,
+        "order": 0,
+        "type": "captured"
+      }
+    ],
+    "records": [
+      {
+        "callbackID": null,
+        "canRestore": false,
+        "closeRequested": false,
+        "closes": [],
+        "oldInitialized": true,
+        "restorationID": null,
+        "restoredInitialized": false,
+        "restoredLiveID": null,
+        "restoredURL": null,
+        "restoreRequested": false,
+        "restores": [],
+        "sourceID": "1508786195",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+      },
+      {
+        "callbackID": null,
+        "canRestore": false,
+        "closeRequested": false,
+        "closes": [],
+        "oldInitialized": true,
+        "restorationID": null,
+        "restoredInitialized": false,
+        "restoredLiveID": null,
+        "restoredURL": null,
+        "restoreRequested": false,
+        "restores": [],
+        "sourceID": "1508786196",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+      }
+    ],
+    "sentinelInitialized": true,
+    "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/1"
+  },
+  "closed": [
+    {
+      "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B",
+      "sourceID": "1508786195",
+      "restorationID": "1508786197",
+      "contextKey": "Default/0",
+      "raw": {
+        "callbackID": null,
+        "canRestore": true,
+        "closeRequested": true,
+        "closes": [
+          {
+            "id": "1508786197",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 1,
+            "sourceID": "1508786195",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          }
+        ],
+        "oldInitialized": false,
+        "restorationID": "1508786197",
+        "restoredInitialized": false,
+        "restoredLiveID": null,
+        "restoredURL": null,
+        "restoreRequested": false,
+        "restores": [],
+        "sourceID": "1508786195",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+      }
+    },
+    {
+      "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B",
+      "sourceID": "1508786196",
+      "restorationID": "1508786198",
+      "contextKey": "Default/0",
+      "raw": {
+        "callbackID": null,
+        "canRestore": true,
+        "closeRequested": true,
+        "closes": [
+          {
+            "id": "1508786198",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 2,
+            "sourceID": "1508786196",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "oldInitialized": false,
+        "restorationID": "1508786198",
+        "restoredInitialized": false,
+        "restoredLiveID": null,
+        "restoredURL": null,
+        "restoreRequested": false,
+        "restores": [],
+        "sourceID": "1508786196",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+      }
+    }
+  ],
+  "beforeQuit": {
+    "browserInitialized": true,
+    "contextKey": "Default/0",
+    "error": null,
+    "events": [
+      {
+        "insideAction": false,
+        "main": true,
+        "order": 0,
+        "type": "captured"
+      },
+      {
+        "id": "1508786197",
+        "insideAction": true,
+        "main": true,
+        "nilID": false,
+        "order": 1,
+        "sourceID": "1508786195",
+        "type": "closed",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+      },
+      {
+        "id": "1508786198",
+        "insideAction": true,
+        "main": true,
+        "nilID": false,
+        "order": 2,
+        "sourceID": "1508786196",
+        "type": "closed",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+      }
+    ],
+    "records": [
+      {
+        "callbackID": null,
+        "canRestore": true,
+        "closeRequested": true,
+        "closes": [
+          {
+            "id": "1508786197",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 1,
+            "sourceID": "1508786195",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          }
+        ],
+        "oldInitialized": false,
+        "restorationID": "1508786197",
+        "restoredInitialized": false,
+        "restoredLiveID": null,
+        "restoredURL": null,
+        "restoreRequested": false,
+        "restores": [],
+        "sourceID": "1508786195",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+      },
+      {
+        "callbackID": null,
+        "canRestore": true,
+        "closeRequested": true,
+        "closes": [
+          {
+            "id": "1508786198",
+            "insideAction": true,
+            "main": true,
+            "nilID": false,
+            "order": 2,
+            "sourceID": "1508786196",
+            "type": "closed",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "oldInitialized": false,
+        "restorationID": "1508786198",
+        "restoredInitialized": false,
+        "restoredLiveID": null,
+        "restoredURL": null,
+        "restoreRequested": false,
+        "restores": [],
+        "sourceID": "1508786196",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+      }
+    ],
+    "sentinelInitialized": true,
+    "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/1"
+  },
+  "storageBeforeQuit": {
+    "scope": "opaque storage presence only; no payload inspection, decryption, or fixture-content claim",
+    "agent": "trace156",
+    "contextKey": "Default/0",
+    "observedAt": "2026-10-23T12:09:47.343Z",
+    "selected": {
+      "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/User Data/Default/Sessions_Encrypted/Tabs_13437230987283266",
+      "name": "Tabs_13437230987283266",
+      "generation": "13437230987283266",
+      "size": 6775,
+      "mtime": "2026-10-23T12:09:47.283Z",
+      "sha256": "04f8fa0e6f7bafbb24142f4f7fb013fea839b7cd0bc5829d632363e965b76eff",
+      "version": 5,
+      "encrypted": true
+    },
+    "files": [
+      {
+        "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/User Data/Default/Sessions_Encrypted/Tabs_13437230987283266",
+        "name": "Tabs_13437230987283266",
+        "generation": "13437230987283266",
+        "size": 6775,
+        "mtime": "2026-10-23T12:09:47.283Z",
+        "sha256": "04f8fa0e6f7bafbb24142f4f7fb013fea839b7cd0bc5829d632363e965b76eff",
+        "version": 5,
+        "encrypted": true
+      },
+      {
+        "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/User Data/Default/Sessions/Tabs_13437230987282926",
+        "name": "Tabs_13437230987282926",
+        "generation": "13437230987282926",
+        "size": 6643,
+        "mtime": "2026-10-23T12:09:47.283Z",
+        "sha256": "5ef7728dc237273b656b888448cb41c17fc9af8cacfbd338a6e9839c87d16206",
+        "version": 3,
+        "encrypted": false
+      }
+    ]
+  },
+  "storageAfterQuit": {
+    "scope": "opaque storage presence only; no payload inspection, decryption, or fixture-content claim",
+    "agent": "trace156",
+    "contextKey": "Default/0",
+    "observedAt": "2026-10-23T12:09:47.635Z",
+    "selected": {
+      "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/User Data/Default/Sessions_Encrypted/Tabs_13437230987283266",
+      "name": "Tabs_13437230987283266",
+      "generation": "13437230987283266",
+      "size": 6775,
+      "mtime": "2026-10-23T12:09:47.283Z",
+      "sha256": "04f8fa0e6f7bafbb24142f4f7fb013fea839b7cd0bc5829d632363e965b76eff",
+      "version": 5,
+      "encrypted": true
+    },
+    "files": [
+      {
+        "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/User Data/Default/Sessions_Encrypted/Tabs_13437230987283266",
+        "name": "Tabs_13437230987283266",
+        "generation": "13437230987283266",
+        "size": 6775,
+        "mtime": "2026-10-23T12:09:47.283Z",
+        "sha256": "04f8fa0e6f7bafbb24142f4f7fb013fea839b7cd0bc5829d632363e965b76eff",
+        "version": 5,
+        "encrypted": true
+      },
+      {
+        "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/User Data/Default/Sessions/Tabs_13437230987282926",
+        "name": "Tabs_13437230987282926",
+        "generation": "13437230987282926",
+        "size": 6643,
+        "mtime": "2026-10-23T12:09:47.283Z",
+        "sha256": "5ef7728dc237273b656b888448cb41c17fc9af8cacfbd338a6e9839c87d16206",
+        "version": 3,
+        "encrypted": false
+      }
+    ]
+  },
+  "pid2": 92333,
+  "resumed": [
+    {
+      "browserInitialized": true,
+      "contextKey": "Default/0",
+      "error": null,
+      "events": [
+        {
+          "id": "1508786197",
+          "insideAction": false,
+          "main": true,
+          "order": 0,
+          "sourceID": "1508786195",
+          "type": "resumed",
+          "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+        }
+      ],
+      "records": [
+        {
+          "callbackID": null,
+          "canRestore": true,
+          "closeRequested": false,
+          "closes": [],
+          "oldInitialized": false,
+          "restorationID": "1508786197",
+          "restoredInitialized": false,
+          "restoredLiveID": null,
+          "restoredURL": null,
+          "restoreRequested": false,
+          "restores": [],
+          "sourceID": "1508786195",
+          "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+        }
+      ],
+      "sentinelInitialized": true,
+      "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+    },
+    {
+      "browserInitialized": true,
+      "contextKey": "Default/0",
+      "error": null,
+      "events": [
+        {
+          "id": "1508786197",
+          "insideAction": false,
+          "main": true,
+          "order": 0,
+          "sourceID": "1508786195",
+          "type": "resumed",
+          "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+        },
+        {
+          "id": "1508786198",
+          "insideAction": false,
+          "main": true,
+          "order": 1,
+          "sourceID": "1508786196",
+          "type": "resumed",
+          "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+        }
+      ],
+      "records": [
+        {
+          "callbackID": null,
+          "canRestore": true,
+          "closeRequested": false,
+          "closes": [],
+          "oldInitialized": false,
+          "restorationID": "1508786197",
+          "restoredInitialized": false,
+          "restoredLiveID": null,
+          "restoredURL": null,
+          "restoreRequested": false,
+          "restores": [],
+          "sourceID": "1508786195",
+          "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+        },
+        {
+          "callbackID": null,
+          "canRestore": true,
+          "closeRequested": false,
+          "closes": [],
+          "oldInitialized": false,
+          "restorationID": "1508786198",
+          "restoredInitialized": false,
+          "restoredLiveID": null,
+          "restoredURL": null,
+          "restoreRequested": false,
+          "restores": [],
+          "sourceID": "1508786196",
+          "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+        }
+      ],
+      "sentinelInitialized": true,
+      "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+    }
+  ],
+  "restoredHistory": {
+    "tab1": {
+      "index": 1,
+      "pages": [
+        "FIXTURE/tab1/A",
+        "FIXTURE/tab1/B",
+        "FIXTURE/tab1/C"
+      ],
+      "titles": [
+        "Sessions tab1 A",
+        "Sessions tab1 B",
+        "Sessions tab1 C"
+      ]
+    },
+    "tab2": {
+      "index": 1,
+      "pages": [
+        "FIXTURE/tab2/A",
+        "FIXTURE/tab2/B",
+        "FIXTURE/tab2/C"
+      ],
+      "titles": [
+        "Sessions tab2 A",
+        "Sessions tab2 B",
+        "Sessions tab2 C"
+      ]
+    }
+  },
+  "after": {
+    "browserInitialized": true,
+    "contextKey": "Default/0",
+    "error": null,
+    "events": [
+      {
+        "id": "1508786197",
+        "insideAction": false,
+        "main": true,
+        "order": 0,
+        "sourceID": "1508786195",
+        "type": "resumed",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+      },
+      {
+        "id": "1508786198",
+        "insideAction": false,
+        "main": true,
+        "order": 1,
+        "sourceID": "1508786196",
+        "type": "resumed",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+      },
+      {
+        "id": "1508786197",
+        "initialized": true,
+        "insideAction": false,
+        "main": true,
+        "order": 2,
+        "type": "restored",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+      },
+      {
+        "id": "1508786198",
+        "initialized": true,
+        "insideAction": false,
+        "main": true,
+        "order": 3,
+        "type": "restored",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+      }
+    ],
+    "records": [
+      {
+        "callbackID": "1508786197",
+        "canRestore": false,
+        "closeRequested": false,
+        "closes": [],
+        "oldInitialized": false,
+        "restorationID": "1508786197",
+        "restoredInitialized": true,
+        "restoredLiveID": "1508786250",
+        "restoredURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B",
+        "restoreRequested": true,
+        "restores": [
+          {
+            "id": "1508786197",
+            "initialized": true,
+            "insideAction": false,
+            "main": true,
+            "order": 2,
+            "type": "restored",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+          }
+        ],
+        "sourceID": "1508786195",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab1/B"
+      },
+      {
+        "callbackID": "1508786198",
+        "canRestore": false,
+        "closeRequested": false,
+        "closes": [],
+        "oldInitialized": false,
+        "restorationID": "1508786198",
+        "restoredInitialized": true,
+        "restoredLiveID": "1508786251",
+        "restoredURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B",
+        "restoreRequested": true,
+        "restores": [
+          {
+            "id": "1508786198",
+            "initialized": true,
+            "insideAction": false,
+            "main": true,
+            "order": 3,
+            "type": "restored",
+            "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+          }
+        ],
+        "sourceID": "1508786196",
+        "url": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/tab2/B"
+      }
+    ],
+    "sentinelInitialized": true,
+    "sentinelURL": "http://127.0.0.1:58346/arc-sessions-restart-5196b4b5-3177-41c0-bcca-d2459f7bc7db/sentinel/2"
+  },
+  "contractPass": true
+}

@@ -27,9 +27,14 @@ after, snapshot = identity(source), identity(frozen)
 assert before == after and snapshot['sha256'] == before['sha256'], 'recorder changed while freezing'
 output.write_text(json.dumps({'source': before, 'frozen': snapshot}, indent=2) + '\n')
 PY
+comparison_snapshot="$(mktemp -d "$E/results/webextras-values/comparator.XXXXXX")"
+python3 -B "$E/arc/browser/webextras_fixture_inputs.py" freeze "$E" "$comparison_snapshot" probe \
+  > "$E/results/webextras-values/comparison-identity.json"
+comparison_helper="$comparison_snapshot/arc/browser/webextras_fixture_inputs.py"
 original="$E/../arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
 ours="$E/chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
 for name in original ours; do
+  python3 -B "$comparison_helper" verify "$comparison_snapshot" >/dev/null
   framework="$original"; [ "$name" != ours ] || framework="$ours"
   out="$E/results/webextras-values/$name"
   mkdir -p "$out"
@@ -64,12 +69,16 @@ before = json.loads((out/'provenance-before.json').read_text())
 assert all(before[key] == after[key] for key in ('realpath', 'size', 'mtimeNs', 'sha256')), 'framework changed during probe'
 PY
 done
-python3 - <<'PY'
+python3 -B - "$comparison_snapshot" <<'PY'
 import collections
 import json
 import subprocess
+import sys
 from pathlib import Path
 root = Path('results/webextras-values')
+comparison_snapshot = Path(sys.argv[1])
+comparison_helper = comparison_snapshot/'arc/browser/webextras_fixture_inputs.py'
+comparison = json.loads((comparison_snapshot/'comparison-inputs.json').read_text())
 for filename in ('values.json', 'recorded-values.json'):
     original = json.loads((root/'original'/filename).read_text())
     ours = json.loads((root/'ours'/filename).read_text())
@@ -108,16 +117,21 @@ for name, rows in zip(('original', 'ours'), records):
         else:
             assert row.get('ev') == 'ret' and stack and 'ret' in row, name
             call = stack.pop()
-            assert row.get('depth') == len(stack) and all(call[field] == row[field] for field in
-                   ('thread', 'dir', 'kind', 'cls', 'sel', 'self')), name
+            assert row.get('depth') == len(stack) and all(call.get(field) == row.get(field) for field in
+                   ('thread', 'dir', 'kind', 'cls', 'sel', 'self', 'from')), name
     assert not stack and counts == expected, f'{name}: incomplete recorded value coverage: {counts}'
-if all(any('from' in row for row in rows) for rows in records):
-    raise SystemExit('JSON/metadata parity verified; recorder diff requires an explicit fixture-caller comparison mode')
+if comparison['capability']['verified'] is not True:
+    raise SystemExit('JSON/metadata parity verified; pending fixture-comparison support (frozen capability check failed)')
+for name, rows in zip(('original', 'ours'), records):
+    assert all(row.get('from') == 'probe' for row in rows if row.get('ev') in ('call', 'ret')), name + ': missing/mixed caller attribution'
+    assert sum(row.get('ev') == 'call' for row in rows) == 72, name
+    assert sum(row.get('ev') == 'ret' for row in rows) == 72, name
 with (root/'diff.txt').open('w') as output:
-    subprocess.run(['python3', 'tests/recorder/diff.py', str(root/'original/record.jsonl'),
-                    str(root/'ours/record.jsonl'), '--json', str(root/'diff.json')], stdout=output, check=True)
+    subprocess.run([sys.executable, '-B', str(comparison_helper), 'compare', str(comparison_snapshot), 'probe',
+                    str(root/'original/record.jsonl'), str(root/'ours/record.jsonl'), '72', str(root/'diff.json')], stdout=output, check=True)
 print('\n'.join((root/'diff.txt').read_text().splitlines()[:2]))
 report = json.loads((root/'diff.json').read_text())
 for key in ('missing','extra','return_mismatch','arg_mismatch','count_mismatch'):
     assert not report[key], key
+assert report['callback_sequence']['first_divergence'] is None
 PY

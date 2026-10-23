@@ -3,8 +3,11 @@
 
 #import <objc/runtime.h>
 
+#include <memory>
+
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/current_thread.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -25,9 +28,17 @@ class TerminationRequest final {
  public:
   bool active() const { return active_; }
   void Begin(void (^completion)(NSUInteger)) {
-    NSLog(@"Arc termination: begin");
     active_ = true;
     completion_ = [completion copy];
+    // CDP initiates AppKit termination from inside a Chromium task. AppKit
+    // waits in a native nested loop after tryToTerminate: returns, so its
+    // storage replies and timeout must remain runnable until we reply. A
+    // stack guard here would end before that native loop starts.
+    if (completion_ &&
+        !base::CurrentThread::Get().ApplicationTasksAllowedInNativeNestedLoop()) {
+      nested_tasks_ = std::make_unique<
+          base::CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop>();
+    }
     // Native starts preflight before returning NSTerminateLater. A posted
     // Chromium task may be suppressed by Cocoa's nested termination loop.
     Check();
@@ -35,7 +46,6 @@ class TerminationRequest final {
 
  private:
   void BeforeUnloadResult(bool allowed) {
-    NSLog(@"Arc termination: beforeunload %d", allowed);
     if (!active_ || approved_) return;
     if (allowed) {
       Check();
@@ -49,6 +59,7 @@ class TerminationRequest final {
     completion_ = nil;
     active_ = false;
     weak_factory_.InvalidateWeakPtrs();
+    nested_tasks_.reset();
     if (completion) completion(0);
   }
   void Check() {
@@ -65,7 +76,6 @@ class TerminationRequest final {
         }
         return true;
       });
-      NSLog(@"Arc termination: preflight waiting=%d", waiting);
       if (waiting || !active_) return;
       approved_ = true;
       browsers->ForEach([](BrowserWindowInterface* browser) {
@@ -106,18 +116,17 @@ class TerminationRequest final {
     return base::BindOnce(&TerminationRequest::FlushDone, weak_factory_.GetWeakPtr());
   }
   void FlushDone() {
-    NSLog(@"Arc termination: flush remaining=%zu", pending_flushes_);
     if (!pending_flushes_ || --pending_flushes_) return;
     Finish();
   }
   void Finish() {
-    NSLog(@"Arc termination: finish");
     pending_flushes_ = 0;
     flush_timeout_.Stop();
     auto completion = completion_;
     completion_ = nil;
     // Keep active_ set after approval: a repeated request must neither replace
     // the first completion nor start a second close transaction.
+    nested_tasks_.reset();
     if (completion) completion(1);
   }
   bool active_ = false;
@@ -125,6 +134,9 @@ class TerminationRequest final {
   size_t pending_flushes_ = 0;
   void (^completion_)(NSUInteger) = nil;
   base::OneShotTimer flush_timeout_;
+  std::unique_ptr<
+      base::CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop>
+      nested_tasks_;
   base::WeakPtrFactory<TerminationRequest> weak_factory_{this};
 };
 const char kTerminationRequestKey = 0;

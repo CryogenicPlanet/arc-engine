@@ -13,7 +13,7 @@ Scheduling audit corrected the earlier policy-buffer design. Native flag branche
 
 The current companion stages WebContents; navigation async registration already landed independently. It removes all artificial policy queues, captures native flag snapshots, uses separate UI tasks, and models UI delegate bridge lifetime: every nonnil assignment replaces the stored bridge; nil unregisters future delivery but retains the stored bridge so already queued old status may survive. Public delegate getters and lead integration remain. Actual compilers for staged WC, staged navigation, and native WC exit0 in logs/wp/core.navigation.proposal.check.log. Fresh review P1 is CLOSED: sync zoom KVO now has the prior native-liveness/generation guard before controller receipt. Navigation async registration delivery has independently landed in owned production; the remaining companion therefore changes WebContents only. The display companion below is also ready for integration with the native hook patch. All sources remain private staged until the lead applies the bundle.
 
-Explicit remaining gaps: other WebContents callback scheduling; immutable ArcNavigation receipt snapshots versus native shared values constructed at delivery; AUDIO trait producer mapping; dynamic nonempty target text font/width; exact cancellation lifetime of native DelegateWrapper versus weak ObjC owner. Runtime validation remains necessary after native patch + companion are applied together.
+Explicit remaining gaps: AUDIO trait producer mapping; dynamic nonempty target text font/width; exact cancellation lifetime of native DelegateWrapper versus weak ObjC owner. Runtime validation remains necessary after native patch + companion are applied together.
 
 ## Independent requests
 
@@ -45,7 +45,7 @@ View hook consumers only update observations or enqueue UI work; no synchronous 
 
 ## Observer scheduling follow-on (ready, unapplied; request136683)
 
-`core_observer_registration.patch` must follow the three-part bundle136490. Its WebContents base is the staged navigation companion; its navigation/header bases are current production. Actual staged WC/navigation compilers exit0 (`logs/wp/core.observer.proposal.check.log`), staged-base applycheck with whitespace errors rejected passes, fresh read-only review reports no P1/P2.
+`core_observer_registration.patch` must follow the three-part bundle136490. It is now WebContents-only; its navigation/header changes landed independently. Its WebContents base is the staged navigation companion. Actual staged WC/navigation compilers exit0 (`logs/wp/core.observer.proposal.check.log`), staged-base applycheck with whitespace errors rejected passes, fresh read-only review reports no P1/P2.
 
 The history observer is a separate native WCO (`da7b748`), with exactly four non-no-op callbacks: committed+0x170, pruned+0x178, deleted+0x180, changed+0x188. It updates a shared cached native model, retains that same model in posted delivery, then materializes Objective-C arrays at delivery. Changed compares cached title AND VirtualURL, updates and posts only if either differs; invalid cached index traps. Original title update itself stores title then sends TitleWasSet+0x208 (NOOP for this observer) and TITLE invalidation. Chromium156 has the same signal shape: do not invent a title/history producer to chase counts. Source evidence `/tmp/core-history-title-{sender2,upstream,callers}.txt` and `/tmp/core-history-changed-{sender,dispatch}.txt`.
 
@@ -58,3 +58,30 @@ Correct native state provenance supersedes preliminary crash/readiness guesses: 
 Production ArcBrowser now implements tryToCloseSkipBeforeUnloadHandlers:callback: (136887): cancellation BOOL, FIFO coalescing/escalation, inline NO before native Close, posted YES after unload reset, native teardown draining and weak liveness rechecks. core_browser_close.patch is an ALREADY APPLIED review artifact; do not reapply. Actual staged compiler0, production check-file no diagnostics, fresh review clean; runtime beforeunload/cancellation still pending.
 
 The navigation/header portion of observerpatch136683 and all core_navigation_values.patch have independently LANDED in owned production. The observer artifact is now WC-ONLY; its base remains the staged generic navigation companion. The shared history model is structurally in place; existing production snapshotForWebContents still materializes immediately until the WC observer companion starts capturing it for queued delivery. Navigation values now retain shared URL/status/redirect fields and snapshot headers per wrapper construction; callbacks construct wrappers at delivery. No native handle is retained by a queued callback. Nav-values patch is an ALREADY APPLIED review artifact; do not reapply. Finish-load FIFO/URL update, command preallocation, actual cross-tab true producer and exact process-address hash remain uncovered. ArcNavigation native init: has C++ aggregate ABI and is excluded by the binding architecture; no invented ObjC initializer was added.
+
+## Latest current-base verification and owned fixes
+
+`logs/wp/core.bundle-current.20261023T122644Z/manifest.json` records strict sequential
+apply checks for native, generic WebContents, display and observer patches against
+current production. Actual combined WebContents and render helper compilers both
+exit0 with no diagnostics. It preserves newer existing-only diagnostic lookup,
+canonical-marker query, popup count/getters, historical -1 fallback and deferred
+Close target. Apply incremental patches; copying an older staged WebContents file
+would lose independently landed work. Native hook header remains absent.
+
+Browser type/active correction and diagnostic lookup artifacts are ALREADY APPLIED:
+`core_browser_type.patch`, `core_diagnostic_lookup.patch`. Browser Chrome raw
+0/1/4/5 maps to public0/1/2/3; popup/app-popup force insertion active, otherwise
+current active identity is captured before callouts. Existing-only diagnostic
+lookup never creates a wrapper or allocates an ID; shared declaration is pending.
+Public tab close still defers, but its final target is WebContents::Close rather
+than ClosePage. `core_close_accounting_plan.md` maps a coordinated accounting
+change and its remaining native prerequisites; independent review found no P1/P2.
+Do not activate the held partial synchronous-close patch.
+
+`core_navigation_followon_notes.md` corrects older stage notes: native436a748
+finishes,436ade4 fails; both pop committed values FIFO and update URL from frame
+callback GURL. Command redirected-to-other-tab flag compares post-Navigate
+source_contents, not destination output or HTTP redirect. FIFO overlap, public
+command return identity and BFCache adaptation remain uncovered/unimplemented;
+no current golden establishes those changes as a runtime fix.

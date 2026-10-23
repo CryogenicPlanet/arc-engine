@@ -61,6 +61,22 @@ class Image:
         return self.read(a, 512).split(b"\0")[0].decode(errors="replace")
 
 
+def branch_target(address, word):
+    """Decode direct PC-relative branch destinations from instruction bits."""
+    if word & 0xFC000000 in (0x14000000, 0x94000000):
+        displacement, bits = word & 0x3FFFFFF, 26
+    elif (word & 0xFF000010 == 0x54000000 or
+          word & 0x7E000000 == 0x34000000):
+        displacement, bits = (word >> 5) & 0x7FFFF, 19
+    elif word & 0x7E000000 == 0x36000000:
+        displacement, bits = (word >> 5) & 0x3FFF, 14
+    else:
+        return None
+    if displacement & (1 << (bits - 1)):
+        displacement -= 1 << bits
+    return address + 4 * displacement
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("ranges", nargs="*")
@@ -111,11 +127,9 @@ def main():
             n = lib.LLVMDisasmInstruction(ctx, inp, 4, a, buf, 300)
             s = buf.value.decode() if n else "<undecoded>"
             word = struct.unpack("<I", raw)[0]
-            if word & 0xFC000000 in (0x14000000, 0x94000000):
-                disp = word & 0x3FFFFFF
-                if disp & (1 << 25):
-                    disp -= 1 << 26
-                s += f" -> {a + 4 * disp:#x}"
+            target = branch_target(a, word)
+            if target is not None:
+                s += f" -> {target:#x}"
             print(f"{a:#x} {raw.hex()} {s}")
 
 

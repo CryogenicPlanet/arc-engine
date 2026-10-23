@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 // Test-only owned-app boundary probe; no AX/native readiness or global input.
+import { PublicTraceProjection } from "./webextras_fixture_projection";
 import { AgentCDP, verifyAgentEndpoint } from "../../../arc/tools/agent-cdp";
 import { chmodSync, constants, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -51,7 +52,7 @@ function scanRecords(rows: RecordRow[], initial = new Map<string, RecordRow[]>()
     } else {
       const call = stack.pop();
       assert(call && event.depth === stack.length && call.event.seq < event.seq &&
-        ["cls", "kind", "sel", "self", "dir", "thread"].every(key => call.event[key] === event[key]) &&
+        ["cls", "kind", "sel", "self", "dir", "thread", "from"].every(key => call.event[key] === event[key]) &&
         Object.hasOwn(event, "ret"), `unmatched return: ${event.sel}`);
       matches.set(call.event.seq, row);
     }
@@ -73,7 +74,7 @@ function expectedSelectors(operation: string): string[] {
   if (operation === "subscription") return ["subscribe:autoEnable:notification:", "execute:completion:error:", "unsubscribe:"];
   return [one[operation] ?? "execute:completion:error:"];
 }
-function validateActionTrace(action: any, rows: RecordRow[], record: Buffer): any[] {
+function validateActionTrace(action: any, rows: RecordRow[], record: Buffer, projection?: PublicTraceProjection): any[] {
   // ArcBrowserApplication.run is recorded around the lifetime of the native run loop.
   // Derive ambient stacks from the prefix; actions must restore those exact stacks.
   const ambient = action.recordBegin > 0 ? scanRecords(parseRecords(record.subarray(0, action.recordBegin))).stacks : new Map<string, RecordRow[]>();
@@ -92,6 +93,7 @@ function validateActionTrace(action: any, rows: RecordRow[], record: Buffer): an
       row.event.dir === "->engine" && row.event.cls === cls && row.event.sel === call.selector && row.event.depth === mainDepth && row.event.thread === "main");
     assert(candidates.length === 1, `expected exactly one recorded ${cls}.${call.selector} invocation`);
     const entry = candidates[0]!;
+    if (projection?.byCaller) assert(entry.event.from === projection.fixtureImage, "public call is not attributed to the selected fixture image");
     const returned = matched.get(entry.event.seq);
     assert(returned && returned.end <= call.recordEnd, `missing matching public return: ${call.selector}`);
     publicRows.push(entry);
@@ -119,15 +121,21 @@ function validateActionTrace(action: any, rows: RecordRow[], record: Buffer): an
     const callback = action.callbacks?.find((event: any) => event.event === (action.operation === "console-open" ? "display" : "closed"));
     const entry = delegates[0]!;
     const returned = matched.get(entry.event.seq)!;
+    const ancestors = projection ? scanRecords(rows.filter(row => row.end <= entry.begin), ambient).stacks.get("main") ?? [] : [];
+    const underPublicCall = ancestors.some(row => row.event.seq === publicRows[0]!.event.seq);
+    const validCallbackDepth = projection ? underPublicCall === callback?.beforePublicReturn :
+      entry.event.depth === mainDepth + (callback?.beforePublicReturn ? 1 : 0);
     const recorderInsideHook = callback?.recordOffset <= entry.begin && returned.end <= callback?.recordAfterForwarding;
     const recorderOutsideHook = entry.end <= callback?.recordOffset && callback?.recordAfterForwarding <= returned.begin;
     assert(callback?.forwarded === true && Number.isSafeInteger(callback.recordOffset) && Number.isSafeInteger(callback.recordAfterForwarding) &&
       callback.recordOffset >= action.recordBegin && callback.recordOffset <= callback.recordAfterForwarding &&
       callback.recordAfterForwarding <= action.recordEnd && returned.end <= action.recordEnd &&
       (recorderInsideHook || recorderOutsideHook) && entry.event.thread === "main" &&
-      entry.event.depth === mainDepth + (callback.beforePublicReturn ? 1 : 0) &&
+      validCallbackDepth &&
       entry.event.args?.[0] === publicRows[0]!.event.self, "incomplete or mismatched app callback forwarding");
   } else assert(!delegates.length, "unexpected display/close callback");
+  if (projection) return projection.project(rows);
+  // Legacy replay only: live fixture comparisons use the frozen-metadata projection.
   // A complete ordered boundary shape closes diff.py's depth/order/object-identity gaps.
   const identities = new Map<string, string>();
   const counts = new Map<string, number>();
@@ -319,6 +327,13 @@ const recorderSource = join(root, "tests/recorder/ArcEngineRecorder.dylib");
 for (const file of [dylib, recorderSource]) if (!existsSync(file)) throw new Error(`missing ${file}`);
 const recorderIdentity = freezeRecorder(recorderSource, out);
 const recorder = recorderIdentity.frozen.path;
+const fixtureImage = "WebextrasNativeProbe.dylib";
+const comparisonSnapshot = join(out, "fixture-comparator");
+const comparisonInputs = JSON.parse(exec(["python3", "-B", join(root, "arc/browser/webextras_fixture_inputs.py"),
+  "freeze", root, comparisonSnapshot, fixtureImage]));
+const comparisonHelper = join(comparisonSnapshot, "arc/browser/webextras_fixture_inputs.py");
+const comparisonMetadata = readFileSync(join(comparisonSnapshot, "arc/tools/arccore-1.170.0-objc.tsv"), "utf8");
+const fixtureVerified = comparisonInputs.capability?.verified === true;
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 let observeProcesses: (() => void) | undefined;
 const wait = async <T>(read: () => T | Promise<T>, timeout = 20000): Promise<NonNullable<T>> => {
@@ -350,12 +365,12 @@ const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
 } });
 const fixtureURL = `http://127.0.0.1:${server.port}${fixturePath}`;
 mkdirSync(out, { recursive: true });
-type Run = { agent: string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string };
+type Run = { agent: string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; comparisonInputs?: any; fixturePublicCounts?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string };
 const runs: Run[] = [];
 const operations = ["console-open", "frontend", "console-close", "panel-closed", "execute-evaluate", "execute-malformed", "execute-unknown", "subscription", "media-types", "pip-request-error", "pip-exit-error"];
 try {
   for (const agent of agents) {
-    const run: Run = { agent, phase: "preflight", recorderIdentity, actions: [], errors: [] };
+    const run: Run = { agent, phase: "preflight", recorderIdentity, comparisonInputs, actions: [], errors: [] };
     runs.push(run);
     const dir = join(out, agent);
     mkdirSync(dir, { recursive: true });
@@ -417,6 +432,7 @@ try {
       writeFileSync(join(dir, "binary-identity.json"), JSON.stringify(run.binaryIdentity, null, 2));
       run.phase = "recorder-identity";
       assert(JSON.stringify(recorderFileIdentity(recorder)) === JSON.stringify(recorderIdentity.frozen), "frozen recorder changed before launch");
+      exec(["python3", "-B", comparisonHelper, "verify", comparisonSnapshot]);
       run.phase = "launch";
       readiness = { agent, beforeLaunch: readySnapshot(nativeReadyPath), launchStartedMs: Date.now() };
       writeFileSync(join(dir, "readiness.json"), JSON.stringify(readiness, null, 2));
@@ -546,22 +562,36 @@ try {
         try {
           const all = parseRecords(record);
           run.recordCallerLabels = hasCallerLabels(all);
-          run.fixtureComparisonStatus = run.recordCallerLabels ? "pending-fixture-comparison-support" : "legacy-unlabelled";
-          if (run.recordCallerLabels) run.errors.push(fixtureComparisonPending);
+          run.fixtureComparisonStatus = fixtureVerified ? "verified-exact-image" : "pending-fixture-comparison-support";
+          if (!fixtureVerified) run.errors.push(fixtureComparisonPending);
+          for (const row of all) if (row.event.ev === "call" || row.event.ev === "ret") {
+            const caller = row.event.from;
+            assert(typeof caller === "string" && caller.length > 0 && caller.trim() === caller && !/[\x00-\x1f]/.test(caller), "missing/mixed caller attribution");
+          }
           if (all[0]?.event.ev !== "hooked" || all[0]?.event.seq !== 0 || !(all[0]?.event.engine_classes > 0) || all.filter(row => row.event.ev === "hooked").length !== 1) {
             throw new Error("missing initial recorder hooked event");
           }
           assert(new Set(all.map(row => row.event.seq)).size === all.length, "duplicate recorder sequence IDs");
           // Shutdown may interrupt final lifecycle calls; every measured action is checked separately for complete nesting.
         } catch (error) { run.errors.push(`recorder: ${String(error)}`); }
+        const projection = new PublicTraceProjection(comparisonMetadata, fixtureImage);
+        let fixtureCalls = 0, fixtureReturns = 0;
         for (const action of run.actions) {
           try {
             const span = validSpan(record, action.recordBegin, action.recordEnd);
             const rows = parseRecords(span, action.recordBegin);
-            action.traceShape = validateActionTrace(action, rows, record);
+            action.traceShape = validateActionTrace(action, rows, record, projection);
+            const fixtureRows = rows.filter(row => row.event.dir === "->engine" && row.event.from === fixtureImage);
+            const calls = fixtureRows.filter(row => row.event.ev === "call").length;
+            const returns = fixtureRows.filter(row => row.event.ev === "ret").length;
+            const expected = expectedSelectors(action.operation).length;
+            assert(calls === expected && returns === expected, "fixture public invocation coverage mismatch");
+            fixtureCalls += calls; fixtureReturns += returns;
             writeFileSync(join(dir, `${action.operation}.record.jsonl`), span);
           } catch (error) { run.errors.push(`${action.operation}: ${String(error)}`); }
         }
+        run.fixturePublicCounts = { call: fixtureCalls, ret: fixtureReturns };
+        if (run.actions.length === operations.length && (fixtureCalls !== 13 || fixtureReturns !== 13)) run.errors.push("expected exactly 13 admitted fixture calls and returns");
       }
       else run.errors.push("recorder file missing at cleanup");
       writeFileSync(join(dir, "observations.json"), JSON.stringify(run, null, 2));
@@ -591,15 +621,17 @@ if (golden && ours) for (let index = 0; index < Math.max(golden.actions.length, 
   if (JSON.stringify(left) !== JSON.stringify(right)) differences.push({ golden: left, ours: right });
 }
 const boundaryDiffs: unknown[] = [];
-const fixtureComparison = { status: runs.some(run => run.recordCallerLabels) ? "pending-fixture-comparison-support" : "legacy-unlabelled",
-  fixtureImageOption: null, reason: runs.some(run => run.recordCallerLabels) ? fixtureComparisonPending : null };
+const fixtureComparison = { status: fixtureVerified ? "verified-exact-image" : "pending-fixture-comparison-support",
+  fixtureImageOption: fixtureVerified ? fixtureImage : null, reason: fixtureVerified ? null : fixtureComparisonPending };
 if (fixtureComparison.reason) boundaryDiffs.push({ status: fixtureComparison.status, error: fixtureComparison.reason });
 if (golden && ours) for (const operation of operations) {
   const left = join(out, "trace156", `${operation}.record.jsonl`);
   const right = join(out, "ours156", `${operation}.record.jsonl`);
   if (!existsSync(left) || !existsSync(right)) continue;
   const diffPath = join(out, `${operation}.diff.json`);
-  const result = Bun.spawnSync(["python3", join(root, "tests/recorder/diff.py"), left, right, "--json", diffPath], { stdout: "pipe", stderr: "pipe" });
+  if (!fixtureVerified) continue; // A default app-only zero diff is not fixture evidence.
+  const result = Bun.spawnSync(["python3", "-B", comparisonHelper, "compare", comparisonSnapshot, fixtureImage,
+    left, right, String(expectedSelectors(operation).length), diffPath], { stdout: "pipe", stderr: "pipe" });
   writeFileSync(join(out, `${operation}.diff.txt`), result.stdout);
   if (!result.success) { boundaryDiffs.push({ operation, error: result.stderr.toString() }); continue; }
   const diff = json(diffPath);
@@ -609,6 +641,6 @@ if (golden && ours) for (const operation of operations) {
 }
 const complete = runs.length === agents.length && runs.every(run => !run.errors.length && !!run.cleanup && run.actions.length === operations.length && run.actions.every(action => action.traceShape?.length > 0));
 const parity = golden && ours ? complete && !differences.length && !boundaryDiffs.length : null;
-writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, fixtureComparison, differences, boundaryDiffs, runs }, null, 2));
+writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, comparisonInputs, fixtureComparison, differences, boundaryDiffs, runs }, null, 2));
 console.log(JSON.stringify({ complete, parity, fixtureComparison, out }));
 process.exitCode = complete && parity !== false ? 0 : 1;

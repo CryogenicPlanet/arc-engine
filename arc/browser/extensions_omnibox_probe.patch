@@ -1,0 +1,316 @@
+--- a/arc/browser/extensions_service_probe.m
++++ b/arc/browser/extensions_service_probe.m
+@@ -47,6 +47,8 @@
+ static NSString* gToken;
+ static NSString* gFixtureMode;
+ static BOOL gBrowserPinsEnabled;
++static BOOL gBrowserOmniboxEnabled;
++static NSString* gFixtureURL;
+ static NSMutableSet* gStartupPending;
+ static NSString* gRecord;
+ static NSString* gLastID;
+@@ -300,7 +302,7 @@
+ static NSDictionary* Metadata(id service, id browser) {
+   NSMutableDictionary* result = [NSMutableDictionary dictionary];
+   NSDictionary* classes = @{@"ArcBrowserContextExtensions":@[@"owner",@"isEqual:",@"hash",@"setDelegate:",@"isExtensionSystemReady",@"listExtensions",@"getExtensionInfo:",@"enableExtension:",@"disableExtension:",@"reloadExtension:",@"uninstallExtension:",@"installExtensionFromUnpackedPath:completion:",@"runJSInExtensionBackgroundPage:js_code:",@"getAllExtensionCommands",@"executeExtensionCommand:commandName:",@"getPinnedExtensionOrder",@"setPinnedExtensionOrder:"],
+-      @"ArcBrowser":@[@"executeExtensionAction:",@"pinExtension:",@"unpinExtension:",@"moveExtension:targetIndex:"]};
++      @"ArcBrowser":@[@"executeExtensionAction:",@"pinExtension:",@"unpinExtension:",@"moveExtension:targetIndex:",@"triggerExtensionOmniboxInput:inputText:disposition:"]};
+   for (NSString* className in classes) {
+     NSMutableDictionary* methods = [NSMutableDictionary dictionary];
+     Class cls = [className isEqual:@"ArcBrowser"] ? (browser ? [browser class] : NSClassFromString(@"ArcBrowser")) : [service class];
+@@ -389,6 +391,59 @@
+   else ((void (*)(id,SEL,id,NSUInteger))objc_msgSend)(browser,NSSelectorFromString(selector),identifier,targetIndex);
+   return nil;
+ }
++// Omnibox is a separate explicit CLI phase. The runner must additionally prove
++// the sole active tab/window's nonce URL through genuine B-action listener data
++// immediately before this call; ArcBrowser has no public active-tab getter.
++static NSString* BrowserOmniboxRequest(id service, id browser, NSDictionary* request,
++                                       ExtensionsProbeWork* work) {
++  if (!gBrowserOmniboxEnabled || ![gFixtureMode isEqual:@"command-line"])
++    return @"browser omnibox phase not explicitly enabled in command-line mode";
++  if (!service || !browser || work.entry.service != service || work.browser != browser ||
++      ![gBrowserDelegates objectForKey:browser]) return @"browser omnibox identity entry missing";
++  NSMutableArray* inventory = [NSMutableArray array];
++  NSArray* matches = MatchingBrowsers(service,work.entry.context,inventory);
++  work.response[@"browserOmniboxIdentityCandidates"] = inventory;
++  if (matches.count != 1 || matches.firstObject != browser)
++    return @"browser omnibox service/browser identity is ambiguous or changed";
++  if (gOutstandingInstalls.count || gStartupPending.count || !gBaseline || gOwned.count != 2 ||
++      [gOwned[@"A"] isEqual:gOwned[@"B"]]) return @"browser omnibox ownership unresolved";
++  for (NSString* label in @[@"A",@"B"]) {
++    NSString* identifier = gOwned[label];
++    if (!Proven(service,label,identifier)) return @"browser omnibox target not a proven nonce fixture";
++    id info = Get1(service,@"getExtensionInfo:",identifier);
++    if (![PropertyValue(info,@"enabled") isEqual:@YES] || ![PropertyValue(info,@"hasAction") isEqual:@YES])
++      return @"browser omnibox fixtures must both be enabled and action-bearing";
++  }
++  if (![request[@"label"] isEqual:@"A"] || request[@"extensionID"])
++    return @"browser omnibox request must use only owned fixture A";
++  NSNumber* raw = request[@"disposition"];
++  if (![raw isKindOfClass:NSNumber.class] || CFGetTypeID((__bridge CFTypeRef)raw) == CFBooleanGetTypeID())
++    return @"browser omnibox disposition must be an integer ordinal";
++  double number = raw.doubleValue;
++  if (!(number >= 0 && number <= 11) || number != (long long)number)
++    return @"browser omnibox disposition outside proven native 0..11 range";
++  long long disposition = (long long)number;
++  NSString* input = request[@"inputText"];
++  NSString* expected = [NSString stringWithFormat:@"%@/omnibox/%lld/π 東京 🧭",gToken,disposition];
++  if (![input isKindOfClass:NSString.class] || ![input isEqual:expected] ||
++      !gFixtureURL || ![request[@"fixtureURL"] isEqual:gFixtureURL])
++    return @"browser omnibox input/fixture URL is not this phase's nonce";
++  NSString* selector = @"triggerExtensionOmniboxInput:inputText:disposition:";
++  Method method = class_getInstanceMethod([browser class],NSSelectorFromString(selector));
++  if (!ABI(method,5,@"v")) return @"browser omnibox selector return/count ABI mismatch";
++  NSMethodSignature* signature = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(method)];
++  if (strcmp([signature getArgumentTypeAtIndex:2],"@") ||
++      strcmp([signature getArgumentTypeAtIndex:3],"@") ||
++      strcmp([signature getArgumentTypeAtIndex:4],"q") || sizeof(long long) != 8)
++    return @"browser omnibox selector argument ABI mismatch (requires native q)";
++  work.response[@"browserOmniboxIdentityVerified"] = @YES;
++  work.response[@"browserOmniboxFixtureURL"] = gFixtureURL;
++  work.response[@"browserOmniboxSelector"] = selector;
++  work.response[@"browserOmniboxABI"] = [NSString stringWithUTF8String:method_getTypeEncoding(method)];
++  work.response[@"browserOmniboxArguments"] = @[gOwned[@"A"],input,@(disposition)];
++  ((void (*)(id,SEL,id,id,long long))objc_msgSend)(browser,NSSelectorFromString(selector),gOwned[@"A"],input,disposition);
++  return nil;
++}
+ static void OwnershipJournal(void) {
+   WriteJSON(@{@"fixtureMode":gFixtureMode,@"startupPending":[gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)],@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy]},[gRequest stringByAppendingString:@".owned.json"]);
+ }
+@@ -450,7 +505,7 @@
+     work.response[@"outstandingInstalls"] = gOutstandingInstalls.allObjects;
+     work.response[@"startupPending"] = [gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)];
+     work.response[@"fixtureMode"] = gFixtureMode;
+-    if ([work.response[@"operation"] hasPrefix:@"browser-"]) {
++    if ([@[@"browser-pin",@"browser-unpin",@"browser-move"] containsObject:work.response[@"operation"]]) {
+       NSMutableArray* baseline = [NSMutableArray array];
+       for (NSString* identifier in work.response[@"pinsAfter"])
+         if (![gOwned.allValues containsObject:identifier]) [baseline addObject:identifier];
+@@ -604,6 +659,9 @@
+     } else if ([@[@"browser-pin",@"browser-unpin",@"browser-move"] containsObject:operation]) {
+       NSString* error = BrowserPinRequest(service,browser,operation,request,gWork);
+       if (error) { Finish(error); return; }
++    } else if ([operation isEqual:@"browser-omnibox"]) {
++      NSString* error = BrowserOmniboxRequest(service,browser,request,gWork);
++      if (error) { Finish(error); return; }
+     } else if ([operation isEqual:@"cleanup"]) {
+       // Wait for every attempted install, including timed-out requests, before
+       // reconciling actual installed nonce fixtures and mutating cleanup state.
+@@ -645,6 +703,19 @@
+     const char* browserPins = getenv("ARC_EXTENSIONS_PROBE_BROWSER_PINS");
+     gBrowserPinsEnabled = browserPins && !strcmp(browserPins,"1");
+     if (gBrowserPinsEnabled && ![gFixtureMode isEqual:@"command-line"]) return;
++    const char* browserOmnibox = getenv("ARC_EXTENSIONS_PROBE_BROWSER_OMNIBOX");
++    gBrowserOmniboxEnabled = browserOmnibox && !strcmp(browserOmnibox,"1");
++    if (gBrowserOmniboxEnabled && ![gFixtureMode isEqual:@"command-line"]) return;
++    const char* fixtureURL = getenv("ARC_EXTENSIONS_PROBE_FIXTURE_URL");
++    gFixtureURL = fixtureURL ? @(fixtureURL) : nil;
++    if (gBrowserOmniboxEnabled) {
++      if (!gFixtureURL) return;
++      NSURL* url = [NSURL URLWithString:gFixtureURL];
++      NSString* expectedPath = [NSString stringWithFormat:@"/%@/page",@(token)];
++      if (![url.scheme isEqual:@"http"] || ![url.host isEqual:@"127.0.0.1"] ||
++          !url.port || url.port.integerValue < 1024 || url.port.integerValue > 65535 ||
++          ![url.path isEqual:expectedPath] || url.query || url.fragment || url.user || url.password) return;
++    }
+     if (![@[@"public-install",@"command-line"] containsObject:gFixtureMode]) return;
+     gRequest = @(request); gFixtures = @(fixtures); gToken = @(token); gRecord = @(record);
+     if (!gRequest.isAbsolutePath || !gFixtures.isAbsolutePath || !gRecord.isAbsolutePath ||
+--- a/arc/browser/extensions_service_probe.ts
++++ b/arc/browser/extensions_service_probe.ts
+@@ -23,6 +23,8 @@
+ if (!["public-install", "command-line"].includes(fixtureMode)) throw Error("fixture-mode must be public-install or command-line");
+ const browserPins = args.includes("--browser-pins");
+ if (browserPins && fixtureMode !== "command-line") throw Error("--browser-pins requires explicit --fixture-mode command-line");
++const browserOmnibox = args.includes("--browser-omnibox");
++if (browserOmnibox && fixtureMode !== "command-line") throw Error("--browser-omnibox requires explicit --fixture-mode command-line");
+ const diagnosticDisableFieldTrialConfig = args.includes("--diagnostic-disable-field-trial-config");
+ const fixtureEnvironmentArguments = ["--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking", "--noerrdialogs",
+   ...(diagnosticDisableFieldTrialConfig ? ["--disable-field-trial-config"] : [])];
+@@ -110,7 +112,7 @@
+   const current = statSync(file.path); return current.size === file.size && current.mtimeMs === file.mtimeMs;
+ };
+ const provenance = {
+-  capturedAt: new Date().toISOString(), fixtureMode, browserPins, diagnosticDisableFieldTrialConfig, fixtureEnvironmentArguments, builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
++  capturedAt: new Date().toISOString(), fixtureMode, browserPins, browserOmnibox, diagnosticDisableFieldTrialConfig, fixtureEnvironmentArguments, builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
+   expectedStockSHA256, independentStockSibling,
+   traceMatchesVerifiedStock: packagedEngines.trace156.sha256 === expectedStockSHA256,
+   siblingMatchesVerifiedStock: independentStockSibling ? independentStockSibling.sha256 === expectedStockSHA256 : null,
+@@ -230,7 +232,7 @@
+   };
+   writeFileSync(join(directory, "manifest.json"), JSON.stringify(manifest));
+   writeFileSync(join(directory, "icon.png"), Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGMwTpv5/0ya8X8GGAMATsMJK9Ofv4oAAAAASUVORK5CYII=", "base64"));
+-  writeFileSync(join(directory, "background.js"), `const report=value=>fetch(${JSON.stringify(endpoint)},{method:'POST',body:JSON.stringify({...value,id:chrome.runtime.id})}).catch(()=>{});chrome.commands.onCommand.addListener(function(command){const args=Array.from(arguments);report({kind:'command',command,argumentCount:args.length,argumentTypes:args.map(value=>value===null?'null':typeof value),noTab:args.length<2||args[1]===undefined});});chrome.action.onClicked.addListener(tab=>report({kind:'action',tab:tab?{url:tab.url??null,idPresent:Number.isInteger(tab.id)}:null}));chrome.runtime.onInstalled.addListener(()=>report({kind:'installed'}));chrome.action.setBadgeText({text:'P'});`);
++  writeFileSync(join(directory, "background.js"), `const report=value=>fetch(${JSON.stringify(endpoint)},{method:'POST',body:JSON.stringify({...value,id:chrome.runtime.id})}).catch(()=>{});chrome.commands.onCommand.addListener(function(command){const args=Array.from(arguments);report({kind:'command',command,argumentCount:args.length,argumentTypes:args.map(value=>value===null?'null':typeof value),noTab:args.length<2||args[1]===undefined});});chrome.action.onClicked.addListener(tab=>report({kind:'action',tab:tab?{url:tab.url??null,idPresent:Number.isInteger(tab.id)}:null}));chrome.runtime.onInstalled.addListener(()=>report({kind:'installed'}));chrome.action.setBadgeText({text:'P'});` + (browserOmnibox ? `let actionSequence=0;const inventory=async()=>({tabs:(await chrome.tabs.query({})).map(tab=>({id:tab.id,windowId:tab.windowId,url:tab.url??null,active:tab.active,incognito:tab.incognito})),windows:(await chrome.windows.getAll()).map(window=>({id:window.id,type:window.type,incognito:window.incognito}))});chrome.action.onClicked.addListener(async tab=>{const sequence=++actionSequence;report({kind:"omnibox-preflight",nonce:${JSON.stringify(token)},sequence,tab:tab?{id:tab.id,windowId:tab.windowId,url:tab.url??null,active:tab.active,incognito:tab.incognito}:null,...await inventory()});});chrome.omnibox.onInputEntered.addListener(async function(input,disposition){const args=Array.from(arguments);report({kind:"omnibox",nonce:${JSON.stringify(token)},input,disposition,argumentCount:args.length,argumentTypes:args.map(value=>value===null?"null":typeof value),...await inventory()});});` : ""));
+   writeFileSync(join(directory, "popup.html"), '<!doctype html><meta charset="utf-8"><title>Service fixture popup</title><style>body{margin:0;width:320px;height:160px;background:#334455;color:white}</style><main>Real extension popup</main><script src="popup.js"></script>');
+   writeFileSync(join(directory, "popup.js"), `const report=value=>fetch(${JSON.stringify(endpoint)},{method:'POST',body:JSON.stringify({...value,id:chrome.runtime.id})}).catch(()=>{});report({kind:'popup-loaded',url:location.href});setTimeout(()=>{document.body.style.width='400px';document.body.style.height='220px';report({kind:'popup-resized'});},300);setTimeout(()=>{report({kind:'popup-close-requested'});window.close();},1400);`);
+ }
+@@ -260,6 +262,7 @@
+   "browser-pin":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
+   "browser-unpin":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
+   "browser-move":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinAnchorLabel","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
++  "browser-omnibox":["browserOmniboxSelector","browserOmniboxABI","browserOmniboxArguments","browserOmniboxIdentityVerified","browserOmniboxFixtureURL","effects","omniboxPreflight","omniboxCDPBefore","omniboxCDPAfter"],
+   command:["effects"], action:["callbacks"],
+   "background-js":["value"], disable:[], enable:[], reload:[], uninstall:[], cleanup:["cleanupCertified","outstandingInstalls","startupPending"],
+ };
+@@ -267,8 +270,10 @@
+   const dictionary = (item: any): boolean => !!item && typeof item === "object" && !Array.isArray(item);
+   const completion = (item: any): boolean => dictionary(item) && typeof item.id === "string" && Number.isInteger(item.result) && typeof item.mainThread === "boolean" && typeof item.synchronous === "boolean";
+   const callback = (item: any): boolean => dictionary(item) && typeof item.selector === "string" && Array.isArray(item.payload) && typeof item.mainThread === "boolean" && (item.synchronous === null || typeof item.synchronous === "boolean");
+-  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"].includes(path)) return typeof value === "boolean";
+-  if (["browserPinSelector","browserPinABI","browserPinLabel","browserPinAnchorLabel"].includes(path)) return typeof value === "string" && value.length > 0;
++  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved","browserOmniboxIdentityVerified"].includes(path)) return typeof value === "boolean";
++  if (["browserPinSelector","browserPinABI","browserPinLabel","browserPinAnchorLabel","browserOmniboxSelector","browserOmniboxABI","browserOmniboxFixtureURL"].includes(path)) return typeof value === "string" && value.length > 0;
++  if (path === "browserOmniboxArguments") return Array.isArray(value) && value.length === 3 && typeof value[0] === "string" && typeof value[1] === "string" && Number.isSafeInteger(value[2]) && value[2] >= 0 && value[2] <= 11;
++  if (["omniboxPreflight","omniboxCDPBefore","omniboxCDPAfter"].includes(path)) return dictionary(value);
+   if (path === "browserPinArguments") return Array.isArray(value) && (value.length === 1 || value.length === 2) && typeof value[0] === "string" && (value.length === 1 || (Number.isSafeInteger(value[1]) && value[1] >= 0));
+   if (path === "operation") return typeof value === "string" && Object.hasOwn(requiredPaths,value);
+   if (path === "matches") return Number.isInteger(value) && value >= 0;
+@@ -298,7 +303,7 @@
+ try {
+   for (const agent of agents) {
+     currentAgent = agent;
+-    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: [browserPins ? "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only"] }; runs.push(run);
++    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: [browserPins ? "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only", browserOmnibox ? "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: metadata only; executable behavior uncovered"] }; runs.push(run);
+     const dir = join(out, agent); mkdirSync(dir);
+     const app = resolve(root, `../arc/build/ArcModAgent-${agent}.app`), exe = join(app, "Contents/MacOS/Arc");
+     const plist = (key: string) => exec(["/usr/libexec/PlistBuddy", "-c", `Print :${key}`, join(app, "Contents/Info.plist")]);
+@@ -362,7 +367,7 @@
+       startupLoadIssued = fixtureMode === "command-line";
+       exec(["open", "-n", "-g", "-a", app,
+         "--env", `DYLD_INSERT_LIBRARIES=${dylib}:${recorder}`, "--env", `ARC_RECORD_PATH=${recordPath}`,
+-        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_PINS=${browserPins ? "1" : "0"}`,
++        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_PINS=${browserPins ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_OMNIBOX=${browserOmnibox ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_URL=${fixtureURL}`,
+         "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args", ...fixtureEnvironmentArguments,
+         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${data}`, "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`, ...startupArguments]);
+       pid = await wait(() => pids(exe)[0], 30000); run.pid = pid;
+@@ -484,6 +489,91 @@
+       clicked.effects = await wait(() => { const events = effects.slice(beforeAction).filter(event => event.agent === agent && event.label === "B" && event.value.kind === "action"); return events.length ? events : undefined; }, 8000);
+       assert(clicked.effects[0].value.id === clicked.owned.B, "action effect not from installed fixture");
+       assert(clicked.effects[0].value.tab?.url === fixtureURL && clicked.effects[0].value.tab?.idPresent === true, "probe precondition failed: action selected a different browser/tab; no activation attempted");
++      if (browserOmnibox) {
++        // All inventories below come from real action/omnibox extension listeners
++        // or CDP observations. Neither listener creates tabs/windows or navigates.
++        const proveInventory = (value: any, previous?: any) => {
++          assert(value?.nonce === token && [clicked.owned.A,clicked.owned.B].includes(value.id),
++            "omnibox inventory nonce/owned extension ID mismatch");
++          assert(Array.isArray(value.tabs) && value.tabs.length === 1 && Array.isArray(value.windows) && value.windows.length === 1,
++            "omnibox precondition requires exactly one actual tab/window; no activation or removal attempted");
++          const tab = value.tabs[0], window = value.windows[0];
++          assert(Number.isSafeInteger(tab.id) && Number.isSafeInteger(tab.windowId) && Number.isSafeInteger(window.id) &&
++            tab.id >= 0 && tab.windowId >= 0 && window.id >= 0 && tab.windowId === window.id && tab.url === fixtureURL && tab.active === true && tab.incognito === false &&
++            window.type === "normal" && window.incognito === false, "omnibox active tab/window is not the exact nonce fixture");
++          if (value.tab) assert(value.tab.id === tab.id && value.tab.windowId === window.id && value.tab.url === fixtureURL &&
++            value.tab.active === true && value.tab.incognito === false,"omnibox clicked tab differs from inventory");
++          if (previous) assert(tab.id === previous.tabs[0].id && window.id === previous.windows[0].id,
++            "omnibox changed actual tab/window identity");
++        };
++        const cdpFixture = async () => {
++          assert(pid && verifyAgentEndpoint(agent,port) === pid,"omnibox endpoint PID changed");
++          const page = await cdp!.targetCommand(target!,"Runtime.evaluate",{expression:`({url:location.href,token:document.querySelector('#fixture')?.dataset.token})`,returnByValue:true});
++          const value = (page.result as any)?.value;
++          assert(value?.url === fixtureURL && value?.token === token,"omnibox CDP target is no longer nonce fixture");
++          const window = await cdp!.request("Browser.getWindowForTarget",{targetId:target});
++          assert(typeof window.windowId === "number" && Number.isSafeInteger(window.windowId) && window.windowId >= 0,"omnibox CDP window identity missing");
++          return {targetId:target!,windowId:window.windowId,fixtureURL:value.url,nonce:value.token};
++        };
++        const initialPreflights = await wait(()=>{
++          const values=effects.slice(beforeAction).filter(event=>event.agent === agent && event.label === "B" && event.value.kind === "omnibox-preflight");
++          return values.length ? values : undefined;
++        },8000);
++        assert(initialPreflights.length === 1,"initial B action must have exactly one genuine inventory report");
++        clicked.omniboxPreflight = initialPreflights[0].value;
++        proveInventory(initialPreflights[0].value);
++        let previousSequence = initialPreflights[0].value.sequence;
++        assert(Number.isSafeInteger(previousSequence) && previousSequence > 0,"initial B action sequence missing");
++        const observedInputs: string[] = [];
++        for (let disposition = 0; disposition <= 11; ++disposition) {
++          const beforePreflight = effects.length;
++          const preflight = await action(`omnibox-preflight-${disposition}`,"action",{label:"B"});
++          preflight.effects = await wait(()=>{
++            const values=effects.slice(beforePreflight).filter(event=>event.agent===agent && event.label==="B" && event.value.kind==="omnibox-preflight");
++            return values.length ? values : undefined;
++          },8000);
++          assert(preflight.effects.length === 1 && preflight.effects[0].value.id === preflight.owned.B &&
++            preflight.effects[0].value.sequence === previousSequence + 1,"omnibox preflight stale/duplicate/foreign B effect");
++          const before = preflight.effects[0].value; previousSequence = before.sequence;
++          preflight.omniboxPreflight = before;
++          const realClicks = effects.slice(beforePreflight).filter(event=>event.agent===agent && event.label==="B" && event.value.kind==="action");
++          assert(realClicks.length===1 && realClicks[0].value.id===preflight.owned.B && realClicks[0].value.tab?.url===fixtureURL &&
++            realClicks[0].value.tab?.idPresent===true,"omnibox preflight ordinary B action effect missing or foreign");
++          preflight.effects = effects.slice(beforePreflight).filter(event=>event.agent===agent && event.label==="B" && ["action","omnibox-preflight"].includes(event.value.kind));
++          proveInventory(before,initialPreflights[0].value);
++          const cdpBefore = await cdpFixture();
++          assert(cdpBefore.windowId === before.windows[0].id,"omnibox CDP target belongs to another extension-reported window");
++          const inputText = `${token}/omnibox/${disposition}/π 東京 🧭`, beforeInput = effects.length;
++          assert(!observedInputs.includes(inputText),"omnibox input nonce reused"); observedInputs.push(inputText);
++          const entered = await action(`omnibox-${disposition}`,"browser-omnibox",{label:"A",disposition,inputText,fixtureURL});
++          entered.omniboxPreflight = before; entered.omniboxCDPBefore = cdpBefore;
++          entered.effects = await wait(()=>{
++            const values=effects.slice(beforeInput).filter(event=>event.agent===agent && event.label==="A" && event.value.kind==="omnibox" && event.value.input===inputText);
++            return values.length ? values : undefined;
++          },8000);
++          assert(entered.browserMatches === 1 && entered.browserOmniboxIdentityVerified === true &&
++            entered.browserOmniboxFixtureURL === fixtureURL &&
++            JSON.stringify(entered.browserOmniboxArguments) === JSON.stringify([entered.owned.A,inputText,disposition]),"omnibox real browser identity/arguments missing");
++          assert(entered.effects.length === 1,"omnibox duplicate input listener effects");
++          const effect = entered.effects[0].value;
++          assert(effect.id === entered.owned.A && effect.nonce === token && effect.input === inputText &&
++            typeof effect.disposition === "string" && effect.argumentCount >= 2 && Number.isSafeInteger(effect.argumentCount) &&
++            Array.isArray(effect.argumentTypes) && effect.argumentTypes.length === effect.argumentCount &&
++            effect.argumentTypes[0] === "string" && effect.argumentTypes[1] === "string" &&
++            effect.argumentTypes.slice(2).every((type:string)=>type === "undefined"),"omnibox listener payload is foreign or malformed");
++          const expected = [2,9,10].includes(disposition) ? "newForegroundTab" : disposition === 3 ? "newBackgroundTab" : "currentTab";
++          assert(effect.disposition === expected,"omnibox listener disposition differs from native three-string projection");
++          proveInventory(effect,before);
++          entered.omniboxCDPAfter = await cdpFixture();
++          assert(JSON.stringify(entered.omniboxCDPAfter) === JSON.stringify(cdpBefore),"omnibox CDP nonce target/window changed");
++          assert(JSON.stringify(entered.pinsAfter) === JSON.stringify(clicked.pinsAfter),"omnibox changed full pin order");
++        }
++        const actualInputs = effects.filter(event=>event.agent===agent && event.value.kind==="omnibox");
++        assert(actualInputs.length === 12 && actualInputs.every(event=>event.label==="A" && event.value.id===clicked.owned.A && event.value.nonce===token && observedInputs.includes(event.value.input)) &&
++          new Set(actualInputs.map(event=>event.value.input)).size===12,"omnibox phase has duplicate/foreign/stale input effects");
++        run.uncovered = run.uncovered.filter(value=>!value.startsWith("ArcBrowser triggerExtensionOmniboxInput:"));
++        run.uncovered.push("Omnibox valid Arc ordinals 0..11 observed only through three native onInputEntered strings; internal window/popup/OTR casts and independent activeTab permission changes remain unproved");
++      }
+       const js = await action("background-js-MV3", "background-js", { label: "A" });
+       assert(js.value === false, "MV3 worker unexpectedly treated as background page");
+       const disabled = await action("disable-A", "disable", { label: "A" });
+@@ -580,6 +670,19 @@
+         }
+       }
+       for (const observed of run.actions) writeFileSync(join(dir,`${observed.step}.required-rows.json`),JSON.stringify(requiredRows(observed),null,2));
++      if (browserOmnibox) {
++        const attempts = run.actions.filter(value=>value.operation === "browser-omnibox");
++        const preflights = effects.filter(event=>event.agent===agent && event.value.kind==="omnibox-preflight");
++        const expectedPreflights = run.actions.filter(value=>value.step==="action-B" || value.step.startsWith("omnibox-preflight-")).length;
++        if (preflights.length!==expectedPreflights || preflights.some((event,index)=>event.label!=="B" || event.value.id!==run.ownership?.owned?.B ||
++            event.value.nonce!==token || event.value.sequence!==index+1))
++          run.errors.push("omnibox late/duplicate/foreign/missing genuine B preflight effects; partial evidence retained");
++        const entered = effects.filter(event=>event.agent===agent && event.value.kind==="omnibox");
++        const expected = attempts.map(value=>value.browserOmniboxArguments?.[1]).filter(value=>typeof value === "string");
++        if (entered.length !== expected.length || new Set(entered.map(event=>event.value.input)).size !== entered.length ||
++            entered.some(event=>event.label!=="A" || event.value.id!==run.ownership?.owned?.A || event.value.nonce!==token || !expected.includes(event.value.input)))
++          run.errors.push("omnibox late/duplicate/foreign/missing actual listener effects; partial evidence retained");
++      }
+       writeFileSync(join(dir, "observations.json"), JSON.stringify(run, null, 2));
+       writeFileSync(join(dir, "effects.json"), JSON.stringify(effects.filter(event => event.agent === agent), null, 2));
+     }
+@@ -603,7 +706,7 @@
+     return { selector: event.selector, payload, mainThread: event.mainThread, synchronous: event.synchronous };
+   };
+   const callbacks = (action.callbacks ?? []).map(scopeCallback).filter(Boolean);
+-  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value", "browserPinSelector", "browserPinABI", "browserPinLabel", "browserPinArguments", "browserPinAnchorLabel", "browserPinIdentityVerified", "browserPinBaselineBeforePreserved", "browserPinBaselineAfterPreserved"];
++  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value", "browserPinSelector", "browserPinABI", "browserPinLabel", "browserPinArguments", "browserPinAnchorLabel", "browserPinIdentityVerified", "browserPinBaselineBeforePreserved", "browserPinBaselineAfterPreserved", "browserOmniboxSelector", "browserOmniboxABI", "browserOmniboxArguments", "browserOmniboxIdentityVerified", "browserOmniboxFixtureURL", "omniboxPreflight", "omniboxCDPBefore", "omniboxCDPAfter"];
+   const result: Record<string, any> = Object.fromEntries(keep.filter(key => key in action).map(key => [key, action[key]]));
+   result.callbacks = callbacks;
+   result.eventOrder = (action.events ?? []).flatMap((event: any) => {
+@@ -684,6 +787,7 @@
+   "Scoped boundary records preserve true caller labels and may include real app callbacks or app/engine calls. Their class/selector projection excludes some public calls; the default comparator also excludes probe origins. Full raw inputs are retained separately. No synthetic recorder rows, fake app attribution or caller-label removal is used.",
+   "Existing diff.py renumbers recording object identities and masks loopback ports, temporary folders and UUID strings. The exact supplemental semantic comparison applies none of those string masks.",
+   browserPins ? "Explicit --browser-pins CLI phase calls real browser pin/unpin/move selectors only on enabled nonce-owned A/B, with exact service/browser identity, Q target ABI, actual before/after ordered snapshots, untouched baseline assertions, and no synthetic callbacks; default sequence and original cleanup remain. Invalid/disabled/OTR/force-pinned paths remain uncovered." : "ArcBrowser pinExtension:, unpinExtension:, moveExtension:targetIndex: are metadata-only here; their executable behavior is uncovered. Context setPinnedExtensionOrder: is exercised separately when the native enable precondition permits it.",
++  browserOmnibox ? "Explicit --browser-omnibox CLI phase uses real B-action preflight inventories then actual A omnibox calls for ordinals0..11. Both fixtures and exact browser/service are reverified each call; the sole actual nonce tab/window must retain identity. Input/nonce/listener strings and raw actual tab/window/CDP IDs remain in evidence/semantic comparison, so native SessionID differences can remain mismatches. Three event strings do not prove internal disposition casts/window behavior or an independent permission grant; v2 method inventory remains unknown." : "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: is metadata-only; executable behavior remains uncovered.",
+   "MV3 background-page JavaScript negative path only; positive legacy background-page execution is uncovered and no legacy fixture is enabled.",
+   "Browser captures retain all weak live browser/delegate entries per context; ambiguous selection fails a probe precondition. Action-B onClicked effects must prove a real numeric tab ID and the exact nonce fixture URL; no activation is attempted.",
+   "Context command dispatch targets an enabled extension, supplies only its command string, sets user gesture, and has no target-tab or independent activeTab permission-grant coverage. Listener argumentCount/types and noTab are retained exactly; optional undefined binding padding is observed rather than invented or normalized.",

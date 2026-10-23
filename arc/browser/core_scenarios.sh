@@ -90,11 +90,21 @@ PY
 ./package-engine.sh ours156 > "$run_root/package.log" 2>&1
 framework="chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
 shasum -a 256 "$framework" > "$run_root/framework.sha256"
+packaged_framework="$engine_root/../arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
+shasum -a 256 "$packaged_framework" > "$run_root/packaged-framework.sha256"
+verify_packaged_framework() {
+  shasum -a 256 "$packaged_framework" > "$run_root/packaged-framework-current.sha256"
+  if ! cmp -s "$run_root/packaged-framework.sha256" "$run_root/packaged-framework-current.sha256"; then
+    echo "Packaged framework changed during validation; evidence: $run_root"
+    return 1
+  fi
+}
 git diff --no-ext-diff -- arc/api/arc_browser.mm arc/api/arc_web_contents.mm \
   arc/api/arc_navigation.mm arc/api/arc_internal.h arc/browser arc/wp/core.gni > "$run_root/source.diff"
 batch_exit=0
 for scenario in launch-slice tabs-navigation; do
   verify_runtime_inputs
+  verify_packaged_framework
   # The only profile removed is this disposable agent's isolated test profile.
   rm -rf "$HOME/Library/Application Support/ArcModAgent-ours156"
   harness_exit=0
@@ -108,6 +118,7 @@ for scenario in launch-slice tabs-navigation; do
   echo "$harness_exit" > "$run_root/$scenario.harness-exit"
   if [ "$harness_exit" != 0 ]; then batch_exit=1; fi
   verify_runtime_inputs
+  verify_packaged_framework
   for golden in "$run_root/goldens/$scenario"/launch-*/record.jsonl; do
     launch="$(basename "$(dirname "$golden")")"
     transcript="$run_root/$scenario/$launch/record.jsonl"
@@ -124,5 +135,10 @@ for scenario in launch-slice tabs-navigation; do
     head -2 "$run_root/$scenario/diff-$launch.txt"
   done
 done
+snapshot_sources "$run_root/sources-final.json"
+if ! cmp -s "$run_root/sources-after.json" "$run_root/sources-final.json"; then
+  echo "Core sources changed after the build; frozen evidence retained, validation requires retry."
+  batch_exit=1
+fi
 echo "Evidence: $run_root"
 exit "$batch_exit"

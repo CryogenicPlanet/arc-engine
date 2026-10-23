@@ -1,0 +1,65 @@
+--- a/arc/api/arc_internal.h
++++ b/arc/api/arc_internal.h
+@@ -16,6 +16,7 @@
+ #define ARC_EXPORT __attribute__((visibility("default")))
+ 
+ class Profile;
++namespace input { struct NativeWebKeyboardEvent; }
+ namespace content {
+ class WebContents;
+ }
+@@ -126,6 +127,15 @@
+ // restore (browser:didRestoreWebContents:...) and core must not send didCreateNewWebContents.
+ BOOL ArcSessionsDidInsertWebContents(ArcBrowser* browser, content::WebContents* contents);
+ 
++// extensions: the same browser's unhandled keyboard event. Return false unless
++// its window-owned registry and shortcut-suspension state are initialized. No
++// app/owner state may be accessed after executing a possibly reentrant action.
++namespace arc {
++bool HandleExtensionsKeyboardEvent(
++    BrowserWindowInterface* browser,
++    const input::NativeWebKeyboardEvent& event);
++}  // namespace arc
++
+ // The app's ArcBrowserApplicationDelegate (ADKApplication), weak; nil before -[ArcBrowserApplication init:].
+ id ArcBrowserApplicationDelegateObject();
+ 
+--- a/arc/browser/arc_browser_window.mm
++++ b/arc/browser/arc_browser_window.mm
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "arc/browser/arc_browser_window.h"
++#import "arc/api/arc_internal.h"
+ 
+ #import <AppKit/AppKit.h>
+ 
+@@ -285,7 +286,13 @@
+ 
+ bool ArcBrowserWindow::HandleKeyboardEvent(
+     const input::NativeWebKeyboardEvent& event) {
+-  return false;
++  const auto browser = browser_;
++  if (!browser) {
++    return false;
++  }
++  // The callee may synchronously destroy this window. Return without accessing
++  // the window or its registry after the action invocation.
++  return HandleExtensionsKeyboardEvent(browser.get(), event);
+ }
+ 
+ bool ArcBrowserWindow::IsTabStripEditable() const {
+@@ -442,4 +449,13 @@
+ bool ArcBrowserWindow::CanUserEnterFullscreen() const { return true; }
+ bool ArcBrowserWindow::CanUserExitFullscreen() const { return true; }
+ 
++// The extensions package supplies the strong implementation only after its
++// native registry/suspension contract is ready. The absent seam preserves the
++// existing unhandled behavior and performs no shortcut dispatch.
++__attribute__((weak)) bool HandleExtensionsKeyboardEvent(
++    BrowserWindowInterface*,
++    const input::NativeWebKeyboardEvent&) {
++  return false;
++}
++
+ }  // namespace arc

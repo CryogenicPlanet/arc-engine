@@ -1,0 +1,103 @@
+{
+  "canonicalGolden": true,
+  "parity": false,
+  "scope": "Unchanged accepted scenario; ours aborts synchronous-close assertion before restore coverage",
+  "comparison": {
+    "original": {
+      "transcript": "results/golden/arc-1.170-sessions-public-api/launch-1/record.jsonl",
+      "closeCall": {
+        "seq": 6136,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#148>",
+        "args": []
+      },
+      "closeReturn": {
+        "seq": 6489,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#148>",
+        "ret": null
+      },
+      "callbacks": [
+        {
+          "seq": 6138,
+          "ev": "call",
+          "thread": "main",
+          "depth": 3,
+          "from": "engine",
+          "dir": "engine->app",
+          "cls": "ADK.WebContentChromium",
+          "kind": "-",
+          "sel": "webContents:didCloseWithSessionID:",
+          "self": "<ADK.WebContentChromium#156>",
+          "args": [
+            "<ArcWebContents#148>",
+            "<ArcSessionID#222>"
+          ]
+        }
+      ],
+      "synchronousClose": true
+    },
+    "ours": {
+      "transcript": "results/sessions/canonical-public-api-run1/launch-1/record.jsonl",
+      "closeCall": {
+        "seq": 6380,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#129>",
+        "args": []
+      },
+      "closeReturn": {
+        "seq": 6381,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#129>",
+        "ret": null
+      },
+      "callbacks": [
+        {
+          "seq": 6428,
+          "ev": "call",
+          "thread": "main",
+          "depth": 1,
+          "from": "engine",
+          "dir": "engine->app",
+          "cls": "ADK.WebContentChromium",
+          "kind": "-",
+          "sel": "webContents:didCloseWithSessionID:",
+          "self": "<ADK.WebContentChromium#137>",
+          "args": [
+            "<ArcWebContents#129>",
+            "<ArcSessionID#194>"
+          ]
+        }
+      ],
+      "synchronousClose": false
+    }
+  }
+}

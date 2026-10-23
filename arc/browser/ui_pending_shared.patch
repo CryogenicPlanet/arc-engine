@@ -20,7 +20,7 @@
  #endif  // ARC_API_ARC_INTERNAL_H_
 --- a/arc/api/arc_web_contents.mm
 +++ b/arc/api/arc_web_contents.mm
-@@ -625,6 +625,7 @@
+@@ -602,6 +602,7 @@
      wrapper = [[self alloc] initWithWebContents:contents];
      data->wrapper = wrapper;
      data->weak_wrapper = wrapper;
@@ -28,9 +28,12 @@
      // Renderer package: per-frame config (ad blocking, effects) before the first navigation.
      arc::InitializeRendererBridge(contents);
    }
-@@ -886,3 +887,5 @@
+@@ -897,6 +898,8 @@
+ }
+ }  // namespace arc
+ 
++__attribute__((weak)) void ArcUIWebContentsCreated(content::WebContents*) {}
++
+ // Weak default so the framework links before the renderer package defines it (renderer's definition wins).
  namespace arc {
  __attribute__((weak)) void InitializeRendererBridge(content::WebContents* contents) {}
- }  // namespace arc
-+
-+__attribute__((weak)) void ArcUIWebContentsCreated(content::WebContents*) {}

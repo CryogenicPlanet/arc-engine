@@ -1,0 +1,35 @@
+--- a/arc/api/arc_extensions_browser.mm
++++ b/arc/api/arc_extensions_browser.mm
+@@ -1,4 +1,6 @@
+ // Copyright 2026 ArcMod. Chrome owns extension execution; Arc's app owns its UI.
++#import <AppKit/AppKit.h>
++
+ #import "arc/browser/extensions_bridge.h"
+ #import "arc/browser/extensions_values.h"
+ #import "arc/browser/extensions_context.h"
+@@ -33,6 +35,7 @@
+ #include "chrome/browser/tab_list/tab_list_interface.h"
+ #include "chrome/browser/tab_list/tab_list_interface_observer.h"
+ #include "components/tabs/public/tab_interface.h"
++#include "components/input/native_web_keyboard_event.h"
+ #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+ #include "content/public/browser/browser_thread.h"
+ #include "content/public/browser/render_frame_host.h"
+@@ -120,7 +123,16 @@
+       view->EnableAutoResize(extensions::kExtensionPopupMinSize,
+                             extensions::kExtensionPopupMaxSize);
+   }
+-  bool HandleKeyboardEvent(content::WebContents*, const input::NativeWebKeyboardEvent&) override { return false; }
++  bool HandleKeyboardEvent(content::WebContents*,
++                           const input::NativeWebKeyboardEvent& event) override {
++    NSEvent* native_event = event.os_event.Get();
++    if (!native_event || native_event.type != NSEventTypeKeyDown ||
++        !(native_event.modifierFlags & NSEventModifierFlagDeviceIndependentFlagsMask) ||
++        !NSApp || !NSApp.mainMenu) {
++      return false;
++    }
++    return [NSApp.mainMenu performKeyEquivalent:native_event];
++  }
+   void OnLoaded() override {
+     if (!host_) return;
+     host_->host_contents()->Focus();

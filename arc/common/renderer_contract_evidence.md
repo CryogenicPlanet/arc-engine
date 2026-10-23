@@ -1171,16 +1171,28 @@ and is required to equal enum1 (`EVisibility::kVisible`). The generated
 enum values/bit positions. Opacity is the float at StyleSVGData +60, reached
 through style +24. The rectangle
 helper `0x119c340` gathers absolute quads and returns their enclosing integer
-rectangle. Geometric checks at `0x4686ad4..0x4686b08` require height >=11 and
-width >=floor(W/3), plus this exact condition: `(left + width < W) &&
-(left >= 1)`. In particular `0x4686b04` uses `ccmp left, #1, #8, lt` after
-comparing right against W: the NZCV fallback8 has N=1/V=0 and therefore forces
-the following `b.lt` rejection when right>=W. This corrects an earlier mistaken
-interpretation of that conditional comparison. Under feature
-`ArcMacCoalescedResizing` (feature object
-`0xe304a40`, name `0xd41f79f`), all three quarter points must lie within the
-candidate's horizontal half-open interval `[left, right)`
-(`0x4686b1c..0x4686b50`). The rectangle helper matches
+rectangle. Style and size checks require height >=11 and width >=floor(W/3).
+After those prerequisites, **left<1 OR right>=W admits immediately**. Strictly
+interior candidates require `ArcMacCoalescedResizing` enabled (feature object
+`0xe304a40`, name `0xd41f79f`) and all three quarter points in the horizontal
+half-open interval `[left,right)`. The feature is disabled by native default.
+
+This corrects the prior inverted interpretation, which confused adjacent return
+labels. Fresh raw-bit decoding of word `0x54fffd6b` at `0x4686b08` gives signed
+imm19=-21, displacement=-84, target **`0x4686ab4`**, which returns the original
+element pointer. Word `0x34fffcc0` at `0x4686b18` gives signed imm19=-26,
+displacement=-104, target **`0x4686ab0`**, which zeroes the pointer before the
+common return. At `0x4686b04`, `ccmp left,#1,#8,lt` compares left against1 only
+when right<W; otherwise fallback NZCV8 has N=1/V=0 and forces LT=true. Thus its
+following B.LT **admits**, while feature-false CBZ **rejects** the strict interior.
+The enabled path counts all three quarter points (`0x4686b1c..0x4686b50`) and
+preserves the pointer only when count>2. Caller CBZ at `0x4685484` advances to
+the next hit (`0x4685438`), and preliminary CBZ at `0x46851c0` similarly advances
+to `0x468517c`; nonzero is admission in both callers. Raw proof is in
+`logs/wp/renderer-topband-next-controls/native-helper-and-callers.log` and the
+fresh annotated `logs/wp/renderer-top-band-proposal/geometry-native-annotated.log`.
+The previous proposal88 and its inverted fixtures are historical HELD inputs;
+compilation of those fixtures did not validate the predicate. The rectangle helper matches
 `LayoutObject::AbsoluteBoundingBoxRect(MapCoordinatesFlags)` (current source
 `layout_object.cc:2108`), using enclosing bounds of absolute quads.
 
@@ -1325,7 +1337,8 @@ candidates. Before color traversal, native scans each hit element and its
 ParentOrShadowHostElement chain (`0x1a6d4`, matching node.cc:2108). A Canvas or
 Video with visible style, display!=none, opacity>0, width>=floor(W/3), and
 height>=11 sets local screenshotAllowed=false (`0x468529c..0x468530c` ->
-`0x46864b0`). This prepass does not apply the strict interior-bounds predicate.
+`0x46864b0`). This prepass does not apply the color helper's edge/interior
+coalescing admission tests.
 
 When bitmap analysis fails: if screenshotAllowed is false, skip that complex
 candidate. Otherwise issue a surface-sampling candidate if unscrolled, or if
@@ -1475,13 +1488,31 @@ The creation byte is exactly RuntimeEnabledFeatures::TopBandColorSamplingEnabled
   runtime_enabled_features.cc:8799..8808. Generic SetFeatureEnabledFromString
   can also address the name in native name pool `0xcdd5705`.
 
-Public Arc feature36 independently has enum name `kEnableTopBandColorSampling`,
-JSON key `enableTopBandColorSampling`, and default false (initializer
-`0x44d92b8`, key use `0x44d92e4`; native feature table `0xdff38c8/+8`). A bounded
-search did **not** establish a relay from that Arc runtime setting to this Blink
-base/runtime feature, nor live propagation. Matching names do not prove one.
-Do not implement an invented live Arc36 relay. The native Blink gate and
-FeatureList/command-line behavior above can be ported faithfully on their own.
+**Corrected public enum mapping and proven startup relay:** TopBand is public
+Arc feature **31**, not36. The earlier table reading paired an enum with the
+next record's name. The actual name table uses24-byte records with pointer+0,
+length+8 and enum+16; lookup `0x44da780` and consumer `0x44d8970` establish that
+schema. Record `0xdff38d0` names `kEnableTopBandColorSampling` and stores enum31.
+Enum36 instead names `kEnableTabLifecycleSnapshot`; HEIF is43. Initializer
+`0x44d92b8` belongs to enum31 and uses JSON key `enableTopBandColorSampling`
+with false default. There is no proven native name/config mismatch.
+
+Renderer child-command-line hook `0x42abb3c` admits only process type renderer,
+then `0x42abd14/0x42abd18` read runtime feature31. True loads descriptor
+`0xe2c32b8`'s `TopBandColorSampling` name and appends
+`--enable-blink-features=TopBandColorSampling` through `0x1b2e164` at
+`0x42abd38..0x42abd4c`. Thus **startup relay from public31 is proved**; native
+public getter/setter preserve31 without remapping it to36. Prior controls that
+toggled36 tested Snapshot, not TopBand, and cannot reject this relay.
+
+Live propagation to an existing renderer remains unproved. Bounded singleton
+subscription/callback audits found adblock11 and memory20..23 handling, not a
+TopBand live update, but do not exclude every indirect consumer. Do not invent
+a live relay. Full raw provenance and independent clean review are in
+`renderer_arc36_relay_evidence.md` (historical filename) and
+`logs/wp/renderer-arc36-relay/independent-static-review.txt`. The current private
+proposal still lacks this proven public31 startup hook; shared-hook work is
+separate from the geometry/timer correction.
 
 ### Minimum faithful port boundary and remaining uncertainty
 
@@ -1510,8 +1541,9 @@ Shared changes required for a proposal:
    the separately recovered 8-DIP browser fallback from RENDERER_VISUAL_GAPS.md,
    its optional equality, token, five-point distance policy, and scroll events.
 
-This is a proposal boundary, not permission to edit shared files. The remaining
-unestablished external contract is Arc feature36's relay/live-update behavior.
+This is a proposal boundary, not permission to edit shared files. Remaining
+external work includes the now-proven Arc feature31 startup relay's
+shared hook; live-update behavior remains unestablished.
 The stripped native source enum labels are unnecessary: observed mode values
 0/1/3 and transitions are exact. Full arbitrary integer overflow/NaN states
 outside Blink's validated geometry/color invariants have not been probed; use
@@ -1821,3 +1853,148 @@ It bypasses the CSS FillLayer significance scan used by other elements. Thus a
 foreground IMG takes the complex path even with opaque plain CSS background,
 opacity1, and no CSS background image. Canvas/Video remain explicitly skipped
 in the main candidate loop, as documented above.
+
+### Committed-navigation refresh: established local order and boundary
+
+Refresh caller `0x438b6ec` is an ArcWebContents secondary observer interface:
+thunk `0x438b950` subtracts168 from its receiver and tail-branches there;
+native vtable data reference is `0xda81be8`. Its committed-state admission
+(NavigationRequest state8/11), primary-root checks and sampler refresh at
+`0x438b824` are documented above. Within this function, an optional native
+state/UI update `0x4374a1c` occurs at `0x438b790` **before** the sampler refresh;
+native user-data record synchronization calls `0x575e00` and `0x1b92100` at
+`0x438b874/0x438b888` occur **after** it. The function contains no direct
+navigation observer bridge dispatch around that refresh.
+
+Objective-C navigation observer registration is a separate route:
+ArcWebContentsNavigationController addObserver `0x4416eac` registers through
+`0x4333598 -> 0x42f2480`. Its bridge vtable `0xda882d0` has provisional
+`0x44193c0`, commit `0x44195b4`, finish `0x44197a8`, failure `0x441999c`, and
+provisional-failure `0x4419b90` endpoints. This separation alone does **not**
+establish whether the top-band refresh callback occurs before or after an app's
+navigation commit/failure notification. A shared-core hook should not be called
+native-order-equivalent merely because it is placed adjacent to a method named
+DidFinishNavigation; relative observer registration/traversal must be grounded
+separately or left an explicit proposal limitation.
+
+The bounded controller endpoint inspection confirms a distinct list:
+`0x42f2480` accesses controller +136, performs dedup/lookup using `0x42f67a0`,
+and when absent increments controller +176 and inserts the shared observer pair
+through `0x42f6ae0`. Controller registration/traversal timing relative to the
+ArcWebContents +168 observer was not recovered by this bounded follow-up.
+No before/after navigation-delegate ordering is claimed.
+
+### Candidate-cache mutation occurs only on accepted image/capture branches
+
+The recent-candidate helper `0x4686b58` is read-only: it obtains current
+monotonic time, rejects age >1,500,000us (`0x4686b70..0x4686b9c`), then tests
+node/style compatibility as documented above. It does not refresh age or style.
+
+| Accepted path | Persistent mutations |
+| --- | --- |
+| Compatible cached analyzed color (`0x46855e8/0x46855f4 -> 0x468642c`) | Reads Color +280..296, then votes at +6454; **no** node/style/time/token refresh |
+| Fresh opaque analyzed bitmap (`0x46862dc..0x4686358`) | Writes node +260, style +264, current time +272, Color +280..296 and analyzed presence +300=true; leaves token counter +304 unchanged |
+| Compatible accepted surface-capture candidate (`0x468639c..0x46863c0 -> 0x4686420`) | Reuses nonzero token +304; no node/style/time refresh |
+| New accepted surface-capture candidate (`0x46863c4..0x4686424`) | Clears analyzed presence +300, writes node/style/time +260/+264/+272, increments token +304, stores token in vote record +40 |
+
+Surface acceptance begins at `0x4686360`; its vote record requests sampling via
+record +32. Token reuse requires both nonzero +304 and helper compatibility.
+The bitmap failure itself is not an acceptance. If screenshot admission is
+false, `0x46856d8..0x46856e4` continues the hit loop with no persistent cache
+write. If scrolled and no compatible recent token permits capture,
+`0x46856fc..0x4685718` only sets the pass-wide reuse_cached_color flag and
+continues. These rejected paths preserve the **previous** candidate cache,
+including any previously engaged analyzed color. Do not clear/update the cache
+merely because a different node or failed bitmap was examined. Likewise, a
+successful cache reuse does not extend the original 1.5-second retention age.
+
+### FireDetection active-timer branch and missing-view behavior
+
+`0x46849d0` branches on timer activity. With an active timer, it sets retry +135
+true at `0x4684b48`; if pending-presentation active +192 is false or mode +128
+is3 it returns (`0x4684b50/0x4684b5c`). Otherwise it re-fetches the frame's
+current view and returns when null (`0x4684b74..0x4684b78` target `0x4684b00`).
+With a view but no `view->GetScrollableArea()`, it instead sets mode3 and
+submits an empty ChosenState through `0x4684b10..0x4684b34`, including while
+the timer is active. Fresh conditional-target decoding distinguishes those
+destinations: failures at `0x4684b94`, `0x4684bb4`, `0x4684bc0`,
+`0x4684bd0`, `0x4684be0` and `0x4684bf0` all target `0x4684b10`;
+only the missing-view check at `0x4684b78` targets the quiet return. Raw full
+function proof: `logs/wp/renderer-topband-bounds-correction-review/adjacent-bridges.raw.log`.
+This corrects prior prose and proposal88's active-timer/no-area quiet return.
+Valid state tail-
+calls Detect at `0x4684c04`. That branch neither rearms the timer nor clears
+retry, including when immediate detection is permitted. Thus every eligible
+FireDetection while the timer is active and a pending presentation exists can
+detect immediately, while retry stays true.
+
+With an inactive timer, it arms100ms at `0x4684a40..0x4684a54`, then clears retry
+at `0x4684a58`. Mode3 returns. With a ScrollableArea it detects
+(`0x4684afc`); no ScrollableArea sets mode3 and submits an empty ChosenState via
+`0x4684b10..0x4684b34`. This inactive branch has no explicit null-view check
+before dereferencing view at `0x4684a80`; it presumes the lifecycle caller has a
+live view. Do not describe that presumed-live case as a native missing-view nil
+emission. The explicit active-branch missing-view check returns without emit.
+
+Timer callback `0x46847c0` only reads retry and current view. If retry is true
+and view exists, it schedules animation through `0xb44440` at `0x4684824`.
+It does not clear retry, perform detection, or submit a state itself.
+
+### ScrollableArea prerequisite and preliminary scroll-policy hit provenance
+
+The FireDetection prerequisite is exactly **`view->GetScrollableArea() !=
+nullptr`**, not rendering throttle, pending layout, or view +576 equals zero.
+Native +576 is a compressed Member<RootFrameViewport>. Inactive branch
+`0x4684a84` CBNZ jumps **to** `0x4684aec`, and active `0x4684b80` jumps **to**
+`0x4684be8`; both decode/test that pointer and proceed to Detect when nonnull.
+When absent, the inline fallback traverses the frame/window/document/LayoutView
+and its PaintLayerScrollableArea. This matches LocalFrameView::GetScrollableArea
+at local_frame_view.cc:4697..4706: return viewport_scrollable_area_ if present,
+otherwise LayoutViewport(). Its Frame -> LocalDOMWindow -> Document chain is
+an implementation of that fallback, not a separate readiness policy.
+Native `0x4684e54..0x4684e80` independently loads the same +576 RootFrameViewport
+and calls GetScrollOffset via virtual +328; positive Y establishes scrolled
+state. Thus scroll uses the frame ScrollableArea, including root viewport
+semantics, rather than unconditionally using only LayoutViewport.
+
+The raw preliminary hit for scrolled coordinate policy does **not** use
+HitTestResult::InnerNode or InnerNodeOrImageMapImage. After its HitTest
+`0x4685154`, `0x468515c` explicitly obtains ListBasedTestResult (`0xa79cc00`).
+The next-index loop `0x468516c..0x46851ac` visits insertion-order hits and calls
+the same eligible-element helper `0x4686a2c` at `0x46851bc` with reference W.
+Rejected entries continue; the **first eligible element** stops that search.
+It loads that element's GetLayoutObject from node +48 at `0x46851c4`. This
+layout object then follows the already documented ContainingBlock chain,
+checking active sticky offset/fixed positioning (`0x4685bbc..0x4685c28`).
+No eligible element, no applicable layout ancestor, or reaching LayoutView
+selects DocumentToFrame adjustment. Do not replace this search with InnerNode,
+the raw first hit, or the separate main color-voting traversal.
+
+Scrolled surface-capture admission additionally requires **nonzero token
++304 and compatibility** to bypass the scroll restriction: `0x46856e8` loads
+the counter; zero branches to `0x4685858`, which tests scrolled state before
+allowing capture. Nonzero checks compatibility at `0x46856fc`; only true goes
+directly to capture acceptance `0x4686360`. A compatible node with token0 is
+therefore insufficient to admit a fresh capture while scrolled. Rejected
+scrolled paths set reuse_cached_color and continue, as documented above.
+
+The raw-versus-adjusted policy is selected **once per entire detection pass**,
+despite preliminary-HitTest instructions being physically laid out inside the
+sample-loop block. Persistent stack word sp+120 is policy_decided, initialized
+false by `0x4684e98` (`stp wzr,w8,[sp,#120]`, second word is quarter-width).
+Stack word sp+108 is use_raw, initialized false at `0x4684e8c`. For a scrolled
+sample, `0x46850fc..0x4685100` tests policy_decided; false runs the preliminary
+HitTest. Its sticky/fixed success returns through `0x4685c54 -> 0x468510c`,
+sets use_raw=true, and reaches `0x468520c`, which sets policy_decided=true.
+No qualifying layout object/reaching LayoutView instead uses
+`0x46851e8..0x4685200` to transform that point and set use_raw=false, then also
+sets policy_decided at +520c.
+
+Subsequent samples advance via `0x46850b8..0x46850f0` without resetting either
+flag. Once decided, +5104 reads use_raw: true follows +510c/+520c without
+transforming the new raw point; false follows +51e8 to transform the new point.
+Only initialization +4e98 and assignment +520c write policy_decided in the
+complete Detect body. Therefore do not perform a new raw preliminary hit at
+each sample. The first x=0 hit can admit an edge element; geometry intuition
+does not change the persistent control flow. That native control flow is exact;
+no alternative per-sample policy is inferred from geometry intuition.

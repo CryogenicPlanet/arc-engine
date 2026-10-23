@@ -3,7 +3,14 @@
 
 #import <objc/runtime.h>
 
+#include <cstddef>
+#include <cstdint>
+#include <string>
+
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/no_destructor.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/performance_manager/public/user_tuning/battery_saver_mode_manager.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
@@ -12,10 +19,28 @@
 #include "content/public/browser/scoped_accessibility_mode.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/network_service_instance.h"
 #include "ui/accessibility/platform/ax_mode_observer.h"
 #include "ui/accessibility/platform/ax_platform.h"
+
+// Identical to the native record consumed by ArcGPULogMessage in app_values.
+namespace app_values {
+struct GPULogMessage {
+  int32_t severity;
+  std::string header;
+  std::string message;
+};
+static_assert(sizeof(GPULogMessage) == 56);
+static_assert(offsetof(GPULogMessage, header) == 8);
+static_assert(offsetof(GPULogMessage, message) == 32);
+}  // namespace app_values
+
+// The primary implementation and ownership of the copied record live in app_values.
+ARC_EXPORT @interface ArcGPULogMessage : NSObject
+- (instancetype)initWithGPULogMessage:(const void*)message;
+@end
 
 @protocol ArcAccessibilityObserver <NSObject>
 - (void)accessibilityModeChanged:(NSString*)mode;
@@ -123,14 +148,12 @@ __weak id g_host_notification_center;
   std::unique_ptr<content::ScopedAccessibilityMode> screen_reader_mode;
 }
 @property(nonatomic, weak) id notificationCenter;
-@property(nonatomic, weak) id histogramDelegate;
 @property(nonatomic, copy) id breadcrumbCallback;
 @property(nonatomic, copy) id dumpWithoutCrashingCallback;
 @property(nonatomic, copy) id webContentsCloseCallback;
 @end
 @implementation ApplicationServicesState
 @synthesize notificationCenter = _notificationCenter;
-@synthesize histogramDelegate = _histogramDelegate;
 @synthesize breadcrumbCallback = _breadcrumbCallback;
 @synthesize dumpWithoutCrashingCallback = _dumpWithoutCrashingCallback;
 @synthesize webContentsCloseCallback = _webContentsCloseCallback;
@@ -152,6 +175,24 @@ ApplicationServicesState* Services(id app) {
 ARC_EXPORT @interface ArcBrowserApplication : NSObject
 @end
 @implementation ArcBrowserApplication (AppServices)
+- (NSArray<ArcGPULogMessage*>*)getGPULogMessages {
+  NSMutableArray<ArcGPULogMessage*>* messages = [NSMutableArray array];
+  base::ListValue snapshot = content::GpuDataManagerImpl::GetInstance()->GetLogMessages();
+  for (const base::Value& entry : snapshot) {
+    const base::DictValue* dictionary = entry.GetIfDict();
+    if (!dictionary) continue;
+    const auto severity = dictionary->FindInt("level");
+    const std::string* header = dictionary->FindString("header");
+    const std::string* text = dictionary->FindString("message");
+    if (!severity.has_value() || !header || !text) continue;
+    app_values::GPULogMessage message{*severity, *header, *text};
+    [messages addObject:[[ArcGPULogMessage alloc] initWithGPULogMessage:&message]];
+  }
+  return messages;
+}
+- (NSString*)getHistogramsJSON {
+  return ArcNSString(base::StatisticsRecorder::ToJSON(base::JSON_VERBOSITY_LEVEL_FULL));
+}
 - (void)setNotificationCenter:(id)center {
   g_host_notification_center = center;
   Services(self).notificationCenter = center;
@@ -161,7 +202,6 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
     if (content::GpuDataManager::Initialized()) ObserveApplicationGPU();
   });
 }
-- (void)setHistogramSamplesDelegate:(id)delegate { Services(self).histogramDelegate = delegate; }
 - (void)setBreadcrumbCallback:(void (^)(id))callback { Services(self).breadcrumbCallback = callback; }
 - (void)setDumpWithoutCrashingCallback:(void (^)(void))callback { Services(self).dumpWithoutCrashingCallback = callback; }
 - (void)setOnWebContentsCloseDebugLogCallback:(void (^)(id))callback { Services(self).webContentsCloseCallback = callback; }

@@ -28,6 +28,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_registrar.h"
@@ -43,7 +44,6 @@
 #include "extensions/common/mojom/execution_world.mojom.h"
 #include "extensions/browser/unpacked_installer.h"
 #include "extensions/browser/webstore_install_result.h"
-#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/description_info.h"
@@ -202,7 +202,8 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
     toolbar_->RemoveObserver(this);
     toolbar_ = nullptr;
   }
-  void OnExtensionLoaded(content::BrowserContext*,
+  // Native RegistryObserver emits DidEnable from its Ready slot, not Loaded.
+  void OnExtensionReady(content::BrowserContext*,
                          const extensions::Extension* extension) override {
     if (extension->id() == arc::kInternalExtensionId) return;
     NSString* identifier = base::SysUTF8ToNSString(extension->id());
@@ -342,11 +343,13 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
   for (const auto& message : extension.permissions_data()->GetPermissionMessages())
     result.permissions.push_back(message.message());
   if (profile) {
-    result.icon = ExtensionIcon(profile, extension);
+    auto* manager = extensions::ExtensionActionManager::Get(profile);
+    auto* action = manager ? manager->GetExtensionAction(extension) : nullptr;
+    result.has_action = action != nullptr;
+    if (action) result.icon = ExtensionIcon(profile, extension);
     if (auto* registry = extensions::ExtensionRegistry::Get(profile))
       result.enabled = registry->enabled_extensions().Contains(extension.id());
   }
-  result.has_action = extensions::ActionInfo::GetExtensionActionInfo(&extension) != nullptr;
   result.version = extension.VersionString();
   result.omnibox_keyword = extensions::OmniboxInfo::GetKeyword(&extension);
   result.from_webstore = extension.from_webstore();

@@ -1,0 +1,182 @@
+{
+  "raw_diff": "results/core-runtime/20261023T125302Z/tabs-navigation/diff-launch-1.json",
+  "rows": {
+    "missing": [
+      {
+        "method": "->engine -ArcWebContents ignoreDisablePiPAttribute:",
+        "golden_calls": 4,
+        "example": {
+          "args": "[false]",
+          "ret": "null"
+        }
+      }
+    ],
+    "extra": [],
+    "return_mismatch": [
+      {
+        "method": "->engine -ArcBrowser context",
+        "call": 0,
+        "args": "[]",
+        "golden": "\"<ArcBrowserContext#2>\"",
+        "ours": "\"<ArcBrowserContext#1>\""
+      },
+      {
+        "method": "->engine -ArcSessionID identifier",
+        "call": 0,
+        "args": "[]",
+        "golden": "805422707",
+        "ours": "1297063360"
+      },
+      {
+        "method": "->engine -ArcWebContents isReadyToDisplay",
+        "call": 3,
+        "args": "[]",
+        "golden": "true",
+        "ours": "false"
+      },
+      {
+        "method": "->engine -ArcWebContents loadProgress",
+        "call": 5,
+        "args": "[]",
+        "golden": "1",
+        "ours": "0.7"
+      },
+      {
+        "method": "->engine -ArcWebContents nativeView",
+        "call": 0,
+        "args": "[]",
+        "golden": "\"<WebContentsHostView#1>\"",
+        "ours": "\"<WebContentsViewCocoa#1>\""
+      },
+      {
+        "method": "->engine -ArcWebContents navigationController",
+        "call": 5,
+        "args": "[]",
+        "golden": "\"<ArcWebContentsNavigationController#4>\"",
+        "ours": "\"<ArcWebContentsNavigationController#2>\""
+      },
+      {
+        "method": "->engine -ArcWebContents navigationID",
+        "call": 2,
+        "args": "[]",
+        "golden": "0",
+        "ours": "1"
+      },
+      {
+        "method": "->engine -ArcWebContents tabTraits",
+        "call": 3,
+        "args": "[]",
+        "golden": "\"<NSMutableIndexSet#3>\"",
+        "ours": "\"<NSMutableIndexSet#2>\""
+      },
+      {
+        "method": "->engine -ArcWebContents url",
+        "call": 2,
+        "args": "[]",
+        "golden": "\"url:http://*/b\"",
+        "ours": "\"url:http://*/a\""
+      }
+    ],
+    "arg_mismatch": [
+      {
+        "method": "engine->app -ADK.WebContentChromium webContents:didChangeStatusText:",
+        "call": 2,
+        "golden": "[\"<ArcWebContents#1>\", \"\"]",
+        "ours": "[\"<ArcWebContents#2>\", \"\"]"
+      }
+    ],
+    "count_mismatch": [
+      {
+        "method": "->engine -ArcWebContents backForwardList",
+        "golden": 16,
+        "ours": 17
+      },
+      {
+        "method": "->engine -ArcWebContents favicon",
+        "golden": 17,
+        "ours": 14
+      },
+      {
+        "method": "->engine -ArcWebContents insertStylesheet:stylesheet:",
+        "golden": 3,
+        "ours": 9
+      },
+      {
+        "method": "->engine -ArcWebContents isReadyToDisplay",
+        "golden": 18,
+        "ours": 10
+      },
+      {
+        "method": "->engine -ArcWebContents loadProgress",
+        "golden": 31,
+        "ours": 36
+      },
+      {
+        "method": "->engine -ArcWebContents navigationID",
+        "golden": 17,
+        "ours": 24
+      },
+      {
+        "method": "->engine -ArcWebContents setBackForwardList:",
+        "golden": 16,
+        "ours": 17
+      },
+      {
+        "method": "->engine -ArcWebContents setFavicon:",
+        "golden": 17,
+        "ours": 14
+      },
+      {
+        "method": "->engine -ArcWebContents setIsReadyToDisplay:",
+        "golden": 18,
+        "ours": 10
+      },
+      {
+        "method": "->engine -ArcWebContents setLoadProgress:",
+        "golden": 31,
+        "ours": 36
+      },
+      {
+        "method": "->engine -ArcWebContents setNavigationID:",
+        "golden": 17,
+        "ours": 27
+      },
+      {
+        "method": "->engine -ArcWebContents setState:",
+        "golden": 5,
+        "ours": 6
+      },
+      {
+        "method": "->engine -ArcWebContents setTabTraits:",
+        "golden": 17,
+        "ours": 14
+      },
+      {
+        "method": "->engine -ArcWebContents setUrl:",
+        "golden": 17,
+        "ours": 27
+      },
+      {
+        "method": "->engine -ArcWebContents state",
+        "golden": 5,
+        "ours": 6
+      },
+      {
+        "method": "->engine -ArcWebContents tabTraits",
+        "golden": 19,
+        "ours": 16
+      },
+      {
+        "method": "->engine -ArcWebContents url",
+        "golden": 17,
+        "ours": 24
+      },
+      {
+        "method": "engine->app -ADK.WebContentChromium webContents:didChangeStatusText:",
+        "golden": 35,
+        "ours": 26
+      }
+    ],
+    "internal": []
+  }
+}

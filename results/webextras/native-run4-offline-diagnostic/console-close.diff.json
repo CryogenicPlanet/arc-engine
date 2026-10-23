@@ -1,0 +1,112 @@
+{
+ "internal": [],
+ "internal_ours": [],
+ "missing": [
+  {
+   "method": "->engine -ArcWebContents isReadyToDisplay",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setIsReadyToDisplay:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[true]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"ProfileKeepAlive-origin\", \"kDevToolsWindow\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "extra": [
+  {
+   "method": "->engine -ArcWebContents pendingRenderFrameViewportSize",
+   "our_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"{1042, 716}\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents rootBackgroundColor",
+   "our_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcColor4f#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setPendingRenderFrameViewportSize:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"{1042, 716}\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setRootBackgroundColor:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcColor4f#1>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setState:",
+   "our_calls": 1,
+   "example": {
+    "args": "[0]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setVisibility:",
+   "our_calls": 1,
+   "example": {
+    "args": "[0]",
+    "ret": "null"
+   }
+  }
+ ],
+ "return_mismatch": [],
+ "arg_mismatch": [],
+ "count_mismatch": [],
+ "callback_sequence": {
+  "golden": 2,
+  "ours": 1,
+  "first_divergence": 1,
+  "golden_from": [
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ],
+  "ours_from": []
+ },
+ "fixture_comparison": {
+  "mode": "exact-image",
+  "admitted_images": [
+   "WebextrasNativeProbe.dylib"
+  ],
+  "retained_fixture_events": {
+   "golden": {
+    "WebextrasNativeProbe.dylib": {
+     "call": 1,
+     "ret": 1
+    }
+   },
+   "ours": {
+    "WebextrasNativeProbe.dylib": {
+     "call": 1,
+     "ret": 1
+    }
+   }
+  }
+ }
+}

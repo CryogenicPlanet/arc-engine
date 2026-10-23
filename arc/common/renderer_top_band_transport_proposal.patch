@@ -1,0 +1,432 @@
+--- a/arc/renderer/render_frame_agent.cc
++++ b/arc/renderer/render_frame_agent.cc
+@@ -231,6 +231,16 @@
+     installed_filter_ruleset_.reset();
+     InstallAdBlockFilter();
+   }
++  void OnArcTopBandColorChanged(
++      std::optional<uint32_t> color, bool request_surface_sample, uint64_t token,
++      bool reuse_cached_color, bool crossfade) override {
++    if (host_.is_bound()) {
++      host_->TopBandColorChanged(
++          color ? mojom::TopBandColor::New(*color) : nullptr,
++          request_surface_sample, token, reuse_cached_color, crossfade);
++    }
++  }
++
+   void OnDestruct() override { delete this; }
+ 
+  private:
+--- a/arc/wp/renderer.gni
++++ b/arc/wp/renderer.gni
+@@ -6,6 +6,7 @@
+   "//arc/api/arc_renderer_extraction.mm",
+   "//arc/api/arc_renderer_network.mm",
+   "//arc/api/arc_renderer_process.mm",
++  "//arc/api/arc_renderer_top_band.mm",
+   "//arc/api/arc_renderer_values.mm",
+   "//arc/api/arc_renderer_web_contents.mm",
+ ]
+@@ -13,9 +14,11 @@
+   "//arc/common:network_rules",
+   "//arc/common:renderer_interfaces",
+   "//arc/renderer",
++  "//cc/paint",
+   "//components/optimization_guide/content/browser",
+   "//components/subresource_filter/core/common",
+   "//components/subresource_filter/tools/ruleset_converter:support",
+   "//ipc",
+   "//mojo/public/cpp/bindings",
++  "//third_party/blink/public/common",
+ ]
+--- a/arc/common/renderer.mojom
++++ b/arc/common/renderer.mojom
+@@ -3,9 +3,15 @@
+ 
+ import "mojo/public/mojom/base/file.mojom";
+ 
++struct TopBandColor {
++  uint32 value;
++};
++
+ interface RendererHost {
+   // Blink calls ReportDisallowedLoad only for an actually disallowed load.
+   ReportDisallowedLoad();
++  TopBandColorChanged(TopBandColor? color, bool request_surface_sample,
++                      uint64 token, bool reuse_cached_color, bool crossfade);
+ };
+ 
+ struct EffectSource {
+--- a/arc/api/arc_renderer_web_contents.mm
++++ b/arc/api/arc_renderer_web_contents.mm
+@@ -6,6 +6,7 @@
+ #include <utility>
+ 
+ #include "arc/common/ad_block_browser.h"
++#include "arc/common/top_band_browser.h"
+ #include "arc/common/effects_browser.h"
+ #include "arc/common/renderer.mojom.h"
+ #include "arc/common/renderer_values.h"
+@@ -78,6 +79,17 @@
+     }
+   }
+ 
++  void TopBandColorChanged(mojom::TopBandColorPtr color,
++                           bool request_surface_sample, uint64_t token,
++                           bool reuse_cached_color, bool crossfade) override {
++    auto* frame = content::RenderFrameHost::FromID(hosts_.current_context());
++    if (frame && content::WebContents::FromRenderFrameHost(frame) == web_contents()) {
++      ReceiveRendererTopBandColor(
++          frame, color ? std::make_optional(color->value) : std::nullopt,
++          request_surface_sample, token, reuse_cached_color, crossfade);
++    }
++  }
++
+   void PrimaryPageChanged(content::Page&) override {
+     if (blocked_resource_count_ != 0) {
+       blocked_resource_count_ = 0;
+--- /dev/null
++++ b/arc/common/top_band_browser.h
+@@ -0,0 +1,29 @@
++// Copyright 2026 ArcMod. Document-scoped TopBand fallback transport.
++#ifndef ARC_COMMON_TOP_BAND_BROWSER_H_
++#define ARC_COMMON_TOP_BAND_BROWSER_H_
++
++#include <cstdint>
++#include <optional>
++#include "third_party/skia/include/core/SkColor.h"
++
++namespace content {
++class RenderFrameHost;
++class WebContents;
++}
++#ifdef __OBJC__
++@class ArcWebContents;
++#endif
++namespace arc {
++#ifdef __OBJC__
++// Core retains its public selector/weak property. Registration does not replay.
++void SetRendererTopBandColorDelegate(content::WebContents* contents,
++                                     ArcWebContents* wrapper, id delegate);
++#endif
++void ReceiveRendererTopBandColor(content::RenderFrameHost* frame,
++                                 std::optional<SkColor> color,
++                                 bool request_surface_sample, uint64_t token,
++                                 bool reuse_cached_color, bool crossfade);
++// Called only at the native-equivalent committed-navigation refresh point.
++void RefreshRendererTopBandColor(content::RenderFrameHost* frame);
++}  // namespace arc
++#endif
+--- /dev/null
++++ b/arc/api/arc_renderer_top_band.mm
+@@ -0,0 +1,310 @@
++// Copyright 2026 ArcMod. Native-equivalent document-owned TopBand fallback.
++#import "arc/api/arc_internal.h"
++#import <objc/runtime.h>
++
++#include <algorithm>
++#include <cmath>
++#include <optional>
++#include <utility>
++
++#include "arc/common/top_band_browser.h"
++#include "base/functional/bind.h"
++#include "base/memory/raw_ptr.h"
++#include "base/memory/weak_ptr.h"
++#include "base/numerics/safe_conversions.h"
++#include "base/scoped_observation.h"
++#include "cc/paint/arc_top_band_color_analyzer.h"
++#include "content/public/browser/browser_task_traits.h"
++#include "content/public/browser/browser_thread.h"
++#include "content/public/browser/document_user_data.h"
++#include "content/public/browser/render_frame_host.h"
++#include "content/public/browser/render_widget_host.h"
++#include "content/public/browser/render_widget_host_observer.h"
++#include "content/public/browser/render_widget_host_view.h"
++#include "content/public/browser/web_contents.h"
++#include "content/public/browser/web_contents_user_data.h"
++#include "components/viz/common/frame_sinks/copy_output_result.h"
++#include "third_party/blink/public/common/input/web_input_event.h"
++#include "third_party/skia/include/core/SkBitmap.h"
++
++@protocol RendererTopBandColorDelivery
++- (void)webContents:(ArcWebContents*)contents
++    didSampleTopBandColor:(ArcColor*)color
++         shouldCrossfade:(BOOL)crossfade;
++@end
++
++// Native's private shared bridge is retained by the Arc wrapper and observed
++// weakly by WebContents. This payload supplies that lifetime without retaining
++// either public callback object or redefining core's selector/category.
++@interface RendererTopBandDelegatePayload : NSObject {
++ @public
++  __weak ArcWebContents* wrapper;
++  __weak id delegate;
++}
++@end
++@implementation RendererTopBandDelegatePayload
++@end
++
++namespace arc {
++namespace {
++char g_top_band_payload_key;
++// Observe the current wrapper-retained delivery payload weakly. The sampler
++// cache belongs to the RFH document; registration never refreshes that sampler.
++class TopBandDelegate final
++    : public content::WebContentsUserData<TopBandDelegate> {
++ public:
++  void Set(RendererTopBandDelegatePayload* bridge) { bridge_ = bridge; }
++  void Deliver(std::optional<SkColor> color, bool crossfade) {
++    RendererTopBandDelegatePayload* bridge = bridge_;
++    if (!bridge) {
++      return;
++    }
++    id<RendererTopBandColorDelivery> delegate = bridge->delegate;
++    ArcWebContents* wrapper = bridge->wrapper;
++    [delegate webContents:wrapper
++        didSampleTopBandColor:color ? [ArcColor colorWithSkColor:*color] : nil
++             shouldCrossfade:crossfade];
++  }
++ private:
++  explicit TopBandDelegate(content::WebContents* contents)
++      : content::WebContentsUserData<TopBandDelegate>(*contents) {}
++  friend class content::WebContentsUserData<TopBandDelegate>;
++  __weak RendererTopBandDelegatePayload* bridge_ = nil;
++  WEB_CONTENTS_USER_DATA_KEY_DECL();
++};
++WEB_CONTENTS_USER_DATA_KEY_IMPL(TopBandDelegate);
++
++class TopBandSampler final
++    : public content::DocumentUserData<TopBandSampler>,
++      public content::RenderWidgetHost::InputEventObserver,
++      public content::RenderWidgetHostObserver {
++ public:
++  ~TopBandSampler() override {
++    if (widget_) {
++      widget_->RemoveInputEventObserver(this);
++    }
++  }
++
++  void Receive(std::optional<SkColor> color, bool sample, uint64_t token,
++               bool reuse, bool crossfade) {
++    if (!sample) {
++      pending_ = false;
++      if (reuse && cached_color_) {
++        color = cached_color_;
++      }
++      Emit(color, crossfade);
++      return;
++    }
++    pending_ = true;
++    pending_token_ = token;
++    pending_crossfade_ = crossfade;
++    ServePending();
++  }
++
++  void Refresh() {
++    if (!IsActivePrimaryMainFrame()) {
++      return;
++    }
++    auto weak = weak_factory_.GetWeakPtr();
++    ServePending();
++    if (weak && has_last_emitted_) {
++      // Commit replay deliberately bypasses optional-color equality.
++      Deliver(last_emitted_, false);
++    }
++  }
++
++  void OnInputEvent(const content::RenderWidgetHost&,
++                    const blink::WebInputEvent& event,
++                    InputEventSource) override {
++    if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin) {
++      scrolling_ = true;
++      invalidated_ = capture_active_;
++    } else if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollEnd) {
++      scrolling_ = false;
++      ServePending();
++    }
++  }
++
++  void RenderWidgetHostDestroyed(content::RenderWidgetHost* widget) override {
++    if (widget_ == widget) {
++      widget_->RemoveInputEventObserver(this);
++      widget_ = nullptr;
++      widget_observation_.Reset();
++    }
++  }
++
++ private:
++  explicit TopBandSampler(content::RenderFrameHost* frame)
++      : content::DocumentUserData<TopBandSampler>(frame),
++        widget_(frame->GetRenderWidgetHost()) {
++    if (widget_) {
++      widget_observation_.Observe(widget_);
++      widget_->AddInputEventObserver(this);
++    }
++  }
++  friend class content::DocumentUserData<TopBandSampler>;
++
++  bool IsActivePrimaryMainFrame() {
++    return render_frame_host().IsActive() &&
++           render_frame_host().IsInPrimaryMainFrame();
++  }
++
++  void Deliver(std::optional<SkColor> color, bool crossfade) {
++    auto* contents = content::WebContents::FromRenderFrameHost(&render_frame_host());
++    auto* delegate = contents ? TopBandDelegate::FromWebContents(contents) : nullptr;
++    if (delegate) {
++      delegate->Deliver(color, crossfade);
++    }
++  }
++
++  void Emit(std::optional<SkColor> color, bool crossfade) {
++    if (has_last_emitted_ && color == last_emitted_) {
++      return;
++    }
++    // Native records/suppresses before checking active/root/primary/delegate.
++    has_last_emitted_ = true;
++    last_emitted_ = color;
++    if (IsActivePrimaryMainFrame()) {
++      Deliver(color, crossfade);
++    }
++  }
++
++  void ServePending() {
++    if (scrolling_ || capture_active_ || !pending_) {
++      return;
++    }
++    if (cached_token_ && *cached_token_ == pending_token_) {
++      pending_ = false;
++      Emit(cached_color_, pending_crossfade_);
++      return;
++    }
++    Capture(pending_token_);
++  }
++
++  static void CopyCompleted(base::WeakPtr<TopBandSampler> sampler,
++                             uint64_t token, float scale,
++                             const content::CopyFromSurfaceResult& result) {
++    SkBitmap bitmap;
++    if (result.has_value()) {
++      bitmap = result->bitmap;
++    }
++    // Surface callbacks may already be on UI; preserve synchronous delivery
++    // there, and never dereference a browser WeakPtr on another sequence.
++    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
++      if (sampler) {
++        sampler->CaptureCompleted(token, scale, std::move(bitmap));
++      }
++    } else {
++      content::GetUIThreadTaskRunner({})->PostTask(
++          FROM_HERE, base::BindOnce(&TopBandSampler::CaptureCompleted,
++                                    std::move(sampler), token, scale,
++                                    std::move(bitmap)));
++    }
++  }
++
++  void Capture(uint64_t token) {
++    auto* view = render_frame_host().GetView();
++    if (!view) {
++      return;
++    }
++    const int width = view->GetViewBounds().width();
++    if (width < 1) {
++      return;
++    }
++    const float scale = view->GetDeviceScaleFactor();
++    capture_token_ = token;
++    capture_active_ = true;
++    invalidated_ = false;
++    view->CopyFromSurface(
++        gfx::Rect(0, 0, width, 8), gfx::Size(), base::TimeDelta(),
++        base::BindOnce(&TopBandSampler::CopyCompleted,
++                        weak_factory_.GetWeakPtr(), token, scale));
++  }
++
++  void CaptureCompleted(uint64_t token, float scale, SkBitmap bitmap) {
++    if (!capture_active_ || capture_token_ != token) {
++      return;
++    }
++    capture_active_ = false;
++    const bool invalidated = std::exchange(invalidated_, false);
++    if (invalidated || scrolling_ || !pending_ || pending_token_ != token) {
++      ServePending();
++      return;
++    }
++    pending_ = false;
++    const bool crossfade = pending_crossfade_;
++    const int height = std::max(1, base::saturated_cast<int>(std::round(8.0f * scale)));
++    const int margin = base::saturated_cast<int>(std::round(24.0f * scale));
++    cached_token_ = token;
++    cached_color_ = cc::AnalyzeArcTopBandColor(bitmap, height, margin);
++    auto weak = weak_factory_.GetWeakPtr();
++    Emit(cached_color_, crossfade);
++    if (weak) {
++      ServePending();
++    }
++  }
++
++  std::optional<uint64_t> cached_token_;
++  std::optional<SkColor> cached_color_;
++  uint64_t capture_token_ = 0;
++  bool capture_active_ = false;
++  bool invalidated_ = false;
++  uint64_t pending_token_ = 0;
++  bool pending_crossfade_ = false;
++  bool pending_ = false;
++  bool has_last_emitted_ = false;
++  std::optional<SkColor> last_emitted_;
++  raw_ptr<content::RenderWidgetHost> widget_;
++  bool scrolling_ = false;
++  base::ScopedObservation<content::RenderWidgetHost,
++                          content::RenderWidgetHostObserver> widget_observation_{this};
++  base::WeakPtrFactory<TopBandSampler> weak_factory_{this};
++  DOCUMENT_USER_DATA_KEY_DECL();
++};
++DOCUMENT_USER_DATA_KEY_IMPL(TopBandSampler);
++
++content::RenderFrameHost* RootFrame(content::RenderFrameHost* frame) {
++  while (frame && frame->GetParent()) {
++    frame = frame->GetParent();
++  }
++  return frame;
++}
++}  // namespace
++
++void SetRendererTopBandColorDelegate(content::WebContents* contents,
++                                     ArcWebContents* wrapper, id delegate) {
++  if (!contents) {
++    return;
++  }
++  TopBandDelegate::CreateForWebContents(contents);
++  RendererTopBandDelegatePayload* bridge = nil;
++  if (delegate) {
++    bridge = [RendererTopBandDelegatePayload new];
++    bridge->wrapper = wrapper;
++    bridge->delegate = delegate;
++    objc_setAssociatedObject(wrapper, &g_top_band_payload_key, bridge,
++                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++  }
++  // Nil clears only the native-equivalent weak slot. It does not discard the
++  // wrapper's previously retained private bridge payload.
++  TopBandDelegate::FromWebContents(contents)->Set(bridge);
++}
++
++void ReceiveRendererTopBandColor(content::RenderFrameHost* frame,
++                                 std::optional<SkColor> color, bool sample,
++                                 uint64_t token, bool reuse, bool crossfade) {
++  if (auto* root = RootFrame(frame)) {
++    TopBandSampler::GetOrCreateForCurrentDocument(root)->Receive(
++        color, sample, token, reuse, crossfade);
++  }
++}
++
++void RefreshRendererTopBandColor(content::RenderFrameHost* frame) {
++  if (auto* root = RootFrame(frame)) {
++    // The native committed-navigation path refreshes an existing sampler.
++    if (auto* sampler = TopBandSampler::GetForCurrentDocument(root)) {
++      sampler->Refresh();
++    }
++  }
++}
++}  // namespace arc

@@ -1,0 +1,23 @@
+{
+  "scope": "Current Chromium 156 source only; no original runtime or successful service migration claim",
+  "observedUTC": "2026-10-23T12:29:53.026594+00:00",
+  "files": {
+    "chromium/src/chrome/browser/performance_manager/policies/discard_eligibility_policy.cc": "cc84d1605ccdc73bd1d20e73660ca500ef64cbd7cd9b4f94b1a88b21df8879a6",
+    "chromium/src/chrome/browser/performance_manager/policies/page_discarding_helper.cc": "80cd9697655d356bfbd80610c6e53b5832487ad8883bb7d0161b70e0afd425f7"
+  },
+  "reason": "PROACTIVE",
+  "ignoreRecentVisibility": true,
+  "eligibleOnly": "ImmediatelyDiscardMultiplePages accepts CanDiscardResult::kEligible at page_discarding_helper.cc305-323",
+  "protections": {
+    "currentPDF": "discard_eligibility_policy.cc302-307 application/pdf -> kProtected",
+    "currentPiP": "cc297-300 -> kProtected",
+    "audio": "cc286-295 audible/recently audible -> kProtected",
+    "devtools": "cc416-423 -> kProtected unless AllowDevtoolsConnectedDiscard feature"
+  },
+  "limits": [
+    "Retained PDF peer or queued receipt after HTML navigation remains possible.",
+    "Idle cached media/thumbnails services remain relevant.",
+    "Original Arc eligibility overrides and callback absence unproven.",
+    "No protection/eligibility bypass proposed."
+  ]
+}

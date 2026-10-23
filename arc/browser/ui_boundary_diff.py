@@ -27,6 +27,9 @@ CALLBACKS = {
     'webContents:showWebUIDialog:', 'webContents:didCloseWebUIDialog:',
     'webContents:willShowConfirmInfobar:', 'webContents:willCloseConfirmInfobar:',
     'menuItemModelChanged:', 'menuItemModelRemoved:',
+    # UI brief explicitly includes BrowserContext DevTools/extension prompts.
+    'browserContext:devToolsNeedsConfirmation:withMessage:completion:',
+    'browserContext:extensionPermissionPrompt:extensionInfo:withMessages:completion:',
 }
 
 # app_callbacks.inc86-87 identifies the concrete receiver. Do not treat every

@@ -277,9 +277,9 @@ static NSDictionary* Summary(NSString* stage, BOOL inspect, UIPermissionTree** t
       @"notificationsIconCount":@(icons), @"expectedButtonCounts":@{@"Not Now":@(deny), @"Allow":@(allow)},
       @"siteSettingsButtonCount":@(site ? SiteButtons(tree).count : 0), @"siteControlCenterCount":@(centers),
       @"lockOffInsecureCount":@(insecure), @"siteControlCenterInsecureSubtreeCount":@(insecureSubtrees),
-      @"siteSettingsObserved":@(inspect && !tree.truncated && centers == 1 && insecure == 1 && insecureSubtrees == 1),
+      @"siteSettingsObserved":@((BOOL)(inspect && !tree.truncated && centers == 1 && insecure == 1 && insecureSubtrees == 1)),
       @"nodeCount":@(tree.nodes.count), @"truncated":@(tree.truncated), @"excludedRemoteRendererOrPrivateCount":@(tree.excluded),
-      @"ownerWindowAvailable":@(gOwnerWindow != nil), @"causalProfileIsolated":@(ProfileIsolated()),
+      @"ownerWindowAvailable":@((BOOL)(gOwnerWindow != nil)), @"causalProfileIsolated":@(ProfileIsolated()),
       @"phase":Phase(), @"actionAttemptCount":@(gAttempts), @"nativeActionsPerformed":@(gAttempts)};
 }
 static BOOL LiveButton(UIPermissionNode* node, NSString* label) {
@@ -297,10 +297,561 @@ static BOOL LiveButton(UIPermissionNode* node, NSString* label) {
 }
 static BOOL ValidStage(NSString* stage) { return [stage isEqual:@"deny"] || (FullScenario() && [@[@"allow", @"site-settings"] containsObject:stage]); }
 static BOOL ValidOperation(NSString* operation) {
-  return [@[@"inventory", @"press-deny"] containsObject:operation] ||
+  return [@[@"inventory", @"press-deny", @"press-prompt-site-center"] containsObject:operation] ||
       (FullScenario() && [@[@"press-allow", @"press-site-settings", @"inspect-site-settings"] containsObject:operation]);
 }
+// Diagnostic-only public local AX graph. Never used by action qualification.
+static BOOL gDiagnosticOnly;
+static const NSUInteger kDiagnosticEdgeLimit = 10000;
+enum { DMessage = 1, DAllowMessage = 2, DIcon = 4, DNotNow = 8, DAllow = 16,
+       DSettings = 32, DCenter = 64, DInsecure = 128 };
+static NSArray<NSString*>* DMarkerNames(void) {
+  return @[@"denyMessage", @"allowMessage", @"notificationsIcon", @"notNow", @"allow", @"siteSettings", @"siteCenter", @"insecure"];
+}
+static void DIncrement(NSMutableDictionary* counts, NSString* key) {
+  counts[key] = @([counts[key] unsignedIntegerValue] + 1);
+}
+static NSMutableDictionary* DZeroMarkers(void) {
+  NSMutableDictionary* counts = [NSMutableDictionary dictionary];
+  for (NSString* key in DMarkerNames()) counts[key] = @0;
+  return counts;
+}
+static void DCountMarkers(NSMutableDictionary* counts, NSUInteger markers) {
+  NSArray* names = DMarkerNames();
+  for (NSUInteger i = 0; i < names.count; ++i) if (markers & (1u << i)) DIncrement(counts, names[i]);
+}
+static NSUInteger DMarkers(id value) {
+  if (![value isKindOfClass:NSString.class]) return 0;
+  NSString* string = value; NSUInteger result = 0;
+  if ([string isEqual:PermissionMessage(NO)]) result |= DMessage;
+  if ([string isEqual:PermissionMessage(YES)]) result |= DAllowMessage;
+  NSArray* fixed = @[@"Notifications", @"Not Now", @"Allow", @"Site Settings", @"Site Control Center", @"Lock Off Insecure"];
+  for (NSUInteger i = 0; i < fixed.count; ++i) if ([string isEqual:fixed[i]]) result |= 1u << (i + 2);
+  return result;
+}
+static NSString* DRole(id value) {
+  NSArray* roles = @[NSAccessibilityApplicationRole, NSAccessibilityWindowRole, NSAccessibilityGroupRole,
+      NSAccessibilityPopoverRole, NSAccessibilityButtonRole, NSAccessibilityImageRole, NSAccessibilityStaticTextRole,
+      NSAccessibilityWebAreaRole, NSAccessibilityTextFieldRole, NSAccessibilityTextAreaRole];
+  if ([value isKindOfClass:NSString.class]) for (NSString* role in roles) if ([value isEqual:role]) return role;
+  return @"otherOrMissing";
+}
+static NSString* DType(id value) {
+  if (!value) return @"absent";
+  if ([value isKindOfClass:NSWindow.class]) return @"localNSWindow";
+  if ([value isKindOfClass:NSString.class]) return @"string";
+  if ([value isKindOfClass:NSNumber.class]) return @"number";
+  if ([value isKindOfClass:NSArray.class]) return @"array";
+  return @"otherObject";
+}
+@interface UIPermissionDiagnosticNode : NSObject
+@property(nonatomic, strong) id object;
+@property(nonatomic, strong) NSWindow* owner;
+@property(nonatomic, copy) NSString* role;
+@property(nonatomic, strong) NSMutableIndexSet* children;
+@property(nonatomic) NSUInteger markers;
+@property(nonatomic) BOOL enabled;
+@property(nonatomic) BOOL press;
+@property(nonatomic) BOOL nativeButton;
+@end
+@implementation UIPermissionDiagnosticNode
+@synthesize object = _object, owner = _owner, role = _role, children = _children;
+@synthesize markers = _markers, enabled = _enabled, press = _press, nativeButton = _nativeButton;
+@end
+@interface UIPermissionDiagnosticGraph : NSObject
+@property(nonatomic, strong) NSMutableArray<UIPermissionDiagnosticNode*>* nodes;
+@property(nonatomic, strong) NSMapTable* indices;
+@property(nonatomic, strong) NSHashTable* seen;
+@property(nonatomic, strong) NSHashTable* active;
+@property(nonatomic, strong) NSHashTable* windows;
+@property(nonatomic, strong) NSMutableDictionary* exclusions;
+@property(nonatomic, strong) NSMutableDictionary* getters;
+@property(nonatomic, strong) NSMutableDictionary* capabilities;
+@property(nonatomic, strong) NSMutableDictionary* edgesBySource;
+@property(nonatomic) NSUInteger edges;
+@property(nonatomic) NSUInteger visits;
+@property(nonatomic) NSUInteger aliases;
+@property(nonatomic) NSUInteger cycles;
+@property(nonatomic) NSUInteger appChildCount;
+@property(nonatomic) BOOL truncated;
+@end
+@implementation UIPermissionDiagnosticGraph
+@synthesize nodes = _nodes, indices = _indices, seen = _seen, active = _active, windows = _windows;
+@synthesize exclusions = _exclusions, getters = _getters, capabilities = _capabilities, edgesBySource = _edgesBySource;
+@synthesize edges = _edges, visits = _visits, aliases = _aliases, cycles = _cycles, appChildCount = _appChildCount, truncated = _truncated;
+@end
+static id DTyped(id object, NSString* key, BOOL* available) {
+  if ([key isEqual:@"role"]) { *available = [object respondsToSelector:@selector(accessibilityRole)]; return *available ? [(id<NSAccessibility>)object accessibilityRole] : nil; }
+  if ([key isEqual:@"children"]) { *available = [object respondsToSelector:@selector(accessibilityChildren)]; return *available ? [(id<NSAccessibility>)object accessibilityChildren] : nil; }
+  if ([key isEqual:@"enabled"]) { *available = [object respondsToSelector:@selector(isAccessibilityEnabled)]; return *available ? @([(id<NSAccessibility>)object isAccessibilityEnabled]) : nil; }
+  if ([key isEqual:@"description"]) { *available = [object respondsToSelector:@selector(accessibilityLabel)]; return *available ? [(id<NSAccessibility>)object accessibilityLabel] : nil; }
+  if ([key isEqual:@"title"]) { *available = [object respondsToSelector:@selector(accessibilityTitle)]; return *available ? [(id<NSAccessibility>)object accessibilityTitle] : nil; }
+  if ([key isEqual:@"window"]) { *available = [object respondsToSelector:@selector(accessibilityWindow)]; return *available ? [(id<NSAccessibility>)object accessibilityWindow] : nil; }
+  if ([key isEqual:@"staticValue"]) { *available = [object respondsToSelector:@selector(accessibilityValue)]; return *available ? [(id<NSAccessibility>)object accessibilityValue] : nil; }
+  if ([key isEqual:@"protectedContent"]) { *available = [object respondsToSelector:@selector(isAccessibilityProtectedContent)]; return *available ? @([(id<NSAccessibility>)object isAccessibilityProtectedContent]) : nil; }
+  *available = NO; return nil;
+}
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+static NSArray* DAdvertisedAttributes(id object) {
+  if (![object respondsToSelector:@selector(accessibilityAttributeNames)]) return nil;
+  id names = [object accessibilityAttributeNames];
+  return [names isKindOfClass:NSArray.class] ? names : nil;
+}
+static id DLegacy(id object, NSString* key, NSArray* names, BOOL* available) {
+  // This fixed dictionary is the entire legacy read allowlist. No enumeration
+  // of unknown attribute values, parameterized reads or legacy actions occurs.
+  NSDictionary* attributes = @{@"role":NSAccessibilityRoleAttribute, @"children":NSAccessibilityChildrenAttribute,
+      @"enabled":NSAccessibilityEnabledAttribute, @"description":NSAccessibilityDescriptionAttribute,
+      @"title":NSAccessibilityTitleAttribute, @"window":NSAccessibilityWindowAttribute,
+      @"staticValue":NSAccessibilityValueAttribute, @"protectedContent":NSAccessibilityContainsProtectedContentAttribute};
+  NSString* attribute = attributes[key];
+  *available = attribute && [names containsObject:attribute] && [object respondsToSelector:@selector(accessibilityAttributeValue:)];
+  return *available ? [object accessibilityAttributeValue:attribute] : nil;
+}
+static BOOL DLegacyPressAdvertised(id object) {
+  if (![object respondsToSelector:@selector(accessibilityActionNames)]) return NO;
+  id actions = [object accessibilityActionNames];
+  return [actions isKindOfClass:NSArray.class] && [actions count] <= 64 && [actions containsObject:NSAccessibilityPressAction];
+}
+#pragma clang diagnostic pop
+static BOOL DKnownChildrenEqual(id left, id right, UIPermissionDiagnosticGraph* graph) {
+  if (![left isKindOfClass:NSArray.class] || ![right isKindOfClass:NSArray.class]) return left == right;
+  if ([left count] > kNodeLimit || [right count] > kNodeLimit) { graph.truncated = YES; return NO; }
+  NSHashTable* identities = [NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality];
+  for (id child in left) [identities addObject:child];
+  NSHashTable* other = [NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality];
+  for (id child in right) [other addObject:child];
+  if (identities.count != other.count) return NO;
+  for (id child in identities) if (![other containsObject:child]) return NO;
+  return YES;
+}
+static NSArray* DReadPair(id object, NSString* key, NSArray* advertised, UIPermissionDiagnosticGraph* graph) {
+  NSMutableDictionary* counts = graph.getters[key];
+  if (!counts) { counts = [NSMutableDictionary dictionary]; graph.getters[key] = counts; }
+  BOOL typedAvailable = NO, legacyAvailable = NO; id typed = nil, legacy = nil;
+  @try { typed = DTyped(object, key, &typedAvailable); }
+  @catch (NSException* exception) {
+    (void)exception; DIncrement(counts, @"typedException"); graph.truncated = YES;
+    if ([key isEqual:@"role"] || [key isEqual:@"protectedContent"]) typed = @[];
+  }
+  @try { legacy = DLegacy(object, key, advertised, &legacyAvailable); }
+  @catch (NSException* exception) {
+    (void)exception; DIncrement(counts, @"legacyException"); graph.truncated = YES;
+    if ([key isEqual:@"role"] || [key isEqual:@"protectedContent"]) legacy = @[];
+  }
+  DIncrement(counts, typedAvailable ? @"typedAvailable" : @"typedUnavailable");
+  DIncrement(counts, legacyAvailable ? @"legacyAdvertised" : @"legacyNotAdvertised");
+  DIncrement(counts, [@"typedType_" stringByAppendingString:DType(typed)]);
+  DIncrement(counts, [@"legacyType_" stringByAppendingString:DType(legacy)]);
+  if ([key isEqual:@"role"]) {
+    DIncrement(counts, [@"typedRole_" stringByAppendingString:DRole(typed)]);
+    DIncrement(counts, [@"legacyRole_" stringByAppendingString:DRole(legacy)]);
+  } else if ([@[@"description", @"title", @"staticValue"] containsObject:key]) {
+    NSMutableDictionary* typedMatches = counts[@"typedFixedMatches"], *legacyMatches = counts[@"legacyFixedMatches"];
+    if (!typedMatches) { typedMatches = DZeroMarkers(); counts[@"typedFixedMatches"] = typedMatches; }
+    if (!legacyMatches) { legacyMatches = DZeroMarkers(); counts[@"legacyFixedMatches"] = legacyMatches; }
+    DCountMarkers(typedMatches, DMarkers(typed)); DCountMarkers(legacyMatches, DMarkers(legacy));
+  }
+  BOOL disagree = ![DType(typed) isEqual:DType(legacy)];
+  if ([key isEqual:@"role"]) disagree |= ![DRole(typed) isEqual:DRole(legacy)];
+  else if ([key isEqual:@"children"]) disagree |= !DKnownChildrenEqual(typed, legacy, graph);
+  else if ([key isEqual:@"window"]) disagree |= typed != legacy;
+  else if ([key isEqual:@"enabled"] || [key isEqual:@"protectedContent"]) {
+    if ([typed isKindOfClass:NSNumber.class] && [legacy isKindOfClass:NSNumber.class]) disagree |= [typed boolValue] != [legacy boolValue];
+  } else disagree |= DMarkers(typed) != DMarkers(legacy);
+  if (disagree) DIncrement(counts, @"resultOrFixedMatchDisagreement");
+  // Raw labels/values live only until this node has compared fixed constants.
+  return @[typed ?: NSNull.null, legacy ?: NSNull.null];
+}
+static id DPreferred(NSArray* pair, Class kind) {
+  for (id value in pair) if ([value isKindOfClass:kind]) return value;
+  return nil;
+}
+static void DEdge(UIPermissionDiagnosticGraph* graph, NSInteger parent, NSUInteger child, NSString* source) {
+  if (parent < 0) return;
+  DIncrement(graph.edgesBySource, source);
+  if ([graph.nodes[(NSUInteger)parent].children containsIndex:child]) return;
+  if (graph.edges >= kDiagnosticEdgeLimit) { graph.truncated = YES; return; }
+  [graph.nodes[(NSUInteger)parent].children addIndex:child]; ++graph.edges;
+}
+static BOOL DVisitLimitReached(UIPermissionDiagnosticGraph* graph) {
+  if (graph.visits < 20000) return NO;
+  graph.exclusions[@"visitAttemptLimit"] = @1; graph.truncated = YES; return YES;
+}
+static void DVisit(id object, NSWindow* inheritedOwner, NSInteger parent, NSString* source,
+                   NSUInteger depth, UIPermissionDiagnosticGraph* graph) {
+  if (!object || DVisitLimitReached(graph)) return;
+  ++graph.visits;
+  NSNumber* known = [graph.indices objectForKey:object];
+  if (known) {
+    ++graph.aliases; DEdge(graph, parent, known.unsignedIntegerValue, source);
+    if ([graph.active containsObject:object]) { ++graph.cycles; graph.truncated = YES; }
+    return;
+  }
+  if ([graph.seen containsObject:object]) return;
+  if (graph.seen.count >= kNodeLimit || depth > kDepthLimit) { DIncrement(graph.exclusions, @"nodeOrDepthLimit"); graph.truncated = YES; return; }
+  [graph.seen addObject:object];
+  NSString* className = NSStringFromClass(object_getClass(object));
+  if (ExcludedClass(className)) { DIncrement(graph.exclusions, @"remoteOrRenderer"); return; }
+  if (SecureField(object)) { DIncrement(graph.exclusions, @"secureField"); return; }
+  if (([object isKindOfClass:NSTextField.class] && [(NSTextField*)object isEditable]) ||
+      ([object isKindOfClass:NSTextView.class] && [(NSTextView*)object isEditable])) { DIncrement(graph.exclusions, @"editableField"); return; }
+  @try {
+    NSArray* advertised = DAdvertisedAttributes(object);
+    if (advertised.count > 128) { DIncrement(graph.exclusions, @"legacyAttributeNameLimit"); graph.truncated = YES; return; }
+    DIncrement(graph.capabilities, advertised ? @"legacyAttributeNamesAvailable" : @"legacyAttributeNamesUnavailable");
+    // The only additional legacy attribute is this fixed public protection flag.
+    // Read both representations before any description, title or static value.
+    // Genuine absence is neutral; true, malformed, or conflicting flags prune.
+    NSArray* protection = DReadPair(object, @"protectedContent", advertised, graph);
+    BOOL malformedProtection = NO, protectedContent = NO;
+    for (id flag in protection) {
+      if (flag == NSNull.null) continue;
+      if (![flag isKindOfClass:NSNumber.class] || !([flag isEqual:@NO] || [flag isEqual:@YES])) { malformedProtection = YES; continue; }
+      protectedContent |= [flag boolValue];
+    }
+    BOOL protectionConflict = [protection[0] isKindOfClass:NSNumber.class] && [protection[1] isKindOfClass:NSNumber.class] &&
+        [protection[0] boolValue] != [protection[1] boolValue];
+    if (malformedProtection) DIncrement(graph.exclusions, @"malformedProtectedContentFlag");
+    if (protectionConflict) DIncrement(graph.exclusions, @"typedLegacyProtectedContentConflict");
+    if (protectedContent) DIncrement(graph.exclusions, @"protectedContent");
+    if (malformedProtection || protectionConflict || protectedContent) return;
+    NSArray* windows = DReadPair(object, @"window", advertised, graph);
+    NSWindow* owner = inheritedOwner;
+    NSWindow* reported = DPreferred(windows, NSWindow.class);
+    if ([windows[0] isKindOfClass:NSWindow.class] && [windows[1] isKindOfClass:NSWindow.class] && windows[0] != windows[1]) {
+      DIncrement(graph.exclusions, @"typedLegacyWindowConflict"); [graph.seen removeObject:object]; return;
+    }
+    if ([object isKindOfClass:NSWindow.class]) owner = object;
+    else if ([object isKindOfClass:NSView.class] && [(NSView*)object window]) owner = [(NSView*)object window];
+    else if (reported) owner = reported;
+    if (reported && owner && reported != owner) { DIncrement(graph.exclusions, @"conflictingNativeWindow"); [graph.seen removeObject:object]; return; }
+    BOOL application = object == NSApp;
+    if (!application && !owner) { DIncrement(graph.exclusions, @"missingLocalWindow"); [graph.seen removeObject:object]; return; }
+    if (!application && ![graph.windows containsObject:owner]) { DIncrement(graph.exclusions, @"unknownLocalWindow"); [graph.seen removeObject:object]; return; }
+    if (!application && !owner.visible) { DIncrement(graph.exclusions, @"invisibleWindow"); return; }
+    NSArray* roles = DReadPair(object, @"role", advertised, graph);
+    NSString* typedRole = DRole(roles[0]), *legacyRole = DRole(roles[1]);
+    NSArray* forbidden = @[NSAccessibilityWebAreaRole, NSAccessibilityTextFieldRole, NSAccessibilityTextAreaRole];
+    if ([forbidden containsObject:typedRole] || [forbidden containsObject:legacyRole]) { DIncrement(graph.exclusions, @"webOrEditableRole"); return; }
+    if ([object respondsToSelector:@selector(isAccessibilityHidden)] && [(id<NSAccessibility>)object isAccessibilityHidden]) { DIncrement(graph.exclusions, @"accessibilityHidden"); return; }
+    if ([object isKindOfClass:NSView.class] && [(NSView*)object isHiddenOrHasHiddenAncestor]) { DIncrement(graph.exclusions, @"nativeViewHidden"); return; }
+    UIPermissionDiagnosticNode* node = [UIPermissionDiagnosticNode new];
+    node.object = object; node.owner = owner; node.children = [NSMutableIndexSet indexSet];
+    node.role = ![typedRole isEqual:@"otherOrMissing"] ? typedRole : legacyRole;
+    if (!application) {
+      NSArray* enabled = DReadPair(object, @"enabled", advertised, graph);
+      NSNumber* enabledValue = DPreferred(enabled, NSNumber.class); node.enabled = enabledValue.boolValue;
+      node.nativeButton = [object isKindOfClass:NSButton.class];
+      if (node.nativeButton) node.enabled &= [(NSButton*)object isEnabled];
+      node.press = [object respondsToSelector:@selector(accessibilityPerformPress)];
+      if ([node.role isEqual:NSAccessibilityButtonRole] || node.nativeButton) {
+        DIncrement(graph.capabilities, @"buttonCount");
+        if (node.nativeButton) DIncrement(graph.capabilities, @"nativeNSButtonCount");
+        if (node.enabled) DIncrement(graph.capabilities, @"enabledButtonCount");
+        if (node.press) DIncrement(graph.capabilities, @"publicPressCapableButtonCount");
+        DIncrement(graph.capabilities, DLegacyPressAdvertised(object) ? @"buttonLegacyPressAdvertised" : @"buttonLegacyPressNotAdvertised");
+      }
+      for (NSString* key in @[@"description", @"title"]) {
+        NSArray* values = DReadPair(object, key, advertised, graph);
+        for (id value in values) node.markers |= DMarkers(value);
+      }
+      if (node.nativeButton) node.markers |= DMarkers([(NSButton*)object title]);
+      // Inspect raw role results, never the lossy reporting buckets: an
+      // unknown present role or malformed value is not evidence of absence.
+      // DReadPair normalizes a genuinely absent result to NSNull. Both public
+      // representations must be absent or exactly AXStaticText, with at least
+      // one exact match. Native editable/protected controls were pruned above.
+      id rawTypedRole = roles[0], rawLegacyRole = roles[1];
+      BOOL typedStatic = [rawTypedRole isKindOfClass:NSString.class] && [rawTypedRole isEqual:NSAccessibilityStaticTextRole];
+      BOOL legacyStatic = [rawLegacyRole isKindOfClass:NSString.class] && [rawLegacyRole isEqual:NSAccessibilityStaticTextRole];
+      BOOL staticText = (typedStatic || legacyStatic) &&
+          (rawTypedRole == NSNull.null || typedStatic) && (rawLegacyRole == NSNull.null || legacyStatic);
+      if ((typedStatic || legacyStatic) && !staticText) DIncrement(graph.exclusions, @"staticTextRawRoleConflictOrMalformed");
+      if (staticText) for (id value in DReadPair(object, @"staticValue", advertised, graph)) node.markers |= DMarkers(value);
+      if (![node.role isEqual:NSAccessibilityImageRole]) node.markers &= ~DIcon;
+    }
+    NSUInteger index = graph.nodes.count; [graph.nodes addObject:node]; [graph.indices setObject:@(index) forKey:object];
+    DEdge(graph, parent, index, source); [graph.active addObject:object];
+    if (DVisitLimitReached(graph)) { [graph.active removeObject:object]; return; }
+    NSArray* childPairs = DReadPair(object, @"children", advertised, graph);
+    for (NSUInteger representation = 0; representation < childPairs.count; ++representation) {
+      if (DVisitLimitReached(graph)) break;
+      id children = childPairs[representation]; if (![children isKindOfClass:NSArray.class]) continue;
+      if ([children count] > kNodeLimit) { graph.truncated = YES; DIncrement(graph.exclusions, @"childArrayLimit"); continue; }
+      if (application) graph.appChildCount += [children count];
+      for (id child in children) {
+        if (DVisitLimitReached(graph)) break;
+        DVisit(child, owner, (NSInteger)index,
+            representation == 0 ? @"typedAXChildren" : @"legacyAXChildren", depth + 1, graph);
+      }
+    }
+    if (!DVisitLimitReached(graph) && [object isKindOfClass:NSWindow.class]) DVisit([(NSWindow*)object contentView], owner, (NSInteger)index, @"nativeContentView", depth + 1, graph);
+    else if (!DVisitLimitReached(graph) && [object isKindOfClass:NSView.class]) {
+      NSArray* views = [[(NSView*)object subviews] copy];
+      if (views.count > kNodeLimit) { graph.truncated = YES; DIncrement(graph.exclusions, @"subviewArrayLimit"); }
+      else for (NSView* child in views) {
+        if (DVisitLimitReached(graph)) break;
+        DVisit(child, owner, (NSInteger)index, @"nativeSubviews", depth + 1, graph);
+      }
+    }
+    [graph.active removeObject:object];
+  } @catch (NSException* exception) { (void)exception; DIncrement(graph.exclusions, @"inspectionException"); graph.truncated = YES; }
+}
+static NSIndexSet* DDescendants(UIPermissionDiagnosticGraph* graph, NSUInteger index) {
+  NSMutableIndexSet* found = [NSMutableIndexSet indexSet], *pending = [NSMutableIndexSet indexSetWithIndex:index];
+  while (pending.count) {
+    NSUInteger current = pending.firstIndex; [pending removeIndex:current];
+    if ([found containsIndex:current]) continue;
+    [found addIndex:current];
+    // Group qualification is diagnostic only and bounded to 128 descendants.
+    // Stop at the first excess node instead of rescanning a large graph for
+    // every ancestor; whole-graph counters still include every admitted node.
+    if (found.count > 128) break;
+    [pending addIndexes:graph.nodes[current].children];
+    [pending removeIndexes:found];
+  }
+  return found;
+}
+static NSDictionary* DiagnosticSummary(void) {
+  UIPermissionDiagnosticGraph* graph = [UIPermissionDiagnosticGraph new];
+  graph.nodes = [NSMutableArray array]; graph.exclusions = [NSMutableDictionary dictionary];
+  graph.getters = [NSMutableDictionary dictionary]; graph.capabilities = [NSMutableDictionary dictionary]; graph.edgesBySource = [NSMutableDictionary dictionary];
+  graph.indices = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsStrongMemory];
+  graph.seen = [NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality];
+  graph.active = [NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality];
+  graph.windows = [NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory | NSPointerFunctionsObjectPointerPersonality];
+  NSArray* windows = [NSApp.windows copy];
+  if (windows.count > 64) { graph.truncated = YES; DIncrement(graph.exclusions, @"windowRootLimit"); }
+  else for (NSWindow* window in windows) if (window.visible) [graph.windows addObject:window];
+  DVisit(NSApp, nil, -1, @"applicationRoot", 0, graph);
+  for (NSWindow* window in graph.windows) {
+    if (DVisitLimitReached(graph)) break;
+    DVisit(window, window, -1, @"windowRoot", 0, graph);
+  }
+  NSMutableDictionary* roles = [NSMutableDictionary dictionary], *markers = DZeroMarkers();
+  NSMutableDictionary* buttons = DZeroMarkers(), *enabledButtons = DZeroMarkers(), *pressButtons = DZeroMarkers();
+  NSMutableDictionary* groupReasons = [NSMutableDictionary dictionary];
+  __block NSUInteger groups = 0, bounded = 0, qualified = 0;
+  for (NSUInteger index = 0; index < graph.nodes.count; ++index) {
+    UIPermissionDiagnosticNode* node = graph.nodes[index]; DIncrement(roles, node.role); DCountMarkers(markers, node.markers);
+    BOOL button = node.nativeButton || [node.role isEqual:NSAccessibilityButtonRole];
+    if (button) { DCountMarkers(buttons, node.markers); if (node.enabled) DCountMarkers(enabledButtons, node.markers); if (node.press) DCountMarkers(pressButtons, node.markers); }
+    if (![node.role isEqual:NSAccessibilityGroupRole]) continue;
+    ++groups; NSIndexSet* descendants = DDescendants(graph, index);
+    if (descendants.count > 128) { DIncrement(groupReasons, @"over128Descendants"); continue; }
+    ++bounded; __block NSUInteger message = 0, icon = 0, deny = 0, allow = 0;
+    [descendants enumerateIndexesUsingBlock:^(NSUInteger child, BOOL* stop) {
+      (void)stop; UIPermissionDiagnosticNode* member = graph.nodes[child]; if (member.owner != node.owner) return;
+      message += !!(member.markers & DMessage); icon += !!(member.markers & DIcon);
+      BOOL actionable = member.enabled && (member.nativeButton || ([member.role isEqual:NSAccessibilityButtonRole] && member.press));
+      deny += actionable && (member.markers & DNotNow); allow += actionable && (member.markers & DAllow);
+    }];
+    if (message != 1) DIncrement(groupReasons, message ? @"multipleMessages" : @"missingMessage");
+    if (icon != 1) DIncrement(groupReasons, icon ? @"multipleIcons" : @"missingIcon");
+    if (deny != 1) DIncrement(groupReasons, deny ? @"multipleNotNowButtons" : @"missingNotNowButton");
+    if (allow != 1) DIncrement(groupReasons, allow ? @"multipleAllowButtons" : @"missingAllowButton");
+    if (message == 1 && icon == 1 && deny == 1 && allow == 1) ++qualified;
+  }
+  return @{@"diagnosticOnly":@YES, @"functionalAcceptance":@NO, @"actionQualificationUsed":@NO,
+      @"nodeCount":@(graph.nodes.count), @"edgeCount":@(graph.edges), @"visitAttemptCount":@(graph.visits), @"aliasEdgeVisitCount":@(graph.aliases),
+      @"cycleCount":@(graph.cycles), @"truncated":@(graph.truncated), @"knownVisibleLocalWindowCount":@(graph.windows.count),
+      @"applicationAXChildReferences":@(graph.appChildCount), @"roles":roles, @"wholeGraphFixedMarkers":markers,
+      @"wholeGraphButtonFixedMarkers":buttons, @"wholeGraphEnabledButtonFixedMarkers":enabledButtons,
+      @"wholeGraphPressCapableButtonFixedMarkers":pressButtons, @"edgeSources":graph.edgesBySource,
+      @"exclusionReasons":graph.exclusions, @"capabilityCounts":graph.capabilities, @"typedLegacyComparisons":graph.getters,
+      @"diagnosticGroupCount":@(groups), @"diagnosticBoundedGroupCount":@(bounded),
+      @"diagnosticQualifiedGroupCountBeforeInnermostFilter":@(qualified), @"diagnosticGroupRejectionReasons":groupReasons,
+      @"privacy":@"Only fixed fixture matches, fixed role/type buckets and counts; raw text, object descriptions and pointers are never emitted."};
+}
+static void HandleDiagnosticRequest(NSDictionary* request) {
+  gBusy = YES;
+  NSMutableDictionary* response = [@{@"id":request[@"id"], @"nonce":gNonce,
+      @"pid":@(NSProcessInfo.processInfo.processIdentifier), @"mainThread":@(NSThread.isMainThread),
+      @"scenario":gScenario, @"stage":request[@"stage"], @"operation":request[@"operation"],
+      @"diagnosticOnly":@YES, @"functionalAcceptance":@NO, @"actionAttempted":@NO,
+      @"actionAttemptCount":@0, @"nativeActionsPerformed":@0, @"nativeMethodReturned":@NO,
+      @"causalProfileIsolated":@(ProfileIsolated()), @"causalFixtureVerified":@(CausalRequest(request))} mutableCopy];
+  if (![request[@"operation"] isEqual:@"inventory"]) response[@"refusalReason"] = @"diagnostic-only helper refuses every non-inventory operation";
+  else if (!ProfileIsolated() || !CausalRequest(request)) response[@"refusalReason"] = @"diagnostics require fresh profile isolation and driver-verified sole fixture target";
+  else [response addEntriesFromDictionary:DiagnosticSummary()];
+  WriteJSON(response, [gRequest stringByAppendingString:@".response.json"]); gBusy = NO;
+}
+
+// Separately opted-in public UI reveal attempt. This does not participate in
+// permission AXGroup qualification and never uses the diagnostic graph.
+static BOOL gRevealEnabled;
+static NSUInteger gRevealAttempts;
+static BOOL gRevealBudgetConsumed;
+static BOOL gRevealFirstInventoryCaptured;
+static BOOL gRevealFirstInventoryEligible;
+static NSString* gRevealFirstInventoryID;
+static __weak id gRevealSiteCenter;
+static __weak NSWindow* gRevealWindow;
+static BOOL RevealTrue(id value) {
+  return [value isKindOfClass:NSNumber.class] && CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID() && [value boolValue];
+}
+static NSArray<UIPermissionNode*>* RevealSiteCenters(UIPermissionTree* tree) {
+  NSMutableArray* buttons = [NSMutableArray array];
+  for (UIPermissionNode* node in tree.nodes) if (node.siteCenter && ActionButton(node) &&
+      [tree.windows containsObject:node.window]) [buttons addObject:node];
+  return buttons;
+}
+static NSDictionary* RevealAccounting(NSDictionary* source) {
+  NSMutableDictionary* result = [source mutableCopy];
+  result[@"actionAttemptCount"] = @(gAttempts + gRevealAttempts);
+  result[@"nativeActionsPerformed"] = @(gAttempts + gRevealAttempts);
+  result[@"normalActionAttemptCount"] = @(gAttempts);
+  result[@"revealAttemptCount"] = @(gRevealAttempts);
+  result[@"revealAttemptBudgetConsumed"] = @((BOOL)gRevealBudgetConsumed);
+  return result;
+}
+static NSDictionary* RevealInventory(UIPermissionTree* tree, NSArray<UIPermissionScope*>* scopes, NSDictionary* request) {
+  NSArray<UIPermissionNode*>* centers = RevealSiteCenters(tree);
+  if (!gRevealFirstInventoryCaptured && [request[@"stage"] isEqual:@"deny"]) {
+    gRevealFirstInventoryCaptured = YES;
+    gRevealFirstInventoryID = [request[@"id"] copy];
+    gRevealFirstInventoryEligible = !tree.truncated && scopes.count == 0 && centers.count == 1 &&
+        gPhase == 0 && gAttempts == 0 && ProfileIsolated() && CausalRequest(request);
+    if (gRevealFirstInventoryEligible) {
+      gRevealSiteCenter = centers.firstObject.object; gRevealWindow = centers.firstObject.window;
+    }
+  }
+  return @{@"promptSiteCenterButtonCount":@(centers.count),
+      @"revealFirstInventoryCaptured":@((BOOL)gRevealFirstInventoryCaptured),
+      @"revealFirstInventoryEligible":@((BOOL)gRevealFirstInventoryEligible),
+      @"revealFirstInventoryID":gRevealFirstInventoryID ?: NSNull.null,
+      @"revealAttemptCount":@(gRevealAttempts), @"normalActionAttemptCount":@(gAttempts)};
+}
+static BOOL RevealLiveSiteCenter(UIPermissionNode* node) {
+  id object = node.object;
+  if (!node.window || !node.window.visible || object != gRevealSiteCenter || node.window != gRevealWindow ||
+      SecureField(object) || ExcludedClass(NSStringFromClass(object_getClass(object)))) return NO;
+  @try {
+    if ([object isKindOfClass:NSView.class] && ([(NSView*)object window] != node.window || [(NSView*)object isHiddenOrHasHiddenAncestor])) return NO;
+    if ([object respondsToSelector:@selector(isAccessibilityHidden)] && [(id<NSAccessibility>)object isAccessibilityHidden]) return NO;
+    if (![object respondsToSelector:@selector(isAccessibilityEnabled)] || ![(id<NSAccessibility>)object isAccessibilityEnabled]) return NO;
+    if ([object isKindOfClass:NSButton.class] && ![(NSButton*)object isEnabled]) return NO;
+    BOOL label = [ReadString(object, @selector(accessibilityLabel)) isEqual:@"Site Control Center"] ||
+        [ReadString(object, @selector(accessibilityTitle)) isEqual:@"Site Control Center"];
+    if ([object isKindOfClass:NSButton.class]) return label || [[(NSButton*)object title] isEqual:@"Site Control Center"];
+    return label && [ReadString(object, @selector(accessibilityRole)) isEqual:NSAccessibilityButtonRole] &&
+        [object respondsToSelector:@selector(accessibilityPerformPress)];
+  } @catch (NSException* exception) { (void)exception; return NO; }
+}
+static BOOL PersistRevealIntent(NSDictionary* response) {
+  NSString* path = [gRequest stringByAppendingString:@".attempt.json"];
+  NSData* bytes = [NSJSONSerialization dataWithJSONObject:response options:NSJSONWritingPrettyPrinted error:NULL];
+  if (!bytes || ![bytes writeToFile:path options:NSDataWritingAtomic error:NULL]) return NO;
+  if (![NSFileManager.defaultManager setAttributes:@{NSFilePosixPermissions:@0600} ofItemAtPath:path error:NULL]) return NO;
+  NSData* persisted = [NSData dataWithContentsOfFile:path];
+  return [persisted isEqualToData:bytes];
+}
+static void HandleRevealRequest(NSDictionary* request) {
+  gBusy = YES;
+  UIPermissionTree* tree = Tree(NO, NO);
+  NSArray<UIPermissionScope*>* scopes = PermissionScopes(tree, NO);
+  NSArray<UIPermissionNode*>* centers = RevealSiteCenters(tree);
+  NSMutableDictionary* response = [@{@"id":request[@"id"], @"nonce":gNonce,
+      @"pid":@(NSProcessInfo.processInfo.processIdentifier), @"mainThread":@((BOOL)NSThread.isMainThread),
+      @"scenario":gScenario, @"stage":request[@"stage"], @"operation":request[@"operation"],
+      @"diagnosticOnly":@NO, @"functionalAcceptance":@NO, @"actionAttempted":@NO,
+      @"nativeMethodReturned":@NO, @"nativeActionKind":NSNull.null, @"accessibilityPressReturn":NSNull.null,
+      @"causalProfileIsolated":@((BOOL)ProfileIsolated()), @"causalFixtureVerified":@((BOOL)CausalRequest(request)),
+      @"notificationPendingVerified":@((BOOL)RevealTrue(request[@"notificationPendingVerified"])),
+      @"promptSiteCenterButtonCount":@(centers.count), @"matchingGroupCount":@(scopes.count),
+      @"truncated":@((BOOL)tree.truncated), @"foregroundBefore":@(NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier),
+      @"ownershipBasis":@"Unique fixed-label local native button in a fresh isolated process with driver-verified sole fixture and pending Notification request. No exact page-to-window mapping is claimed.",
+      @"interpretation":@"One public Site Control Center press is an experimental reveal attempt, not permission resolution. A false press consumes the attempt without fallback; a fixed-origin prompt and canonical denial outcome remain required."} mutableCopy];
+  response[@"phase"] = Phase();
+  response[@"revealFirstInventoryCaptured"] = @((BOOL)gRevealFirstInventoryCaptured);
+  response[@"revealFirstInventoryEligible"] = @((BOOL)gRevealFirstInventoryEligible);
+  response[@"revealFirstInventoryID"] = gRevealFirstInventoryID ?: NSNull.null;
+  response[@"before"] = RevealAccounting(@{@"matchingGroupCount":@(scopes.count),
+      @"promptSiteCenterButtonCount":@(centers.count), @"truncated":@((BOOL)tree.truncated)});
+  NSString* refusal = nil;
+  if (gDiagnosticOnly || !gEnabled || !gRevealEnabled) refusal = @"canonical permission and canonical-site-center-v1 opt-ins are required; diagnostic mode forbids mutations";
+  else if (!ProfileIsolated() || !CausalRequest(request) || !RevealTrue(request[@"notificationPendingVerified"])) refusal = @"fresh isolation, sole-fixture proof and pending Notification proof are required";
+  else if (![request[@"stage"] isEqual:@"deny"] || gPhase != 0 || gAttempts != 0) refusal = @"reveal is limited to the initial undecided deny stage";
+  else if (!gRevealFirstInventoryCaptured || !gRevealFirstInventoryEligible ||
+      ![request[@"revealBaselineInventoryID"] isEqual:gRevealFirstInventoryID]) refusal = @"the first complete inventory did not establish a unique reveal candidate without a permission group";
+  else if (gRevealBudgetConsumed || gRevealAttempts != 0) refusal = @"the one reveal attempt is already consumed; replay is forbidden";
+  else if (tree.truncated || scopes.count != 0 || centers.count != 1) refusal = @"live tree must remain complete with zero qualified permission groups and one Site Control Center button";
+  UIPermissionNode* button = centers.count == 1 ? centers.firstObject : nil;
+  const BOOL nativeButton = button && [button.object isKindOfClass:NSButton.class];
+  NSString* method = nativeButton ? @"performClick" : @"accessibilityPerformPress";
+  if (!refusal && (!button || !RevealLiveSiteCenter(button) || !ProfileIsolated() || !CausalRequest(request))) refusal = @"the same live Site Control Center control or causal scope changed";
+  if (!refusal) {
+    // Consume the separate budget even if intent persistence fails. The method
+    // was chosen before this point; neither false return nor exception retries.
+    gRevealBudgetConsumed = YES;
+    NSMutableDictionary* intent = [response mutableCopy];
+    intent[@"actionAttempted"] = @YES; intent[@"nativeActionKind"] = method;
+    intent[@"revealAttemptBudgetConsumed"] = @YES; intent[@"revealAttemptCount"] = @(gRevealAttempts + 1);
+    intent[@"normalActionAttemptCount"] = @(gAttempts);
+    intent[@"actionAttemptCount"] = @(gAttempts + gRevealAttempts + 1);
+    intent[@"nativeActionsPerformed"] = @(gAttempts + gRevealAttempts + 1);
+    intent[@"intentBeforeInvocation"] = @YES;
+    if (!PersistRevealIntent(intent)) {
+      response[@"refusalReason"] = @"intent could not be persisted privately; budget consumed without native invocation";
+      response[@"intentPersisted"] = @NO;
+    } else {
+      ++gRevealAttempts;
+      response[@"intentPersisted"] = @YES; response[@"actionAttempted"] = @YES; response[@"nativeActionKind"] = method;
+      @try {
+        if (nativeButton) [(NSButton*)button.object performClick:nil];
+        else response[@"accessibilityPressReturn"] = @((BOOL)[(id<NSAccessibility>)button.object accessibilityPerformPress]);
+        response[@"nativeMethodReturned"] = @YES;
+      } @catch (NSException* exception) { response[@"nativeExceptionClass"] = exception.name; }
+    }
+  } else response[@"refusalReason"] = refusal;
+  [response addEntriesFromDictionary:RevealAccounting(@{})];
+  response[@"foregroundAfter"] = @(NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier);
+  WriteJSON(response, [gRequest stringByAppendingString:@".response.json"]); gBusy = NO;
+}
+
+// One bounded, read-only scan after the actual reveal invocation. Its graph is
+// evidence only; no normal action qualification or diagnostic-mode code changes.
+static BOOL gPostRevealDiagnosticConsumed;
+static void AddPostRevealDiagnostics(NSDictionary* request, NSMutableDictionary* response, UIPermissionTree* tree) {
+  if (!request[@"includeRevealDiagnostics"]) return;
+  if (!RevealTrue(request[@"includeRevealDiagnostics"]) || gDiagnosticOnly || !gRevealEnabled ||
+      gRevealAttempts != 1 || gAttempts != 0 || gPhase != 0 ||
+      ![request[@"operation"] isEqual:@"inventory"] || ![request[@"stage"] isEqual:@"deny"] ||
+      !ProfileIsolated() || !CausalRequest(request) || gPostRevealDiagnosticConsumed) {
+    response[@"refusalReason"] = @"post-reveal diagnostics require one actual reveal, no normal actions, initial deny scope, causal isolation and an unused read-only scan budget";
+    return;
+  }
+  // Consume before reading, including any inspection exception; never rescan.
+  gPostRevealDiagnosticConsumed = YES;
+  response[@"revealDiagnosticScanCount"] = @1;
+  @try {
+    NSMutableDictionary* diagnostic = [DiagnosticSummary() mutableCopy];
+    NSUInteger key = 0, main = 0;
+    for (NSWindow* window in tree.windows) {
+      key += window.isKeyWindow ? 1 : 0; main += window.isMainWindow ? 1 : 0;
+    }
+    NSWindow* siteWindow = gRevealWindow;
+    BOOL knownSiteWindow = siteWindow && [tree.windows containsObject:siteWindow];
+    diagnostic[@"nativeWindowContext"] = @{
+        @"applicationActive":@((BOOL)NSApp.isActive), @"applicationHidden":@((BOOL)NSApp.isHidden),
+        @"scopedKnownWindowCount":@(tree.windows.count), @"scopedKeyWindowCount":@(key), @"scopedMainWindowCount":@(main),
+        @"scopedNormalTreeTruncated":@((BOOL)tree.truncated), @"siteCenterKnownWindowAvailable":@((BOOL)knownSiteWindow),
+        @"siteCenterKnownWindowKey":@((BOOL)(knownSiteWindow && siteWindow.isKeyWindow)),
+        @"siteCenterKnownWindowMain":@((BOOL)(knownSiteWindow && siteWindow.isMainWindow))};
+    response[@"revealDiagnostic"] = diagnostic;
+    response[@"readOnlyRevealDiagnostics"] = @YES;
+    response[@"diagnosticOnly"] = @NO;
+  } @catch (NSException* exception) {
+    (void)exception;
+    response[@"refusalReason"] = @"the single read-only post-reveal diagnostic scan raised an inspection exception; no retry is permitted";
+  }
+}
+
 static void HandleRequest(NSDictionary* request) {
+  if (gDiagnosticOnly) { HandleDiagnosticRequest(request); return; }
+  if ([request[@"operation"] isEqual:@"press-prompt-site-center"]) { HandleRevealRequest(request); return; }
   gBusy = YES;
   NSString* stage = request[@"stage"], *operation = request[@"operation"], *identifier = request[@"id"];
   BOOL inspect = [operation isEqual:@"inspect-site-settings"];
@@ -314,8 +865,14 @@ static void HandleRequest(NSDictionary* request) {
       @"foregroundBefore":@(NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier),
       @"interpretation":@"Public native control invocation is experimental. A false accessibility press or lost response still consumes the attempt. Only independent page state and boundary recording can establish functional acceptance."} mutableCopy];
   [response addEntriesFromDictionary:before]; response[@"before"] = before;
+  if (gRevealEnabled) {
+    [response addEntriesFromDictionary:RevealAccounting(@{})];
+    response[@"before"] = RevealAccounting(before);
+    if ([operation isEqual:@"inventory"]) [response addEntriesFromDictionary:RevealInventory(tree, scopes, request)];
+  }
   if ([operation isEqual:@"inventory"] || inspect) {
     if (inspect && ![stage isEqual:@"site-settings"]) response[@"refusalReason"] = @"site inspection requires site-settings stage";
+    if ([operation isEqual:@"inventory"]) AddPostRevealDiagnostics(request, response, tree);
     response[@"foregroundAfter"] = @(NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier);
     WriteJSON(response, [gRequest stringByAppendingString:@".response.json"]); gBusy = NO; return;
   }
@@ -348,6 +905,7 @@ static void HandleRequest(NSDictionary* request) {
     response[@"nativeActionKind"] = [button.object isKindOfClass:NSButton.class] ? @"performClick" : @"accessibilityPerformPress";
     // Persist intent after consuming phase/budget, before a native call can
     // reenter the run loop or terminate the process. Never retry this attempt.
+    if (gRevealEnabled) [response addEntriesFromDictionary:RevealAccounting(@{})];
     WriteJSON(response, [gRequest stringByAppendingString:@".attempt.json"]);
     @try {
       if ([button.object isKindOfClass:NSButton.class]) [(NSButton*)button.object performClick:nil];
@@ -358,7 +916,11 @@ static void HandleRequest(NSDictionary* request) {
   response[@"actionAttemptCount"] = @(gAttempts); response[@"nativeActionsPerformed"] = @(gAttempts); response[@"phase"] = Phase();
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 150 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
     response[@"after"] = Summary(stage, [stage isEqual:@"site-settings"], NULL, NULL);
-    response[@"ownerWindowAvailable"] = @(gOwnerWindow != nil);
+    response[@"ownerWindowAvailable"] = @((BOOL)(gOwnerWindow != nil));
+    if (gRevealEnabled) {
+      [response addEntriesFromDictionary:RevealAccounting(@{})];
+      response[@"after"] = RevealAccounting(response[@"after"]);
+    }
     response[@"foregroundAfter"] = @(NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier);
     WriteJSON(response, [gRequest stringByAppendingString:@".response.json"]); gBusy = NO;
   });
@@ -374,7 +936,8 @@ static void Poll(void) {
       ![request[@"nonce"] isEqual:gNonce] || ![request[@"pid"] isEqual:@(NSProcessInfo.processInfo.processIdentifier)] ||
       !ValidStage(request[@"stage"]) || !ValidOperation(request[@"operation"])) return;
   NSString* operation = request[@"operation"], *stage = request[@"stage"];
-  if (([operation isEqual:@"press-deny"] && ![stage isEqual:@"deny"]) ||
+  if (([operation isEqual:@"press-prompt-site-center"] && ![stage isEqual:@"deny"]) ||
+      ([operation isEqual:@"press-deny"] && ![stage isEqual:@"deny"]) ||
       ([operation isEqual:@"press-allow"] && ![stage isEqual:@"allow"]) ||
       ([@[@"press-site-settings", @"inspect-site-settings"] containsObject:operation] && ![stage isEqual:@"site-settings"])) return;
   [gSeenIDs addObject:identifier]; ++gRequests; HandleRequest(request);
@@ -397,7 +960,13 @@ __attribute__((constructor)) static void StartUIPermissionControlsProbe(void) {
         ![@[@"permissions-deny", @"cookies-storage-site-settings"] containsObject:gScenario] ||
         ![parsed.host isEqual:@"127.0.0.1"] || port < 1024 || port > 65535 ||
         ![gAuthority isEqual:[NSString stringWithFormat:@"127.0.0.1:%ld", (long)port]]) return;
-    gEnabled = enabled && [@(enabled) isEqual:@"canonical-permissions-v1"];
+    const char* diagnostic = getenv("ARC_UI_PERMISSION_DIAGNOSTIC_ONLY");
+    if (diagnostic && ![@(diagnostic) isEqual:@"1"]) return;
+    gDiagnosticOnly = diagnostic && [@(diagnostic) isEqual:@"1"];
+    gEnabled = !gDiagnosticOnly && enabled && [@(enabled) isEqual:@"canonical-permissions-v1"];
+    const char* reveal = getenv("ARC_UI_PERMISSION_REVEAL_ENABLE");
+    if (reveal && ![@(reveal) isEqual:@"canonical-site-center-v1"]) return;
+    gRevealEnabled = !gDiagnosticOnly && reveal && [@(reveal) isEqual:@"canonical-site-center-v1"];
     if (isolation && @(isolation).length && @(isolation).length <= 160) gIsolationNonce = @(isolation);
     gIsolationPath = [[NSHomeDirectory() stringByAppendingPathComponent:@"Library/Application Support"]
         stringByAppendingPathComponent:[NSString stringWithFormat:@"ArcModAgent-%@/.arc-ui-probe-profile.json", slug]];
@@ -405,7 +974,8 @@ __attribute__((constructor)) static void StartUIPermissionControlsProbe(void) {
     dispatch_async(dispatch_get_main_queue(), ^{
       WriteJSON(@{@"installed":@YES, @"pid":@(NSProcessInfo.processInfo.processIdentifier), @"nonce":gNonce,
           @"mainThread":@(NSThread.isMainThread), @"scenario":gScenario, @"phase":Phase(),
-          @"actionCapabilityEnabled":@(gEnabled), @"actionAttemptBudget":@(Budget()), @"actionAttemptCount":@0,
+          @"diagnosticOnly":@(gDiagnosticOnly), @"actionCapabilityEnabled":@(gEnabled),
+          @"revealCapabilityEnabled":@((BOOL)gRevealEnabled), @"revealAttemptBudget":@(gRevealEnabled ? 1 : 0), @"actionAttemptBudget":@(gDiagnosticOnly ? 0 : Budget()), @"actionAttemptCount":@0,
           @"nativeActionsPerformed":@0, @"causalProfileIsolated":@(ProfileIsolated()), @"functionalAcceptance":@NO},
           [gRequest stringByAppendingString:@".ready.json"]);
       dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());

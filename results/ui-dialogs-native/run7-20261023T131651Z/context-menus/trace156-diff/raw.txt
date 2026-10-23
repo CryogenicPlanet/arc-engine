@@ -1,0 +1,15 @@
+methods differing: 34 (missing 5, extra 0, returns 4, callback args 3, counts 22; internal-only 1, ours-internal 0)
+callback sequence: {"golden": 79, "ours": 73, "first_divergence": 13, "golden_from": ["_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:", "ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:", "ADK.ADKApplication didConnectToNetworkProcess", "ADK.ADKApplication didReceiveGPUInfoUpdate:", "ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:"], "ours_from": ["ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:", "ADK.ADKApplication didConnectToNetworkProcess", "ADK.ADKApplication didRece
+caller attribution: off (a transcript predates it)
+missing {"method": "->engine -ArcBrowser isCastEnabled", "golden_calls": 2, "example": {"args": "[]", "ret": "true"}}
+missing {"method": "->engine -ArcBrowser isJavaScriptFromAppleEventsAllowed", "golden_calls": 2, "example": {"args": "[]", "ret": "false"}}
+missing {"method": "->engine -ArcBrowserContext getContentSettingForOrigin:withContentSettingType:", "golden_calls": 2, "example": {"args": "[\"url:http://*/a\", 29]", "ret": "\"<ArcSiteSettingInfo#1>\""}}
+missing {"method": "->engine -ArcSiteSettingInfo siteSetting", "golden_calls": 2, "example": {"args": "[]", "ret": "0"}}
+missing {"method": "->engine -ArcWebContents isScaleFactorOne", "golden_calls": 2, "example": {"args": "[]", "ret": "true"}}
+return_mismatch {"method": "->engine -ArcBrowserContext loadUrl:withDelegate:", "call": 0, "args": "[\"<ArcURLLoadConfiguration#5>\", \"<_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate#5>\"]", "golden": "\"<ArcURLLoadCancellationToken#5>\"", "ours": "\"<ArcURLLoadCancellationToken#4>\""}
+return_mismatch {"method": "->engine -ArcSearchEngine url", "call": 535, "args": "[]", "golden": "\"chrome://history/?q=%7BsearchTerms%7D\"", "ours": "\"https://drive.google.com/drive/search?q=%s\""}
+return_mismatch {"method": "->engine -ArcSessionID identifier", "call": 0, "args": "[]", "golden": "2113537285", "ours": "1397090502"}
+return_mismatch {"method": "->engine -ArcWebContents tabTraits", "call": 4, "args": "[]", "golden": "\"<NSMutableIndexSet#1>\"", "ours": "\"<NSMutableIndexSet#3>\""}
+arg_mismatch {"method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:", "call": 0, "golden": "[\"<ArcBrowser#1>\", 2113537285]", "ours": "[\"<ArcBrowser#1>\", 1397090502]"}
+arg_mismatch {"method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "call": 20, "golden": "[\"ax_focus_top_frame\", \"id=1 rootWebArea FOCUSABLE name=launch-slice A name_from=relatedElement url=http://*/a clips_children child_ids=2 unignored_child_ids=6\"]", "ours": "[\"nav_reentrancy_ca
+arg_mismatch {"method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:", "call": 0, "golden": "[\"*\", \"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany

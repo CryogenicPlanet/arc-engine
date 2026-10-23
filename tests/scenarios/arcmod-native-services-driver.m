@@ -45,7 +45,7 @@ static void StartDNS(void) {
         ((struct sockaddr_in *)control->ai_addr)->sin_addr.s_addr == htonl(INADDR_LOOPBACK);
       if (control) freeaddrinfo(control);
       NSDictionary *result = @{@"blockedHost":kBlockedHost, @"blockedCode":@(blockedCode),
-        @"blockedIsEAINONAME":@(blockedCode == EAI_NONAME), @"blockedReturnedNull":@(blockedNull),
+        @"blockedIsEAINONAME":@((BOOL)(blockedCode == EAI_NONAME)), @"blockedReturnedNull":@(blockedNull),
         @"numericControlCode":@(controlCode), @"numericControlIsLoopback":@(loopback)};
       dispatch_async(dispatch_get_main_queue(), ^{ gResults[@"dns"] = result; gDNSDone = YES; });
     }
@@ -64,9 +64,9 @@ static void StartHTTP(NSString *name, NSString *url) {
       NSString *text = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil;
       gResults[name] = @{@"mainThread":@(main), @"errorDomain":error.domain ?: NSNull.null,
         @"errorCode":@(error ? error.code : 0), @"errorDescription":error.localizedDescription ?: NSNull.null,
-        @"policyMessageMatches":@(error && [error.localizedDescription isEqual:kPolicyMessage]),
-        @"hasResponse":@(response != nil), @"status":@(status), @"bytes":@(data.length),
-        @"fixtureControlMatches":@(text && [text containsString:@"<title>launch-slice A</title>"] && [text containsString:@"fixture A"])};
+        @"policyMessageMatches":@((BOOL)(error && [error.localizedDescription isEqual:kPolicyMessage])),
+        @"hasResponse":@((BOOL)(response != nil)), @"status":@(status), @"bytes":@(data.length),
+        @"fixtureControlMatches":@((BOOL)(text && [text containsString:@"<title>launch-slice A</title>"] && [text containsString:@"fixture A"]))};
       if (gCompletions == 2) [gSession finishTasksAndInvalidate];
     };
     if (main) finish(); else dispatch_async(dispatch_get_main_queue(), finish);

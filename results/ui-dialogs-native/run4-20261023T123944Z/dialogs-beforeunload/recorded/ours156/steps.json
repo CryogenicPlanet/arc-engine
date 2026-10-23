@@ -1,0 +1,36 @@
+{
+  "scenario": "dialogs-beforeunload",
+  "backend": "local AppKit controls",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "PID-bound app/helper/CDP ready"
+    },
+    {
+      "step": "fixture /a",
+      "outcome": "pass",
+      "detail": "canonical URL/title/marker"
+    },
+    {
+      "step": "beforeunload prompt",
+      "outcome": "pass",
+      "detail": "actual canonical native sheet proved"
+    },
+    {
+      "step": "stay cancels navigation",
+      "outcome": "pass",
+      "detail": "actual native controls followed by page assertion"
+    },
+    {
+      "step": "leave commits navigation",
+      "outcome": "pass",
+      "detail": "actual native controls followed by page assertion"
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Captured browser/helpers exited; close request acknowledged"
+    }
+  ]
+}

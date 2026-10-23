@@ -1,0 +1,1013 @@
+{
+ "internal": [
+  {
+   "method": "->engine -ArcBackForwardList initWithBackForwardList:",
+   "golden_calls": 4,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcBackForwardList#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBackForwardListItem initWithBackForwardListItem:",
+   "golden_calls": 14,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcBackForwardListItem#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcNavigationAction initWithNavigationAction:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcNavigationAction#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcSecureContext initWithSecureContext:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcSecureContext#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcSiteSettingInfo initWithSiteSettingInfo:",
+   "golden_calls": 4,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcSiteSettingInfo#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents initWithWebContents:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcWebContents#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsBoostIDE initWithBoostIDE:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcWebContentsBoostIDE#1>\""
+   }
+  }
+ ],
+ "internal_ours": [],
+ "missing": [
+  {
+   "method": "->engine -ArcBrowser isCastEnabled",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowser isJavaScriptFromAppleEventsAllowed",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserApplication ensureBasicAccessibilityEnabled",
+   "golden_calls": 24,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContext getContentSettingForOrigin:withContentSettingType:",
+   "golden_calls": 4,
+   "example": {
+    "args": "[\"url:http://*/a\", 29]",
+    "ret": "\"<ArcSiteSettingInfo#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f a",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f b",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f g",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f r",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcNavigationAction navigationDisposition",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcNavigationAction navigationType",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcNavigationAction referrer",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "\"url:http://*/a\""
+   }
+  },
+  {
+   "method": "->engine -ArcNavigationAction url",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "\"url:http://*/b\""
+   }
+  },
+  {
+   "method": "->engine -ArcSecureContext state",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcSessionID identifier",
+   "golden_calls": 3,
+   "example": {
+    "args": "[]",
+    "ret": "1133983710"
+   }
+  },
+  {
+   "method": "->engine -ArcSiteSettingInfo siteSetting",
+   "golden_calls": 4,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents backForwardList",
+   "golden_calls": 8,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcBackForwardList#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents blockedResourceCount",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents boostIDE",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcWebContentsBoostIDE#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents canGoBack",
+   "golden_calls": 18,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents canGoForward",
+   "golden_calls": 18,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents devTools",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcWebContentsDevTools#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents diagnosticId",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents favicon",
+   "golden_calls": 10,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents freeformTextFieldActive",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents hadFormOrUserEdits",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents hasDirtyTextField",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents hasFocus",
+   "golden_calls": 14,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents ignoreDisablePiPAttribute:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents inputEvent",
+   "golden_calls": 4,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents insertStylesheet:stylesheet:",
+   "golden_calls": 5,
+   "example": {
+    "args": "[\"__arc_theme_css\", \":root {\\n    --arc-palette-background: #0A0D4BFF;\\n    --arc-background-gradient-color1: #17011EFF;\\n    --arc-palette-focus: #4D54FBCE;\\n    --arc-palette-hover: #5D64FB7A;\\n    --arc-palette-foregroundTertiary: #3139FBFF;\\n    --arc-palette-foregroundPrimary: #ECEDFEFF;\\n    --arc-background-gradient-col\\u2026\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents isLoading",
+   "golden_calls": 18,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents isReadyToDisplay",
+   "golden_calls": 12,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents isScaleFactorOne",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents loadProgress",
+   "golden_calls": 18,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents mediaSession",
+   "golden_calls": 11,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcWebContentsMediaSession#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents nativeView",
+   "golden_calls": 5,
+   "example": {
+    "args": "[]",
+    "ret": "\"<WebContentsHostView#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents navigationController",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcWebContentsNavigationController#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents navigationID",
+   "golden_calls": 16,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents passwordTextFieldActive",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents pendingRenderFrameViewportSize",
+   "golden_calls": 6,
+   "example": {
+    "args": "[]",
+    "ret": "\"{0, 0}\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents rootBackgroundColor",
+   "golden_calls": 6,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents selectedText",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents sessionId",
+   "golden_calls": 3,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcSessionID#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setBackForwardList:",
+   "golden_calls": 4,
+   "example": {
+    "args": "[\"<ArcBackForwardList#1>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setBlockedResourceCount:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[0]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setCanGoBack:",
+   "golden_calls": 9,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setCanGoForward:",
+   "golden_calls": 9,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setFavicon:",
+   "golden_calls": 5,
+   "example": {
+    "args": "[null]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setFreeformTextFieldActive:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setHadFormOrUserEdits:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setHasDirtyTextField:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setHasFocus:",
+   "golden_calls": 7,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setInputEvent:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"{\\\"click\\\":{\\\"id\\\":9}}\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setIsLoading:",
+   "golden_calls": 9,
+   "example": {
+    "args": "[true]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setIsReadyToDisplay:",
+   "golden_calls": 6,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setLoadProgress:",
+   "golden_calls": 9,
+   "example": {
+    "args": "[0]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setNavigationDelegate:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ADK.WebContentChromium#123>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setNavigationID:",
+   "golden_calls": 8,
+   "example": {
+    "args": "[0]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setPasswordTextFieldActive:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setPendingRenderFrameViewportSize:",
+   "golden_calls": 3,
+   "example": {
+    "args": "[\"{0, 0}\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setRootBackgroundColor:",
+   "golden_calls": 3,
+   "example": {
+    "args": "[null]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setSelectedText:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[null]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setState:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[0]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setTabTraits:",
+   "golden_calls": 5,
+   "example": {
+    "args": "[\"<NSMutableIndexSet#1>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setThemeColor:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[null]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setTitle:",
+   "golden_calls": 6,
+   "example": {
+    "args": "[null]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setTopBandColorDelegate:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ADK.WebContentChromium#123>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setUIDelegate:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ADK.WebContentChromium#123>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setUndoableFieldActive:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setUrl:",
+   "golden_calls": 8,
+   "example": {
+    "args": "[\"url:http://*/a\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setVisibility:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[2]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents setZoomLevel:",
+   "golden_calls": 3,
+   "example": {
+    "args": "[1]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents state",
+   "golden_calls": 4,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "golden_calls": 20,
+   "example": {
+    "args": "[]",
+    "ret": "\"<NSMutableIndexSet#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents themeColor",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents thumbnailsGenerator",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ArcWebContentsThumbnailsGenerator#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents title",
+   "golden_calls": 12,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents undoableFieldActive",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents url",
+   "golden_calls": 16,
+   "example": {
+    "args": "[]",
+    "ret": "\"url:http://*/a\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents visibility",
+   "golden_calls": 4,
+   "example": {
+    "args": "[]",
+    "ret": "2"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents zoomLevel",
+   "golden_calls": 6,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsBoostIDE setDelegate:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ADK.WebContentChromium#123>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsDevTools setDelegate:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ADK.WebContentChromium#123>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsMediaSession getMediaContentTypes:",
+   "golden_calls": 10,
+   "example": {
+    "args": "[null]",
+    "ret": "\"<NSIndexSet#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsMediaSession setDelegate:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ADK.WebContentChromium#123>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsNavigationController addObserver:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ADK.WebContentChromium#123>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsThumbnailsGenerator addObserver:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ADK.WebContentChromium#123>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.AccessibilityObserver accessibilityModeChanged:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"kNativeAPIs | kWebContents\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ArcBrowser#1>\", \"<ArcWebContents#1>\", true]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+   "golden_calls": 6,
+   "example": {
+    "args": "[\"<ArcBrowser#1>\", 1133983710]",
+    "ret": "-1"
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:decidePolicyForNavigationAction:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"<ArcNavigationAction#1>\"]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didChangeAvailableMediaActions:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"<NSMutableIndexSet#2>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didChangeStatusText:",
+   "golden_calls": 10,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didChangeVisibleSecurityState:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"<ArcSecureContext#1>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didCommitNavigation:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"<ArcNavigation#2>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didFinishNavigation:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"<ArcNavigation#3>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didStartProvisionalNavigation:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"<ArcNavigation#1>\"]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:runJavaScriptApplicationModalBeforeUnloadPanel:withMessage:withPrimaryButtonLabel:completion:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"Leave site?\", \"Changes you made may not be saved.\", \"Leave\", \"<block>\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "extra": [],
+ "return_mismatch": [
+  {
+   "method": "->engine -ArcBrowserContext loadUrl:withDelegate:",
+   "call": 0,
+   "args": "[\"<ArcURLLoadConfiguration#4>\", \"<_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate#4>\"]",
+   "golden": "\"<ArcURLLoadCancellationToken#4>\"",
+   "ours": "\"<ArcURLLoadCancellationToken#5>\""
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "call": 532,
+   "args": "[]",
+   "golden": "\"chrome://bookmarks/?q=%7BsearchTerms%7D\"",
+   "ours": "\"chrome://history/?q=%7BsearchTerms%7D\""
+  }
+ ],
+ "arg_mismatch": [
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "call": 15,
+   "golden": "[\"nav_reentrancy_caller1-LoadIf_pending\", \"true\"]",
+   "ours": "[\"ProfileKeepAlive-origin\", \"kExtensionUpdater\"]"
+  }
+ ],
+ "count_mismatch": [
+  {
+   "method": "->engine -ArcBrowserApplication availableBrowserContextAttributes",
+   "golden": 8,
+   "ours": 7
+  },
+  {
+   "method": "->engine -ArcBrowserApplication loadUrl:withDelegate:",
+   "golden": 3,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcBrowserContext extensions",
+   "golden": 7,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes directoryBasename",
+   "golden": 8,
+   "ours": 7
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes initWithBrowserContextAttributes:",
+   "golden": 8,
+   "ours": 7
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userColor",
+   "golden": 8,
+   "ours": 7
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userVisibleName",
+   "golden": 15,
+   "ours": 14
+  },
+  {
+   "method": "->engine -ArcBrowserContextExtensions listExtensions",
+   "golden": 6,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcColor a",
+   "golden": 8,
+   "ours": 7
+  },
+  {
+   "method": "->engine -ArcColor b",
+   "golden": 8,
+   "ours": 7
+  },
+  {
+   "method": "->engine -ArcColor g",
+   "golden": 8,
+   "ours": 7
+  },
+  {
+   "method": "->engine -ArcColor r",
+   "golden": 8,
+   "ours": 7
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "golden": 2431,
+   "ours": 1329
+  },
+  {
+   "method": "->engine -ArcURLLoadCancellationToken initWithToken:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setBlockLocalRequest:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setCachePolicy:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setFollowRedirects:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setHeaders:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setMethod:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setStreamResponseData:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setTimeout:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setUrl:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "golden": 24,
+   "ours": 17
+  },
+  {
+   "method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:",
+   "golden": 3,
+   "ours": 4
+  }
+ ],
+ "callback_sequence": {
+  "golden": 67,
+  "ours": 30,
+  "first_divergence": 13,
+  "golden_from": [
+   "ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:",
+   "ADK.ADKApplication didConnectToNetworkProcess",
+   "ADK.ADKApplication didReceiveGPUInfoUpdate:",
+   "ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ],
+  "ours_from": [
+   "_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:",
+   "ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:",
+   "ADK.ADKApplication didConnectToNetworkProcess",
+   "ADK.ADKApplication didReceiveGPUInfoUpdate:",
+   "ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:"
+  ]
+ }
+}

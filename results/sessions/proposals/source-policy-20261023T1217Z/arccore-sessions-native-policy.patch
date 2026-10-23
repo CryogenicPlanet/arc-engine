@@ -1,0 +1,49 @@
+--- a/chrome/browser/arcmod/arcmod_hooks.h
++++ b/chrome/browser/arcmod/arcmod_hooks.h
+@@ -45,6 +45,15 @@
+ }  // namespace download
+ 
+ namespace arcmod {
++
++// Hosted configuration chooses the startup type, while profile startup URLs
++// still come from preferences. nullopt leaves Chrome's type lookup unchanged.
++using SessionStartupRestoreHook =
++    base::RepeatingCallback<std::optional<bool>()>;
++inline SessionStartupRestoreHook& GetSessionStartupRestoreHook() {
++  static base::NoDestructor<SessionStartupRestoreHook> hook;
++  return *hook;
++}
+ 
+ // Marks one actual historical WebContents insertion, preserving both source
+ // IDs and optional presence. The returned scope clears its exact WC marker.
+--- a/chrome/browser/prefs/session_startup_pref.cc
++++ b/chrome/browser/prefs/session_startup_pref.cc
+@@ -8,9 +8,11 @@
+ 
+ #include <string>
+ 
++#include "base/command_line.h"
+ #include "base/feature_list.h"
+ #include "base/values.h"
+ #include "build/build_config.h"
++#include "chrome/browser/arcmod/arcmod_hooks.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/ui/ui_features.h"
+ #include "chrome/common/pref_names.h"
+@@ -117,7 +119,15 @@
+     const PrefService* prefs) {
+   DCHECK(prefs);
+ 
+-  SessionStartupPref pref(
++  std::optional<Type> hosted_type;
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++      arcmod::GetSessionStartupRestoreHook()) {
++    if (std::optional<bool> restore =
++            arcmod::GetSessionStartupRestoreHook().Run()) {
++      hosted_type = *restore ? LAST : DEFAULT;
++    }
++  }
++  SessionStartupPref pref(hosted_type ? *hosted_type :
+       PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
+ 
+   // Always load the urls, even if the pref type isn't URLS. This way the

@@ -63,7 +63,7 @@ try {
     refresh();
     await post();
     while (!stop && Date.now()<next) {
-      await Bun.sleep(Math.min(60000,next-Date.now())); await post();
+      await Bun.sleep(Math.min(60000,next-Date.now())); refresh(); await post();
     }
     if (stop) break;
     const child = Bun.spawn(["bun",join(import.meta.dir,"scoreboard.ts"),"--run-next"],{cwd:root,stdout:"inherit",stderr:"inherit"});
@@ -71,7 +71,7 @@ try {
     // Lock acquisition may take hours; hourly summaries continue independently.
     let done = false;
     const ended = child.exited.then(()=>{ done=true; });
-    while (!done) { await Promise.race([ended,Bun.sleep(60000)]); await post(); }
+    while (!done) { await Promise.race([ended,Bun.sleep(60000)]); refresh(); await post(); }
     rmSync(join(lease,"child-pid"),{force:true});
     await post();
   }

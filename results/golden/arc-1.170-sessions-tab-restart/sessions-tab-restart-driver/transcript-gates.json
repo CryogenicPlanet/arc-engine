@@ -1,0 +1,148 @@
+[
+  {
+    "path": "/Users/cryogenicplanet/general/arc-engine/results/golden/arc-1.170-sessions-tab-restart.candidate/launch-1/record.jsonl",
+    "sha256": "78af52987c1c76ac7b16b23c4b5cfb922e3eed75df4a70283b8f02a4f92d6370",
+    "launch": 1,
+    "callCount": 4891,
+    "ownDriverCalls": 74,
+    "requiredRequestCalls": [
+      {
+        "seq": 8034,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsTabRestartDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#145>",
+        "args": []
+      },
+      {
+        "seq": 8420,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsTabRestartDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#218>",
+        "args": []
+      }
+    ],
+    "requiredCallbacks": [
+      {
+        "seq": 8036,
+        "ev": "call",
+        "thread": "main",
+        "depth": 3,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:didCloseWithSessionID:",
+        "self": "<ADK.WebContentChromium#153>",
+        "args": [
+          "<ArcWebContents#145>",
+          "<ArcSessionID#295>"
+        ]
+      },
+      {
+        "seq": 8422,
+        "ev": "call",
+        "thread": "main",
+        "depth": 3,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:didCloseWithSessionID:",
+        "self": "<ADK.WebContentChromium#226>",
+        "args": [
+          "<ArcWebContents#218>",
+          "<ArcSessionID#297>"
+        ]
+      }
+    ],
+    "rawLabelsPreserved": true
+  },
+  {
+    "path": "/Users/cryogenicplanet/general/arc-engine/results/golden/arc-1.170-sessions-tab-restart.candidate/launch-2/record.jsonl",
+    "sha256": "9ae849efcc1622694829606e49238c437f429a6be40f268086f246b807bf61a1",
+    "launch": 2,
+    "callCount": 2880,
+    "ownDriverCalls": 159,
+    "requiredRequestCalls": [
+      {
+        "seq": 4148,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsTabRestartDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcBrowser",
+        "kind": "-",
+        "sel": "restoreWebContentsWithSessionId:",
+        "self": "<ArcBrowser#89>",
+        "args": [
+          "<ArcSessionID#150>"
+        ]
+      },
+      {
+        "seq": 4526,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsTabRestartDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcBrowser",
+        "kind": "-",
+        "sel": "restoreWebContentsWithSessionId:",
+        "self": "<ArcBrowser#89>",
+        "args": [
+          "<ArcSessionID#156>"
+        ]
+      }
+    ],
+    "requiredCallbacks": [
+      {
+        "seq": 4268,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.ChromiumBrowser",
+        "kind": "-",
+        "sel": "browser:didRestoreWebContents:withSessionId:",
+        "self": "<ADK.ChromiumBrowser#94>",
+        "args": [
+          "<ArcBrowser#89>",
+          "<ArcWebContents#160>",
+          "<ArcSessionID#168>"
+        ]
+      },
+      {
+        "seq": 4624,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.ChromiumBrowser",
+        "kind": "-",
+        "sel": "browser:didRestoreWebContents:withSessionId:",
+        "self": "<ADK.ChromiumBrowser#94>",
+        "args": [
+          "<ArcBrowser#89>",
+          "<ArcWebContents#187>",
+          "<ArcSessionID#195>"
+        ]
+      }
+    ],
+    "rawLabelsPreserved": true
+  }
+]

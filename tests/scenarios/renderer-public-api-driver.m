@@ -68,7 +68,7 @@ static void Install(void) {
 }
 // Status polling is cached only: no engine selectors, tree traversal or lookup.
 static NSDictionary *State(void) {
-  return @{@"selected":@(gSelected != nil), @"insertCalls":@(gInsertCalls), @"removeCalls":@(gRemoveCalls),
+  return @{@"selected":@((BOOL)(gSelected != nil)), @"insertCalls":@(gInsertCalls), @"removeCalls":@(gRemoveCalls),
     @"extractionCalls":@(gExtractionCalls), @"completionCalls":@(gCompletionCalls),
     @"completionCounts":[gCompletionCounts copy], @"pending":@(gExtractPending)};
 }

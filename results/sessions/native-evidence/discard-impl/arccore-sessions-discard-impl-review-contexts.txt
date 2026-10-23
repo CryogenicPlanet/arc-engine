@@ -1,0 +1,168 @@
+RANGE 0436edb0-0436ee80
+0436edb0: bl #0x8008ef0
+0436edb4: brk #1
+0436edb8: adrp x8, #0xd72a000
+0436edbc: add x8, x8, #0xa76
+0436edc0: str x8, [sp]
+0436edc4: adrp x0, #0xd72a000
+0436edc8: add x0, x0, #0xa40
+0436edcc: bl #0x8008a04
+0436edd0: sub sp, sp, #0x50
+0436edd4: stp x22, x21, [sp, #0x20]
+0436edd8: stp x20, x19, [sp, #0x30]
+0436eddc: stp x29, x30, [sp, #0x40]
+0436ede0: add x29, sp, #0x40
+0436ede4: mov x21, x1
+0436ede8: mov x19, x0
+0436edec: mov w0, #0x620
+0436edf0: bl #0x8790
+0436edf4: mov x20, x0
+0436edf8: ldr q0, [x21]
+0436edfc: str q0, [sp]
+0436ee00: ldur q0, [x21, #9]
+0436ee04: stur q0, [sp, #9]
+0436ee08: mov x1, sp
+0436ee0c: bl #0x4371518
+0436ee10: mov w0, #0x20
+0436ee14: bl #0x8790
+0436ee18: mov x21, x0
+0436ee1c: mov x22, x0
+0436ee20: str xzr, [x22, #8]!
+0436ee24: adrp x8, #0xda82000
+0436ee28: add x8, x8, #0x440
+0436ee2c: str x8, [x0]
+0436ee30: stp xzr, x20, [x0, #0x10]
+0436ee34: cbz x20, #0x436eea4
+0436ee38: ldr x0, [x20, #0x10]
+0436ee3c: cbz x0, #0x436ee4c
+0436ee40: ldr x8, [x0, #8]
+0436ee44: cmn x8, #1
+0436ee48: b.ne #0x436eea4
+0436ee4c: cbz x21, #0x436ee64
+0436ee50: add x8, x21, #8
+0436ee54: mov w9, #1
+0436ee58: ldadd x9, x8, [x8]
+0436ee5c: add x8, x21, #0x10
+0436ee60: ldadd x9, x8, [x8]
+0436ee64: stp x20, x21, [x20, #8]
+0436ee68: cbz x0, #0x436ee94
+0436ee6c: ldapur x8, [x0, #0x10]
+0436ee70: cbnz x8, #0x436eed4
+0436ee74: ldr x8, [x0]
+0436ee78: ldr x8, [x8, #0x20]
+0436ee7c: adrp x9, #0xf01000
+RANGE 04370ff0-04371068
+04370ff0: brk #0
+04370ff4: hlt #0
+04370ff8: brk #1
+04370ffc: sub sp, sp, #0x50
+04371000: stp x22, x21, [sp, #0x20]
+04371004: stp x20, x19, [sp, #0x30]
+04371008: stp x29, x30, [sp, #0x40]
+0437100c: add x29, sp, #0x40
+04371010: mov x20, x1
+04371014: mov x21, x0
+04371018: mov w0, #0x620
+0437101c: bl #0x8790
+04371020: mov x19, x0
+04371024: ldr q0, [x20]
+04371028: str q0, [sp]
+0437102c: ldur q0, [x20, #9]
+04371030: stur q0, [sp, #9]
+04371034: mov x1, sp
+04371038: bl #0x4371518
+0437103c: mov w0, #0x20
+04371040: bl #0x8790
+04371044: mov x20, x0
+04371048: mov x22, x0
+0437104c: str xzr, [x22, #8]!
+04371050: adrp x8, #0xda82000
+04371054: add x8, x8, #0x440
+04371058: str x8, [x0]
+0437105c: stp xzr, x19, [x0, #0x10]
+04371060: cbz x19, #0x43710d0
+04371064: ldr x0, [x19, #0x10]
+RANGE 04371210-04371290
+04371210: b.eq #0x43711e4
+04371214: mov x0, x20
+04371218: blr x8
+0437121c: b #0x43710d0
+04371220: brk #0
+04371224: hlt #0
+04371228: brk #1
+0437122c: sub sp, sp, #0x50
+04371230: stp x22, x21, [sp, #0x20]
+04371234: stp x20, x19, [sp, #0x30]
+04371238: stp x29, x30, [sp, #0x40]
+0437123c: add x29, sp, #0x40
+04371240: mov x20, x0
+04371244: mov w0, #0x620
+04371248: bl #0x8790
+0437124c: mov x19, x0
+04371250: ldr q0, [x20]
+04371254: str q0, [sp]
+04371258: ldur q0, [x20, #9]
+0437125c: stur q0, [sp, #9]
+04371260: mov x1, sp
+04371264: bl #0x4371518
+04371268: mov w0, #0x20
+0437126c: bl #0x8790
+04371270: mov x20, x0
+04371274: mov x21, x0
+04371278: str xzr, [x21, #8]!
+0437127c: adrp x8, #0xda82000
+04371280: add x8, x8, #0x440
+04371284: str x8, [x0]
+04371288: stp xzr, x19, [x0, #0x10]
+0437128c: cbz x19, #0x43712fc
+RANGE 0438eb68-0438ebbc
+0438eb68: ldr w8, [x4, #0x1b8]
+0438eb6c: cmn w8, #0x5a
+0438eb70: b.eq #0x438eb78
+0438eb74: ret 
+0438eb78: ldr w8, [x0, #0x5cc]
+0438eb7c: add w1, w8, #1
+0438eb80: b #0x438eb84
+0438eb84: sub sp, sp, #0xe0
+0438eb88: stp x28, x27, [sp, #0x80]
+0438eb8c: stp x26, x25, [sp, #0x90]
+0438eb90: stp x24, x23, [sp, #0xa0]
+0438eb94: stp x22, x21, [sp, #0xb0]
+0438eb98: stp x20, x19, [sp, #0xc0]
+0438eb9c: stp x29, x30, [sp, #0xd0]
+0438eba0: add x29, sp, #0xd0
+0438eba4: ldr w8, [x0, #0x5cc]
+0438eba8: cmp w8, w1
+0438ebac: b.eq #0x438ee18
+0438ebb0: str w1, [x0, #0x5cc]
+0438ebb4: ldr x27, [x0, #0x10]
+0438ebb8: cbz x27, #0x438ec60
+RANGE 0438f2d0-0438f308
+0438f2d0: ldr w8, [x4, #0x1b8]
+0438f2d4: cmn w8, #0x5a
+0438f2d8: b.eq #0x438f2e0
+0438f2dc: ret 
+0438f2e0: sub x8, x0, #0xa8
+0438f2e4: ldr w9, [x0, #0x524]
+0438f2e8: add w1, w9, #1
+0438f2ec: mov x0, x8
+0438f2f0: b #0x438eb84
+0438f2f4: mov w1, #0
+0438f2f8: b #0x438eb84
+0438f2fc: sub x0, x0, #0xa8
+0438f300: mov w1, #0
+0438f304: b #0x438eb84
+RANGE 04371a7c-04371ab0
+04371a7c: str x21, [x19, #0x5a8]
+04371a80: mov w20, #1
+04371a84: str x20, [x19, #0x5b0]
+04371a88: strb wzr, [x19, #0x5c0]
+04371a8c: str wzr, [x19, #0x5c4]
+04371a90: strh wzr, [x19, #0x5c8]
+04371a94: str wzr, [x19, #0x5cc]
+04371a98: strb wzr, [x19, #0x5d0]
+04371a9c: add x8, x19, #0x5d4
+04371aa0: movi v0.2d, #0000000000000000
+04371aa4: str q0, [x19, #0x600]
+04371aa8: stp q0, q0, [x8]
+04371aac: str q0, [x8, #0x20]

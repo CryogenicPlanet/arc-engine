@@ -1,0 +1,65 @@
+{
+ "internal": [],
+ "internal_ours": [],
+ "missing": [
+  {
+   "method": "engine->app -ADK.WebContentChromium webContentsClosePermission:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "extra": [],
+ "return_mismatch": [],
+ "arg_mismatch": [],
+ "count_mismatch": [
+  {
+   "method": "->engine -ArcDisplayNameOrOrigin initWithDisplayNameOrOrigin:",
+   "golden": 2,
+   "ours": 1
+  },
+  {
+   "method": "->engine -ArcDisplayNameOrOrigin isOrigin",
+   "golden": 2,
+   "ours": 1
+  },
+  {
+   "method": "->engine -ArcDisplayNameOrOrigin nameOrOrigin",
+   "golden": 2,
+   "ours": 1
+  },
+  {
+   "method": "->engine -ArcPermissionRequest initWithPermissionRequest:",
+   "golden": 2,
+   "ours": 1
+  },
+  {
+   "method": "->engine -ArcPermissionRequest originUrl",
+   "golden": 2,
+   "ours": 1
+  },
+  {
+   "method": "->engine -ArcPermissionRequest type",
+   "golden": 2,
+   "ours": 1
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:willAskForPermission:withRequests:withQuietUIReason:completion:",
+   "golden": 2,
+   "ours": 1
+  }
+ ],
+ "callback_sequence": {
+  "golden": 4,
+  "ours": 1,
+  "first_divergence": 1,
+  "golden_from": [
+   "ADK.WebContentChromium webContentsClosePermission:",
+   "ADK.WebContentChromium webContents:willAskForPermission:withRequests:withQuietUIReason:completion:",
+   "ADK.WebContentChromium webContentsClosePermission:"
+  ],
+  "ours_from": []
+ }
+}

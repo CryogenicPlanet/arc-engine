@@ -1,0 +1,772 @@
+{
+  "golden": {
+    "step": "popup-A",
+    "operation": "action",
+    "basis": "actual helper-returned observations, not ArcEngineRecorder rows",
+    "complete": true,
+    "rows": [
+      {
+        "path": "operation",
+        "present": true,
+        "valid": true,
+        "value": "action"
+      },
+      {
+        "path": "ok",
+        "present": true,
+        "valid": true,
+        "value": true
+      },
+      {
+        "path": "matches",
+        "present": true,
+        "valid": true,
+        "value": 1
+      },
+      {
+        "path": "mainThread",
+        "present": true,
+        "valid": true,
+        "value": true
+      },
+      {
+        "path": "infosAfter",
+        "present": true,
+        "valid": true,
+        "value": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": true,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "ghicoghcmhiochafepcegcjifkimlpho",
+            "name": "ArcCore service probe arc-extensions-service-probe-38606992-cf3c-4b8b-bb46-7fce90930020 A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://ghicoghcmhiochafepcegcjifkimlpho/",
+            "version": "1.2.3"
+          },
+          "B": {
+            "description": "Local fixture B π 東京",
+            "enabled": true,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 64,
+                  "width": 64
+                },
+                {
+                  "height": 32,
+                  "width": 32
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "ljckkmecohbahlbplchcjjagfncpofhf",
+            "name": "ArcCore service probe arc-extensions-service-probe-38606992-cf3c-4b8b-bb46-7fce90930020 B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://ljckkmecohbahlbplchcjjagfncpofhf/",
+            "version": "1.2.3"
+          }
+        }
+      },
+      {
+        "path": "pinsAfter",
+        "present": true,
+        "valid": true,
+        "value": [
+          "ghicoghcmhiochafepcegcjifkimlpho"
+        ]
+      },
+      {
+        "path": "owned",
+        "present": true,
+        "valid": true,
+        "value": {
+          "A": "ghicoghcmhiochafepcegcjifkimlpho",
+          "B": "ljckkmecohbahlbplchcjjagfncpofhf"
+        }
+      },
+      {
+        "path": "callbacks",
+        "present": true,
+        "valid": true,
+        "value": [
+          {
+            "selector": "browser:didOpenExtensionPopup:webContents:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              {
+                "class": "ArcWebContents",
+                "url": "chrome-extension://ghicoghcmhiochafepcegcjifkimlpho/popup.html"
+              }
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didResizeExtensionPopup:size:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              [
+                320,
+                160
+              ]
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didResizeExtensionPopup:size:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              [
+                400,
+                220
+              ]
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didUpdateExtensionToolbarAction:",
+            "payload": [
+              {
+                "accessibleName": "Service fixture A\nHas access to this site",
+                "enabled": true,
+                "icon": {
+                  "present": true,
+                  "representations": [
+                    {
+                      "height": 32,
+                      "width": 32
+                    },
+                    {
+                      "height": 64,
+                      "width": 64
+                    }
+                  ],
+                  "size": [
+                    32,
+                    32
+                  ]
+                },
+                "id": "ghicoghcmhiochafepcegcjifkimlpho",
+                "pinnedPosition": 0,
+                "tooltipText": "Service fixture A\nHas access to this site"
+              }
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didCloseExtensionPopup:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho"
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        ]
+      },
+      {
+        "path": "events",
+        "present": true,
+        "valid": true,
+        "value": [
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browser:didOpenExtensionPopup:webContents:",
+              "payload": [
+                "ghicoghcmhiochafepcegcjifkimlpho",
+                {
+                  "class": "ArcWebContents",
+                  "url": "chrome-extension://ghicoghcmhiochafepcegcjifkimlpho/popup.html"
+                }
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browser:didResizeExtensionPopup:size:",
+              "payload": [
+                "ghicoghcmhiochafepcegcjifkimlpho",
+                [
+                  320,
+                  160
+                ]
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browser:didResizeExtensionPopup:size:",
+              "payload": [
+                "ghicoghcmhiochafepcegcjifkimlpho",
+                [
+                  400,
+                  220
+                ]
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browser:didUpdateExtensionToolbarAction:",
+              "payload": [
+                {
+                  "accessibleName": "Service fixture A\nHas access to this site",
+                  "enabled": true,
+                  "icon": {
+                    "present": true,
+                    "representations": [
+                      {
+                        "height": 32,
+                        "width": 32
+                      },
+                      {
+                        "height": 64,
+                        "width": 64
+                      }
+                    ],
+                    "size": [
+                      32,
+                      32
+                    ]
+                  },
+                  "id": "ghicoghcmhiochafepcegcjifkimlpho",
+                  "pinnedPosition": 0,
+                  "tooltipText": "Service fixture A\nHas access to this site"
+                }
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browser:didCloseExtensionPopup:",
+              "payload": [
+                "ghicoghcmhiochafepcegcjifkimlpho"
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          }
+        ]
+      },
+      {
+        "path": "callbacks",
+        "present": true,
+        "valid": true,
+        "value": [
+          {
+            "selector": "browser:didOpenExtensionPopup:webContents:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              {
+                "class": "ArcWebContents",
+                "url": "chrome-extension://ghicoghcmhiochafepcegcjifkimlpho/popup.html"
+              }
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didResizeExtensionPopup:size:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              [
+                320,
+                160
+              ]
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didResizeExtensionPopup:size:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              [
+                400,
+                220
+              ]
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didUpdateExtensionToolbarAction:",
+            "payload": [
+              {
+                "accessibleName": "Service fixture A\nHas access to this site",
+                "enabled": true,
+                "icon": {
+                  "present": true,
+                  "representations": [
+                    {
+                      "height": 32,
+                      "width": 32
+                    },
+                    {
+                      "height": 64,
+                      "width": 64
+                    }
+                  ],
+                  "size": [
+                    32,
+                    32
+                  ]
+                },
+                "id": "ghicoghcmhiochafepcegcjifkimlpho",
+                "pinnedPosition": 0,
+                "tooltipText": "Service fixture A\nHas access to this site"
+              }
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didCloseExtensionPopup:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho"
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        ]
+      }
+    ]
+  },
+  "ours": {
+    "step": "popup-A",
+    "operation": "action",
+    "basis": "actual helper-returned observations, not ArcEngineRecorder rows",
+    "complete": true,
+    "rows": [
+      {
+        "path": "operation",
+        "present": true,
+        "valid": true,
+        "value": "action"
+      },
+      {
+        "path": "ok",
+        "present": true,
+        "valid": true,
+        "value": true
+      },
+      {
+        "path": "matches",
+        "present": true,
+        "valid": true,
+        "value": 1
+      },
+      {
+        "path": "mainThread",
+        "present": true,
+        "valid": true,
+        "value": true
+      },
+      {
+        "path": "infosAfter",
+        "present": true,
+        "valid": true,
+        "value": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": true,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "ghicoghcmhiochafepcegcjifkimlpho",
+            "name": "ArcCore service probe arc-extensions-service-probe-38606992-cf3c-4b8b-bb46-7fce90930020 A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://ghicoghcmhiochafepcegcjifkimlpho/",
+            "version": "1.2.3"
+          },
+          "B": {
+            "description": "Local fixture B π 東京",
+            "enabled": true,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "ljckkmecohbahlbplchcjjagfncpofhf",
+            "name": "ArcCore service probe arc-extensions-service-probe-38606992-cf3c-4b8b-bb46-7fce90930020 B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://ljckkmecohbahlbplchcjjagfncpofhf/",
+            "version": "1.2.3"
+          }
+        }
+      },
+      {
+        "path": "pinsAfter",
+        "present": true,
+        "valid": true,
+        "value": [
+          "ghicoghcmhiochafepcegcjifkimlpho"
+        ]
+      },
+      {
+        "path": "owned",
+        "present": true,
+        "valid": true,
+        "value": {
+          "A": "ghicoghcmhiochafepcegcjifkimlpho",
+          "B": "ljckkmecohbahlbplchcjjagfncpofhf"
+        }
+      },
+      {
+        "path": "callbacks",
+        "present": true,
+        "valid": true,
+        "value": [
+          {
+            "selector": "browser:didOpenExtensionPopup:webContents:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              {
+                "class": "ArcWebContents",
+                "url": "chrome-extension://ghicoghcmhiochafepcegcjifkimlpho/popup.html"
+              }
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didUpdateExtensionToolbarAction:",
+            "payload": [
+              {
+                "accessibleName": "Service fixture A\nHas access to this site",
+                "enabled": true,
+                "icon": {
+                  "present": true,
+                  "representations": [
+                    {
+                      "height": 32,
+                      "width": 32
+                    },
+                    {
+                      "height": 64,
+                      "width": 64
+                    }
+                  ],
+                  "size": [
+                    32,
+                    32
+                  ]
+                },
+                "id": "ghicoghcmhiochafepcegcjifkimlpho",
+                "pinnedPosition": 0,
+                "tooltipText": "Service fixture A\nHas access to this site"
+              }
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didResizeExtensionPopup:size:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              [
+                320,
+                160
+              ]
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didResizeExtensionPopup:size:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              [
+                400,
+                220
+              ]
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didCloseExtensionPopup:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho"
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        ]
+      },
+      {
+        "path": "events",
+        "present": true,
+        "valid": true,
+        "value": [
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browser:didOpenExtensionPopup:webContents:",
+              "payload": [
+                "ghicoghcmhiochafepcegcjifkimlpho",
+                {
+                  "class": "ArcWebContents",
+                  "url": "chrome-extension://ghicoghcmhiochafepcegcjifkimlpho/popup.html"
+                }
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browser:didUpdateExtensionToolbarAction:",
+              "payload": [
+                {
+                  "accessibleName": "Service fixture A\nHas access to this site",
+                  "enabled": true,
+                  "icon": {
+                    "present": true,
+                    "representations": [
+                      {
+                        "height": 32,
+                        "width": 32
+                      },
+                      {
+                        "height": 64,
+                        "width": 64
+                      }
+                    ],
+                    "size": [
+                      32,
+                      32
+                    ]
+                  },
+                  "id": "ghicoghcmhiochafepcegcjifkimlpho",
+                  "pinnedPosition": 0,
+                  "tooltipText": "Service fixture A\nHas access to this site"
+                }
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browser:didResizeExtensionPopup:size:",
+              "payload": [
+                "ghicoghcmhiochafepcegcjifkimlpho",
+                [
+                  320,
+                  160
+                ]
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browser:didResizeExtensionPopup:size:",
+              "payload": [
+                "ghicoghcmhiochafepcegcjifkimlpho",
+                [
+                  400,
+                  220
+                ]
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browser:didCloseExtensionPopup:",
+              "payload": [
+                "ghicoghcmhiochafepcegcjifkimlpho"
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          }
+        ]
+      },
+      {
+        "path": "callbacks",
+        "present": true,
+        "valid": true,
+        "value": [
+          {
+            "selector": "browser:didOpenExtensionPopup:webContents:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              {
+                "class": "ArcWebContents",
+                "url": "chrome-extension://ghicoghcmhiochafepcegcjifkimlpho/popup.html"
+              }
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didUpdateExtensionToolbarAction:",
+            "payload": [
+              {
+                "accessibleName": "Service fixture A\nHas access to this site",
+                "enabled": true,
+                "icon": {
+                  "present": true,
+                  "representations": [
+                    {
+                      "height": 32,
+                      "width": 32
+                    },
+                    {
+                      "height": 64,
+                      "width": 64
+                    }
+                  ],
+                  "size": [
+                    32,
+                    32
+                  ]
+                },
+                "id": "ghicoghcmhiochafepcegcjifkimlpho",
+                "pinnedPosition": 0,
+                "tooltipText": "Service fixture A\nHas access to this site"
+              }
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didResizeExtensionPopup:size:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              [
+                320,
+                160
+              ]
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didResizeExtensionPopup:size:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho",
+              [
+                400,
+                220
+              ]
+            ],
+            "mainThread": true,
+            "synchronous": false
+          },
+          {
+            "selector": "browser:didCloseExtensionPopup:",
+            "payload": [
+              "ghicoghcmhiochafepcegcjifkimlpho"
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        ]
+      }
+    ]
+  }
+}

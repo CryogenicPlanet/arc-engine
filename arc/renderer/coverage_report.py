@@ -49,11 +49,16 @@ def snapshot(path):
                   'mtime_ns': after.st_mtime_ns}
 
 
-report = {'goldens': {}, 'shared_diffs': {}}
+report = {'goldens': {}, 'archived_goldens': {}, 'shared_diffs': {}}
 for path in sorted((ROOT / 'results/golden').glob('arc-1.170-*/launch-*/record.jsonl')):
     if any('candidate' in part.lower() for part in path.parts):
         continue
     data, provenance = snapshot(path)
+    # Recorder migration preserves immutable v1 copies beside canonical goldens.
+    # Keep their provenance without counting duplicate historical coverage.
+    if path.parent.parent.name.endswith('.recorder-v1'):
+        report['archived_goldens'][provenance['path']] = provenance
+        continue
     calls = collections.Counter()
     callers = collections.Counter()
     for line in data.splitlines():
@@ -93,5 +98,6 @@ for path in sorted((ROOT / 'results/ours').glob('*/diff-launch-*.json')):
 output = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'logs/wp/renderer.coverage.run2.json'
 output.parent.mkdir(parents=True, exist_ok=True)
 output.write_text(json.dumps(report, indent=2) + '\n')
-print(f'{len(report["goldens"])} accepted launch transcripts; '
+print(f'{len(report["goldens"])} canonical accepted launch transcripts; '
+      f'{len(report["archived_goldens"])} archived v1 transcripts; '
       f'{len(report["shared_diffs"])} shared diff snapshots; {output}')

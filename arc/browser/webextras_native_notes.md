@@ -115,3 +115,291 @@ The upstream helper-to-producer chain remains partial: `0x439c028` occurs in the
 Original439c11c/120 loads the PDFController shared pair from nativeImpl+308/+310, increments its strong count, and439c204 stores the pair into the queued innerclosure+48/+50.43a35a8..5b8 passes exactly that saved pair to the bridge, without reloading owner/helper. Constructor43717dc zeros+308/+310;439c04c/050 skips allocation/writes when+308 is nonnull; only nonzero direct/overlapping stores found in4370000..43a5000 are null-branch439c078/080. Destructor4372104/2114 releases it. This bounded store scan supports a lazy persistent per-Impl peer, not proof against generic alias writes or exact cross-document helper semantics.
 
 Guard storage Impl+368/+370 is initialized by4371828, invalidated/cleared in4372070/2080. Delegate registration4375cdc replaces the weakdelegate pair+348/+350. Delivery42c1740/42c0840 checks the wrapper/cancellation lifetime and weak-locks the captured registration; there is no recovered navigation-generation comparison. Therefore production now validates/deduplicates in synchronous PDFReady receipt (no app/KVO) and queues weakobserver DeliverPDF without a late generation/helper/readiness check. readiness_posted_ resets on navigation and is separate from has_controller_, which tracks actual setter delivery; an old queued delivery cannot suppress the new document's receipt or cause a premature nil setter. Strong local delegate/owner/controller survive KVO; no observer/helper access follows setter. Official compile0 +fresh design review. Native first-ready eligibility and UIdelegate replacement-token behavior remain partially uncovered; exact runtime parity is not claimed.
+
+## High-level DevTools close and reentry (12:47 UTC)
+Original high-level close4357fd0 calls native DevToolsWindow::CloseWindow atc107c50 before synchronous DidClose. Current C156 delegate public base permits virtual dispatch to its private CloseWindow override (docked beforeunload/closing path; undocked browser close), rather than skipping directly to frontend ClosePage. Production uses that native call when a window exists and only falls back to ClosePage for a frontend with no window. A pending native window can be located from the inspected contents before the show hook. Hosted undocked-with-no-browser behavior remains unverified.
+
+Reset/disarm the old frontend observer BEFORE native/app callbacks; retain old toolbox/pending blocks until the operation ends. Native close and DidClose can reopen F2. No cleanup follows those calls, so delayed F1 destruction cannot erase F2. Standalone webextras_devtools_close_regression.py extracts actual production struct/observer/reset/notify/frontendClosed/close;9cases PASS atO2/Wall/Wextra/Werror, source excerpt SHA833a200f34666c99a80fffa0874c37277035fe7d722c8508e6a0eaf202032a3d. Independent negative controls reject missing disarm, retired-state lifetime, or native close. This proves wrapper ordering/reentry/ARC lifetime/public-base virtual dispatch, not real native window behavior.
+
+## Context DevTools uncovered identity (12:47 UTC)
+ArcBrowserContextDevTools factory remains unwired. Native Extensions isEqual43f8f28 compares native shared Impl identity after self/nil/type/optional checks, not frontend WebContents identity; native hash43f91fc requires engaged Impl and hashes its pointer. Current shell has no such native peer, so isEqual/hash remain generated stubs; do not substitute ObjC/weak WC identity. Native context-close4437324 calls c107cd4 Close(reason3), distinct from the high-level service CloseWindow entry. Current context shell ClosePage behavior is unverified and must not be reported implemented parity. Existing goldens do not exercise these methods.
+
+## DevTools display scheduling and modes (recorded native-run4 follow-up)
+
+`results/webextras/native-run4/trace156/record.jsonl` records
+`openConsoleView` call/return 3572/3573, then genuine engine-to-app
+`webContentsDevTools:displayAs:` call/return 3574/3717, main, depth1,
+mode3. The corresponding `observations.json` explicitly records display
+`beforePublicReturn:false`. Ours records first display3863..4012 nested
+inside open3858..4015, mode4, with `beforePublicReturn:true`; its full raw also
+has another display4097..4136. The second display is outside that first action's
+accepted callback span and must not be hidden by inspecting its JSON timeline
+alone. This audit establishes differences, not a passing comparison.
+
+Bounded original arm64 evidence proves the display adapter itself always posts;
+the original after-return event is not explained solely by frontend load timing:
+
+- Native display producer4359388 decodes dock-side text into modes:
+  undocked1 (43593d0..43593f4), left2 (4359430..4359450), right3
+  (4359470..4359494 via4359458), bottom4 (43593fc..4359428), unknown0.
+  At43594ec..4359508 it passes label d38120a
+  `arc::WebContents::DevTools::Delegate::DisplayDevToolsAs`, virtual-member
+  slot0x10, and the decoded scalar to4359648. Delegate bridge vtable
+  da88250+0x10=da88260 points to4415fe0. Its4416010..4416018 bounds mapping
+  preserves1..4 and maps other native values to0. A Boolean docked?3:4 cannot
+  represent this contract:4 means bottom, not undocked.
+- 4359648 locks the current delegate bridge weak_ptr from native Impl+78/+80.
+  It builds an inner closure with invoke435d2a0, copies and retains the bridge
+  shared pair at inner+38/+40 (4359730..4359748), captures the bridge pointer
+  at+30, and copies the mode into+48 (435974c). These are receipt-time captures.
+- At4359770..4359788 the source location is the literal `InvokeAsync`
+  (d37e47c), `../../arc/common/utils/delegate_wrapper.h` (d37e488), line118.
+  43597c8..4359814 builds an outer task with invoke42c1740, guarded dispatch
+  42c0840, the native wrapper weak flag/anchor from Impl+98/+a0, and the inner
+  closure. 4359818..4359830 invokes the selected runner's post entry with
+  zero delay. There is no direct-success dispatch branch in4359648; the
+  missing/dead-bridge branch4359864..435993c also posts housekeeping, not a
+  synchronous app notification. Close wrapper4358240 instead uses literal
+  `InvokeSync` d37e54d / delegate_wrapper.h line61, corroborating that these
+  source-location names distinguish scheduling paths.
+- 42c1740 checks captured weak flag+4 and anchor before guarded dispatch;
+  42c0840 locks the captured bridge and invokes the inner callable.
+  435d2a0 loads captured mode+48 and calls the stored virtual member with
+  the captured bridge pair. There is no frontend pointer, current-window lookup,
+  or frontend generation in these closures. 4415fe0 weak-loads app delegate
+  bridge+8 and service bridge+10 at delivery, holds the successful loads across
+  the direct ObjC send441602c, then releases them. Do not strongly retain the
+  ObjC service/delegate from receipt merely to deliver this task.
+
+The native delegate wrapper's flag at Impl+98 is initialized in43569e8..4356a14
+and invalidated during Impl destruction at4356c00..4356c10. Examined high-level
+close4357fd0 and frontend-closed43586ac do not invalidate that flag; they retire
+window/toolbox state without a display-generation check. Thus a received display
+notification is not locally cancelled merely because that frontend closes or a
+new frontend opens before task delivery. Queue the notification after immediate
+native frontend state association; do not queue/replay the whole state setup or
+let an old task overwrite a replacement frontend. No state should be touched
+after the app callback unless independently protected against its reentry.
+
+ObjC setDelegate4414f60 updates the existing bridge's weak delegate for a nonnil
+replacement, but nil clears its owning shared pair. A previously posted display
+retains that old bridge pair; a later new bridge is a separate registration.
+That distinction matters if approximating cancellation through registration
+tokens. A late current-delegate read alone does not reproduce old-registration
+behavior. Weak delegate/service loads still decide whether app objects exist at
+delivery. Full alias-write coverage of all native guard mutations was not
+proved by this bounded audit; the inspected close paths establish no local
+close cancellation, not an absolute claim about every possible native teardown.
+
+The runner is fetched through TLS e379858; its exact named sequence identity was
+not recovered here. The actual run4 callbacks are main-thread. C156's hosted
+frontend source separately clears can_dock without a Chrome docking controller,
+then ScheduleShow can synchronously Show the undocked frontend before load.
+Original opening43572f4 explicitly requests can_dock1 before creationc1057c0;
+that is an input proof, not blanket proof that every original creation keeps it.
+Preserving correct hosted docking/load semantics and posting the proven display
+adapter are separate required changes. No production source or runtime was
+changed by this audit.
+
+NIL-setter instruction check:4414fb4 loads the old control block,4414fb8 clears
+only the service's bridge pair with `stp xzr,xzr,[self,#0x10]`, and4414fc0..4fcc
+decrements its strong count and returns directly when a queued closure still
+retains it. There is no weak-delegate store on this branch. By contrast,
+nonnil-existing4414f88..4414f98 calls the weak-store routine on bridge+8.
+Consequently nil then new registration preserves a queued old bridge with its
+old weak delegate, while direct nonnil replacement updates the bridge seen by
+already queued delivery. A registration's validity token must not be invalidated
+by nil to approximate this behavior; capture that bridge strongly while keeping
+its ObjC service/delegate fields weak.
+
+4415fe0 has no explicit nil-service check after its weak load. If the app delegate
+still exists while the weak service load yields nil, the direct send passes nil
+as the service argument; a nil delegate naturally receives no message. An
+implementation that cancels solely on weak ObjC service disappearance adds a
+condition absent from this bridge. Whether a native Impl can outlive that ObjC
+service in each owner lifecycle is not established here; its outer lifetime
+guard must not be confused with the bridge's weak ObjC fields.
+
+## DevTools frontend getter fresh wrapping: native-run4
+
+Original `webContents` getter44151a0 always allocates an ArcWebContents when
+DevTools Impl+68 is nonnull:44151b8..44151bc reads the frontend peer box,
+44151c4..44151cc allocates, and44151d8..44151e8 reloads that same Impl field
+and passes it to `initWithWebContents:` (selector slot e28f8e8). There is no
+wrapper-cache check, current-window lookup, or native WebContents creation in
+this getter. The toolbox getter4415204 is different: it uses Impl+70 and
+compares its cached wrapper's native peer before reusing/rebuilding that cache.
+
+Run4 original raw `webContents`3615..3676 returns wrapper127 and later
+3760..3821 returns wrapper136, each with its own initialization boundary
+sequence. Ours3904..3967 and4090..4093 returns canonical wrapper111 both times.
+Unconditional fresh wrapping of the same native peer **field** explains those
+different ObjC identities without requiring a native frontend replacement.
+The serialized `<ptr>` arguments do not establish equality of the field's
+contents across the two calls. The bounded owned-Impl scan finds +68 written
+at creation4357490 and cleared at close4358084/4358744/destruction4356c98;
+it is not exhaustive alias-write or runtime native-identity proof. Preserve
+the canonical-wrapper architecture pending an explicit lead decision about
+this native fresh-wrapper behavior; no allocation workaround was made here.
+
+Further registration detail: only the new-bridge setter branch calls native
+SetDelegate, at44150bc ->4332f08 ->42ede24. 42ede50 writes the native weak bridge
+pair to Impl+78/+80. Neither the nil branch nor existing-nonnil weak-field update
+does that native call. Therefore nil leaves the native weak registration alias
+pointing at the old bridge. If an earlier queued notification still retains that
+bridge, **a new native display receipt after nil can still lock and queue it**;
+after all strong captures drain, that weak registration expires. A new nonnil
+registration installs a new alias; existing queued captures keep their prior
+bridge. The owned approximation needs both current strong registration and a
+separate native-registration weak alias, not merely `_delegateBridge` at receipt.
+
+## Inspect-mode trigger: original embedder-message route
+
+A bounded native chain establishes a direct **embedder message** producer,
+separate from the frontend CDP transport. It does not establish an
+`Overlay.setInspectMode` packet interceptor:
+
+1. Original DevToolsUIBindings constructor calls frontend dispatcher creation
+   c0eb6fc at c0f7774 with the bindings object. Its primary address point is
+   dd00b80 (installed c0f7538..c0f755c).
+2. Dispatcher creation registers literal `inspectModeChanged` at d701069 via
+   c0ebaa0..c0ebae0, passing virtual-member slot50 and flag1 to c0ed650.
+   That registrar stores the member pair/receiver and installs parser
+   c0ef394 (c0ed680..c0ed6c4). The separate literal
+   `dispatchProtocolMessage` d7011e4 is registered at c0ec5a8..c0ec5e8 with
+   member slot160, not slot50.
+3. The inspect handler requires **exactly one argument**: c0ef3d8..c0ef3e0
+   compares the supplied list size to1. c0ef528..c0ef588 checks its first value
+   via c483aa0 ->170dd80; that helper returns nonnull only for value type4
+   (string). Zero/extra arguments or a nonstring returns false without invoking
+   the selected method. c0ef510..c0ef518 invokes the bound handler only after
+   successful parsing. Missing/malformed outer embedder-envelope behavior was
+   not separately recovered by this bounded parser audit.
+4. Bindings vtable dd00b80+50=dd00bd0 points to4718fd0. This thunk loads
+   bindings delegate+58 and invokes its slot50. The DevToolsWindow delegate
+   address point dd01bf0+50=dd01c40 is471a128 (the same table's+20 is native
+   CloseWindow c107c50, corroborating its identity).
+5. 471a128..471a168 requires window inspectedWC+50, looks up userdata key
+   c9d7108, requires userdata+10 native peer, then tail-calls4359a74 with the
+   parsed string. That reaches the recovered string-to-mode conversion and
+   asynchronous slot18 delegate bridge described above. Any string is accepted
+   by this local parser: recognized mode names map1..4; all others, including
+   `none`, reach mode0. A missing inspected WC/userdata/peer produces no callback.
+
+No agent-host attachment test, target/session lookup, protocol-method comparison,
+or CDP success result occurs in this direct route. That statement is local to
+the recovered path; it does not prove no alternative producer exists. The
+original frontend JS emission site and the generic outer embedder dispatcher
+validation/session provenance remain unmeasured here. Current C156 has no
+`inspectModeChanged` frontend embedder handler or bindings/window delegate
+method. Its outgoing `dispatchProtocolMessage` hook is a different route; any
+attempt to infer these app notifications from Overlay packets needs an explicit
+equivalence decision or separate native evidence, including duplicate prevention
+if an embedder emission is later restored. This finding does not activate a hook
+or fabricate an inspect-success callback.
+
+Adjacent display-trigger evidence: original literal `requestDockPosition`
+(d701055) is registered at c0eba34..c0eba78 with member slot48 and the same
+one-string handler c0ed650. Bindings dd00b80+48=4718fc0 loads its delegate+58
+and invokes slot48; window table dd01bf0+48=471a0d8 requires inspectedWC+50,
+userdata c9d7108 and native peer+10, then tail-calls display producer4359388
+at471a118. Thus an original display callback can be requested explicitly by
+this frontend embedder message. The current Show-hook/GetDockSide adaptation
+does not, by itself, establish full equivalence for every explicit dock-position
+request or message multiplicity. Normal-open runtime measurement remains useful;
+the async adapter and mode mapping proof above does not depend on this trigger
+equivalence. No activation or production change follows from this finding.
+
+## Original packaged frontend emission proof
+
+The disposable original app's framework `Versions/A/Resources/resources.pak`
+was read without launching an app. SHA256
+`56734b34502ff1e68d72a9d36b19715a8e55fd3b910a8ce7839304cbd0fe07bc`,
+size24824865, mtimeNs1792616318000000000, stable before/after extraction.
+Correct extraction uses `chromium/src/tools/grit/pak_util.py extract` with
+**explicit** `--brotli /opt/homebrew/bin/brotli`. An initial search with the
+tool's default shell-based Brotli invocation left frontend payloads incorrectly
+decoded; that no-match result is superseded and supplies no absence evidence.
+Clean explicit extraction is byte-identical to the recovered JS below.
+
+The original Mach-O resource-name table de7b7f8..de82378 has860 records, stride32,
+mapping IDs52161..53020 to bundled frontend paths. Mapping source
+`/tmp/arccore-webextras.arm64` SHA256
+`fe0f512702094c7c1067576bd0dd84bdc18e2ab5a5ef9953ac1edd26a50ccbce`.
+Extracted artifacts, table JSON, byte-offset fragments and hashes are at
+`/tmp/webextras-frontend-emission-_mseb9oi/frontend-emission-evidence.json` and
+`resources-correct/<resourceID>`; no application/private profile was read.
+
+| Resource ID and path | Decoded SHA256 | Relevant byte offsets |
+| --- | --- | --- |
+| 52490 `devtools_compatibility.js` | `5155e65c618a6776d555abd85bcafdabe1d4fc606aaeeaa6292cea1eb3c6217c` | requestDockPosition45044/45121; inspectModeChanged45170/45245 |
+| 52853 `panels/elements/elements.js` | `2616bfe4be3a3ce9eab925f250452f2f1e21398c763cb1a0c790787092e32702` | inspectModeChanged575760 |
+| 53015 `ui/legacy/legacy.js` | `723be0b9811a6686918ea2889e72a69466d07197fcb3313804f86fa86884853e` | requestDockPosition30936/31298 |
+| 52476 `core/host/host.js` | `7c9cb7cc1b64d651ec04cab8704414c504ecdbdee23a3129505e521ef58583a0` | empty nonembedded stub methods23522/23546 |
+
+### Inspect controller emitter
+
+Actual original `InspectElementModeController.setMode(mode)` first checks
+`!TargetManager.instance().allTargetsSuspended()`. Inside that guard it sets
+the global mode, loops over **scoped** OverlayModels and calls each model's
+`setInspectMode(mode, tooltipSetting)` without awaiting, updates the search
+action toggled state, and finally calls the host's `inspectModeChanged(mode)`
+**once after the loop**. There is no equality/deduplication test for repeated
+same-mode calls. The host notification is independent of target count and
+backend command completion; it is not one notification per Overlay target.
+A normal model's asynchronous setInspectMode waits for requestDocument before
+calling its highlighter, so this controller send is not a backend-success ack.
+
+Other original controller paths fix the remaining repeat/suspend distinctions:
+
+- Search-toggle chooses None versus SearchForNode/SearchForUAShadowDOM and
+  calls setMode; capture-area screenshot also calls setMode.
+- Escape while active calls setMode(None). The scoped EXITED_INSPECT_MODE
+  listener also calls setMode(None), subject to the same suspension guard.
+- Tooltip-setting change calls setMode(this.mode), including repeated values;
+  it emits again when not suspended.
+- modelAdded applies an already active mode to the newly added OverlayModel,
+  but does **not** call the host notification.
+- suspendStateChanged directly writes mode=None and search-action false when
+  all targets are suspended, with **no** host notification. A suspended setMode
+  call skips the entire body. Do not add an inferred suspension-reset callback.
+- Constructor initializes None without sending. The action delegate refuses
+  the shared-worker query-param case. No original controller action for
+  showDistances was found in this recovered body; the native receiver's support
+  for that string does not authorize inventing such an action.
+
+The compatibility layer's `inspectModeChanged(mode)` directly calls
+`DevToolsAPI.sendMessageToEmbedder('inspectModeChanged', [mode], null)`.
+sendMessageToEmbedder increments an ID, stores a completion only when a callback
+is truthy, serializes `{id, method, params: [mode]}`, and calls DevToolsHost.
+There is no callback promise or session/target envelope on this notification.
+This directly corroborates the one-string native handler recovered above.
+
+### Dock controller emitter
+
+Actual original DockController constructor stores canDock; when false it sets
+its local side to undocked, hides close UI and returns before registering the
+dock-setting change listener. initialize() in that case explicitly sends
+requestDockPosition('undocked') and returns. With docking enabled initialize()
+calls dockSideChanged(), which feeds the current setting to setDockSide().
+
+setDockSide validates against `['right','bottom','left','undocked']`, falling
+back to right for an invalid input, and returns early if the requested side
+already equals the local side. Otherwise it calls requestDockPosition(side)
+**before** updating body CSS, last-side/current-side settings, dispatching
+BeforeDockSideChanged, or calling setIsDocked(side!='undocked', callback).
+After that call it updates close UI and dispatches DockSideChanged. The later
+setIsDocked callback dispatches AfterDockSideChanged and announces location.
+Thus display-request emission is not gated on the docking callback/ack.
+
+Compatibility requestDockPosition(side) uses the same direct embedder sender
+with `[side]` and no completion callback. The native message receives the
+requested side itself; reconstructing that value later from profile settings
+does not establish identical request-time ordering. The current Show adapter
+still requires runtime comparison for its narrower ordinary-open behavior.
+These recovered original emitters support a dedicated controller/compatibility/
+one-string browser-handler integration proposal. They disprove treating generic
+outgoing Overlay packets as an exact substitute. No hook/source activation or
+runtime acceptance was performed for this resource audit.
+
+Durable original-frontend evidence JSON/excerpts, fullresource table and hashes are also preserved in logs/wp/webextras-original-frontend-emission/; parent rehashed the original PAK and all four correctly decoded resources before preservation. Full decoded resources remain in the cited temporary extraction, reproducible from the unchanged original PAK with the explicit extractor above.

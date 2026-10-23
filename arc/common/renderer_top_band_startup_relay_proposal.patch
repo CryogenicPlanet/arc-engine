@@ -1,0 +1,145 @@
+--- /dev/null
++++ b/arc/api/arc_renderer_startup.mm
+@@ -0,0 +1,26 @@
++// Copyright 2026 ArcMod. Arc's runtime31-to-Blink startup relay.
++#import "arc/api/arc_internal.h"
++
++#include "arc/common/renderer_startup_browser.h"
++#include "base/command_line.h"
++#include "base/functional/bind.h"
++#include "chrome/browser/arcmod/arcmod_hooks.h"
++
++namespace arc {
++void AppendRendererStartupCommandLine(base::CommandLine* command_line) {
++  if (!command_line ||
++      !base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") ||
++      command_line->GetSwitchValueASCII("type") != "renderer" ||
++      !ArcRuntimeFeatureEnabled(31)) {
++    return;
++  }
++  // Native 0x42abd38 uses AppendSwitchNative, not a feature-list merge. On
++  // POSIX this overwrites the map value and appends another argv occurrence.
++  command_line->AppendSwitchASCII("enable-blink-features", "TopBandColorSampling");
++}
++
++void InstallRendererStartupCommandLineHook() {
++  arcmod::GetRendererStartupCommandLineHook() =
++      base::BindRepeating(&AppendRendererStartupCommandLine);
++}
++}  // namespace arc
+--- /dev/null
++++ b/arc/common/renderer_startup_browser.h
+@@ -0,0 +1,18 @@
++// Copyright 2026 ArcMod. Browser-only renderer startup feature relay.
++#ifndef ARC_COMMON_RENDERER_STARTUP_BROWSER_H_
++#define ARC_COMMON_RENDERER_STARTUP_BROWSER_H_
++
++namespace base {
++class CommandLine;
++}
++
++namespace arc {
++// Called for each child command line. Only hosted renderer children are changed.
++// This is startup-only; it does not configure an already running renderer.
++void AppendRendererStartupCommandLine(base::CommandLine* command_line);
++// Install explicitly before ChromeMainInitializeHostedBrowser can spawn children.
++// Does not inspect CommandLine, profiles, or the runtime feature table at install.
++void InstallRendererStartupCommandLineHook();
++}  // namespace arc
++
++#endif  // ARC_COMMON_RENDERER_STARTUP_BROWSER_H_
+--- a/arc/wp/renderer.gni
++++ b/arc/wp/renderer.gni
+@@ -6,6 +6,7 @@
+   "//arc/api/arc_renderer_extraction.mm",
+   "//arc/api/arc_renderer_network.mm",
+   "//arc/api/arc_renderer_process.mm",
++  "//arc/api/arc_renderer_startup.mm",
+   "//arc/api/arc_renderer_top_band.mm",
+   "//arc/api/arc_renderer_values.mm",
+   "//arc/api/arc_renderer_web_contents.mm",
+--- a/arc/api/arc_browser_application.mm
++++ b/arc/api/arc_browser_application.mm
+@@ -7,6 +7,8 @@
+ 
+ #include <string>
+ #include <vector>
++
++#include "arc/api/arc_internal.h"
+ 
+ #include "base/check.h"
+ #include "base/functional/bind.h"
+@@ -142,6 +144,11 @@
+   return g_delegate;
+ }
+ 
++namespace arc {
++// Renderer is optional; its strong provider replaces this hosted-entry default.
++__attribute__((weak)) void InstallRendererStartupCommandLineHook() {}
++}
++
+ ARC_EXPORT @interface ArcBrowserApplication : NSObject
+ @end
+ 
+@@ -186,6 +193,8 @@
+   for (const std::string& arg : args) {
+     argv->push_back(arg.c_str());
+   }
++  // Install before Chrome initialization can create any normal or spare renderer.
++  arc::InstallRendererStartupCommandLineHook();
+   int exit_code = ChromeMainInitializeHostedBrowser(static_cast<int>(argv->size()), argv->data());
+   if (exit_code != 0) {
+     LOG(ERROR) << "ArcCore: browser initialization stopped with exit code " << exit_code;
+--- a/chromium/src/chrome/browser/arcmod/arcmod_hooks.h
++++ b/chromium/src/chrome/browser/arcmod/arcmod_hooks.h
+@@ -15,6 +15,9 @@
+ #include "chrome/browser/ui/tab_helpers.h"
+ #include "net/base/auth.h"
+ 
++namespace base {
++class CommandLine;
++}
+ class LoginHandler;
+ class Profile;
+ namespace net {
+@@ -43,6 +46,14 @@
+ }  // namespace download
+ 
+ namespace arcmod {
++
++// Installed explicitly before hosted Chrome initialization. Renderer-owned
++// browser code appends Arc startup features without a Chrome-to-Arc dependency.
++using RendererStartupCommandLineHook = base::RepeatingCallback<void(base::CommandLine*)>;
++inline RendererStartupCommandLineHook& GetRendererStartupCommandLineHook() {
++  static base::NoDestructor<RendererStartupCommandLineHook> hook;
++  return *hook;
++}
+ 
+ // Adds ArcCore's navigation throttles (synchronous navigation policy from Arc's app) to every navigation.
+ // Called from ChromeContentBrowserClient::CreateThrottlesForNavigation after Chrome's own throttles.
+--- a/chromium/src/chrome/browser/chrome_content_browser_client.cc
++++ b/chromium/src/chrome/browser/chrome_content_browser_client.cc
+@@ -3327,6 +3327,12 @@
+                                     switches::kChangeStackGuardOnForkEnabled);
+   }
+ #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
++
++  // Arc's startup-only runtime relay runs after Chrome's own child switches.
++  if (browser_command_line.HasSwitch("arcmod-host-app") &&
++      arcmod::GetRendererStartupCommandLineHook()) {
++    arcmod::GetRendererStartupCommandLineHook().Run(command_line);
++  }
+ }
+ 
+ std::string
+--- a/arc/api/arc_internal.h
++++ b/arc/api/arc_internal.h
+@@ -141,6 +141,8 @@
+ // Native renderer consumers share the app feature table without ObjC calls.
+ bool ArcRuntimeFeatureEnabled(NSUInteger identifier);
+ namespace arc {
++// App calls this before Chrome initialization can launch normal/spare renderers.
++void InstallRendererStartupCommandLineHook();
+ void RefreshRendererAdBlockFeature();
+ void InitializeRendererProfile(Profile* profile);
+ void SetRendererSkipUserActivationForPiP(content::WebContents*, bool);

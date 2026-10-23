@@ -1,0 +1,56 @@
+{
+  "scenario": "renderer-public-api",
+  "started_utc": "2026-10-23T12:43:47.439650+00:00",
+  "command": [
+    "/opt/homebrew/opt/python@3.15/bin/python3.15",
+    "/Users/cryogenicplanet/general/arc-engine/arc/browser/ui_isolate_probe_profiles.py",
+    "--agents",
+    "ours156",
+    "--journal",
+    "/Users/cryogenicplanet/general/arc-engine/results/ui-renderer-public-replay/run4-20261023T123944Z/profile-isolation.json",
+    "--",
+    "/Users/cryogenicplanet/.bun/bin/bun",
+    "/Users/cryogenicplanet/general/arc-engine/tests/launch-slice/run.ts",
+    "--app",
+    "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app",
+    "--out",
+    "/Users/cryogenicplanet/general/arc-engine/results/ui-renderer-public-replay/run4-20261023T123944Z/harness",
+    "--record",
+    "--scenario",
+    "renderer-public-api",
+    "--port",
+    "9464"
+  ],
+  "full_harness_acceptance_claimed": false,
+  "scope": "Existing scenario replay plus explicit UI boundary comparison. Harness/quit failures remain failures; UI comparison does not waive them.",
+  "paths": {
+    "output": "/Users/cryogenicplanet/general/arc-engine/results/ui-renderer-public-replay/run4-20261023T123944Z",
+    "harness": "/Users/cryogenicplanet/general/arc-engine/results/ui-renderer-public-replay/run4-20261023T123944Z/harness",
+    "journal": "/Users/cryogenicplanet/general/arc-engine/results/ui-renderer-public-replay/run4-20261023T123944Z/profile-isolation.json",
+    "golden": "/Users/cryogenicplanet/general/arc-engine/results/golden/arc-1.170-renderer-public-api/launch-1/record.jsonl",
+    "ours": "/Users/cryogenicplanet/general/arc-engine/results/ui-renderer-public-replay/run4-20261023T123944Z/harness/launch-1/record.jsonl",
+    "raw_diff": "/Users/cryogenicplanet/general/arc-engine/results/ui-renderer-public-replay/run4-20261023T123944Z/diff-launch-1.txt",
+    "ui_diff": "/Users/cryogenicplanet/general/arc-engine/results/ui-renderer-public-replay/run4-20261023T123944Z/boundary-launch-1/ui.txt"
+  },
+  "errors": [],
+  "isolation_harness_exit": 0,
+  "profile_journal_status": "restored",
+  "profiles_restored": true,
+  "nonpassing_steps": [],
+  "standard_steps_all_pass": true,
+  "raw_diff_exit": 0,
+  "raw_diff_header": [
+    "methods differing: 84 (missing 13, extra 4, returns 15, callback args 4, counts 48; internal-only 9, ours-internal 21)",
+    "callback sequence: {\"golden\": 65, \"ours\": 106, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserv"
+  ],
+  "ui_boundary_diff_exit": 0,
+  "ui_boundary_clean": true,
+  "ui_diff_header": [
+    "methods differing: 0 (missing 0, extra 0, returns 0, callback args 0, counts 0; internal-only 0, ours-internal 0)",
+    "callback sequence: {\"golden\": 0, \"ours\": 0, \"first_divergence\": null, \"golden_from\": [], \"ours_from\": []}"
+  ],
+  "evidence_drift": [],
+  "evidence_unchanged": true,
+  "finished_utc": "2026-10-23T12:44:03.896713+00:00",
+  "status": "pass"
+}

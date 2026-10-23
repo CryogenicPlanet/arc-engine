@@ -1,0 +1,190 @@
+{
+  "checked": [
+    {
+      "file": "adblock-observations.json",
+      "observations": 16
+    }
+  ],
+  "differences": [
+    {
+      "file": "adblock-observations.json",
+      "step": "rule-active-new-document",
+      "original": {
+        "step": "rule-active-new-document",
+        "loaded": "blocked",
+        "count": 1,
+        "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+        "adDisplay": "none"
+      },
+      "ours": {
+        "step": "rule-active-new-document",
+        "loaded": "blocked",
+        "count": 1,
+        "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+        "adDisplay": "block"
+      }
+    },
+    {
+      "file": "adblock-observations.json",
+      "step": "feature-disabled",
+      "original": {
+        "step": "feature-disabled",
+        "loaded": "blocked",
+        "count": 2,
+        "debug": "Native ad blocker feature disabled",
+        "adDisplay": "none"
+      },
+      "ours": {
+        "step": "feature-disabled",
+        "loaded": "blocked",
+        "count": 2,
+        "debug": "Native ad blocker feature disabled",
+        "adDisplay": "block"
+      }
+    },
+    {
+      "file": "adblock-observations.json",
+      "step": "feature-disabled-excluded",
+      "original": {
+        "step": "feature-disabled-excluded",
+        "loaded": "blocked",
+        "count": 3,
+        "debug": "Native ad blocker feature disabled",
+        "adDisplay": "none"
+      },
+      "ours": {
+        "step": "feature-disabled-excluded",
+        "loaded": "blocked",
+        "count": 3,
+        "debug": "Native ad blocker feature disabled",
+        "adDisplay": "block"
+      }
+    },
+    {
+      "file": "adblock-observations.json",
+      "step": "feature-disabled-exclusions-cleared",
+      "original": {
+        "step": "feature-disabled-exclusions-cleared",
+        "loaded": "blocked",
+        "count": 4,
+        "debug": "Native ad blocker feature disabled",
+        "adDisplay": "none"
+      },
+      "ours": {
+        "step": "feature-disabled-exclusions-cleared",
+        "loaded": "blocked",
+        "count": 4,
+        "debug": "Native ad blocker feature disabled",
+        "adDisplay": "block"
+      }
+    },
+    {
+      "file": "adblock-observations.json",
+      "step": "feature-reenabled",
+      "original": {
+        "step": "feature-reenabled",
+        "loaded": "blocked",
+        "count": 5,
+        "debug": "/* Result: Success */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+        "adDisplay": "none"
+      },
+      "ours": {
+        "step": "feature-reenabled",
+        "loaded": "blocked",
+        "count": 5,
+        "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+        "adDisplay": "none"
+      }
+    },
+    {
+      "file": "adblock-observations.json",
+      "step": "cached-exclusion-on-reenable",
+      "original": {
+        "step": "cached-exclusion-on-reenable",
+        "loaded": "loaded",
+        "count": 6,
+        "debug": "/* Result: Excluded */\n/ * CSS: */\n",
+        "adDisplay": "block"
+      },
+      "ours": {
+        "step": "cached-exclusion-on-reenable",
+        "loaded": "blocked",
+        "count": 7,
+        "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+        "adDisplay": "block"
+      }
+    },
+    {
+      "file": "adblock-observations.json",
+      "step": "disabled-retains-installed-exclusion",
+      "original": {
+        "step": "disabled-retains-installed-exclusion",
+        "loaded": "loaded",
+        "count": 6,
+        "debug": "Native ad blocker feature disabled",
+        "adDisplay": "block"
+      },
+      "ours": {
+        "step": "disabled-retains-installed-exclusion",
+        "loaded": "loaded",
+        "count": 7,
+        "debug": "Native ad blocker feature disabled",
+        "adDisplay": "block"
+      }
+    },
+    {
+      "file": "adblock-observations.json",
+      "step": "cached-clear-on-reenable",
+      "original": {
+        "step": "cached-clear-on-reenable",
+        "loaded": "blocked",
+        "count": 7,
+        "debug": "/* Result: Success */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+        "adDisplay": "none"
+      },
+      "ours": {
+        "step": "cached-clear-on-reenable",
+        "loaded": "loaded",
+        "count": 7,
+        "debug": "/* Result: Excluded */\n/ * CSS: */\n",
+        "adDisplay": "none"
+      }
+    },
+    {
+      "file": "adblock-observations.json",
+      "step": "exclusions-cleared",
+      "original": {
+        "step": "exclusions-cleared",
+        "loaded": "blocked",
+        "count": 8,
+        "debug": "/* Result: Success */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+        "adDisplay": "none"
+      },
+      "ours": {
+        "step": "exclusions-cleared",
+        "loaded": "blocked",
+        "count": 8,
+        "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+        "adDisplay": "none"
+      }
+    },
+    {
+      "file": "adblock-observations.json",
+      "step": "badfilter",
+      "original": {
+        "step": "badfilter",
+        "loaded": "loaded",
+        "count": 8,
+        "debug": "/* Result: Success */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+        "adDisplay": "none"
+      },
+      "ours": {
+        "step": "badfilter",
+        "loaded": "loaded",
+        "count": 8,
+        "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+        "adDisplay": "none"
+      }
+    }
+  ]
+}

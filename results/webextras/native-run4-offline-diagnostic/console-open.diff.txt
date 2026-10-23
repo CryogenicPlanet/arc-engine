@@ -1,0 +1,8 @@
+methods differing: 10 (missing 1, extra 2, returns 1, callback args 1, counts 5; internal-only 0, ours-internal 0)
+callback sequence: {"golden": 1, "ours": 1, "first_divergence": null, "golden_from": [], "ours_from": []}
+caller attribution: on (app calls + engine setters)
+missing {"method": "->engine -ArcWebContents visibility", "golden_calls": 1, "example": {"args": "[]", "ret": "0"}}
+return_mismatch {"method": "->engine -ArcWebContents nativeView", "call": 0, "args": "[]", "golden": "\"<WebContentsHostView#1>\"", "ours": "\"<WebContentsViewCocoa#1>\""}
+arg_mismatch {"method": "engine->app -ADK.WebContentChromium webContentsDevTools:displayAs:", "call": 0, "golden": "[\"<ArcWebContentsDevTools#1>\", 3]", "ours": "[\"<ArcWebContentsDevTools#1>\", 4]"}
+extra {"method": "->engine -ArcWebContents pendingRenderFrameViewportSize", "our_calls": 2, "example": {"args": "[]", "ret": "\"{1042, 706}\""}}
+extra {"method": "->engine -ArcWebContents rootBackgroundColor", "our_calls": 2, "example": {"args": "[]", "ret": "\"<ArcColor4f#1>\""}}

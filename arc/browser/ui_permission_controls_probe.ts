@@ -10,20 +10,28 @@ import { summarize } from "../../tests/scenarios/coverage";
 type Identity = { pid: number; ppid: number; born: string; command: string };
 type Receipt = Record<string, unknown>;
 type Step = {step: string; outcome: "pass" | "fail" | "inconclusive"; detail: string};
-type Run = {agent: string; pid?: number; errors: string[]; receipts: Receipt[]; steps: Step[];
+type Run = {revealAttemptCount?: number; revealUncertain?: boolean; revealPromptObserved?: boolean; revealOutcomeConfirmed?: boolean; revealBaselineInventoryID?: string; diagnosticInventories?: number; agent: string; pid?: number; errors: string[]; receipts: Receipt[]; steps: Step[];
   cleanup?: string; elapsedMs?: number; phase?: string; browserAliveOnFailure?: boolean;
   closeAcknowledged?: boolean; artifactBefore?: Record<string, string>; artifactAfter?: Record<string, string>; artifactsStable?: boolean; completedStages: string[]; uncertainMutation?: string; coverage?: unknown; profileIsolation?: {nonce: string; device: number; inode: number}};
 const root = resolve(import.meta.dir, "../..");
 const args = process.argv.slice(2);
-const allowed = new Set(["--out", "--dylib", "--agents", "--port", "--record", "--scenario"]);
+const allowed = new Set(["--out", "--dylib", "--agents", "--port", "--record", "--scenario", "--diagnostic-only", "--reveal-prompt"]);
 const options = new Map<string, string>();
-for (let i = 0; i < args.length; i += 2) {
-  const key = args[i]!, value = args[i + 1];
+for (let i = 0; i < args.length;) {
+  const key = args[i]!;
+  if (key === "--diagnostic-only" || key === "--reveal-prompt") {
+    if (options.has(key)) throw new Error(`duplicate ${key}`);
+    options.set(key, "1"); ++i; continue;
+  }
+  const value = args[i + 1];
   if (!allowed.has(key) || options.has(key) || !value || value.startsWith("--")) throw new Error(`invalid option ${key}`);
-  options.set(key, value);
+  options.set(key, value); i += 2;
 }
+const diagnosticOnly = options.has("--diagnostic-only");
+const revealPrompt = options.has("--reveal-prompt");
+if (diagnosticOnly && revealPrompt) throw new Error("--diagnostic-only and --reveal-prompt are mutually exclusive");
 if (!options.has("--out") || !options.has("--dylib")) {
-  throw new Error("usage: bun arc/browser/ui_permission_controls_probe.ts --out NEW_DIR --dylib PATH [--agents trace156,ours156] [--port 9464] [--record 0|1]");
+  throw new Error("usage: bun arc/browser/ui_permission_controls_probe.ts --out NEW_DIR --dylib PATH [--agents trace156,ours156] [--port 9464] [--record 0|1] [--diagnostic-only] [--reveal-prompt]");
 }
 const out = resolve(options.get("--out")!);
 const dylib = resolve(options.get("--dylib")!);
@@ -187,7 +195,9 @@ try {
         "--env", `ARC_UI_PERMISSION_REQUEST=${requestPath}`, "--env", `ARC_UI_PERMISSION_NONCE=${nonce}`,
         "--env", `ARC_UI_PERMISSION_FIXTURE_AUTHORITY=${authority}`,
         ...(run.profileIsolation ? ["--env", `ARC_UI_PROFILE_ISOLATION_NONCE=${run.profileIsolation.nonce}`] : []),
-        "--env", "ARC_UI_PERMISSION_ACTION_ENABLE=canonical-permissions-v1", "--env", `ARC_UI_PERMISSION_SCENARIO=${scenario}`, "--stdout", join(dir, "app.stdout.log"), "--stderr", join(dir, "app.stderr.log"), "--args",
+        ...(diagnosticOnly ? ["--env", "ARC_UI_PERMISSION_DIAGNOSTIC_ONLY=1"] : ["--env", "ARC_UI_PERMISSION_ACTION_ENABLE=canonical-permissions-v1"]),
+        ...(revealPrompt ? ["--env", "ARC_UI_PERMISSION_REVEAL_ENABLE=canonical-site-center-v1"] : []),
+        "--env", `ARC_UI_PERMISSION_SCENARIO=${scenario}`, "--stdout", join(dir, "app.stdout.log"), "--stderr", join(dir, "app.stderr.log"), "--args",
         "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking",
         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${data}`,
         "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`]);
@@ -196,8 +206,10 @@ try {
         return matches.length === 1 ? matches[0] : undefined;
       }, 20000); run.pid = browser.pid;
       await wait(() => {
-        const ready = json<{installed: boolean; pid: number; nonce: string; mainThread: boolean; actionCapabilityEnabled?: boolean; causalProfileIsolated?: boolean}>(requestPath + ".ready.json");
-        return ready.installed && ready.pid === browser!.pid && ready.nonce === nonce && ready.mainThread && ready.actionCapabilityEnabled === true && (ready.causalProfileIsolated === true);
+        const ready = json<{installed: boolean; pid: number; nonce: string; mainThread: boolean; actionCapabilityEnabled?: boolean; causalProfileIsolated?: boolean; diagnosticOnly?: boolean; revealCapabilityEnabled?: boolean}>(requestPath + ".ready.json");
+        return ready.installed && ready.pid === browser!.pid && ready.nonce === nonce && ready.mainThread &&
+          ready.actionCapabilityEnabled === !diagnosticOnly && (!diagnosticOnly || ready.diagnosticOnly === true) &&
+          (!revealPrompt || ready.revealCapabilityEnabled === true) && ready.causalProfileIsolated === true;
       }, 20000);
       await wait(() => {
         const ready = json<{ready: boolean; pid: number}>(join(applicationData, "ArcModAgentReady.json"));
@@ -221,12 +233,13 @@ try {
       };
       const blankURLs = new Set(["", "about:blank", "chrome://newtab/", "chrome://new-tab-page/", "arc://newtab/"]);
       const baseline = await inventoryTargets();
-      // Built-in Hangouts (native Arc) and Contextual Tasks (our C156 build)
+      // Built-in Hangouts, Contextual Tasks and Arc Internal Extension
       // can have these startup targets in a fresh profile. Only exact baseline
       // identities are allowed, never new/replaced extension targets or pages.
       const components = new Map([
         ["chrome-extension://nkeimhogjdpnpccoofpliimaahmaaome/background.html", "background_page"],
         ["chrome-extension://glbjnfimcajjenihimblfaponejbkoph/background.js", "service_worker"],
+        ["chrome-extension://ldciclpbkaobfbicjebamaapbfplfjen/background.js", "service_worker"],
       ]);
       const isComponent = (row: TargetInfo) => components.get(row.url) === row.type;
       writeFileSync(join(dir, "target-baseline.json"), JSON.stringify(baseline, null, 2), {mode: 0o600});
@@ -268,21 +281,46 @@ try {
       await wait(pageIdentity, 15000);
       run.steps.push({step: "fixture /a", outcome: "pass", detail: "canonical URL/title/marker"});
       let requestCount = 0;
+      let postRevealDiagnosticRequested = false;
       const mutationIntents = new Set<string>();
+      const verifyRevealProfileAndPID = () => {
+        if (!browser || verifyAgentEndpoint(agent, port) !== browser.pid || !snapshot().some(row => same(row, browser!))) throw new Error("reveal captured process identity changed");
+        const markerPath = join(applicationData, ".arc-ui-probe-profile.json");
+        const directory = lstatSync(applicationData), markerFile = lstatSync(markerPath);
+        const marker = json<{nonce: string; agent: string; device: number; inode: number}>(markerPath);
+        if (!run.profileIsolation || !directory.isDirectory() || directory.isSymbolicLink() || !markerFile.isFile() || markerFile.isSymbolicLink() ||
+            marker.nonce !== run.profileIsolation.nonce || marker.agent !== agent || marker.device !== directory.dev || marker.inode !== directory.ino ||
+            directory.dev !== run.profileIsolation.device || directory.ino !== run.profileIsolation.inode) throw new Error("reveal fresh-profile marker/identity changed");
+      };
+      const pendingRevealFixture = async () => await evaluate(`location.href===${JSON.stringify(fixtureURL)}&&document.title==='launch-slice A'&&!!document.getElementById('ls-marker-7f3a')&&window.permissionResult==='pending'&&Notification.permission==='default'`) === true;
       const rpc = async (stage: string, operation: string): Promise<Receipt> => {
         if (++requestCount > 40) throw new Error("native request budget exceeded");
         if (!browser || verifyAgentEndpoint(agent, port) !== browser.pid || !snapshot().some(row => same(row, browser!))) throw new Error("native request captured-process identity changed");
         const id = `${nonce}-${requestCount}`;
-        const causalFixtureVerified = !["inventory", "inspect-site-settings"].includes(operation);
+        if (diagnosticOnly && operation !== "inventory") throw new Error("diagnostic-only driver refuses every native non-inventory operation");
+        const causalFixtureVerified = diagnosticOnly || revealPrompt || !["inventory", "inspect-site-settings"].includes(operation);
         if (causalFixtureVerified) {
           const targets = await verifyExclusiveFixtureTargets();
           writeFileSync(join(dir, `${id}.targets.json`), JSON.stringify(targets, null, 2), {mode: 0o600});
         }
+        let notificationPendingVerified = false;
+        if (operation === "press-prompt-site-center") {
+          if (!revealPrompt || diagnosticOnly || !run.revealBaselineInventoryID) throw new Error("reveal mode/baseline authority missing");
+          notificationPendingVerified = await pendingRevealFixture();
+          if (!notificationPendingVerified) throw new Error("reveal fixture is no longer the exact pending Notification request");
+          verifyRevealProfileAndPID();
+        }
+        const includeRevealDiagnostics = !diagnosticOnly && revealPrompt && operation === "inventory" && stage === "deny" &&
+          run.revealAttemptCount === 1 && run.completedStages.length === 0 && run.receipts.at(-1)?.normalActionAttemptCount === 0 && !postRevealDiagnosticRequested;
+        if (includeRevealDiagnostics) postRevealDiagnosticRequested = true;
         const request = {id, nonce, pid: browser.pid, stage, operation,
-          causalFixtureVerified, isolatedProfileNonce: run.profileIsolation?.nonce};
+          causalFixtureVerified, isolatedProfileNonce: run.profileIsolation?.nonce,
+          ...(includeRevealDiagnostics ? {includeRevealDiagnostics: true} : {}),
+          ...(operation === "press-prompt-site-center" ? {notificationPendingVerified, revealBaselineInventoryID: run.revealBaselineInventoryID} : {})};
         if (!["inventory", "inspect-site-settings"].includes(operation)) {
           if (mutationIntents.has(operation)) throw new Error("mutation replay refused");
-          mutationIntents.add(operation); run.uncertainMutation = operation;
+          mutationIntents.add(operation);
+          run.uncertainMutation = run.revealUncertain ? "press-prompt-site-center" : operation;
           writeFileSync(join(dir, `${id}.intent.json`), JSON.stringify({...request, retriesAllowed: false}), {mode: 0o600});
         }
         writeFileSync(requestPath + ".tmp", JSON.stringify(request), {mode: 0o600});
@@ -295,6 +333,13 @@ try {
         writeFileSync(join(dir, `${id}.response.json`), JSON.stringify(response, null, 2), {mode: 0o600});
         if (response.nonce !== nonce || response.pid !== browser.pid || response.mainThread !== true || response.functionalAcceptance !== false) throw new Error("native response identity/semantics mismatch");
         if (causalFixtureVerified && (response.causalProfileIsolated !== true || response.causalFixtureVerified !== true)) throw new Error("helper causal ownership verification missing");
+        if (diagnosticOnly && (response.diagnosticOnly !== true || response.actionAttempted !== false || response.actionAttemptCount !== 0 || response.nativeActionsPerformed !== 0 || response.refusalReason)) throw new Error("diagnostic-only helper semantics/refusal mismatch");
+        if (includeRevealDiagnostics) {
+          const diagnostic = response.revealDiagnostic;
+          if (response.readOnlyRevealDiagnostics !== true || response.diagnosticOnly !== false || response.revealDiagnosticScanCount !== 1 || response.refusalReason ||
+              !diagnostic || typeof diagnostic !== "object" || Array.isArray(diagnostic) ||
+              (diagnostic as Receipt).diagnosticOnly !== true || (diagnostic as Receipt).functionalAcceptance !== false) throw new Error("single read-only post-reveal diagnostic acknowledgment missing or refused; no rescan");
+        }
         return response;
       };
       const readyStage = async (stage: string) => {
@@ -307,22 +352,55 @@ try {
       };
       const press = async (stage: string, operation: string, count: number) => {
         const row = await rpc(stage, operation);
-        if (row.actionAttempted !== true || row.actionAttemptCount !== count || row.nativeActionsPerformed !== count || !["performClick", "accessibilityPerformPress"].includes(String(row.nativeActionKind)) || row.refusalReason) throw new Error(`native ${operation} refused or unconfirmed`);
-        delete run.uncertainMutation;
+        if (row.actionAttempted !== true || row.actionAttemptCount !== count + (run.revealAttemptCount ?? 0) || row.nativeActionsPerformed !== count + (run.revealAttemptCount ?? 0) || !["performClick", "accessibilityPerformPress"].includes(String(row.nativeActionKind)) || row.refusalReason) throw new Error(`native ${operation} refused or unconfirmed`);
+        if (revealPrompt && (row.normalActionAttemptCount !== count || row.revealAttemptCount !== (run.revealAttemptCount ?? 0))) throw new Error("normal/reveal native counters disagree");
+        if (!run.revealUncertain) delete run.uncertainMutation;
       };
       const assertPage = async (name: string, expression: string, identity = pageIdentity) => {
         await wait(async () => await evaluate(expression) === true, 5000);
         if (!await identity()) throw new Error("canonical page identity changed after action");
-        run.steps.push({step: name, outcome: "pass", detail: "actual native controls followed by page assertion"});
+        run.steps.push({step: name, outcome: "pass", detail: diagnosticOnly ? "canonical page storage assertion; diagnostic only, no native control action" : "actual native controls followed by page assertion"});
       };
-      run.phase = "canonical storage and notification denial";
+      const maybeRevealPrompt = async () => {
+        const first = await rpc("deny", "inventory");
+        if (first.truncated !== false) throw new Error("initial reveal inventory is incomplete");
+        if (first.matchingGroupCount === 1 && first.exactMessageCount === 1 && first.notificationsIconCount === 1) return;
+        if (first.matchingGroupCount !== 0) throw new Error("initial permission scope is ambiguous; reveal forbidden");
+        if (first.promptSiteCenterButtonCount !== 1 || first.revealFirstInventoryEligible !== true || typeof first.id !== "string" || first.revealFirstInventoryID !== first.id) throw new Error("first inventory has no unique eligible Site Control Center");
+        run.revealBaselineInventoryID = first.id;
+        run.revealUncertain = true;
+        const row = await rpc("deny", "press-prompt-site-center");
+        if (row.actionAttempted !== true || row.intentPersisted !== true || row.revealAttemptBudgetConsumed !== true || row.revealAttemptCount !== 1 || row.normalActionAttemptCount !== 0 || row.actionAttemptCount !== 1 || row.nativeActionsPerformed !== 1 || row.nativeMethodReturned !== true ||
+            !["performClick", "accessibilityPerformPress"].includes(String(row.nativeActionKind)) || row.refusalReason ||
+            (row.nativeActionKind === "accessibilityPerformPress" && typeof row.accessibilityPressReturn !== "boolean")) throw new Error("one reveal attempt refused or unconfirmed; no retry or fallback allowed");
+        run.revealAttemptCount = 1;
+      };
+      run.phase = diagnosticOnly ? "canonical storage before read-only permission diagnostics" : "canonical storage and notification denial";
+      if (diagnosticOnly) await verifyExclusiveFixtureTargets();
       await assertPage("cookie/local/session storage roundtrip", `(() => {
         document.cookie='scenario_cookie=c0ffee; path=/'; localStorage.setItem('scenario','41'); sessionStorage.setItem('scenario','93');
         return document.cookie.includes('scenario_cookie=c0ffee') && localStorage.getItem('scenario')==='41' && sessionStorage.getItem('scenario')==='93';
       })()`);
+      if (diagnosticOnly) await verifyExclusiveFixtureTargets();
       await evaluate("window.permissionResult='pending'; Notification.requestPermission().then(r=>window.permissionResult=r); 1");
-      await readyStage("deny"); await press("deny", "press-deny", 1);
+      if (diagnosticOnly) {
+        run.phase = "read-only local permission graph diagnostics";
+        run.diagnosticInventories = 0;
+        for (let attempt = 0; attempt < 6; ++attempt) {
+          await rpc("deny", "inventory"); ++run.diagnosticInventories;
+          if (attempt < 5) await sleep(200);
+        }
+        run.steps.push({step: "read-only permission diagnostics", outcome: "pass", detail: "Six bounded inventories; zero native control actions; no permission decision or functional acceptance claimed"});
+      } else {
+      if (revealPrompt) await maybeRevealPrompt();
+      await readyStage("deny");
+      if (run.revealAttemptCount === 1) run.revealPromptObserved = true;
+      await press("deny", "press-deny", 1);
       await assertPage("deny notification prompt", "window.permissionResult==='denied'"); run.completedStages.push("deny");
+      if (run.revealAttemptCount === 1 && run.revealPromptObserved === true) {
+        run.revealOutcomeConfirmed = true; run.revealUncertain = false; delete run.uncertainMutation;
+        run.steps.push({step: "optional prompt reveal", outcome: "pass", detail: "One public Site Control Center press, then newly qualified fixed-origin prompt and canonical denial page outcome"});
+      }
       await assertPage("cookie deletion", "document.cookie='scenario_cookie=; Max-Age=0; path=/'; !document.cookie.includes('scenario_cookie=')");
       if (scenario === "cookies-storage-site-settings") {
         run.phase = "canonical fresh permission scope";
@@ -346,6 +424,7 @@ try {
         }, 5000);
         run.steps.push({step: "site settings reflects insecure HTTP fixture", outcome: "pass", detail: "actual native Site Control Center subtree contains Lock Off Insecure"});
         run.completedStages.push("site-settings");
+      }
       }
     } catch (error) {
       run.errors.push(`${run.phase}: ${String(error)}`);
@@ -404,12 +483,14 @@ try {
       run.elapsedMs = Date.now() - started;
       if (run.elapsedMs > 90000) run.errors.push("per-app 90-second budget exceeded; inspect cleanup diagnostics");
       run.steps.push({step: "quit", outcome: run.closeAcknowledged && run.cleanup?.startsWith("Captured browser/helpers exited;") ? "pass" : "inconclusive", detail: run.cleanup ?? "cleanup unresolved"});
-      writeFileSync(join(agentDir, "steps.json"), JSON.stringify({scenario, backend: "local AppKit controls", steps: run.steps}, null, 2), {mode: 0o600});
+      writeFileSync(join(agentDir, "steps.json"), JSON.stringify({scenario, diagnosticOnly, functionalAcceptance: false, backend: diagnosticOnly ? "read-only local public AX diagnostics" : "local AppKit controls", steps: run.steps}, null, 2), {mode: 0o600});
       if (recorded) {
         try {
           const coverage = summarize(agentDir); run.coverage = coverage;
-          for (const error of coverage.errors) run.errors.push(`recorder summary: ${error}`);
-          if (!coverage.accepted) run.errors.push("recorded scenario summary is not accepted");
+          if (!diagnosticOnly) {
+            for (const error of coverage.errors) run.errors.push(`recorder summary: ${error}`);
+            if (!coverage.accepted) run.errors.push("recorded scenario summary is not accepted");
+          }
         } catch (error) { run.errors.push(`recorder summary: ${String(error)}`); }
       }
       writeFileSync(join(dir, "run.json"), JSON.stringify(run, null, 2), { mode: 0o600 });
@@ -420,12 +501,16 @@ try {
   frontend.stop(true);
   try { await stopFixture(); } catch (error) { runs.at(-1)?.errors.push(String(error)); }
 }
-const report = {nonce, scenario, backend: "actual local AppKit controls", recorded,
+const report = {nonce, scenario, backend: diagnosticOnly ? "read-only local public AX diagnostics" : "actual local AppKit controls", recorded,
+  diagnosticOnly, revealPromptOptIn: revealPrompt, functionalAcceptance: false, acceptanceClaimed: false,
   acceptedGoldenModified: false, visualAcceptance: false,
   runs: runs.map(run => ({agent: run.agent, pid: run.pid, errors: run.errors, steps: run.steps,
-    phase: run.phase, completedStages: run.completedStages, uncertainMutation: run.uncertainMutation ?? null,
+    phase: run.phase, revealAttemptCount: run.revealAttemptCount ?? 0, revealUncertain: run.revealUncertain ?? false,
+    revealPromptObserved: run.revealPromptObserved ?? false, revealOutcomeConfirmed: run.revealOutcomeConfirmed ?? false, diagnosticInventories: run.diagnosticInventories ?? 0, completedStages: run.completedStages, uncertainMutation: run.uncertainMutation ?? null,
     coverage: run.coverage ?? null, profileIsolation: run.profileIsolation ?? null, browserAliveOnFailure: run.browserAliveOnFailure, artifactsStable: run.artifactsStable ?? false, cleanup: run.cleanup, elapsedMs: run.elapsedMs})),
-  limitation: "Only the selected canonical permission sequence is exercised. The real fixture frontend uses its accepted fixed port; no output values are rewritten. Boundary diff and recorder noninterference are separate required checks; local controls do not establish external AX or visual acceptance."};
+  limitation: diagnosticOnly ? "Diagnostic collection only: canonical storage and first Notification.requestPermission are followed by six local inventories. No denial, grant, site settings, legacy action, engine completion or functional acceptance. Recorder coverage is observational and intentionally partial. Existing PID/profile/target guards, artifact hashing and cleanup still apply." : "Only the selected canonical permission sequence is exercised. The real fixture frontend uses its accepted fixed port; no output values are rewritten. Boundary diff and recorder noninterference are separate required checks; local controls do not establish external AX or visual acceptance."};
 writeFileSync(join(out, "report.json"), JSON.stringify(report, null, 2), {mode: 0o600});
 console.log(JSON.stringify(report, null, 2));
-process.exitCode = runs.some(run => run.errors.length > 0 || JSON.stringify(run.completedStages) !== JSON.stringify(expectedStages) || run.steps.some(step => step.outcome !== "pass")) ? 1 : 0;
+process.exitCode = runs.some(run => run.errors.length > 0 || run.revealUncertain === true ||
+  (diagnosticOnly ? run.diagnosticInventories !== 6 || run.completedStages.length !== 0 : JSON.stringify(run.completedStages) !== JSON.stringify(expectedStages)) ||
+  run.steps.some(step => step.outcome !== "pass")) ? 1 : 0;

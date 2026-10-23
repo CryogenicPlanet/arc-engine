@@ -21,6 +21,13 @@ const agents = option("--agents", "trace156,ours156")!.split(",");
 if (!agents.length || new Set(agents).size !== agents.length || agents.some(agent => !["trace156", "ours156"].includes(agent))) throw Error("only trace156/ours156, once each");
 const fixtureMode = args.find(arg => arg.startsWith("--fixture-mode="))?.slice("--fixture-mode=".length) ?? option("--fixture-mode", "public-install")!;
 if (!["public-install", "command-line"].includes(fixtureMode)) throw Error("fixture-mode must be public-install or command-line");
+const browserPins = args.includes("--browser-pins");
+if (browserPins && fixtureMode !== "command-line") throw Error("--browser-pins requires explicit --fixture-mode command-line");
+const browserOmnibox = args.includes("--browser-omnibox");
+if (browserOmnibox && fixtureMode !== "command-line") throw Error("--browser-omnibox requires explicit --fixture-mode command-line");
+const diagnosticDisableFieldTrialConfig = args.includes("--diagnostic-disable-field-trial-config");
+const fixtureEnvironmentArguments = ["--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking", "--noerrdialogs",
+  ...(diagnosticDisableFieldTrialConfig ? ["--disable-field-trial-config"] : [])];
 const port = Number(option("--port", "9458"));
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw Error("invalid CDP port");
 const exec = (argv: string[]) => {
@@ -105,7 +112,7 @@ const unchanged = (file: { path: string; size: number; mtimeMs: number }) => {
   const current = statSync(file.path); return current.size === file.size && current.mtimeMs === file.mtimeMs;
 };
 const provenance = {
-  capturedAt: new Date().toISOString(), fixtureMode, fixtureEnvironmentArguments: ["--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking", "--no-error-dialogs"], builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
+  capturedAt: new Date().toISOString(), fixtureMode, browserPins, browserOmnibox, diagnosticDisableFieldTrialConfig, fixtureEnvironmentArguments, builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
   expectedStockSHA256, independentStockSibling,
   traceMatchesVerifiedStock: packagedEngines.trace156.sha256 === expectedStockSHA256,
   siblingMatchesVerifiedStock: independentStockSibling ? independentStockSibling.sha256 === expectedStockSHA256 : null,
@@ -225,7 +232,7 @@ for (const label of ["A", "B"]) {
   };
   writeFileSync(join(directory, "manifest.json"), JSON.stringify(manifest));
   writeFileSync(join(directory, "icon.png"), Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGMwTpv5/0ya8X8GGAMATsMJK9Ofv4oAAAAASUVORK5CYII=", "base64"));
-  writeFileSync(join(directory, "background.js"), `const report=value=>fetch(${JSON.stringify(endpoint)},{method:'POST',body:JSON.stringify({...value,id:chrome.runtime.id})}).catch(()=>{});chrome.commands.onCommand.addListener(function(command){const args=Array.from(arguments);report({kind:'command',command,argumentCount:args.length,argumentTypes:args.map(value=>value===null?'null':typeof value),noTab:args.length<2||args[1]===undefined});});chrome.action.onClicked.addListener(tab=>report({kind:'action',tab:tab?{url:tab.url??null,idPresent:Number.isInteger(tab.id)}:null}));chrome.runtime.onInstalled.addListener(()=>report({kind:'installed'}));chrome.action.setBadgeText({text:'P'});`);
+  writeFileSync(join(directory, "background.js"), `const report=value=>fetch(${JSON.stringify(endpoint)},{method:'POST',body:JSON.stringify({...value,id:chrome.runtime.id})}).catch(()=>{});chrome.commands.onCommand.addListener(function(command){const args=Array.from(arguments);report({kind:'command',command,argumentCount:args.length,argumentTypes:args.map(value=>value===null?'null':typeof value),noTab:args.length<2||args[1]===undefined});});chrome.action.onClicked.addListener(tab=>report({kind:'action',tab:tab?{url:tab.url??null,idPresent:Number.isInteger(tab.id)}:null}));chrome.runtime.onInstalled.addListener(()=>report({kind:'installed'}));chrome.action.setBadgeText({text:'P'});` + (browserOmnibox ? `let actionSequence=0;const inventory=async()=>({tabs:(await chrome.tabs.query({})).map(tab=>({id:tab.id,windowId:tab.windowId,url:tab.url??null,active:tab.active,incognito:tab.incognito})),windows:(await chrome.windows.getAll()).map(window=>({id:window.id,type:window.type,incognito:window.incognito}))});chrome.action.onClicked.addListener(async tab=>{const sequence=++actionSequence;report({kind:"omnibox-preflight",nonce:${JSON.stringify(token)},sequence,tab:tab?{id:tab.id,windowId:tab.windowId,url:tab.url??null,active:tab.active,incognito:tab.incognito}:null,...await inventory()});});chrome.omnibox.onInputEntered.addListener(async function(input,disposition){const args=Array.from(arguments);report({kind:"omnibox",nonce:${JSON.stringify(token)},input,disposition,argumentCount:args.length,argumentTypes:args.map(value=>value===null?"null":typeof value),...await inventory()});});` : ""));
   writeFileSync(join(directory, "popup.html"), '<!doctype html><meta charset="utf-8"><title>Service fixture popup</title><style>body{margin:0;width:320px;height:160px;background:#334455;color:white}</style><main>Real extension popup</main><script src="popup.js"></script>');
   writeFileSync(join(directory, "popup.js"), `const report=value=>fetch(${JSON.stringify(endpoint)},{method:'POST',body:JSON.stringify({...value,id:chrome.runtime.id})}).catch(()=>{});report({kind:'popup-loaded',url:location.href});setTimeout(()=>{document.body.style.width='400px';document.body.style.height='220px';report({kind:'popup-resized'});},300);setTimeout(()=>{report({kind:'popup-close-requested'});window.close();},1400);`);
 }
@@ -251,17 +258,26 @@ const requiredPaths: Record<string,string[]> = {
   registry:["metadata","ready","identity","hashStable","baselinePins"],
   "adopt-command-line":["metadata","ready","identity","hashStable","baselinePins","adopted","adoptionComplete","startupPending"],
   install:["completion","completions"], "install-invalid":["completion","completions"],
-  snapshot:["list","commands"], pins:[], command:["effects"], action:["callbacks"],
+  snapshot:["list","commands"], pins:[],
+  "browser-pin":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
+  "browser-unpin":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
+  "browser-move":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinAnchorLabel","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
+  "browser-omnibox":["browserOmniboxSelector","browserOmniboxABI","browserOmniboxArguments","browserOmniboxIdentityVerified","browserOmniboxFixtureURL","effects","omniboxPreflight","omniboxCDPBefore","omniboxCDPAfter"],
+  command:["effects"], action:["callbacks"],
   "background-js":["value"], disable:[], enable:[], reload:[], uninstall:[], cleanup:["cleanupCertified","outstandingInstalls","startupPending"],
 };
 function validRequiredValue(path: string, value: any): boolean {
   const dictionary = (item: any): boolean => !!item && typeof item === "object" && !Array.isArray(item);
   const completion = (item: any): boolean => dictionary(item) && typeof item.id === "string" && Number.isInteger(item.result) && typeof item.mainThread === "boolean" && typeof item.synchronous === "boolean";
   const callback = (item: any): boolean => dictionary(item) && typeof item.selector === "string" && Array.isArray(item.payload) && typeof item.mainThread === "boolean" && (item.synchronous === null || typeof item.synchronous === "boolean");
-  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified"].includes(path)) return typeof value === "boolean";
+  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved","browserOmniboxIdentityVerified"].includes(path)) return typeof value === "boolean";
+  if (["browserPinSelector","browserPinABI","browserPinLabel","browserPinAnchorLabel","browserOmniboxSelector","browserOmniboxABI","browserOmniboxFixtureURL"].includes(path)) return typeof value === "string" && value.length > 0;
+  if (path === "browserOmniboxArguments") return Array.isArray(value) && value.length === 3 && typeof value[0] === "string" && typeof value[1] === "string" && Number.isSafeInteger(value[2]) && value[2] >= 0 && value[2] <= 11;
+  if (["omniboxPreflight","omniboxCDPBefore","omniboxCDPAfter"].includes(path)) return dictionary(value);
+  if (path === "browserPinArguments") return Array.isArray(value) && (value.length === 1 || value.length === 2) && typeof value[0] === "string" && (value.length === 1 || (Number.isSafeInteger(value[1]) && value[1] >= 0));
   if (path === "operation") return typeof value === "string" && Object.hasOwn(requiredPaths,value);
   if (path === "matches") return Number.isInteger(value) && value >= 0;
-  if (["pinsAfter","baselinePins","outstandingInstalls","startupPending"].includes(path)) return Array.isArray(value) && value.every(item=>typeof item === "string");
+  if (["pinsBefore","pinsAfter","baselinePins","outstandingInstalls","startupPending"].includes(path)) return Array.isArray(value) && value.every(item=>typeof item === "string");
   if (["metadata","infosAfter","owned","adopted"].includes(path)) return dictionary(value);
   if (["list","commands","effects"].includes(path)) return Array.isArray(value);
   if (path === "callbacks") return Array.isArray(value) && value.every(callback);
@@ -277,7 +293,7 @@ function requiredRows(action: Action) {
   // Pins are scoped to fixture IDs in semantic comparison; the full native
   // baseline-preservation check is independently asserted during the run.
   const rows = paths.map(path => {
-    const semanticPath = path === "pinsAfter" ? "fixturePinsAfter" : path === "events" ? "eventOrder" : path === "baselinePins" ? "fixtureBaselinePins" : path;
+    const semanticPath = path === "pinsBefore" ? "fixturePinsBefore" : path === "pinsAfter" ? "fixturePinsAfter" : path === "events" ? "eventOrder" : path === "baselinePins" ? "fixtureBaselinePins" : path;
     const present = Object.prototype.hasOwnProperty.call(action,path);
     return {path, present, valid:present && validRequiredValue(path,action[path]), value:measured[semanticPath]};
   });
@@ -287,7 +303,7 @@ const boundaryClasses = new Set(["ArcBrowserContextExtensions", "ArcExtensionInf
 try {
   for (const agent of agents) {
     currentAgent = agent;
-    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: ["ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only"] }; runs.push(run);
+    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: [browserPins ? "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only", browserOmnibox ? "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: metadata only; executable behavior uncovered"] }; runs.push(run);
     const dir = join(out, agent); mkdirSync(dir);
     const app = resolve(root, `../arc/build/ArcModAgent-${agent}.app`), exe = join(app, "Contents/MacOS/Arc");
     const plist = (key: string) => exec(["/usr/libexec/PlistBuddy", "-c", `Print :${key}`, join(app, "Contents/Info.plist")]);
@@ -299,7 +315,7 @@ try {
       const metadataPath = join(dir,`${step}.failed-install-sample.json`);
       const samplePath = join(dir,`${step}.failed-install.sample.txt`);
       const diagnostic: Record<string,any> = {step,operation,error:String(error),agent,pid:pid ?? null,
-        requestedDurationSeconds:1,samplerTimeoutMs:5000,provenancePath:join(out,"provenance.json"),
+        requestedDurationSeconds:1,samplerTimeoutMs:30000,provenancePath:join(out,"provenance.json"),
         fixtureEnvironmentArguments:provenance.fixtureEnvironmentArguments,
         scope:"passive sample of this verified owned PID only; no debugger attach, global sample, callback substitution or dialog-cause assertion"};
       try {
@@ -309,7 +325,7 @@ try {
         if (before.command !== exe && !before.command.startsWith(exe + " ")) throw Error("owned executable differs; sample skipped");
         diagnostic.before = before;
         diagnostic.provenanceUnchanged = sources.every(unchanged) && unchanged(builtEngine) && unchanged(selectedEngine(agent)) && unchanged(probeBinary) && unchanged(recorderBinary) && unchanged(imageFingerprintTool);
-        const sampler = Bun.spawn(["/usr/bin/sample",String(pid),"1","1","-file",samplePath],{stdout:"pipe",stderr:"pipe",timeout:5000});
+        const sampler = Bun.spawn(["/usr/bin/sample",String(pid),"1","1","-file",samplePath],{stdout:"pipe",stderr:"pipe",timeout:30000});
         const [exitCode,stdout,stderr] = await Promise.all([sampler.exited,new Response(sampler.stdout).text(),new Response(sampler.stderr).text()]);
         diagnostic.exitCode = exitCode; diagnostic.stdout = stdout; diagnostic.stderr = stderr;
         const after = inspect(); diagnostic.after = after;
@@ -351,8 +367,8 @@ try {
       startupLoadIssued = fixtureMode === "command-line";
       exec(["open", "-n", "-g", "-a", app,
         "--env", `DYLD_INSERT_LIBRARIES=${dylib}:${recorder}`, "--env", `ARC_RECORD_PATH=${recordPath}`,
-        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`,
-        "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args", "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking", "--no-error-dialogs",
+        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_PINS=${browserPins ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_OMNIBOX=${browserOmnibox ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_URL=${fixtureURL}`,
+        "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args", ...fixtureEnvironmentArguments,
         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${data}`, "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`, ...startupArguments]);
       pid = await wait(() => pids(exe)[0], 30000); run.pid = pid;
       run.startupIntent.pid = pid; writeFileSync(join(dir,"launch-intents.json"),JSON.stringify(run.startupIntent,null,2));
@@ -413,6 +429,48 @@ try {
       checkPins(await action("pins-AB-dedup", "pins", { labels: ["A", "B", "A"] }), ["A", "B"]);
       checkPins(await action("pins-BA", "pins", { labels: ["B", "A"] }), ["B", "A"]);
       checkPins(await action("pins-A", "pins", { labels: ["A"] }), ["A"]);
+      if (browserPins) {
+        const phase = async (step: string, operation: string, label: string, expected: string[], anchorLabel?: string) => {
+          const value = await action(step,operation,{label,...(anchorLabel ? {anchorLabel} : {})});
+          assert(value.browserMatches === 1 && value.browserPinIdentityVerified === true &&
+            value.browserPinBaselineBeforePreserved === true && value.browserPinBaselineAfterPreserved === true,
+            `${step}: browser identity/baseline guard did not pass`);
+          checkPins(value,expected);
+          assert(Array.isArray(value.pinsBefore) && Array.isArray(value.browserPinArguments) &&
+            value.browserPinArguments[0] === value.owned[label], `${step}: real browser arguments missing`);
+          if (operation === "browser-move") {
+            const index = value.browserPinArguments[1];
+            assert(Number.isSafeInteger(index) && index >= 0 && index < value.pinsBefore.length &&
+              value.pinsBefore[index] === value.owned[anchorLabel!], `${step}: target index is not the actual owned anchor`);
+            const expectedFull = [...value.pinsBefore];
+            const source = expectedFull.indexOf(value.owned[label]);
+            assert(source >= 0,`${step}: moved fixture was not pinned`);
+            expectedFull.splice(source,1); expectedFull.splice(index,0,value.owned[label]);
+            assert(JSON.stringify(value.pinsAfter) === JSON.stringify(expectedFull),`${step}: full visible pin splice differs`);
+          }
+          return value;
+        };
+        const entryPins = await phase("browser-unpin-A-start","browser-unpin","A",[]);
+        await phase("browser-pin-A","browser-pin","A",["A"]);
+        await phase("browser-pin-A-again","browser-pin","A",["A"]);
+        const both = await phase("browser-pin-B","browser-pin","B",["A","B"]);
+        assert(both.pinsAfter.indexOf(both.owned.B) === both.pinsAfter.indexOf(both.owned.A) + 1,
+          "browser pin fixtures are not adjacent; move precondition unproved");
+        const observedToolbarIDs = both.callbacks.flatMap((event: any) => event.selector === "browser:didUpdateExtensionToolbarActions:" ? event.payload[0].map((item: any) => item.id) : event.selector === "browser:didUpdateExtensionToolbarAction:" ? [event.payload[0]?.id] : []);
+        assert([both.owned.A,both.owned.B].every(id => observedToolbarIDs.includes(id)),
+          "browser move precondition failed: no actual toolbar snapshots prove both fixture action models");
+        await phase("browser-move-B-left","browser-move","B",["B","A"],"A");
+        await phase("browser-move-B-same","browser-move","B",["B","A"],"B");
+        await phase("browser-move-B-right","browser-move","B",["A","B"],"A");
+        await phase("browser-unpin-A","browser-unpin","A",["B"]);
+        await phase("browser-unpin-A-again","browser-unpin","A",["B"]);
+        await phase("browser-unpin-B","browser-unpin","B",[]);
+        const restoredPins = await phase("browser-pin-A-restore","browser-pin","A",["A"]);
+        assert(JSON.stringify(restoredPins.pinsAfter) === JSON.stringify(entryPins.pinsBefore),
+          "browser pin phase did not restore its full entry order");
+        run.uncovered = run.uncovered.filter(value => !value.startsWith("ArcBrowser pinExtension:"));
+        run.uncovered.push("Browser pin/unpin/move exercised only for enabled nonce-owned A/B; disabled/OTR/force-pinned/invalid-ID/index paths remain uncovered");
+      }
       const beforeCommand = effects.length;
       const command = await action("command-A", "command", { label: "A", command: "probe-command" });
       command.effects = await wait(() => { const events = effects.slice(beforeCommand).filter(event => event.agent === agent && event.label === "A" && event.value.kind === "command"); return events.length ? events : undefined; }, 8000);
@@ -431,6 +489,91 @@ try {
       clicked.effects = await wait(() => { const events = effects.slice(beforeAction).filter(event => event.agent === agent && event.label === "B" && event.value.kind === "action"); return events.length ? events : undefined; }, 8000);
       assert(clicked.effects[0].value.id === clicked.owned.B, "action effect not from installed fixture");
       assert(clicked.effects[0].value.tab?.url === fixtureURL && clicked.effects[0].value.tab?.idPresent === true, "probe precondition failed: action selected a different browser/tab; no activation attempted");
+      if (browserOmnibox) {
+        // All inventories below come from real action/omnibox extension listeners
+        // or CDP observations. Neither listener creates tabs/windows or navigates.
+        const proveInventory = (value: any, previous?: any) => {
+          assert(value?.nonce === token && [clicked.owned.A,clicked.owned.B].includes(value.id),
+            "omnibox inventory nonce/owned extension ID mismatch");
+          assert(Array.isArray(value.tabs) && value.tabs.length === 1 && Array.isArray(value.windows) && value.windows.length === 1,
+            "omnibox precondition requires exactly one actual tab/window; no activation or removal attempted");
+          const tab = value.tabs[0], window = value.windows[0];
+          assert(Number.isSafeInteger(tab.id) && Number.isSafeInteger(tab.windowId) && Number.isSafeInteger(window.id) &&
+            tab.id >= 0 && tab.windowId >= 0 && window.id >= 0 && tab.windowId === window.id && tab.url === fixtureURL && tab.active === true && tab.incognito === false &&
+            window.type === "normal" && window.incognito === false, "omnibox active tab/window is not the exact nonce fixture");
+          if (value.tab) assert(value.tab.id === tab.id && value.tab.windowId === window.id && value.tab.url === fixtureURL &&
+            value.tab.active === true && value.tab.incognito === false,"omnibox clicked tab differs from inventory");
+          if (previous) assert(tab.id === previous.tabs[0].id && window.id === previous.windows[0].id,
+            "omnibox changed actual tab/window identity");
+        };
+        const cdpFixture = async () => {
+          assert(pid && verifyAgentEndpoint(agent,port) === pid,"omnibox endpoint PID changed");
+          const page = await cdp!.targetCommand(target!,"Runtime.evaluate",{expression:`({url:location.href,token:document.querySelector('#fixture')?.dataset.token})`,returnByValue:true});
+          const value = (page.result as any)?.value;
+          assert(value?.url === fixtureURL && value?.token === token,"omnibox CDP target is no longer nonce fixture");
+          const window = await cdp!.request("Browser.getWindowForTarget",{targetId:target});
+          assert(typeof window.windowId === "number" && Number.isSafeInteger(window.windowId) && window.windowId >= 0,"omnibox CDP window identity missing");
+          return {targetId:target!,windowId:window.windowId,fixtureURL:value.url,nonce:value.token};
+        };
+        const initialPreflights = await wait(()=>{
+          const values=effects.slice(beforeAction).filter(event=>event.agent === agent && event.label === "B" && event.value.kind === "omnibox-preflight");
+          return values.length ? values : undefined;
+        },8000);
+        assert(initialPreflights.length === 1,"initial B action must have exactly one genuine inventory report");
+        clicked.omniboxPreflight = initialPreflights[0].value;
+        proveInventory(initialPreflights[0].value);
+        let previousSequence = initialPreflights[0].value.sequence;
+        assert(Number.isSafeInteger(previousSequence) && previousSequence > 0,"initial B action sequence missing");
+        const observedInputs: string[] = [];
+        for (let disposition = 0; disposition <= 11; ++disposition) {
+          const beforePreflight = effects.length;
+          const preflight = await action(`omnibox-preflight-${disposition}`,"action",{label:"B"});
+          preflight.effects = await wait(()=>{
+            const values=effects.slice(beforePreflight).filter(event=>event.agent===agent && event.label==="B" && event.value.kind==="omnibox-preflight");
+            return values.length ? values : undefined;
+          },8000);
+          assert(preflight.effects.length === 1 && preflight.effects[0].value.id === preflight.owned.B &&
+            preflight.effects[0].value.sequence === previousSequence + 1,"omnibox preflight stale/duplicate/foreign B effect");
+          const before = preflight.effects[0].value; previousSequence = before.sequence;
+          preflight.omniboxPreflight = before;
+          const realClicks = effects.slice(beforePreflight).filter(event=>event.agent===agent && event.label==="B" && event.value.kind==="action");
+          assert(realClicks.length===1 && realClicks[0].value.id===preflight.owned.B && realClicks[0].value.tab?.url===fixtureURL &&
+            realClicks[0].value.tab?.idPresent===true,"omnibox preflight ordinary B action effect missing or foreign");
+          preflight.effects = effects.slice(beforePreflight).filter(event=>event.agent===agent && event.label==="B" && ["action","omnibox-preflight"].includes(event.value.kind));
+          proveInventory(before,initialPreflights[0].value);
+          const cdpBefore = await cdpFixture();
+          assert(cdpBefore.windowId === before.windows[0].id,"omnibox CDP target belongs to another extension-reported window");
+          const inputText = `${token}/omnibox/${disposition}/π 東京 🧭`, beforeInput = effects.length;
+          assert(!observedInputs.includes(inputText),"omnibox input nonce reused"); observedInputs.push(inputText);
+          const entered = await action(`omnibox-${disposition}`,"browser-omnibox",{label:"A",disposition,inputText,fixtureURL});
+          entered.omniboxPreflight = before; entered.omniboxCDPBefore = cdpBefore;
+          entered.effects = await wait(()=>{
+            const values=effects.slice(beforeInput).filter(event=>event.agent===agent && event.label==="A" && event.value.kind==="omnibox" && event.value.input===inputText);
+            return values.length ? values : undefined;
+          },8000);
+          assert(entered.browserMatches === 1 && entered.browserOmniboxIdentityVerified === true &&
+            entered.browserOmniboxFixtureURL === fixtureURL &&
+            JSON.stringify(entered.browserOmniboxArguments) === JSON.stringify([entered.owned.A,inputText,disposition]),"omnibox real browser identity/arguments missing");
+          assert(entered.effects.length === 1,"omnibox duplicate input listener effects");
+          const effect = entered.effects[0].value;
+          assert(effect.id === entered.owned.A && effect.nonce === token && effect.input === inputText &&
+            typeof effect.disposition === "string" && effect.argumentCount >= 2 && Number.isSafeInteger(effect.argumentCount) &&
+            Array.isArray(effect.argumentTypes) && effect.argumentTypes.length === effect.argumentCount &&
+            effect.argumentTypes[0] === "string" && effect.argumentTypes[1] === "string" &&
+            effect.argumentTypes.slice(2).every((type:string)=>type === "undefined"),"omnibox listener payload is foreign or malformed");
+          const expected = [2,9,10].includes(disposition) ? "newForegroundTab" : disposition === 3 ? "newBackgroundTab" : "currentTab";
+          assert(effect.disposition === expected,"omnibox listener disposition differs from native three-string projection");
+          proveInventory(effect,before);
+          entered.omniboxCDPAfter = await cdpFixture();
+          assert(JSON.stringify(entered.omniboxCDPAfter) === JSON.stringify(cdpBefore),"omnibox CDP nonce target/window changed");
+          assert(JSON.stringify(entered.pinsAfter) === JSON.stringify(clicked.pinsAfter),"omnibox changed full pin order");
+        }
+        const actualInputs = effects.filter(event=>event.agent===agent && event.value.kind==="omnibox");
+        assert(actualInputs.length === 12 && actualInputs.every(event=>event.label==="A" && event.value.id===clicked.owned.A && event.value.nonce===token && observedInputs.includes(event.value.input)) &&
+          new Set(actualInputs.map(event=>event.value.input)).size===12,"omnibox phase has duplicate/foreign/stale input effects");
+        run.uncovered = run.uncovered.filter(value=>!value.startsWith("ArcBrowser triggerExtensionOmniboxInput:"));
+        run.uncovered.push("Omnibox valid Arc ordinals 0..11 observed only through three native onInputEntered strings; internal window/popup/OTR casts and independent activeTab permission changes remain unproved");
+      }
       const js = await action("background-js-MV3", "background-js", { label: "A" });
       assert(js.value === false, "MV3 worker unexpectedly treated as background page");
       const disabled = await action("disable-A", "disable", { label: "A" });
@@ -512,20 +655,34 @@ try {
           if (!Number.isInteger(begin) || !Number.isInteger(end) || begin < 0 || end < begin || end > raw.length ||
               (begin && raw[begin - 1] !== 10) || (end > begin && raw[end - 1] !== 10)) { run.errors.push(`${value.step}: invalid recorder span`); continue; }
           const slice = raw.subarray(begin, end); writeFileSync(join(dir, `${value.step}.raw.record.jsonl`), slice);
-          // Preserve true caller labels. V2 omits probe-image calls; retained
-          // app/engine events are supplementary and cannot prove that public
-          // fixture calls and returns were recorded.
+          // Preserve true caller labels. This projection and the default
+          // comparator exclude some probe calls; raw v2 inputs retain them.
+          // Retained app/engine events are supplementary. Fixture coverage
+          // additionally requires a verified paired public-call inventory.
           const selected = slice.toString().split("\n").filter(Boolean).map(line => JSON.parse(line)).filter(event =>
             boundaryClasses.has(event.cls) || callbackSelectors.has(event.sel) ||
             (event.cls === "ArcBrowser" && event.sel === "executeExtensionAction:"));
           writeFileSync(join(dir, `${value.step}.record.jsonl`), selected.map(event => JSON.stringify(event)).join("\n") + (selected.length ? "\n" : ""));
           writeFileSync(join(dir, `${value.step}.retained-row-inventory.json`), JSON.stringify({
-            fixtureMethodCoverage:"unsupported: recorder v2 excludes probe image calls; no caller-attribution opt-in or verified fixture-call/return inventory", fixtureMethodInventory:[],
+            fixtureMethodCoverage:"unavailable: scoped projection/default comparator exclude probe calls; raw v2 inputs retain them, but no fixture admission or verified paired call/return inventory is applied", fixtureMethodInventory:[],
             retainedRows:selected.map(({dir,ev,kind,cls,sel,from}:any)=>({dir,ev,kind,cls,sel,from})),
           },null,2));
         }
       }
       for (const observed of run.actions) writeFileSync(join(dir,`${observed.step}.required-rows.json`),JSON.stringify(requiredRows(observed),null,2));
+      if (browserOmnibox) {
+        const attempts = run.actions.filter(value=>value.operation === "browser-omnibox");
+        const preflights = effects.filter(event=>event.agent===agent && event.value.kind==="omnibox-preflight");
+        const expectedPreflights = run.actions.filter(value=>value.step==="action-B" || value.step.startsWith("omnibox-preflight-")).length;
+        if (preflights.length!==expectedPreflights || preflights.some((event,index)=>event.label!=="B" || event.value.id!==run.ownership?.owned?.B ||
+            event.value.nonce!==token || event.value.sequence!==index+1))
+          run.errors.push("omnibox late/duplicate/foreign/missing genuine B preflight effects; partial evidence retained");
+        const entered = effects.filter(event=>event.agent===agent && event.value.kind==="omnibox");
+        const expected = attempts.map(value=>value.browserOmniboxArguments?.[1]).filter(value=>typeof value === "string");
+        if (entered.length !== expected.length || new Set(entered.map(event=>event.value.input)).size !== entered.length ||
+            entered.some(event=>event.label!=="A" || event.value.id!==run.ownership?.owned?.A || event.value.nonce!==token || !expected.includes(event.value.input)))
+          run.errors.push("omnibox late/duplicate/foreign/missing actual listener effects; partial evidence retained");
+      }
       writeFileSync(join(dir, "observations.json"), JSON.stringify(run, null, 2));
       writeFileSync(join(dir, "effects.json"), JSON.stringify(effects.filter(event => event.agent === agent), null, 2));
     }
@@ -549,7 +706,7 @@ function semantic(action: Action) {
     return { selector: event.selector, payload, mainThread: event.mainThread, synchronous: event.synchronous };
   };
   const callbacks = (action.callbacks ?? []).map(scopeCallback).filter(Boolean);
-  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value"];
+  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value", "browserPinSelector", "browserPinABI", "browserPinLabel", "browserPinArguments", "browserPinAnchorLabel", "browserPinIdentityVerified", "browserPinBaselineBeforePreserved", "browserPinBaselineAfterPreserved", "browserOmniboxSelector", "browserOmniboxABI", "browserOmniboxArguments", "browserOmniboxIdentityVerified", "browserOmniboxFixtureURL", "omniboxPreflight", "omniboxCDPBefore", "omniboxCDPAfter"];
   const result: Record<string, any> = Object.fromEntries(keep.filter(key => key in action).map(key => [key, action[key]]));
   result.callbacks = callbacks;
   result.eventOrder = (action.events ?? []).flatMap((event: any) => {
@@ -557,6 +714,7 @@ function semantic(action: Action) {
     const callback = scopeCallback(event.value);
     return callback ? [{ type: "delegate", value: callback }] : [];
   });
+  if ("pinsBefore" in action) result.fixturePinsBefore = action.pinsBefore.filter(own);
   result.fixturePinsAfter = (action.pinsAfter ?? []).filter(own);
   if ("baselinePins" in action) result.fixtureBaselinePins = action.baselinePins === null ? null : action.baselinePins.filter(own);
   if (action.effects) result.effects = action.effects.map(({ label, value }: any) => ({ label, value }));
@@ -582,7 +740,7 @@ if (golden && ours) {
     if (!leftRows?.complete || !rightRows?.complete || JSON.stringify(leftRows) !== JSON.stringify(rightRows)) requiredRowDifferences.push({step,golden:leftRows,ours:rightRows});
     const leftPath = join(out, "trace156", `${step}.record.jsonl`), rightPath = join(out, "ours156", `${step}.record.jsonl`);
     if (!existsSync(leftPath) || !existsSync(rightPath)) { boundaryDiffs.push({ step, error: "missing scoped record" }); continue; }
-    boundaryUnavailable.push({step,reason:"no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"});
+    boundaryUnavailable.push({step,reason:"no verified paired fixture-call/return inventory: scoped projection/default comparator exclude probe calls; raw v2 inputs retain them, but retained comparison rows do not prove fixture method coverage"});
     if (!readFileSync(leftPath,"utf8").trim() && !readFileSync(rightPath,"utf8").trim()) continue;
     const diffPath = join(out, `${step}.diff.json`);
     const diff = Bun.spawnSync(["python3", join(root, "tests/recorder/diff.py"), leftPath, rightPath, "--json", diffPath], { stdout: "pipe", stderr: "pipe" });
@@ -613,21 +771,23 @@ const comparedOperationCount = golden && ours ? golden.actions.filter(left => {
 }).length : 0;
 const observedParity = golden && ours ? (differences.length || requiredRowDifferences.length ? false : comparedOperationCount > 0 ? true : null) : null;
 const standardBoundaryParity = golden && ours ? (boundaryDiffs.length ? false : comparedOperationCount > 0 && !boundaryUnavailable.length ? true : null) : null;
-// No v2 fixture-caller inventory is available. Never promote unrelated retained
+// No verified paired fixture-caller inventory is applied. Never promote unrelated retained
 // rows or an empty default diff to public API call/return proof.
 const boundaryMethodParity = null;
 const parity = golden && ours ? (!complete || observedParity === false || standardBoundaryParity === false ? false : boundaryMethodParity) : null;
 const notes = [
-  "Both disposable launches include --no-error-dialogs as an explicit fixture environment precondition, suppressing modal install-error presentation while preserving native LoadErrorReporter errors/callbacks. No fake errors or callback substitutions are used.",
+  diagnosticDisableFieldTrialConfig ? "DIAGNOSTIC environment: both engines explicitly receive --disable-field-trial-config. This tests an explicit launch condition; it does not establish default startup behavior or integrate the lead-owned bootstrap policy." : "Default fixture environment: no explicit field-trial-config switch is supplied by this helper.",
+  "Both disposable launches include Chromium's --noerrdialogs (base::switches::kNoErrorDialogs) as an explicit fixture environment precondition, suppressing modal install-error presentation while preserving native LoadErrorReporter errors/callbacks. This does not establish default hosted warning-presentation parity.",
   "Command-line mode is a separate fixture phase using explicit --load-extension paths, not public-install success evidence. Startup intents and exact fixture file hashes are recorded before launch; all real callbacks entering before adoption are independently retained as startup-observation diagnostics, including callbacks during incomplete discovery requests and compared separately without reassigning them to later requests; adopted IDs/names/versions come only from actual public native info. Readiness alone never resolves a missing startup fixture. CLI baseline pins exclude only adopted IDs. Positive command/pin/popup probes precede reload; the returned reload enabled state is preserved exactly because current Chromium may convert command-line loading to normal unpacked policy.",
-  "Default public-install retains malformed-manifest installation before public enable. Separate CLI mode moves this error diagnostic after positive command/pin/popup and reload observations; the same ordering applies to both engines. Failed install requests trigger a bounded passive one-second sample only after exact owned PID/executable/endpoint verification, before cleanup. Sample failure remains a diagnostic; native completion/ownership assertions are unchanged. The recorded --no-error-dialogs precondition does not prove a warning dialog caused a stall.",
+  "Default public-install retains malformed-manifest installation before public enable. Separate CLI mode moves this error diagnostic after positive command/pin/popup and reload observations; the same ordering applies to both engines. Failed install requests trigger a bounded passive one-second sample only after exact owned PID/executable/endpoint verification, before cleanup. Sample failure remains a diagnostic; native completion/ownership assertions are unchanged.",
   "Supplemental probe only; canonical extensions scenario acceptance remains separate.",
   "Native metadata encodings and fixture DTO scalar/string/ordered-array observations compare exactly; image observations include NSImage dimensions and representation sizes, not pixel equivalence.",
   "Semantic comparison omits transport PID/request IDs, recorder offsets and engine labels; callback and pin arrays are scoped to proven fixture IDs. Each baseline pin order is independently restored and asserted.",
-  "Recorder v2 excludes probe-image calls. Exact helper semantic and required-row sidecars are a separate evidence stream, not synthetic recorder rows. Without a verified paired fixture-call/return inventory, standardBoundaryParity and boundaryMethodParity remain null even if retained app/engine rows compare cleanly. Known mismatches remain false and dominate unavailable coverage. At least one valid paired helper observation is required for observedParity.",
-  "Scoped boundary records preserve true caller labels and may include real app callbacks or app/engine calls. V2 excludes probe-image DTO getters/public calls; no fake app attribution or caller-label removal is used.",
+  "Raw v2 recordings retain probe-origin calls. The current scoped projection and default comparator exclude probe calls; no fixture admission or verified paired call/return inventory is applied. Exact helper semantic and required-row sidecars remain a separate evidence stream. Without that inventory, standardBoundaryParity and boundaryMethodParity remain null even if retained comparison rows are clean. Known mismatches remain false and dominate unavailable coverage. At least one valid paired helper observation is required for observedParity.",
+  "Scoped boundary records preserve true caller labels and may include real app callbacks or app/engine calls. Their class/selector projection excludes some public calls; the default comparator also excludes probe origins. Full raw inputs are retained separately. No synthetic recorder rows, fake app attribution or caller-label removal is used.",
   "Existing diff.py renumbers recording object identities and masks loopback ports, temporary folders and UUID strings. The exact supplemental semantic comparison applies none of those string masks.",
-  "ArcBrowser pinExtension:, unpinExtension:, moveExtension:targetIndex: are metadata-only here; their executable behavior is uncovered. Context setPinnedExtensionOrder: is exercised separately when the native enable precondition permits it.",
+  browserPins ? "Explicit --browser-pins CLI phase calls real browser pin/unpin/move selectors only on enabled nonce-owned A/B, with exact service/browser identity, Q target ABI, actual before/after ordered snapshots, untouched baseline assertions, and no synthetic callbacks; default sequence and original cleanup remain. Invalid/disabled/OTR/force-pinned paths remain uncovered." : "ArcBrowser pinExtension:, unpinExtension:, moveExtension:targetIndex: are metadata-only here; their executable behavior is uncovered. Context setPinnedExtensionOrder: is exercised separately when the native enable precondition permits it.",
+  browserOmnibox ? "Explicit --browser-omnibox CLI phase uses real B-action preflight inventories then actual A omnibox calls for ordinals0..11. Both fixtures and exact browser/service are reverified each call; the sole actual nonce tab/window must retain identity. Input/nonce/listener strings and raw actual tab/window/CDP IDs remain in evidence/semantic comparison, so native SessionID differences can remain mismatches. Three event strings do not prove internal disposition casts/window behavior or an independent permission grant; v2 method inventory remains unknown." : "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: is metadata-only; executable behavior remains uncovered.",
   "MV3 background-page JavaScript negative path only; positive legacy background-page execution is uncovered and no legacy fixture is enabled.",
   "Browser captures retain all weak live browser/delegate entries per context; ambiguous selection fails a probe precondition. Action-B onClicked effects must prove a real numeric tab ID and the exact nonce fixture URL; no activation is attempted.",
   "Context command dispatch targets an enabled extension, supplies only its command string, sets user gesture, and has no target-tab or independent activeTab permission-grant coverage. Listener argumentCount/types and noTab are retained exactly; optional undefined binding padding is observed rather than invented or normalized.",

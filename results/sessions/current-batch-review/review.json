@@ -1,0 +1,443 @@
+{
+  "scope": "Independent read-only verification of already completed batch. Original recorded discard remains supplemental, not canonical golden or paired service parity. Only this review directory written.",
+  "checks": {
+    "originalCloseRowsExact": true,
+    "originalCloseReturnPaired": true,
+    "originalCloseSameWC": true,
+    "originalCloseMain": true,
+    "originalSynchronousClaim": true,
+    "originalCloseExactlyOnce": true,
+    "oursCloseRowsExact": true,
+    "oursCloseReturnPaired": true,
+    "oursCloseSameWC": true,
+    "oursCloseMain": true,
+    "oursSynchronousClaim": true,
+    "oursCloseExactlyOnce": true,
+    "discardTimelineExact": true,
+    "discardTimelineMain": true,
+    "discardReturnPaired": true,
+    "finalizeReturnPaired": true,
+    "sameWrapperBoolean": true,
+    "stateOne": true,
+    "selectedRowsExact": true,
+    "selectedServiceRowsExact": true,
+    "selectedWindowIncludesFinalizeReturn": true,
+    "sameCachedMedia": true,
+    "sameCachedNavigation": true,
+    "sameWrapperChangedLiveID": true,
+    "exactHistory": true,
+    "cleanupGracefulNoTerm": true,
+    "frozenInputHashesMatch": true,
+    "originalFrameworkBeforeAfterMatch": true,
+    "explicitFinalizeReturnExact": true
+  },
+  "verifiedClose": {
+    "original": {
+      "transcript": "results/golden/arc-1.170-sessions-public-api/launch-1/record.jsonl",
+      "call": {
+        "seq": 6136,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#148>",
+        "args": []
+      },
+      "return": {
+        "seq": 6489,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#148>",
+        "ret": null
+      },
+      "callback": {
+        "seq": 6138,
+        "ev": "call",
+        "thread": "main",
+        "depth": 3,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:didCloseWithSessionID:",
+        "self": "<ADK.WebContentChromium#156>",
+        "args": [
+          "<ArcWebContents#148>",
+          "<ArcSessionID#222>"
+        ]
+      },
+      "callbackReturns": [
+        {
+          "seq": 6483,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 3,
+          "from": "engine",
+          "dir": "engine->app",
+          "cls": "ADK.WebContentChromium",
+          "kind": "-",
+          "sel": "webContents:didCloseWithSessionID:",
+          "self": "<ADK.WebContentChromium#156>",
+          "ret": null
+        }
+      ],
+      "restoredCallbacksObserved": 1
+    },
+    "ours": {
+      "transcript": "results/sessions/canonical-public-api-run1/launch-1/record.jsonl",
+      "call": {
+        "seq": 6380,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#129>",
+        "args": []
+      },
+      "return": {
+        "seq": 6381,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#129>",
+        "ret": null
+      },
+      "callback": {
+        "seq": 6428,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:didCloseWithSessionID:",
+        "self": "<ADK.WebContentChromium#137>",
+        "args": [
+          "<ArcWebContents#129>",
+          "<ArcSessionID#194>"
+        ]
+      },
+      "callbackReturns": [
+        {
+          "seq": 6773,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 1,
+          "from": "engine",
+          "dir": "engine->app",
+          "cls": "ADK.WebContentChromium",
+          "kind": "-",
+          "sel": "webContents:didCloseWithSessionID:",
+          "self": "<ADK.WebContentChromium#137>",
+          "ret": null
+        }
+      ],
+      "restoredCallbacksObserved": 0
+    }
+  },
+  "verifiedDiscard": {
+    "transcript": "results/sessions/discard-recorded-original-run1/record.jsonl",
+    "selectedWC": "<ArcWebContents#137>",
+    "timeline": [
+      {
+        "seq": 6236,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "arccore-sessions-discard-probe.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "discard",
+        "self": "<ArcWebContents#137>",
+        "args": []
+      },
+      {
+        "seq": 6237,
+        "ev": "call",
+        "thread": "main",
+        "depth": 2,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContentsPiPControllerDestroyed:",
+        "self": "<ADK.WebContentChromium#145>",
+        "args": [
+          "<ArcWebContents#137>"
+        ]
+      },
+      {
+        "seq": 6279,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "arccore-sessions-discard-probe.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "discard",
+        "self": "<ArcWebContents#137>",
+        "ret": null
+      },
+      {
+        "seq": 6304,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "setFavicon:",
+        "self": "<ArcWebContents#137>",
+        "args": [
+          null
+        ]
+      },
+      {
+        "seq": 6310,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "setTabTraits:",
+        "self": "<ArcWebContents#137>",
+        "args": [
+          "<NSMutableIndexSet#227>"
+        ]
+      },
+      {
+        "seq": 6316,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "setState:",
+        "self": "<ArcWebContents#137>",
+        "args": [
+          1
+        ]
+      },
+      {
+        "seq": 6384,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "arccore-sessions-discard-probe.dylib",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:finalizeDiscardRequest:",
+        "self": "<ADK.WebContentChromium#145>",
+        "args": [
+          "<ArcWebContents#137>",
+          true
+        ]
+      },
+      {
+        "seq": 6385,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "arccore-sessions-discard-probe.dylib",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:finalizeDiscardRequest:",
+        "self": "<ADK.WebContentChromium#145>",
+        "ret": null
+      }
+    ],
+    "serviceGetterReturns": [
+      {
+        "seq": 3666,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 2,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "devTools",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsDevTools#146>"
+      },
+      {
+        "seq": 3670,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 2,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "mediaSession",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsMediaSession#147>"
+      },
+      {
+        "seq": 3676,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 2,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "navigationController",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsNavigationController#148>"
+      },
+      {
+        "seq": 3682,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 2,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "boostIDE",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsBoostIDE#149>"
+      },
+      {
+        "seq": 6361,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "mediaSession",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsMediaSession#147>"
+      },
+      {
+        "seq": 7591,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "navigationController",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsNavigationController#148>"
+      }
+    ],
+    "identityAfterFinalize": {
+      "beforeSessionID": "2138339481",
+      "selectedAfterSessionID": "2138339482",
+      "callbackAfterSessionID": "2138339482",
+      "matchingLiveCount": 1,
+      "liveSessionID": "2138339482",
+      "liveWrapperSameAsSelected": true,
+      "liveSessionIDSameAsBefore": false
+    },
+    "identityAfterReload": {
+      "beforeSessionID": "2138339481",
+      "selectedAfterSessionID": "2138339482",
+      "callbackAfterSessionID": "2138339482",
+      "matchingLiveCount": 1,
+      "liveSessionID": "2138339482",
+      "liveWrapperSameAsSelected": true,
+      "liveSessionIDSameAsBefore": false
+    },
+    "history": {
+      "index": 1,
+      "pages": [
+        "FIXTURE/A",
+        "FIXTURE/B",
+        "FIXTURE/C"
+      ],
+      "titles": [
+        "Discard A",
+        "Discard B",
+        "Discard C"
+      ]
+    },
+    "cleanup": {
+      "pid": 54169,
+      "birth": "Fri Oct 23 05:34:05 2026",
+      "graceful": true,
+      "term": false
+    },
+    "selectedPDFThumbnailGetterCalls": []
+  },
+  "provenance": {
+    "fixtures": {
+      "/tmp/arccore-sessions-discard-recorded-v7.ts": {
+        "expected": "186230aef2e2fafc2aab237355e272166065037bcd2facb4c019299b88bfaee3",
+        "current": "186230aef2e2fafc2aab237355e272166065037bcd2facb4c019299b88bfaee3"
+      },
+      "/tmp/arccore-sessions-discard-probe.mm": {
+        "expected": "1f845887b3fe779398838495e37fcb72817f6f29c8d9b82893fc1490c2be718e",
+        "current": "1f845887b3fe779398838495e37fcb72817f6f29c8d9b82893fc1490c2be718e"
+      },
+      "/tmp/arccore-sessions-discard-probe.dylib": {
+        "expected": "16e8c77ccd7e3bd72dfdfc442cc99865c70270c8c9a7ef41d952a3bcb34e0546",
+        "current": "16e8c77ccd7e3bd72dfdfc442cc99865c70270c8c9a7ef41d952a3bcb34e0546"
+      },
+      "/Users/cryogenicplanet/general/arc-engine/tests/recorder/ArcEngineRecorder.dylib": {
+        "expected": "fee95e1339e8c1aa2ecf1fcb0e9ebf1137efe64193031b60ead9c110677bba9a",
+        "current": "fee95e1339e8c1aa2ecf1fcb0e9ebf1137efe64193031b60ead9c110677bba9a"
+      }
+    },
+    "originalFramework": [
+      "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d  ../arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
+    ]
+  },
+  "limits": [
+    "Canonical original close callback is synchronous; replacement callback is asynchronous. Replacement scenario aborts its synchronous-close assertion before restore, so missing restores there are not independently exercised restoration failures.",
+    "Recorded original discard uses unchanged public probe plus standard recorder. Probe wraps the actual canonical finalize method, records sidecar state, and forwards captured IMP once. Raw callback from=image is probe, not native engine.",
+    "No canonical golden or replacement service parity is established by supplemental original discard.",
+    "Media/navigation object identity is observed only at getter-return level; no proof that native service bindings migrated correctly.",
+    "Navigation return7591 is later than discard/finalize and in the run after reload workflow; rawseq has no exact phase timestamp, so do not attribute it to discard or reload alone.",
+    "No selected-wrapper PDF or thumbnail getter coverage. No inference of absence/lifecycle correctness for those services.",
+    "PiP-controller destroyed callback is observed, but fixture is background HTML with no active PiP/PDF/audio claim.",
+    "A/B/C history/index1 and titles match before, after discard, after reload; this is navigation history evidence, not serialized metadata or physical back/forward traversal coverage.",
+    "Original framework hashes match before/after; frozen input hashes match current files. This is batch provenance, not compiler reproducibility or later production state."
+  ],
+  "resolvedFindings": [
+    {
+      "severity": "P2",
+      "kind": "evidence presentation",
+      "path": "results/sessions/discard-recorded-original-run1/selected-boundary-window.json",
+      "jsonPointer": "/events",
+      "description": "scope says through finalize forwarded return inclusive and endSeq=6385, but /events omits paired finalize ret6385; raw transcript and this independent review retain it. Include the delegate return explicitly or qualify selected-row filtering. No runtime/result contradiction.",
+      "status": "corrected by parent before handoff; selected events now include callback returns and explicit finalizeReturn6385"
+    }
+  ],
+  "findings": [],
+  "handoffSelectedScope": "Actual selected WC rows plus paired returns of its genuine callbacks, discard call through forwarded finalize return inclusive; no post-finalize/reload or unobserved service absence claim"
+}

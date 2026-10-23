@@ -1,0 +1,365 @@
+{
+  "close": {
+    "original": {
+      "transcript": "results/golden/arc-1.170-sessions-public-api/launch-1/record.jsonl",
+      "call": {
+        "seq": 6136,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#148>",
+        "args": []
+      },
+      "return": {
+        "seq": 6489,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#148>",
+        "ret": null
+      },
+      "callback": {
+        "seq": 6138,
+        "ev": "call",
+        "thread": "main",
+        "depth": 3,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:didCloseWithSessionID:",
+        "self": "<ADK.WebContentChromium#156>",
+        "args": [
+          "<ArcWebContents#148>",
+          "<ArcSessionID#222>"
+        ]
+      },
+      "callbackReturns": [
+        {
+          "seq": 6483,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 3,
+          "from": "engine",
+          "dir": "engine->app",
+          "cls": "ADK.WebContentChromium",
+          "kind": "-",
+          "sel": "webContents:didCloseWithSessionID:",
+          "self": "<ADK.WebContentChromium#156>",
+          "ret": null
+        }
+      ],
+      "restoredCallbacksObserved": 1
+    },
+    "ours": {
+      "transcript": "results/sessions/canonical-public-api-run1/launch-1/record.jsonl",
+      "call": {
+        "seq": 6380,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#129>",
+        "args": []
+      },
+      "return": {
+        "seq": 6381,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#129>",
+        "ret": null
+      },
+      "callback": {
+        "seq": 6428,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:didCloseWithSessionID:",
+        "self": "<ADK.WebContentChromium#137>",
+        "args": [
+          "<ArcWebContents#129>",
+          "<ArcSessionID#194>"
+        ]
+      },
+      "callbackReturns": [
+        {
+          "seq": 6773,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 1,
+          "from": "engine",
+          "dir": "engine->app",
+          "cls": "ADK.WebContentChromium",
+          "kind": "-",
+          "sel": "webContents:didCloseWithSessionID:",
+          "self": "<ADK.WebContentChromium#137>",
+          "ret": null
+        }
+      ],
+      "restoredCallbacksObserved": 0
+    }
+  },
+  "discard": {
+    "transcript": "results/sessions/discard-recorded-original-run1/record.jsonl",
+    "selectedWC": "<ArcWebContents#137>",
+    "timeline": [
+      {
+        "seq": 6236,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "arccore-sessions-discard-probe.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "discard",
+        "self": "<ArcWebContents#137>",
+        "args": []
+      },
+      {
+        "seq": 6237,
+        "ev": "call",
+        "thread": "main",
+        "depth": 2,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContentsPiPControllerDestroyed:",
+        "self": "<ADK.WebContentChromium#145>",
+        "args": [
+          "<ArcWebContents#137>"
+        ]
+      },
+      {
+        "seq": 6279,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "arccore-sessions-discard-probe.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "discard",
+        "self": "<ArcWebContents#137>",
+        "ret": null
+      },
+      {
+        "seq": 6304,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "setFavicon:",
+        "self": "<ArcWebContents#137>",
+        "args": [
+          null
+        ]
+      },
+      {
+        "seq": 6310,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "setTabTraits:",
+        "self": "<ArcWebContents#137>",
+        "args": [
+          "<NSMutableIndexSet#227>"
+        ]
+      },
+      {
+        "seq": 6316,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "setState:",
+        "self": "<ArcWebContents#137>",
+        "args": [
+          1
+        ]
+      },
+      {
+        "seq": 6384,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "arccore-sessions-discard-probe.dylib",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:finalizeDiscardRequest:",
+        "self": "<ADK.WebContentChromium#145>",
+        "args": [
+          "<ArcWebContents#137>",
+          true
+        ]
+      },
+      {
+        "seq": 6385,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "arccore-sessions-discard-probe.dylib",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:finalizeDiscardRequest:",
+        "self": "<ADK.WebContentChromium#145>",
+        "ret": null
+      }
+    ],
+    "serviceGetterReturns": [
+      {
+        "seq": 3666,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 2,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "devTools",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsDevTools#146>"
+      },
+      {
+        "seq": 3670,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 2,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "mediaSession",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsMediaSession#147>"
+      },
+      {
+        "seq": 3676,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 2,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "navigationController",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsNavigationController#148>"
+      },
+      {
+        "seq": 3682,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 2,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "boostIDE",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsBoostIDE#149>"
+      },
+      {
+        "seq": 6361,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "mediaSession",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsMediaSession#147>"
+      },
+      {
+        "seq": 7591,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "app",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "navigationController",
+        "self": "<ArcWebContents#137>",
+        "ret": "<ArcWebContentsNavigationController#148>"
+      }
+    ],
+    "identityAfterFinalize": {
+      "beforeSessionID": "2138339481",
+      "selectedAfterSessionID": "2138339482",
+      "callbackAfterSessionID": "2138339482",
+      "matchingLiveCount": 1,
+      "liveSessionID": "2138339482",
+      "liveWrapperSameAsSelected": true,
+      "liveSessionIDSameAsBefore": false
+    },
+    "identityAfterReload": {
+      "beforeSessionID": "2138339481",
+      "selectedAfterSessionID": "2138339482",
+      "callbackAfterSessionID": "2138339482",
+      "matchingLiveCount": 1,
+      "liveSessionID": "2138339482",
+      "liveWrapperSameAsSelected": true,
+      "liveSessionIDSameAsBefore": false
+    },
+    "history": {
+      "index": 1,
+      "pages": [
+        "FIXTURE/A",
+        "FIXTURE/B",
+        "FIXTURE/C"
+      ],
+      "titles": [
+        "Discard A",
+        "Discard B",
+        "Discard C"
+      ]
+    },
+    "cleanup": {
+      "pid": 54169,
+      "birth": "Fri Oct 23 05:34:05 2026",
+      "graceful": true,
+      "term": false
+    },
+    "selectedPDFThumbnailGetterCalls": []
+  }
+}

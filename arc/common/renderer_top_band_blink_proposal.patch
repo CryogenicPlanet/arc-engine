@@ -1,0 +1,1032 @@
+--- a/chromium/src/third_party/blink/renderer/core/frame/local_frame_view.cc
++++ b/chromium/src/third_party/blink/renderer/core/frame/local_frame_view.cc
+@@ -25,6 +25,7 @@
+  */
+ 
+ #include "third_party/blink/renderer/core/frame/local_frame_view.h"
++#include "third_party/blink/renderer/core/frame/arc_top_band_color_tracker.h"
+ 
+ #include <algorithm>
+ #include <memory>
+@@ -1093,6 +1094,9 @@
+   }
+ 
+   RunCanvasOnpaintSteps();
++  if (auto* tracker = frame_->GetTopBandColorTracker()) {
++    tracker->FireDetection();
++  }
+ }
+ 
+ void LocalFrameView::RunCanvasOnpaintSteps() {
+@@ -5264,6 +5268,14 @@
+ }
+ 
+ void LocalFrameView::MaybeStopDeferringCommitsWithoutContentfulPaint() {
++  // Native parsing-plus-first-paint readiness precedes upstream FCP gates.
++  if (auto* tracker = frame_->GetTopBandColorTracker()) {
++    auto* document = frame_->GetDocument();
++    if (document && document->HasFinishedParsing() &&
++        !PaintTiming::From(*document).FirstPaintRendered().is_null()) {
++      tracker->OnParsingAndFirstPaintReady();
++    }
++  }
+   if (!RuntimeEnabledFeatures::
+           ReleasePaintHoldingWithoutContentfulPaintEnabled()) {
+     return;
+--- a/chromium/src/third_party/blink/renderer/core/frame/frame_client.h
++++ b/chromium/src/third_party/blink/renderer/core/frame/frame_client.h
+@@ -4,6 +4,9 @@
+ 
+ #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_CLIENT_H_
+ #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_CLIENT_H_
++
++#include <cstdint>
++#include <optional>
+ 
+ #include "base/unguessable_token.h"
+ #include "third_party/blink/renderer/core/core_export.h"
+@@ -30,6 +33,12 @@
+   // tab causes the document width to change, or loading additional content
+   // causes the document height to increase. Only invoked on the outermost main
+   // frame.
++  // Native TopBand producer output. The token identifies a sampling candidate,
++  // not a frame; presentation-only stabilization remains inside Blink.
++  virtual void OnArcTopBandColorChanged(
++      std::optional<uint32_t> color, bool request_surface_sample, uint64_t token,
++      bool reuse_cached_color, bool crossfade) {}
++
+   virtual void OnMainFrameRectangleChanged(const gfx::Rect& main_frame_rect) {}
+ 
+   // Called when the main frame's viewport rectangle (the viewport dimensions
+--- a/chromium/src/third_party/blink/public/web/web_local_frame_client.h
++++ b/chromium/src/third_party/blink/public/web/web_local_frame_client.h
+@@ -547,6 +547,12 @@
+   // tab causes the document width to change, or loading additional content
+   // causes the document height to increase. Only invoked on the outermost main
+   // frame.
++  // Native TopBand producer output. The token identifies a sampling candidate,
++  // not a frame; presentation-only stabilization remains inside Blink.
++  virtual void OnArcTopBandColorChanged(
++      std::optional<uint32_t> color, bool request_surface_sample, uint64_t token,
++      bool reuse_cached_color, bool crossfade) {}
++
+   virtual void OnMainFrameRectangleChanged(const gfx::Rect& main_frame_rect) {}
+ 
+   // Called when the main frame's viewport rectangle (the viewport dimensions
+--- a/chromium/src/content/public/renderer/render_frame_observer.h
++++ b/chromium/src/content/public/renderer/render_frame_observer.h
+@@ -342,6 +342,12 @@
+   // tab causes the document width to change, or loading additional content
+   // causes the document height to increase. Only invoked on the outermost main
+   // frame.
++  // Native TopBand producer output. The token identifies a sampling candidate,
++  // not a frame; presentation-only stabilization remains inside Blink.
++  virtual void OnArcTopBandColorChanged(
++      std::optional<uint32_t> color, bool request_surface_sample, uint64_t token,
++      bool reuse_cached_color, bool crossfade) {}
++
+   virtual void OnMainFrameRectangleChanged(const gfx::Rect& main_frame_rect) {}
+ 
+   // Called when the main frame's viewport rectangle (the viewport dimensions
+--- a/chromium/src/third_party/blink/renderer/core/frame/local_frame_client_impl.h
++++ b/chromium/src/third_party/blink/renderer/core/frame/local_frame_client_impl.h
+@@ -263,6 +263,10 @@
+ 
+   void FocusedElementChanged(Element* element) override;
+ 
++  void OnArcTopBandColorChanged(
++      std::optional<uint32_t> color, bool request_surface_sample, uint64_t token,
++      bool reuse_cached_color, bool crossfade) override;
++
+   void OnMainFrameRectangleChanged(const gfx::Rect& main_frame_rect) override;
+ 
+   void OnMainFrameViewportRectangleChanged(
+--- a/chromium/src/content/renderer/render_frame_impl.h
++++ b/chromium/src/content/renderer/render_frame_impl.h
+@@ -573,6 +573,10 @@
+   void DidChangeSelection(bool is_empty_selection,
+                           blink::SyncCondition force_sync) override;
+   void FocusedElementChanged(const blink::WebElement& element) override;
++  void OnArcTopBandColorChanged(
++      std::optional<uint32_t> color, bool request_surface_sample, uint64_t token,
++      bool reuse_cached_color, bool crossfade) override;
++
+   void OnMainFrameRectangleChanged(const gfx::Rect& main_frame_rect) override;
+   void OnMainFrameViewportRectangleChanged(
+       const gfx::Rect& main_frame_viewport_rect) override;
+--- a/chromium/src/third_party/blink/renderer/core/frame/local_frame_client_impl.cc
++++ b/chromium/src/third_party/blink/renderer/core/frame/local_frame_client_impl.cc
+@@ -1189,6 +1189,15 @@
+   web_frame_->Client()->FocusedElementChanged(element);
+ }
+ 
++void LocalFrameClientImpl::OnArcTopBandColorChanged(
++    std::optional<uint32_t> color, bool request_surface_sample, uint64_t token,
++    bool reuse_cached_color, bool crossfade) {
++  DCHECK(web_frame_->Client());
++  DCHECK(web_frame_->GetFrame()->IsMainFrame());
++  web_frame_->Client()->OnArcTopBandColorChanged(
++      color, request_surface_sample, token, reuse_cached_color, crossfade);
++}
++
+ void LocalFrameClientImpl::OnMainFrameRectangleChanged(
+     const gfx::Rect& main_frame_rect) {
+   DCHECK(web_frame_->Client());
+--- a/chromium/src/content/renderer/render_frame_impl.cc
++++ b/chromium/src/content/renderer/render_frame_impl.cc
+@@ -4599,6 +4599,19 @@
+   SyncSelectionIfRequired(force_sync);
+ }
+ 
++void RenderFrameImpl::OnArcTopBandColorChanged(
++    std::optional<uint32_t> color, bool request_surface_sample, uint64_t token,
++    bool reuse_cached_color, bool crossfade) {
++  auto weak = weak_factory_.GetWeakPtr();
++  for (auto& observer : observers_) {
++    observer.OnArcTopBandColorChanged(
++        color, request_surface_sample, token, reuse_cached_color, crossfade);
++    if (!weak) {
++      return;
++    }
++  }
++}
++
+ void RenderFrameImpl::OnMainFrameRectangleChanged(
+     const gfx::Rect& main_frame_rect) {
+   if (main_frame_rect != main_frame_rect_) {
+--- a/chromium/src/cc/paint/BUILD.gn
++++ b/chromium/src/cc/paint/BUILD.gn
+@@ -9,6 +9,8 @@
+ cc_component("paint") {
+   output_name = "cc_paint"
+   sources = [
++    "arc_top_band_color_analyzer.cc",
++    "arc_top_band_color_analyzer.h",
+     "clear_for_opaque_raster.cc",
+     "clear_for_opaque_raster.h",
+     "color_filter.cc",
+--- a/chromium/src/third_party/blink/public/common/features.h
++++ b/chromium/src/third_party/blink/public/common/features.h
+@@ -42,6 +42,8 @@
+ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+     kAIPageContentMissingSubframesFailSilently);
+ 
++
++BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kArcMacCoalescedResizing);
+ 
+ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAudioWorkletJSDenormalEnabler);
+ 
+--- a/chromium/src/third_party/blink/common/features.cc
++++ b/chromium/src/third_party/blink/common/features.cc
+@@ -42,6 +42,8 @@
+ BASE_FEATURE(kAIPageContentMissingSubframesFailSilently,
+              base::FEATURE_ENABLED_BY_DEFAULT);
+ 
++
++BASE_FEATURE(kArcMacCoalescedResizing, base::FEATURE_DISABLED_BY_DEFAULT);
+ 
+ // Controls whether JavaScript execution inside AudioWorkletProcessor::Process()
+ // runs under strict IEEE-754 floating-point semantics (disabling FTZ/DAZ).
+--- a/chromium/src/third_party/blink/renderer/platform/runtime_enabled_features.json5
++++ b/chromium/src/third_party/blink/renderer/platform/runtime_enabled_features.json5
+@@ -6534,6 +6534,11 @@
+       status: "experimental",
+     },
+     {
++      // Native gate: default disabled, normal enabled-or-overridden policy.
++      name: "TopBandColorSampling",
++      base_feature_status: "disabled",
++    },
++    {
+       name: "TopicsAPI",
+       base_feature: "none",
+       public: true,
+--- a/chromium/src/third_party/blink/renderer/core/frame/local_frame.h
++++ b/chromium/src/third_party/blink/renderer/core/frame/local_frame.h
+@@ -119,6 +119,8 @@
+ class SharedURLLoaderFactory;
+ }  // namespace network
+ 
++namespace arc { class TopBandColorTracker; }
++
+ namespace blink {
+ 
+ class AdTracker;
+@@ -548,6 +550,9 @@
+   PerformanceMonitor* GetPerformanceMonitor() {
+     return performance_monitor_.Get();
+   }
++  ::arc::TopBandColorTracker* GetTopBandColorTracker() const {
++    return top_band_color_tracker_.Get();
++  }
+   IdlenessDetector* GetIdlenessDetector() { return idleness_detector_.Get(); }
+   AdTracker* GetAdTracker() { return ad_tracker_.Get(); }
+   ExtensionScriptTracker* GetExtensionScriptTracker();
+@@ -1164,6 +1169,7 @@
+   Member<AdTracker> ad_tracker_;
+   Member<ExtensionScriptTracker> extension_script_tracker_;
+   Member<ScriptInitiationMonitor> script_initiation_monitor_;
++  Member<::arc::TopBandColorTracker> top_band_color_tracker_;
+   Member<IdlenessDetector> idleness_detector_;
+   base::OnceClosureList network_idle_callbacks_;
+   Member<InspectorIssueReporter> inspector_issue_reporter_;
+--- a/chromium/src/third_party/blink/renderer/core/frame/local_frame.cc
++++ b/chromium/src/third_party/blink/renderer/core/frame/local_frame.cc
+@@ -29,6 +29,7 @@
+  */
+ 
+ #include "third_party/blink/renderer/core/frame/local_frame.h"
++#include "third_party/blink/renderer/core/frame/arc_top_band_color_tracker.h"
+ 
+ #include <algorithm>
+ #include <cstdint>
+@@ -541,6 +542,7 @@
+   visitor->Trace(probe_sink_);
+   visitor->Trace(performance_monitor_);
+   visitor->Trace(idleness_detector_);
++  visitor->Trace(top_band_color_tracker_);
+   visitor->Trace(inspector_issue_reporter_);
+   visitor->Trace(inspector_trace_events_);
+   visitor->Trace(loader_);
+@@ -2124,6 +2126,9 @@
+     script_observer_ = LocalFrameRoot().script_observer_;
+   }
+   idleness_detector_ = MakeGarbageCollected<IdlenessDetector>(this, clock);
++  if (IsMainFrame() && RuntimeEnabledFeatures::TopBandColorSamplingEnabled()) {
++    top_band_color_tracker_ = MakeGarbageCollected<::arc::TopBandColorTracker>(this);
++  }
+   inspector_task_runner_->InitIsolate(isolate);
+ 
+   if (IsOutermostMainFrame()) {
+--- a/chromium/src/third_party/blink/renderer/core/dom/document.cc
++++ b/chromium/src/third_party/blink/renderer/core/dom/document.cc
+@@ -28,6 +28,7 @@
+  */
+ 
+ #include "third_party/blink/renderer/core/dom/document.h"
++#include "third_party/blink/renderer/core/frame/arc_top_band_color_tracker.h"
+ 
+ #include <algorithm>
+ #include <memory>
+@@ -8022,6 +8023,11 @@
+ void Document::OnLargestContentfulPaintUpdated() {
+   MaybeExecuteDelayedAsyncScripts(
+       MilestoneForDelayedAsyncScript::kLcpCandidate);
++  if (GetFrame()) {
++    if (auto* tracker = GetFrame()->GetTopBandColorTracker()) {
++      tracker->OnLargestContentfulPaintUpdated();
++    }
++  }
+ }
+ 
+ void Document::OnPrepareToStopParsing() {
+--- a/chromium/src/third_party/blink/renderer/core/frame/build.gni
++++ b/chromium/src/third_party/blink/renderer/core/frame/build.gni
+@@ -102,6 +102,8 @@
+   "layout_subtree_root_list.h",
+   "local_dom_window.cc",
+   "local_dom_window.h",
++  "arc_top_band_color_tracker.cc",
++  "arc_top_band_color_tracker.h",
+   "local_frame.cc",
+   "local_frame.h",
+   "local_frame_client.h",
+--- /dev/null
++++ b/chromium/src/cc/paint/arc_top_band_color_analyzer.cc
+@@ -0,0 +1,67 @@
++// Copyright 2026 ArcMod. Native source: browser analyzer0x40c05c0.
++#include "cc/paint/arc_top_band_color_analyzer.h"
++
++#include <algorithm>
++#include <array>
++#include <cmath>
++
++#include "base/numerics/safe_conversions.h"
++#include "third_party/skia/include/core/SkBitmap.h"
++
++namespace cc {
++namespace {
++float ColorDistance(SkColor a, SkColor b) {
++  const float blue = (static_cast<int>(SkColorGetB(a)) -
++                      static_cast<int>(SkColorGetB(b))) / 255.0f;
++  const float red = (static_cast<int>(SkColorGetR(a)) -
++                     static_cast<int>(SkColorGetR(b))) / 255.0f;
++  const float green = (static_cast<int>(SkColorGetG(a)) -
++                       static_cast<int>(SkColorGetG(b))) / 255.0f;
++  // Preserve native difference/divide/square/add/sqrt order. Alpha does not
++  // participate in either the threshold or the exact-zero shortcut.
++  return std::sqrt(blue * blue + (red * red + green * green));
++}
++}  // namespace
++std::optional<SkColor> AnalyzeArcTopBandColor(const SkBitmap& bitmap,
++                                            int sample_height,
++                                            int horizontal_margin) {
++  if (bitmap.width() < 1 || bitmap.height() < 1) {
++    return std::nullopt;
++  }
++  const int second_y = std::clamp(sample_height, 1, bitmap.height()) - 1;
++  const int span = std::max(bitmap.width() - horizontal_margin, 0);
++  std::array<SkColor, 5> top;
++  std::array<SkColor, 5> second;
++  for (size_t i = 0; i < top.size(); ++i) {
++    const float point = (static_cast<float>(i) / 4.0f) * static_cast<float>(span);
++    const int x = std::clamp(base::saturated_cast<int>(point), 0, bitmap.width() - 1);
++    top[i] = bitmap.getColor(x, 0);
++    second[i] = bitmap.getColor(x, second_y);
++  }
++  float maximum = 0;
++  for (size_t i = 1; i < top.size(); ++i) {
++    for (size_t j = 0; j < i; ++j) {
++      maximum = std::max(maximum, ColorDistance(top[j], top[i]));
++    }
++  }
++  maximum = std::max(maximum, ColorDistance(top.front(), second.front()));
++  maximum = std::max(maximum, ColorDistance(top.back(), second.back()));
++  if (maximum == 0) {
++    return top.front();
++  }
++  if (maximum > 0.5f) {
++    return std::nullopt;
++  }
++  float alpha = 0, red = 0, green = 0, blue = 0;
++  for (SkColor color : top) {
++    alpha += SkColorGetA(color);
++    red += SkColorGetR(color);
++    green += SkColorGetG(color);
++    blue += SkColorGetB(color);
++  }
++  const auto mean = [](float sum) {
++    return base::saturated_cast<uint8_t>(std::round(sum / 5.0f));
++  };
++  return SkColorSetARGB(mean(alpha), mean(red), mean(green), mean(blue));
++}
++}  // namespace cc
+--- /dev/null
++++ b/chromium/src/cc/paint/arc_top_band_color_analyzer.h
+@@ -0,0 +1,17 @@
++// Copyright 2026 ArcMod.
++#ifndef CC_PAINT_ARC_TOP_BAND_COLOR_ANALYZER_H_
++#define CC_PAINT_ARC_TOP_BAND_COLOR_ANALYZER_H_
++
++#include <optional>
++
++#include "cc/paint/paint_export.h"
++#include "third_party/skia/include/core/SkColor.h"
++
++class SkBitmap;
++namespace cc {
++// Shared native-equivalent bitmap analysis. The caller supplies pixel units;
++// renderer image analysis uses8/24, browser surface analysis scales those first.
++CC_PAINT_EXPORT std::optional<SkColor> AnalyzeArcTopBandColor(
++    const SkBitmap& bitmap, int sample_height, int horizontal_margin);
++}  // namespace cc
++#endif  // CC_PAINT_ARC_TOP_BAND_COLOR_ANALYZER_H_
+--- /dev/null
++++ b/chromium/src/third_party/blink/renderer/core/frame/arc_top_band_color_tracker.cc
+@@ -0,0 +1,573 @@
++// Copyright 2026 ArcMod. Native TopBand producer port (proposal only).
++#include "third_party/blink/renderer/core/frame/arc_top_band_color_tracker.h"
++
++#include <algorithm>
++#include <utility>
++#include "base/feature_list.h"
++#include "cc/paint/arc_top_band_color_analyzer.h"
++#include "third_party/blink/public/common/features.h"
++#include "cc/paint/paint_flags.h"
++#include "cc/paint/skia_paint_canvas.h"
++#include "third_party/blink/public/platform/task_type.h"
++#include "third_party/blink/renderer/core/css/properties/longhands.h"
++#include "third_party/blink/renderer/core/dom/document.h"
++#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
++#include "third_party/blink/renderer/core/dom/element.h"
++#include "third_party/blink/renderer/core/frame/local_frame.h"
++#include "third_party/blink/renderer/core/frame/local_frame_client.h"
++#include "third_party/blink/renderer/core/frame/local_frame_view.h"
++#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
++#include "third_party/blink/renderer/core/html/html_image_element.h"
++#include "third_party/blink/renderer/core/html/media/html_video_element.h"
++#include "third_party/blink/renderer/core/layout/layout_box.h"
++#include "third_party/blink/renderer/core/layout/layout_view.h"
++#include "third_party/blink/renderer/core/layout/hit_test_location.h"
++#include "third_party/blink/renderer/core/layout/hit_test_request.h"
++#include "third_party/blink/renderer/core/layout/hit_test_result.h"
++#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
++#include "third_party/blink/renderer/core/page/chrome_client.h"
++#include "third_party/blink/renderer/core/page/page.h"
++#include "third_party/blink/renderer/core/style/computed_style.h"
++#include "third_party/blink/renderer/core/style/style_image.h"
++#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
++#include "third_party/blink/renderer/core/view_transition/view_transition.h"
++#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
++#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
++#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
++#include "third_party/blink/renderer/platform/graphics/image.h"
++#include "third_party/blink/renderer/platform/heap/persistent.h"
++#include "third_party/blink/renderer/platform/loader/fetch/resource_status.h"
++#include "third_party/blink/renderer/platform/wtf/functional.h"
++#include "third_party/skia/include/core/SkBitmap.h"
++#include "third_party/skia/include/core/SkImageInfo.h"
++
++namespace arc {
++using blink::Color;
++using blink::ComputedStyle;
++using blink::DOMNodeIds;
++using blink::Element;
++using blink::HTMLImageElement;
++using blink::LocalFrame;
++using blink::LocalFrameView;
++
++TopBandColorTracker::TopBandColorTracker(LocalFrame* frame)
++    : frame_(frame), timer_(frame->GetTaskRunner(blink::TaskType::kInternalDefault),
++                            this, &TopBandColorTracker::ScheduleDetection) {}
++
++void TopBandColorTracker::Trace(blink::Visitor* visitor) const {
++  visitor->Trace(frame_);
++  visitor->Trace(cached_style_);
++  timer_.Trace(visitor);
++}
++
++void TopBandColorTracker::FireDetection() {
++  const bool timer_active = timer_.IsActive();
++  if (timer_active) {
++    retry_ = true;
++    if (!pending_ || mode_ == 3) {
++      return;
++    }
++  } else {
++    timer_.StartOneShot(base::Milliseconds(100), FROM_HERE);
++    retry_ = false;
++    if (mode_ == 3) {
++      return;
++    }
++  }
++  auto* view = frame_->View();
++  if (view && view->GetScrollableArea()) {
++    Detect(*view);
++  } else if (view) {
++    mode_ = 3;
++    Submit({});
++  }
++}
++
++void TopBandColorTracker::ScheduleDetection(blink::TimerBase*) {
++  if (retry_ && frame_->View()) {
++    frame_->View()->ScheduleAnimation();
++  }
++}
++
++void TopBandColorTracker::OnLargestContentfulPaintUpdated() {
++  lcp_seen_ = true;
++  cached_node_ = 0;
++  cached_style_ = nullptr;
++  cached_time_ = base::TimeTicks();
++  cached_analyzed_color_.reset();
++  if (frame_->View()) {
++    frame_->View()->ScheduleAnimation();
++  }
++}
++
++void TopBandColorTracker::OnParsingAndFirstPaintReady() {
++  if (!parsing_and_first_paint_ready_) {
++    parsing_and_first_paint_ready_ = true;
++    if (frame_->View()) {
++      frame_->View()->ScheduleAnimation();
++    }
++  }
++}
++
++void TopBandColorTracker::CancelPending() {
++  pending_.reset();
++  ++generation_;
++}
++
++void TopBandColorTracker::Submit(ChosenState state) {
++  if (pending_ && *pending_ == state) {
++    return;
++  }
++  if (pending_) {
++    CancelPending();
++  }
++  if (last_emitted_ && *last_emitted_ == state) {
++    return;
++  }
++  if ((state.request_surface_sample || state.wait_for_presentation) && frame_->GetPage()) {
++    pending_ = std::move(state);
++    const uint64_t generation = ++generation_;
++    frame_->GetPage()->GetChromeClient().NotifyPresentationTime(
++        *frame_, blink::BindOnce(&TopBandColorTracker::DidPresent,
++                                 blink::WrapWeakPersistent(this), generation));
++    return;
++  }
++  Emit(std::move(state));
++}
++
++void TopBandColorTracker::DidPresent(uint64_t generation,
++                                    const viz::FrameTimingDetails&) {
++  if (generation_ != generation || !pending_) {
++    return;
++  }
++  ChosenState state = std::move(*pending_);
++  pending_.reset();
++  Emit(std::move(state));
++}
++
++void TopBandColorTracker::Emit(ChosenState state) {
++  if (last_emitted_ && *last_emitted_ == state) {
++    return;
++  }
++  last_emitted_ = state;
++  bool crossfade = false;
++  if (lcp_seen_) {
++    crossfade = mode_ != 3 && emitted_after_lcp_;
++    emitted_after_lcp_ = true;
++  }
++  if (frame_->Client()) {
++    frame_->Client()->OnArcTopBandColorChanged(
++        state.color ? std::make_optional(state.color->Rgb()) : std::nullopt,
++        state.request_surface_sample, state.token, state.reuse_cached_color,
++        crossfade);
++  }
++}
++
++bool TopBandColorTracker::CompatibleCandidate(Element& element) const {
++  if (cached_node_ != DOMNodeIds::IdForNode(&element) ||
++      base::TimeTicks::Now() - cached_time_ > base::Milliseconds(1500)) {
++    return false;
++  }
++  if (blink::IsA<HTMLImageElement>(element)) {
++    return true;
++  }
++  const auto* style = element.GetComputedStyle();
++  return style == cached_style_ ||
++         (style && cached_style_ &&
++          style->BackgroundLayers() == cached_style_->BackgroundLayers() &&
++          style->Filter() == cached_style_->Filter() &&
++          style->BackdropFilter() == cached_style_->BackdropFilter() &&
++          style->Opacity() == cached_style_->Opacity());
++}
++
++void TopBandColorTracker::RememberAnalyzed(Element& element, Color color) {
++  cached_node_ = DOMNodeIds::IdForNode(&element);
++  cached_style_ = element.GetComputedStyle();
++  cached_time_ = base::TimeTicks::Now();
++  cached_analyzed_color_ = color;
++}
++
++uint64_t TopBandColorTracker::CaptureToken(Element& element) {
++  if (sampling_token_ && CompatibleCandidate(element)) {
++    return sampling_token_;
++  }
++  cached_analyzed_color_.reset();
++  cached_node_ = DOMNodeIds::IdForNode(&element);
++  cached_style_ = element.GetComputedStyle();
++  cached_time_ = base::TimeTicks::Now();
++  return ++sampling_token_;
++}
++
++bool TopBandColorTracker::SignificantImage(const Element& element) const {
++  if (blink::IsA<HTMLImageElement>(element)) {
++    return true;
++  }
++  const auto& style = *element.GetComputedStyle();
++  for (auto* layer = &style.BackgroundLayers(); layer; layer = layer->Next()) {
++    auto* image = layer->GetImage();
++    if (!image || (!image->IsImageResource() && !image->IsGeneratedImage())) {
++      continue;
++    }
++    if (layer->Repeat().y == blink::EFillRepeat::kNoRepeatFill) {
++      if (layer->BackgroundYOrigin() == blink::BackgroundEdgeOrigin::kBottom ||
++          (layer->BackgroundYOrigin() == blink::BackgroundEdgeOrigin::kTop &&
++           layer->PositionY().IsPercent() && layer->PositionY().Percent() == 100)) {
++        continue;
++      }
++      return true;
++    }
++    if (image->IsImageResource() &&
++        layer->Repeat().x == blink::EFillRepeat::kNoRepeatFill) {
++      auto* box = blink::DynamicTo<blink::LayoutBox>(element.GetLayoutObject());
++      auto* resource = image->CachedImage();
++      if (box && resource && frame_->GetPage()) {
++        const float ratio = frame_->GetPage()->InspectorDeviceScaleFactorOverride() *
++                            frame_->LayoutZoomFactor();
++        if (resource->IntrinsicSize(blink::kRespectImageOrientation).width() * ratio <
++            box->PhysicalContentBoxRect().Width().ToFloat() * 0.5f) {
++          continue;
++        }
++      }
++    }
++    return true;
++  }
++  return false;
++}
++
++std::optional<Color> TopBandColorTracker::AnalyzeImage(Element& element) const {
++  auto analyze_resource = [](blink::ImageResourceContent* resource) -> std::optional<Color> {
++    if (!resource || resource->GetContentStatus() <= blink::ResourceStatus::kPending) {
++      return std::nullopt;
++    }
++    auto* image = resource->GetImage();
++    if (!image) {
++      return std::nullopt;
++    }
++    auto color = cc::AnalyzeArcTopBandColor(
++        image->AsSkBitmapForCurrentFrame(blink::kRespectImageOrientation), 8, 24);
++    return color ? std::make_optional(Color::FromSkColor(*color)) : std::nullopt;
++  };
++  if (auto* image = blink::DynamicTo<HTMLImageElement>(element)) {
++    return analyze_resource(image->CachedImage());
++  }
++  const auto& style = *element.GetComputedStyle();
++  for (auto* layer = &style.BackgroundLayers(); layer; layer = layer->Next()) {
++    auto* style_image = layer->GetImage();
++    if (!style_image || (!style_image->IsImageResource() && !style_image->IsGeneratedImage())) {
++      continue;
++    }
++    std::optional<Color> color;
++    if (style_image->IsImageResource()) {
++      color = analyze_resource(style_image->CachedImage());
++    } else {
++      const auto bounds = element.GetLayoutObject()->AbsoluteBoundingBoxRect();
++      const int width = std::min(bounds.width(), 800);
++      const int height = std::min(bounds.height(), 800);
++      if (width > 0 && height > 0) {
++        SkBitmap bitmap;
++        if (bitmap.tryAllocPixels(SkImageInfo::Make(width, height,
++                                                    kBGRA_8888_SkColorType,
++                                                    kPremul_SkAlphaType))) {
++          bitmap.eraseColor(SK_ColorTRANSPARENT);
++          gfx::SizeF size(width, height);
++          auto image = style_image->GetImage(*element.GetLayoutObject(), element, style, size);
++          if (image) {
++            cc::SkiaPaintCanvas canvas(bitmap);
++            cc::PaintFlags flags;
++            blink::ImageDrawOptions options;
++            image->Draw(&canvas, flags, gfx::RectF(size), gfx::RectF(size), options);
++            auto analyzed = cc::AnalyzeArcTopBandColor(bitmap, 8, 24);
++            if (analyzed) {
++              color = Color::FromSkColor(*analyzed);
++            }
++          }
++        }
++      }
++    }
++    if (color) {
++      // A translucent result stops layer traversal and enters capture admission.
++      return color;
++    }
++  }
++  return std::nullopt;
++}
++
++namespace {
++bool VisibleForTopBand(const Element& element) {
++  const auto* style = element.GetComputedStyle();
++  return style && element.GetLayoutObject() &&
++         style->Visibility() == blink::EVisibility::kVisible &&
++         style->Display() != blink::EDisplay::kNone && style->Opacity() > 0;
++}
++Element* EligibleTopBandElement(blink::Node* node, int width, bool coalesced) {
++  auto* element = blink::DynamicTo<Element>(node);
++  if (!element || !VisibleForTopBand(*element)) {
++    return nullptr;
++  }
++  const auto bounds = element->GetLayoutObject()->AbsoluteBoundingBoxRect();
++  if (bounds.height() < 11 || bounds.width() < width / 3) {
++    return nullptr;
++  }
++  // Native B.LT reaches the preserve-pointer return, while the feature-false
++  // CBZ reaches the zero-pointer return. Edge candidates bypass quarter tests.
++  if (bounds.x() < 1 || bounds.right() >= width) {
++    return element;
++  }
++  if (!coalesced) {
++    return nullptr;
++  }
++  for (int i = 1; i < 4; ++i) {
++    const int x = i * (width / 4);
++    if (x < bounds.x() || x >= bounds.right()) {
++      return nullptr;
++    }
++  }
++  return element;
++}
++bool IsCanvasOrVideo(const Element& element) {
++  return blink::IsA<blink::HTMLCanvasElement>(element) ||
++         blink::IsA<blink::HTMLVideoElement>(element);
++}
++bool AllowsSurfaceCapture(const blink::HitTestResult::NodeSet& nodes, int width) {
++  for (blink::Node* hit : nodes) {
++    for (auto* node = hit; node; node = node->ParentOrShadowHostElement()) {
++      auto* element = blink::DynamicTo<Element>(node);
++      if (element && IsCanvasOrVideo(*element) && VisibleForTopBand(*element)) {
++        const auto bounds = element->GetLayoutObject()->AbsoluteBoundingBoxRect();
++        if (bounds.width() >= width / 3 && bounds.height() >= 11) {
++          return false;
++        }
++      }
++    }
++  }
++  return true;
++}
++bool UseRawTopBandPoints(const blink::HitTestResult::NodeSet& nodes,
++                         blink::LayoutView& layout, int width, bool coalesced) {
++  Element* first = nullptr;
++  for (blink::Node* node : nodes) {
++    if ((first = EligibleTopBandElement(node, width, coalesced))) {
++      break;
++    }
++  }
++  for (auto* object = first ? first->GetLayoutObject() : nullptr;
++       object && object != &layout; object = object->ContainingBlock()) {
++    if (object->StyleRef().GetPosition() == blink::EPosition::kFixed) {
++      return true;
++    }
++    auto* box = blink::DynamicTo<blink::LayoutBoxModelObject>(object);
++    if (box && box->StickyPositionOffset() != blink::PhysicalOffset()) {
++      return true;
++    }
++  }
++  return false;
++}
++}  // namespace
++
++void TopBandColorTracker::Detect(LocalFrameView& view) {
++  auto* document = frame_->GetDocument();
++  auto* layout = document ? document->GetLayoutView() : nullptr;
++  auto* area = layout ? layout->GetScrollableArea() : nullptr;
++  if (!document || !layout) {
++    mode_ = 3;
++    Submit({});
++    return;
++  }
++  const int width = area ? area->VisibleContentRect(blink::kExcludeScrollbars).width() : 0;
++  if (width <= 0) {
++    // A transient nonpositive width does not latch the terminal mode or emit.
++    // Native cancels only an active background-presentation wait here.
++    if (pending_ && pending_->wait_for_presentation) {
++      CancelPending();
++    }
++    return;
++  }
++  const bool coalesced = base::FeatureList::IsEnabled(
++      blink::features::kArcMacCoalescedResizing);
++  if (coalesced) {
++    bool active_transition = false;
++    blink::ViewTransitionUtils::ForEachTransition(*document,
++        [&](blink::ViewTransition& transition) {
++          active_transition |= !transition.IsDone();
++        });
++    if (active_transition) {
++      retry_ = true;
++      return;
++    }
++  }
++  Color root_background = Color::kTransparent;
++  const auto& root_style = layout->StyleRef();
++  if (root_style.HasBackground()) {
++    const auto color = root_style.VisitedDependentColor(
++        blink::GetCSSPropertyBackgroundColor());
++    if (color.IsOpaque()) {
++      root_background = color;
++    }
++  }
++  const bool scrolled = view.GetScrollableArea()->GetScrollOffset().y() > 0;
++  constexpr unsigned flags = blink::HitTestRequest::kReadOnly |
++      blink::HitTestRequest::kActive | blink::HitTestRequest::kIgnoreClipping |
++      blink::HitTestRequest::kIgnorePointerEventsNone |
++      blink::HitTestRequest::kListBased | blink::HitTestRequest::kPenetratingList;
++  static_assert(flags == 0x1c26);
++  struct Vote {
++    ChosenState state;
++    int count = 0;
++  };
++  blink::HeapHashMap<blink::Member<Element>, Vote> votes;
++  auto vote = [&](Element* element, ChosenState state) {
++    auto& entry = votes.insert(element, Vote{}).stored_value->value;
++    entry.state = std::move(state);
++    ++entry.count;
++  };
++  int root_votes = 0;
++  bool reuse_cached_color = false;
++  bool policy_decided = false;
++  bool use_raw_points = false;
++  for (int i = 0; i < 4; ++i) {
++    const blink::PhysicalOffset raw_point(blink::LayoutUnit(i * (width / 4)),
++                                           blink::LayoutUnit(1));
++    if (scrolled && !policy_decided) {
++      blink::HitTestLocation location(raw_point);
++      blink::HitTestResult result(blink::HitTestRequest(flags), location);
++      layout->HitTest(location, result);
++      use_raw_points = UseRawTopBandPoints(result.ListBasedTestResult(),
++                                           *layout, width, coalesced);
++      policy_decided = true;
++    }
++    const auto point = use_raw_points ? raw_point : view.DocumentToFrame(raw_point);
++    blink::HitTestLocation location(point);
++    blink::HitTestResult result(blink::HitTestRequest(flags), location);
++    layout->HitTest(location, result);
++    const auto& nodes = result.ListBasedTestResult();
++    if (nodes.empty()) {
++      continue;
++    }
++    const bool screenshot_allowed = AllowsSurfaceCapture(nodes, width);
++    std::optional<Color> front;
++    Element* first_partial = nullptr;
++    bool accepted = false;
++    for (blink::Node* node : nodes) {
++      auto* element = EligibleTopBandElement(node, width, coalesced);
++      if (!element || IsCanvasOrVideo(*element)) {
++        continue;
++      }
++      const auto host = document->Url().Host();
++      if ((host == "youtube.com" || host.ends_with(".youtube.com")) &&
++          element->ClassNames().Contains(blink::AtomicString("ytd-masthead"))) {
++        continue;
++      }
++      const auto& style = *element->GetComputedStyle();
++      const Color background = style.VisitedDependentColor(
++          blink::GetCSSPropertyBackgroundColor());
++      const bool partial = background.Alpha() > 0 && background.Alpha() < 1;
++      const bool image = SignificantImage(*element);
++      if (!partial && style.Opacity() >= 1 && !image) {
++        if (!background.IsOpaque()) {
++          continue;
++        }
++        ChosenState state;
++        state.color = front ? background.Blend(*front) : background;
++        vote(first_partial ? first_partial : element, std::move(state));
++        accepted = true;
++        break;
++      }
++      if (!lcp_seen_) {
++        if (pending_ && pending_->wait_for_presentation) {
++          CancelPending();
++        }
++        return;
++      }
++      if (partial && style.Opacity() >= 1 && !image) {
++        front = front ? background.Blend(*front) : background;
++        if (!first_partial) {
++          first_partial = element;
++        }
++        continue;
++      }
++      std::optional<Color> analyzed;
++      if (CompatibleCandidate(*element) && cached_analyzed_color_) {
++        analyzed = cached_analyzed_color_;
++      } else {
++        // Compatible analyzed-color reuse precedes native's fresh-raster gate.
++        // Non-box/zero-bounds candidates continue to surface admission without
++        // changing the previous candidate cache.
++        auto* object = element->GetLayoutObject();
++        if (element->GetComputedStyle() && object && object->IsBox()) {
++          const auto bounds = object->AbsoluteBoundingBoxRect();
++          if (bounds.width() != 0 && bounds.height() != 0) {
++            analyzed = AnalyzeImage(*element);
++            if (analyzed && analyzed->IsOpaque()) {
++              RememberAnalyzed(*element, *analyzed);
++            }
++          }
++        }
++      }
++      if (analyzed && analyzed->IsOpaque()) {
++        ChosenState state;
++        state.color = *analyzed;
++        vote(element, std::move(state));
++        accepted = true;
++        break;
++      }
++      if (!screenshot_allowed) {
++        continue;
++      }
++      if (scrolled && !(sampling_token_ && CompatibleCandidate(*element))) {
++        reuse_cached_color = true;
++        continue;
++      }
++      ChosenState state;
++      state.request_surface_sample = true;
++      state.token = CaptureToken(*element);
++      vote(element, std::move(state));
++      accepted = true;
++      break;
++    }
++    if (!accepted && root_background.IsOpaque()) {
++      if (front) {
++        ChosenState state;
++        state.color = root_background.Blend(*front);
++        vote(first_partial, std::move(state));
++      } else {
++        ++root_votes;
++      }
++    }
++  }
++  ChosenState choice;
++  int best_votes = 0;
++  for (const auto& entry : votes) {
++    if (entry.value.count > best_votes) {
++      best_votes = entry.value.count;
++      choice = entry.value.state;
++    }
++  }
++  if (root_votes > best_votes && root_background.IsOpaque()) {
++    best_votes = root_votes;
++    choice.color = root_background;
++    choice.request_surface_sample = false;
++    choice.token = 0;
++  }
++  if (!best_votes) {
++    const Color background = view.DocumentBackgroundColor();
++    if (background.IsOpaque()) {
++      if (pending_ && pending_->request_surface_sample) {
++        CancelPending();
++        retry_ = true;
++        return;
++      }
++      if (!parsing_and_first_paint_ready_) {
++        if (pending_) {
++          CancelPending();
++        }
++        return;
++      }
++      choice.color = background;
++      choice.wait_for_presentation = true;
++    }
++  }
++  choice.reuse_cached_color = reuse_cached_color;
++  mode_ = 1;
++  Submit(std::move(choice));
++}
++}  // namespace arc
+--- /dev/null
++++ b/chromium/src/third_party/blink/renderer/core/frame/arc_top_band_color_tracker.h
+@@ -0,0 +1,70 @@
++// Copyright 2026 ArcMod. Native TopBand producer port (proposal only).
++#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ARC_TOP_BAND_COLOR_TRACKER_H_
++#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ARC_TOP_BAND_COLOR_TRACKER_H_
++
++#include <cstdint>
++#include <optional>
++#include "base/time/time.h"
++#include "third_party/blink/renderer/core/core_export.h"
++#include "third_party/blink/renderer/platform/graphics/color.h"
++#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
++#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
++#include "third_party/blink/renderer/platform/heap/member.h"
++#include "third_party/blink/renderer/platform/timer.h"
++
++namespace viz { class FrameTimingDetails; }
++namespace blink {
++class ComputedStyle;
++class Element;
++class LocalFrame;
++class LocalFrameView;
++}
++namespace arc {
++class CORE_EXPORT TopBandColorTracker final
++    : public blink::GarbageCollected<TopBandColorTracker> {
++ public:
++  explicit TopBandColorTracker(blink::LocalFrame* frame);
++  void Trace(blink::Visitor* visitor) const;
++  void FireDetection();
++  void OnLargestContentfulPaintUpdated();
++  void OnParsingAndFirstPaintReady();
++
++ private:
++  struct ChosenState {
++    std::optional<blink::Color> color;
++    bool request_surface_sample = false;
++    uint64_t token = 0;
++    bool wait_for_presentation = false;
++    bool reuse_cached_color = false;
++    bool operator==(const ChosenState&) const = default;
++  };
++  void ScheduleDetection(blink::TimerBase*);
++  void Detect(blink::LocalFrameView& view);
++  void Submit(ChosenState state);
++  void Emit(ChosenState state);
++  void DidPresent(uint64_t generation, const viz::FrameTimingDetails&);
++  void CancelPending();
++  bool CompatibleCandidate(blink::Element& element) const;
++  void RememberAnalyzed(blink::Element& element, blink::Color color);
++  uint64_t CaptureToken(blink::Element& element);
++  bool SignificantImage(const blink::Element& element) const;
++  std::optional<blink::Color> AnalyzeImage(blink::Element& element) const;
++
++  blink::Member<blink::LocalFrame> frame_;
++  blink::HeapTaskRunnerTimer<TopBandColorTracker> timer_;
++  int mode_ = 0;
++  bool lcp_seen_ = false;
++  bool emitted_after_lcp_ = false;
++  bool retry_ = false;
++  bool parsing_and_first_paint_ready_ = false;
++  std::optional<ChosenState> last_emitted_;
++  std::optional<ChosenState> pending_;
++  uint64_t generation_ = 0;
++  blink::DOMNodeId cached_node_ = 0;
++  blink::Member<const blink::ComputedStyle> cached_style_;
++  base::TimeTicks cached_time_;
++  std::optional<blink::Color> cached_analyzed_color_;
++  uint64_t sampling_token_ = 0;
++};
++}  // namespace arc
++#endif

@@ -1,8 +1,50 @@
 # Renderer work package checkpoint, 2026-10-23
 
-Acceptance verification is in progress. No commits or pushes. This supersedes
-run1 implementation gaps; the final run2 report must record the completed
-fresh runtime results rather than treating this checkpoint as acceptance.
+CURRENT RELEASE: corrected UNAPPLIED TopBandd106f59e replaces withdrawn88.
+Dependency order ALL e07 → gradient661 → TopBandd106.19actual-flags checks0/empty;
+38fixtures compiled NOT executed; native-contract and canonical replay reviews pass.
+Native geometry and active-pending/no-area findings are closed. Historical88 is
+archived; dependent723 remains HELD while privately rebasing. Count-only discard21a
+remains independently HELD for core global phases. Production is unchanged.
+Public TopBand flag is31 (36 is Snapshot); startup relay is proved but not integrated.
+Native live propagation, commit refresh activation and private ABI remain open.
+
+
+## Current handoff, 2026-10-23
+
+Production remains unchanged since the checked exclusion/compiler-sequence fixes.
+Published unapplied order is ALL `e07d1b39` → gradient `66179056` → TopBand
+`d106f59e`. TopBand canonical manifest `6a5aefce` pins19real-flags checks and
+38compile-only fixtures, canonical29-file replay and fresh native-contract review.
+Geometry now admits edge/fullbleed directly, while strict interior needs coalescing
+and all three quarter points. Active timer/pending/no-area entersmode3+empty;
+missingView staysquiet. Earlier88 is withdrawn in held-88/.
+
+Native public flag31 is TopBand;36 is Snapshot. A reviewed native startup hook reads
+31 and adds enable-blink-features=TopBandColorSampling for renderer children. That
+startup integration is privately preparing; live propagation remains unproved.
+Commit refresh remains unwired. Native attachment proof establishes refresh before
+queued ObjC commit on ordinary NONNESTED UI dispatch; unconditional nested order
+is unproved. Shared adoption/GN/link/runtime and private C++ABI remain pending.
+
+Count-only discard `21a83075` is HELD: SAME Impl/backend count survives replacement,
+old count read before teardown, seeded before new publication, wrapper KVO sync last.
+Core must implement canonical ownership/global retirement→attachment phases.
+Full-stack current weak TopBand-holder transfer is privately rebasing onto d106;
+no old document sampler/cache/capture migration, no setter replay/activation.
+
+Native retry1:4×14stages, integrity/restoration/natural quit pass; callbacks0/9/0/9
+(default/base/index36/both), all18non-nil/main/crossfadefalse. Callbacks precede
+hostobservation by21–31ms and screenshots by1.53s; not a final-painted-color oracle.
+Those index36 controls tested Snapshot, not TopBand relay. Parent inspected actual
+interior/splitgradient/fixedblue screenshots. Next private probe covers31/new renderer,
+same-document geometry and genuine nullable/crossfade opportunities; not queued.
+
+Peer UIrun4 fresh-profile37/37steps/natural quit pass.10strict fixture CSScalls each
+match both preservedv1 and current attributednative. Current-native vs historical
+UI global57 is a diagnostic, old84 remains pinned tooldv1. Twoextra theme calls are
+app-origin invocations; upstream scheduling unproved, no renderer hack. Official
+results/ours/renderer-public-api remains absent. Acceptance is in progress.
 
 ## Implemented, by file
 
@@ -168,7 +210,9 @@ registry, per-profile retained file snapshots, native bind-order debug selection
 distinct rule/exclusion updates and bounded first-frame retry. Global pair
 absence is distinct from engaged empty lists. Cosmetic availability is distinct
 from a network-only ruleset (native debug NoBlockList for no cosmetic region).
-Explicit exclusions work while disabled. Rebind replays an incarnation's own
+Historical exclusion claim corrected: native caches explicit setters while disabled,
+without delivering them to profiles or renderers. See renderer_exclusion_feature_gate_evidence.md.
+Rebind replays an incarnation's own
 pending snapshot rather than incorrectly inheriting current profile rules.
 
 All three changed .mm and both renderer .cc files pass actual flags, and fresh
@@ -383,3 +427,124 @@ mainRFHdocument, notunkeyedWebContents/wholeRFHlifetime; BFCachepersistsand
 sameRFHcrossdocresets. Missingview/width<1 retains pending, failedcopy cachesnil.
 Separatefaithfulportproposalwillpreserve these. Arc36relay/liveupdatesremain
 unproven; bothnativebasefeaturedefaultsDISABLED.
+
+
+## Current checkpoint: native startup and exclusion correction
+
+The long native/replacement pair completed at results/renderer-long-readiness-run2.
+Both compiled lists became observable near the native three-minute startup failsafe
+(native165177ms and replacement164444ms after request). Native histogram reason0
+and180697ms startup delay, plus recovered FinishStartupRegistration180s posting,
+are preserved in logs/wp/renderer.native-checkpoints.diagnosis.md. This resolves
+the earlier scheduling uncertainty without changing BEST_EFFORT priority.
+
+All14 base CSS states match, but strict feature and filter comparators fail.
+New-document cosmetics are absent in the replacement pending the shared document-start
+hook; Page filters are still proposal-only. Native generated linear/radial/conic
+red gradients change under grayscale and restore exactly on removal. Ordinary
+canvas, PNG and SVG images remain unchanged in this fixture. Dithering is retained
+in raw histograms; no uniform-color normalization is used.
+
+A real owned bug was exposed: disabled setExcludedDomains incorrectly published to
+renderers. Four actual owned files now correct manager cache gating, weak queued
+per-agent live-feature checks with latest profile origins, and equal-version
+exclusion invalidation. Captured initial registration remains independent. All
+three actual-flags checks and both prescribed .mm checks pass; fresh review is clean.
+See logs/wp/renderer-exclusion-publication-fix/ and dedicated native evidence.
+
+ALL50 has been rebased onto that applied correction and released from its temporary
+HOLD: SHA27eee809695859f41af46a7d74fffd50386b84805aaeb12eb6c637a6c91ca5c0.
+Its36actual-flags checks and fresh independent composition review pass. Gradient3
+SHA66179056ee5ae3a5c76f226e805ca86a8652279ea9f8fd15ac7ec799bf129e80 is
+incremental AFTER this exact ALL hash. Both remain unapplied; real GN/link/runtime
+coverage is still required after lead adoption.
+
+One fresh fullbuild/package/16-stage public exclusion pair is queued, waiter94168,
+tool79512, logs/wp/renderer.exclusions-runtime.run2.sh. The additional4 stages test
+same-main-turn queued exclude+disable, cached publish on enable, retained installed
+exclusion while disabled, and cached clear on enable. Clang/Bun checks and fresh
+harness review pass. No outcome is claimed until its actual run completes.
+
+The same native evaluator/cache handles frame cosmetics and debug; Success/Cached
+differences must not be normalized or fixed with a separate debug cache. Early
+process hook adoption changes which agents are available; the exact per-run debug
+agent identity is unobserved. See renderer_debug_cache_evidence.md.
+
+Scenarios owns the official fresh-profile renderer-public-api run (Chirp136798),
+with stricter exact fixture attribution gates (137192). Our prior standard-scenario
+run remains supplemental. The separate TopBand public callback fixture is compiled
+and reviewed but has not run; its modes distinguish base-feature and Arc36 enabling,
+actual callbacks and silence, without claiming silence is nil or parity. Full
+TopBand port remains private/in progress; no speculative commit-hook ordering.
+
+
+## Discard attachment audit (held)
+
+Core requested synchronous renderer attachment migration for canonical tab rebind.
+The dedicated renderer_discard_attachment_evidence.md identifies RendererBridge as
+the only native-WC observer/helper requiring teardown and recreation. A separate
+held2file proposal, renderer_discard_attachment_proposal.patch, has real-flags
+syntax0/apply-check0/fresh review clean. It preserves process/profile state and does
+not move old RFH endpoints or direct CSS. Core must install replacement canonical
+identity, teardown old helper without an app callback gap, then attach new helper;
+the explicit wrapper count setter is last. Native discard-specific count policy is
+unproved, so this is not ready for activation and is not part of ALL.
+
+Latest accepted-golden census now snapshots25canonical launch transcripts and16shared diff
+artifacts in logs/wp/renderer.coverage.run2.json. Remaining renderer-labelled shared
+rows are caller-count differences on stylesheet insertion, zero count initialization,
+delegate registration/getters, or missing rows when the host scenario failed before
+opening tabs. That census does not erase failures or prove all host paths equivalent;
+old/raw scenarios remain separately dated and explicit feature fixtures are required.
+
+
+## Serialized block-list compiler correction
+
+New bounded native proof (renderer_blocklist_overlap_evidence.md) identifies one
+singleton pooled SequencedTaskRunner for all accepted block-list requests. Each
+compiler posts its UI result before the next compilation; the manager stores every
+result. Its later weak notification coalescing is a separate stage. Our prior
+parallel tasks/latest-request rejection did not match this scheduling policy.
+
+The one-file arc_renderer_ad_block.mm correction is now applied/frozen: shared
+MayBlock/BEST_EFFORT sequence and per-success publication; failure handling,
+feature gates, IDs and deferred descriptor-close policy are unchanged. Private
+actual-flags compilation0/empty, fresh independent review clean, prescribed
+check-file0. Evidence/checks: logs/wp/renderer-compiler-sequence-fix/.
+
+Only our confirmed-unstarted waiter94168 was paused under foreign72424, then
+resumed with refreshed frozen inputs after checks. Same tool79512/batch; no extra
+waiter or runtime claim. The current16-stage matrix covers regressions/feature
+publication, not controlled overlapping compilations. Network/combined/ALL proposal
+rebasing and gradient dependency refresh are in progress; old ALL adoption briefly
+held in Chirp137508. TopBand private writer remains isolated from that rebase.
+
+
+Census correction: recorder migration archives four immutable v1 launch records in
+*.recorder-v1 directories. They were briefly counted with canonical coverage;
+coverage_report.py now retains their provenance separately in archived_goldens.
+Current25canonical launch transcripts correspond to21accepted baselines;4v1
+archives are historical duplicates. The earlier derived census is retained as
+renderer.coverage.including-v1-archives.run2.json, not canonical feature coverage.
+
+
+Compiler-sequence rebase RELEASED: ALL50 is now
+SHAe07d1b39dd68beb59af325ab90446c760cc731911a2caf422d766ac20c0612bf,
+superseding27eee809. Gradient3 bytes remain66179056ee5ae3a5c76f226e805ca86a8652279ea9f8fd15ac7ec799bf129e80,
+now requiring the exact new ALL. Manifest/review: renderer-compiler-sequence-rebase/.
+All74component/combined/ALL/gradient actual-flags checks0/empty, independent
+reconstruction/replay/applicability and optional app-first49remainder verified.
+No source adoption by renderer. Fresh actual build12:22:48Z/package strictsign pass;
+native16-stage matrix complete, replacement active on the same held/resumed waiter.
+
+
+## TopBand final review hold
+
+The first private29file TopBand candidate359c1d08 is NOT ready. Parent native-semantic
+review found transient nonpositive-width incorrectly enters terminal mode3, and fresh
+bitmap analysis lacks native layout-box/nonzero-bound admission. Writer is correcting
+both privately and adding focused cases, then will rerun checks and fresh review.
+No TopBand canonical publication is authorized until parent-contract review is clean.
+The brief copied359canonical artifacts were withdrawn; ALL e07/gradient661 are intact.
+Native4mode diagnostic waiter52933/tool64062 remains the only runtime queue; no source
+or runtime result from it yet. Actual exclusion/sequence production source is frozen.

@@ -1,0 +1,166 @@
+diff --git a/arc/api/arc_webextras_devtools.mm b/arc/api/arc_webextras_devtools.mm
+--- a/arc/api/arc_webextras_devtools.mm
++++ b/arc/api/arc_webextras_devtools.mm
+@@ -12,11 +12,9 @@
+ #include "base/supports_user_data.h"
+ #include "net/base/auth.h"
+ #include "chrome/browser/arcmod/arcmod_hooks.h"
+-#include "chrome/browser/devtools/devtools_settings.h"
+ #include "chrome/browser/devtools/devtools_toggle_action.h"
+ #include "chrome/browser/devtools/devtools_ui_bindings.h"
+ #include "chrome/browser/devtools/devtools_window.h"
+-#include "chrome/browser/profiles/profile.h"
+ #include "content/public/browser/browser_thread.h"
+ #include "content/public/browser/devtools_agent_host.h"
+ #include "content/public/browser/devtools_agent_host_client.h"
+@@ -56,15 +54,19 @@
+ @synthesize delegate = _delegate, owner = _owner;
+ @end
+ 
+-static NSUInteger DevToolsDisplayMode(content::WebContents* frontend, bool docked) {
+-  if (!docked) { return 1; }
+-  auto* profile = Profile::FromBrowserContext(frontend->GetBrowserContext());
+-  switch (DevToolsSettings::GetDockSide(profile)) {
+-    case devtools::DockSide::kLeft: return 2;
+-    case devtools::DockSide::kRight: return 3;
+-    case devtools::DockSide::kBottom: return 4;
+-    case devtools::DockSide::kNone: return 1;
+-  }
++static NSUInteger DevToolsDisplayMode(const std::string& side) {
++  if (side == "undocked") { return 1; }
++  if (side == "left") { return 2; }
++  if (side == "right") { return 3; }
++  if (side == "bottom") { return 4; }
++  return 0;
++}
++
++static NSUInteger DevToolsInspectMode(const std::string& mode) {
++  if (mode == "searchForNode") { return 1; }
++  if (mode == "searchForUAShadowDOM") { return 2; }
++  if (mode == "captureAreaScreenshot") { return 3; }
++  if (mode == "showDistances") { return 4; }
+   return 0;
+ }
+ 
+@@ -94,6 +96,20 @@
+     ArcWebContentsDevTools* owner = bridge.owner;
+     if ([delegate respondsToSelector:@selector(webContentsDevToolsNeedsFocus:)]) {
+       [delegate webContentsDevToolsNeedsFocus:owner];
++    }
++  }));
++}
++
++static void PostDevToolsInspectMode(WebextrasDevToolsDelegateBridge* bridge,
++                                   base::WeakPtr<content::WebContents> native_lifetime,
++                                   NSUInteger mode) {
++  if (!bridge) { return; }
++  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(^{
++    if (!native_lifetime) { return; }
++    id<WebExtrasDevToolsDelegate> delegate = bridge.delegate;
++    ArcWebContentsDevTools* owner = bridge.owner;
++    if ([delegate respondsToSelector:@selector(webContentsDevTools:inspectModeDidChange:)]) {
++      [delegate webContentsDevTools:owner inspectModeDidChange:mode];
+     }
+   }));
+ }
+@@ -267,6 +283,9 @@
+ - (void)didShowFrontend:(content::WebContents*)frontend docked:(BOOL)docked;
+ - (void)frontendClosed __attribute__((objc_direct));
+ - (void)frontendRequestedFocus __attribute__((objc_direct));
++- (void)didCreateFrontend:(content::WebContents*)frontend __attribute__((objc_direct));
++- (void)requestedDockPosition:(const std::string&)side __attribute__((objc_direct));
++- (void)inspectModeChanged:(const std::string&)mode __attribute__((objc_direct));
+ - (void)resetFrontendState __attribute__((objc_direct));
+ - (void)notifyFrontendClosed __attribute__((objc_direct));
+ - (BOOL)ensureCommandClient:(NSError**)error __attribute__((objc_direct));
+@@ -294,6 +313,21 @@
+           id tools = ToolsForContents(inspected);
+           [tools didShowFrontend:frontend docked:docked];
+         });
++    arcmod::GetDevToolsFrontendCreatedHook() = base::BindRepeating(
++        [](content::WebContents* inspected, content::WebContents* frontend) {
++          ArcWebContentsDevTools* tools = ToolsForContents(inspected);
++          [tools didCreateFrontend:frontend];
++        });
++    arcmod::GetDevToolsDockPositionHook() = base::BindRepeating(
++        [](content::WebContents* inspected, content::WebContents*, const std::string& side) {
++          ArcWebContentsDevTools* tools = ToolsForContents(inspected);
++          [tools requestedDockPosition:side];
++        });
++    arcmod::GetDevToolsInspectModeHook() = base::BindRepeating(
++        [](content::WebContents* inspected, content::WebContents*, const std::string& mode) {
++          ArcWebContentsDevTools* tools = ToolsForContents(inspected);
++          [tools inspectModeChanged:mode];
++        });
+     arcmod::GetDevToolsFocusHook() = base::BindRepeating(
+         [](content::WebContents* inspected) {
+           ArcWebContentsDevTools* tools = ToolsForContents(inspected);
+@@ -316,13 +350,17 @@
+   return _frontend ? [ArcWebContents wrapperForWebContents:_frontend.get()] : nil;
+ }
+ - (ArcWebContents*)toolboxWebContents { return _toolboxWebContents; }
+-- (void)didShowFrontend:(content::WebContents*)frontend docked:(BOOL)docked {
+-  const NSUInteger mode = DevToolsDisplayMode(frontend, docked);
+-  _opening = NO;
+-  _shown = YES;
++- (void)didCreateFrontend:(content::WebContents*)frontend {
++  // Establish getter/close routing before the frontend's first docking request.
++  // This path invokes no app callback, public getter, KVO or renderer method.
+   _frontend = frontend->GetWeakPtr();
+   frontend->SetUserData(&kDevToolsBindingKey, std::make_unique<DevToolsBinding>(self));
+   _frontendObserver = std::make_unique<FrontendObserver>(frontend, self);
++  _opening = YES;
++}
++- (void)didShowFrontend:(content::WebContents*)frontend docked:(BOOL)docked {
++  _opening = NO;
++  _shown = YES;
+   if (_requestedPanel) {
+     if (auto* bindings = DevToolsUIBindings::ForWebContents(frontend)) {
+       bindings->CallClientMethod("DevToolsAPI", "showPanel", base::Value(ArcUTF8(_requestedPanel)));
+@@ -332,8 +370,19 @@
+   NSArray* queries = [_panelQueries copy];
+   [_panelQueries removeAllObjects];
+   for (ProtocolNotification callback in queries) { QueryPanel(frontend, callback); }
++  // Show handles native readiness and pending queries only. Explicit frontend
++  // requestDockPosition messages are the sole source of display notifications.
++}
++- (void)requestedDockPosition:(const std::string&)side {
++  const NSUInteger mode = DevToolsDisplayMode(side);
+   auto* contents = [_owner webContents];
+   PostDevToolsDisplay(_registeredDelegateBridge,
++      contents ? contents->GetWeakPtr() : base::WeakPtr<content::WebContents>(), mode);
++}
++- (void)inspectModeChanged:(const std::string&)value {
++  const NSUInteger mode = DevToolsInspectMode(value);
++  auto* contents = [_owner webContents];
++  PostDevToolsInspectMode(_registeredDelegateBridge,
+       contents ? contents->GetWeakPtr() : base::WeakPtr<content::WebContents>(), mode);
+ }
+ - (void)resetFrontendState {
+@@ -360,7 +409,7 @@
+       contents ? contents->GetWeakPtr() : base::WeakPtr<content::WebContents>());
+ }
+ - (void)frontendClosed {
+-  const BOOL notify = _shown;
++  const BOOL notify = bool{_frontendObserver};
+   [[maybe_unused]] FrontendRetiredState retired{_toolboxWebContents, _panelQueries};
+   [self resetFrontendState];
+   if (notify) { [self notifyFrontendClosed]; }
+@@ -381,7 +430,7 @@
+   _requestedPanel = @"network";
+   [self openWithAction:DevToolsToggleAction::Show()];
+   auto* frontend = _frontend.get();
+-  if (frontend) {
++  if (frontend && _shown) {
+     if (auto* bindings = DevToolsUIBindings::ForWebContents(frontend)) {
+       bindings->CallClientMethod("DevToolsAPI", "showPanel", base::Value("network"));
+       _requestedPanel = nil;
+@@ -413,7 +462,7 @@
+ - (BOOL)currentPanel:(ProtocolNotification)completion error:(NSError**)error {
+   auto* frontend = _frontend.get();
+   auto* bindings = frontend ? DevToolsUIBindings::ForWebContents(frontend) : nullptr;
+-  if (!bindings) {
++  if (!bindings || !_shown) {
+     if (_opening) {
+       if (completion) { [_panelQueries addObject:[completion copy]]; }
+       return YES;

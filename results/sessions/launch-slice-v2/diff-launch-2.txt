@@ -1,0 +1,27 @@
+methods differing: 51 (missing 6, extra 2, returns 12, callback args 4, counts 27; internal-only 0, ours-internal 1)
+callback sequence: {"golden": 47, "ours": 63, "first_divergence": 1, "golden_from": ["ADK.ADKApplication didInitializeBrowserProcess", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"], "ours_from": ["ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserve
+caller attribution: on (app calls + engine setters)
+missing {"method": "->engine -ArcColor4f a", "golden_calls": 1, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcColor4f b", "golden_calls": 1, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcColor4f g", "golden_calls": 1, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcColor4f r", "golden_calls": 1, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcWebContents ignoreDisablePiPAttribute:", "golden_calls": 1, "example": {"args": "[false]", "ret": "null"}}
+missing {"method": "engine->app -ADK.WebContentChromium webContentsRenderViewReady:", "golden_calls": 1, "example": {"args": "[\"<ArcWebContents#1>\"]", "ret": "null"}}
+return_mismatch {"method": "->engine -ArcBrowser context", "call": 0, "args": "[]", "golden": "\"<ArcBrowserContext#2>\"", "ours": "\"<ArcBrowserContext#1>\""}
+return_mismatch {"method": "->engine -ArcBrowserContext id", "call": 1, "args": "[]", "golden": "\"<ArcBrowserContextID#2>\"", "ours": "\"<ArcBrowserContextID#1>\""}
+return_mismatch {"method": "->engine -ArcBrowserContext loadUrl:withDelegate:", "call": 0, "args": "[\"<ArcURLLoadConfiguration#5>\", \"<_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate#5>\"]", "golden": "\"<ArcURLLoadCancellationToken#5>\"", "ours": "\"<ArcURLLoadCancellationToken#4>\""}
+return_mismatch {"method": "->engine -ArcBrowserContextAttributes userVisibleName", "call": 0, "args": "[]", "golden": "\"Default\"", "ours": "\"Your Chromium\""}
+return_mismatch {"method": "->engine -ArcColor b", "call": 0, "args": "[]", "golden": "250", "ours": "34"}
+return_mismatch {"method": "->engine -ArcColor g", "call": 0, "args": "[]", "golden": "199", "ours": "30"}
+return_mismatch {"method": "->engine -ArcColor r", "call": 0, "args": "[]", "golden": "168", "ours": "28"}
+return_mismatch {"method": "->engine -ArcSearchEngine url", "call": 513, "args": "[]", "golden": "\"https://www.google.com/search?q=%7BsearchTerms%7D&sourceid=chrome&ie=UTF-8\"", "ours": "\"https://drive.google.com/drive/search?q=%s\""}
+return_mismatch {"method": "->engine -ArcSessionID identifier", "call": 0, "args": "[]", "golden": "1064772440", "ours": "1500332824"}
+return_mismatch {"method": "->engine -ArcWebContents loadProgress", "call": 1, "args": "[]", "golden": "1", "ours": "0.7"}
+return_mismatch {"method": "->engine -ArcWebContents nativeView", "call": 0, "args": "[]", "golden": "\"<WebContentsHostView#1>\"", "ours": "\"<WebContentsViewCocoa#1>\""}
+return_mismatch {"method": "->engine -ArcWebContents tabTraits", "call": 3, "args": "[]", "golden": "\"<NSMutableIndexSet#3>\"", "ours": "\"<NSMutableIndexSet#2>\""}
+arg_mismatch {"method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:", "call": 0, "golden": "[\"<ArcBrowser#1>\", 1064772440]", "ours": "[\"<ArcBrowser#1>\", 1500332824]"}
+arg_mismatch {"method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "call": 0, "golden": "[\"keep_alive_registry\", \"{registered_count_=1, restart_allowed_count_=0, KeepAlives=[APP_CONTROLLER (1)]}\"]", "ours": "[\"keep_alive_registry\", \"{registered_count_=4, restart_allowed_count_=0,
+arg_mismatch {"method": "engine->app -ADK.WebContentChromium webContents:didChangeAvailableMediaActions:", "call": 0, "golden": "[\"<ArcWebContents#1>\", \"<NSMutableIndexSet#2>\"]", "ours": "[\"<ArcWebContents#1>\", \"<NSMutableIndexSet#3>\"]"}
+arg_mismatch {"method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:", "call": 0, "golden": "[\"*\", \"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany
+extra {"method": "->engine -ArcBrowserApplication ensureBasicAccessibilityEnabled", "our_calls": 3, "example": {"args": "[]", "ret": "null"}}
+extra {"method": "engine->app -ADK.AccessibilityObserver accessibilityModeChanged:", "our_calls": 1, "example": {"args": "[\"kNativeAPIs | kWebContents\"]", "ret": "null"}}

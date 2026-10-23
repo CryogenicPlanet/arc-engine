@@ -45,7 +45,7 @@
  - (void)nativeContentsDestroyed __attribute__((objc_direct));
  - (void)coreDidShowJavaScriptPopup __attribute__((objc_direct));
  - (id)serviceNamed:(NSString*)className __attribute__((objc_direct));
-@@ -204,7 +212,21 @@
+@@ -205,7 +213,21 @@
  - (void)webContents:(ArcWebContents*)contents didChangeVisibleSecurityState:(ArcSecureContext*)context;
  @end
  
@@ -67,7 +67,7 @@
  bool NeedsNavigationPolicy(content::NavigationHandle* handle) {
    return handle->IsInPrimaryMainFrame() && handle->IsRendererInitiated() &&
        !handle->IsSameDocument() && handle->GetReloadType() == content::ReloadType::NONE &&
-@@ -221,25 +243,27 @@
+@@ -222,25 +244,27 @@
      if (!NeedsNavigationPolicy(handle)) {
        return PROCEED;
      }
@@ -98,7 +98,7 @@
    arcmod::GetNavigationThrottleHook() = base::BindRepeating(
        [](content::NavigationThrottleRegistry& registry) {
          registry.AddThrottle(std::make_unique<CoreNavigationPolicyThrottle>(registry));
-@@ -251,137 +275,113 @@
+@@ -252,137 +276,120 @@
    ArcContentsObserver(content::WebContents* contents, ArcWebContents* wrapper)
        : content::WebContentsObserver(contents), wrapper_(wrapper),
          last_committed_entry_count_(contents->GetController().GetEntryCount()) {}
@@ -295,10 +295,17 @@
 +        if (owner) { owner.favicon = state.favicon.IsEmpty() ? nil : state.favicon.AsNSImage(); }
 +      });
 +    }
-+    if (flags & content::INVALIDATE_TYPE_AUDIO) {
++    // Native TAB falls through to traits; TAB|AUDIO still posts once.
++    if (flags & (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_AUDIO)) {
 +      PostCoreUI(^{
++        // Native 4413050 materializes a fresh set per delivery, before loading
++        // its weak owner. Keep the receipt-time payload as native ordinals.
++        NSMutableIndexSet* traits = [NSMutableIndexSet indexSet];
++        for (uint32_t trait : state.traits) {
++          if (trait <= 13) { [traits addIndex:trait]; }
++        }
 +        ArcWebContents* owner = weak_owner;
-+        if (owner) { owner.tabTraits = state.traits; }
++        if (owner) { owner.tabTraits = traits; }
 +      });
 +    }
 +  }
@@ -323,7 +330,7 @@
    }
    void NavigationEntryCommitted(const content::LoadCommittedDetails&) override {
      if (web_contents()) {
-@@ -392,17 +392,10 @@
+@@ -393,17 +400,10 @@
    }
    void NavigationListPruned(const content::PrunedDetails&) override { UpdateHistory(); }
    void NavigationEntriesDeleted() override { UpdateHistory(); }
@@ -345,7 +352,7 @@
    void OnVisibilityChanged(content::Visibility visibility) override {
      ArcWebContents* wrapper = wrapper_;
      wrapper.visibility = static_cast<NSInteger>(visibility);
-@@ -419,7 +412,7 @@
+@@ -420,7 +420,7 @@
        UpdateHistory();
        if (!native || generation != navigation_generation_) { return; }
      }
@@ -354,7 +361,7 @@
      if (web_contents() && [delegate respondsToSelector:@selector(webContents:didChangeVisibleSecurityState:)]) {
        ArcSecureContext* state = [[ArcSecureContext alloc] initWithSecureContext:web_contents()];
        [delegate webContents:wrapper didChangeVisibleSecurityState:state];
-@@ -435,82 +428,49 @@
+@@ -436,82 +436,49 @@
    void OnWebContentsLostFocus(content::RenderWidgetHost*) override { wrapper_.hasFocus = NO; }
    void WebContentsDestroyed() override {
      ArcWebContents* wrapper = wrapper_;
@@ -378,7 +385,7 @@
 +    NSString* __strong title = nil;
 +    NSString* __strong status = nil;
 +    gfx::Image favicon;
-+    NSMutableIndexSet* __strong traits = nil;
++    std::vector<uint32_t> traits;
    };
 -  void ResetPendingNavigation() {
 -    pending_navigation_ = nil;
@@ -465,16 +472,16 @@
 +      auto* entry = native->GetController().GetLastCommittedEntry();
 +      if (entry && entry->GetFavicon().valid) { state.favicon = entry->GetFavicon().image; }
 +    }
-+    if (flags & content::INVALIDATE_TYPE_AUDIO) {
-+      // Audit gap: original 4378e28 emits a native vector of trait ordinals,
-+      // filtered to 0..13 by 4413050; its producer mapping remains unrecovered.
-+      state.traits = [NSMutableIndexSet indexSet];
++    if (flags & (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_AUDIO)) {
++      // The nonempty cached-alert/ICE provider is staged separately. Preserve
++      // its native vector until each delivery constructs the Objective-C set.
++      state.traits = {};
 +    }
 +    return state;
    }
    void UpdateHistory() {
      ArcWebContents* wrapper = wrapper_;
-@@ -518,25 +478,11 @@
+@@ -519,25 +486,11 @@
        wrapper.backForwardList = [ArcBackForwardList snapshotForWebContents:web_contents()];
      }
    }
@@ -501,7 +508,7 @@
  };
  
  class ArcContentsData : public content::WebContentsUserData<ArcContentsData> {
-@@ -551,6 +497,20 @@
+@@ -552,6 +505,20 @@
  };
  WEB_CONTENTS_USER_DATA_KEY_IMPL(ArcContentsData);
  
@@ -522,7 +529,7 @@
  uint64_t NextDiagnosticID() {
    static constinit uint64_t next = 0;
    return ++next;
-@@ -567,6 +527,8 @@
+@@ -568,6 +535,8 @@
    ArcWebContentsNavigationController* _navigationController;
    __weak id _navigationDelegate;
    __weak id _uiDelegate;
@@ -531,7 +538,7 @@
    __weak id _actionsDelegate;
    __weak id _topBandColorDelegate;
    uint64_t _refreshGeneration;
-@@ -713,42 +675,22 @@
+@@ -714,42 +683,22 @@
  - (BOOL)foregroundForInsertion { return _foreground; }
  - (BOOL)isInitialized { return !!_contents; }
  - (void)invalidateNativeStateRefresh { ++_refreshGeneration; }
@@ -589,7 +596,7 @@
  }
  // Sub-objects (DevTools, media session, ...) that implement -initWithArcWebContents: get this wrapper;
  // shell classes get plain init.
-@@ -790,7 +732,19 @@
+@@ -792,7 +741,19 @@
  }
  - (void)setNavigationDelegate:(id)delegate { _navigationDelegate = delegate; }
  - (id)navigationDelegate { return _navigationDelegate; }

@@ -241,3 +241,229 @@ ARC_EXPORT @interface ArcAdhocHistogramSample : NSObject {
   return self;
 }
 @end
+
+// Native collection inputs are read only through the offsets proven by the
+// original engine constructors. Their C++ type names and leading bytes remain
+// unknown; these readers do not assert an allocation size or header meaning.
+#include <bit>
+#include "base/compiler_specific.h"
+#include "base/containers/span.h"
+#include "base/numerics/byte_conversions.h"
+
+ARC_EXPORT @interface ArcHistogramSamples : NSObject {
+  ArcHistogramSample* _browserMemoryFootprintMb;
+  ArcHistogramSample* _totalMemoryFootprintMb;
+  ArcHistogramSample* _averageTotalCpuWhileInBackgroundPercent;
+  ArcHistogramSample* _averageTotalCpuPercent;
+  ArcHistogramSample* _averageBrowserCpuPercent;
+  ArcHistogramSample* _idleWakeupsTotalWhileInBackground;
+  ArcHistogramSample* _idleWakeupsTotal;
+  ArcHistogramSample* _batteryDischargeRateNavigation;
+  ArcHistogramSample* _batteryDischargeRateWhileInBackground;
+  ArcHistogramSample* _batteryDischargeRate;
+  ArcHistogramSample* _memoryPressureWindowDurationCriticalToModerate;
+  ArcHistogramSample* _memoryPressureWindowDurationCriticalToNone;
+  ArcHistogramSample* _memoryPressureWindowDurationModerateToCritical;
+  ArcHistogramSample* _memoryPressureWindowDurationModerateToNone;
+  ArcHistogramSample* _averageGpuProcessCpuPercent;
+  ArcHistogramSample* _averageNetworkProcessCpuPercent;
+  ArcHistogramSample* _averageExtensionEventProcessCpuPercent;
+  ArcHistogramSample* _averageExtensionPersistentProcessCpuPercent;
+  ArcHistogramSample* _averageRendererProcessCpuPercent;
+  ArcHistogramSample* _averageTotalCpuDuringFullscreenVideoPercent;
+  ArcHistogramSample* _averageTotalCpuWithInteractionPercent;
+  ArcHistogramSample* _averageTotalCpuWithNavigationPercent;
+  ArcHistogramSample* _averageTotalCpuWhenIdleForegroundPercent;
+  ArcHistogramSample* _gpuMemoryFootprintMb;
+  ArcHistogramSample* _rendererMemoryFootprintMb;
+  ArcHistogramSample* _totalRendererMemoryFootprintMb;
+  ArcHistogramSample* _totalSharedMemoryFootprintMb;
+  ArcHistogramSample* _totalPrivateSwapFootprintMb;
+  ArcHistogramSample* _totalResidentSetMb;
+  ArcHistogramSample* _totalGpuMappedMemoryMb;
+  ArcHistogramSample* _totalTileMemoryMb;
+  ArcHistogramSample* _networkServiceMemoryFootprintMb;
+  ArcHistogramSample* _extensionMemoryFootprintMb;
+  ArcHistogramSample* _aiServiceMemoryFootprintMb;
+  ArcHistogramSample* _audioServiceMemoryFootprintMb;
+  ArcHistogramSample* _utilityMemoryFootprintMb;
+  ArcHistogramSample* _averageAIServiceCpuPercent;
+}
+@property(nonatomic, readonly) ArcHistogramSample* browserMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* totalMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* averageTotalCpuWhileInBackgroundPercent;
+@property(nonatomic, readonly) ArcHistogramSample* averageTotalCpuPercent;
+@property(nonatomic, readonly) ArcHistogramSample* averageBrowserCpuPercent;
+@property(nonatomic, readonly) ArcHistogramSample* idleWakeupsTotalWhileInBackground;
+@property(nonatomic, readonly) ArcHistogramSample* idleWakeupsTotal;
+@property(nonatomic, readonly) ArcHistogramSample* batteryDischargeRateNavigation;
+@property(nonatomic, readonly) ArcHistogramSample* batteryDischargeRateWhileInBackground;
+@property(nonatomic, readonly) ArcHistogramSample* batteryDischargeRate;
+@property(nonatomic, readonly) ArcHistogramSample* memoryPressureWindowDurationCriticalToModerate;
+@property(nonatomic, readonly) ArcHistogramSample* memoryPressureWindowDurationCriticalToNone;
+@property(nonatomic, readonly) ArcHistogramSample* memoryPressureWindowDurationModerateToCritical;
+@property(nonatomic, readonly) ArcHistogramSample* memoryPressureWindowDurationModerateToNone;
+@property(nonatomic, readonly) ArcHistogramSample* averageGpuProcessCpuPercent;
+@property(nonatomic, readonly) ArcHistogramSample* averageNetworkProcessCpuPercent;
+@property(nonatomic, readonly) ArcHistogramSample* averageExtensionEventProcessCpuPercent;
+@property(nonatomic, readonly) ArcHistogramSample* averageExtensionPersistentProcessCpuPercent;
+@property(nonatomic, readonly) ArcHistogramSample* averageRendererProcessCpuPercent;
+@property(nonatomic, readonly) ArcHistogramSample* averageTotalCpuDuringFullscreenVideoPercent;
+@property(nonatomic, readonly) ArcHistogramSample* averageTotalCpuWithInteractionPercent;
+@property(nonatomic, readonly) ArcHistogramSample* averageTotalCpuWithNavigationPercent;
+@property(nonatomic, readonly) ArcHistogramSample* averageTotalCpuWhenIdleForegroundPercent;
+@property(nonatomic, readonly) ArcHistogramSample* gpuMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* rendererMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* totalRendererMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* totalSharedMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* totalPrivateSwapFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* totalResidentSetMb;
+@property(nonatomic, readonly) ArcHistogramSample* totalGpuMappedMemoryMb;
+@property(nonatomic, readonly) ArcHistogramSample* totalTileMemoryMb;
+@property(nonatomic, readonly) ArcHistogramSample* networkServiceMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* extensionMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* aiServiceMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* audioServiceMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* utilityMemoryFootprintMb;
+@property(nonatomic, readonly) ArcHistogramSample* averageAIServiceCpuPercent;
+- (instancetype)initWithPeriodicHistogramSample:(const void*)sample;
+@end
+
+@implementation ArcHistogramSamples
+@synthesize browserMemoryFootprintMb = _browserMemoryFootprintMb;
+@synthesize totalMemoryFootprintMb = _totalMemoryFootprintMb;
+@synthesize averageTotalCpuWhileInBackgroundPercent = _averageTotalCpuWhileInBackgroundPercent;
+@synthesize averageTotalCpuPercent = _averageTotalCpuPercent;
+@synthesize averageBrowserCpuPercent = _averageBrowserCpuPercent;
+@synthesize idleWakeupsTotalWhileInBackground = _idleWakeupsTotalWhileInBackground;
+@synthesize idleWakeupsTotal = _idleWakeupsTotal;
+@synthesize batteryDischargeRateNavigation = _batteryDischargeRateNavigation;
+@synthesize batteryDischargeRateWhileInBackground = _batteryDischargeRateWhileInBackground;
+@synthesize batteryDischargeRate = _batteryDischargeRate;
+@synthesize memoryPressureWindowDurationCriticalToModerate = _memoryPressureWindowDurationCriticalToModerate;
+@synthesize memoryPressureWindowDurationCriticalToNone = _memoryPressureWindowDurationCriticalToNone;
+@synthesize memoryPressureWindowDurationModerateToCritical = _memoryPressureWindowDurationModerateToCritical;
+@synthesize memoryPressureWindowDurationModerateToNone = _memoryPressureWindowDurationModerateToNone;
+@synthesize averageGpuProcessCpuPercent = _averageGpuProcessCpuPercent;
+@synthesize averageNetworkProcessCpuPercent = _averageNetworkProcessCpuPercent;
+@synthesize averageExtensionEventProcessCpuPercent = _averageExtensionEventProcessCpuPercent;
+@synthesize averageExtensionPersistentProcessCpuPercent = _averageExtensionPersistentProcessCpuPercent;
+@synthesize averageRendererProcessCpuPercent = _averageRendererProcessCpuPercent;
+@synthesize averageTotalCpuDuringFullscreenVideoPercent = _averageTotalCpuDuringFullscreenVideoPercent;
+@synthesize averageTotalCpuWithInteractionPercent = _averageTotalCpuWithInteractionPercent;
+@synthesize averageTotalCpuWithNavigationPercent = _averageTotalCpuWithNavigationPercent;
+@synthesize averageTotalCpuWhenIdleForegroundPercent = _averageTotalCpuWhenIdleForegroundPercent;
+@synthesize gpuMemoryFootprintMb = _gpuMemoryFootprintMb;
+@synthesize rendererMemoryFootprintMb = _rendererMemoryFootprintMb;
+@synthesize totalRendererMemoryFootprintMb = _totalRendererMemoryFootprintMb;
+@synthesize totalSharedMemoryFootprintMb = _totalSharedMemoryFootprintMb;
+@synthesize totalPrivateSwapFootprintMb = _totalPrivateSwapFootprintMb;
+@synthesize totalResidentSetMb = _totalResidentSetMb;
+@synthesize totalGpuMappedMemoryMb = _totalGpuMappedMemoryMb;
+@synthesize totalTileMemoryMb = _totalTileMemoryMb;
+@synthesize networkServiceMemoryFootprintMb = _networkServiceMemoryFootprintMb;
+@synthesize extensionMemoryFootprintMb = _extensionMemoryFootprintMb;
+@synthesize aiServiceMemoryFootprintMb = _aiServiceMemoryFootprintMb;
+@synthesize audioServiceMemoryFootprintMb = _audioServiceMemoryFootprintMb;
+@synthesize utilityMemoryFootprintMb = _utilityMemoryFootprintMb;
+@synthesize averageAIServiceCpuPercent = _averageAIServiceCpuPercent;
+- (instancetype)initWithPeriodicHistogramSample:(const void*)sample {
+  if ((self = [super init])) {
+    // SAFETY: This ABI takes an existing native sample without a length. The
+    // original reader accesses through byte 0x1c0; the caller owns that storage.
+    const auto bytes = UNSAFE_BUFFERS(base::span<const uint8_t>(
+        static_cast<const uint8_t*>(sample), size_t{0x1c1}));
+    auto wrap = [&](size_t payload, size_t presence) -> ArcHistogramSample* {
+      if (!bytes[presence]) return nil;
+      app_values::HistogramSample captured;
+      captured.value = base::I32FromNativeEndian(bytes.subspan(payload).first<4>());
+      captured.browser_state = std::bit_cast<app_values::BrowserState>(
+          base::U32FromNativeEndian(bytes.subspan(payload + 4).first<4>()));
+      return [[ArcHistogramSample alloc] initWithHistogramSample:&captured];
+    };
+    // Constructor order differs from both native field and Objective-C slot order.
+    _browserMemoryFootprintMb = wrap(0x14, 0x1c);
+    _totalMemoryFootprintMb = wrap(0x8, 0x10);
+    _averageTotalCpuWhileInBackgroundPercent = wrap(0x20, 0x28);
+    _averageTotalCpuPercent = wrap(0x2c, 0x34);
+    _averageBrowserCpuPercent = wrap(0x38, 0x40);
+    _idleWakeupsTotalWhileInBackground = wrap(0x44, 0x4c);
+    _idleWakeupsTotal = wrap(0x50, 0x58);
+    _batteryDischargeRateWhileInBackground = wrap(0x5c, 0x64);
+    _batteryDischargeRateNavigation = wrap(0x68, 0x70);
+    _batteryDischargeRate = wrap(0x74, 0x7c);
+    _memoryPressureWindowDurationCriticalToModerate = wrap(0x80, 0x88);
+    _memoryPressureWindowDurationCriticalToNone = wrap(0x8c, 0x94);
+    _memoryPressureWindowDurationModerateToCritical = wrap(0x98, 0xa0);
+    _memoryPressureWindowDurationModerateToNone = wrap(0xa4, 0xac);
+    _averageGpuProcessCpuPercent = wrap(0xb0, 0xb8);
+    _averageNetworkProcessCpuPercent = wrap(0xbc, 0xc4);
+    _averageExtensionEventProcessCpuPercent = wrap(0xc8, 0xd0);
+    _averageExtensionPersistentProcessCpuPercent = wrap(0xd4, 0xdc);
+    _averageRendererProcessCpuPercent = wrap(0xe0, 0xe8);
+    _averageTotalCpuDuringFullscreenVideoPercent = wrap(0xec, 0xf4);
+    _averageTotalCpuWithInteractionPercent = wrap(0xf8, 0x100);
+    _averageTotalCpuWithNavigationPercent = wrap(0x104, 0x10c);
+    _averageTotalCpuWhenIdleForegroundPercent = wrap(0x110, 0x118);
+    _gpuMemoryFootprintMb = wrap(0x128, 0x130);
+    _rendererMemoryFootprintMb = wrap(0x11c, 0x124);
+    _totalRendererMemoryFootprintMb = wrap(0x17c, 0x184);
+    _totalSharedMemoryFootprintMb = wrap(0x188, 0x190);
+    _totalPrivateSwapFootprintMb = wrap(0x194, 0x19c);
+    _totalResidentSetMb = wrap(0x1a0, 0x1a8);
+    _totalGpuMappedMemoryMb = wrap(0x1ac, 0x1b4);
+    _totalTileMemoryMb = wrap(0x1b8, 0x1c0);
+    _networkServiceMemoryFootprintMb = wrap(0x134, 0x13c);
+    _extensionMemoryFootprintMb = wrap(0x140, 0x148);
+    _aiServiceMemoryFootprintMb = wrap(0x158, 0x160);
+    _audioServiceMemoryFootprintMb = wrap(0x164, 0x16c);
+    _utilityMemoryFootprintMb = wrap(0x170, 0x178);
+    _averageAIServiceCpuPercent = wrap(0x14c, 0x154);
+  }
+  return self;
+}
+@end
+
+ARC_EXPORT @interface ArcAdhocHistogramSamples : NSObject {
+  NSMutableArray* _samples;
+}
+@property(nonatomic, readonly) NSMutableArray* samples;
+- (instancetype)initWithAdhocHistogramSample:(const void*)sample;
+@end
+
+@implementation ArcAdhocHistogramSamples
+@synthesize samples = _samples;
+- (instancetype)initWithAdhocHistogramSample:(const void*)sample {
+  if ((self = [super init])) {
+    _samples = [[NSMutableArray alloc] init];
+    // SAFETY: The native ABI supplies a valid input, whose reader loads a data
+    // pointer at +8 and a count at +16. It does not retain either input region.
+    const auto header = UNSAFE_BUFFERS(base::span<const uint8_t>(
+        static_cast<const uint8_t*>(sample), size_t{24}));
+    const uint64_t count = base::U64FromNativeEndian(header.subspan<16, 8>());
+    // Match the original reader's scaled-count empty test and byte extent.
+    const size_t byte_count = (count & UINT64_C(0x1fffffffffffffff)) * 8;
+    if (byte_count) {
+      const uintptr_t address = base::U64FromNativeEndian(header.subspan<8, 8>());
+      // SAFETY: A valid native count names this many contiguous eight-byte rows.
+      const auto rows = UNSAFE_BUFFERS(base::span<const uint8_t>(
+          reinterpret_cast<const uint8_t*>(address), byte_count));
+      for (size_t offset = 0; offset < rows.size(); offset += 8) {
+        ArcAdhocHistogramSample* record = [[ArcAdhocHistogramSample alloc] init];
+        const auto row = rows.subspan(offset).first<8>();
+        const uint32_t type = base::U32FromNativeEndian(row.first<4>());
+        if (type > 4) {
+          // Original arm64 instruction at 0x4403608 is 0xd42aa160.
+          // Keep its exact BRK immediate; CHECK would add different side effects.
+          asm volatile("brk #0x550b");
+          __builtin_unreachable();
+        }
+        [record setType:type];
+        [record setValue:base::I32FromNativeEndian(row.subspan<4, 4>())];
+        [_samples addObject:record];
+      }
+    }
+  }
+  return self;
+}
+@end

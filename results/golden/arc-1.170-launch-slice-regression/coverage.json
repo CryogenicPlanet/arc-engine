@@ -1,7 +1,7 @@
 {
-  "engineClassCount": 37,
-  "engineSelectorCount": 224,
-  "callbackSelectorCount": 27,
+  "engineClassCount": 36,
+  "engineSelectorCount": 220,
+  "callbackSelectorCount": 26,
   "scenario": "launch-slice-regression",
   "accepted": true,
   "errors": [],
@@ -9,9 +9,9 @@
     "launch-1",
     "launch-2"
   ],
-  "classCount": 45,
-  "selectorCount": 251,
-  "callCount": 6263,
+  "classCount": 43,
+  "selectorCount": 246,
+  "callCount": 5875,
   "classes": {
     "ADK.ADKApplication": {
       "calls": 6,
@@ -20,13 +20,6 @@
         "engine->app -[ADK.ADKApplication didConnectToNetworkProcess]",
         "engine->app -[ADK.ADKApplication didInitializeBrowserProcess]",
         "engine->app -[ADK.ADKApplication didReceiveGPUInfoUpdate:]"
-      ]
-    },
-    "ADK.AccessibilityObserver": {
-      "calls": 2,
-      "selectorCount": 1,
-      "selectors": [
-        "engine->app -[ADK.AccessibilityObserver accessibilityModeChanged:]"
       ]
     },
     "ADK.BrowserContextDelegateBridge": {
@@ -53,7 +46,7 @@
       ]
     },
     "ADK.CrashKeysObserverBridge": {
-      "calls": 63,
+      "calls": 59,
       "selectorCount": 1,
       "selectors": [
         "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]"
@@ -105,14 +98,13 @@
       ]
     },
     "ArcBrowserApplication": {
-      "calls": 106,
-      "selectorCount": 21,
+      "calls": 96,
+      "selectorCount": 20,
       "selectors": [
         "->engine -[ArcBrowserApplication availableBrowserContextAttributes]",
         "->engine -[ArcBrowserApplication availableImportSourceProfiles:]",
         "->engine -[ArcBrowserApplication createBrowser:withDelegate:forWindow:]",
         "->engine -[ArcBrowserApplication disableAccessibility]",
-        "->engine -[ArcBrowserApplication ensureBasicAccessibilityEnabled]",
         "->engine -[ArcBrowserApplication getBrowserContext:type:]",
         "->engine -[ArcBrowserApplication getNonDefaultFlags:]",
         "->engine -[ArcBrowserApplication init:]",
@@ -148,13 +140,12 @@
       ]
     },
     "ArcBrowserContext": {
-      "calls": 60,
-      "selectorCount": 10,
+      "calls": 56,
+      "selectorCount": 9,
       "selectors": [
         "->engine -[ArcBrowserContext downloads]",
         "->engine -[ArcBrowserContext extensions]",
         "->engine -[ArcBrowserContext favicon:completion:]",
-        "->engine -[ArcBrowserContext getContentSettingForOrigin:withContentSettingType:]",
         "->engine -[ArcBrowserContext history]",
         "->engine -[ArcBrowserContext id]",
         "->engine -[ArcBrowserContext initWithBrowserContext:]",
@@ -350,7 +341,7 @@
       ]
     },
     "ArcSearchEngine": {
-      "calls": 4528,
+      "calls": 4189,
       "selectorCount": 8,
       "selectors": [
         "->engine -[ArcSearchEngine faviconUrl]",
@@ -378,14 +369,6 @@
         "->engine -[ArcSessionID identifier]"
       ]
     },
-    "ArcSiteSettingInfo": {
-      "calls": 8,
-      "selectorCount": 2,
-      "selectors": [
-        "->engine -[ArcSiteSettingInfo initWithSiteSettingInfo:]",
-        "->engine -[ArcSiteSettingInfo siteSetting]"
-      ]
-    },
     "ArcTracingController": {
       "calls": 2,
       "selectorCount": 1,
@@ -394,14 +377,14 @@
       ]
     },
     "ArcURLLoadCancellationToken": {
-      "calls": 8,
+      "calls": 9,
       "selectorCount": 1,
       "selectors": [
         "->engine -[ArcURLLoadCancellationToken initWithToken:]"
       ]
     },
     "ArcURLLoadConfiguration": {
-      "calls": 64,
+      "calls": 72,
       "selectorCount": 8,
       "selectors": [
         "->engine -[ArcURLLoadConfiguration setBlockLocalRequest:]",
@@ -415,7 +398,7 @@
       ]
     },
     "ArcWebContents": {
-      "calls": 751,
+      "calls": 728,
       "selectorCount": 65,
       "selectors": [
         "->engine -[ArcWebContents backForwardList]",
@@ -501,7 +484,7 @@
       ]
     },
     "ArcWebContentsMediaSession": {
-      "calls": 17,
+      "calls": 9,
       "selectorCount": 2,
       "selectors": [
         "->engine -[ArcWebContentsMediaSession getMediaContentTypes:]",
@@ -525,7 +508,7 @@
       ]
     },
     "_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate": {
-      "calls": 12,
+      "calls": 13,
       "selectorCount": 4,
       "selectors": [
         "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:]",
@@ -552,13 +535,12 @@
     "->engine -[ArcBrowserApplication availableImportSourceProfiles:]": 2,
     "->engine -[ArcBrowserApplication createBrowser:withDelegate:forWindow:]": 2,
     "->engine -[ArcBrowserApplication disableAccessibility]": 2,
-    "->engine -[ArcBrowserApplication ensureBasicAccessibilityEnabled]": 11,
     "->engine -[ArcBrowserApplication getBrowserContext:type:]": 2,
     "->engine -[ArcBrowserApplication getNonDefaultFlags:]": 2,
     "->engine -[ArcBrowserApplication init:]": 2,
     "->engine -[ArcBrowserApplication initialize:]": 2,
     "->engine -[ArcBrowserApplication isEncryptionAvailable]": 4,
-    "->engine -[ArcBrowserApplication loadUrl:withDelegate:]": 6,
+    "->engine -[ArcBrowserApplication loadUrl:withDelegate:]": 7,
     "->engine -[ArcBrowserApplication run]": 2,
     "->engine -[ArcBrowserApplication setAccessibilityObserver:]": 2,
     "->engine -[ArcBrowserApplication setExcludedDomains:]": 2,
@@ -582,7 +564,6 @@
     "->engine -[ArcBrowserContext downloads]": 2,
     "->engine -[ArcBrowserContext extensions]": 8,
     "->engine -[ArcBrowserContext favicon:completion:]": 3,
-    "->engine -[ArcBrowserContext getContentSettingForOrigin:withContentSettingType:]": 4,
     "->engine -[ArcBrowserContext history]": 2,
     "->engine -[ArcBrowserContext id]": 8,
     "->engine -[ArcBrowserContext initWithBrowserContext:]": 6,
@@ -670,22 +651,20 @@
     "->engine -[ArcSearchEngine keyword]": 35,
     "->engine -[ArcSearchEngine name]": 14,
     "->engine -[ArcSearchEngine status]": 41,
-    "->engine -[ArcSearchEngine url]": 4307,
+    "->engine -[ArcSearchEngine url]": 3968,
     "->engine -[ArcSecureContext initWithSecureContext:]": 6,
     "->engine -[ArcSecureContext state]": 6,
     "->engine -[ArcSessionID identifier]": 11,
-    "->engine -[ArcSiteSettingInfo initWithSiteSettingInfo:]": 4,
-    "->engine -[ArcSiteSettingInfo siteSetting]": 4,
     "->engine -[ArcTracingController setDelegate:]": 2,
-    "->engine -[ArcURLLoadCancellationToken initWithToken:]": 8,
-    "->engine -[ArcURLLoadConfiguration setBlockLocalRequest:]": 8,
-    "->engine -[ArcURLLoadConfiguration setCachePolicy:]": 8,
-    "->engine -[ArcURLLoadConfiguration setFollowRedirects:]": 8,
-    "->engine -[ArcURLLoadConfiguration setHeaders:]": 8,
-    "->engine -[ArcURLLoadConfiguration setMethod:]": 8,
-    "->engine -[ArcURLLoadConfiguration setStreamResponseData:]": 8,
-    "->engine -[ArcURLLoadConfiguration setTimeout:]": 8,
-    "->engine -[ArcURLLoadConfiguration setUrl:]": 8,
+    "->engine -[ArcURLLoadCancellationToken initWithToken:]": 9,
+    "->engine -[ArcURLLoadConfiguration setBlockLocalRequest:]": 9,
+    "->engine -[ArcURLLoadConfiguration setCachePolicy:]": 9,
+    "->engine -[ArcURLLoadConfiguration setFollowRedirects:]": 9,
+    "->engine -[ArcURLLoadConfiguration setHeaders:]": 9,
+    "->engine -[ArcURLLoadConfiguration setMethod:]": 9,
+    "->engine -[ArcURLLoadConfiguration setStreamResponseData:]": 9,
+    "->engine -[ArcURLLoadConfiguration setTimeout:]": 9,
+    "->engine -[ArcURLLoadConfiguration setUrl:]": 9,
     "->engine -[ArcWebContents backForwardList]": 22,
     "->engine -[ArcWebContents blockedResourceCount]": 6,
     "->engine -[ArcWebContents boostIDE]": 3,
@@ -697,15 +676,15 @@
     "->engine -[ArcWebContents freeformTextFieldActive]": 6,
     "->engine -[ArcWebContents hadFormOrUserEdits]": 6,
     "->engine -[ArcWebContents hasDirtyTextField]": 6,
-    "->engine -[ArcWebContents hasFocus]": 14,
+    "->engine -[ArcWebContents hasFocus]": 6,
     "->engine -[ArcWebContents ignoreDisablePiPAttribute:]": 3,
     "->engine -[ArcWebContents initWithWebContents:]": 3,
     "->engine -[ArcWebContents inputEvent]": 6,
-    "->engine -[ArcWebContents insertStylesheet:stylesheet:]": 4,
+    "->engine -[ArcWebContents insertStylesheet:stylesheet:]": 6,
     "->engine -[ArcWebContents isLoading]": 36,
-    "->engine -[ArcWebContents isReadyToDisplay]": 24,
+    "->engine -[ArcWebContents isReadyToDisplay]": 26,
     "->engine -[ArcWebContents loadProgress]": 40,
-    "->engine -[ArcWebContents mediaSession]": 17,
+    "->engine -[ArcWebContents mediaSession]": 9,
     "->engine -[ArcWebContents nativeView]": 3,
     "->engine -[ArcWebContents navigationController]": 4,
     "->engine -[ArcWebContents navigationID]": 20,
@@ -722,9 +701,9 @@
     "->engine -[ArcWebContents setFreeformTextFieldActive:]": 3,
     "->engine -[ArcWebContents setHadFormOrUserEdits:]": 3,
     "->engine -[ArcWebContents setHasDirtyTextField:]": 3,
-    "->engine -[ArcWebContents setHasFocus:]": 7,
+    "->engine -[ArcWebContents setHasFocus:]": 3,
     "->engine -[ArcWebContents setIsLoading:]": 18,
-    "->engine -[ArcWebContents setIsReadyToDisplay:]": 12,
+    "->engine -[ArcWebContents setIsReadyToDisplay:]": 13,
     "->engine -[ArcWebContents setLoadProgress:]": 20,
     "->engine -[ArcWebContents setNavigationDelegate:]": 3,
     "->engine -[ArcWebContents setNavigationID:]": 10,
@@ -743,7 +722,7 @@
     "->engine -[ArcWebContents setVisibility:]": 6,
     "->engine -[ArcWebContents setZoomLevel:]": 9,
     "->engine -[ArcWebContents state]": 12,
-    "->engine -[ArcWebContents tabTraits]": 36,
+    "->engine -[ArcWebContents tabTraits]": 28,
     "->engine -[ArcWebContents themeColor]": 6,
     "->engine -[ArcWebContents thumbnailsGenerator]": 4,
     "->engine -[ArcWebContents title]": 26,
@@ -754,7 +733,7 @@
     "->engine -[ArcWebContentsBoostIDE initWithBoostIDE:]": 3,
     "->engine -[ArcWebContentsBoostIDE setDelegate:]": 3,
     "->engine -[ArcWebContentsDevTools setDelegate:]": 3,
-    "->engine -[ArcWebContentsMediaSession getMediaContentTypes:]": 14,
+    "->engine -[ArcWebContentsMediaSession getMediaContentTypes:]": 6,
     "->engine -[ArcWebContentsMediaSession setDelegate:]": 3,
     "->engine -[ArcWebContentsNavigationController addObserver:]": 3,
     "->engine -[ArcWebContentsNavigationController removeObserver:]": 1,
@@ -763,13 +742,12 @@
     "engine->app -[ADK.ADKApplication didConnectToNetworkProcess]": 2,
     "engine->app -[ADK.ADKApplication didInitializeBrowserProcess]": 2,
     "engine->app -[ADK.ADKApplication didReceiveGPUInfoUpdate:]": 2,
-    "engine->app -[ADK.AccessibilityObserver accessibilityModeChanged:]": 2,
     "engine->app -[ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:]": 2,
     "engine->app -[ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:]": 2,
     "engine->app -[ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:]": 3,
     "engine->app -[ADK.ChromiumBrowser browser:didUpdateExtensionToolbarActions:]": 2,
     "engine->app -[ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:]": 16,
-    "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]": 63,
+    "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]": 59,
     "engine->app -[ADK.WebContentChromium webContents:decidePolicyForNavigationAction:]": 1,
     "engine->app -[ADK.WebContentChromium webContents:didChangeAvailableMediaActions:]": 3,
     "engine->app -[ADK.WebContentChromium webContents:didChangeStatusText:]": 19,
@@ -783,7 +761,7 @@
     "engine->app -[ADK.WebContentChromium webContentsClosingImminent:withSessionID:]": 1,
     "engine->app -[ADK.WebContentChromium webContentsPiPControllerDestroyed:]": 1,
     "engine->app -[ADK.WebContentChromium webContentsRenderViewReady:]": 1,
-    "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:]": 6,
+    "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:]": 7,
     "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFinish:]": 2,
     "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveData:withData:]": 2,
     "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:]": 2

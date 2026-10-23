@@ -1,0 +1,101 @@
+--- a/arc/api/arc_sessions_restore.mm
++++ b/arc/api/arc_sessions_restore.mm
+@@ -247,6 +247,8 @@
+ @interface SessionsRestoreRequest ()
+ - (void)performRestore;
+ - (void)retryAfterActiveRestore;
++- (void)performNativeWindowRestore:(sessions::TabRestoreService*)service identifier:(SessionID)identifier;
++- (arcmod::SessionBrowserCreatedCallback)prepareFactory:(Profile*)profile params:(BrowserWindowCreateParams&)params;
+ - (void)finish:(ArcBrowser*)browser;
+ @end
+ 
+@@ -261,6 +263,11 @@
+   BOOL _scheduled;
+   BOOL _completed;
+   BOOL _serviceDestroyed;
++  BOOL _factoryPending;
++  ArcBrowser* _factoryWrapper;
++  SessionsRestoreIDs* _factoryIDs;
++  base::WeakPtr<BrowserWindowInterface> _factoryNative;
++  std::unique_ptr<ScopedFullRestoreIDs> _factoryInsertion;
+ }
+ + (void)startWithContext:(ArcBrowserContext*)context identifier:(ArcSessionID*)identifier
+     created:(void (^)(ArcBrowser*))created finished:(void (^)(ArcBrowser*))finished {
+@@ -328,6 +335,64 @@
+   objc_setAssociatedObject(_restoringBrowser, &kFullBrowserRestoring, nil,
+                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+   _activeRestore.reset();
++  _factoryInsertion.reset();
++  _factoryIDs = nil;
++  _factoryWrapper = nil;
++}
++- (arcmod::SessionBrowserCreatedCallback)prepareFactory:(Profile*)profile params:(BrowserWindowCreateParams&)params {
++  if (!_factoryPending || ArcProfileFrom(_context) != profile || params.window) {
++    return {};
++  }
++  _factoryPending = NO; // Consume before any app callback can reenter.
++  params.window = new arc::ArcBrowserWindow();
++  params.should_trigger_session_restore = false;
++  params.creation_source = BrowserWindowCreateParams::CreationSource::kSessionRestore;
++  return base::BindOnce(^(base::WeakPtr<BrowserWindowInterface> native) {
++    if (!native || native->IsDeleteScheduled() || ArcProfileFrom(self->_context) != profile) {
++      return;
++    }
++    self->_factoryNative = native;
++    ArcBrowser* wrapper = [ArcBrowser wrapperForBrowser:native.get()];
++    self->_factoryWrapper = wrapper;
++    self->_restoringBrowser = wrapper;
++    objc_setAssociatedObject(wrapper, &kFullBrowserRestoring, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++    self->_factoryInsertion = std::make_unique<ScopedFullRestoreIDs>(wrapper, self->_factoryIDs);
++    if (self->_created) {
++      self->_created(wrapper);
++    }
++  });
++}
++- (void)performNativeWindowRestore:(sessions::TabRestoreService*)service identifier:(SessionID)identifier {
++  static const bool installed = [] {
++    arcmod::GetSessionBrowserFactoryHook() = base::BindRepeating(
++        [](Profile* profile, BrowserWindowCreateParams& params) -> arcmod::SessionBrowserCreatedCallback {
++          ArcBrowserContext* owner = [ArcBrowserContext wrapperForProfile:profile];
++          SessionsRestoreRequest* request = objc_getAssociatedObject(owner, &kActiveBrowserRestore);
++          return request ? [request prepareFactory:profile params:params] : arcmod::SessionBrowserCreatedCallback();
++        });
++    return true;
++  }();
++  (void)installed;
++  __attribute__((objc_precise_lifetime)) SessionsRestoreRequest* keepAlive = self;
++  _activeRestore = std::make_unique<ScopedBrowserRestore>(_context, self);
++  _factoryIDs = [[SessionsRestoreIDs alloc] init];
++  _factoryPending = YES;
++  const auto result = service->RestoreEntryById(nullptr, identifier, WindowOpenDisposition::NEW_FOREGROUND_TAB);
++  _factoryPending = NO;
++  _factoryInsertion.reset();
++  _activeRestore.reset();
++  SessionsRestoreIDs* state = _factoryIDs;
++  ArcBrowser* wrapper = _factoryWrapper;
++  auto weakBrowser = _factoryNative;
++  const bool succeeded = result.has_value();
++  __weak SessionsRestoreIDs* weakState = state;
++  state.completion = ^{
++    [keepAlive finish:succeeded && !weakState.cancelled && weakBrowser &&
++        !weakBrowser->IsDeleteScheduled() ? wrapper : nil];
++  };
++  state.sealed = YES;
++  // Even zero-insertion/cancelled completions run after the API unwinds.
++  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{ CompleteFullRestore(state); }));
+ }
+ - (void)retryAfterActiveRestore {
+   if (_scheduled || _completed) {
+@@ -378,6 +443,12 @@
+     [keepAlive finish:nil];
+     return;
+   }
++  if (selected->type == sessions::tab_restore::WINDOW &&
++      (*matchedID == selected->id || *matchedID == selected->original_id)) {
++    [keepAlive performNativeWindowRestore:service identifier:*matchedID];
++    return;
++  }
++  // Non-root WINDOW/TAB/GROUP paths remain the preexisting, uncovered route.
+   // Reserve the profile before creating the browser or invoking app code.
+   // A nested request must not consume the native entry that this request uses.
+   _activeRestore = std::make_unique<ScopedBrowserRestore>(_context, self);

@@ -5,6 +5,7 @@
 #include "arc/browser/arc_browser_window.h"
 #include "arc/browser/extensions_bridge.h"
 #import <objc/message.h>
+#include "base/check.h"
 #include "base/memory/weak_ptr.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -128,6 +129,13 @@ bool HasCoreWebContentsData(content::WebContents* contents);
 @end
 
 namespace {
+// The native BrowserWindowCreateParams constructor and GetType bridge use
+// these exact Chrome ordinals; fail compilation if a later Chromium changes it.
+static_assert(BrowserWindowInterface::TYPE_NORMAL == 0);
+static_assert(BrowserWindowInterface::TYPE_POPUP == 1);
+static_assert(BrowserWindowInterface::TYPE_APP_POPUP == 4);
+static_assert(BrowserWindowInterface::TYPE_PICTURE_IN_PICTURE == 5);
+
 void NotifyTabChange(ArcBrowser* browser, ArcWebContents* contents, NSString* change) {
   if (browser && contents) {
     [NSNotificationCenter.defaultCenter postNotificationName:kArcBrowserTabsChangedNotification
@@ -162,15 +170,31 @@ class ArcBrowserTabsObserver : public TabStripModelObserver {
     const bool notify_created = inserted && !inserted->contents.empty() &&
         !arc::HasCoreWebContentsData(inserted->contents.front().contents.get()) &&
         [wrapper hasCoreDelegateBridge];
+    // Native 43065dc compares each insertion to the current active contents,
+    // independently of selection.active_tab_changed(). Popup and app-popup
+    // browser types force true (4306614/430663c). Capture before any callout.
+    std::vector<bool> inserted_active;
+    if (inserted) {
+      const content::WebContents* active_at_receipt = tabs->GetActiveWebContents();
+      BrowserWindowInterface* native_browser = [wrapper browser];
+      const bool popup_active = native_browser &&
+          (native_browser->GetType() == BrowserWindowInterface::TYPE_POPUP ||
+           native_browser->GetType() == BrowserWindowInterface::TYPE_APP_POPUP);
+      inserted_active.reserve(inserted->contents.size());
+      for (const auto& entry : inserted->contents) {
+        inserted_active.push_back(popup_active || entry.contents.get() == active_at_receipt);
+      }
+    }
     NSMutableArray<NSDictionary*>* changes = [NSMutableArray array];
     NSMutableArray<NSArray*>* closing = [NSMutableArray array];
-    auto append = [&](content::WebContents* contents, NSString* kind) {
+    auto append = [&](content::WebContents* contents, NSString* kind, bool active = false) {
       ArcWebContents* tab = [ArcWebContents wrapperForWebContents:contents];
-      if (tab) { [changes addObject:@{@"webContents": tab, @"change": kind}]; }
+      if (tab) { [changes addObject:@{@"webContents": tab, @"change": kind, @"active": @(active)}]; }
     };
     if (change.type() == TabStripModelChange::kInserted) {
+      size_t index = 0;
       for (const auto& entry : change.GetInsert()->contents) {
-        append(entry.contents.get(), @"inserted");
+        append(entry.contents.get(), @"inserted", inserted_active[index++]);
       }
     } else if (change.type() == TabStripModelChange::kRemoved) {
       for (const auto& entry : change.GetRemove()->contents) {
@@ -198,7 +222,8 @@ class ArcBrowserTabsObserver : public TabStripModelObserver {
         content::WebContents* native = [tab webContents];
         BrowserWindowInterface* browser = [wrapper browser];
         if (browser && !browser->IsDeleteScheduled() && native) {
-          [wrapper didInsertWebContents:native active:tab == activated
+          [wrapper didInsertWebContents:native
+                                active:[entry[@"active"] boolValue]
                          notifyCreated:notify_created];
         }
       }
@@ -413,9 +438,11 @@ struct ArcBrowserHolder : base::SupportsUserData::Data {
   switch (_browser->GetType()) {
     case BrowserWindowInterface::TYPE_NORMAL: return 0;
     case BrowserWindowInterface::TYPE_POPUP: return 1;
-    case BrowserWindowInterface::TYPE_APP: return 2;
-    case BrowserWindowInterface::TYPE_APP_POPUP: return 3;
-    default: return 0;
+    case BrowserWindowInterface::TYPE_APP_POPUP: return 2;
+    case BrowserWindowInterface::TYPE_PICTURE_IN_PICTURE: return 3;
+    // Original 42fad78 accepts only Chrome 0/1/4/5 (mask 0x33), trapping
+    // unsupported live browser types rather than reporting normal/default.
+    default: CHECK(false) << "Unsupported Arc browser type";
   }
 }
 - (void)tryToCloseSkipBeforeUnloadHandlers:(BOOL)skipBeforeUnloadHandlers

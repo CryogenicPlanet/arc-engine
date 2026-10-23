@@ -1,0 +1,289 @@
+{
+  "scope": "Existing raw canonical transcripts only. No apps/builds/production writes/Chirp. Exact selected WC is genuine didClose callback first argument; identity aliases or native peers are not inferred.",
+  "conclusion": "No recorded selected-WebContents getter oracle inside either genuine didClose callback. Existing raw trace proves the close timing difference but cannot establish callback-time native binding/getter validity difference.",
+  "runs": {
+    "original": {
+      "transcript": "results/golden/arc-1.170-sessions-public-api/launch-1/record.jsonl",
+      "sha256": "9d03a2511387771a02d05f0f1e758d5652557e2b64d701b508b5f775eb5ca5a0",
+      "selectedWC": "<ArcWebContents#148>",
+      "closeCall": {
+        "seq": 6136,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#148>",
+        "args": []
+      },
+      "closeReturn": {
+        "seq": 6489,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#148>",
+        "ret": null
+      },
+      "callbackCall": {
+        "seq": 6138,
+        "ev": "call",
+        "thread": "main",
+        "depth": 3,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:didCloseWithSessionID:",
+        "self": "<ADK.WebContentChromium#156>",
+        "args": [
+          "<ArcWebContents#148>",
+          "<ArcSessionID#222>"
+        ]
+      },
+      "callbackReturn": {
+        "seq": 6483,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 3,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:didCloseWithSessionID:",
+        "self": "<ADK.WebContentChromium#156>",
+        "ret": null
+      },
+      "callbackInteriorRowCount": 344,
+      "selectedWCRowsInside": [],
+      "allArcWebContentsRowsInside": [],
+      "requestedGetterRowsInside": {
+        "isInitialized": [],
+        "nativeView": [],
+        "url": [],
+        "sessionId": []
+      },
+      "engineCallsInside": [
+        {
+          "class": "ArcSessionID",
+          "selector": "identifier",
+          "calls": 1
+        },
+        {
+          "class": "ArcSearchEngine",
+          "selector": "url",
+          "calls": 171
+        }
+      ],
+      "callbackSessionIDRows": [
+        {
+          "seq": 6139,
+          "ev": "call",
+          "thread": "main",
+          "depth": 4,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcSessionID",
+          "kind": "-",
+          "sel": "identifier",
+          "self": "<ArcSessionID#222>",
+          "args": []
+        },
+        {
+          "seq": 6140,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 4,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcSessionID",
+          "kind": "-",
+          "sel": "identifier",
+          "self": "<ArcSessionID#222>",
+          "ret": 1517929100
+        }
+      ],
+      "firstSelectedWCGetterAfterCallback": {
+        "call": {
+          "seq": 6484,
+          "ev": "call",
+          "thread": "main",
+          "depth": 3,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcWebContents",
+          "kind": "-",
+          "sel": "navigationController",
+          "self": "<ArcWebContents#148>",
+          "args": []
+        },
+        "return": {
+          "seq": 6485,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 3,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcWebContents",
+          "kind": "-",
+          "sel": "navigationController",
+          "self": "<ArcWebContents#148>",
+          "ret": "<ArcWebContentsNavigationController#159>"
+        }
+      },
+      "callbackBeforeCloseReturn": true
+    },
+    "ours": {
+      "transcript": "results/sessions/canonical-public-api-run1/launch-1/record.jsonl",
+      "sha256": "15b43d13a3ce7a941dd658774e478aa5659442d9dd14618c5edd2a3602a4b3e5",
+      "selectedWC": "<ArcWebContents#129>",
+      "closeCall": {
+        "seq": 6380,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#129>",
+        "args": []
+      },
+      "closeReturn": {
+        "seq": 6381,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "SessionsPublicAPIDriver.dylib",
+        "dir": "->engine",
+        "cls": "ArcWebContents",
+        "kind": "-",
+        "sel": "close",
+        "self": "<ArcWebContents#129>",
+        "ret": null
+      },
+      "callbackCall": {
+        "seq": 6428,
+        "ev": "call",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:didCloseWithSessionID:",
+        "self": "<ADK.WebContentChromium#137>",
+        "args": [
+          "<ArcWebContents#129>",
+          "<ArcSessionID#194>"
+        ]
+      },
+      "callbackReturn": {
+        "seq": 6773,
+        "ev": "ret",
+        "thread": "main",
+        "depth": 1,
+        "from": "engine",
+        "dir": "engine->app",
+        "cls": "ADK.WebContentChromium",
+        "kind": "-",
+        "sel": "webContents:didCloseWithSessionID:",
+        "self": "<ADK.WebContentChromium#137>",
+        "ret": null
+      },
+      "callbackInteriorRowCount": 344,
+      "selectedWCRowsInside": [],
+      "allArcWebContentsRowsInside": [],
+      "requestedGetterRowsInside": {
+        "isInitialized": [],
+        "nativeView": [],
+        "url": [],
+        "sessionId": []
+      },
+      "engineCallsInside": [
+        {
+          "class": "ArcSessionID",
+          "selector": "identifier",
+          "calls": 1
+        },
+        {
+          "class": "ArcSearchEngine",
+          "selector": "url",
+          "calls": 171
+        }
+      ],
+      "callbackSessionIDRows": [
+        {
+          "seq": 6429,
+          "ev": "call",
+          "thread": "main",
+          "depth": 2,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcSessionID",
+          "kind": "-",
+          "sel": "identifier",
+          "self": "<ArcSessionID#194>",
+          "args": []
+        },
+        {
+          "seq": 6430,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 2,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcSessionID",
+          "kind": "-",
+          "sel": "identifier",
+          "self": "<ArcSessionID#194>",
+          "ret": 869898253
+        }
+      ],
+      "firstSelectedWCGetterAfterCallback": {
+        "call": {
+          "seq": 6774,
+          "ev": "call",
+          "thread": "main",
+          "depth": 1,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcWebContents",
+          "kind": "-",
+          "sel": "navigationController",
+          "self": "<ArcWebContents#129>",
+          "args": []
+        },
+        "return": {
+          "seq": 6775,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 1,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcWebContents",
+          "kind": "-",
+          "sel": "navigationController",
+          "self": "<ArcWebContents#129>",
+          "ret": "<ArcWebContentsNavigationController#140>"
+        }
+      },
+      "callbackBeforeCloseReturn": false
+    }
+  },
+  "limits": [
+    "Zero recorded getter rows is bounded recorder coverage, not proof that no application/driver activity or unrecorded alias getter occurred.",
+    "Callback ArcSessionID.identifier accesses identify historical callback IDs; they are not selected-WC.sessionId or native-binding validity checks.",
+    "Navigation controller getters immediately after callback return are outside the callback interval and can return cached wrappers; they do not establish callback-time binding validity.",
+    "The replacement scenario aborts its synchronous-close assertion before restoration; subsequent action coverage differs and must not be compared as if both completed the same restore path.",
+    "Original/ours native cleanup source ordering is a separate static finding; no additional callback-time getter behavior follows from these raw transcripts alone."
+  ]
+}

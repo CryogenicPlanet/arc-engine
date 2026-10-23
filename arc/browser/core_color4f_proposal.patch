@@ -1,0 +1,78 @@
+--- /dev/null
++++ b/arc/api/arc_app_color.mm
+@@ -0,0 +1,66 @@
++// Copyright 2026 ArcMod. Exact four-float Arc color value marshalling.
++#import "arc/api/arc_internal.h"
++
++#include <cstddef>
++#include <type_traits>
++
++namespace app_color {
++struct Color4f {
++  // Original getters/setters pass this aggregate indirectly (x8/x2), despite
++  // its four float fields. Empty nontrivial lifecycle preserves that C++ ABI;
++  // the generated ObjC .cxx_construct/.cxx_destruct perform no stores/cleanup.
++  Color4f() {}
++  Color4f(const Color4f&) = default;
++  Color4f& operator=(const Color4f&) = default;
++  ~Color4f() {}
++  float r;
++  float g;
++  float b;
++  float a;
++};
++static_assert(sizeof(float) == 4);
++static_assert(sizeof(Color4f) == 16);
++static_assert(alignof(Color4f) == 4);
++static_assert(std::is_standard_layout_v<Color4f>);
++static_assert(!std::is_trivially_destructible_v<Color4f>);
++static_assert(offsetof(Color4f, r) == 0 && offsetof(Color4f, g) == 4 &&
++              offsetof(Color4f, b) == 8 && offsetof(Color4f, a) == 12);
++}  // namespace app_color
++
++ARC_EXPORT @interface ArcColor4f : NSObject
++- (instancetype)initWithColor4f:(const app_color::Color4f*)color;
++@property(nonatomic) app_color::Color4f color4f;
++@property(nonatomic, readonly) float r;
++@property(nonatomic, readonly) float g;
++@property(nonatomic, readonly) float b;
++@property(nonatomic, readonly) float a;
++@end
++
++@implementation ArcColor4f
++@synthesize color4f = _color4f;
++- (instancetype)initWithColor4f:(const app_color::Color4f*)color {
++  if ((self = [super init])) {
++    _color4f = *color;
++  }
++  return self;
++}
++- (float)r { return _color4f.r; }
++- (float)g { return _color4f.g; }
++- (float)b { return _color4f.b; }
++- (float)a { return _color4f.a; }
++@end
++
++@interface ArcColor4f (Init)
++- (instancetype)initWithR:(float)r g:(float)g b:(float)b a:(float)a;
++@end
++
++@implementation ArcColor4f (Init)
++- (instancetype)initWithR:(float)r g:(float)g b:(float)b a:(float)a {
++  app_color::Color4f color;
++  color.r = r;
++  color.g = g;
++  color.b = b;
++  color.a = a;
++  return [self initWithColor4f:&color];
++}
++@end
+--- a/arc/wp/app.gni
++++ b/arc/wp/app.gni
+@@ -1,5 +1,6 @@
+ # Work package "app": sources and deps (absolute //arc/... paths). Owned by that package.
+ wp_app_sources = [
++  "//arc/api/arc_app_color.mm",
+   "//arc/api/arc_app_cpu.mm",
+   "//arc/api/arc_app_crash.mm",
+   "//arc/api/arc_app_flags.mm",

@@ -1,0 +1,28 @@
+{
+ "internal": [],
+ "internal_ours": [],
+ "missing": [
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:runJavaScriptApplicationModalBeforeUnloadPanel:withMessage:withPrimaryButtonLabel:completion:",
+   "golden_calls": 2,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"Leave site?\", \"Changes you made may not be saved.\", \"Leave\", \"<block>\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "extra": [],
+ "return_mismatch": [],
+ "arg_mismatch": [],
+ "count_mismatch": [],
+ "callback_sequence": {
+  "golden": 2,
+  "ours": 0,
+  "first_divergence": 0,
+  "golden_from": [
+   "ADK.WebContentChromium webContents:runJavaScriptApplicationModalBeforeUnloadPanel:withMessage:withPrimaryButtonLabel:completion:",
+   "ADK.WebContentChromium webContents:runJavaScriptApplicationModalBeforeUnloadPanel:withMessage:withPrimaryButtonLabel:completion:"
+  ],
+  "ours_from": []
+ }
+}

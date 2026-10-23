@@ -1,0 +1,272 @@
+--- /dev/null
++++ b/arc/browser/core_close_state.h
+@@ -0,0 +1,91 @@
++// Copyright 2026 ArcMod. Shared accounting for one logical Arc WebContents.
++#ifndef ARC_BROWSER_CORE_CLOSE_STATE_H_
++#define ARC_BROWSER_CORE_CLOSE_STATE_H_
++
++#include <memory>
++
++#include "base/functional/callback_forward.h"
++#include "base/memory/scoped_refptr.h"
++
++namespace base {
++class Location;
++class SingleThreadTaskRunner;
++}  // namespace base
++
++namespace arc {
++
++// The state owns no native contents, Objective-C wrapper, delegate, or runner.
++// Create and access it on the logical contents' primary UI sequence. Queued work
++// captures this exact handle, never a lookup by native pointer at completion.
++class CoreCloseState;
++using CoreCloseStateHandle = std::shared_ptr<CoreCloseState>;
++
++// Delegate invocation accounting and observer batch accounting are distinct.
++enum class CoreCloseDelegateChannel { kUI, kNavigation, kMedia };
++enum class CoreCloseObserverChannel { kWebContents, kNavigationController };
++
++CoreCloseStateHandle CreateCoreCloseState();
++bool CoreCloseStateIsBusy(const CoreCloseStateHandle& state);
++
++// Stack/LIFO scope, including nested calls of the same channel. Restores the
++// previous synchronous flag only after the selector invocation has returned.
++class [[nodiscard]] ScopedCoreCloseInvocation final {
++ public:
++  ScopedCoreCloseInvocation(CoreCloseStateHandle state,
++                            CoreCloseDelegateChannel channel);
++  ~ScopedCoreCloseInvocation();
++  ScopedCoreCloseInvocation(const ScopedCoreCloseInvocation&) = delete;
++  ScopedCoreCloseInvocation& operator=(const ScopedCoreCloseInvocation&) = delete;
++  ScopedCoreCloseInvocation(ScopedCoreCloseInvocation&&) = delete;
++  ScopedCoreCloseInvocation& operator=(ScopedCoreCloseInvocation&&) = delete;
++
++ private:
++  CoreCloseStateHandle state_;
++  CoreCloseDelegateChannel channel_;
++  bool previous_;
++};
++
++// Call immediately at enqueue, then post the returned closure with the caller's
++// unchanged runner, location, delay, and nesting policy. Pending is acquired now
++// and released after conditional_callback RETURNS, including a no-op/expired
++// target path. A null callback also consumes one invocation when the task runs.
++//
++// Destruction without Run() DOES NOT release pending: original cancellation and
++// PostTask rejection semantics are unproved. A rejected/canceled task therefore
++// leaves the state busy while it survives. Callers must observe post failure;
++// deciding a shutdown/rejection policy is required before production activation.
++base::OnceClosure MakeCoreCloseAsyncInvocation(
++    CoreCloseStateHandle state,
++    CoreCloseDelegateChannel channel,
++    base::OnceClosure conditional_callback);
++
++// Begin before posting a notification's existing per-registration deliveries.
++// This increments once for the entire notification, including an empty list.
++// After ALL delivery posts, call PostFinalizer exactly once with their original
++// primary UI runner. It posts a SEPARATE ordinary zero-delay task to decrement.
++// Do not finish inline or replace this with a per-callback scope.
++//
++// Dropping this token, rejecting its finalizer, or canceling the posted finalizer
++// DOES NOT decrement. It shares the bounded, unproved cancellation policy above.
++class [[nodiscard]] CoreCloseObserverBatch final {
++ public:
++  CoreCloseObserverBatch(CoreCloseStateHandle state,
++                         CoreCloseObserverChannel channel);
++  ~CoreCloseObserverBatch();
++  CoreCloseObserverBatch(const CoreCloseObserverBatch&) = delete;
++  CoreCloseObserverBatch& operator=(const CoreCloseObserverBatch&) = delete;
++  CoreCloseObserverBatch(CoreCloseObserverBatch&&) = delete;
++  CoreCloseObserverBatch& operator=(CoreCloseObserverBatch&&) = delete;
++
++  [[nodiscard]] bool PostFinalizer(
++      const base::Location& from_here,
++      scoped_refptr<base::SingleThreadTaskRunner> primary_ui_runner);
++
++ private:
++  CoreCloseStateHandle state_;
++  CoreCloseObserverChannel channel_;
++};
++
++}  // namespace arc
++
++#endif  // ARC_BROWSER_CORE_CLOSE_STATE_H_
+--- /dev/null
++++ b/arc/browser/core_close_state.mm
+@@ -0,0 +1,175 @@
++// Copyright 2026 ArcMod. No close behavior or native/wrapper lookup is installed.
++#include "arc/browser/core_close_state.h"
++
++#include <array>
++#include <cstddef>
++#include <cstdint>
++#include <limits>
++#include <utility>
++
++#include "base/check.h"
++#include "base/check_op.h"
++#include "base/functional/bind.h"
++#include "base/functional/callback.h"
++#include "base/sequence_checker.h"
++#include "base/task/single_thread_task_runner.h"
++
++namespace arc {
++namespace {
++constexpr size_t kDelegateChannels = 3;
++constexpr size_t kObserverChannels = 2;
++
++size_t Index(CoreCloseDelegateChannel channel) {
++  switch (channel) {
++    case CoreCloseDelegateChannel::kUI: return 0;
++    case CoreCloseDelegateChannel::kNavigation: return 1;
++    case CoreCloseDelegateChannel::kMedia: return 2;
++  }
++  CHECK(false) << "Invalid close delegate channel";
++}
++
++size_t Index(CoreCloseObserverChannel channel) {
++  switch (channel) {
++    case CoreCloseObserverChannel::kWebContents: return 0;
++    case CoreCloseObserverChannel::kNavigationController: return 1;
++  }
++  CHECK(false) << "Invalid close observer channel";
++}
++}  // namespace
++
++class CoreCloseState final {
++ public:
++  bool IsBusy() const {
++    CheckSequence();
++    for (size_t index = 0; index < kDelegateChannels; ++index) {
++      if (synchronous_[index] || pending_[index]) {
++        return true;
++      }
++    }
++    for (uint64_t batches : batches_) {
++      if (batches) {
++        return true;
++      }
++    }
++    return false;
++  }
++
++  bool EnterSync(CoreCloseDelegateChannel channel) {
++    CheckSequence();
++    return std::exchange(synchronous_[Index(channel)], true);
++  }
++
++  void LeaveSync(CoreCloseDelegateChannel channel, bool previous) {
++    CheckSequence();
++    synchronous_[Index(channel)] = previous;
++  }
++
++  void AddPending(CoreCloseDelegateChannel channel) {
++    CheckSequence();
++    uint64_t& pending = pending_[Index(channel)];
++    CHECK_LT(pending, std::numeric_limits<uint64_t>::max());
++    ++pending;
++  }
++
++  void CompletePending(CoreCloseDelegateChannel channel) {
++    CheckSequence();
++    uint64_t& pending = pending_[Index(channel)];
++    CHECK_GT(pending, 0u);
++    --pending;
++  }
++
++  void AddBatch(CoreCloseObserverChannel channel) {
++    CheckSequence();
++    uint64_t& batches = batches_[Index(channel)];
++    CHECK_LT(batches, std::numeric_limits<uint64_t>::max());
++    ++batches;
++  }
++
++  void CompleteBatch(CoreCloseObserverChannel channel) {
++    CheckSequence();
++    uint64_t& batches = batches_[Index(channel)];
++    CHECK_GT(batches, 0u);
++    --batches;
++  }
++
++  void CheckSequence() const {
++    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
++  }
++
++ private:
++  std::array<bool, kDelegateChannels> synchronous_{};
++  std::array<uint64_t, kDelegateChannels> pending_{};
++  std::array<uint64_t, kObserverChannels> batches_{};
++  SEQUENCE_CHECKER(sequence_checker_);
++};
++
++CoreCloseStateHandle CreateCoreCloseState() {
++  return std::make_shared<CoreCloseState>();
++}
++
++bool CoreCloseStateIsBusy(const CoreCloseStateHandle& state) {
++  CHECK(state);
++  return state->IsBusy();
++}
++
++ScopedCoreCloseInvocation::ScopedCoreCloseInvocation(
++    CoreCloseStateHandle state,
++    CoreCloseDelegateChannel channel)
++    : state_(std::move(state)), channel_(channel) {
++  CHECK(state_);
++  previous_ = state_->EnterSync(channel_);
++}
++
++ScopedCoreCloseInvocation::~ScopedCoreCloseInvocation() {
++  state_->LeaveSync(channel_, previous_);
++}
++
++base::OnceClosure MakeCoreCloseAsyncInvocation(
++    CoreCloseStateHandle state,
++    CoreCloseDelegateChannel channel,
++    base::OnceClosure conditional_callback) {
++  CHECK(state);
++  state->AddPending(channel);
++  return base::BindOnce(
++      [](CoreCloseStateHandle state, CoreCloseDelegateChannel channel,
++         base::OnceClosure callback) {
++        state->CheckSequence();
++        if (callback) {
++          std::move(callback).Run();
++        }
++        // Retain only the captured accounting state through invocation return.
++        // Skipped/expired target paths are inside callback and also reach here.
++        state->CompletePending(channel);
++      },
++      std::move(state), channel, std::move(conditional_callback));
++}
++
++CoreCloseObserverBatch::CoreCloseObserverBatch(
++    CoreCloseStateHandle state,
++    CoreCloseObserverChannel channel)
++    : state_(std::move(state)), channel_(channel) {
++  CHECK(state_);
++  state_->AddBatch(channel_);
++}
++
++CoreCloseObserverBatch::~CoreCloseObserverBatch() = default;
++
++bool CoreCloseObserverBatch::PostFinalizer(
++    const base::Location& from_here,
++    scoped_refptr<base::SingleThreadTaskRunner> primary_ui_runner) {
++  CHECK(state_);  // Exactly one post attempt for this batch.
++  state_->CheckSequence();
++  CHECK(primary_ui_runner);
++  CHECK(primary_ui_runner->RunsTasksInCurrentSequence());
++  // The caller posted all deliveries first. Even an empty batch posts this task.
++  // Neither rejection nor closure destruction synthesizes a native decrement.
++  return primary_ui_runner->PostTask(
++      from_here,
++      base::BindOnce(
++          [](CoreCloseStateHandle state, CoreCloseObserverChannel channel) {
++            state->CompleteBatch(channel);
++          },
++          std::move(state_), channel_));
++}
++
++}  // namespace arc

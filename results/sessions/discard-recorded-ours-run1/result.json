@@ -1,0 +1,262 @@
+{
+  "pass": true,
+  "contractPass": true,
+  "scope": "Ours-only currently configured production framework; public discard contract observation, not replacement/parity acceptance. No feature overrides or native C++ introspection.",
+  "actualDiscarded": true,
+  "state": {
+    "before": {
+      "initialized": true,
+      "sessionID": "1555513126",
+      "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+      "wrapper": "0x11c0fc44880"
+    },
+    "callbackContents": {
+      "initialized": true,
+      "sessionID": "1555513126",
+      "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+      "wrapper": "0x11c0fc44880"
+    },
+    "discarded": true,
+    "events": [
+      {
+        "contents": {
+          "initialized": true,
+          "sessionID": "1555513126",
+          "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+          "wrapper": "0x11c0fc44880"
+        },
+        "insideAction": false,
+        "main": true,
+        "type": "prepared"
+      },
+      {
+        "contents": {
+          "initialized": true,
+          "sessionID": "1555513126",
+          "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+          "wrapper": "0x11c0fc44880"
+        },
+        "insideAction": false,
+        "main": true,
+        "type": "discard-request"
+      },
+      {
+        "contents": {
+          "initialized": true,
+          "sessionID": "1555513126",
+          "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+          "wrapper": "0x11c0fc44880"
+        },
+        "discarded": true,
+        "insideAction": false,
+        "main": true,
+        "sameWrapperAsSelected": true,
+        "selected": {
+          "initialized": true,
+          "sessionID": "1555513126",
+          "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+          "wrapper": "0x11c0fc44880"
+        },
+        "type": "finalize-before-forward"
+      },
+      {
+        "contents": {
+          "initialized": true,
+          "sessionID": "1555513126",
+          "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+          "wrapper": "0x11c0fc44880"
+        },
+        "insideAction": false,
+        "main": true,
+        "selected": {
+          "initialized": true,
+          "sessionID": "1555513126",
+          "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+          "wrapper": "0x11c0fc44880"
+        },
+        "type": "finalize-after-forward"
+      }
+    ],
+    "finalizations": 1,
+    "finalized": true,
+    "matchingLive": [
+      {
+        "initialized": true,
+        "sessionID": "1555513126",
+        "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+        "wrapper": "0x11c0fc44880"
+      }
+    ],
+    "requests": 1,
+    "selected": {
+      "initialized": true,
+      "sessionID": "1555513126",
+      "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+      "wrapper": "0x11c0fc44880"
+    }
+  },
+  "error": null,
+  "cleanupError": null,
+  "recorder": {
+    "pass": true,
+    "path": "/Users/cryogenicplanet/general/arc-engine/results/sessions/discard-recorded-ours-run1/record.jsonl",
+    "scope": "Raw standard recorder; exact fixture discard+pairedreturn+same-wrapper finalize gate. Services only if actually observed; no absence/parity claim.",
+    "discard": {
+      "seq": 6670,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "arccore-sessions-discard-ours-v8.dylib",
+      "dir": "->engine",
+      "cls": "ArcWebContents",
+      "kind": "-",
+      "sel": "discard",
+      "self": "<ArcWebContents#121>",
+      "args": []
+    },
+    "returned": {
+      "seq": 6681,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "arccore-sessions-discard-ours-v8.dylib",
+      "dir": "->engine",
+      "cls": "ArcWebContents",
+      "kind": "-",
+      "sel": "discard",
+      "self": "<ArcWebContents#121>",
+      "ret": null
+    },
+    "finalize": {
+      "seq": 6738,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "arccore-sessions-discard-ours-v8.dylib",
+      "dir": "engine->app",
+      "cls": "ADK.WebContentChromium",
+      "kind": "-",
+      "sel": "webContents:finalizeDiscardRequest:",
+      "self": "<ADK.WebContentChromium#130>",
+      "args": [
+        "<ArcWebContents#121>",
+        true
+      ]
+    },
+    "rows": 8082
+  },
+  "recorderError": null,
+  "inputError": null,
+  "inputsBefore": {
+    "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore": "6b6f7cd5e50a88f2f2c09e0fc46ce33dd1b30e539a609eff66695ff298557ad5",
+    "/tmp/arccore-sessions-discard-ours-v8.dylib": "00971656721829ea7425aa67202b955e9b5a9c949472afb98dbe998f81404025",
+    "/Users/cryogenicplanet/general/arc-engine/tests/recorder/ArcEngineRecorder.dylib": "fee95e1339e8c1aa2ecf1fcb0e9ebf1137efe64193031b60ead9c110677bba9a",
+    "/private/tmp/arccore-sessions-discard-ours-v8.ts": "703933c77bd67daf1b2acf9f457a8218a4d36c43096840d58a1fdf49507cfe11",
+    "/Users/cryogenicplanet/general/arc/tools/agent-cdp.ts": "13ef30c08abc728aa3a27917f7ae652c17943e4d1020df59a669c0d8a7dca60c"
+  },
+  "inputsAfter": {
+    "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore": "6b6f7cd5e50a88f2f2c09e0fc46ce33dd1b30e539a609eff66695ff298557ad5",
+    "/tmp/arccore-sessions-discard-ours-v8.dylib": "00971656721829ea7425aa67202b955e9b5a9c949472afb98dbe998f81404025",
+    "/Users/cryogenicplanet/general/arc-engine/tests/recorder/ArcEngineRecorder.dylib": "fee95e1339e8c1aa2ecf1fcb0e9ebf1137efe64193031b60ead9c110677bba9a",
+    "/private/tmp/arccore-sessions-discard-ours-v8.ts": "703933c77bd67daf1b2acf9f457a8218a4d36c43096840d58a1fdf49507cfe11",
+    "/Users/cryogenicplanet/general/arc/tools/agent-cdp.ts": "13ef30c08abc728aa3a27917f7ae652c17943e4d1020df59a669c0d8a7dca60c"
+  },
+  "callback": {
+    "discarded": true,
+    "count": 1,
+    "main": true,
+    "async": true,
+    "sameCallbackWrapper": true,
+    "before": {
+      "initialized": true,
+      "sessionID": "1555513126",
+      "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+      "wrapper": "0x11c0fc44880"
+    },
+    "selected": {
+      "initialized": true,
+      "sessionID": "1555513126",
+      "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+      "wrapper": "0x11c0fc44880"
+    },
+    "callbackContents": {
+      "initialized": true,
+      "sessionID": "1555513126",
+      "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+      "wrapper": "0x11c0fc44880"
+    },
+    "matchingLive": [
+      {
+        "initialized": true,
+        "sessionID": "1555513126",
+        "url": "http://127.0.0.1:51467/arc-sessions-discard-767acfcb-7450-4e35-90ad-e8da41bd371f/B",
+        "wrapper": "0x11c0fc44880"
+      }
+    ]
+  },
+  "identityAfterFinalize": {
+    "beforeSessionID": "1555513126",
+    "selectedAfterSessionID": "1555513126",
+    "callbackAfterSessionID": "1555513126",
+    "matchingLiveCount": 1,
+    "liveSessionID": "1555513126",
+    "liveWrapperSameAsSelected": true,
+    "liveSessionIDSameAsBefore": true
+  },
+  "identityAfterReload": {
+    "beforeSessionID": "1555513126",
+    "selectedAfterSessionID": "1555513126",
+    "callbackAfterSessionID": "1555513126",
+    "matchingLiveCount": 1,
+    "liveSessionID": "1555513126",
+    "liveWrapperSameAsSelected": true,
+    "liveSessionIDSameAsBefore": true
+  },
+  "before": {
+    "index": 1,
+    "pages": [
+      "FIXTURE/A",
+      "FIXTURE/B",
+      "FIXTURE/C"
+    ],
+    "titles": [
+      "Discard A",
+      "Discard B",
+      "Discard C"
+    ]
+  },
+  "historyAfterDiscard": {
+    "index": 1,
+    "pages": [
+      "FIXTURE/A",
+      "FIXTURE/B",
+      "FIXTURE/C"
+    ],
+    "titles": [
+      "Discard A",
+      "Discard B",
+      "Discard C"
+    ]
+  },
+  "historyAfterReload": {
+    "index": 1,
+    "pages": [
+      "FIXTURE/A",
+      "FIXTURE/B",
+      "FIXTURE/C"
+    ],
+    "titles": [
+      "Discard A",
+      "Discard B",
+      "Discard C"
+    ]
+  },
+  "cleanup": {
+    "pid": 50633,
+    "birth": "Fri Oct 23 06:12:59 2026",
+    "graceful": true,
+    "term": false,
+    "mode": "real AppKit terminate via owned main queue",
+    "appKitAcknowledged": true
+  }
+}

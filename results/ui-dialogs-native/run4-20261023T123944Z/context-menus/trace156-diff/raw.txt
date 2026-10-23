@@ -1,0 +1,11 @@
+methods differing: 61 (missing 2, extra 0, returns 3, callback args 3, counts 53; internal-only 1, ours-internal 0)
+callback sequence: {"golden": 79, "ours": 48, "first_divergence": 28, "golden_from": ["ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.WebContentChromium webContents:didChangeAvailableMediaActions:", "ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:"], "ours_from": ["ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:", "ADK.CrashKeys
+caller attribution: off (a transcript predates it)
+missing {"method": "->engine -ArcBrowserContext getContentSettingForOrigin:withContentSettingType:", "golden_calls": 2, "example": {"args": "[\"url:http://*/a\", 29]", "ret": "\"<ArcSiteSettingInfo#1>\""}}
+missing {"method": "->engine -ArcSiteSettingInfo siteSetting", "golden_calls": 2, "example": {"args": "[]", "ret": "0"}}
+return_mismatch {"method": "->engine -ArcSearchEngine url", "call": 533, "args": "[]", "golden": "\"chrome://bookmarks/?q=%7BsearchTerms%7D\"", "ours": "\"chrome://history/?q=%7BsearchTerms%7D\""}
+return_mismatch {"method": "->engine -ArcSessionID identifier", "call": 0, "args": "[]", "golden": "2113537285", "ours": "2115008532"}
+return_mismatch {"method": "->engine -ArcWebContents tabTraits", "call": 4, "args": "[]", "golden": "\"<NSMutableIndexSet#1>\"", "ours": "\"<NSMutableIndexSet#3>\""}
+arg_mismatch {"method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:", "call": 0, "golden": "[\"<ArcBrowser#1>\", 2113537285]", "ours": "[\"<ArcBrowser#1>\", 2115008532]"}
+arg_mismatch {"method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "call": 15, "golden": "[\"ProfileKeepAlive-origin\", \"kExtensionUpdater\"]", "ours": "[\"nav_reentrancy_caller1-LoadIf_pending\", \"true\"]"}
+arg_mismatch {"method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:", "call": 0, "golden": "[\"*\", \"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany

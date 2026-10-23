@@ -1,0 +1,34 @@
+{
+ "internal": [],
+ "internal_ours": [],
+ "missing": [],
+ "extra": [],
+ "return_mismatch": [
+  {
+   "method": "->engine -ArcExtensionToolbarAction tooltipText",
+   "call": 0,
+   "args": "[]",
+   "golden": "\"Service fixture A\\nHas access to this site\"",
+   "ours": "\"Service fixture A\\nAllowed to read & change this site\""
+  }
+ ],
+ "arg_mismatch": [],
+ "count_mismatch": [],
+ "callback_sequence": {
+  "golden": 5,
+  "ours": 5,
+  "first_divergence": 1,
+  "golden_from": [
+   "ADK.ChromiumBrowser browser:didResizeExtensionPopup:size:",
+   "ADK.ChromiumBrowser browser:didResizeExtensionPopup:size:",
+   "ADK.ChromiumBrowser browser:didUpdateExtensionToolbarAction:",
+   "ADK.ChromiumBrowser browser:didCloseExtensionPopup:"
+  ],
+  "ours_from": [
+   "ADK.ChromiumBrowser browser:didUpdateExtensionToolbarAction:",
+   "ADK.ChromiumBrowser browser:didResizeExtensionPopup:size:",
+   "ADK.ChromiumBrowser browser:didResizeExtensionPopup:size:",
+   "ADK.ChromiumBrowser browser:didCloseExtensionPopup:"
+  ]
+ }
+}

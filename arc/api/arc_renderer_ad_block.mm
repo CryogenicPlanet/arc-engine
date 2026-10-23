@@ -44,6 +44,14 @@ ApplicationAdBlockState& State() {
   return *state;
 }
 
+base::SequencedTaskRunner& RulesetCompilerTaskRunner() {
+  // Native 0x42bd878 reuses one pooled sequence for every accepted request.
+  static base::NoDestructor<scoped_refptr<base::SequencedTaskRunner>> runner(
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+  return **runner;
+}
+
 // Arc preprocesses $badfilter before handing text to RuleInputStream (original
 // 0x4732008..0x47325a8). Preserve all non-badfilter options verbatim and remove
 // the corresponding parsed URL rule in a second pass. Original keys are
@@ -208,11 +216,11 @@ CompiledRules CompileRulesForReply(
 
 void PublishRules(uint64_t generation, CompiledRules result) {
   auto& state = State();
-  if (state.requested_ruleset_id != generation || !result.success) {
+  if (!result.success) {
     return;
   }
   // File::operator= closes its previous descriptor and cannot run that close
-  // on UI. Stale results/cancelled replies retain the same MayBlock deleter.
+  // on UI. Unsuccessful results/cancelled replies retain the same MayBlock deleter.
   DeferredRulesetFile previous(
       new base::File(std::move(state.configuration.indexed_ruleset)),
       base::OnTaskRunnerDeleter(result.file.get_deleter().task_runner_));
@@ -299,9 +307,9 @@ void SetRendererBlockLists(std::vector<std::string> lists) {
   auto close_runner = base::ThreadPool::CreateSequencedTaskRunner(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-  // Original SetBlockLists converts on a background task, then publishes.
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  // Native finishes and posts each compiler result in accepted request order.
+  RulesetCompilerTaskRunner().PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&CompileRulesForReply, std::move(lists), generation, std::move(close_runner)),
       base::BindOnce(&PublishRules, generation));
 }

@@ -1,0 +1,114 @@
+[
+  {
+    "step": "baseline",
+    "loaded": "loaded",
+    "count": 0,
+    "debug": "/* Result: NoBlockList */\n/ * CSS: */\n",
+    "adDisplay": "block"
+  },
+  {
+    "step": "rule-active",
+    "loaded": "blocked",
+    "count": 1,
+    "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+    "adDisplay": "none"
+  },
+  {
+    "step": "rule-active-new-document",
+    "loaded": "blocked",
+    "count": 1,
+    "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+    "adDisplay": "block"
+  },
+  {
+    "step": "feature-disabled",
+    "loaded": "blocked",
+    "count": 2,
+    "debug": "Native ad blocker feature disabled",
+    "adDisplay": "block"
+  },
+  {
+    "step": "feature-disabled-excluded",
+    "loaded": "blocked",
+    "count": 3,
+    "debug": "Native ad blocker feature disabled",
+    "adDisplay": "block"
+  },
+  {
+    "step": "feature-disabled-exclusions-cleared",
+    "loaded": "blocked",
+    "count": 4,
+    "debug": "Native ad blocker feature disabled",
+    "adDisplay": "block"
+  },
+  {
+    "step": "feature-reenabled",
+    "loaded": "blocked",
+    "count": 5,
+    "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+    "adDisplay": "none"
+  },
+  {
+    "step": "queued-exclusion-disabled",
+    "loaded": "blocked",
+    "count": 6,
+    "debug": "Native ad blocker feature disabled",
+    "adDisplay": "none"
+  },
+  {
+    "step": "cached-exclusion-on-reenable",
+    "loaded": "blocked",
+    "count": 7,
+    "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+    "adDisplay": "block"
+  },
+  {
+    "step": "disabled-retains-installed-exclusion",
+    "loaded": "loaded",
+    "count": 7,
+    "debug": "Native ad blocker feature disabled",
+    "adDisplay": "block"
+  },
+  {
+    "step": "cached-clear-on-reenable",
+    "loaded": "loaded",
+    "count": 7,
+    "debug": "/* Result: Excluded */\n/ * CSS: */\n",
+    "adDisplay": "none"
+  },
+  {
+    "step": "exclude-ip-no-port",
+    "loaded": "loaded",
+    "count": 7,
+    "debug": "/* Result: Excluded */\n/ * CSS: */\n",
+    "adDisplay": "block"
+  },
+  {
+    "step": "exclude-ip-with-port",
+    "loaded": "loaded",
+    "count": 7,
+    "debug": "/* Result: Excluded */\n/ * CSS: */\n",
+    "adDisplay": "block"
+  },
+  {
+    "step": "exclusions-cleared",
+    "loaded": "blocked",
+    "count": 8,
+    "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+    "adDisplay": "none"
+  },
+  {
+    "step": "badfilter",
+    "loaded": "loaded",
+    "count": 8,
+    "debug": "/* Result: Cached: renderer-probe.test */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+    "adDisplay": "none"
+  },
+  {
+    "step": "lists-cleared",
+    "loaded": "loaded",
+    "count": 8,
+    "debug": "/* Result: NoBlockList */\n/ * CSS: */\n",
+    "adDisplay": "block"
+  }
+]
