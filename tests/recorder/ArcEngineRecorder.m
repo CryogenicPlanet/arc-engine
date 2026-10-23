@@ -135,6 +135,29 @@ static SEL AliasFor(SEL sel) {
   return NSSelectorFromString([@"__arcrec_" stringByAppendingString:NSStringFromSelector(sel)]);
 }
 
+// Who called: the image of the first stack frame outside the recorder, the ObjC runtime and the forwarding
+// machinery ("app" = Arc's executable, "engine" = ArcCore, else the image name).
+static NSString* Caller(void) {
+  static const void* selfBase;
+  if (!selfBase) {
+    Dl_info me;
+    if (dladdr((const void*)&Caller, &me)) selfBase = me.dli_fbase;
+  }
+  NSArray<NSNumber*>* frames = [NSThread callStackReturnAddresses];
+  for (NSUInteger i = 1; i < frames.count && i < 24; i++) {
+    Dl_info info;
+    if (!dladdr((const void*)frames[i].unsignedLongValue, &info) || !info.dli_fname) continue;
+    if (info.dli_fbase == selfBase) continue;
+    const char* base = strrchr(info.dli_fname, '/');
+    base = base ? base + 1 : info.dli_fname;
+    if (!strcmp(base, "libobjc.A.dylib") || !strcmp(base, "CoreFoundation") || !strcmp(base, "Foundation")) continue;
+    if (!strcmp(base, "Arc")) return @"app";
+    if (!strcmp(base, "ArcCore")) return @"engine";
+    return @(base);
+  }
+  return @"?";
+}
+
 static void RecForwardInvocation(id self, SEL _cmd, NSInvocation* inv) {
   SEL sel = inv.selector;
   Class hit = Nil;
@@ -164,8 +187,8 @@ static void RecForwardInvocation(id self, SEL _cmd, NSInvocation* inv) {
   }
   unsigned long long seq = __atomic_add_fetch(&gSeq, 1, __ATOMIC_RELAXED);
   NSString* cls = NSStringFromClass(hit);
-  NSString* common = [NSString stringWithFormat:@"\"thread\":%@,\"depth\":%d,\"dir\":\"%@\",\"cls\":%@,\"kind\":\"%@\",\"sel\":%@,\"self\":%@",
-                       Quote(ThreadName()), tDepth, dir, Quote(cls), isClass ? @"+" : @"-", Quote(NSStringFromSelector(sel)),
+  NSString* common = [NSString stringWithFormat:@"\"thread\":%@,\"depth\":%d,\"from\":\"%@\",\"dir\":\"%@\",\"cls\":%@,\"kind\":\"%@\",\"sel\":%@,\"self\":%@",
+                       Quote(ThreadName()), tDepth, Caller(), dir, Quote(cls), isClass ? @"+" : @"-", Quote(NSStringFromSelector(sel)),
                        isClass ? @"null" : Describe(self, 0)];
   Emit([NSString stringWithFormat:@"{\"seq\":%llu,\"ev\":\"call\",%@,\"args\":[%@]}", seq, common, [args componentsJoinedByString:@","]]);
   tDepth++;

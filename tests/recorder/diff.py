@@ -18,13 +18,27 @@ import sys
 OBJ = re.compile(r"<([A-Za-z_][A-Za-z0-9_]*)#(\d+)>")
 
 
-def load(path):
+def has_callers(path):
+    for line in open(path):
+        if '"from":' in line:
+            return True
+    return False
+
+
+def load(path, by_caller=False):
     events = []
     for line in open(path):
         try:
-            events.append(json.loads(line))
+            e = json.loads(line)
         except ValueError:
-            pass
+            continue
+        # With caller attribution on both sides, compare what the app sees: its own calls into the engine,
+        # engine->app callbacks, and the engine's own setters (state the app observes with KVO). The engine's
+        # internal getter reads are implementation detail.
+        if by_caller and e.get("dir") == "->engine" and e.get("from") != "app" and not (
+                e.get("from") == "engine" and e.get("sel", "").startswith("set")):
+            continue
+        events.append(e)
     ids = {}
     per_class = collections.Counter()
 
@@ -57,12 +71,30 @@ def load(path):
     return calls, callbacks
 
 
+def boundary_methods():
+    """(kind, class, selector) of Arc's interface: ArcCore 1.170.0 metadata plus the app's callback methods."""
+    import os
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    keys = set()
+    for line in open(os.path.join(root, "arc/tools/arccore-1.170.0-objc.tsv")):
+        r = line.rstrip("\n").split("\t")
+        if r[0] == "M":
+            keys.add((r[2], r[1], r[3]))
+    for line in open(os.path.join(root, "tests/recorder/app_callbacks.inc")):
+        m = re.match(r'\{"([^"]+)", "([^"]+)"\}', line.strip())
+        if m:
+            keys.add(("-", m.group(1), m.group(2)))
+    return keys
+
+
 def main():
     golden, ours = sys.argv[1], sys.argv[2]
     limit = int(sys.argv[sys.argv.index("--max") + 1]) if "--max" in sys.argv else 40
-    g, gcb = load(golden)
-    o, ocb = load(ours)
-    report = {"internal": [], "missing": [], "extra": [], "return_mismatch": [], "arg_mismatch": [], "count_mismatch": []}
+    by_caller = has_callers(golden) and has_callers(ours)
+    g, gcb = load(golden, by_caller)
+    o, ocb = load(ours, by_caller)
+    boundary = boundary_methods()
+    report = {"internal": [], "internal_ours": [], "missing": [], "extra": [], "return_mismatch": [], "arg_mismatch": [], "count_mismatch": []}
     for key in sorted(set(g) | set(o)):
         name = "%s %s%s %s" % (key[0], key[1], key[2], key[3])
         gc, oc = g.get(key, []), o.get(key, [])
@@ -72,7 +104,10 @@ def main():
             report[section].append({"method": name, "golden_calls": len(gc), "example": gc[0]})
             continue
         if oc and not gc:
-            report["extra"].append({"method": name, "our_calls": len(oc), "example": oc[0]})
+            # Selectors outside Arc's interface are our engine's own helpers, not boundary behavior.
+            cls = key[2].replace("ADK.", "_TtC3ADK") if key[0] == "engine->app" else key[2]
+            in_boundary = (key[1], key[2], key[3]) in boundary or (key[0] == "engine->app")
+            report["extra" if in_boundary else "internal_ours"].append({"method": name, "our_calls": len(oc), "example": oc[0]})
             continue
         if len(gc) != len(oc):
             report["count_mismatch"].append({"method": name, "golden": len(gc), "ours": len(oc)})
@@ -91,11 +126,12 @@ def main():
         "golden_from": gcb[first_div:first_div + 5] if first_div is not None else [],
         "ours_from": ocb[first_div:first_div + 5] if first_div is not None else [],
     }
-    total = sum(len(v) for k, v in report.items() if isinstance(v, list) and k != "internal")
-    print("methods differing: %d (missing %d, extra %d, returns %d, callback args %d, counts %d; internal-only %d)" % (
+    total = sum(len(v) for k, v in report.items() if isinstance(v, list) and k not in ("internal", "internal_ours"))
+    print("methods differing: %d (missing %d, extra %d, returns %d, callback args %d, counts %d; internal-only %d, ours-internal %d)" % (
         total, len(report["missing"]), len(report["extra"]), len(report["return_mismatch"]),
-        len(report["arg_mismatch"]), len(report["count_mismatch"]), len(report["internal"])))
+        len(report["arg_mismatch"]), len(report["count_mismatch"]), len(report["internal"]), len(report["internal_ours"])))
     print("callback sequence:", json.dumps(report["callback_sequence"])[:600])
+    print("caller attribution:", "on (app calls + engine setters)" if by_caller else "off (a transcript predates it)")
     for section in ("missing", "return_mismatch", "arg_mismatch", "extra"):
         for item in report[section][:limit]:
             print(section, json.dumps(item)[:300])
