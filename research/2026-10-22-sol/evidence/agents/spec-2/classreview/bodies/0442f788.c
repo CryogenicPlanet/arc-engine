@@ -1,0 +1,78 @@
+// ==== 0x442f788  ArcDownloadItem::targetPath  (260 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcDownloadItem::targetPath(ID param_1,SEL param_2)
+
+{
+  undefined1 **ppuVar1;
+  ulong uVar2;
+  code *pcVar3;
+  bool bVar4;
+  long lVar5;
+  ID IVar6;
+  uint uVar7;
+  long lVar8;
+  undefined1 *local_50;
+  ulong uStack_48;
+  undefined8 local_40;
+  undefined1 *local_38;
+  ulong uStack_30;
+  undefined7 local_28;
+  char cStack_21;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    lVar8 = *(long *)(param_1 + 0x10);
+    if (lVar8 == 0) {
+      uVar7 = 0;
+      local_40 = local_40 & 0xffffffffffffff;
+      local_50 = (undefined1 *)((ulong)local_50 & 0xffffffffffffff00);
+    }
+    else {
+      lVar5 = (**(code **)(**(long **)(lVar8 + 0x18) + 0xf8))();
+      if (lVar5 == 0) {
+        uVar7 = 0;
+        local_50 = (undefined1 *)0x0;
+        uStack_48 = 0;
+        local_40 = 0;
+      }
+      else {
+        (**(code **)(**(long **)(lVar8 + 0x18) + 0x108))(&local_38);
+        if (cStack_21 < '\0') {
+          FUN_00060a60(&local_50,local_38,uStack_30);
+          if (cStack_21 < '\0') {
+            FUN_00005810(local_38,CONCAT17(cStack_21,local_28) & 0x7fffffffffffffff);
+          }
+        }
+        else {
+          uStack_48 = uStack_30;
+          local_50 = local_38;
+          local_40 = CONCAT17(cStack_21,local_28);
+        }
+        uVar7 = (uint)local_40._7_1_;
+      }
+    }
+    bVar4 = -1 < (char)uVar7;
+    ppuVar1 = (undefined1 **)local_50;
+    if (bVar4) {
+      ppuVar1 = &local_50;
+    }
+    uVar2 = uStack_48;
+    if (bVar4) {
+      uVar2 = (ulong)uVar7;
+    }
+    IVar6 = FUN_01c391bc(ppuVar1,uVar2);
+    if ((long)local_40 < 0) {
+      FUN_00005810(local_50,local_40 & 0x7fffffffffffffff);
+    }
+    return IVar6;
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x442f88c);
+  (*pcVar3)();
+}
+
+

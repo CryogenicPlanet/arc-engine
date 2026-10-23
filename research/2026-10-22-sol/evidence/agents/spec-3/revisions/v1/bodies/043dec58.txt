@@ -1,0 +1,38 @@
+INDEX 0x43dec58 ArcAccessibilityActionData::value path=/home/exedev/work/inputs/decompile/0x43.c offset=4194231 C_bytes=905 failed=0
+// ==== 0x43dec58  ArcAccessibilityActionData::value  (84 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAccessibilityActionData::value(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  long lVar2;
+  ID IVar3;
+  long lVar4;
+  
+  if (*(char *)(param_1 + 0x28) != '\0') {
+    lVar4 = (long)*(char *)(param_1 + 0x27);
+    lVar1 = lVar4;
+    if (lVar4 < 0) {
+      lVar1 = *(long *)(param_1 + 0x18);
+    }
+    if (lVar1 != 0) {
+      lVar1 = *(long *)(param_1 + 0x18);
+      lVar2 = *(long *)(param_1 + 0x10);
+      if (-1 < *(char *)(param_1 + 0x27)) {
+        lVar1 = lVar4;
+        lVar2 = param_1 + 0x10;
+      }
+      IVar3 = FUN_01c391bc(lVar2,lVar1);
+      return IVar3;
+    }
+  }
+  return 0;
+}
+
+
+

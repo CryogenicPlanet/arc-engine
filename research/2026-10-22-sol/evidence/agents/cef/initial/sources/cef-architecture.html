@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>CEF Documentation | Chromium Embedded Framework documentation</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="CEF Documentation" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Chromium Embedded Framework documentation" />
+<meta property="og:description" content="Chromium Embedded Framework documentation" />
+<link rel="canonical" href="https://chromiumembedded.github.io/cef/architecture.html" />
+<meta property="og:url" content="https://chromiumembedded.github.io/cef/architecture.html" />
+<meta property="og:site_name" content="CEF Documentation" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="CEF Documentation" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Chromium Embedded Framework documentation","headline":"CEF Documentation","url":"https://chromiumembedded.github.io/cef/architecture.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/cef/assets/css/style.css?v=7f8a5ec28e932aa62b583c8248e3df2e4dfe4807">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/cef/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1><a href="https://chromiumembedded.github.io/cef/">CEF Documentation</a></h1>
+
+        
+
+        <p>Chromium Embedded Framework documentation</p>
+
+        
+        <p class="view"><a href="https://github.com/chromiumembedded/cef">View the Project on GitHub <small>chromiumembedded/cef</small></a></p>
+        
+
+        
+
+        
+      </header>
+      <section>
+
+      <p>This page provides an overview of the CEF architecture.</p>
+
+<p><strong>Contents</strong></p>
+
+<ul>
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#dependencies">Dependencies</a></li>
+  <li><a href="#versions">Versions</a></li>
+  <li><a href="#history">History</a></li>
+  <li><a href="#modern-architecture">Modern Architecture</a></li>
+  <li><a href="#common-api-usage">Common API Usage</a></li>
+  <li><a href="#c-wrapper-api">C Wrapper API</a></li>
+  <li><a href="#cef1-discontinued">CEF1 (Discontinued)</a>
+    <ul>
+      <li><a href="#api-usage">API Usage</a></li>
+      <li><a href="#threading-considerations">Threading Considerations</a></li>
+      <li><a href="#implementation-details">Implementation Details</a></li>
+    </ul>
+  </li>
+  <li><a href="#cef2-discontinued">CEF2 (Discontinued)</a></li>
+  <li><a href="#cef3">CEF3</a>
+    <ul>
+      <li><a href="#api-usage">API Usage</a></li>
+      <li><a href="#process-considerations">Process Considerations</a></li>
+      <li><a href="#threading-considerations">Threading Considerations</a></li>
+      <li><a href="#implementation-details">Implementation Details</a>
+        <ul>
+          <li><a href="#alloy-runtime-classes">Alloy Runtime Classes</a></li>
+          <li><a href="#chrome-runtime-classes">Chrome Runtime Classes</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+
+<h1 id="overview">Overview</h1>
+
+<p>The Chromium Embedded Framework (CEF) is an open source project founded by Marshall Greenblatt in 2008 to develop a Web browser control based on the <a href="http://www.chromium.org/Home">Google Chromium</a> project. CEF currently supports a range of programming languages and operating systems and can be easily integrated into both new and existing applications. It was designed from the ground up with both performance and ease of use in mind. The base framework includes C and C++ programming interfaces exposed via native libraries that insulate the host application from Chromium and Blink implementation details. It provides close integration between the browser control and the host application, which can optionally control resource loading, navigation, context menus, printing, JavaScript bindings and more, while taking advantage of the same performance and HTML5 technologies available in the Google Chrome Web browser.</p>
+
+<p>See the project <a href="https://github.com/chromiumembedded/cef/blob/master/README.md">README.md</a> for additional introductory material.</p>
+
+<h1 id="dependencies">Dependencies</h1>
+
+<p>The CEF project depends on a number of other projects maintained by third parties. The major projects that CEF depends on are:</p>
+
+<ul>
+  <li><a href="http://www.chromium.org/Home">Chromium</a> - Provides general functionality like network stack, threading, message loop, logging and process control needed to create a fully functional Web browser. Implements “platform” code that allows Blink to communicate with V8 and Skia. Many Chromium design documents can be found at http://dev.chromium.org/developers.</li>
+  <li><a href="https://www.chromium.org/blink">Blink</a> (formerly WebKit) - The rendering implementation used by Chromium. Provides DOM parsing, layout, event handling, rendering and HTML5 JavaScript APIs. Some HTML5 implementations are split between the Blink and Chromium code bases.</li>
+  <li><a href="https://developers.google.com/v8/">V8</a> - JavaScript engine.</li>
+  <li><a href="https://skia.org/">Skia</a> - 2D graphics library used for rendering non-accelerated content. More information on how Chromium integrates Skia is available <a href="http://www.chromium.org/developers/design-documents/graphics-and-skia">here</a>.</li>
+  <li><a href="https://chromium.googlesource.com/angle/angle/+/master/README.md">Angle</a> - 3D graphics translation layer for Windows that converts GLES calls to DirectX. More information about accelerated compositing is available <a href="http://dev.chromium.org/developers/design-documents/gpu-accelerated-compositing-in-chrome">here</a>.</li>
+</ul>
+
+<h1 id="versions">Versions</h1>
+
+<p>There have been three versions of CEF to date.</p>
+
+<ul>
+  <li>CEF1 - Single process implementation using the Chromium WebKit API (now discontinued).</li>
+  <li>CEF2 - Multi process implementation built on the Chromium browser (now discontinued).</li>
+  <li>CEF3 - Multi process implementation using either the <a href="http://www.chromium.org/developers/content-module/content-api">Chromium Content API</a> (called the “Alloy runtime”) or the complete Chrome UI (called the “Chrome runtime”).</li>
+</ul>
+
+<p>Only the CEF3 version is currently developed and supported. See the “History” and “Modern Architecture” sections below for background and the <a href="/cef/branches_and_building.html">Branches And Building</a> page for current development information.</p>
+
+<h1 id="history">History</h1>
+
+<p>In 2008, when the CEF project started, Chromium was a monolithic application built on top of Apple’s <a href="https://webkit.org/">WebKit</a> rendering engine. Google maintained an in-tree variant of WebKit (called the <a href="https://www.youtube.com/watch?v=JFzC_Gx76E8">Chromium WebKit API</a>) that added additional functionality specific to Chromium. The first version of CEF (called CEF1) was implemented on top of this Chromium WebKit API and used the default single-process application model supported by WebKit1 at that time (for more details on CEF1 architecture see the “CEF1” section below).</p>
+
+<p>Use of the Chromium WebKit API came with some known limitations. For example, that API layer did not support the multi-process model that was the basis for most of Google Chrome’s <a href="https://chromium.googlesource.com/playground/chromium-org-site/+/refs/heads/main/developers/design-documents/multi-process-architecture/index.md">stability and security advantages</a>. It also lacked many of the UI features that were becoming necessary to support new web platform features (like device selection dialogs, permissions management, etc). We therefore began a new effort, in 2010, to reimplement CEF (called CEF2) on top of the fully-featured but monolithic Chromium browser UI. The lack of internal API boundaries in the Chromium code at that time made it necessary for us to take an “all or nothing” approach. If we could create a CEF browser window based on the complete Chrome UI we would effectively gain access to all of Chrome’s capabilities “for free” (for more details on CEF2 architecture see the “CEF2” section below).</p>
+
+<p>Google began acknowledging the validity of the embedded use case for Chromium in 2010 and started work on new internal API boundaries to make embedding easier. The <a href="http://www.chromium.org/developers/content-module/content-api">Chromium Content API</a>, which encapsulated the multi-process application model and provided stub implementations for most web platform features, reached a development stage in late 2011 where it was a viable option for Chromium embedders like CEF. It still didn’t provide all of the features that we might like, but it was a “supported” API layer. We therefore abandoned the CEF2 effort in early 2012 and focused our efforts instead on the Content API as the more viable embedding option. The existing CEF1 API, which was strongly dependent on WebKit1 and the single-process model, could not be directly ported to the Content API. A new CEF API (called CEF3), with substantial breaking API changes and multi-process support, was released in early 2013 (for more details on CEF3 architecture see the “Modern Architecture” and “CEF3” sections below).</p>
+
+<p>Also in 2013, Google decided to <a href="https://blog.chromium.org/2013/04/blink-rendering-engine-for-chromium.html">fork the WebKit project</a>. After renaming it to Blink they removed many of the API boundaries that had previously existed between Chromium and WebKit and effectively deleted the Chromium WebKit API. The multi-process architecture, which was optional in WebKit1, was now a requirement with Chromium/Blink. CEF1, which depended on the Chromium WebKit API, no longer had a viable future and CEF3 became the only path forward.</p>
+
+<p>Fast forward another 7 years, to 2020, and the Chromium architecture has again changed substantially. A lot of effort has been spent to define clear architectural layers (sometimes called <a href="https://www.chromium.org/developers/design-documents/cookbook/">components</a>) in the Chromium/Blink source code. New platforms and new embedders have entered the Chromium ecosystem. And yet, many features desired by CEF users remain stubbornly out of reach in the Chrome UI layer. With this new, more modern, version of Chromium, we decided it was time to revisit our goals from CEF2 and create a new CEF version based on the Chrome UI layer (now called the “Chrome runtime” in CEF3). Continue to the “Modern Architecture” section for details.</p>
+
+<h1 id="modern-architecture">Modern Architecture</h1>
+
+<p>The modern Chromium code base is composed of architectural layers, with the primary application layers being “content” (for the <a href="http://www.chromium.org/developers/content-module/content-api">Content API</a>) and “chrome” (for the Chrome UI layer). The “content” layer includes <a href="https://source.chromium.org/chromium/chromium/src/+/master:content/public/browser/web_contents.h">WebContents</a> as the primary browser object and provides implementations for most of the generic web platform and application/process management functionality. The “chrome” layer includes <a href="https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/ui/browser.h">Browser</a> as the primary browser object and provides implementations for many advanced features (including datalist/autofill, extensions, gamepad, webhid, webmidi, etc.), along with standard Chrome UI toolbars and dialogs for device selection, user permissions, settings, etc.</p>
+
+<p>For historical reasons (outlined above), CEF browser windows have been based on the “content” layer WebContents object since the introduction of CEF3 in 2013. Adding support for additional “chrome” layer features in that architecture was a serious effort because it involved careful understanding and cherry-picking of the related functionality from “chrome” code into the CEF code base. Over time we have added dependencies on the “chrome” layer targets to support some features in CEF (such and extensions, PDF viewer and print preview) and to avoid code duplication. As a result, CEF3 binaries in modern times already contained most/all of the code that would be required to launch a stand-alone “chrome” Browser window, but simply lacked the mechanism to do so.</p>
+
+<p>In 2020 we launched a <a href="https://github.com/chromiumembedded/cef/issues/2969">new effort</a> to implement the CEF3 API on top of a fully-featured “chrome” Browser window. To be usable in existing CEF3 client applications the “chrome” window needed to support a large subset of CEF3’s existing callbacks/intercepts (e.g. loading progress, network requests, etc.), and be inserted into the existing <a href="https://www.chromium.org/developers/design-documents/chromeviews/">Views framework</a> structure. At the same time, it was necessary to substantially refactor the internal CEF (libcef) code to extract functionality that was common to both the old WebContents-based approach and the new Browser-based approach. As part of this refactoring we renamed the existing “content” layer implementation to the “Alloy runtime” (where Alloy = Chrome + other stuff) and named the new “chrome” layer implementation as the “Chrome runtime”. Proceed to the “CEF3” section below for additional feature and implementation details.</p>
+
+<h1 id="common-api-usage">Common API Usage</h1>
+
+<p>All versions of CEF expose a simple, easy-to-use API designed to insulate users from the underlying Chromium and Blink code complexity. Common usage is as follows:</p>
+
+<ol>
+  <li>
+    <p>Initialize CEF by calling CefInitialize().</p>
+  </li>
+  <li>
+    <p>Perform work on the UI message loop by calling CefRunMessageLoop() or CefDoMessageLoopWork().</p>
+  </li>
+  <li>
+    <p>Create a browser window by calling CreateBrowser() or CreateBrowserSync() and passing in a CefClient instance.</p>
+  </li>
+  <li>
+    <p>Shut down CEF by calling CefShutdown() before the application exits.</p>
+  </li>
+</ol>
+
+<h1 id="c-wrapper-api">C Wrapper API</h1>
+
+<p>The libcef shared library exports a C API that isolates the user from the CEF runtime and code base. The libcef_dll_wrapper project, which is distributed in source code form as part of the binary release, wraps this exported C API in a C++ API that is then linked into the client application. The code for this C/C++ API translation layer is automatically generated by the <a href="https://github.com/chromiumembedded/cef/blob/master/tools/translator.README.txt">translator</a> tool. Direct usage of the C API is described on the <a href="/cef/using_the_capi.html">Using The CAPI</a> page.</p>
+
+<h1 id="cef1-discontinued">CEF1 (Discontinued)</h1>
+
+<p>CEF1 was the initial version of CEF first released in 2008. It was discontinued in 2013 when Google forked the WebKit project and subsequently deleted the Chromium WebKit API. See the “History” section above for additional details.</p>
+
+<p>The single process architecture used by CEF1 integrates Chromium and WebKit directly into the client application. Advantages to the single process architecture included reduced memory usage and closer integration with the client application. For example, having the renderer running in the same process allowed JavaScript bindings to synchronously communicate between client code and renderer code. Disadvantages included <a href="https://github.com/chromiumembedded/cef/issues/304">reduced performance</a> with certain types of accelerated content, <a href="https://github.com/chromiumembedded/cef/issues/242">crashes</a> due to plugins like Flash running in the same process, and lack of support for application <a href="https://chromium.googlesource.com/playground/chromium-org-site/+/refs/heads/main/developers/design-documents/multi-process-architecture/index.md">security and stability features</a> that required a multi-process architecture.</p>
+
+<h2 id="api-usage">API Usage</h2>
+
+<p>Below is an overview of the main CEF1 interfaces and their uses. Since CEF1 is discontinued we no longer provide detailed usage information.</p>
+
+<ul>
+  <li><a href="http://magpcss.org/ceforum/apidocs/projects/(default)/CefApp.html">CefApp</a> - This interface is passed to CefInitialize() and allows the application to customize global functionality like resource loading and proxy handling.</li>
+  <li><a href="http://magpcss.org/ceforum/apidocs/projects/(default)/CefClient.html">CefClient</a> - This interface is passed to CefCreateBrowser() or CefCreateBrowserSync() and acts as the connection between an individual CEF browser instance and the client application. Additional interfaces for request handling, display handling, etc. are exposed via this interface.</li>
+  <li><a href="http://magpcss.org/ceforum/apidocs/projects/(default)/CefBrowser.html">CefBrowser</a> - Exposes capabilities provided by the browser. This includes back/forward navigation, source retrieval, request loading, etc. A single CefBrowser may have one or more child <a href="http://magpcss.org/ceforum/apidocs/projects/(default)/CefFrame.html">CefFrame</a> objects.</li>
+</ul>
+
+<h2 id="threading-considerations">Threading Considerations</h2>
+
+<p>CEF1 includes UI, IO and FILE threads. The UI thread creates browser windows and is used for all interaction with WebKit and V8. The IO thread is used for handling schema and network requests. The FILE thread is used for the application cache and other miscellaneous activities.</p>
+
+<p>When using CEF1 you should keep the following threading considerations in mind:</p>
+
+<ul>
+  <li>Do not perform blocking operations on the UI thread. This can lead to serious performance issues.</li>
+  <li>The UI thread will be the same as the main application thread if CefInitialize() is called with a CefSettings.multi_threaded_message_loop value of false.</li>
+  <li>All WebKit and V8 interation must take place on the UI thread. Consequently, some CEF API functions can only be called on the UI thread. Functions that have this limitation will be documented accordingly in the associated CEF header file.</li>
+  <li>The <a href="http://magpcss.org/ceforum/apidocs/projects/(default)/(_globals).html#CefPostTask(CefThreadId,CefRefPtr&lt;CefTask&gt;)">CefPostTask</a> method can be used to post tasks asnychronously between the various threads.</li>
+</ul>
+
+<h2 id="implementation-details">Implementation Details</h2>
+
+<p>CEF1 has the following major implementation classes:</p>
+
+<ul>
+  <li>CefContext - Represents the global CEF context. A single CefContext object is created by CefInitialize() and destroyed by CefShutdown().</li>
+  <li>CefProcess - Used by CefContext to create and manage the CEF threads.</li>
+  <li>BrowserWebKitInit - Manages the global WebKit environment as exposed by the Chromium WebKit API.</li>
+  <li>WebViewHost - Provides the native window “wrapper” implementation for a WebView. This class extends WebWidgetHost which provides functionality shared in common with popup widgets (like select menus) on some platforms.</li>
+  <li>CefBrowserImpl - Implements the CefBrowser interface, creates the WebViewHost and provides the glue code for a single browser instance.</li>
+  <li>BrowserWebViewDelegate - Implements the WebKit interfaces that provide communication between CefBrowserImpl and the underlying WebView.</li>
+</ul>
+
+<h1 id="cef2-discontinued">CEF2 (Discontinued)</h1>
+
+<p>CEF2 was an effort to reimplement the CEF1 API on top of the Chrome browser UI as it existed in 2010. CEF2 was discontinued when Chromium announced support for the Content API. Information about CEF2 can be found in the “History” section above and <a href="http://magpcss.org/ceforum/viewtopic.php?f=10&amp;t=122">here</a> on the CEF Forum.</p>
+
+<h1 id="cef3">CEF3</h1>
+
+<p>CEF3 has been the recommended and supported version of CEF since January 2013. It uses the same multi process architecture as the Chromium Web browser via either the <a href="http://www.chromium.org/developers/content-module/content-api">Chromium Content API</a> (called the “Alloy runtime”) or the complete Chrome UI (called the “Chrome runtime”). This architecture provides a number of advantages over the single process architecture used by CEF1:</p>
+
+<ul>
+  <li>Support for multi-process run mode (with related <a href="https://chromium.googlesource.com/playground/chromium-org-site/+/refs/heads/main/developers/design-documents/multi-process-architecture/index.md">stability and security advantages</a>).</li>
+  <li>More code sharing with the Chromium browser.</li>
+  <li>Improved performance and less breakage due to use of the “supported” code path.</li>
+  <li>Faster access to new features.</li>
+</ul>
+
+<p>In most cases CEF3 will have the same performance and stability characteristics as the Chromium Web browser. Both the Alloy runtime and the Chrome runtime support modern web platform features and provide the safety/security expected from an up-to-date Chromium-based browser. The Chrome runtime, which was introduced in 2020, adds implementations for many advanced features (including datalist/autofill, extensions, gamepad, webhid, webmidi, etc.), along with standard Chrome UI toolbars and dialogs for device selection, user permissions, settings, etc. At the time of writing, the Chrome runtime requires use of the <a href="https://www.chromium.org/developers/design-documents/chromeviews/">Views framework</a> in CEF client applications and does not support off-screen rendering. A current list of open issues specific to the Chrome runtime can be found <a href="https://github.com/chromiumembedded/cef/issues?q=is%3Aissue+is%3Aopen+label%3Achrome">here</a>.</p>
+
+<p>Starting with the M125 release (mid-2024) the Alloy runtime has been <a href="https://github.com/chromiumembedded/cef/issues/3681">split</a> into separate style and bootstrap components. Both Chrome style and Alloy style browsers/windows can now be created while using the Chrome bootstrap. The Alloy bootstrap has been <a href="https://github.com/chromiumembedded/cef/issues/3685">removed</a> starting with the M128 release.</p>
+
+<h2 id="api-usage-1">API Usage</h2>
+
+<p>See the <a href="/cef/general_usage.html">General Usage</a> page for detailed API usage instructions.</p>
+
+<h2 id="process-considerations">Process Considerations</h2>
+
+<p>See the <a href="/cef/general_usage.html#processes">Processes</a> section of the <a href="/cef/general_usage.html">General Usage</a> page for details.</p>
+
+<h2 id="threading-considerations-1">Threading Considerations</h2>
+
+<p>See the <a href="/cef/general_usage.html#threads">Threads</a> section of the <a href="/cef/general_usage.html">General Usage</a> page for details.</p>
+
+<h2 id="implementation-details-1">Implementation Details</h2>
+
+<p>For an implementation overview see the “Modern Architecture” section above.</p>
+
+<p>Shared CEF library/runtime classes use the Cef prefix. Classes that implement the Alloy or Chrome runtime use the Alloy or Chrome prefixes respectively. Classes that extend an existing Chrome-prefixed class add the Cef or Alloy suffix, thereby following the existing naming pattern of Chrome-derived classes.</p>
+
+<h3 id="alloy-runtime-classes">Alloy Runtime Classes</h3>
+
+<p>Alloy runtime bootstrap was <a href="https://github.com/chromiumembedded/cef/issues/3685">removed</a> in M128 (mid-2024) and Alloy runtime style is now supported using the Chrome runtime bootstrap. Alloy runtime style is based on the “content” layer and has the following major implementation classes:</p>
+
+<ul>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/master/libcef/browser/alloy/alloy_browser_host_impl.h">AlloyBrowserHostImpl</a> - Implements the CefBrowser and CefBrowserHost interfaces in the browser process. Provides the glue code and implements interfaces for communicating with the RenderViewHost.</li>
+</ul>
+
+<h3 id="chrome-runtime-classes">Chrome Runtime Classes</h3>
+
+<p>Chrome runtime bootstrap and style is based on the “chrome” layer and has the following major implementation classes:</p>
+
+<ul>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/master/libcef/common/chrome/chrome_main_delegate_cef.h">ChromeMainDelegateCef</a> - Implements the common process bootstrap logic.</li>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/master/libcef/common/chrome/chrome_content_client_cef.h">ChromeContentClientCef</a> - Implements the Content API callbacks that are common to all processes.</li>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/master/libcef/browser/context.h">CefContext</a> - Represents the global CEF context in the browser process. A single CefContext object is created by CefInitialize() and destroyed by CefShutdown().</li>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/master/libcef/browser/chrome/chrome_browser_main_extra_parts_cef.h">ChromeBrowserMainExtraPartsCef</a> - Implements the browser process bootstrap logic.</li>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/master/libcef/browser/chrome/chrome_content_browser_client_cef.h">ChromeContentBrowserClientCef</a> - Implements the Content API callbacks for the browser process.</li>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/master/libcef/browser/chrome/chrome_browser_host_impl.h">ChromeBrowserHostImpl</a> - Implements the CefBrowser and CefBrowserHost interfaces in the browser process. Provides the glue code and implements interfaces for communicating with the RenderViewHost.</li>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/master/libcef/renderer/chrome/chrome_content_renderer_client_cef.h">ChromeContentRendererClientCef</a> - Implements the Content API callbacks for the render process.</li>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/master/libcef/renderer/browser_impl.h">CefBrowserImpl</a> - Implements the CefBrowser interface in the render process. Provides the glue code and implements interfaces for communicating with the RenderView.</li>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/master/libcef/browser/chrome/chrome_browser_delegate.h">ChromeBrowserDelegate</a> - Interface injected into Chrome’s <a href="https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/ui/browser.h">Browser</a> object (via <a href="https://github.com/chromiumembedded/cef/blob/master/patch/README.txt">patch files</a>) to support callbacks into CEF code.</li>
+  <li><a href="https://github.com/chromiumembedded/cef/blob/ecdfd467f84da9bb6ef57eb4fcb2778fdef5e07a/libcef/browser/chrome/views/chrome_browser_frame.h">ChromeBrowserFrame</a> - Widget for a Views-hosted Chrome browser.</li>
+</ul>
+
+<p>An overview of the Chrome Browser object model is also available <a href="https://github.com/chromiumembedded/cef/blob/ecdfd467f84da9bb6ef57eb4fcb2778fdef5e07a/libcef/browser/chrome/views/chrome_browser_frame.h">here</a>.</p>
+
+
+      </section>
+      <footer>
+        
+        <p>This project is maintained by <a href="https://github.com/chromiumembedded">chromiumembedded</a></p>
+        
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="/cef/assets/js/scale.fix.js"></script>
+  </body>
+</html>

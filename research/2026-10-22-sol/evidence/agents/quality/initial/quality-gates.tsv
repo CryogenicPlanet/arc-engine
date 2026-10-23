@@ -1,0 +1,24 @@
+gate	status	finding	evidence	synthesis_requirement
+export_presence	PASS	199 manifest records in 3 manifest files; all SHA256 and byte sizes verified	manifest-verification.tsv	Integrity/presence only
+export_counts	PASS	567959 unique VA C headers; 79 failure placeholders; 567880 candidates; 607294 TSV rows	coverage.json	Candidates are not validated functions
+failure_taxonomy	PASS	48 timeout; 24 nonunique-varnode hash; 3 range; 3 input-varnode; 1 forced-merge errors	failures.tsv	Never describe all 79 as timed out
+address_join	PASS	All C header VAs present in TSV; no name/order pairing used for metadata	method-coverage.tsv	Retain image version and VA basis
+function_span_integrity	FAIL	579666 entries inside earlier enclosing spans; 59181 span/body disagreements	huge-bounds.tsv; coverage.json	No contiguous body map, byte coverage or rewrite-size claim
+only_one_bad_region	FAIL	10 spans >=1MiB; 39 bad-instruction bodies; 5 unimplemented-instruction bodies	huge-bounds.tsv; warning-bodies.tsv	Review every consequential body, including seeds/callees
+handoff_reproduction	PASS	5846 exact row reproductions including sizes/reasons/depth	closure-audit.tsv	Mechanical consistency only
+handoff_address_identity	FAIL	No VA field in 5846 supplied rows; 524 zero sizes; 3 normalized-name collisions	closure-audit.tsv	Use address + raw name + metadata method identity
+handoff_is_complete_Arc_layer	FAIL	Two-hop anonymous-call regex excludes thunks, named calls, indirect callbacks and dispatch	methods-outside-closure.tsv	Never call this all proprietary code or rewrite scope
+class_inventory	PASS	146 Arc metadata/exported classes; 144 current Arc-named seed namespaces; 142 not reproduced	inventory.json	Keep metadata, named-function and export sets distinct
+all_class_spec_inventory	PASS	146 classes assigned exactly once; each group has 491 declarations	spec-expectations.tsv	Presence/availability is not completed behavioral spec
+imported_method_surface	PASS	834 declarations on 63 imports; 830 class/kind/selector keys	inventory.json	Do not count as 834 proven calls
+direct_app_usage	PROVISIONAL	ABI evidence includes branch-supported caller/selector records and separately reviewed receiver cases	/home/exedev/work/agents/abi/initial/used-calls.tsv	Quality audit did not repeat whole app branch scan; selector alone does not identify receiver
+older_encoding_equivalence	PROVISIONAL	6 older Arc encodings lack unique selector/type association	old-encoding-unknowns.tsv	No order-based pairing; no complete old-version ABI equivalence
+category_resolution	PROVISIONAL	Base/category identities share selectors with distinct IMPs; additionalData needs separate assessment	method-coverage.tsv	Never inherit mapping just by class/selector
+thunk_completion	PROVISIONAL	createPaneHostView missing C header has B target; _CallWithEHFrame also a B thunk	branch-probes.tsv	Follow target and validate contract, not prototype guessing
+body_semantics	PROVISIONAL	Successful candidates include unresolved jumps, injections, type propagation and unsupported instructions	warning-bodies.tsv	Pseudocode is not semantics, ownership or callback ABI proof
+aperitif_static_role	PASS	Both slices export AperitifCheckInitialized and import sandbox APIs; source describes early sandboxing	aperitif.json; aperitif-strings.tsv	Consistent with upstream role, not binary equivalence
+aperitif_exact_implementation	PROVISIONAL	Not included in engine Ghidra export; static metadata and strings only	aperitif.json	Additional bounded decompile/disassembly needed for exact behavior
+helper_executables	NOT_ANALYZED	Helper executables absent from copied binary inputs	/home/exedev/work/inputs/binaries	Launch/entitlement/load-order/helper contract remains a scope gap
+upstream_change_scope	PROVISIONAL	LTO/config/ICF and missing logging paths defeat difference-by-absence reasoning	/home/exedev/work/inputs/context/lead-review.md	Unmatched functions or missing paths do not prove proprietary code or unchanged Chromium
+CEF_native_hosting	PROVISIONAL	Pinned CEF/Chromium sources establish API context only	/home/exedev/work/inputs/context/lead-review.md	Validate parent_view Alloy restrictions, pane hosting and Chrome services
+replacement_runtime_compatibility	NOT_ESTABLISHED	No replacement built or executed in this research	report.md	No behavioral assurance or maintenance effort estimate

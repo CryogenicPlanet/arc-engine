@@ -1,0 +1,30 @@
+// ==== 0x442fe90  ArcDownloadItem::remove  (88 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcDownloadItem::remove(char *param_1)
+
+{
+  code *pcVar1;
+  int iVar2;
+  long lVar3;
+  long lVar4;
+  
+  if ((param_1[0x20] & 1U) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x442fee8);
+    (*pcVar1)();
+  }
+  lVar4 = *(long *)(param_1 + 0x10);
+  if ((lVar4 != 0) &&
+     (lVar3 = (**(code **)(**(long **)(lVar4 + 0x18) + 0xf8))(), param_1 = (char *)0x0, lVar3 != 0))
+  {
+                    /* WARNING: Could not recover jumptable at 0x0442fed4. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+    iVar2 = (**(code **)(**(long **)(lVar4 + 0x18) + 0x188))();
+    return iVar2;
+  }
+  return (int)param_1;
+}
+
+

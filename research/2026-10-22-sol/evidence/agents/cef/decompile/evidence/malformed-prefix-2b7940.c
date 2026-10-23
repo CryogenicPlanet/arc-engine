@@ -1,0 +1,241 @@
+// ==== 0x2b7940  FUN_002b7940  (21900 bytes)
+
+/* WARNING: Removing unreachable block (ram,0x08b5b83c) */
+/* WARNING: Removing unreachable block (ram,0x01cbda0c) */
+/* WARNING: Removing unreachable block (ram,0x01cbda20) */
+/* WARNING: Removing unreachable block (ram,0x01cbdec8) */
+/* WARNING: Removing unreachable block (ram,0x01cbdedc) */
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+byte * FUN_002b7940(byte *param_1,long *param_2,float *param_3)
+
+{
+  unkbyte9 *pVar1;
+  undefined1 (*pauVar2) [12];
+  ushort uVar3;
+  int iVar4;
+  undefined1 auVar5 [12];
+  byte *pbVar6;
+  double dVar7;
+  int iVar8;
+  undefined1 auVar9 [16];
+  undefined1 auVar10 [16];
+  undefined1 auVar11 [16];
+  undefined8 uVar12;
+  undefined4 *puVar13;
+  bool bVar14;
+  bool bVar15;
+  bool bVar16;
+  bool bVar17;
+  int iVar18;
+  uint uVar19;
+  undefined8 uVar20;
+  undefined1 (*pauVar21) [16];
+  long *plVar22;
+  void *pvVar23;
+  undefined4 *puVar24;
+  undefined4 *puVar25;
+  byte *pbVar26;
+  long *plVar27;
+  long *plVar28;
+  byte *extraout_x0;
+  undefined8 *puVar29;
+  byte bVar30;
+  undefined8 *puVar31;
+  long *plVar32;
+  long lVar33;
+  ulong uVar34;
+  code *pcVar35;
+  ulong uVar36;
+  dispatch_object_t *pdVar37;
+  undefined **ppuVar38;
+  undefined4 extraout_var;
+  undefined4 extraout_var_00;
+  int iVar39;
+  uint uVar40;
+  ulong *puVar41;
+  long lVar42;
+  ulong uVar43;
+  ulong uVar44;
+  float *pfVar45;
+  undefined8 uVar46;
+  long lVar47;
+  int *piVar48;
+  long lVar49;
+  undefined8 *puVar50;
+  float fVar51;
+  float fVar52;
+  undefined1 uVar53;
+  undefined1 extraout_b0;
+  undefined1 extraout_b0_00;
+  undefined1 extraout_b0_01;
+  undefined1 extraout_b0_02;
+  undefined1 extraout_b0_03;
+  undefined1 extraout_b0_04;
+  undefined1 extraout_b0_05;
+  undefined1 extraout_b0_06;
+  undefined1 extraout_b0_07;
+  undefined1 extraout_b0_08;
+  undefined1 uVar54;
+  undefined1 extraout_var_01;
+  undefined1 extraout_var_02;
+  undefined1 extraout_var_03;
+  undefined1 extraout_var_04;
+  undefined1 extraout_var_05;
+  undefined1 extraout_var_06;
+  undefined1 extraout_var_07;
+  undefined1 extraout_var_08;
+  undefined1 extraout_var_09;
+  undefined1 extraout_var_10;
+  undefined1 uVar55;
+  undefined1 extraout_var_11;
+  undefined1 extraout_var_12;
+  undefined1 extraout_var_13;
+  undefined1 extraout_var_14;
+  undefined1 extraout_var_15;
+  undefined1 extraout_var_16;
+  undefined1 extraout_var_17;
+  undefined1 extraout_var_18;
+  undefined1 extraout_var_19;
+  undefined1 extraout_var_20;
+  undefined1 uVar56;
+  undefined1 extraout_var_21;
+  undefined1 extraout_var_22;
+  undefined1 extraout_var_23;
+  undefined1 extraout_var_24;
+  undefined1 extraout_var_25;
+  undefined1 extraout_var_26;
+  undefined1 extraout_var_27;
+  undefined1 extraout_var_28;
+  undefined1 extraout_var_29;
+  undefined1 extraout_var_30;
+  undefined1 uVar57;
+  undefined1 uVar58;
+  undefined1 uVar59;
+  undefined1 uVar60;
+  float fVar61;
+  float fVar62;
+  undefined1 auVar63 [16];
+  undefined1 auVar64 [16];
+  undefined1 auVar65 [16];
+  float fVar66;
+  float fVar67;
+  float fVar68;
+  float fVar69;
+  float fVar70;
+  float fVar71;
+  undefined1 auVar72 [16];
+  float fVar73;
+  undefined4 uVar74;
+  float fVar75;
+  undefined4 uVar76;
+  float fVar77;
+  ulong unaff_d11;
+  float fVar78;
+  float fVar79;
+  undefined1 auVar80 [16];
+  long local_2d0;
+  long local_2c8;
+  long *local_2c0;
+  byte *local_2b0;
+  long *plStack_2a8;
+  long *local_2a0;
+  long *plStack_298;
+  long *local_290;
+  long *local_288;
+  undefined8 local_280;
+  float fStack_278;
+  float fStack_274;
+  float local_270;
+  float local_26c;
+  float local_268;
+  undefined4 uStack_264;
+  undefined8 local_260;
+  long *plStack_258;
+  undefined4 local_250;
+  undefined4 uStack_24c;
+  undefined4 uStack_248;
+  undefined4 uStack_244;
+  undefined4 local_240;
+  undefined4 uStack_23c;
+  undefined4 uStack_238;
+  undefined4 uStack_234;
+  undefined4 local_230;
+  undefined4 uStack_22c;
+  float fStack_228;
+  float fStack_224;
+  float local_220;
+  float fStack_21c;
+  float fStack_218;
+  float fStack_214;
+  undefined8 local_210;
+  undefined8 local_208;
+  undefined8 local_200;
+  undefined8 uStack_1f8;
+  undefined8 local_1f0;
+  undefined8 uStack_1e8;
+  float local_1e0;
+  undefined8 local_1d0;
+  float fStack_1c8;
+  float fStack_1c4;
+  float fStack_1c0;
+  float fStack_1bc;
+  float fStack_1b8;
+  float fStack_1b4;
+  undefined8 uStack_1b0;
+  undefined8 local_1a8;
+  undefined8 local_1a0;
+  ulong local_190;
+  byte *pbStack_188;
+  char *local_180;
+  undefined8 local_178;
+  undefined8 local_170;
+  undefined8 uStack_168;
+  byte *local_160;
+  long *plStack_158;
+  long *local_150;
+  long lStack_148;
+  long *local_140;
+  undefined8 local_138;
+  undefined8 local_130;
+  undefined8 uStack_128;
+  float local_120;
+  float fStack_11c;
+  undefined8 uStack_118;
+  undefined8 local_110;
+  undefined8 local_100;
+  undefined8 uStack_f8;
+  undefined8 uStack_f0;
+  float fStack_e8;
+  float fStack_e4;
+  undefined8 local_e0;
+  undefined8 uStack_d8;
+  undefined8 local_d0;
+  undefined8 uStack_c8;
+  long local_c0;
+  undefined8 uStack_b8;
+  long *local_b0;
+  undefined8 uStack_a8;
+  undefined8 uStack_a0;
+  undefined8 *local_98;
+  long *local_90;
+  undefined8 *puStack_88;
+  
+  puVar31 = *(undefined8 **)PTR____stack_chk_guard_0d824020;
+  bVar30 = *param_1;
+  local_98 = puVar31;
+  if (0x24 < bVar30) goto LAB_002ba21c;
+  if (bVar30 != 0x18) {
+    if (*(undefined8 **)PTR____stack_chk_guard_0d824020 != puVar31) goto LAB_002b9e04;
+                    /* WARNING (jumptable): Sanity check requires truncation of jumptable */
+                    /* WARNING: Could not find normalized switch variable to match jumptable */
+    switch(bVar30) {
+    case 0x19:
+      uVar34 = *(ulong *)(*(long *)(param_1 + 0x50) + 0x10);
+      if (uVar34 != *(ulong *)(*(long *)(param_1 + 0x58) + 0x10)) {
+                    /* WARNING: Does not return */
+        pcVar35 = (code *)SoftwareBreakpoint(0,0x8b340b8);
+        (*pcVar35)();
+      }
+      if (uVar34 >> 0x1f == 0) {
+        uVar36 = *(ulong *)

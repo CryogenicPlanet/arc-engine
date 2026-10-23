@@ -1,0 +1,304 @@
+{
+  "class_name": "ArcNetworkLoggingConfiguration",
+  "metadata_va": "0xe37e148",
+  "metadata_file_offset": "0xe37e148",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2adf70",
+  "instance_start": 8,
+  "instance_size": 40,
+  "ivars": [
+    {
+      "record_va": "0xe2adf18",
+      "offset": 8,
+      "name": "_network_logging_configuration",
+      "type": "{NetworkLoggingConfiguration=\"file_path\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"logging_duration_in_seconds\"d}",
+      "alignment": 3,
+      "size": 32
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcNetworkLoggingConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "init", "type_encoding": "@16@0:8", "imp": "0x443c3e4", "method_record_va": "0xd77c7c4", "selector_va": "0xd744859", "dyld_line": 3014, "imp_file_offset": "0x443c3e4", "body_name": "ArcNetworkLoggingConfiguration::init", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1439786, "body_length": 662, "failed": 0, "truncated": false}
+// ==== 0x443c3e4  ArcNetworkLoggingConfiguration::init  (108 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcNetworkLoggingConfiguration::init(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcNetworkLoggingConfiguration;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0x1f) < '\0') {
+      FUN_00005810(*(undefined8 *)(IVar1 + 8),*(ulong *)(IVar1 + 0x18) & 0x7fffffffffffffff);
+    }
+    *(undefined8 *)(IVar1 + 8) = 0;
+    *(undefined8 *)(IVar1 + 0x10) = 0;
+    *(undefined8 *)(IVar1 + 0x18) = 0;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkLoggingConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "initWithNetworkLoggingConfiguration:", "type_encoding": "@24@0:8r^v16", "imp": "0x443c450", "method_record_va": "0xd77c7d0", "selector_va": "0xd7676c3", "dyld_line": 3015, "imp_file_offset": "0x443c450", "body_name": "ArcNetworkLoggingConfiguration::initWithNetworkLoggingConfiguration:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1440448, "body_length": 1482, "failed": 0, "truncated": false}
+// ==== 0x443c450  ArcNetworkLoggingConfiguration::initWithNetworkLoggingConfiguration:  (176 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcNetworkLoggingConfiguration::initWithNetworkLoggingConfiguration_
+             (ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ulong uVar1;
+  byte bVar2;
+  const_void__ pvVar3;
+  ID IVar4;
+  undefined8 uVar5;
+  undefined8 uVar6;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcNetworkLoggingConfiguration;
+  local_30 = param_1;
+  IVar4 = NSObject::init((ID)&local_30,"init");
+  if (IVar4 != 0) {
+    if ((undefined8 *)(IVar4 + 8) != param_3) {
+      bVar2 = *(byte *)((long)param_3 + 0x17);
+      if (*(char *)(IVar4 + 0x1f) < '\0') {
+        uVar1 = *(ulong *)((long)param_3 + 8);
+        pvVar3 = *(const_void__ *)param_3;
+        if (-1 < (char)bVar2) {
+          uVar1 = (ulong)bVar2;
+          pvVar3 = param_3;
+        }
+        FUN_00359ad8(IVar4 + 8,pvVar3,uVar1);
+      }
+      else if ((char)bVar2 < '\0') {
+        FUN_00359998(IVar4 + 8,*(undefined8 *)param_3,*(undefined8 *)((long)param_3 + 8));
+      }
+      else {
+        uVar6 = *(undefined8 *)((long)param_3 + 8);
+        uVar5 = *(undefined8 *)param_3;
+        *(undefined8 *)(IVar4 + 0x18) = *(undefined8 *)((long)param_3 + 0x10);
+        *(undefined8 *)(IVar4 + 0x10) = uVar6;
+        *(undefined8 *)(IVar4 + 8) = uVar5;
+      }
+    }
+    *(undefined8 *)(IVar4 + 0x20) = *(undefined8 *)((long)param_3 + 0x18);
+  }
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkLoggingConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "filePath", "type_encoding": "@16@0:8", "imp": "0x43e632c", "method_record_va": "0xd77c7dc", "selector_va": "0xd75d061", "dyld_line": 3016, "imp_file_offset": "0x43e632c", "body_name": "ArcNetworkLoggingConfiguration::filePath", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4341056, "body_length": 532, "failed": 0, "truncated": false}
+// ==== 0x43e632c  ArcNetworkLoggingConfiguration::filePath  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcNetworkLoggingConfiguration::filePath(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  
+  cVar3 = *(char *)(param_1 + 0x1f);
+  plVar1 = (long *)*(long *)(param_1 + 8);
+  if (-1 < (long)cVar3) {
+    plVar1 = (long *)(param_1 + 8);
+  }
+  lVar2 = *(long *)(param_1 + 0x10);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  IVar4 = FUN_01c391bc(plVar1,lVar2);
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkLoggingConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "setFilePath:", "type_encoding": "v24@0:8@16", "imp": "0x443c500", "method_record_va": "0xd77c7e8", "selector_va": "0xd75d06a", "dyld_line": 3017, "imp_file_offset": "0x443c500", "body_name": "ArcNetworkLoggingConfiguration::setFilePath:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1441930, "body_length": 867, "failed": 0, "truncated": false}
+// ==== 0x443c500  ArcNetworkLoggingConfiguration::setFilePath:  (128 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcNetworkLoggingConfiguration::setFilePath_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined8 local_38;
+  undefined8 uStack_30;
+  undefined8 local_28;
+  
+  if (param_3 == 0) {
+    local_38 = 0;
+    uStack_30 = 0;
+    local_28 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_38,param_3);
+  }
+  if (*(char *)(param_1 + 0x1f) < '\0') {
+    FUN_00005810(*(undefined8 *)(param_1 + 8),*(ulong *)(param_1 + 0x18) & 0x7fffffffffffffff);
+  }
+  *(undefined8 *)(param_1 + 0x10) = uStack_30;
+  *(undefined8 *)(param_1 + 8) = local_38;
+  *(undefined8 *)(param_1 + 0x18) = local_28;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkLoggingConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "loggingDurationInSeconds", "type_encoding": "d16@0:8", "imp": "0xed0b1c", "method_record_va": "0xd77c7f4", "selector_va": "0xd7676e8", "dyld_line": 3018, "imp_file_offset": "0xed0b1c", "body_name": "ArcNetworkLoggingConfiguration::loggingDurationInSeconds", "body_path": "/home/exedev/work/inputs/decompile/0xe.c", "body_offset": 4632667, "body_length": 259, "failed": 0, "truncated": false}
+// ==== 0xed0b1c  ArcNetworkLoggingConfiguration::loggingDurationInSeconds  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+double ArcNetworkLoggingConfiguration::loggingDurationInSeconds(ID param_1,SEL param_2)
+
+{
+  return *(double *)(param_1 + 0x20);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkLoggingConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "setLoggingDurationInSeconds:", "type_encoding": "v24@0:8d16", "imp": "0x443c580", "method_record_va": "0xd77c800", "selector_va": "0xd767701", "dyld_line": 3019, "imp_file_offset": "0x443c580", "body_name": "ArcNetworkLoggingConfiguration::setLoggingDurationInSeconds:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1442797, "body_length": 310, "failed": 0, "truncated": false}
+// ==== 0x443c580  ArcNetworkLoggingConfiguration::setLoggingDurationInSeconds:  (8 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcNetworkLoggingConfiguration::setLoggingDurationInSeconds_
+               (ID param_1,SEL param_2,double param_3)
+
+{
+  *(double *)(param_1 + 0x20) = param_3;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkLoggingConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "network_logging_configuration", "type_encoding": "{NetworkLoggingConfiguration={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}d}16@0:8", "imp": "0x443c588", "method_record_va": "0xd77c80c", "selector_va": "0xd75c2d0", "dyld_line": 3020, "imp_file_offset": "0x443c588", "body_name": "ArcNetworkLoggingConfiguration::network_logging_configuration", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1443107, "body_length": 939, "failed": 0, "truncated": false}
+// ==== 0x443c588  ArcNetworkLoggingConfiguration::network_logging_configuration  (80 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcNetworkLoggingConfiguration::network_logging_configuration
+               (NetworkLoggingConfiguration *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  char *pcVar1;
+  
+  if (*(char *)(param_1 + 0x1f) < '\0') {
+    FUN_00060a60(__return_storage_ptr__,*(undefined8 *)(param_1 + 8),*(undefined8 *)(param_1 + 0x10)
+                );
+  }
+  else {
+    pcVar1 = *(char **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field1_0x8 =
+         *(unsigned_long_long *)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field0_0x0 = pcVar1;
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field2_0x10 =
+         *(AnonymousBitField1 *)(param_1 + 0x18);
+  }
+  __return_storage_ptr__->field1_0x18 = *(double *)(param_1 + 0x20);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkLoggingConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "setNetwork_logging_configuration:", "type_encoding": "v48@0:8{NetworkLoggingConfiguration={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}d}16", "imp": "0x443c5d8", "method_record_va": "0xd77c818", "selector_va": "0xd76771e", "dyld_line": 3021, "imp_file_offset": "0x443c5d8", "body_name": "ArcNetworkLoggingConfiguration::setNetwork_logging_configuration:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1444046, "body_length": 1570, "failed": 0, "truncated": false}
+// ==== 0x443c5d8  ArcNetworkLoggingConfiguration::setNetwork_logging_configuration:  (132 bytes)
+
+/* Function Stack Size: 0x30 bytes */
+
+void ArcNetworkLoggingConfiguration::setNetwork_logging_configuration_
+               (ID param_1,SEL param_2,NetworkLoggingConfiguration *param_3)
+
+{
+  byte bVar1;
+  NetworkLoggingConfiguration *pNVar2;
+  char *pcVar3;
+  unsigned_long_long uVar4;
+  
+  if ((NetworkLoggingConfiguration *)(param_1 + 8) != param_3) {
+    bVar1 = *(byte *)((long)&(param_3->field0_0x0).field0_0x0 + 0x17);
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      uVar4 = (param_3->field0_0x0).field0_0x0.field1.field1_0x8;
+      pNVar2 = (NetworkLoggingConfiguration *)(param_3->field0_0x0).field0_0x0.field1.field0_0x0;
+      if (-1 < (char)bVar1) {
+        uVar4 = (ulong)bVar1;
+        pNVar2 = param_3;
+      }
+      FUN_00359ad8(param_1 + 8,pNVar2,uVar4);
+    }
+    else if ((char)bVar1 < '\0') {
+      FUN_00359998(param_1 + 8,(param_3->field0_0x0).field0_0x0.field1.field0_0x0,
+                   (param_3->field0_0x0).field0_0x0.field1.field1_0x8);
+    }
+    else {
+      uVar4 = (param_3->field0_0x0).field0_0x0.field1.field1_0x8;
+      pcVar3 = (param_3->field0_0x0).field0_0x0.field1.field0_0x0;
+      *(AnonymousBitField1 *)(param_1 + 0x18) = (param_3->field0_0x0).field0_0x0.field1.field2_0x10;
+      *(unsigned_long_long *)(param_1 + 0x10) = uVar4;
+      (((NetworkLoggingConfiguration *)(param_1 + 8))->field0_0x0).field0_0x0.field1.field0_0x0 =
+           pcVar3;
+    }
+  }
+  *(double *)(param_1 + 0x20) = param_3->field1_0x18;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkLoggingConfiguration", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x440d470", "method_record_va": "0xd77c824", "selector_va": "0xd744a39", "dyld_line": 3022, "imp_file_offset": "0x440d470", "body_name": "ArcNetworkLoggingConfiguration::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 322885, "body_length": 359, "failed": 0, "truncated": false}
+// ==== 0x440d470  ArcNetworkLoggingConfiguration::.cxx_destruct  (32 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcNetworkLoggingConfiguration::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (-1 < *(char *)(param_1 + 0x1f)) {
+    return;
+  }
+  FUN_00005810(*(undefined8 *)(param_1 + 8),*(ulong *)(param_1 + 0x18) & 0x7fffffffffffffff);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkLoggingConfiguration", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x416a680", "method_record_va": "0xd77c830", "selector_va": "0xd744a47", "dyld_line": 3023, "imp_file_offset": "0x416a680", "body_name": "SDPQueryListener::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x41.c", "body_offset": 2236472, "body_length": 303, "failed": 0, "truncated": false}
+// ==== 0x416a680  SDPQueryListener::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID SDPQueryListener::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 8) = 0;
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+

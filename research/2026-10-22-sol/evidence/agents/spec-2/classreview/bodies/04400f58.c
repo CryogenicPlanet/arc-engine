@@ -1,0 +1,33 @@
+// ==== 0x4400f58  ArcBrowserCreateParams::initWithBrowserCreateParams:  (140 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcBrowserCreateParams::initWithBrowserCreateParams_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ID IVar1;
+  long lVar2;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcBrowserCreateParams;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0x18) == '\0') {
+      *(undefined8 *)(IVar1 + 8) = *(undefined8 *)param_3;
+      lVar2 = *(long *)((long)param_3 + 8);
+      *(long *)(IVar1 + 0x10) = lVar2;
+      if (lVar2 != 0) {
+        *(long *)(lVar2 + 8) = *(long *)(lVar2 + 8) + 1;
+      }
+      *(undefined1 *)(IVar1 + 0x18) = 1;
+    }
+    else {
+      FUN_04331e20(IVar1 + 8,param_3);
+    }
+  }
+  return IVar1;
+}
+
+

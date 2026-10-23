@@ -1,0 +1,57 @@
+// ==== 0x43e0a9c  ArcBrowser::windowIdentifier  (212 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcBrowser::windowIdentifier(ID param_1,SEL param_2)
+
+{
+  undefined1 **ppuVar1;
+  code *pcVar2;
+  ID IVar3;
+  undefined1 *local_40;
+  long lStack_38;
+  undefined7 local_30;
+  char cStack_29;
+  byte local_28;
+  
+  if (*(char *)(param_1 + 0x38) == '\0') {
+LAB_043e0b50:
+    IVar3 = 0;
+  }
+  else {
+    FUN_042fb498(&local_40,*(undefined8 *)(param_1 + 0x28));
+    if ((local_28 == 0) || (-1 < cStack_29)) {
+      if (local_28 == 0) goto LAB_043e0b50;
+    }
+    else {
+      FUN_00005810(local_40,CONCAT17(cStack_29,local_30) & 0x7fffffffffffffff);
+    }
+    if ((*(byte *)(param_1 + 0x38) & 1) == 0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43e0b6c);
+      (*pcVar2)();
+    }
+    FUN_042fb498(&local_40,*(undefined8 *)(param_1 + 0x28));
+    if ((local_28 & 1) == 0) {
+                    /* WARNING: Subroutine does not return */
+      FUN_04b08a00();
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)cStack_29) {
+      ppuVar1 = &local_40;
+    }
+    if (-1 < cStack_29) {
+      lStack_38 = (long)cStack_29;
+    }
+    IVar3 = FUN_01c391bc(ppuVar1,lStack_38);
+    if ((local_28 != 0) && (cStack_29 < '\0')) {
+      FUN_00005810(local_40,CONCAT17(cStack_29,local_30) & 0x7fffffffffffffff);
+    }
+  }
+  return IVar3;
+}
+
+

@@ -1,0 +1,18 @@
+// ==== 0x442c174  ArcSelectOption::isSelected  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcSelectOption::isSelected(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x50) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x48);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442c188);
+  (*pcVar1)();
+}
+
+

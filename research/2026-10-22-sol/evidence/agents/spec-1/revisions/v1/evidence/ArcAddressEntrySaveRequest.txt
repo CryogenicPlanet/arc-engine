@@ -1,0 +1,187 @@
+{
+  "class_name": "ArcAddressEntrySaveRequest",
+  "metadata_va": "0xe37e418",
+  "metadata_file_offset": "0xe37e418",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2ae778",
+  "instance_start": 8,
+  "instance_size": 32,
+  "ivars": [
+    {
+      "record_va": "0xe2ae740",
+      "offset": 8,
+      "name": "_address_entry_save_request",
+      "type": "{optional<arc::AddressEntrySaveRequest>=\"\"(?=\"__null_state_\"c\"__val_\"{AddressEntrySaveRequest=\"impl_\"{shared_ptr<arc::AddressEntrySaveRequest::Impl>=\"__ptr_\"^{Impl}\"__cntrl_\"^{__shared_weak_count}}})\"__engaged_\"B}",
+      "size": 24,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2ae768",
+      "name": "address_entry_save_request",
+      "attributes": "T{optional<arc::AddressEntrySaveRequest>=(?=c{AddressEntrySaveRequest={shared_ptr<arc::AddressEntrySaveRequest::Impl>=^{Impl}^{__shared_weak_count}}})B},R,N,V_address_entry_save_request"
+    }
+  ]
+}
+
+###  -initWithAddressEntrySaveRequest: 0x443ebe4 @24@0:8r^v16 available
+
+  ID IVar2;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcAddressEntrySaveRequest;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x18) == '\0') goto LAB_0443ec44;
+  plVar4 = *(long **)(IVar2 + 0x10);
+  if (plVar4 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar4[1];
+    plVar4[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar4[2];
+        plVar4[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_0443ec40;
+      }
+      pcVar3 = *(code **)(*plVar4 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*pcVar3)(plVar4);
+      }
+    }
+  }
+LAB_0443ec40:
+  *(undefined1 *)(IVar2 + 0x18) = 0;
+LAB_0443ec44:
+  *(undefined8 *)(IVar2 + 8) = *(undefined8 *)param_3;
+  lVar1 = *(long *)((long)param_3 + 8);
+  *(long *)(IVar2 + 0x10) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = *(long *)(lVar1 + 8) + 1;
+  }
+  *(undefined1 *)(IVar2 + 0x18) = 1;
+  return IVar2;
+}
+
+
+
+
+###  -save 0x443ed08 v16@0:8 available
+
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    FUN_04330cdc(param_1 + 8);
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443ed1c);
+  (*pcVar1)();
+}
+
+
+
+
+###  -cancel 0x443ed1c v16@0:8 available
+
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    FUN_04330d38(param_1 + 8);
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443ed30);
+  (*pcVar1)();
+}
+
+
+
+
+###  -address_entry_save_request 0x43df53c {optional<arc::AddressEntrySaveRequest>=(?=c{AddressEntrySaveRequest={shared_ptr<arc::AddressEntrySaveRequest::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8 available
+
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::AIAgent> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43df57c);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x10);
+    pIVar4 = *(Impl **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x43df69c v16@0:8 available
+
+  
+  if ((*(char *)(param_1 + 0x18) != '\0') &&
+     (plVar2 = *(long **)(param_1 + 0x10), plVar2 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x043df75c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x43df760 @16@0:8 available
+
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+

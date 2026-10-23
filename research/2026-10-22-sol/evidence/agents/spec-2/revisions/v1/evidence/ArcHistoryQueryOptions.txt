@@ -1,0 +1,564 @@
+{
+  "class_name": "ArcHistoryQueryOptions",
+  "metadata_va": "0xe37c320",
+  "metadata_file_offset": "0xe37c320",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a6d30",
+  "instance_start": 8,
+  "instance_size": 24,
+  "ivars": [
+    {
+      "record_va": "0xe2a6c98",
+      "offset": 8,
+      "name": "_options",
+      "type": "{HistoryQueryOptions=\"impl_\"{shared_ptr<arc::HistoryQueryOptions::Impl>=\"__ptr_\"^{Impl}\"__cntrl_\"^{__shared_weak_count}}}",
+      "alignment": 3,
+      "size": 16
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "searchText", "type_encoding": "@16@0:8", "imp": "0x440360c", "method_record_va": "0xd7790f4", "selector_va": "0xd75b77b", "dyld_line": 1748, "imp_file_offset": "0x440360c", "body_name": "ArcHistoryQueryOptions::searchText", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 93720, "body_length": 1072, "failed": 0, "truncated": false}
+// ==== 0x440360c  ArcHistoryQueryOptions::searchText  (144 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryQueryOptions::searchText(ID param_1,SEL param_2)
+
+{
+  undefined1 **ppuVar1;
+  long lVar2;
+  ID IVar3;
+  undefined8 *puVar4;
+  undefined1 *local_40;
+  long lStack_38;
+  undefined8 local_30;
+  
+  puVar4 = *(undefined8 **)(param_1 + 8);
+  if (*(char *)((long)puVar4 + 0x17) < '\0') {
+    FUN_00054420(&local_40,*puVar4,puVar4[1]);
+  }
+  else {
+    lStack_38 = puVar4[1];
+    local_40 = (undefined1 *)*puVar4;
+    local_30 = puVar4[2];
+  }
+  ppuVar1 = (undefined1 **)local_40;
+  if (-1 < (long)local_30._7_1_) {
+    ppuVar1 = &local_40;
+  }
+  lVar2 = lStack_38;
+  if (-1 < local_30) {
+    lVar2 = (long)local_30._7_1_;
+  }
+  IVar3 = FUN_01d9fb90(ppuVar1,lVar2);
+  if (local_30 < 0) {
+    FUN_00005810(local_40,local_30 << 1);
+  }
+  return IVar3;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "setSearchText:", "type_encoding": "v24@0:8@16", "imp": "0x44036c0", "method_record_va": "0xd779100", "selector_va": "0xd75b786", "dyld_line": 1749, "imp_file_offset": "0x44036c0", "body_name": "ArcHistoryQueryOptions::setSearchText:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 94792, "body_length": 1421, "failed": 0, "truncated": false}
+// ==== 0x44036c0  ArcHistoryQueryOptions::setSearchText:  (216 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcHistoryQueryOptions::setSearchText_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined8 **ppuVar1;
+  undefined8 ***pppuVar2;
+  undefined8 ***pppuVar3;
+  undefined8 **local_38;
+  undefined8 *puStack_30;
+  undefined8 *local_28;
+  
+  if (param_3 == 0) {
+    local_38 = (undefined8 ***)0x0;
+    puStack_30 = (undefined8 **)0x0;
+    local_28 = (undefined8 **)0x0;
+  }
+  else {
+    FUN_083b1228(&local_38,param_3);
+  }
+  pppuVar3 = *(undefined8 ****)(param_1 + 8);
+  if (pppuVar3 != &local_38) {
+    if (*(char *)((long)pppuVar3 + 0x17) < '\0') {
+      ppuVar1 = (undefined8 **)puStack_30;
+      pppuVar2 = (undefined8 ***)local_38;
+      if (-1 < (long)local_28) {
+        ppuVar1 = (undefined8 **)((ulong)local_28 >> 0x38);
+        pppuVar2 = &local_38;
+      }
+      FUN_007ab764(pppuVar3,pppuVar2,ppuVar1);
+    }
+    else if ((long)local_28 < 0) {
+      FUN_007ab624(pppuVar3,local_38,puStack_30);
+    }
+    else {
+      pppuVar3[2] = (undefined8 **)local_28;
+      pppuVar3[1] = (undefined8 **)puStack_30;
+      *pppuVar3 = local_38;
+    }
+  }
+  if ((long)local_28 < 0) {
+    FUN_00005810(local_38,(long)local_28 << 1);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "beginTime", "type_encoding": "@16@0:8", "imp": "0x4403798", "method_record_va": "0xd77910c", "selector_va": "0xd75b795", "dyld_line": 1750, "imp_file_offset": "0x4403798", "body_name": "ArcHistoryQueryOptions::beginTime", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 96213, "body_length": 871, "failed": 0, "truncated": false}
+// ==== 0x4403798  ArcHistoryQueryOptions::beginTime  (152 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryQueryOptions::beginTime(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  ID IVar2;
+  long lVar3;
+  double dVar4;
+  
+  lVar3 = *(long *)(*(long *)(param_1 + 8) + 0x18);
+  if (lVar3 == 0) {
+    dVar4 = 0.0;
+  }
+  else if (lVar3 + 0x8000000000000001U < 2) {
+    dVar4 = -INFINITY;
+    if (-1 < lVar3) {
+      dVar4 = INFINITY;
+    }
+  }
+  else {
+    lVar1 = -0x8000000000000000;
+    if (!SCARRY8(lVar3,-0x295e9648864000)) {
+      lVar1 = lVar3 + -0x295e9648864000;
+    }
+    if (lVar1 == -0x8000000000000000) {
+      dVar4 = -INFINITY;
+    }
+    else {
+      dVar4 = (double)lVar1 / 1000000.0;
+    }
+  }
+  IVar2 = NSDate::dateWithTimeIntervalSince1970_
+                    ((ID)&_OBJC_CLASS___NSDate,"dateWithTimeIntervalSince1970:",dVar4);
+  return IVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "setBeginTime:", "type_encoding": "v24@0:8@16", "imp": "0x4403830", "method_record_va": "0xd779118", "selector_va": "0xd75b79f", "dyld_line": 1751, "imp_file_offset": "0x4403830", "body_name": "ArcHistoryQueryOptions::setBeginTime:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 97084, "body_length": 898, "failed": 0, "truncated": false}
+// ==== 0x4403830  ArcHistoryQueryOptions::setBeginTime:  (176 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcHistoryQueryOptions::setBeginTime_(ID param_1,SEL param_2,ID param_3)
+
+{
+  long lVar1;
+  long lVar2;
+  double extraout_d0;
+  double dVar3;
+  
+  _objc_msgSend(param_3,"timeIntervalSince1970");
+  lVar2 = 0x295e9648864000;
+  if ((extraout_d0 != 0.0) && (lVar2 = 0, !NAN(extraout_d0))) {
+    dVar3 = extraout_d0 * 1000000.0;
+    lVar2 = 0;
+    if (-9.223372036854776e+18 <= dVar3) {
+      lVar2 = 0x7fffffffffffffff;
+    }
+    lVar1 = (long)dVar3;
+    if (9.223372036854775e+18 < dVar3) {
+      lVar1 = lVar2;
+    }
+    lVar2 = lVar1;
+    if (1 < lVar1 + 0x8000000000000001U) {
+      lVar2 = 0x7fffffffffffffff;
+      if (!SCARRY8(lVar1,0x295e9648864000)) {
+        lVar2 = lVar1 + 0x295e9648864000;
+      }
+    }
+  }
+  *(long *)(*(long *)(param_1 + 8) + 0x18) = lVar2;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "endTime", "type_encoding": "@16@0:8", "imp": "0x44038e0", "method_record_va": "0xd779124", "selector_va": "0xd75b7ad", "dyld_line": 1752, "imp_file_offset": "0x44038e0", "body_name": "ArcHistoryQueryOptions::endTime", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 97982, "body_length": 867, "failed": 0, "truncated": false}
+// ==== 0x44038e0  ArcHistoryQueryOptions::endTime  (152 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryQueryOptions::endTime(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  ID IVar2;
+  long lVar3;
+  double dVar4;
+  
+  lVar3 = *(long *)(*(long *)(param_1 + 8) + 0x20);
+  if (lVar3 == 0) {
+    dVar4 = 0.0;
+  }
+  else if (lVar3 + 0x8000000000000001U < 2) {
+    dVar4 = -INFINITY;
+    if (-1 < lVar3) {
+      dVar4 = INFINITY;
+    }
+  }
+  else {
+    lVar1 = -0x8000000000000000;
+    if (!SCARRY8(lVar3,-0x295e9648864000)) {
+      lVar1 = lVar3 + -0x295e9648864000;
+    }
+    if (lVar1 == -0x8000000000000000) {
+      dVar4 = -INFINITY;
+    }
+    else {
+      dVar4 = (double)lVar1 / 1000000.0;
+    }
+  }
+  IVar2 = NSDate::dateWithTimeIntervalSince1970_
+                    ((ID)&_OBJC_CLASS___NSDate,"dateWithTimeIntervalSince1970:",dVar4);
+  return IVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "setEndTime:", "type_encoding": "v24@0:8@16", "imp": "0x4403978", "method_record_va": "0xd779130", "selector_va": "0xd75b7b5", "dyld_line": 1753, "imp_file_offset": "0x4403978", "body_name": "ArcHistoryQueryOptions::setEndTime:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 98849, "body_length": 894, "failed": 0, "truncated": false}
+// ==== 0x4403978  ArcHistoryQueryOptions::setEndTime:  (176 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcHistoryQueryOptions::setEndTime_(ID param_1,SEL param_2,ID param_3)
+
+{
+  long lVar1;
+  long lVar2;
+  double extraout_d0;
+  double dVar3;
+  
+  _objc_msgSend(param_3,"timeIntervalSince1970");
+  lVar2 = 0x295e9648864000;
+  if ((extraout_d0 != 0.0) && (lVar2 = 0, !NAN(extraout_d0))) {
+    dVar3 = extraout_d0 * 1000000.0;
+    lVar2 = 0;
+    if (-9.223372036854776e+18 <= dVar3) {
+      lVar2 = 0x7fffffffffffffff;
+    }
+    lVar1 = (long)dVar3;
+    if (9.223372036854775e+18 < dVar3) {
+      lVar1 = lVar2;
+    }
+    lVar2 = lVar1;
+    if (1 < lVar1 + 0x8000000000000001U) {
+      lVar2 = 0x7fffffffffffffff;
+      if (!SCARRY8(lVar1,0x295e9648864000)) {
+        lVar2 = lVar1 + 0x295e9648864000;
+      }
+    }
+  }
+  *(long *)(*(long *)(param_1 + 8) + 0x20) = lVar2;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "maxResults", "type_encoding": "i16@0:8", "imp": "0x40cbfe8", "method_record_va": "0xd77913c", "selector_va": "0xd75b7c1", "dyld_line": 1754, "imp_file_offset": "0x40cbfe8", "body_name": "ArcHistoryQueryOptions::maxResults", "body_path": "/home/exedev/work/inputs/decompile/0x40.c", "body_offset": 5655199, "body_length": 226, "failed": 0, "truncated": false}
+// ==== 0x40cbfe8  ArcHistoryQueryOptions::maxResults  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcHistoryQueryOptions::maxResults(ID param_1,SEL param_2)
+
+{
+  return *(int *)(*(long *)(param_1 + 8) + 0x28);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "setMaxResults:", "type_encoding": "v20@0:8i16", "imp": "0x4403a28", "method_record_va": "0xd779148", "selector_va": "0xd75b7cc", "dyld_line": 1755, "imp_file_offset": "0x4403a28", "body_name": "ArcHistoryQueryOptions::setMaxResults:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 99743, "body_length": 260, "failed": 0, "truncated": false}
+// ==== 0x4403a28  ArcHistoryQueryOptions::setMaxResults:  (12 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcHistoryQueryOptions::setMaxResults_(ID param_1,SEL param_2,int param_3)
+
+{
+  *(int *)(*(long *)(param_1 + 8) + 0x28) = param_3;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "duplicateHandlingPolicy", "type_encoding": "q16@0:8", "imp": "0x4403a34", "method_record_va": "0xd779154", "selector_va": "0xd75b7db", "dyld_line": 1756, "imp_file_offset": "0x4403a34", "body_name": "ArcHistoryQueryOptions::duplicateHandlingPolicy", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 100003, "body_length": 554, "failed": 0, "truncated": false}
+// ==== 0x4403a34  ArcHistoryQueryOptions::duplicateHandlingPolicy  (44 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcHistoryQueryOptions::duplicateHandlingPolicy(ID param_1,SEL param_2)
+
+{
+  long_long lVar1;
+  uint uVar2;
+  code *pcVar3;
+  
+  uVar2 = *(uint *)(*(long *)(param_1 + 8) + 0x30);
+  if (uVar2 < 3) {
+    lVar1 = 2;
+    if (uVar2 != 2) {
+      lVar1 = (ulong)(uVar2 == 1);
+    }
+    return lVar1;
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(0x550b,0x4403a60);
+  (*pcVar3)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "setDuplicateHandlingPolicy:", "type_encoding": "v24@0:8q16", "imp": "0x4403a60", "method_record_va": "0xd779160", "selector_va": "0xd75b7f3", "dyld_line": 1757, "imp_file_offset": "0x4403a60", "body_name": "ArcHistoryQueryOptions::setDuplicateHandlingPolicy:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 100557, "body_length": 324, "failed": 0, "truncated": false}
+// ==== 0x4403a60  ArcHistoryQueryOptions::setDuplicateHandlingPolicy:  (20 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcHistoryQueryOptions::setDuplicateHandlingPolicy_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  if (param_3 < 3) {
+    *(int *)(*(long *)(param_1 + 8) + 0x30) = (int)param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "matchingAlgorithm", "type_encoding": "q16@0:8", "imp": "0x4403a74", "method_record_va": "0xd77916c", "selector_va": "0xd75b80f", "dyld_line": 1758, "imp_file_offset": "0x4403a74", "body_name": "ArcHistoryQueryOptions::matchingAlgorithm", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 100881, "body_length": 618, "failed": 0, "truncated": false}
+// ==== 0x4403a74  ArcHistoryQueryOptions::matchingAlgorithm  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcHistoryQueryOptions::matchingAlgorithm(ID param_1,SEL param_2)
+
+{
+  uint uVar1;
+  code *pcVar2;
+  long_long lVar3;
+  
+  if (*(char *)(*(long *)(param_1 + 8) + 0x38) == '\0') {
+    return 0;
+  }
+  uVar1 = *(uint *)(*(long *)(param_1 + 8) + 0x34);
+  lVar3 = (long_long)uVar1;
+  if (uVar1 != 0) {
+    if (uVar1 != 1) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(0x550b,0x4403aa4);
+      (*pcVar2)();
+    }
+    lVar3 = 1;
+  }
+  return lVar3;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "setMatchingAlgorithm:", "type_encoding": "v24@0:8q16", "imp": "0x4403aa4", "method_record_va": "0xd779178", "selector_va": "0xd75b821", "dyld_line": 1759, "imp_file_offset": "0x4403aa4", "body_name": "ArcHistoryQueryOptions::setMatchingAlgorithm:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 101499, "body_length": 489, "failed": 0, "truncated": false}
+// ==== 0x4403aa4  ArcHistoryQueryOptions::setMatchingAlgorithm:  (44 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcHistoryQueryOptions::setMatchingAlgorithm_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  undefined4 uVar1;
+  long lVar2;
+  
+  if (param_3 == 0) {
+    uVar1 = 0;
+  }
+  else {
+    if (param_3 != 1) {
+      return;
+    }
+    uVar1 = 1;
+  }
+  lVar2 = *(long *)(param_1 + 8);
+  *(undefined4 *)(lVar2 + 0x34) = uVar1;
+  *(undefined1 *)(lVar2 + 0x38) = 1;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "options", "type_encoding": "{HistoryQueryOptions={shared_ptr<arc::HistoryQueryOptions::Impl>=^{Impl}^{__shared_weak_count}}}16@0:8", "imp": "0x4401710", "method_record_va": "0xd779184", "selector_va": "0xd74441d", "dyld_line": 1760, "imp_file_offset": "0x4401710", "body_name": "ArcHistoryQueryOptions::options", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 43102, "body_length": 676, "failed": 0, "truncated": false}
+// ==== 0x4401710  ArcHistoryQueryOptions::options  (32 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+HistoryQueryOptions ArcHistoryQueryOptions::options(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  undefined8 *in_x8;
+  long lVar2;
+  undefined8 uVar3;
+  HistoryQueryOptions HVar4;
+  
+  lVar2 = *(long *)(param_1 + 0x10);
+  uVar3 = *(undefined8 *)(param_1 + 8);
+  in_x8[1] = *(undefined8 *)(param_1 + 0x10);
+  *in_x8 = uVar3;
+  if (lVar2 != 0) {
+    plVar1 = (long *)(lVar2 + 8);
+    *plVar1 = *plVar1 + 1;
+  }
+  HVar4.field0_0x0.field1_0x8 = (__shared_weak_count *)param_2;
+  HVar4.field0_0x0.field0_0x0 = (Impl *)param_1;
+  return (HistoryQueryOptions)HVar4.field0_0x0;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": "setOptions:", "type_encoding": "v32@0:8{HistoryQueryOptions={shared_ptr<arc::HistoryQueryOptions::Impl>=^{Impl}^{__shared_weak_count}}}16", "imp": "0x4403ad0", "method_record_va": "0xd779190", "selector_va": "0xd75b837", "dyld_line": 1761, "imp_file_offset": "0x4403ad0", "body_name": "ArcHistoryQueryOptions::setOptions:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 101988, "body_length": 352, "failed": 0, "truncated": false}
+// ==== 0x4403ad0  ArcHistoryQueryOptions::setOptions:  (12 bytes)
+
+/* Function Stack Size: 0x20 bytes */
+
+void ArcHistoryQueryOptions::setOptions_(ID param_1,SEL param_2,HistoryQueryOptions param_3)
+
+{
+  FUN_04331e20(param_1 + 8,param_3.field0_0x0.field0_0x0,param_3.field0_0x0.field0_0x0,
+               param_3.field0_0x0.field1_0x8);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x43de5e8", "method_record_va": "0xd77919c", "selector_va": "0xd744a39", "dyld_line": 1762, "imp_file_offset": "0x43de5e8", "body_name": "ArcHistoryQueryOptions::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4189792, "body_length": 1164, "failed": 0, "truncated": false}
+// ==== 0x43de5e8  ArcHistoryQueryOptions::.cxx_destruct  (188 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcHistoryQueryOptions::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  code *UNRECOVERED_JUMPTABLE;
+  long *plVar2;
+  
+  plVar2 = *(long **)(param_1 + 0x10);
+  if (plVar2 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x043de6a0. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryQueryOptions", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x4403adc", "method_record_va": "0xd7791a8", "selector_va": "0xd744a47", "dyld_line": 1763, "imp_file_offset": "0x4403adc", "body_name": "ArcHistoryQueryOptions::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 102340, "body_length": 1270, "failed": 0, "truncated": false}
+// ==== 0x4403adc  ArcHistoryQueryOptions::.cxx_construct  (164 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryQueryOptions::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  undefined8 *puVar1;
+  code *pcVar2;
+  undefined8 *puVar3;
+  
+  puVar3 = (undefined8 *)FUN_00008790(0xb8);
+  puVar3[1] = 0;
+  puVar3[2] = 0;
+  *puVar3 = &PTR_viewWillStartLiveResize_0da7ee40;
+  puVar1 = puVar3 + 3;
+  if (puVar1 != (undefined8 *)0x0) {
+    *(undefined1 *)(puVar3 + 10) = 0;
+    *(undefined1 *)(puVar3 + 0xf) = 0;
+    *(undefined1 *)(puVar3 + 0x12) = 0;
+    *(undefined1 *)(puVar3 + 0x13) = 0;
+    puVar3[0xc] = 0;
+    puVar3[0xd] = 0;
+    puVar3[0xb] = 0;
+    *(undefined4 *)(puVar3 + 0xe) = 0;
+    puVar3[4] = 0;
+    *puVar1 = 0;
+    puVar3[6] = 0;
+    puVar3[5] = 0;
+    puVar3[8] = 0;
+    puVar3[7] = 0;
+    *(undefined8 *)((long)puVar3 + 0x45) = 0;
+    *(undefined2 *)((long)puVar3 + 0x99) = 1;
+    puVar3[0x15] = 0;
+    puVar3[0x16] = 0;
+    puVar3[0x14] = 0;
+    FUN_0458d908(puVar3 + 6,1);
+    *(undefined4 *)(puVar3 + 8) = 100;
+    *(undefined8 **)(param_1 + 8) = puVar1;
+    *(undefined8 **)(param_1 + 0x10) = puVar3;
+    return param_1;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x4403b80);
+  (*pcVar2)();
+}
+
+
+

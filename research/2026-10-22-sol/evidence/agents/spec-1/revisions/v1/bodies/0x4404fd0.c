@@ -1,0 +1,17 @@
+// ==== 0x4404fd0  ArcImageRep::decodeFromData:scale:completion:  (28 bytes)
+
+/* Function Stack Size: 0x24 bytes */
+
+void ArcImageRep::decodeFromData_scale_completion_
+               (ID param_1,SEL param_2,ID param_3,float param_4,ID param_5,undefined4 param_6)
+
+{
+  undefined4 in_w7;
+  
+  decodeFromData_scale_desiredWidth_desiredHeight_maxDecodedBytes_completion_
+            (param_1,"decodeFromData:scale:desiredWidth:desiredHeight:maxDecodedBytes:completion:",
+             param_3,param_4,0,0,0,param_5,in_w7);
+  return;
+}
+
+

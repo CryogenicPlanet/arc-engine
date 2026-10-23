@@ -1,0 +1,98 @@
+{
+  "imported_classes": 63,
+  "declared_methods": 834,
+  "cxx_lifecycle": 105,
+  "category_methods": 48,
+  "exact_ghidra_start_matches": 834,
+  "same_selector_sets_168_170": true,
+  "engine_segments": [
+    [
+      0,
+      226639872,
+      0,
+      226639872,
+      "__TEXT"
+    ],
+    [
+      226639872,
+      10649600,
+      226639872,
+      10649600,
+      "__DATA_CONST"
+    ],
+    [
+      237289472,
+      3178496,
+      237289472,
+      1277952,
+      "__DATA"
+    ],
+    [
+      240467968,
+      16384,
+      238567424,
+      16384,
+      "PROTECTED_MEMORY"
+    ],
+    [
+      240484352,
+      720896,
+      238583808,
+      713680,
+      "__LINKEDIT"
+    ]
+  ],
+  "binary_sha256": "69276adaca785a46f2554e7fd18926e7fcdd6aba44ba64400a337427817db3dd"
+}
+{
+  "inventory_methods": 834,
+  "resolved_matching_stubs": 329,
+  "binary_validated_stub_selectors": 329,
+  "binary_bl_calls": 3694,
+  "distinct_called_selectors": 316,
+  "declared_rows_sharing_called_selector": 408,
+  "proven_class_selector_calls": 0,
+  "limitation": "No receiver-class recovery; no indirect dispatch or branch-thunk recovery. Shared selectors can target unrelated classes."
+}
+49 exact method requests, 5 logical 1-MiB buckets; not a body byte map
+Extracted 46/49 original requests and 14/18 followups from 6 verified shards; one omitted thunk resolved from binary.
+{
+  "cef_revision": "426920c33ef22551e0b8f48cf343d623ac25642d",
+  "cef_chromium": "156.0.8078.48",
+  "target_chromium": "156.0.8078.48",
+  "counts": {
+    "direct_cef_public": 11,
+    "partial_cef_plus_bridge": 139,
+    "chrome_internal_dependency": 0,
+    "arc_specific_behavior": 317,
+    "unresolved": 367
+  },
+  "rows": 834,
+  "classes": 63,
+  "independently_matches_abi_contract": true,
+  "positive_rules": 149,
+  "caveat": "Counts describe declared contract operation coverage, not called methods, code size, work estimates, or proven behavioral equivalence."
+}
+{
+  "status": "PASS",
+  "inventory_rows": 834,
+  "classes": 63,
+  "mapping_rows": 834,
+  "categories": {
+    "arc_specific_behavior": 317,
+    "unresolved": 367,
+    "partial_cef_plus_bridge": 139,
+    "direct_cef_public": 11
+  },
+  "decompile_requests": 49,
+  "verified_app_selector_BL_instructions": 3694,
+  "cef_revision": "426920c33ef22551e0b8f48cf343d623ac25642d",
+  "chromium_match": "156.0.8078.48",
+  "engine_decompile_present": true,
+  "arrived_requested_functions_extracted": 46,
+  "arrived_followup_functions_extracted": 14,
+  "omitted_thunk_resolved_by_binary_branch": true,
+  "warnings": [
+    "Integrity checks do not establish Arc behavioral equivalence, CEF build success, callback ownership, or receiver-class dispatch."
+  ]
+}

@@ -1,0 +1,608 @@
+FILE ArcAutocompleteMatchAdditionalData.md
+1: # ArcAutocompleteMatchAdditionalData
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 8 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 64 bytes; class metadata `0xe37dab8`, class_ro `0xe2ac8e0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Owns an inline optional pair of native byte strings. `0x4438824` converts nil key/value to empty strings; `0x442d150` copies both strings to native return storage; `0x442d54c` returns receiver-backed mutable native storage only when engaged. Initializer IMPs: `0x4438824`, `0x4438a6c`. Cleanup IMP: `0x442d244`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Arc value adapter: preserve string conversion, nil/empty distinctions and C++ optional ABI. Backend autocomplete key meanings are separate; no CEF equivalence is established.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+40: ## Remaining consequential questions
+42: Which additional-data keys are read by the app or ranking code, and may native mutable pointers outlive their wrapper?
+44: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcBreadcrumb.md
+1: # ArcBreadcrumb
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 10 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 136 bytes; class metadata `0xe37dce8`, class_ro `0xe2ad1c0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Stores inline category/message strings, unordered string map and optional file ID/line. `0x443ad84` materializes NSDictionary; `0x443ae68` and `0x443af4c` distinguish absent optional values from present strings/numbers. `0x443af90` forwards native record assignment. Initializer IMPs: `0x443ad2c`. Cleanup IMP: `0x8374b44`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Arc telemetry container. Conversion can be specified independently of browser embedding; its producer/crash reporter semantics need separate tracing.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+42: ## Remaining consequential questions
+44: Are file IDs stable source identifiers, and do callbacks use zero- or one-based lines? No such meaning is inferred from field names.
+46: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcBrowserApplicationConfiguration.md
+1: # ArcBrowserApplicationConfiguration
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 11 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 56 bytes; class metadata `0xe37be98`, class_ro `0xe2a53f8`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+21: ## Lifecycle, ownership and callbacks
+23: `0x43eca0c` calls NSObject init and stores configuration fields, but its recovered stack-argument expressions are malformed. At entry-SP+0/+1 raw byte loads feed self+9/+10; entry-SP+8 supplies the pointer passed to the object-store call for self+0x30. This corroborates the final field stores while the C prototype remains unreliable ([instruction analysis](../revision-evidence/analysis.md)); `0x43ecb14` clears ObjC string/array slots on destruction. This is configuration storage; no profile loading or run-loop termination occurs in these methods. Shared getter `0x40b1230` is a raw ARM64 byte load despite Ghidra dropping its result; exact bytes are in accessor-instruction-checks.tsv.
+25: ## Threading and caller/callee relations
+27: The existing APP-layer evidence has a selector-stub call from Arc 1.168.0 `0x1004ad718` in function `0x1004ad314` (initial/app168-launch-calls.tsv and app168/ghidra/decomp/0x1004.c:128994), with receiver association based on old pseudocode. This is evidence of that call site, not blanket proof of runtime receiver types or all declared calls. No scheduling appears in engine constructor `0x43eca0c`.
+29: ## Chrome / CEF route implications
+31: Startup configuration must be consumed by the application/browser-main integration. Preserving these fields alone is insufficient to reproduce startup, helper selection, profile loading or termination. Neither CEF nor Chrome route equivalence is established by the data object.
+33: ## Method matrix
+35: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+51: ## Remaining consequential questions
+53: Trace every restoration-policy enum and startup field into application initialization; validate argc/argv consistency and suite-name nil behavior. Keep the malformed recovered prototype distinct from the declared metadata encoding and raw stack stores.
+55: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcBrowserContext.md
+1: # ArcBrowserContext
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 60 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 96 bytes; class metadata `0xe37da68`, class_ro `0xe2ac7f0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+18: ## Lifecycle, ownership and callbacks
+20: Native context is an engaged optional shared handle at +0x30 (`0x443739c`); service accessors cache ObjC wrappers with associated-object policy 1: preferences `0x44374c0`, history `0x44376b0`, downloads `0x44378a0`, effects `0x4437a90`, extraction `0x4437c80`. Context delegate creation uses weak delegate/self (`0x43ed9a8`); bookmark observer vector owns shared bridge handles (`0x4437fe4`, `0x443808c`, `0x43f1968`, `0x43f21a8`). Destructor `0x4438580` releases those structures. Cached wrappers and native Profile shutdown are distinct lifetimes. The nil delegate path cleans up a returned temporary; stored-bridge removal and callback suppression are not established. See [revision evidence](../revision-evidence/analysis.md).
+22: ## Threading and caller/callee relations
+24: Category overrides are essential: base id/metrics/extensions at `0x4084dc0`/`0x2d0fb40`/`0x2cb140` simply read ivars, while Extensions `0x43f541c` constructs native ID and `0x43f5648`/`0x43f598c` cache real service wrappers. Same-IMP aliases exist for changed-permissions/content-settings (`0x43ee38c`) and chat/product closure (`0x43f5cd4`). Native WebContents construction is `0x43f35bc` → `0x42d7064`; latter has the Arc browser_context_impl.cc CreateWebContents source marker. Delegate adapters `0x43f680c`/`0x43f68cc` invoke show/closed DevTools callbacks. Other vtable targets include missing exported entries `0x43f695c` and `0x43f6ae4`; their behavior is unresolved. URL loads, cookie/storage/favicon operations capture callbacks; callback queue and shutdown cancellation are unproven.
+26: ## Chrome / CEF route implications
+28: A replacement needs one coherent profile/service identity across bookmarks, content settings, cookie/storage partitions, importers, favicon, search and WebContents. Chrome API analogue: Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `chrome/browser/profiles/profile.h:68` (see source index for anchors), and targeted native bridge evidence in methods.tsv. This is a service-integration requirement inferred from calls, not proof each feature requires a private Chromium patch. CEF feasibility needs individual native service and app-call mapping; no mapping is claimed from names or absent source files.
+30: ## Method matrix
+32: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+97: ## Remaining consequential questions
+99: Establish profile-detach and shutdown sequencing; callback cancellation/queues; bookmark managed-node rules; partitioned cookie/storage behavior; import rollback; actual app-called subset. Recover missing delegate adapter bodies using disassembly if needed.
+101: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcBrowserContextEffects.md
+1: # ArcBrowserContextEffects
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 19 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 40 bytes; class metadata `0xe37d978`, class_ro `0xe2ac3d0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+14: ## Lifecycle, ownership and callbacks
+16: Service optional lives at +0x10; wrapper initialization is `0x4436384`/`0x44364a8`. Weak owner accessors `0x43fe200`/`0x43fe218` and destructor `_objc_destroyWeak` at `0x4435e2c` establish weak owner, independently of metadata object type. `0x44365f8` and `0x443684c` share register backend `0x42e1d80` with mode 0/1 for stylesheet/script. Filter registration copies 80 bytes (`0x4436aa0`).
+18: ## Threading and caller/callee relations
+20: Backend `0x42e1d80` and scheme setter `0x42e3140` show `../../arc/browser/browser_context/effects_impl.cc` and NotifyBoostConfigChanged task setup. Zoom registration `0x4436dec` uses log(factor)/ln(1.2); removal `0x4436ec0` restores service default. This agrees with zoom conversion API Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `third_party/blink/public/common/page/page_zoom.h:27` as a source-backed inference. No whole-service thread contract or renderer acknowledgement was recovered.
+22: ## Chrome / CEF route implications
+24: Arc maintains per-host configuration and notifies renderer-side effects. A CEF shim would need matching frame/world/timing, persistent host rules, matrix filtering, color-scheme and zoom behavior; public API coverage has not been verified here. Chrome route still needs the Arc effects IPC/configuration contract.
+26: ## Method matrix
+28: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+52: ## Remaining consequential questions
+54: Recover host-pattern grammar and native map semantics, renderer injection timing/world, invalid zoom inputs, persistence and update acknowledgement. Do configuration updates affect existing documents immediately?
+56: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcBrowserContextHistory.md
+1: # ArcBrowserContextHistory
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 29 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 72 bytes; class metadata `0xe37d928`, class_ro `0xe2ac2d0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+16: ## Lifecycle, ownership and callbacks
+18: Initializers `0x4435ef8`/`0x443601c` copy native shared service at +0x30; owner weak operations are `0x43fe200`/`0x43fe218`, with `_objc_destroyWeak` in `0x443616c`. Delegate/visit observer bridges are shared handles. `0x40439c4` creates weak observer and owner captures, installs through `0x4332f08`, and changes the observer for an existing bridge when the supplied observer is nonnil. Nil takes a temporary-handle cleanup path; stored clear/unregister and callback suppression are not established. See [revision evidence](../revision-evidence/analysis.md).
+20: ## Threading and caller/callee relations
+22: Wrapper operations convert URLs, NSDate epoch seconds and native annotated visits before forwarding (e.g. `0x40435ac`, `0x4043c88`, `0x4043e04`). `0x4044764` → `0x43332d0` → `0x42ee818` and originator deletion `0x4044a1c` → `0x4333408` → `0x42eeb5c` show a bounded two-bridge closure, not the whole DB stack. Visit callback `0x4045110` wraps ArcAnnotatedVisit and sends browserContext:didVisitURL:. These facts establish callback payload adaptation; the delivery queue, synchronization and cancellation guarantees remain unresolved.
+24: ## Chrome / CEF route implications
+26: Needs history query/deletion/expiration, annotated-visit insertion/retrieval and sync originator/cache GUID behavior with app-compatible callback payloads. Source analogue Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/history/core/browser/history_service.h:94` is an inference from service shape, not a proven symbol match. CEF history navigation is not yet demonstrated to cover this DB/service contract.
+28: ## Method matrix
+30: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+64: ## Remaining consequential questions
+66: Recover DB task sequencing, deletion interval inclusivity, sync-originator IDs, top-site ranking, observer ordering and nil/delegate removal behavior. No claim that these are all app-used methods.
+68: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcBrowserContextPreferences.md
+1: # ArcBrowserContextPreferences
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 42 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 64 bytes; class metadata `0xe37d888`, class_ro `0xe2ac070`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+15: ## Lifecycle, ownership and callbacks
+17: Initializers `0x4434cc4`/`0x4434de8` copy optional service at +0x10; weak owner is established by `0x43fe200`, `0x43fe218` and destructor `0x44191d8`. `0x4434f38` creates weak owner/observer bridge and stores shared handle in vector; `0x4435280` unregisters and removes by observer identity. Callbacks `0x43fc79c`, `0x43fc7f0`, `0x43fc844` report preference updates, search-engine updates and added engine.
+19: ## Threading and caller/callee relations
+21: Boolean keys are explicitly present: download.prompt_for_download (`0x4435570`), search.suggest_enabled (`0x44355e0`/`0x4435624`), credentials_enable_service (`0x4435694`/`0x44356d8`/`0x443571c`), autofill.credit_card_enabled (`0x443581c`/`0x4435860`/`0x44358a4`) and omnibox.keyword_space_triggering_enabled (`0x4435b04`/`0x4435b48`). Modifiability calls differ from value reads. Notification enable getter `0x443578c` tests native setting !=2, while setter `0x44357cc` writes 3/2. Search-engine bridges `0x42f3024`/`0x42f3334` queue work around service loading; no general callback thread guarantee follows.
+23: ## Chrome / CEF route implications
+25: Source-backed key identification: Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `chrome/common/pref_names.h:377` and :419; Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/password_manager/core/common/password_manager_pref_names.h:47`; Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/autofill/core/common/autofill_prefs.h:95`; Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/omnibox/browser/omnibox_pref_names.h:71`. PrefService distinguishes value/modifiability (Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/prefs/pref_service.h:159`, :234, :239). TemplateURLService operations are at Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/search_engines/template_url_service.h:264`/:275/:362. These support Chrome-service hypotheses; exact symbol matching and CEF equivalents remain unproven.
+27: ## Method matrix
+29: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+76: ## Remaining consequential questions
+78: Validate policy precedence, native detached/error behavior, observer reentrancy, search-model load state, activation/default restrictions, download safety and path persistence.
+80: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcBrowserSidePanel.md
+1: # ArcBrowserSidePanel
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 13 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 40 bytes; class metadata `0xe37c118`, class_ro `0xe2a5f70`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+14: ## Lifecycle, ownership and callbacks
+16: Initializer `0x44013f0` retains native shared panel; delegate shared bridge is at +0x18 and destructor `0x4401808` releases both. `0x44011d8` initializes weak delegate/self references; nil drops wrapper bridge. Title getter `0x44014fc` converts native title and `0x4401520` returns nil or a newly constructed ArcWebContents wrapper.
+18: ## Threading and caller/callee relations
+20: Closing uses two distinct calls: `0x4401170` requests closure through `0x43c3588`; `0x44011a4` informs native panel after app closure via `0x43c1fe8`. Callback adapters `0x4401984`, `0x4401a10`, `0x4401aa0`, `0x4401b04` emit didShow, didUpdateTitle, willClose:withAnimation: and willUnhide. Session query `0x4401570` → `0x4346bd8` yields active-entry flag, extension ID and optional cached contents. Native liveness checks are visible; callback queue, animation ownership and reparenting are unresolved.
+22: ## Chrome / CEF route implications
+24: Requires native WebContents sharing, per-tab entry/cache identity and extension-associated panel state. Chrome analogue is Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `chrome/browser/ui/side_panel/side_panel_registry.h:25` (candidate service, not proven function identification). CEF route must reproduce this panel lifecycle in addition to native view hosting; a generic child browser alone does not establish equivalence.
+26: ## Method matrix
+28: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+46: ## Remaining consequential questions
+48: Do callbacks remain possible after setDelegate:nil? Who calls didFinishClosing and when can cached contents be reattached? Recover session ID mapping, native view contract and destruction during animation.
+50: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcBrowserSidePanelEntryInfo.md
+1: # ArcBrowserSidePanelEntryInfo
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 7 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37c0f0`, class_ro `0xe2a5e50`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+15: ## Lifecycle, ownership and callbacks
+17: Simple ObjC result record: active flag, extension-ID string and cached ArcWebContents. Setters use normal field/strong-store operations (`0x43e0930`, `0x420b588`, `0x4401164`), destructor clears object slots (`0x43e0940`). Producer `ArcBrowserSidePanel` `0x4401570` fills these fields. Initializer IMPs: . Cleanup IMP: `0x43e0940`.
+19: ## Threading and caller/callee relations
+21: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+23: ## Chrome / CEF route implications
+25: Result adapter for native panel queries; cachedWebContents identity and actual view ownership belong to native panel/controller behavior, not this data record.
+27: ## Method matrix
+29: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+41: ## Remaining consequential questions
+43: Determine whether retaining this result may keep a cached WebContents alive after tab/panel closes.
+45: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcCommandBarRankingModel.md
+1: # ArcCommandBarRankingModel
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 8 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 48 bytes; class metadata `0xe37d6f8`, class_ro `0xe2aba10`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Inline optional directory byte string and integer version; `0x4432940` populates descriptor, `0x442c454` copies it, `0x442c260` returns borrowed mutable storage. This class does not itself load or execute a ranking model. Initializer IMPs: `0x4432940`, `0x4432a5c`. Cleanup IMP: `0x43ed510`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Arc model-descriptor ABI; no browser engine dependency is established by this container. Loading/training integration belongs to its consumers.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+40: ## Remaining consequential questions
+42: Model layout/version compatibility, filesystem ownership and whether directory must be absolute remain unresolved.
+44: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcCommandBarRankingTrainingResult.md
+1: # ArcCommandBarRankingTrainingResult
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 18 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 128 bytes; class metadata `0xe37d608`, class_ro `0xe2ab730`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Inline optional result stores outcomes, failure reason, tensor delta vector, model name/version/sample count, loss vector, float norms/ratio and duration. `0x4431310` performs conversion/storage, `0x4431b28` boxes losses. Category delta `0x4402480` invokes tensor converter `0x44022d8`, but Ghidra places cleanup `0x42a43ac` before vector reads; recovered lifetime semantics are suspect and deliberately unresolved. Initializer IMPs: `0x4431310`, `0x4431a34`. Cleanup IMP: `0x4431cb0`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Arc data interchange, not model execution. Preserving aggregate layout and array/tensor conversion is independent of CEF navigation APIs; training producer behavior is outside this class.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+50: ## Remaining consequential questions
+52: Resolve delta cleanup ordering using coherent disassembly. Validate tensor shape/data deep copy, failure enum values and producer guarantees.
+54: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcCookie.md
+1: # ArcCookie
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 26 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37d568`, class_ro `0xe2ab3c0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Optional shared native Impl; `0x442ffa0` creates native cookie and `0x4430144` shares a supplied handle. String getters/setters operate on Impl fields; flags at +0x60..+0x63, expiration double +0x68 and SameSite int +0x70 (`0x4430870`..`0x4430948`). Mutations are direct record changes, not demonstrated cookie-store writes. Initializer IMPs: `0x442ffa0`, `0x4430144`. Cleanup IMP: `0x43df69c`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Must map Arc cookie fields to the chosen backend and preserve expiry units/SameSite/hostOnly/session distinctions. Store operations occur on ArcBrowserContext (`0x43f2954`, `0x43f2aec`, `0x43f2ca8`); CEF cookie-manager semantic coverage is unverified here.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+58: ## Remaining consequential questions
+60: Establish expiration unit and epoch, cookie flag defaults, SameSite enum, partition keys and whether wrapper mutations ever persist automatically.
+62: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcCpuInfo.md
+1: # ArcCpuInfo
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 29 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 112 bytes; class metadata `0xe37ca78`, class_ro `0xe2a8bb0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+39: ## Lifecycle, ownership and callbacks
+41: `0x440c34c` snapshots native CPU data and strings. On this arm64 slice many x86 feature flags are zeroed; armPartNumber and armImplementer are explicitly initialized to zero despite informative getter names. The shared armImplementer getter `0x40b1230` needs metadata type and raw LDRB interpretation. Initializer IMPs: `0x440c34c`. Cleanup IMP: `0x440c604`.
+43: ## Threading and caller/callee relations
+45: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+47: ## Chrome / CEF route implications
+49: Diagnostic snapshot can be implemented without browser services, but preserve observed arm64 representation rather than synthesizing hardware information from method names.
+51: ## Method matrix
+53: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+87: ## Remaining consequential questions
+89: Verify actual hardware queries, supported ARM feature extraction, selector-to-ivar mismatch (armImplementer loads byte at +8/armPartNumber_, armPartNumber loads +0x68/armImplementer_) and stale snapshot expectations.
+91: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcCrashKeysReporter.md
+1: # ArcCrashKeysReporter
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 1 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 8 bytes; class metadata `0xe37dea0`, class_ro `0xe2ad660`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: No instance ivars. Class method `0x443b578` lazily creates process-global reporter storage and installs an observer callback with explicit weak capture; nil installs an empty callback. Adapter `0x443b78c` converts native name/value and invokes onCrashKeyEmitted:value:.
+17: ## Threading and caller/callee relations
+19: Global reporter setter is the only declared method. Weak capture construction is explicit; reporter producer sources, cross-thread synchronization and whether initial keys replay are unresolved (`0x443b578`, `0x443b78c`). No all-thread safety claim follows from the singleton guard.
+21: ## Chrome / CEF route implications
+23: Arc crash-key observation bridge. It must remain compatible with emitted key/value data independently of backend crash reporter choice; this review does not establish Sentry semantics or CEF coverage.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+33: ## Remaining consequential questions
+35: Find crash-key emission sources and observer replacement ordering; establish callback queue, replay and process lifetime.
+37: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcCreditCardInfoSaveRequest.md
+1: # ArcCreditCardInfoSaveRequest
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 6 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37e468`, class_ro `0xe2ae848`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Initializer `0x443ed30` stores shared native optional; generic getter/destructor/constructor at `0x43df53c`/`0x43df69c`/`0x43df760` must be interpreted with this class metadata. Save `0x443ee54` → `0x433487c` accesses native controller and reports outcome 1; cancel `0x443ee68` reports outcome 2 after liveness checks.
+17: ## Threading and caller/callee relations
+19: Native request guards trap for disengaged state; controller liveness and shared request lifetime are distinct. No callback or main-thread assertion is declared here. Callback consumption and repeat-call safety are not proven by `0x433487c`/`0x7c7dca0`.
+21: ## Chrome / CEF route implications
+23: Chrome autofill/save-card integration candidate based on controller-call shape, not yet symbol-identified. Requires resolving persistence, local/upload save and callback ownership; a UI stub that only returns would miss native state transitions. CEF coverage is open.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+38: ## Remaining consequential questions
+40: Pin enum outcome meaning and concrete controller class, then validate one-shot behavior, closed dialog handling and profile storage selection.
+42: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcExtensionCommand.md
+1: # ArcExtensionCommand
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 10 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 120 bytes; class metadata `0xe37df68`, class_ro `0xe2ad960`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Inline native strings, optional shortcut and Boolean global flag. `0x443baa8` and `0x443bc14` use native copy/assignment helper; `0x443bb24` preserves nil for absent shortcut; `0x41544d0` reads global flag. This class contains no command execution method. Initializer IMPs: `0x443baa8`. Cleanup IMP: `0x443bc20`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Arc value adapter to extension command service. Keyboard dispatch, global registration and permissions require separate service tracing; no CEF extension feature equivalence is implied.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+42: ## Remaining consequential questions
+44: Recover shortcut syntax, command identifiers, global registration semantics and native copy-helper ownership.
+46: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcExtensionRuntimeErrorStackFrame.md
+1: # ArcExtensionRuntimeErrorStackFrame
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 8 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 72 bytes; class metadata `0xe37d428`, class_ro `0xe2aae60`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Inline optional native StackFrame with two unsigned 32-bit numbers and two UTF-16 strings. `0x442ec50` copies data/strings, `0x442ed38`/`0x442ed4c` read numeric fields, `0x442ed60`/`0x442ed90` convert strings and `0x442edc0` returns a native copy. Initializer IMPs: `0x442ec50`. Cleanup IMP: `0x442ee58`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Data adapter for extension runtime error reporting; browser/extension execution is not performed by this class.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+40: ## Remaining consequential questions
+42: Preserve unsigned widths and optional ABI; line/column origin and source URL normalization are not established.
+44: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcExternalProtocolDialog.md
+1: # ArcExternalProtocolDialog
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 9 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 160 bytes; class metadata `0xe37e008`, class_ro `0xe2adb80`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Inline optional contains UTF-16 program/origin and three callback function objects; initializer `0x443bda8` and getter `0x443bec8` copy through `0x4335c68`, destructor `0x443bf10` calls `0x4335bdc`. Accept `0x443be94`, cancel `0x443beb0`, close `0x443be7c` invoke different stored callbacks. No callback consumption/reset is visible in these small IMPs.
+17: ## Threading and caller/callee relations
+19: The Boolean supplied to accept: is forwarded unchanged. close has malformed Ghidra receiver/return type; metadata remains ABI evidence. No callback scheduling is present in these IMPs, so backend/app thread contract is unresolved. Separate callback invocations do not prove mutually exclusive or idempotent actions.
+21: ## Chrome / CEF route implications
+23: Embedding must bridge external-protocol UI decisions to native launch/policy behavior and preserve three separate callbacks. Source/API matching and CEF request-handler route remain unverified; no external application launch was performed.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+41: ## Remaining consequential questions
+43: Determine accept Boolean meaning, remember-choice persistence, invocation order, single-shot semantics and callback lifetime after native dialog close.
+45: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcFindTextWithDirectiveResult.md
+1: # ArcFindTextWithDirectiveResult
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 7 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 40 bytes; class metadata `0xe37e058`, class_ro `0xe2adc70`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Inline native record with byte-string directive and Boolean result; `0x443bf24` copies native input, `0x443bfd4` returns native record and `0x443c024` assigns it. `0x43e632c` converts directive; shared scalar getter `0x4081f00` reads result using metadata identity. Initializer IMPs: `0x443bf24`. Cleanup IMP: `0x440d470`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Result adapter. Text-fragment search algorithm, renderer execution and directive escaping occur in producer methods outside this assignment.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+39: ## Remaining consequential questions
+41: What does false mean (no match, invalid directive or execution failure), and what encoding/escaping is used for directive?
+43: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcImportSourceProfile.md
+1: # ArcImportSourceProfile
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 14 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37c3e8`, class_ro `0xe2a7040`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Optional shared import profile; `0x440403c` creates Safari-export source configuration, converting path and profile/display names. Type uses lookup `0x44045a8`; categories are masked to 0xfff (`0x4404770`); constraints returns native type==3 (`0x440484c`). `0x44044b0` captures completion for available-extension enumeration through `0x433ae6c`. Initializer IMPs: `0x4403f18`, `0x440403c`. Cleanup IMP: `0x43df69c`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Chrome/importer-service integration is indicated by native profile and import flow in ArcBrowserContext `0x43f3874`; source profile itself is data/configuration. CEF route needs independent importer support and data migration contracts.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+46: ## Remaining consequential questions
+48: Recover source type table, category bitset/constraints, Safari archive format, extension enumeration callback queue and exported-path validation.
+50: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcLocalState.md
+1: # ArcLocalState
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 12 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37c528`, class_ro `0xe2a7420`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Initializer `0x440601c` copies optional shared native local-state handle; generic cleanup `0x43df69c` releases it. Preference callback registration `0x4406140` → `0x4325ac8` returns unsigned NSNumber token; remove `0x4406368` uses unsignedIntValue. Callback adapter `0x4407194` supplies converted preference-name string. Error pointer recovery in registration pseudocode is malformed; type encoding is authoritative ABI metadata.
+17: ## Threading and caller/callee relations
+19: Native bridge `0x4325ac8` explicitly reports detached object, and typed getter backend `0x4327790` distinguishes missing preference and wrong type. Conversion `0x4406e44` maps bool/int/double/string/dictionary/list and NSNull recursively. Native policy getter `0x4327f3c` maps numeric selector to preference name, not a proven general policy service query. Callback queue, registrar thread and token invalidation remain unresolved.
+21: ## Chrome / CEF route implications
+23: Strong source-backed candidate: PrefService FindPreference and typed getters (Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/prefs/pref_service.h:234`/:239/:240/:253/:258), PrefChangeRegistrar Add/Remove (Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/prefs/pref_change_registrar.h:55`/:63). This is browser-wide local state, distinct from profile preferences. CEF per-request-context preference access must be compared for registered keys, policy and callback semantics.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+44: ## Remaining consequential questions
+46: Disassemble registration error-pointer ABI; identify policy selector table, error domain/codes and callback cancellation semantics. Confirm recursive value conversion, token reuse and local-state shutdown.
+48: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcLoginCredentialsSaveRequest.md
+1: # ArcLoginCredentialsSaveRequest
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 8 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37e4b8`, class_ro `0xe2ae928`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Initializer `0x443eefc` copies optional shared request handle. `0x443f020` reads native update flag +0x2c. save `0x443f038` calls `0x7d64988` only if manager exists, cancel `0x443f058` calls `0x7d641d0` only for updates, and neverAskAgain `0x443f080` calls `0x7d64b14` if manager exists. Shared request destructor is `0x43df69c`.
+17: ## Threading and caller/callee relations
+19: The observable asymmetry is consequential: cancel for a new-save request has no native manager call in this IMP. Native manager methods update state and virtual callbacks (`0x7d64988`, `0x7d64b14`), but their precise identity and full persistence behavior are not established. No callback queue or general concurrency guarantee is recovered.
+21: ## Chrome / CEF route implications
+23: Password-manager UI request bridge; storage selection, blocked-origin persistence and update behavior must integrate with chosen backend. Concrete manager naming remains a source-backed hypothesis until independently anchored; CEF public API equivalence has not been demonstrated.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+40: ## Remaining consequential questions
+42: Validate one-shot operations, manager disappearance, account versus profile storage, never-ask scope and new-save cancellation lifecycle.
+44: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcMemoryDumpMetric.md
+1: # ArcMemoryDumpMetric
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 5 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37c5c8`, class_ro `0xe2a7670`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+15: ## Lifecycle, ownership and callbacks
+17: Three scalar/object ivars; `0x44076e8` populates name, units and unsigned 64-bit value. Getters share IMPs with unrelated classes (`0x2d0fb40`, `0x2cb140`, `0x4084dc0`); raw load widths and this metadata preserve meaning. Destructor `0x43dd5a4` clears object fields. Initializer IMPs: `0x44076e8`. Cleanup IMP: `0x43dd5a4`.
+19: ## Threading and caller/callee relations
+21: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+23: ## Chrome / CEF route implications
+25: Diagnostic payload independent of Chromium scheduling; units/value interpretation belongs to dump producer.
+27: ## Method matrix
+29: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+39: ## Remaining consequential questions
+41: Define accepted unit strings and whether values ever encode signed measurements or sentinel values.
+43: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcMenuItemModel.md
+1: # ArcMenuItemModel
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 24 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 80 bytes; class metadata `0xe37e5a8`, class_ro `0xe2aee38`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+18: ## Lifecycle, ownership and callbacks
+20: Optional shared native item wraps a menu-model pointer plus index. `0x443fb34`, `0x443fb68`, `0x443fc3c` through `0x443fcbc`, `0x443fcdc`, `0x443ff68` dispatch to model vtable at that index. `0x443fd88` lazily caches submenu strongly; delegate setter `0x443ff88` captures weak model/delegate and registers bridge. Initializer IMPs: `0x443fa10`. Cleanup IMP: `0x44404a4`.
+22: ## Threading and caller/callee relations
+24: `0x443ff88` installs a native bridge; its nil path clears native delegate slots through `0x432bf9c(native,0,0)`. The wrapper getter supplies a temporary that is released; no wrapper stored-bridge clear is visible. Retained lifetime/reuse and queued callback effects remain unknown ([instruction analysis](../revision-evidence/analysis.md)). Bridge callbacks `0x4445404` and `0x4445458` emit changed/removed notifications. Index-based virtual calls and cached submenu imply a consequential invalidation boundary; no synchronization or post-removal validity is established. Category overrides are independently retained in the matrix and category-overrides.json.
+26: ## Chrome / CEF route implications
+28: Source-backed ui::MenuModel candidate: Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `ui/base/models/menu_model.h:104`/:124/:173/:187/:190/:194/:199/:211/:214. Vtable offsets are evidence, not a complete proved class match. Extensions overrides hasAccelerator/accelerator/icon with native queries (`0x44080f8`, `0x44081f0`, `0x4408318`), whereas base IMPs read ivars. Chrome-native menu state and app callback adaptation must be preserved; CEF menu equivalence needs separate comparison.
+30: ## Method matrix
+32: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+61: ## Remaining consequential questions
+63: Callbacks `0x4445404`/`0x4445458` send menuItemModelChanged:/Removed:. Determine index invalidation after removal, callback thread/reentrancy, event flags and submenu lifetime. Category hasAccelerator uses a recovered secondary return register; confirm disassembly.
+65: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcMetaTagEntry.md
+1: # ArcMetaTagEntry
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 4 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 24 bytes; class metadata `0xe37b9e8`, class_ro `0xe2a3e10`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+14: ## Lifecycle, ownership and callbacks
+16: Simple key/value NSString holder. Initializer `0x43dd4e8` populates object fields and destructor `0x43dd5a4` clears them; getters `0x43dd450`/`0x420b5f8` are local slot access. Initializer IMPs: `0x43dd4e8`. Cleanup IMP: `0x43dd5a4`.
+18: ## Threading and caller/callee relations
+20: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+22: ## Chrome / CEF route implications
+24: Arc data adapter; DOM extraction and meta-tag matching are outside this container.
+26: ## Method matrix
+28: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+37: ## Remaining consequential questions
+39: Are key/value optional, copied or retained exactly, and does producer normalize key case? Follow constructor ARC helpers if mutable strings matter.
+41: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcMostVisitedURL.md
+1: # ArcMostVisitedURL
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 7 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 64 bytes; class metadata `0xe37d248`, class_ro `0xe2aa790`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Inline optional URL byte string plus UTF-16 title. `0x442d974` deep-copies long strings, `0x442da54` converts URL representation and `0x442d10c` returns URL spec NSString; `0x442da68` converts title. Initializer IMPs: `0x442d974`. Cleanup IMP: `0x442db28`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Value adapter for history/top-sites outputs; algorithm and caching belong to native producer, not the wrapper.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+39: ## Remaining consequential questions
+41: URL canonicalization and invalid URL handling, title encoding errors and ranking/caching inputs remain unresolved.
+43: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcNomicEmbedTextModel.md
+1: # ArcNomicEmbedTextModel
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 8 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 48 bytes; class metadata `0xe37d1a8`, class_ro `0xe2aa5a0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Inline optional directory byte string plus version integer. `0x442d2ac` stores descriptor; native getter `0x442c454` deep-copies directory when long; mutable getter `0x442c260` borrows internal storage. Shared IMPs also serve ranking-model descriptor; identity is independently verified. Initializer IMPs: `0x442d2ac`, `0x442d3c8`. Cleanup IMP: `0x43ed510`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Arc model descriptor. No model execution, download or browser-engine call is shown in these methods; any CEF integration question belongs to consuming AI service.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+40: ## Remaining consequential questions
+42: Identify model format/versioning, directory normalization, download lifetime and mutable-pointer consumers.
+44: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcPerformanceController.md
+1: # ArcPerformanceController
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 6 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 8 bytes; class metadata `0xe37e1c0`, class_ro `0xe2ae000`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: No instance state. All six methods are class methods, sharing process singleton guarded by `0xe4a2f20` and initialized via `0x433d1bc`. Battery active/temporary-disabled bytes are read at provider+0x28/+0x29 (`0x443c65c`, `0x443c6c8`). Observer setter `0x443c7ac` holds weak callback capture; `0x443c924` invokes onBatterySaverModeChanged:.
+17: ## Threading and caller/callee relations
+19: setHighEfficiencyModeEnabled: `0x8374b4c` → `0x7b02940` writes exact key performance_tuning.high_efficiency_mode.state with integer 2/0. Temporary disable `0x8374bc0` → `0x7afc3a8` updates byte only on change. Low-battery simulation `0x443c734` forwards unsigned duration to `0x4208bd4`; units are unresolved. Singleton construction guard does not prove thread safety of observer replacement or provider mutations.
+21: ## Chrome / CEF route implications
+23: Source-backed memory-saver key Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/performance_manager/public/user_tuning/prefs.h:35` and battery-saver interface implementation Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `chrome/browser/performance_manager/user_tuning/battery_saver_mode_manager.cc:562` support Chrome performance-manager candidate mapping. Arc state numbering and provider behavior require specific validation; CEF route needs equivalent global policy controls, not only page throttling.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+38: ## Remaining consequential questions
+40: Validate duration units, provider-specific behavior, policy precedence, low-battery timer restoration, callback queue and observer initial-state replay.
+42: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcReference.md
+1: # ArcReference
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 4 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 24 bytes; class metadata `0xe37b948`, class_ro `0xe2a3c10`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+14: ## Lifecycle, ownership and callbacks
+16: Stores referenceText NSString and signed 64-bit minimum-character count. `0x43dd3c0` initializes fields, `0x43dd450` returns text and shared raw getter `0x2cb140` returns count bits using this metadata ABI. Initializer IMPs: `0x43dd3c0`. Cleanup IMP: `0x4166068`.
+18: ## Threading and caller/callee relations
+20: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+22: ## Chrome / CEF route implications
+24: Small Arc data record independent of browser services. Matching/extraction algorithm using this reference is not implemented by the container.
+26: ## Method matrix
+28: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+37: ## Remaining consequential questions
+39: Meaning of negative/zero count, Unicode character counting and text normalization must come from consumers.
+41: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcSearchEngine.md
+1: # ArcSearchEngine
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 14 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37d0b8`, class_ro `0xe2aa2b0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Optional shared native search-engine record; `0x442c50c` builds from name/keyword/URL/favicon, `0x442c8ac` copies shared handle. Name/keyword getters convert UTF-16 (`0x442c9d0`, `0x442ca98`), URL uses byte string (`0x442cb60`); `0x442cd1c` tests prepopulate ID>0. Category equality compares native pointers after optional checks (`0x43ecf8c`); hash calls `0x4340180` to combine hashes from native string fields +0x3b8/+0x3d0 (`0x43ed260`). String field names and exact upstream hash symbol remain unproved. See [revision evidence](../revision-evidence/analysis.md). Initializer IMPs: `0x442c50c`, `0x442c8ac`. Cleanup IMP: `0x43df69c`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Native data fits Chromium TemplateURL family; source analogue Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/search_engines/template_url_service.h:264` and Arc preferences bridges `0x43fa828`, `0x43fab90`, `0x43faf00`, `0x43fb268` establish service operations. Preserve search template substitutions/status and provider policy; CEF generic URL loading alone does not establish this contract.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+46: ## Remaining consequential questions
+48: Recover status enum, template validation/substitution, favicon invalidity fallback and identity/equality across service reload.
+50: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcSessionID.md
+1: # ArcSessionID
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 8 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 16 bytes; class metadata `0xe37c8e8`, class_ro `0xe2a81f8`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Inline optional native signed 32-bit ID. Constructor `0x440ab88` narrows long-long to int; `0x440abb4` marks optional engaged. Native optional getter `0x2d0fb40` is an eight-byte raw load; this is aggregate bits, despite Ghidra naming an unrelated ObjC object getter. No destructor is declared.
+17: ## Threading and caller/callee relations
+19: isEqual: `0x440ac14` compares type, engagement and native integer. identifier and hash share `0x440acd8`, sign-extending ID; `0x440acf4` assigns native optional by value. No scheduling is visible and no concurrent setter/getter guarantee is inferred.
+21: ## Chrome / CEF route implications
+23: Native session ID adapter. Preserve 32-bit narrowing, optional ABI and hash/equality consistency. Source family Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/sessions/core/session_types.h:185` declares `SessionID window_id` in session data; no numeric correspondence with CEF browser IDs is assumed.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+40: ## Remaining consequential questions
+42: Which ID values are sentinels, can ID be disengaged in app paths, and how are IDs mapped across restoration? Test negative/out-of-range values explicitly.
+44: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcSessionTabGroup.md
+1: # ArcSessionTabGroup
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 9 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37c938`, class_ro `0xe2a8308`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Optional shared native group record; `0x440ad10` retains native handle. `0x440ae34` converts group ID string, title getter aliases cookie-value string copy `0x440ae60`, color `0x440af20` reads int +0x30 and collapsed `0x440af38` reads byte +0x34. Initializer IMPs: `0x440ad10`. Cleanup IMP: `0x43df69c`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Source-backed candidate structure Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/sessions/core/session_types.h:123`/:133/:135 associates ID and visual data. Preserve serialized group identity and public color enum; this wrapper does not restore tabs. CEF restoration needs separate session data reconstruction.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+41: ## Remaining consequential questions
+43: Map color/group-ID serialization, optional ownership and group order; identify snapshot versus live mutation.
+45: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcSessionWindow.md
+1: # ArcSessionWindow
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 11 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37c988`, class_ro `0xe2a8438`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Optional shared native session-window handle; `0x440af50` retains it. `0x440b0a8` and `0x440b464` wrap native tab/group collections; `0x440b36c` reads selected index. `0x440b388` converts epoch-microsecond time to NSDate, including zero/infinity sentinels. Type/show-state use mappings (`0x440b074`, `0x440b430`). Initializer IMPs: `0x440af50`. Cleanup IMP: `0x43df69c`.
+17: ## Threading and caller/callee relations
+19: The method matrix records local getters/copies and exact bridge calls. No callback registration or scheduling contract is established by these container methods; no thread-affinity or concurrent-mutation guarantee follows. Producers/consumers outside this class remain the boundary of this review.
+21: ## Chrome / CEF route implications
+23: Source-backed structure candidate Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/sessions/core/session_types.h:176`/:203/:216/:223 supports fields, not a proved full layout identity. Replacement must preserve session restoration data, group identity, timestamp conversion and selected-tab semantics in either route.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+43: ## Remaining consequential questions
+45: Recover enum conversion tables, timestamp sentinel boundaries, tab/group order and whether native record updates are visible through existing wrappers.
+47: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcSpake2Context.md
+1: # ArcSpake2Context
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 5 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 16 bytes; class metadata `0xe37ca28`, class_ro `0xe2a8600`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Unique native pointer at +8. `0x440bd1c` passes role!=0 and NSData names to `0x4341ab0` → `0x4461340`; generation `0x440be50` → `0x4341c4c` → `0x44614ac` uses 32-byte message buffer; process `0x440c0b8` → `0x4341d34` → `0x44617b4` uses 64-byte key buffer. Destructor `0x440c320` invokes `0x4341b9c` and frees native allocation.
+17: ## Threading and caller/callee relations
+19: These wrappers return NSData or NSError on invalid context/native failure. Source-backed inference identifies BoringSSL SPAKE2: Chromium DEPS at Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `DEPS:360` pins BoringSSL `2ea3200c3a3ec176613ab7a0b9a4ffc6db846120`; fetched `specs/sources/boringssl/curve25519.h:157-215` specifies one exchange per context, one generation, then processing. Role normalization and matching function signatures/buffer constants corroborate inference; it is not a mechanical binary match. Calls have no scheduling visible; concurrency on one context is unverified.
+21: ## Chrome / CEF route implications
+23: Cryptographic library adapter can be separate from Chromium/CEF navigation. Preserve pinned SPAKE2 protocol behavior and external key-confirmation usage. Source header :195-205 describes output as keying material for confirmation/HKDF; processing alone is not proof of authenticated peer confirmation.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+37: ## Remaining consequential questions
+39: Use interoperability vectors to verify role/name/password binding, wrong password/peer message, call ordering, repeated operations, NSError mapping and zeroization. Do not infer protocol security from wrapper signatures alone.
+41: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcTracingController.md
+1: # ArcTracingController
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 13 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 56 bytes; class metadata `0xe37cb18`, class_ro `0xe2a8e20`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+15: ## Lifecycle, ownership and callbacks
+17: Optional shared controller at +0x20 and shared delegate bridge +0x10; `0x440c8fc` copies native handle, `0x440cb90` creates weak delegate/self references. Destructor `0x440ced8` releases both. isTracing `0x440cda8` locks Impl mutex +0xc0 and reads active-session +0xb8 before caching flag at self+8.
+19: ## Threading and caller/callee relations
+21: Start `0x440ce18` → `0x434a700` configures systrace/categories/histogram list and schedules custom memory-pressure/system/swap/browser CPU tasks at nominal native delays 500000/1000000/5000000/500000. The Arc tracing_controller_impl.cc source markers identify those collection tasks. No time unit is inferred solely from constants. Stop `0x440cec4` → `0x434b768` differs from abort `0x440ceb0` → `0x434b818`; abort explicitly posts DidAbortTracing. Delegate adapters `0x440d248`, `0x440d29c`, `0x440d328` report start, completed text and abort. Getter mutex does not establish the callback queue or whole-object thread safety.
+23: ## Chrome / CEF route implications
+25: Chrome tracing plus Arc metric collection/output contract must be reproduced. Native config names/histograms at `0x434a700` show more than a simple start/stop toggle. CEF tracing API equivalence needs checks for categories, data destination, custom metrics, errors and delegate event order; no final route decision is claimed.
+27: ## Method matrix
+29: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+47: ## Remaining consequential questions
+49: Verify start Boolean return register (native Ghidra prototype is void), output artifact semantics, delegate callback queue, simultaneous start/stop/abort, timer units and cleanup after consumer disappearance.
+51: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcURLUtilities.md
+1: # ArcURLUtilities
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 2 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 8 bytes; class metadata `0xe37e300`, class_ro `0xe2ae420`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: No instance ivars; both methods are class methods. `0x443dd58` converts host and returns nil for empty native registrable-domain result; `0x443de84` converts formatted display host. Native bridges `0x4345480`/`0x434563c` distinguish empty/IP-like hosts and canonicalization paths.
+17: ## Threading and caller/callee relations
+19: Registry helper call `0x4345480` → `0xda58a0` and IDN conversion `0x434563c` → `0x788520` are bounded source-backed hypotheses. Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `net/base/registry_controlled_domains/registry_controlled_domain.h:162`/:193 (fetched under specs/sources) defines registrable-domain behavior/private filters; Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/url_formatter/url_formatter.h:178`/:185 defines IDN display conversion and fallback. No locale/main-thread assumption follows from these synchronous wrappers.
+21: ## Chrome / CEF route implications
+23: Can use pinned Chromium registry/IDN utilities in a Chrome route or reproduce identical public-suffix/IDN behavior in a shim. Return nil versus empty and private-registry filtering are compatibility gates; CEF URL utilities are not yet compared.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+34: ## Remaining consequential questions
+36: Test empty, IP/IPv6, trailing dots, private registries, unknown suffixes, Unicode/punycode spoof checks and invalid hosts against original engine.
+38: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcWebContentsBoostIDE.md
+1: # ArcWebContentsBoostIDE
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 10 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 48 bytes; class metadata `0xe37cc58`, class_ro `0xe2a92c0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+14: ## Lifecycle, ownership and callbacks
+16: Optional shared native handle at +0x18; `0x4414144` copies it and `0x44149dc` releases it and delegate bridge. `0x4414268` creates bridge with weak self but delegate is stored through slot assignment; ownership of that delegate slot is unresolved and not inferred as weak. Existing bridge updated, nil drops stored bridge.
+18: ## Threading and caller/callee relations
+20: Native callbacks `0x4413fd8`, `0x441402c`, `0x4414080` send boostIDEDidOpen:, boostIDEWillClose: and boostIDE:didRequestExecuteCommand:jsonString:. sendResponse `0x4414488` → `0x43d35c8` → `0x68122a8` calls cr.webUIResponse with true; error `0x44145b0` → `0x43d38cc` → `0x6812404` sends false; event `0x44146d8` → `0x8371aa8` sends cr.webUIListenerCallback. The native outgoing paths construct string-valued payloads through `0xc87c40`; they do not show JSON parsing. Parsing or other interpretation by receiving JavaScript remains untraced. Callback queue and JavaScript lifecycle remain unresolved. See [revision evidence](../revision-evidence/analysis.md).
+22: ## Chrome / CEF route implications
+24: Strong source-backed WebUI identification: Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `content/public/browser/web_ui_message_handler.h:76`/:85/:91 identifies resolve/reject/listener contracts; binary strings and Boolean flag differentiate responses. CEF shim would need compatible trusted page/JS bridge, command dispatch and JS-allowed lifetime, rather than treating this as an arbitrary network/CDP request.
+26: ## Method matrix
+28: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+43: ## Remaining consequential questions
+45: Recover delegate-slot ownership from ARC/disassembly, native handler availability/JS-allowed conditions, receiving JavaScript interpretation of string payloads and command ID format. Verify closing while app command is in flight.
+47: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+FILE ArcWebContentsMediaSessionPiPController.md
+1: # ArcWebContentsMediaSessionPiPController
+3: ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 6 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+5: ## State and layout
+7: Superclass `NSObject`; instanceStart 8, instanceSize 32 bytes; class metadata `0xe37ce38`, class_ro `0xe2a9a30`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+13: ## Lifecycle, ownership and callbacks
+15: Initializer `0x441c1f8` copies native shared optional at +8; generic destructor `0x43df69c` decrements its control block. videoView `0x441c31c` returns nil for disengaged/absent native object, otherwise returns view through native pointer chain. Returned-view retain/reparent ownership is not inferred from the getter.
+17: ## Threading and caller/callee relations
+19: sourceElementBounds `0x441c37c` requires engaged wrapper, reads native integer x/y/w/h, converts to CGRect doubles, and gives zeros if native object is absent. No scheduling, coordinate conversion or scale adjustment is shown. The view and geometry depend on nested native controller state; thread affinity and invalidation remain unresolved.
+21: ## Chrome / CEF route implications
+23: A route gate for native macOS embedding: replacement must provide usable native video view plus matching geometry and lifecycle. This wrapper does not prove that CEF child-view hosting or CEF PiP offers that exact contract; identify native view implementation and original-engine reparenting behavior first.
+25: ## Method matrix
+27: Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+38: ## Remaining consequential questions
+40: Determine actual NSView subclass, layer/backing ownership, bounds coordinate space and scale, view migration during PiP, destroyed source behavior and required main-thread operations.
+42: Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.

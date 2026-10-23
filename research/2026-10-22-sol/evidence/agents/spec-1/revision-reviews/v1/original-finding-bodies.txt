@@ -1,0 +1,91 @@
+INDEX 0x4443ee0 ArcWebContents::web_contents path=/home/exedev/work/inputs/decompile/0x44.c offset=1629872 C_bytes=1066 failed=0
+// ==== 0x4443ee0  ArcWebContents::web_contents  (60 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContents::web_contents
+               (optional<arc::WebContents> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  __shared_weak_count *p_Var1;
+  code *pcVar2;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x128) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x4443f1c);
+      (*pcVar2)();
+    }
+    p_Var1 = *(__shared_weak_count **)(param_1 + 0x120);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = *(Impl **)(param_1 + 0x118);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 = p_Var1;
+    if (p_Var1 != (__shared_weak_count *)0x0) {
+      *(long *)(p_Var1 + 8) = *(long *)(p_Var1 + 8) + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x4430bdc ArcContentNode::textColor path=/home/exedev/work/inputs/decompile/0x44.c offset=1124329 C_bytes=740 failed=0
+// ==== 0x4430bdc  ArcContentNode::textColor  (88 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcContentNode::textColor(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  
+  if ((*(byte *)(param_1 + 0x1b8) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x4430c34);
+    (*pcVar1)();
+  }
+  if (*(int *)(param_1 + 0x60) != 0) {
+    IVar2 = NSString::stringWithFormat_((ID)&_OBJC_CLASS___NSString,"stringWithFormat:",&cf___08X);
+    return IVar2;
+  }
+  return 0;
+}
+
+
+
+INDEX 0x4166068 ICloudKeychainPresentationDelegate::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x41.c offset=2167439 C_bytes=339 failed=0
+// ==== 0x4166068  ICloudKeychainPresentationDelegate::.cxx_destruct  (12 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ICloudKeychainPresentationDelegate::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+INDEX 0x425b6d8 ArcHistogramSample::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x42.c offset=1896325 C_bytes=310 failed=0
+// ==== 0x425b6d8  ArcHistogramSample::.cxx_destruct  (12 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcHistogramSample::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  return;
+}
+
+
+

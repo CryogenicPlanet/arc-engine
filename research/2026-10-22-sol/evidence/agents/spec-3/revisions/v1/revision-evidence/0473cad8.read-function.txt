@@ -1,0 +1,126 @@
+INDEX 0x473cad8 FUN_0473cad8 path=/home/exedev/work/inputs/decompile/0x47.c offset=1126188 C_bytes=4021 failed=0
+// ==== 0x473cad8  FUN_0473cad8  (1044 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+
+undefined8 FUN_0473cad8(ID *param_1,ID *param_2)
+
+{
+  byte bVar1;
+  ID IVar2;
+  long lVar3;
+  long lVar4;
+  undefined8 uVar5;
+  ID IVar6;
+  long lVar7;
+  long lVar8;
+  undefined1 auStack_78 [8];
+  undefined1 auStack_70 [32];
+  
+  IVar6 = *param_1;
+  IVar2 = _objc_msgSend((ID)&objc::class_t::WebContentsHostView,"class");
+  IVar2 = _objc_msgSend(IVar6,"isMemberOfClass:",IVar2);
+  if ((IVar2 & 1) == 0) {
+LAB_0473cc1c:
+    lVar3 = 0;
+  }
+  else {
+    IVar2 = _objc_msgSend(IVar6,"knownSubviews");
+    IVar2 = _objc_msgSend(IVar2,"firstObject");
+    IVar6 = _objc_msgSend(IVar2,"conformsToProtocol:",&objc::protocol_t::ViewsHostable);
+    if ((int)IVar6 == 0) {
+      lVar3 = 0;
+    }
+    else {
+      IVar2 = _objc_msgSend(IVar2,"viewsHostableView");
+      lVar3 = 0;
+      if (IVar2 != 0) {
+        lVar3 = IVar2 - 0x20;
+      }
+    }
+    if (((lVar3 == 0) || (*(long *)(lVar3 + 0x28) == 0)) ||
+       (*(long *)(*(long *)(lVar3 + 0x28) + 0x8d8) == 0)) goto LAB_0473cc1c;
+    lVar3 = FUN_010f9b60();
+  }
+  IVar6 = *param_2;
+  IVar2 = _objc_msgSend((ID)&objc::class_t::WebContentsHostView,"class");
+  IVar2 = _objc_msgSend(IVar6,"isMemberOfClass:",IVar2);
+  if ((IVar2 & 1) == 0) {
+LAB_0473cd38:
+    lVar4 = 0;
+  }
+  else {
+    IVar2 = _objc_msgSend(IVar6,"knownSubviews");
+    IVar2 = _objc_msgSend(IVar2,"firstObject");
+    IVar6 = _objc_msgSend(IVar2,"conformsToProtocol:",&objc::protocol_t::ViewsHostable);
+    if ((int)IVar6 == 0) {
+      lVar4 = 0;
+    }
+    else {
+      IVar2 = _objc_msgSend(IVar2,"viewsHostableView");
+      lVar4 = 0;
+      if (IVar2 != 0) {
+        lVar4 = IVar2 - 0x20;
+      }
+    }
+    if (((lVar4 == 0) || (*(long *)(lVar4 + 0x28) == 0)) ||
+       (*(long *)(*(long *)(lVar4 + 0x28) + 0x8d8) == 0)) goto LAB_0473cd38;
+    lVar4 = FUN_010f9b60();
+  }
+  bVar1 = lVar3 == lVar4;
+  if ((lVar3 != 0) && (lVar8 = *(long *)(lVar3 + 0x1f0), lVar8 != 0)) {
+    if (*(long *)(lVar8 + 0x48) == 0) {
+      FUN_0837a430(auStack_70,"../../content/browser/renderer_host/browser_compositor_view_mac.mm",
+                   0x6b);
+      FUN_08375df4(auStack_78,"delegated_frame_host_",0x98,auStack_70);
+      FUN_0837612c(auStack_78);
+      if (*(long *)(lVar8 + 0x48) == 0) goto LAB_0473cd80;
+    }
+    lVar7 = *(long *)(lVar3 + 0x1f0);
+    lVar8 = *(long *)(lVar7 + 0x48);
+    if (lVar8 == 0) {
+      FUN_0837a430(auStack_70,"../../content/browser/renderer_host/browser_compositor_view_mac.mm",
+                   0x6b);
+      FUN_08375df4(auStack_78,"delegated_frame_host_",0x98,auStack_70);
+      FUN_0837612c(auStack_78);
+      lVar8 = *(long *)(lVar7 + 0x48);
+    }
+    bVar1 = lVar3 == lVar4 | *(byte *)(*(long *)(lVar8 + 0x68) + 0x10);
+  }
+LAB_0473cd80:
+  if ((lVar4 == 0) || (lVar8 = *(long *)(lVar4 + 0x1f0), lVar8 == 0)) {
+LAB_0473cdd4:
+    uVar5 = 0;
+  }
+  else {
+    if (*(long *)(lVar8 + 0x48) == 0) {
+      FUN_0837a430(auStack_70,"../../content/browser/renderer_host/browser_compositor_view_mac.mm",
+                   0x6b);
+      FUN_08375df4(auStack_78,"delegated_frame_host_",0x98,auStack_70);
+      FUN_0837612c(auStack_78);
+      if (*(long *)(lVar8 + 0x48) == 0) goto LAB_0473cdd4;
+    }
+    lVar7 = *(long *)(lVar4 + 0x1f0);
+    lVar8 = *(long *)(lVar7 + 0x48);
+    if (lVar8 == 0) {
+      FUN_0837a430(auStack_70,"../../content/browser/renderer_host/browser_compositor_view_mac.mm",
+                   0x6b);
+      FUN_08375df4(auStack_78,"delegated_frame_host_",0x98,auStack_70);
+      FUN_0837612c(auStack_78);
+      lVar8 = *(long *)(lVar7 + 0x48);
+    }
+    uVar5 = 0;
+    if ((lVar3 != 0 && (bVar1 & 1) == 0) && ((*(byte *)(*(long *)(lVar8 + 0x68) + 0x10) & 1) != 0))
+    {
+      FUN_06846c88(lVar3,lVar4);
+      uVar5 = 1;
+    }
+  }
+  return uVar5;
+}
+
+
+

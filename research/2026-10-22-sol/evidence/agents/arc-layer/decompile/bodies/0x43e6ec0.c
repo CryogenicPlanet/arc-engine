@@ -1,0 +1,14 @@
+// ==== 0x43e6ec0  ArcBrowserApplication::run  (32 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcBrowserApplication::run(ID param_1,SEL param_2)
+
+{
+  int iVar1;
+  
+  iVar1 = FUN_042b1ba8(**(undefined8 **)(param_1 + 0x20));
+  return (long)iVar1;
+}
+
+

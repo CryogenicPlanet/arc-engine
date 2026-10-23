@@ -1,0 +1,25 @@
+// ==== 0x4408c30  ArcNotification::type  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcNotification::type(ID param_1,SEL param_2)
+
+{
+  uint uVar1;
+  code *pcVar2;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x4408c5c);
+    (*pcVar2)();
+  }
+  uVar1 = *(uint *)(*(long *)(param_1 + 0x10) + 8);
+  if (uVar1 < 7) {
+    return (ulong)(byte)(&DAT_0c9d8178)[uVar1];
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(0,0x4408c60);
+  (*pcVar2)();
+}
+
+

@@ -1,0 +1,56 @@
+{'manifests': 3, 'unique_paths': 199, 'unique_shards': 199, 'unique_hashes': 199, 'indexed_bodies': 567959, 'failure_placeholders': 79}
+{'handoff_rows': 5846, 'unique_names': 5846, 'resolved_rows': 5846, 'ambiguous_names': 8, 'resolved_metadata_records': 5859, 'depth_counts': {0: 1908, 1: 1558, 2: 2380}, 'reason_counts': {'arc-objc': 1378, 'arc-path': 524, 'export': 6, 'callee': 3938}, 'metadata_rows': 607294, 'flags': {'inside_prior_min_end_not_body_proof': 5709, 'metadata_vs_export_size_diff': 1196, 'known_merged_exclude': 1, 'large_span_review': 1, 'span_contains_next_entry_not_body_proof': 1}, 'note': 'Do not sum any size column into code volume. Overlap flags are diagnostics, not proof of malformed semantics.'}
+{'selected': 42, 'available': 36, 'initial_availability': {('contract.tsv', 'available_exact_header'): 834, ('decompile-requests.tsv', 'available_exact_header'): 63, ('decompile-requests.tsv', 'no_exact_header'): 2, ('missing-engine-bodies.tsv', 'available_exact_header'): 16}}
+{'instructions': 1228, 'branches': 165}
+{'selectors': 4, 'pointer_entries': 17, 'large_metadata_regions': 10, 'app_bodies': 16, 'source_files': 7}
+{
+  "compact_unwind_section": "0xd7910dc",
+  "compact_unwind_encoding": "0x30000a4",
+  "fde": "0xd81603c",
+  "fde_file_offset": "0xd81603c",
+  "cie": "0xd816020",
+  "cie_bytes": "1800000000000000017a504c520001781e079bd5df000010100c1f00",
+  "fde_bytes": "2800000020000000f4a1acf2ffffffff20000000000000000807cf7affffffffff480c1d109e019d02000000",
+  "function_start": "0x2e0238",
+  "fde_pc_range_bytes": 32,
+  "lsda": "0xcfc2f5c",
+  "lsda_bytes": "ff9b1101080c0418011010000001000000000000ffff0132",
+  "personality_pointer_slot": "0xd824008",
+  "personality": "0x83af738",
+  "scope": "Targeted observed encodings only. FDE range includes the landing pad omitted by the 24-byte pseudocode header."
+}
+{
+  "status": "PASS",
+  "engine_headers_independently_streamed": 567959,
+  "selected_functions_with_complete_text": 36,
+  "missing_exact_headers": 6,
+  "binary_instructions_byte_checked": 1228,
+  "contract_method_declarations_with_export_header": 834,
+  "closure_unique_names": 5846,
+  "large_metadata_ranges_rejected": 10,
+  "curated_contract_findings": 14,
+  "limits": "Static assertions validate provenance and selected instructions, not runtime ABI equivalence or all function boundaries."
+}
+	Command being timed: "bash decompile/tools/regenerate.sh"
+	User time (seconds): 9.30
+	System time (seconds): 0.46
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:09.83
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 76380
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 116073
+	Voluntary context switches: 13
+	Involuntary context switches: 798
+	Swaps: 0
+	File system inputs: 216
+	File system outputs: 3840
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

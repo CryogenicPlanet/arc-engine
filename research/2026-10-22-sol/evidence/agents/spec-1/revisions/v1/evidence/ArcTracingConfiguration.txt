@@ -1,0 +1,249 @@
+{
+  "class_name": "ArcTracingConfiguration",
+  "metadata_va": "0xe37cac8",
+  "metadata_file_offset": "0xe37cac8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a8cf0",
+  "instance_start": 8,
+  "instance_size": 64,
+  "ivars": [
+    {
+      "record_va": "0xe2a8c48",
+      "offset": 8,
+      "name": "_filePath",
+      "type": "@\"NSString\"",
+      "size": 8,
+      "alignment": 3
+    },
+    {
+      "record_va": "0xe2a8c68",
+      "offset": 16,
+      "name": "_tracingDuration",
+      "type": "d",
+      "size": 8,
+      "alignment": 3
+    },
+    {
+      "record_va": "0xe2a8c88",
+      "offset": 24,
+      "name": "_tracingConfiguration",
+      "type": "{TracingConfiguration=\"file_path\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"tracing_duration_in_seconds\"d\"privacy_filtering_enabled\"B}",
+      "size": 40,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a8cb0",
+      "name": "tracingConfiguration",
+      "attributes": "T{TracingConfiguration={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}dB},N,V_tracingConfiguration"
+    },
+    {
+      "record_va": "0xe2a8cc0",
+      "name": "filePath",
+      "attributes": "T@\"NSString\",&,N,V_filePath"
+    },
+    {
+      "record_va": "0xe2a8cd0",
+      "name": "tracingDuration",
+      "attributes": "Td,N,V_tracingDuration"
+    },
+    {
+      "record_va": "0xe2a8ce0",
+      "name": "privacyFilteringEnabled",
+      "attributes": "TB,N"
+    }
+  ]
+}
+
+###  -init 0x440c640 @16@0:8 available
+
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcTracingConfiguration;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0x2f) < '\0') {
+      FUN_00005810(*(undefined8 *)(IVar1 + 0x18),*(ulong *)(IVar1 + 0x28) & 0x7fffffffffffffff);
+    }
+    *(undefined8 *)(IVar1 + 0x30) = 0;
+    *(undefined8 *)(IVar1 + 0x28) = 0;
+    *(undefined8 *)(IVar1 + 0x20) = 0;
+    *(undefined8 *)(IVar1 + 0x18) = 0;
+    *(undefined1 *)(IVar1 + 0x38) = 1;
+  }
+  return IVar1;
+}
+
+
+
+
+###  -tracingConfiguration 0x440c6b8 {TracingConfiguration={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}dB}16@0:8 available
+
+  
+  if (*(char *)(param_1 + 0x2f) < '\0') {
+    FUN_00060a60(__return_storage_ptr__,*(undefined8 *)(param_1 + 0x18),
+                 *(undefined8 *)(param_1 + 0x20));
+  }
+  else {
+    pcVar1 = *(char **)(param_1 + 0x18);
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field1_0x8 =
+         *(unsigned_long_long *)(param_1 + 0x20);
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field0_0x0 = pcVar1;
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field2_0x10 =
+         *(AnonymousBitField1 *)(param_1 + 0x28);
+  }
+  __return_storage_ptr__->field1_0x18 = *(double *)(param_1 + 0x30);
+  *(undefined1 *)&__return_storage_ptr__->field2_0x20 = *(undefined1 *)(param_1 + 0x38);
+  return;
+}
+
+
+
+
+###  -filePath 0x440c710 @16@0:8 available
+
+  
+  cVar3 = *(char *)(param_1 + 0x2f);
+  puVar1 = *(undefined8 **)(param_1 + 0x18);
+  if (-1 < (long)cVar3) {
+    puVar1 = (undefined8 *)(param_1 + 0x18);
+  }
+  lVar2 = *(long *)(param_1 + 0x20);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  uVar4 = FUN_01c391bc(puVar1,lVar2);
+  *(undefined8 *)(param_1 + 8) = uVar4;
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+
+###  -setFilePath: 0x440c764 v24@0:8@16 available
+
+  
+  *(ID *)(param_1 + 8) = param_3;
+  if (param_3 == 0) {
+    local_38 = 0;
+    uStack_30 = 0;
+    local_28 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_38,param_3);
+  }
+  if (*(char *)(param_1 + 0x2f) < '\0') {
+    FUN_00005810(*(undefined8 *)(param_1 + 0x18),*(ulong *)(param_1 + 0x28) & 0x7fffffffffffffff);
+  }
+  *(undefined8 *)(param_1 + 0x20) = uStack_30;
+  *(undefined8 *)(param_1 + 0x18) = local_38;
+  *(undefined8 *)(param_1 + 0x28) = local_28;
+  return;
+}
+
+
+
+
+###  -tracingDuration 0x440c800 d16@0:8 available
+
+  *(double *)(param_1 + 0x10) = *(double *)(param_1 + 0x30);
+  return *(double *)(param_1 + 0x30);
+}
+
+
+
+
+###  -setTracingDuration: 0x440c80c v24@0:8d16 available
+
+  *(double *)(param_1 + 0x10) = param_3;
+  *(double *)(param_1 + 0x30) = param_3;
+  return;
+}
+
+
+
+
+###  -privacyFilteringEnabled 0xed0b14 B16@0:8 available
+
+  return (bool)*(byte *)(param_1 + 0x38);
+}
+
+
+
+
+###  -setPrivacyFilteringEnabled: 0x440c818 v20@0:8B16 available
+
+  *(char *)(param_1 + 0x38) = (char)param_3;
+  return;
+}
+
+
+
+
+###  -setTracingConfiguration: 0x440c820 v56@0:8{TracingConfiguration={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}dB}16 available
+
+  byte bVar1;
+  TracingConfiguration *pTVar2;
+  unsigned_long_long uVar5;
+  
+  if ((TracingConfiguration *)(param_1 + 0x18) != param_3) {
+    bVar1 = *(byte *)((long)&(param_3->field0_0x0).field0_0x0 + 0x17);
+    if (*(char *)(param_1 + 0x2f) < '\0') {
+      uVar5 = (param_3->field0_0x0).field0_0x0.field1.field1_0x8;
+      pTVar2 = (TracingConfiguration *)(param_3->field0_0x0).field0_0x0.field1.field0_0x0;
+      if (-1 < (char)bVar1) {
+        uVar5 = (ulong)bVar1;
+        pTVar2 = param_3;
+      }
+      FUN_00359ad8(param_1 + 0x18,pTVar2,uVar5);
+    }
+    else if ((char)bVar1 < '\0') {
+      FUN_00359998(param_1 + 0x18,(param_3->field0_0x0).field0_0x0.field1.field0_0x0,
+                   (param_3->field0_0x0).field0_0x0.field1.field1_0x8);
+    }
+    else {
+      uVar5 = (param_3->field0_0x0).field0_0x0.field1.field1_0x8;
+      pcVar4 = (param_3->field0_0x0).field0_0x0.field1.field0_0x0;
+      *(AnonymousBitField1 *)(param_1 + 0x28) = (param_3->field0_0x0).field0_0x0.field1.field2_0x10;
+      *(unsigned_long_long *)(param_1 + 0x20) = uVar5;
+      (((TracingConfiguration *)(param_1 + 0x18))->field0_0x0).field0_0x0.field1.field0_0x0 = pcVar4
+      ;
+    }
+  }
+  dVar3 = param_3->field1_0x18;
+  *(char *)(param_1 + 0x38) = (char)param_3->field2_0x20;
+  *(double *)(param_1 + 0x30) = dVar3;
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x440c8ac v16@0:8 available
+
+  if (*(char *)(param_1 + 0x2f) < '\0') {
+    FUN_00005810(*(undefined8 *)(param_1 + 0x18),*(ulong *)(param_1 + 0x28) & 0x7fffffffffffffff);
+  }
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x440c8e8 @16@0:8 available
+
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  *(undefined8 *)(param_1 + 0x20) = 0;
+  *(undefined8 *)(param_1 + 0x28) = 0;
+  *(undefined1 *)(param_1 + 0x38) = 1;
+  return param_1;
+}
+
+
+

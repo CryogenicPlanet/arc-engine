@@ -1,0 +1,44 @@
+100:   // sense to proceed with installation. A requestor can be a website that
+101:   // initiated an inline installation, or a command line option.
+102:   virtual bool CheckRequestorAlive() const = 0;
+103: 
+104:   // Should a new tab be opened after installation to show the newly installed
+105:   // extension's icon?
+106:   virtual bool ShouldShowPostInstallUI() const = 0;
+107: 
+108:   // In the very least this should return a dummy WebContents (required
+109:   // by some calls even when no prompt or other UI is shown). A non-dummy
+110:   // WebContents is required if the prompt returned by CreateInstallPromt()
+111:   // contains a navigable link(s). Returned WebContents should correspond
+112:   // to `profile` passed into the constructor.
+113:   virtual content::WebContents* GetWebContents() const = 0;
+114: 
+115:   // Should return an installation prompt with desired properties or NULL if
+116:   // no prompt should be shown.
+117:   virtual std::unique_ptr<InstallPromptData> CreateInstallPrompt() const = 0;
+118: 
+119:   // Will be called after the extension's manifest has been successfully parsed.
+120:   // Subclasses can perform asynchronous checks at this point and call
+121:   // ProceedWithInstallPrompt() to proceed with the install or otherwise call
+122:   // CompleteInstall() with an error code. The default implementation calls
+123:   // ProceedWithInstallPrompt().
+124:   virtual void OnManifestParsed();
+125: 
+126:   // Returns an install UI to be shown. By default, this returns an install UI
+127:   // that is a transient child of the host window for GetWebContents().
+128:   virtual std::unique_ptr<ExtensionInstallPrompt> CreateInstallUI(
+129:       std::unique_ptr<InstallPromptData> prompt);
+130: 
+131:   // Create an approval to pass installation parameters to the CrxInstaller.
+132:   virtual std::unique_ptr<InstallApproval> CreateApproval() const;
+133: 
+134:   // Called once the install prompt has finished.
+135:   virtual void OnInstallPromptDone(
+136:       ExtensionInstallPrompt::DoneCallbackPayload payload);
+137: 
+138:   // Accessors to be used by subclasses.
+139:   bool show_user_count() const { return show_user_count_; }
+140:   const std::string& localized_user_count() const {
+141:     return localized_user_count_;
+142:   }
+143:   double average_rating() const { return average_rating_; }

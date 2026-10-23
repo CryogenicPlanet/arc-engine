@@ -1,0 +1,148 @@
+INDEX 0x43e6548 ArcBrowserApplication::init: path=/home/exedev/work/inputs/decompile/0x43.c offset=4346957 C_bytes=4167 failed=0
+// ==== 0x43e6548  ArcBrowserApplication::init:  (832 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcBrowserApplication::init_(ID param_1,SEL param_2,ID param_3)
+
+{
+  long lVar1;
+  ID IVar2;
+  undefined8 *puVar3;
+  ID IVar4;
+  undefined8 *puVar5;
+  undefined8 uVar6;
+  code *pcVar7;
+  long *plVar8;
+  undefined1 auVar9 [16];
+  undefined1 auStack_60 [8];
+  long *local_58;
+  ID local_50;
+  class_t *pcStack_48;
+  
+  pcStack_48 = &objc::class_t::ArcBrowserApplication;
+  local_50 = param_1;
+  IVar2 = NSObject::init((ID)&local_50,"init");
+  if (IVar2 == 0) {
+    return 0;
+  }
+  puVar3 = (undefined8 *)FUN_00008790(0x28);
+  puVar3[1] = 0;
+  puVar3[2] = 0;
+  *puVar3 = &PTR_viewWillStartLiveResize_0da87850;
+  if (puVar3 + 3 == (undefined8 *)0x0) goto LAB_043e6884;
+  auVar9 = FUN_042b17e8();
+  *(undefined1 (*) [16])(puVar3 + 3) = auVar9;
+  plVar8 = *(long **)(IVar2 + 0x28);
+  *(undefined8 **)(IVar2 + 0x20) = puVar3 + 3;
+  *(undefined8 **)(IVar2 + 0x28) = puVar3;
+  if (plVar8 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar8[1];
+    plVar8[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar8 + 0x10))(plVar8);
+      if (plVar8[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar8[2];
+        plVar8[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043e65dc;
+      }
+      pcVar7 = *(code **)(*plVar8 + 0x20);
+      if (((pcVar7 == FUN_00f01bc0) || (pcVar7 == FUN_00f01bc0)) || (pcVar7 == FUN_013efb40)) {
+        FUN_00005810(plVar8,0x20);
+      }
+      else {
+        (*pcVar7)(plVar8);
+      }
+    }
+  }
+LAB_043e65dc:
+  IVar4 = _objc_alloc(&objc::class_t::ArcLocalState);
+  FUN_042c8400(auStack_60,*(undefined8 *)(**(long **)(IVar2 + 0x20) + 200));
+  IVar4 = ArcLocalState::initWithLocalState_(IVar4,"initWithLocalState:",auStack_60);
+  *(ID *)(IVar2 + 8) = IVar4;
+  if (local_58 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = local_58[1];
+    local_58[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_58 + 0x10))(local_58);
+      if (local_58[2] != 0) {
+        LOAcquire();
+        lVar1 = local_58[2];
+        local_58[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043e663c;
+      }
+      pcVar7 = *(code **)(*local_58 + 0x20);
+      if (((pcVar7 == FUN_00f01bc0) || (pcVar7 == FUN_00f01bc0)) || (pcVar7 == FUN_013efb40)) {
+        FUN_00005810(local_58,0x20);
+      }
+      else {
+        (*pcVar7)(local_58);
+      }
+    }
+  }
+LAB_043e663c:
+  if (param_3 == 0) goto LAB_043e66bc;
+  puVar5 = (undefined8 *)FUN_00008790(0x28);
+  puVar5[1] = 0;
+  puVar5[2] = 0;
+  *puVar5 = &PTR_viewWillStartLiveResize_0da87888;
+  puVar3 = puVar5 + 3;
+  if (puVar3 == (undefined8 *)0x0) {
+LAB_043e6884:
+                    /* WARNING: Does not return */
+    pcVar7 = (code *)SoftwareBreakpoint(1,0x43e6888);
+    (*pcVar7)();
+  }
+  puVar5[3] = &PTR_FUN_0da878c0;
+  _objc_initWeak(puVar5 + 4,param_3);
+  plVar8 = *(long **)(IVar2 + 0x38);
+  *(undefined8 **)(IVar2 + 0x30) = puVar3;
+  *(undefined8 **)(IVar2 + 0x38) = puVar5;
+  if (plVar8 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar8[1];
+    plVar8[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar8 + 0x10))(plVar8);
+      if (plVar8[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar8[2];
+        plVar8[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043e6698;
+      }
+      pcVar7 = *(code **)(*plVar8 + 0x20);
+      if (((pcVar7 == FUN_00f01bc0) || (pcVar7 == FUN_00f01bc0)) || (pcVar7 == FUN_013efb40)) {
+        FUN_00005810(plVar8,0x20);
+      }
+      else {
+        (*pcVar7)(plVar8);
+      }
+    }
+LAB_043e6698:
+    puVar3 = *(undefined8 **)(IVar2 + 0x30);
+    puVar5 = *(undefined8 **)(IVar2 + 0x38);
+  }
+  uVar6 = *(undefined8 *)(IVar2 + 0x20);
+  if (puVar5 != (undefined8 *)0x0) {
+    puVar5[2] = puVar5[2] + 1;
+  }
+  FUN_04332148(uVar6,puVar3,puVar5);
+LAB_043e66bc:
+  *(undefined8 *)(IVar2 + 0x10) = 0;
+  *(undefined8 *)(IVar2 + 0x18) = 0;
+  return IVar2;
+}
+
+
+

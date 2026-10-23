@@ -1,0 +1,21 @@
+// ==== 0x443beb0  ArcExternalProtocolDialog::cancel  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcExternalProtocolDialog::cancel(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+                    /* WARNING: Could not recover jumptable at 0x0443bec0. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+    (**(code **)(param_1 + 0x68))(param_1 + 0x58);
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443bec8);
+  (*pcVar1)();
+}
+
+

@@ -1,0 +1,52 @@
+// ==== 0x44091a4  ArcNotification::documentURL  (172 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcNotification::documentURL(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ulong *puVar2;
+  ID IVar3;
+  SEL extraout_x1;
+  long lVar4;
+  undefined1 auVar5 [16];
+  ulong local_40;
+  ulong uStack_38;
+  ulong local_30;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    lVar4 = *(long *)(*(long *)(param_1 + 0x10) + 0x358);
+    if ((lVar4 == 0) || (*(int *)(lVar4 + 8) != 1)) {
+      local_30 = local_30 & 0xffffffffffffff;
+      local_40 = local_40 & 0xffffffffffffff00;
+    }
+    else {
+      auVar5 = FUN_007cf864(lVar4 + 0x10);
+      param_2 = auVar5._8_8_;
+      puVar2 = auVar5._0_8_;
+      if (*(char *)((long)puVar2 + 0x17) < '\0') {
+        FUN_00060a60(&local_40,*puVar2,puVar2[1]);
+        param_2 = extraout_x1;
+      }
+      else {
+        uStack_38 = puVar2[1];
+        local_40 = *puVar2;
+        local_30 = puVar2[2];
+      }
+    }
+    IVar3 = FUN_043abd34(&local_40,param_2);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4409250);
+  (*pcVar1)();
+}
+
+

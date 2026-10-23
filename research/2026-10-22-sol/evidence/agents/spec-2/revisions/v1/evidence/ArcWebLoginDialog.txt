@@ -1,0 +1,446 @@
+{
+  "class_name": "ArcWebLoginDialog",
+  "metadata_va": "0xe37cf28",
+  "metadata_file_offset": "0xe37cf28",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a9d80",
+  "instance_start": 8,
+  "instance_size": 136,
+  "ivars": [
+    {
+      "record_va": "0xe2a9d18",
+      "offset": 8,
+      "name": "_dialog",
+      "type": "{WebLoginDialog=\"is_proxy_login\"B\"is_url_potentially_trustworthy\"B\"authority\"{basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[11S]\"__padding_\"{__padding<1UL>=\"__padding_\"[1c]}\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"^S\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"accepted\"{function<void (const std::string &, const std::string &)>=\"__f_\"{__policy_func<void (const std::string &, const std::string &)>=\"__buf_\"(__policy_storage=\"__small\"[16c]\"__large\"^v)\"__func_\"^?\"__policy_\"^{__policy}}}\"cancelled\"{function<void ()>=\"__f_\"{__policy_func<void ()>=\"__buf_\"(__policy_storage=\"__small\"[16c]\"__large\"^v)\"__func_\"^?\"__policy_\"^{__policy}}}\"closed\"{function<void ()>=\"__f_\"{__policy_func<void ()>=\"__buf_\"(__policy_storage=\"__small\"[16c]\"__large\"^v)\"__func_\"^?\"__policy_\"^{__policy}}}}",
+      "alignment": 3,
+      "size": 128
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": "initWithWebLoginDialog:", "type_encoding": "@24@0:8r^v16", "imp": "0x441d2c4", "method_record_va": "0xd77a9b8", "selector_va": "0xd75faa7", "dyld_line": 2295, "imp_file_offset": "0x441d2c4", "body_name": "ArcWebLoginDialog::initWithWebLoginDialog:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 622216, "body_length": 3698, "failed": 0, "truncated": false}
+// ==== 0x441d2c4  ArcWebLoginDialog::initWithWebLoginDialog:  (380 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcWebLoginDialog::initWithWebLoginDialog_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ulong uVar1;
+  byte bVar2;
+  undefined8 *puVar3;
+  ID IVar4;
+  undefined8 uVar5;
+  undefined8 *puVar6;
+  undefined8 uVar7;
+  long lVar8;
+  code *pcVar9;
+  undefined8 uVar10;
+  undefined8 uVar11;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcWebLoginDialog;
+  local_40 = param_1;
+  IVar4 = NSObject::init((ID)&local_40,"init");
+  if (IVar4 != 0) {
+    puVar6 = (undefined8 *)((long)param_3 + 8);
+    *(undefined2 *)(IVar4 + 8) = *(undefined2 *)param_3;
+    if ((undefined8 *)(IVar4 + 0x10) != puVar6) {
+      bVar2 = *(byte *)((long)param_3 + 0x1f);
+      if (*(char *)(IVar4 + 0x27) < '\0') {
+        uVar1 = *(ulong *)((long)param_3 + 0x10);
+        puVar3 = *(undefined8 **)((long)param_3 + 8);
+        if (-1 < (char)bVar2) {
+          uVar1 = (ulong)bVar2;
+          puVar3 = puVar6;
+        }
+        FUN_007ab764(IVar4 + 0x10,puVar3,uVar1);
+      }
+      else if ((char)bVar2 < '\0') {
+        FUN_007ab624(IVar4 + 0x10,*(undefined8 *)((long)param_3 + 8),
+                     *(undefined8 *)((long)param_3 + 0x10));
+      }
+      else {
+        uVar10 = *(undefined8 *)((long)param_3 + 0x10);
+        uVar5 = *puVar6;
+        *(undefined8 *)(IVar4 + 0x20) = *(undefined8 *)((long)param_3 + 0x18);
+        *(undefined8 *)(IVar4 + 0x18) = uVar10;
+        *(undefined8 *)(IVar4 + 0x10) = uVar5;
+      }
+    }
+    uVar5 = *(undefined8 *)((long)param_3 + 0x20);
+    uVar10 = *(undefined8 *)((long)param_3 + 0x28);
+    uVar11 = *(undefined8 *)((long)param_3 + 0x38);
+    uVar7 = *(undefined8 *)((long)param_3 + 0x30);
+    if ((code *)**(undefined8 **)((long)param_3 + 0x38) != (code *)0x0) {
+      uVar5 = (*(code *)**(undefined8 **)((long)param_3 + 0x38))();
+    }
+    lVar8 = *(long *)(IVar4 + 0x40);
+    *(undefined8 *)(IVar4 + 0x40) = uVar11;
+    *(undefined8 *)(IVar4 + 0x38) = uVar7;
+    uVar7 = *(undefined8 *)(IVar4 + 0x28);
+    *(undefined8 *)(IVar4 + 0x28) = uVar5;
+    *(undefined8 *)(IVar4 + 0x30) = uVar10;
+    pcVar9 = *(code **)(lVar8 + 8);
+    if (pcVar9 != (code *)0x0) {
+      (*pcVar9)(uVar7);
+    }
+    uVar5 = *(undefined8 *)((long)param_3 + 0x40);
+    uVar10 = *(undefined8 *)((long)param_3 + 0x48);
+    uVar11 = *(undefined8 *)((long)param_3 + 0x58);
+    uVar7 = *(undefined8 *)((long)param_3 + 0x50);
+    if ((code *)**(undefined8 **)((long)param_3 + 0x58) != (code *)0x0) {
+      uVar5 = (*(code *)**(undefined8 **)((long)param_3 + 0x58))();
+    }
+    lVar8 = *(long *)(IVar4 + 0x60);
+    *(undefined8 *)(IVar4 + 0x60) = uVar11;
+    *(undefined8 *)(IVar4 + 0x58) = uVar7;
+    uVar7 = *(undefined8 *)(IVar4 + 0x48);
+    *(undefined8 *)(IVar4 + 0x48) = uVar5;
+    *(undefined8 *)(IVar4 + 0x50) = uVar10;
+    pcVar9 = *(code **)(lVar8 + 8);
+    if (pcVar9 != (code *)0x0) {
+      (*pcVar9)(uVar7);
+    }
+    uVar5 = *(undefined8 *)((long)param_3 + 0x60);
+    uVar10 = *(undefined8 *)((long)param_3 + 0x68);
+    uVar11 = *(undefined8 *)((long)param_3 + 0x78);
+    uVar7 = *(undefined8 *)((long)param_3 + 0x70);
+    if ((code *)**(undefined8 **)((long)param_3 + 0x78) != (code *)0x0) {
+      uVar5 = (*(code *)**(undefined8 **)((long)param_3 + 0x78))();
+    }
+    lVar8 = *(long *)(IVar4 + 0x80);
+    *(undefined8 *)(IVar4 + 0x80) = uVar11;
+    *(undefined8 *)(IVar4 + 0x78) = uVar7;
+    uVar7 = *(undefined8 *)(IVar4 + 0x68);
+    *(undefined8 *)(IVar4 + 0x68) = uVar5;
+    *(undefined8 *)(IVar4 + 0x70) = uVar10;
+    pcVar9 = *(code **)(lVar8 + 8);
+    if (pcVar9 != (code *)0x0) {
+      (*pcVar9)(uVar7);
+    }
+  }
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": "isProxyLogin", "type_encoding": "B16@0:8", "imp": "0x40b1230", "method_record_va": "0xd77a9c4", "selector_va": "0xd75fabf", "dyld_line": 2296, "imp_file_offset": "0x40b1230", "body_name": "MacScreenMonitor::isScreensaverRunning", "body_path": "/home/exedev/work/inputs/decompile/0x40.c", "body_offset": 5191083, "body_length": 265, "failed": 0, "truncated": false}
+// ==== 0x40b1230  MacScreenMonitor::isScreensaverRunning  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void MacScreenMonitor::isScreensaverRunning
+               (void *param_1,void *param_2,int param_3,char *param_4,int param_5,int param_6)
+
+{
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": "isURLPotentiallyTrustworthy", "type_encoding": "B16@0:8", "imp": "0x43ecb04", "method_record_va": "0xd77a9d0", "selector_va": "0xd75facc", "dyld_line": 2297, "imp_file_offset": "0x43ecb04", "body_name": "MacScreenMonitor::isScreenLocked", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4451214, "body_length": 211, "failed": 0, "truncated": false}
+// ==== 0x43ecb04  MacScreenMonitor::isScreenLocked  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool MacScreenMonitor::isScreenLocked(ID param_1,SEL param_2)
+
+{
+  return (bool)*(byte *)(param_1 + 9);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": "authority", "type_encoding": "@16@0:8", "imp": "0x441d440", "method_record_va": "0xd77a9dc", "selector_va": "0xd75fae8", "dyld_line": 2298, "imp_file_offset": "0x441d440", "body_name": "ArcWebLoginDialog::authority", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 625914, "body_length": 514, "failed": 0, "truncated": false}
+// ==== 0x441d440  ArcWebLoginDialog::authority  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcWebLoginDialog::authority(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  
+  cVar3 = *(char *)(param_1 + 0x27);
+  plVar1 = (long *)*(long *)(param_1 + 0x10);
+  if (-1 < (long)cVar3) {
+    plVar1 = (long *)(param_1 + 0x10);
+  }
+  lVar2 = *(long *)(param_1 + 0x18);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  IVar4 = FUN_01d9fb90(plVar1,lVar2);
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": "close", "type_encoding": "v16@0:8", "imp": "0x441d464", "method_record_va": "0xd77a9e8", "selector_va": "0xd747f36", "dyld_line": 2299, "imp_file_offset": "0x441d464", "body_name": "ArcWebLoginDialog::close", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 626428, "body_length": 422, "failed": 0, "truncated": false}
+// ==== 0x441d464  ArcWebLoginDialog::close  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcWebLoginDialog::close(int param_1)
+
+{
+  int iVar1;
+  
+                    /* WARNING: Could not recover jumptable at 0x0441d46c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  iVar1 = (**(code **)((ulong)(uint)param_1 + 0x78))((ulong)(uint)param_1 + 0x68);
+  return iVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": "accept:with:", "type_encoding": "v32@0:8@16@24", "imp": "0x441d470", "method_record_va": "0xd77a9f4", "selector_va": "0xd75faf2", "dyld_line": 2300, "imp_file_offset": "0x441d470", "body_name": "ArcWebLoginDialog::accept:with:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 626850, "body_length": 1166, "failed": 0, "truncated": false}
+// ==== 0x441d470  ArcWebLoginDialog::accept:with:  (256 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+void ArcWebLoginDialog::accept_with_(ID param_1,SEL param_2,ID param_3,ID param_4)
+
+{
+  SEL extraout_x1;
+  undefined8 local_60;
+  undefined8 uStack_58;
+  ulong local_50;
+  undefined8 local_48;
+  undefined8 uStack_40;
+  ulong local_38;
+  
+  local_48 = 0;
+  uStack_40 = 0;
+  local_38 = 0;
+  if (param_3 == 0) {
+    local_48 = 0;
+    uStack_40 = 0;
+    local_38 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_48,param_3);
+    param_2 = extraout_x1;
+  }
+  local_60 = 0;
+  uStack_58 = 0;
+  local_50 = 0;
+  if (param_4 == 0) {
+    local_60 = 0;
+    uStack_58 = 0;
+    local_50 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_60,param_4,param_2);
+  }
+  (**(code **)(param_1 + 0x38))(param_1 + 0x28,&local_48,&local_60);
+  if ((long)local_50 < 0) {
+    FUN_00005810(local_60,local_50 & 0x7fffffffffffffff);
+  }
+  if ((long)local_38 < 0) {
+    FUN_00005810(local_48,local_38 & 0x7fffffffffffffff);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": "cancel", "type_encoding": "v16@0:8", "imp": "0x441d5b4", "method_record_va": "0xd77aa00", "selector_va": "0xd74ed32", "dyld_line": 2301, "imp_file_offset": "0x441d5b4", "body_name": "ArcWebLoginDialog::cancel", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 628016, "body_length": 380, "failed": 0, "truncated": false}
+// ==== 0x441d5b4  ArcWebLoginDialog::cancel  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebLoginDialog::cancel(ID param_1,SEL param_2)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x0441d5bc. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (**(code **)(param_1 + 0x58))(param_1 + 0x48);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": "dialog", "type_encoding": "{WebLoginDialog=BB{basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=(__rep={__short=[11S]{__padding<1UL>=[1c]}b7b1}{__long=^SQb63b1})}{function<void (const std::string &, const std::string &)>={__policy_func<void (const std::string &, const std::string &)>=(__policy_storage=[16c]^v)^?^{__policy}}}{function<void ()>={__policy_func<void ()>=(__policy_storage=[16c]^v)^?^{__policy}}}{function<void ()>={__policy_func<void ()>=(__policy_storage=[16c]^v)^?^{__policy}}}}16@0:8", "imp": "0x441d5c0", "method_record_va": "0xd77aa0c", "selector_va": "0xd75a2fa", "dyld_line": 2302, "imp_file_offset": "0x441d5c0", "body_name": "ArcWebLoginDialog::dialog", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 628396, "body_length": 260, "failed": 0, "truncated": false}
+// ==== 0x441d5c0  ArcWebLoginDialog::dialog  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebLoginDialog::dialog(WebLoginDialog *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  FUN_043467d8(__return_storage_ptr__,param_1 + 8);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": "setDialog:", "type_encoding": "v144@0:8{WebLoginDialog=BB{basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=(__rep={__short=[11S]{__padding<1UL>=[1c]}b7b1}{__long=^SQb63b1})}{function<void (const std::string &, const std::string &)>={__policy_func<void (const std::string &, const std::string &)>=(__policy_storage=[16c]^v)^?^{__policy}}}{function<void ()>={__policy_func<void ()>=(__policy_storage=[16c]^v)^?^{__policy}}}{function<void ()>={__policy_func<void ()>=(__policy_storage=[16c]^v)^?^{__policy}}}}16", "imp": "0x441d5cc", "method_record_va": "0xd77aa18", "selector_va": "0xd75a301", "dyld_line": 2303, "imp_file_offset": "0x441d5cc", "body_name": "ArcWebLoginDialog::setDialog:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 628656, "body_length": 4643, "failed": 0, "truncated": false}
+// ==== 0x441d5cc  ArcWebLoginDialog::setDialog:  (360 bytes)
+
+/* Function Stack Size: 0x90 bytes */
+
+void ArcWebLoginDialog::setDialog_(ID param_1,SEL param_2,WebLoginDialog *param_3)
+
+{
+  undefined8 uVar1;
+  byte bVar2;
+  basic_string<char16_t,_std::char_traits<char16_t>,_std::allocator<char16_t>> *pbVar3;
+  void *pvVar4;
+  SEL extraout_x1;
+  SEL extraout_x1_00;
+  basic_string<char16_t,_std::char_traits<char16_t>,_std::allocator<char16_t>> *pbVar5;
+  code *UNRECOVERED_JUMPTABLE;
+  undefined8 uVar6;
+  long lVar7;
+  unsigned_short *puVar8;
+  undefined4 *puVar9;
+  unsigned_long_long uVar10;
+  __policy *p_Var11;
+  
+  pbVar5 = &param_3->field2_0x8;
+  *(short *)(param_1 + 8) = (short)param_3->field0_0x0;
+  if ((basic_string<char16_t,_std::char_traits<char16_t>,_std::allocator<char16_t>> *)
+      (param_1 + 0x10) != pbVar5) {
+    bVar2 = *(byte *)((long)&(param_3->field2_0x8).field0_0x0 + 0x17);
+    if (*(char *)(param_1 + 0x27) < '\0') {
+      uVar10 = (param_3->field2_0x8).field0_0x0.field1.field1_0x8;
+      pbVar3 = (basic_string<char16_t,_std::char_traits<char16_t>,_std::allocator<char16_t>> *)
+               (param_3->field2_0x8).field0_0x0.field1.field0_0x0;
+      if (-1 < (char)bVar2) {
+        uVar10 = (ulong)bVar2;
+        pbVar3 = pbVar5;
+      }
+      FUN_007ab764(param_1 + 0x10,pbVar3,uVar10);
+      param_2 = extraout_x1_00;
+    }
+    else if ((char)bVar2 < '\0') {
+      FUN_007ab624(param_1 + 0x10,(param_3->field2_0x8).field0_0x0.field1.field0_0x0,
+                   (param_3->field2_0x8).field0_0x0.field1.field1_0x8);
+      param_2 = extraout_x1;
+    }
+    else {
+      uVar10 = (param_3->field2_0x8).field0_0x0.field1.field1_0x8;
+      puVar8 = (pbVar5->field0_0x0).field1.field0_0x0;
+      *(AnonymousBitField1 *)(param_1 + 0x20) = (param_3->field2_0x8).field0_0x0.field1.field2_0x10;
+      *(unsigned_long_long *)(param_1 + 0x18) = uVar10;
+      *(unsigned_short **)(param_1 + 0x10) = puVar8;
+    }
+  }
+  pvVar4 = (param_3->field3_0x20).field0_0x0.field0_0x0.field1;
+  uVar1 = *(undefined8 *)((long)&(param_3->field3_0x20).field0_0x0.field0_0x0 + 8);
+  p_Var11 = (param_3->field3_0x20).field0_0x0.field2_0x18;
+  puVar9 = (param_3->field3_0x20).field0_0x0.field1_0x10;
+  UNRECOVERED_JUMPTABLE = *(code **)(param_3->field3_0x20).field0_0x0.field2_0x18;
+  if (UNRECOVERED_JUMPTABLE != (code *)0x0) {
+    pvVar4 = (void *)(*UNRECOVERED_JUMPTABLE)(pvVar4,param_2);
+  }
+  lVar7 = *(long *)(param_1 + 0x40);
+  *(__policy **)(param_1 + 0x40) = p_Var11;
+  *(undefined4 **)(param_1 + 0x38) = puVar9;
+  uVar6 = *(undefined8 *)(param_1 + 0x28);
+  *(void **)(param_1 + 0x28) = pvVar4;
+  *(undefined8 *)(param_1 + 0x30) = uVar1;
+  UNRECOVERED_JUMPTABLE = *(code **)(lVar7 + 8);
+  if (UNRECOVERED_JUMPTABLE != (code *)0x0) {
+    (*UNRECOVERED_JUMPTABLE)(uVar6);
+  }
+  pvVar4 = (param_3->field4_0x40).field0_0x0.field0_0x0.field1;
+  uVar1 = *(undefined8 *)((long)&(param_3->field4_0x40).field0_0x0.field0_0x0 + 8);
+  p_Var11 = (param_3->field4_0x40).field0_0x0.field2_0x18;
+  puVar9 = (param_3->field4_0x40).field0_0x0.field1_0x10;
+  UNRECOVERED_JUMPTABLE = *(code **)(param_3->field4_0x40).field0_0x0.field2_0x18;
+  if (UNRECOVERED_JUMPTABLE != (code *)0x0) {
+    pvVar4 = (void *)(*UNRECOVERED_JUMPTABLE)();
+  }
+  lVar7 = *(long *)(param_1 + 0x60);
+  *(__policy **)(param_1 + 0x60) = p_Var11;
+  *(undefined4 **)(param_1 + 0x58) = puVar9;
+  uVar6 = *(undefined8 *)(param_1 + 0x48);
+  *(void **)(param_1 + 0x48) = pvVar4;
+  *(undefined8 *)(param_1 + 0x50) = uVar1;
+  UNRECOVERED_JUMPTABLE = *(code **)(lVar7 + 8);
+  if (UNRECOVERED_JUMPTABLE != (code *)0x0) {
+    (*UNRECOVERED_JUMPTABLE)(uVar6);
+  }
+  pvVar4 = (param_3->field5_0x60).field0_0x0.field0_0x0.field1;
+  uVar1 = *(undefined8 *)((long)&(param_3->field5_0x60).field0_0x0.field0_0x0 + 8);
+  p_Var11 = (param_3->field5_0x60).field0_0x0.field2_0x18;
+  puVar9 = (param_3->field5_0x60).field0_0x0.field1_0x10;
+  UNRECOVERED_JUMPTABLE = *(code **)(param_3->field5_0x60).field0_0x0.field2_0x18;
+  if (UNRECOVERED_JUMPTABLE != (code *)0x0) {
+    pvVar4 = (void *)(*UNRECOVERED_JUMPTABLE)();
+  }
+  lVar7 = *(long *)(param_1 + 0x80);
+  *(__policy **)(param_1 + 0x80) = p_Var11;
+  *(undefined4 **)(param_1 + 0x78) = puVar9;
+  uVar6 = *(undefined8 *)(param_1 + 0x68);
+  *(void **)(param_1 + 0x68) = pvVar4;
+  *(undefined8 *)(param_1 + 0x70) = uVar1;
+  UNRECOVERED_JUMPTABLE = *(code **)(lVar7 + 8);
+  if (UNRECOVERED_JUMPTABLE == (code *)0x0) {
+    return;
+  }
+                    /* WARNING: Could not recover jumptable at 0x0441d6ec. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (*UNRECOVERED_JUMPTABLE)(uVar6);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x441d734", "method_record_va": "0xd77aa24", "selector_va": "0xd744a39", "dyld_line": 2304, "imp_file_offset": "0x441d734", "body_name": "ArcWebLoginDialog::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 633299, "body_length": 211, "failed": 0, "truncated": false}
+// ==== 0x441d734  ArcWebLoginDialog::.cxx_destruct  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebLoginDialog::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  FUN_04346764(param_1 + 8);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebLoginDialog", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x441d73c", "method_record_va": "0xd77aa30", "selector_va": "0xd744a47", "dyld_line": 2305, "imp_file_offset": "0x441d73c", "body_name": "ArcWebLoginDialog::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 633510, "body_length": 635, "failed": 0, "truncated": false}
+// ==== 0x441d73c  ArcWebLoginDialog::.cxx_construct  (52 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcWebLoginDialog::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined2 *)(param_1 + 8) = 0;
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  *(undefined8 *)(param_1 + 0x20) = 0;
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(code **)(param_1 + 0x38) = FUN_04048340;
+  *(undefined8 **)(param_1 + 0x40) = &DAT_0c4b3500;
+  *(code **)(param_1 + 0x58) = FUN_04048340;
+  *(undefined8 **)(param_1 + 0x60) = &DAT_0c4b3500;
+  *(code **)(param_1 + 0x78) = FUN_04048340;
+  *(undefined8 **)(param_1 + 0x80) = &DAT_0c4b3500;
+  return param_1;
+}
+
+
+

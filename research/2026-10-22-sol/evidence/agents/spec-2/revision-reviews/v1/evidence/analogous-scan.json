@@ -1,0 +1,138 @@
+{
+  "collection_getters": [
+    {
+      "class_name": "ArcAnnotatedVisit",
+      "selector": "redirectChain",
+      "imp_va": "0x43ff0fc",
+      "body_status": "available",
+      "behavior": "If engaged, builds NSMutableArray of ArcRedirectEntry wrappers from native vector; otherwise empty array."
+    },
+    {
+      "class_name": "ArcAnnotatedVisit",
+      "selector": "categories",
+      "imp_va": "0x43ff438",
+      "body_status": "available",
+      "behavior": "Builds array of ArcVisitCategory wrappers from native IDs/weights; absent record yields empty array."
+    },
+    {
+      "class_name": "ArcAnnotatedVisit",
+      "selector": "relatedSearches",
+      "imp_va": "0x43ff558",
+      "body_status": "available",
+      "behavior": "Returns an array of strings: absent native optional returns the empty NSArray singleton; engaged state enumerates 24-byte native string entries, converts each via 0x1c391bc, adds it to NSMutableArray and returns a copy. Invalid nonzero engagement can trap."
+    },
+    {
+      "class_name": "ArcURLLoadConfiguration",
+      "selector": "headers",
+      "imp_va": "0x440d9f8",
+      "body_status": "available",
+      "behavior": "Returns a copied dictionary snapshot. Iterates native linked header entries, converts each key/value byte string with 0x1c391bc and sends setValue:forKey: to NSMutableDictionary; no entries produces an empty copied dictionary."
+    },
+    {
+      "class_name": "ArcHistoryDeletion",
+      "selector": "deletedItems",
+      "imp_va": "0x442e5ec",
+      "body_status": "available",
+      "behavior": "Requires engaged payload; lazily constructs/caches array of ArcHistoryItem from native deleted-item vector."
+    },
+    {
+      "class_name": "ArcHistoryDeletion",
+      "selector": "deletedVisitIds",
+      "imp_va": "0x442e88c",
+      "body_status": "available",
+      "behavior": "Requires engaged payload; builds array boxing native visit IDs as NSNumber."
+    },
+    {
+      "class_name": "ArcExtensionInfo",
+      "selector": "permissions",
+      "imp_va": "0x442f330",
+      "body_status": "available",
+      "behavior": "Requires engaged native extension snapshot; converts native UTF-16 permissions into NSMutableArray."
+    },
+    {
+      "class_name": "ArcCommandBarRankingEvaluation",
+      "selector": "metrics",
+      "imp_va": "0x4434190",
+      "body_status": "available",
+      "behavior": "Requires engaged evaluation and constructs dictionary mapping converted metric names to NSNumber doubles."
+    },
+    {
+      "class_name": "ArcContextMenuElementInfo",
+      "selector": "dictionarySuggestions",
+      "imp_va": "0x443f654",
+      "body_status": "available",
+      "behavior": "Requires engaged native state or traps. Gets a temporary suggestion vector via 0x43342a4, converts each UTF-16 element with 0x1d9fb90 and returns the constructed NSMutableArray, including an empty array; no copy is sent."
+    },
+    {
+      "class_name": "ArcCommandBarRankingExample",
+      "selector": "input",
+      "imp_va": "0x4401ca0",
+      "body_status": "available",
+      "behavior": "Extensions category copies native example, constructs ArcCommandBarRankingInput from input subobject, then cleans temporary example."
+    },
+    {
+      "class_name": "ArcCommandBarRankingExample",
+      "selector": "candidates",
+      "imp_va": "0x4401f34",
+      "body_status": "available_incoherent_pseudocode",
+      "behavior": "Incoherent pseudocode: apparent temporary-vector cleanup/count reset precedes array construction/reuse; candidate initializer arguments contain object-to-bool casts and in_stack values. Array and ArcCommandBarRankingCandidate allocations show conversion intent only. Array contents, argument mapping and lifetime are unresolved; no actual engine use-after-free, empty-result or corrupt-boundary conclusion follows."
+    }
+  ],
+  "object_return_BOOL_wording": [
+    {
+      "class_name": "ArcWebContentsMediaSession",
+      "selector": "getMediaContentTypes:",
+      "imp_va": "0x441a848",
+      "body_status": "available",
+      "behavior": "Requires engaged native session or traps. Builds NSMutableIndexSet from native result values below 4 and returns its copy on success, including an empty set; on failure calls 0x4402548 for NSError conversion and returns nil. Result is an object, not BOOL."
+    }
+  ],
+  "type_warnings": [
+    {
+      "class_name": "ArcAnnotatedVisit",
+      "selector": "toAnnotatedVisit",
+      "imp_va": "0x4400d54",
+      "body_status": "available_signature_artifact",
+      "behavior": "Returns owned native record: allocates/copies present payload via 0x4336aac; absent payload creates default 0x150-byte record. Ghidra reports type propagation not settling."
+    },
+    {
+      "class_name": "ArcAIService",
+      "selector": "evaluateCommandBarRanking:completion:",
+      "imp_va": "0x43d9ab8",
+      "body_status": "available_signature_artifact",
+      "behavior": "Enumerates input examples, copies the native service handle and captures completion before forwarding to 0x429d6b8; collection helpers include 0x43dab74, 0x43daef4 and 0x43db22c. Ghidra explicitly warns Type propagation algorithm not settling; displayed extra arguments and aggregate semantics are untrusted. Export remains available; function-boundary corruption is not established."
+    },
+    {
+      "class_name": "ArcAIService",
+      "selector": "trainCommandBarRanking:completion:",
+      "imp_va": "0x43d9fd4",
+      "body_status": "available_signature_artifact",
+      "behavior": "Enumerates input examples, copies the native service handle and captures completion before forwarding to 0x429e884; collection helpers include 0x43dab74, 0x43daef4 and 0x43db22c. Ghidra explicitly warns Type propagation algorithm not settling; displayed extra arguments and aggregate semantics are untrusted. Export remains available; function-boundary corruption is not established."
+    }
+  ],
+  "zeroing_annotations": [
+    {
+      "class_name": "ArcBrowserContextAutocomplete",
+      "selector": "initWithAutocompleteController:",
+      "imp_va": "0x43ecb50",
+      "body_status": "available",
+      "behavior": "Adopts the supplied by-value native controller owner into self+8 and disposes the previous owner via 0x42c33cc and 0x5810. The successful path does not zero the incoming source; zero stores are old-owner or failed-init cleanup. Caller-side move and full ownership ABI remain unverified."
+    }
+  ],
+  "weak_owner_initializers": [
+    {
+      "class_name": "ArcWebContentsMediaSession",
+      "selector": "init:forWebContents:",
+      "imp_va": "0x441a1c4",
+      "body_status": "available_signature_artifact",
+      "behavior": "Copies native shared-handle state and stores a weak owner after NSObject init. Ghidra signature/argument-propagation artifact: unused param_4 and owner rendered from the aggregate. Raw entry saves x2 as the handle address and x3 as owner; handle words are loaded through saved x2 and saved x3 feeds the weak-store call. This is local register evidence, not a complete C++ ABI guarantee."
+    },
+    {
+      "class_name": "ArcWebContentsThumbnailsGenerator",
+      "selector": "init:forWebContents:",
+      "imp_va": "0x441c3c0",
+      "body_status": "available_signature_artifact",
+      "behavior": "Copies native shared-handle state and stores a weak owner after NSObject init. Ghidra signature/argument-propagation artifact: unused param_4 and owner rendered from the aggregate. Raw entry saves x2 as the handle address and x3 as owner; handle words are loaded through saved x2 and saved x3 feeds the weak-store call. This is local register evidence, not a complete C++ ABI guarantee."
+    }
+  ]
+}

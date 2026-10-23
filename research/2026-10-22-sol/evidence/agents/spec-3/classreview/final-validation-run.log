@@ -1,0 +1,64 @@
+{
+  "classes": 38,
+  "method_rows": 491,
+  "unique_imps": 418,
+  "exact_body_byte_checks": 505,
+  "source_hash_checks": 22,
+  "method_identity_binary_and_dyld": true,
+  "otool_type_imp_rows": 491,
+  "all_layout_and_ivar_tables_match": true,
+  "all_matrix_identities_exactly_once": true,
+  "raw_simple_accessor_rows": 52,
+  "app_bl_target_verified": true,
+  "reported_span_header_differences": 16,
+  "unmapped_citations": [
+    {
+      "class_name": "ArcBrowserContext",
+      "va": "0x443f1968",
+      "status": "UNMAPPED"
+    },
+    {
+      "class_name": "ArcBrowserContext",
+      "va": "0x443f21a8",
+      "status": "UNMAPPED"
+    }
+  ],
+  "body_status_counts": {
+    "available": 483,
+    "available_pseudocode_incorrect_raw_verified": 4,
+    "available_prototype_malformed": 3,
+    "available_semantics_suspect": 1
+  },
+  "semantic_status_counts": {
+    "local_body_observed": 169,
+    "local_field_observed": 115,
+    "bridge_reviewed_partial": 206,
+    "unresolved": 1
+  },
+  "limits": "Provenance and inventory checks are exhaustive; behavioral review scope is separately recorded in report.md and semantic-review.tsv."
+}
+{
+  "reviewed_classes": 38,
+  "findings": 9,
+  "severity_counts": {
+    "high": 2,
+    "medium": 6,
+    "low": 1
+  },
+  "class_results": {
+    "accepted_with_limits": 29,
+    "requires_correction": 8,
+    "accepted_incomplete": 1
+  },
+  "selected_unique_corpus_bodies": 158,
+  "scope": "All class prose and method declarations reviewed; bodies/bridge callees selected explicitly. Other trivial accessors and native backends sampled, not semantically audited exhaustively."
+}
+{
+  "classes": 38,
+  "method_rows": 491,
+  "findings": 9,
+  "classes_requiring_correction": 8,
+  "selected_bodies_validated": 158,
+  "snapshot_files_unchanged": 40,
+  "result": "PASS inventory/provenance/review structure; semantic corrections remain publication gates"
+}

@@ -1,0 +1,91 @@
+// ==== 0x43e21d8  ArcBrowser::deleteAutocompleteMatch:  (488 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcBrowser::deleteAutocompleteMatch_(ID param_1,SEL param_2,ID param_3)
+
+{
+  long *plVar1;
+  long lVar2;
+  code *pcVar3;
+  long *plVar4;
+  undefined8 local_58;
+  long *local_50;
+  byte local_48;
+  
+  if (param_3 == 0) {
+    return;
+  }
+  _objc_msgSend(param_3,"autocomplete_match",&local_58);
+  plVar1 = local_50;
+  if (local_48 == 0) {
+    return;
+  }
+  if (local_50 != (long *)0x0) {
+    LOAcquire();
+    lVar2 = local_50[1];
+    local_50[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 == 0) {
+      plVar4 = local_50 + 2;
+      (**(code **)(*local_50 + 0x10))(local_50);
+      if (*plVar4 != 0) {
+        LOAcquire();
+        lVar2 = plVar1[2];
+        plVar1[2] = lVar2 + -1;
+        LORelease();
+        if (lVar2 != 0) goto LAB_043e223c;
+      }
+      pcVar3 = *(code **)(*plVar1 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(plVar1,0x20);
+      }
+      else {
+        (*pcVar3)(plVar1);
+      }
+    }
+  }
+LAB_043e223c:
+  if ((*(byte *)(param_1 + 0x38) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x43e23bc);
+    (*pcVar3)();
+  }
+  _objc_msgSend(param_3,"autocomplete_match",&local_58);
+  if ((local_48 & 1) != 0) {
+    lVar2 = *(long *)(*(long *)(param_1 + 0x28) + 0x108);
+    if (((lVar2 == 0) || (FUN_0bd58aa0(lVar2,local_58), local_48 != 0)) && (local_50 != (long *)0x0)
+       ) {
+      LOAcquire();
+      lVar2 = local_50[1];
+      local_50[1] = lVar2 + -1;
+      LORelease();
+      if (lVar2 == 0) {
+        (**(code **)(*local_50 + 0x10))(local_50);
+        if (local_50[2] != 0) {
+          LOAcquire();
+          lVar2 = local_50[2];
+          local_50[2] = lVar2 + -1;
+          LORelease();
+          if (lVar2 != 0) {
+            return;
+          }
+        }
+        pcVar3 = *(code **)(*local_50 + 0x20);
+        if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+          FUN_00005810(local_50,0x20);
+        }
+        else {
+          (*pcVar3)(local_50);
+        }
+      }
+    }
+    return;
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_04b08a00();
+}
+
+

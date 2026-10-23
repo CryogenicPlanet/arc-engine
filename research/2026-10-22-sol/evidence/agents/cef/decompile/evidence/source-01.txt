@@ -1,0 +1,17 @@
+17: WebstoreInstallWithPrompt::WebstoreInstallWithPrompt(
+18:     const std::string& webstore_item_id,
+19:     Profile* profile,
+20:     gfx::NativeWindow parent_window,
+21:     Callback callback)
+22:     : WebstoreStandaloneInstaller(webstore_item_id,
+23:                                   profile,
+24:                                   std::move(callback)),
+25:       show_post_install_ui_(true),
+26:       dummy_web_contents_(
+27:           WebContents::Create(WebContents::CreateParams(profile))),
+28:       parent_window_(parent_window) {
+29:   if (parent_window_)
+30:     parent_window_tracker_ = ui::NativeWindowTracker::Create(parent_window);
+31:   dummy_web_contents_->SetOwnerLocationForDebug(FROM_HERE);
+32:   set_install_source(WebstoreInstaller::INSTALL_SOURCE_OTHER);
+33: }

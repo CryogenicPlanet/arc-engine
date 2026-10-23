@@ -1,0 +1,563 @@
+{
+  "class_name": "ArcExtensionInfo",
+  "metadata_va": "0xe37d4c8",
+  "metadata_file_offset": "0xe37d4c8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2ab160",
+  "instance_start": 8,
+  "instance_size": 232,
+  "ivars": [
+    {
+      "record_va": "0xe2ab058",
+      "offset": 8,
+      "name": "_extension_info",
+      "type": "{optional<arc::ExtensionInfo>=\"\"(?=\"__null_state_\"c\"__val_\"{ExtensionInfo=\"name\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"id\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"url\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"description\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"permissions\"{vector<std::u16string, std::allocator<std::u16string>>=\"__layout_\"{__vector_layout<std::u16string, std::allocator<std::u16string>>=\"__begin_\"^v\"__size_\"Q\"__capacity_\"Q}}\"icon\"{Image=\"_vptr$Image\"^^?\"impl_\"{shared_ptr<arc::ImageImpl>=\"__ptr_\"^{ImageImpl}\"__cntrl_\"^{__shared_weak_count}}}\"rating\"d\"num_ratings\"i\"enabled\"B\"has_action\"B\"version\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"omnibox_keyword\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"from_webstore\"B})\"__engaged_\"B}",
+      "alignment": 3,
+      "size": 224
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "mutableExtensionInfo", "type_encoding": "^v16@0:8", "imp": "0x442f158", "method_record_va": "0xd77b154", "selector_va": "0xd7620d3", "dyld_line": 2482, "imp_file_offset": "0x442f158", "body_name": "ArcExtensionInfo::mutableExtensionInfo", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1070138, "body_length": 351, "failed": 0, "truncated": false}
+// ==== 0x442f158  ArcExtensionInfo::mutableExtensionInfo  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void * ArcExtensionInfo::mutableExtensionInfo(ID param_1,SEL param_2)
+
+{
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    return (void *)(param_1 + 8);
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_04b08a00();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "init", "type_encoding": "@16@0:8", "imp": "0x442f174", "method_record_va": "0xd77b160", "selector_va": "0xd744859", "dyld_line": 2483, "imp_file_offset": "0x442f174", "body_name": "ArcExtensionInfo::init", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1070489, "body_length": 1410, "failed": 0, "truncated": false}
+// ==== 0x442f174  ArcExtensionInfo::init  (164 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionInfo::init(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcExtensionInfo;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0xe0) != '\0') {
+      FUN_04334d2c(IVar1 + 8);
+      *(undefined1 *)(IVar1 + 0xe0) = 0;
+    }
+    *(undefined8 *)(IVar1 + 0x78) = 0;
+    *(undefined8 *)(IVar1 + 0x70) = 0;
+    *(undefined8 *)(IVar1 + 0x68) = 0;
+    *(undefined8 *)(IVar1 + 0x60) = 0;
+    *(undefined8 *)(IVar1 + 0x58) = 0;
+    *(undefined8 *)(IVar1 + 0x50) = 0;
+    *(undefined8 *)(IVar1 + 0x48) = 0;
+    *(undefined8 *)(IVar1 + 0x40) = 0;
+    *(undefined8 *)(IVar1 + 0x38) = 0;
+    *(undefined8 *)(IVar1 + 0x30) = 0;
+    *(undefined8 *)(IVar1 + 0x28) = 0;
+    *(undefined8 *)(IVar1 + 0x20) = 0;
+    *(undefined8 *)(IVar1 + 0x18) = 0;
+    *(undefined8 *)(IVar1 + 0x10) = 0;
+    *(undefined8 *)(IVar1 + 8) = 0;
+    FUN_043386a0(IVar1 + 0x80);
+    *(undefined1 *)(IVar1 + 0xd8) = 0;
+    *(undefined8 *)(IVar1 + 0xd0) = 0;
+    *(undefined8 *)(IVar1 + 200) = 0;
+    *(undefined8 *)(IVar1 + 0xc0) = 0;
+    *(undefined8 *)(IVar1 + 0xb8) = 0;
+    *(undefined8 *)(IVar1 + 0xb0) = 0;
+    *(undefined8 *)(IVar1 + 0xa8) = 0;
+    *(undefined1 *)(IVar1 + 0xe0) = 1;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "initWithExtensionInfo:", "type_encoding": "@24@0:8r^v16", "imp": "0x442f218", "method_record_va": "0xd77b16c", "selector_va": "0xd757174", "dyld_line": 2484, "imp_file_offset": "0x442f218", "body_name": "ArcExtensionInfo::initWithExtensionInfo:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1071899, "body_length": 618, "failed": 0, "truncated": false}
+// ==== 0x442f218  ArcExtensionInfo::initWithExtensionInfo:  (116 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcExtensionInfo::initWithExtensionInfo_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcExtensionInfo;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0xe0) != '\0') {
+      FUN_04334d2c(IVar1 + 8);
+      *(undefined1 *)(IVar1 + 0xe0) = 0;
+    }
+    FUN_04334f1c(IVar1 + 8,param_3);
+    *(undefined1 *)(IVar1 + 0xe0) = 1;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "name", "type_encoding": "@16@0:8", "imp": "0x442f28c", "method_record_va": "0xd77b178", "selector_va": "0xd744fc6", "dyld_line": 2485, "imp_file_offset": "0x442f28c", "body_name": "ArcExtensionInfo::name", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1072517, "body_length": 702, "failed": 0, "truncated": false}
+// ==== 0x442f28c  ArcExtensionInfo::name  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionInfo::name(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  code *pcVar4;
+  ID IVar5;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    cVar3 = *(char *)(param_1 + 0x1f);
+    plVar1 = (long *)*(long *)(param_1 + 8);
+    if (-1 < (long)cVar3) {
+      plVar1 = (long *)(param_1 + 8);
+    }
+    lVar2 = *(long *)(param_1 + 0x10);
+    if (-1 < cVar3) {
+      lVar2 = (long)cVar3;
+    }
+    IVar5 = FUN_01c391bc(plVar1,lVar2);
+    return IVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x442f2bc);
+  (*pcVar4)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "id", "type_encoding": "@16@0:8", "imp": "0x442f2bc", "method_record_va": "0xd77b184", "selector_va": "0xd75829f", "dyld_line": 2486, "imp_file_offset": "0x442f2bc", "body_name": "ArcExtensionInfo::id", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1073219, "body_length": 704, "failed": 0, "truncated": false}
+// ==== 0x442f2bc  ArcExtensionInfo::id  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionInfo::id(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  code *pcVar4;
+  ID IVar5;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    cVar3 = *(char *)(param_1 + 0x37);
+    plVar1 = (long *)*(long *)(param_1 + 0x20);
+    if (-1 < (long)cVar3) {
+      plVar1 = (long *)(param_1 + 0x20);
+    }
+    lVar2 = *(long *)(param_1 + 0x28);
+    if (-1 < cVar3) {
+      lVar2 = (long)cVar3;
+    }
+    IVar5 = FUN_01c391bc(plVar1,lVar2);
+    return IVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x442f2ec);
+  (*pcVar4)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "description", "type_encoding": "@16@0:8", "imp": "0x442f2ec", "method_record_va": "0xd77b190", "selector_va": "0xd74484d", "dyld_line": 2487, "imp_file_offset": "0x442f2ec", "body_name": "ArcExtensionInfo::description", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1073923, "body_length": 722, "failed": 0, "truncated": false}
+// ==== 0x442f2ec  ArcExtensionInfo::description  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionInfo::description(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  code *pcVar4;
+  ID IVar5;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    cVar3 = *(char *)(param_1 + 0x67);
+    plVar1 = (long *)*(long *)(param_1 + 0x50);
+    if (-1 < (long)cVar3) {
+      plVar1 = (long *)(param_1 + 0x50);
+    }
+    lVar2 = *(long *)(param_1 + 0x58);
+    if (-1 < cVar3) {
+      lVar2 = (long)cVar3;
+    }
+    IVar5 = FUN_01c391bc(plVar1,lVar2);
+    return IVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x442f31c);
+  (*pcVar4)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "url", "type_encoding": "@16@0:8", "imp": "0x442f31c", "method_record_va": "0xd77b19c", "selector_va": "0xd75187a", "dyld_line": 2488, "imp_file_offset": "0x442f31c", "body_name": "ArcExtensionInfo::url", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1074645, "body_length": 408, "failed": 0, "truncated": false}
+// ==== 0x442f31c  ArcExtensionInfo::url  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionInfo::url(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    IVar2 = FUN_043abd34(param_1 + 0x38);
+    return IVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442f330);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "permissions", "type_encoding": "@16@0:8", "imp": "0x442f330", "method_record_va": "0xd77b1a8", "selector_va": "0xd7620e8", "dyld_line": 2489, "imp_file_offset": "0x442f330", "body_name": "ArcExtensionInfo::permissions", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1075053, "body_length": 1535, "failed": 0, "truncated": false}
+// ==== 0x442f330  ArcExtensionInfo::permissions  (192 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionInfo::permissions(ID param_1,SEL param_2)
+
+{
+  undefined8 *puVar1;
+  long lVar2;
+  char cVar3;
+  code *pcVar4;
+  ID self;
+  undefined8 uVar5;
+  long lVar6;
+  undefined8 *puVar7;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    self = NSMutableArray::arrayWithCapacity_
+                     ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",
+                      *(undefined8 *)(param_1 + 0x70));
+    lVar6 = *(long *)(param_1 + 0x70) * 0x18;
+    if (lVar6 != 0) {
+      puVar7 = *(undefined8 **)(param_1 + 0x68);
+      do {
+        cVar3 = *(char *)((long)puVar7 + 0x17);
+        puVar1 = (undefined8 *)*puVar7;
+        if (-1 < (long)cVar3) {
+          puVar1 = puVar7;
+        }
+        lVar2 = puVar7[1];
+        if (-1 < cVar3) {
+          lVar2 = (long)cVar3;
+        }
+        uVar5 = FUN_01d9fb90(puVar1,lVar2);
+        NSMutableArray::addObject_(self,"addObject:",uVar5);
+        puVar7 = puVar7 + 3;
+        lVar6 = lVar6 + -0x18;
+      } while (lVar6 != 0);
+    }
+    return self;
+  }
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x442f3f0);
+  (*pcVar4)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "icon", "type_encoding": "@16@0:8", "imp": "0x442f3f0", "method_record_va": "0xd77b1b4", "selector_va": "0xd750396", "dyld_line": 2490, "imp_file_offset": "0x442f3f0", "body_name": "ArcExtensionInfo::icon", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1076588, "body_length": 516, "failed": 0, "truncated": false}
+// ==== 0x442f3f0  ArcExtensionInfo::icon  (44 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionInfo::icon(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x442f41c);
+    (*pcVar1)();
+  }
+  if ((**(long **)(param_1 + 0x88) != 0) && (*(long *)(**(long **)(param_1 + 0x88) + 0x18) != 0)) {
+    IVar2 = FUN_02a02ccc();
+    return IVar2;
+  }
+  return 0;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "rating", "type_encoding": "d16@0:8", "imp": "0x442f41c", "method_record_va": "0xd77b1c0", "selector_va": "0xd7620f4", "dyld_line": 2491, "imp_file_offset": "0x442f41c", "body_name": "ArcExtensionInfo::rating", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1077104, "body_length": 386, "failed": 0, "truncated": false}
+// ==== 0x442f41c  ArcExtensionInfo::rating  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+double ArcExtensionInfo::rating(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    return *(double *)(param_1 + 0x98);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442f430);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "numRatings", "type_encoding": "q16@0:8", "imp": "0x442f430", "method_record_va": "0xd77b1cc", "selector_va": "0xd7620fb", "dyld_line": 2492, "imp_file_offset": "0x442f430", "body_name": "ArcExtensionInfo::numRatings", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1077490, "body_length": 400, "failed": 0, "truncated": false}
+// ==== 0x442f430  ArcExtensionInfo::numRatings  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcExtensionInfo::numRatings(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    return (long)*(int *)(param_1 + 0xa0);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442f444);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "enabled", "type_encoding": "B16@0:8", "imp": "0x442f444", "method_record_va": "0xd77b1d8", "selector_va": "0xd762106", "dyld_line": 2493, "imp_file_offset": "0x442f444", "body_name": "ArcExtensionInfo::enabled", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1077890, "body_length": 390, "failed": 0, "truncated": false}
+// ==== 0x442f444  ArcExtensionInfo::enabled  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcExtensionInfo::enabled(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0xa4);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442f458);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "hasAction", "type_encoding": "B16@0:8", "imp": "0x442f458", "method_record_va": "0xd77b1e4", "selector_va": "0xd76210e", "dyld_line": 2494, "imp_file_offset": "0x442f458", "body_name": "ArcExtensionInfo::hasAction", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1078280, "body_length": 394, "failed": 0, "truncated": false}
+// ==== 0x442f458  ArcExtensionInfo::hasAction  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcExtensionInfo::hasAction(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0xa5);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442f46c);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "version", "type_encoding": "@16@0:8", "imp": "0x442f46c", "method_record_va": "0xd77b1f0", "selector_va": "0xd751517", "dyld_line": 2495, "imp_file_offset": "0x442f46c", "body_name": "ArcExtensionInfo::version", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1078674, "body_length": 714, "failed": 0, "truncated": false}
+// ==== 0x442f46c  ArcExtensionInfo::version  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionInfo::version(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  code *pcVar4;
+  ID IVar5;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    cVar3 = *(char *)(param_1 + 0xbf);
+    plVar1 = (long *)*(long *)(param_1 + 0xa8);
+    if (-1 < (long)cVar3) {
+      plVar1 = (long *)(param_1 + 0xa8);
+    }
+    lVar2 = *(long *)(param_1 + 0xb0);
+    if (-1 < cVar3) {
+      lVar2 = (long)cVar3;
+    }
+    IVar5 = FUN_01c391bc(plVar1,lVar2);
+    return IVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x442f49c);
+  (*pcVar4)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "omniboxKeyword", "type_encoding": "@16@0:8", "imp": "0x442f49c", "method_record_va": "0xd77b1fc", "selector_va": "0xd762118", "dyld_line": 2496, "imp_file_offset": "0x442f49c", "body_name": "ArcExtensionInfo::omniboxKeyword", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1079388, "body_length": 727, "failed": 0, "truncated": false}
+// ==== 0x442f49c  ArcExtensionInfo::omniboxKeyword  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionInfo::omniboxKeyword(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  code *pcVar4;
+  ID IVar5;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    cVar3 = *(char *)(param_1 + 0xd7);
+    plVar1 = (long *)*(long *)(param_1 + 0xc0);
+    if (-1 < (long)cVar3) {
+      plVar1 = (long *)(param_1 + 0xc0);
+    }
+    lVar2 = *(long *)(param_1 + 200);
+    if (-1 < cVar3) {
+      lVar2 = (long)cVar3;
+    }
+    IVar5 = FUN_01c391bc(plVar1,lVar2);
+    return IVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x442f4cc);
+  (*pcVar4)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "fromWebstore", "type_encoding": "B16@0:8", "imp": "0x442f4cc", "method_record_va": "0xd77b208", "selector_va": "0xd762127", "dyld_line": 2497, "imp_file_offset": "0x442f4cc", "body_name": "ArcExtensionInfo::fromWebstore", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1080115, "body_length": 400, "failed": 0, "truncated": false}
+// ==== 0x442f4cc  ArcExtensionInfo::fromWebstore  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcExtensionInfo::fromWebstore(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xe0) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0xd8);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442f4e0);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": "extension_info", "type_encoding": "{optional<arc::ExtensionInfo>=(?=c{ExtensionInfo={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{vector<std::u16string, std::allocator<std::u16string>>={__vector_layout<std::u16string, std::allocator<std::u16string>>=^vQQ}}{Image=^^?{shared_ptr<arc::ImageImpl>=^{ImageImpl}^{__shared_weak_count}}}diBB{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}B})B}16@0:8", "imp": "0x442f4e0", "method_record_va": "0xd77b214", "selector_va": "0xd762134", "dyld_line": 2498, "imp_file_offset": "0x442f4e0", "body_name": "ArcExtensionInfo::extension_info", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1080515, "body_length": 751, "failed": 0, "truncated": false}
+// ==== 0x442f4e0  ArcExtensionInfo::extension_info  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcExtensionInfo::extension_info
+               (optional<arc::ExtensionInfo> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0xd8 = 0;
+  if (*(char *)(param_1 + 0xe0) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::ExtensionInfo> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442f528);
+      (*pcVar1)();
+    }
+    FUN_04334f1c(__return_storage_ptr__,param_1 + 8);
+    *(undefined1 *)&__return_storage_ptr__->field1_0xd8 = 1;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x442f528", "method_record_va": "0xd77b220", "selector_va": "0xd744a39", "dyld_line": 2499, "imp_file_offset": "0x442f528", "body_name": "ArcExtensionInfo::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1081266, "body_length": 269, "failed": 0, "truncated": false}
+// ==== 0x442f528  ArcExtensionInfo::.cxx_destruct  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcExtensionInfo::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0xe0) == '\0') {
+    return;
+  }
+  FUN_04334d2c(param_1 + 8);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionInfo", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x442f53c", "method_record_va": "0xd77b22c", "selector_va": "0xd744a47", "dyld_line": 2500, "imp_file_offset": "0x442f53c", "body_name": "ArcExtensionInfo::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1081535, "body_length": 264, "failed": 0, "truncated": false}
+// ==== 0x442f53c  ArcExtensionInfo::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionInfo::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0xe0) = 0;
+  return param_1;
+}
+
+
+

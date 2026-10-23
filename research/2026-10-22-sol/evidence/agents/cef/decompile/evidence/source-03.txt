@@ -1,0 +1,130 @@
+631: void AutocompleteController::Start(const AutocompleteInput& input) {
+632:   TRACE_EVENT1("omnibox", "AutocompleteController::Start", "text",
+633:                base::UTF16ToUTF8(input.text()));
+634:   // Autocomplete is a critical user journey for Omnibox interaction, we exclude
+635:   // it from additional memory safety checks.
+636:   // TODO(crbug.com/478634529): Optimize and remove if possible.
+637:   base::ScopedSafetyChecksExclusion excluded;
+638: 
+639:   // Providers assume synchronous inputs (`omit_asynchronous_matches() ==
+640:   // true`) are not zero-suggest ones. See crbug.com/1339425.
+641:   DCHECK(!input.omit_asynchronous_matches() || !input.IsZeroSuggest());
+642: 
+643:   // Use a zero-suggest input as the signal that zero-prefix suggestions could
+644:   // have been shown in the autocomplete session.
+645:   if (input.IsZeroSuggest()) {
+646:     internal_result_.set_zero_prefix_enabled_in_session(true);
+647:   }
+648: 
+649:   triggered_feature_service_->ResetInput();
+650: 
+651:   // When input.omit_asynchronous_matches() is true, the AutocompleteController
+652:   // is being used for text classification, which should not notify observers.
+653:   // TODO(manukh): This seems unnecessary; `AutocompleteClassifier` and
+654:   //   `OmniboxController` use separate instances of `AutocompleteController`,
+655:   //   the former doesn't add observers, the latter always uses
+656:   //   `omit_asynchronous_matches()` set to false. Besides, if that weren't the
+657:   //   case, e.g. the classifier did add an observer, then
+658:   //   `AutocompleteController` should respect that, not assume it's a mistake
+659:   //   and silently ignore the observer. Audit all call paths of `::Start()` to
+660:   //   remove this check.
+661:   if (!input.omit_asynchronous_matches()) {
+662:     for (Observer& obs : observers_) {
+663:       obs.OnStart(this, input);
+664:     }
+665:   }
+666: 
+667:   // Must be called before `expire_timer_.Stop()`, modifying `done_`, or
+668:   // modifying `AutocompleteProvider::done_` below. If the previous request has
+669:   // not completed, and therefore has not been logged yet, will log it now.
+670:   // Likewise, if the providers have not completed, and therefore have not been
+671:   // logged yet, will log them now.
+672:   metrics_.OnStart();
+673: 
+674:   // See if we can avoid rerunning autocomplete when the query hasn't changed
+675:   // much.  When the user presses or releases the ctrl key, the desired_tld
+676:   // changes, and when the user finishes an IME composition, inline autocomplete
+677:   // may no longer be prevented.  In both these cases the text itself hasn't
+678:   // changed since the last query, and some providers can do much less work (and
+679:   // get matches back more quickly).  Taking advantage of this reduces flicker.
+680:   //
+681:   // NOTE: This comes after constructing |input_| above since that construction
+682:   // can change the text string (e.g. by stripping off a leading '?').
+683:   const bool minimal_changes = (input_.text() == input.text()) &&
+684:                                (input_.allow_exact_keyword_match() ==
+685:                                 input.allow_exact_keyword_match()) &&
+686:                                (input_.omit_asynchronous_matches() ==
+687:                                 input.omit_asynchronous_matches()) &&
+688:                                (input_.focus_type() == input.focus_type());
+689:   input_ = input;
+690: 
+691:   // Start the new query.
+692:   last_update_type_ = UpdateType::kNone;
+693:   // Use `start_time` rather than `metrics.start_time_` for
+694:   // 'Omnibox.QueryTime2.*'. They differ by 3 μs, which though too small to be
+695:   // distinguished in the ms-scale buckets, is large enough to move the
+696:   // arithmetic mean.
+697:   base::TimeTicks start_time = base::TimeTicks::Now();
+698: 
+699:   for (const auto& provider : providers_) {
+700:     // Starter Pack engines in keyword mode only run a subset of the providers,
+701:     // so call `ShouldRunProvider()` to determine which ones should run.
+702:     if (!ShouldRunProvider(provider.get())) {
+703:       provider->Stop(AutocompleteStopReason::kClobbered);
+704:       continue;
+705:     }
+706: 
+707:     base::TimeTicks provider_start_time = base::TimeTicks::Now();
+708:     provider->Start(input_, minimal_changes);
+709: 
+710:     // `UmaHistogramTimes()` uses 1ms - 10s buckets, whereas this uses 1ms - 5s
+711:     // buckets.
+712:     // TODO(crbug.com/1340291|manukh): This isn't handled by `metrics_` yet. It
+713:     //   will "automatically" move to `metrics_` if we make all providers async.
+714:     //   Otherwise, if we decide not to make all providers async, move this
+715:     //   there.
+716:     base::TimeTicks provider_end_time = base::TimeTicks::Now();
+717:     base::UmaHistogramCustomTimes(
+718:         std::string("Omnibox.ProviderTime2.") + provider->GetName(),
+719:         provider_end_time - provider_start_time, base::Milliseconds(1),
+720:         base::Seconds(5), 20);
+721:   }
+722:   if (!input.omit_asynchronous_matches()) {
+723:     auto elapsed_time = base::TimeTicks::Now() - start_time;
+724:     // `UmaHistogramTimes()` uses 1ms - 10s buckets, whereas this uses 1ms -
+725:     // 1s buckets.
+726:     // TODO(crbug.com/1340291|manukh): This isn't handled by `metrics_` yet.
+727:     //   Do so after we decide whether to make all providers async.
+728:     base::UmaHistogramCustomTimes("Omnibox.QueryTime2", elapsed_time,
+729:                                   base::Milliseconds(1), base::Seconds(1), 50);
+730:     if (input.text().length() < 6) {
+731:       base::UmaHistogramCustomTimes(
+732:           "Omnibox.QueryTime2." + base::NumberToString(input.text().length()),
+733:           elapsed_time, base::Milliseconds(1), base::Seconds(1), 50);
+734:     }
+735:   }
+736:   base::UmaHistogramBoolean("Omnibox.Start.WantAsyncMatches",
+737:                             !input.omit_asynchronous_matches());
+738: 
+739:   // `done` will usually be false, unless all providers are finished after the
+740:   // synchronous pass just completed.
+741:   bool done = GetProviderDoneState() == ProviderDoneState::kAllDone;
+742:   DCHECK(!input_.omit_asynchronous_matches() || done);
+743: 
+744:   UpdateResult(done ? UpdateType::kSyncPassOnly : UpdateType::kSyncPass);
+745: 
+746:   // If the input looks like a query, send a signal predicting that the user is
+747:   // going to issue a search (either to the default search engine or to a
+748:   // keyword search engine, as indicated by the destination_url). This allows
+749:   // any associated service worker to start up early and reduce the latency of a
+750:   // resulting search. However, to avoid a potentially expensive operation, we
+751:   // only do this once per session. Additionally, a default match is expected to
+752:   // be available at this point but we check anyway to guard against an invalid
+753:   // dereference.
+754:   if (input.type() == metrics::OmniboxInputType::QUERY &&
+755:       !search_service_worker_signal_sent_ && internal_result_.default_match()) {
+756:     search_service_worker_signal_sent_ = true;
+757:     provider_client_->StartServiceWorker(
+758:         internal_result_.default_match()->destination_url);
+759:   }
+760: }

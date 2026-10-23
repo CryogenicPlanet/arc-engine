@@ -1,0 +1,1149 @@
+
+### ArcBookmarkTreeNode  -initWithBookmarkTreeNode: 0x43dfd40
+  pcStack_38 = &objc::class_t::ArcBookmarkTreeNode;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x18) == '\0') goto LAB_043dfda0;
+  plVar4 = *(long **)(IVar2 + 0x10);
+  if (plVar4 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar4[1];
+    plVar4[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar4[2];
+        plVar4[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043dfd9c;
+      }
+      pcVar3 = *(code **)(*plVar4 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*pcVar3)(plVar4);
+      }
+    }
+  }
+LAB_043dfd9c:
+  *(undefined1 *)(IVar2 + 0x18) = 0;
+LAB_043dfda0:
+  *(undefined8 *)(IVar2 + 8) = *(undefined8 *)param_3;
+  lVar1 = *(long *)((long)param_3 + 8);
+  *(long *)(IVar2 + 0x10) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = 
+
+### ArcBookmarkTreeNode  -nodeType 0x43dfe80
+  if (*(char *)(param_1 + 0x18) == '\0') {
+    return 0;
+  }
+  uVar1 = *(uint *)(*(long *)(param_1 + 8) + 0x28);
+  if (4 < uVar1 - 1) {
+    uVar1 = 0;
+  }
+  return (ulong)uVar1;
+}
+
+
+
+
+### ArcBookmarkTreeNode  -isFolder 0x43dfea8
+  bVar1 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    bVar1 = *(byte *)(*(long *)(param_1 + 8) + 0x2c);
+  }
+  return bVar1 & 1;
+}
+
+
+
+
+### ArcBookmarkTreeNode  -isUrl 0x43dfec0
+  bVar1 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    bVar1 = *(byte *)(*(long *)(param_1 + 8) + 0x2d);
+  }
+  return bVar1 & 1;
+}
+
+
+
+
+### ArcBookmarkTreeNode  -nodeID 0x43dfed8
+  if (*(char *)(param_1 + 0x18) == '\0') {
+    pcVar2 = &cf___;
+  }
+  else {
+    lVar3 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar3 + 0x5f) < '\0') {
+      FUN_00060a60(&local_40,*(undefined8 *)(lVar3 + 0x48),*(undefined8 *)(lVar3 + 0x50));
+    }
+    else {
+      lStack_38 = *(long *)(lVar3 + 0x50);
+      local_40 = *(undefined1 **)(lVar3 + 0x48);
+      local_30 = *(ulong *)(lVar3 + 0x58);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar3 = lStack_38;
+    if (-1 < (long)local_30) {
+      lVar3 = (long)local_30._7_1_;
+    }
+    pcVar2 = (cfstringStruct *)FUN_01c391bc(ppuVar1,lVar3);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+  }
+  return (ID)pcVar2;
+}
+
+
+
+
+### ArcBookmarkTreeNode  -uuid 0x43dffa0
+  if (*(char *)(param_1 + 0x18) == '\0') {
+    pcVar2 = &cf___;
+  }
+  else {
+    lVar3 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar3 + 0x47) < '\0') {
+      FUN_00060a60(&local_40,*(undefined8 *)(lVar3 + 0x30),*(undefined8 *)(lVar3 + 0x38));
+    }
+    else {
+      lStack_38 = *(long *)(lVar3 + 0x38);
+      local_40 = *(undefined1 **)(lVar3 + 0x30);
+      local_30 = *(ulong *)(lVar3 + 0x40);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar3 = lStack_38;
+    if (-1 < (long)local_30) {
+      lVar3 = (long)local_30._7_1_;
+    }
+    pcVar2 = (cfstringStruct *)FUN_01c391bc(ppuVar1,lVar3);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+  }
+  return (ID)pcVar2;
+}
+
+
+
+
+### ArcBookmarkTreeNode  -parentNodeID 0x43e0068
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    lVar4 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar4 + 0x77) < '\0') {
+      FUN_00060a60(&local_40,*(undefined8 *)(lVar4 + 0x60),*(undefined8 *)(lVar4 + 0x68));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0x68);
+      local_40 = *(undefined1 **)(lVar4 + 0x60);
+      local_30 = *(ulong *)(lVar4 + 0x70);
+    }
+    lVar4 = lStack_38;
+    if (-1 < (long)local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    if ((long)local_30._7_1_ < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+    if (lVar4 != 0) {
+      if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+        pcVar2 = (code *)SoftwareBreakpoint(1,0x43e0170);
+        (*pcVar2)();
+      }
+      lVar4 = *(long *)(param_1 + 8);
+      if (*(char *)(lVar4 + 0x77) < '\0') {
+        FUN_00060a60(&local_40,*(undefined8 *)(lVar4 + 0x60),*(undefined8 *)(lVar4 + 0x68));
+      }
+      else {
+        lStack_38 = *(long *)(lVar4 + 0x68);
+        local_40 = *(undefined1 **)(lVar4 + 0x60);
+        local_30 = *(ulong *)(
+
+### ArcBookmarkTreeNode  -index 0x43e0194
+  if (param_1[0x18] == '\0') {
+    return &DAT_ffffffff;
+  }
+  uVar1 = *(uint *)(*(long *)(param_1 + 8) + 0x78);
+  if ((*(uint *)(*(long *)(param_1 + 8) + 0x80) & 1) == 0) {
+    uVar1 = 0xffffffff;
+  }
+  return (char *)(ulong)uVar1;
+}
+
+
+
+
+### ArcBookmarkTreeNode  -url 0x43e01bc
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    lVar3 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar3 + 0x9f) < '\0') {
+      FUN_00060a60(&local_40,*(undefined8 *)(lVar3 + 0x88),*(undefined8 *)(lVar3 + 0x90));
+      param_2 = extraout_x1;
+    }
+    else {
+      lStack_38 = *(long *)(lVar3 + 0x90);
+      local_40 = *(undefined8 *)(lVar3 + 0x88);
+      local_30 = *(ulong *)(lVar3 + 0x98);
+    }
+    lVar3 = lStack_38;
+    if (-1 < (long)local_30) {
+      lVar3 = (long)local_30._7_1_;
+    }
+    if ((long)local_30._7_1_ < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+      param_2 = extraout_x1_00;
+    }
+    if (lVar3 != 0) {
+      if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+        pcVar1 = (code *)SoftwareBreakpoint(1,0x43e02ac);
+        (*pcVar1)();
+      }
+      lVar3 = *(long *)(param_1 + 8);
+      if (*(char *)(lVar3 + 0x9f) < '\0') {
+        FUN_00060a60(&local_40,*(undefined8 *)(lVar3 + 0x88),*(undefined8 *)(lVar3 + 0x90));
+        param_2 = extraout_x1_01;
+      }
+      else {
+        lStack_38 = *(long *)(lV
+
+### ArcBookmarkTreeNode  -title 0x43e02d0
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    lVar4 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar4 + 0xb7) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0xa0),*(undefined8 *)(lVar4 + 0xa8));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0xa8);
+      local_40 = *(undefined1 **)(lVar4 + 0xa0);
+      local_30 = *(long *)(lVar4 + 0xb0);
+    }
+    lVar4 = lStack_38;
+    if (-1 < local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    if ((long)local_30._7_1_ < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+    if (lVar4 != 0) {
+      if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+        pcVar2 = (code *)SoftwareBreakpoint(1,0x43e03d8);
+        (*pcVar2)();
+      }
+      lVar4 = *(long *)(param_1 + 8);
+      if (*(char *)(lVar4 + 0xb7) < '\0') {
+        FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0xa0),*(undefined8 *)(lVar4 + 0xa8));
+      }
+      else {
+        lStack_38 = *(long *)(lVar4 + 0xa8);
+        local_40 = *(undefined1 **)(lVar4 + 0xa0);
+        local_30 = *(long *)(lVar4 + 0xb0);
+      }
+ 
+
+### ArcBookmarkTreeNode  -faviconUrl 0x43e03fc
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    lVar3 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar3 + 0xcf) < '\0') {
+      FUN_00060a60(&local_40,*(undefined8 *)(lVar3 + 0xb8),*(undefined8 *)(lVar3 + 0xc0));
+      param_2 = extraout_x1;
+    }
+    else {
+      lStack_38 = *(long *)(lVar3 + 0xc0);
+      local_40 = *(undefined8 *)(lVar3 + 0xb8);
+      local_30 = *(ulong *)(lVar3 + 200);
+    }
+    lVar3 = lStack_38;
+    if (-1 < (long)local_30) {
+      lVar3 = (long)local_30._7_1_;
+    }
+    if ((long)local_30._7_1_ < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+      param_2 = extraout_x1_00;
+    }
+    if (lVar3 != 0) {
+      if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+        pcVar1 = (code *)SoftwareBreakpoint(1,0x43e04ec);
+        (*pcVar1)();
+      }
+      lVar3 = *(long *)(param_1 + 8);
+      if (*(char *)(lVar3 + 0xcf) < '\0') {
+        FUN_00060a60(&local_40,*(undefined8 *)(lVar3 + 0xb8),*(undefined8 *)(lVar3 + 0xc0));
+        param_2 = extraout_x1_01;
+      }
+      else {
+        lStack_38 = *(long *)(lVa
+
+### ArcBookmarkTreeNode  -dateAdded 0x43e0510
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+    uVar2 = 0;
+  }
+  else {
+    uVar2 = *(undefined8 *)(*(long *)(param_1 + 8) + 0xd0);
+  }
+  IVar1 = NSDate::dateWithTimeIntervalSince1970_
+                    ((ID)&_OBJC_CLASS___NSDate,"dateWithTimeIntervalSince1970:",uVar2);
+  return IVar1;
+}
+
+
+
+
+### ArcBookmarkTreeNode  -dateFolderModified 0x43e0564
+  if ((*(char *)(param_1 + 0x18) != '\0') && (*(char *)(*(long *)(param_1 + 8) + 0x2c) != '\0')) {
+    IVar1 = NSDate::dateWithTimeIntervalSince1970_
+                      ((ID)&_OBJC_CLASS___NSDate,"dateWithTimeIntervalSince1970:",
+                       *(undefined8 *)(*(long *)(param_1 + 8) + 0xd8));
+    return IVar1;
+  }
+  return 0;
+}
+
+
+
+
+### ArcBookmarkTreeNode  -isValid 0x43e05ac
+  if (*(char *)(param_1 + 0x18) == '\0') {
+    return 0;
+  }
+  lVar1 = FUN_042affa0(*(undefined8 *)(param_1 + 8));
+  return (bool)(lVar1 != 0);
+}
+
+
+
+
+### ArcBookmarkTreeNode  -liveChildren 0x43e05dc
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    lStack_78 = 0;
+    local_80 = (const_void__)0x0;
+    local_68 = 0;
+    local_70 = 0;
+    FUN_042b00f4(&local_80,*(undefined8 *)(param_1 + 8));
+    if ((char)local_68 != '\0') {
+      IVar4 = NSMutableArray::new((ID)&_OBJC_CLASS___NSMutableArray,"new");
+      if ((local_68 & 1) != 0) {
+        pvVar1 = local_80;
+        for (lVar8 = lStack_78 << 4; lVar8 != 0; lVar8 = lVar8 + -0x10) {
+          IVar5 = _objc_alloc(&objc::class_t::ArcBookmarkTreeNode);
+          IVar5 = initWithBookmarkTreeNode_(IVar5,"initWithBookmarkTreeNode:",pvVar1);
+          NSMutableArray::addObject_(IVar4,"addObject:",IVar5);
+          pvVar1 = (const_void__)((long)pvVar1 + 0x10);
+        }
+        IVar4 = NSMutableArray::copy(IVar4,"copy");
+        pvVar1 = local_80;
+        if ((char)local_68 == '\0') {
+          return IVar4;
+        }
+        if (local_80 == (const_void__)0x0) {
+          return IVar4;
+        }
+        if (lStack_78 * 0x10 != 0) {
+          lVar8 = lStack_78 * -0x10;
+          pvVar2 = (const_void__)(lStack_78 * 0x10 + (long)local_80);
+       
+
+### ArcBookmarkTreeNode  -node 0x43df53c
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::AIAgent> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43df57c);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x10);
+    pIVar4 = *(Impl **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+### ArcBookmarkTreeNode  -setNode: 0x43df57c
+  cVar1 = *(char *)(param_1 + 0x18);
+  if (cVar1 == (char)param_3->field1_0x10) {
+    if (cVar1 == '\0') {
+      return;
+    }
+    FUN_04331e20(param_1 + 8,param_3);
+    return;
+  }
+  if (cVar1 == '\0') {
+    *(Impl **)(param_1 + 8) = (param_3->field0_0x0).field1.field0_0x0.field0_0x0;
+    p_Var3 = (param_3->field0_0x0).field1.field0_0x0.field1_0x8;
+    *(__shared_weak_count **)(param_1 + 0x10) = p_Var3;
+    if (p_Var3 != (__shared_weak_count *)0x0) {
+      *(long *)(p_Var3 + 8) = *(long *)(p_Var3 + 8) + 1;
+    }
+    *(undefined1 *)(param_1 + 0x18) = 1;
+    return;
+  }
+  plVar5 = *(long **)(param_1 + 0x10);
+  if (plVar5 != (long *)0x0) {
+    LOAcquire();
+    lVar2 = plVar5[1];
+    plVar5[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 == 0) {
+      (**(code **)(*plVar5 + 0x10))(plVar5);
+      if (plVar5[2] != 0) {
+        LOAcquire();
+        lVar2 = plVar5[2];
+        plVar5[2] = lVar2 + -1;
+        LORelease();
+        if (lVar2 != 0) goto LAB_043df5d8;
+      }
+      pcVar4 = *(code **)(*plVar5 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == 
+
+### ArcBookmarkTreeNode  -.cxx_destruct 0x43df69c
+  if ((*(char *)(param_1 + 0x18) != '\0') &&
+     (plVar2 = *(long **)(param_1 + 0x10), plVar2 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x043df75c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+### ArcBookmarkTreeNode  -.cxx_construct 0x43df760
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+
+
+### ArcAutocompleteMatch  -initWithAutocompleteMatch: 0x4438b70
+  pcStack_38 = &objc::class_t::ArcAutocompleteMatch;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x28) == '\0') goto LAB_04438bd0;
+  plVar4 = *(long **)(IVar2 + 0x20);
+  if (plVar4 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar4[1];
+    plVar4[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar4[2];
+        plVar4[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04438bcc;
+      }
+      pcVar3 = *(code **)(*plVar4 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*pcVar3)(plVar4);
+      }
+    }
+  }
+LAB_04438bcc:
+  *(undefined1 *)(IVar2 + 0x28) = 0;
+LAB_04438bd0:
+  *(undefined8 *)(IVar2 + 0x18) = *(undefined8 *)param_3;
+  lVar1 = *(long *)((long)param_3 + 8);
+  *(long *)(IVar2 + 0x20) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8
+
+### ArcAutocompleteMatch  -destinationUrl 0x4438c94
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    puVar2 = (undefined8 *)FUN_007cf864(*(long *)(param_1 + 0x18) + 0x68);
+    if (*(char *)((long)puVar2 + 0x17) < '\0') {
+      FUN_00060a60(&local_40,*puVar2,puVar2[1]);
+    }
+    else {
+      uStack_38 = puVar2[1];
+      local_40 = *puVar2;
+      local_30 = puVar2[2];
+    }
+    IVar3 = FUN_043abd34(&local_40);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4438d20);
+  (*pcVar1)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -destinationUrlSpec 0x4438d44
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    puVar4 = (undefined8 *)FUN_007cf864(*(long *)(param_1 + 0x18) + 0x68);
+    if (*(char *)((long)puVar4 + 0x17) < '\0') {
+      FUN_00060a60(&local_40,*puVar4,puVar4[1]);
+    }
+    else {
+      lStack_38 = puVar4[1];
+      local_40 = (undefined1 *)*puVar4;
+      local_30 = puVar4[2];
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar2 = lStack_38;
+    if (-1 < (long)local_30) {
+      lVar2 = (long)local_30._7_1_;
+    }
+    IVar5 = FUN_01c391bc(ppuVar1,lVar2);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+    return IVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x4438de8);
+  (*pcVar3)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -imageUrl 0x4438e0c
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    puVar2 = (undefined8 *)FUN_007cf864(*(long *)(param_1 + 0x18) + 0x188);
+    if (*(char *)((long)puVar2 + 0x17) < '\0') {
+      FUN_00060a60(&local_40,*puVar2,puVar2[1]);
+    }
+    else {
+      uStack_38 = puVar2[1];
+      local_40 = *puVar2;
+      local_30 = puVar2[2];
+    }
+    IVar3 = FUN_043abd34(&local_40);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4438e98);
+  (*pcVar1)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -imageUrlSpec 0x4438ebc
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    puVar4 = (undefined8 *)FUN_007cf864(*(long *)(param_1 + 0x18) + 0x188);
+    if (*(char *)((long)puVar4 + 0x17) < '\0') {
+      FUN_00060a60(&local_40,*puVar4,puVar4[1]);
+    }
+    else {
+      lStack_38 = puVar4[1];
+      local_40 = (undefined1 *)*puVar4;
+      local_30 = puVar4[2];
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar2 = lStack_38;
+    if (-1 < (long)local_30) {
+      lVar2 = (long)local_30._7_1_;
+    }
+    IVar5 = FUN_01c391bc(ppuVar1,lVar2);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+    return IVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x4438f60);
+  (*pcVar3)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -relevance 0x4438f84
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return *(int *)(*(long *)(param_1 + 0x18) + 8);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4438f9c);
+  (*pcVar1)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -contents 0x4438f9c
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    lVar4 = *(long *)(param_1 + 0x18);
+    if (*(char *)(lVar4 + 0x2af) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0x298),*(undefined8 *)(lVar4 + 0x2a0));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0x2a0);
+      local_40 = *(undefined1 **)(lVar4 + 0x298);
+      local_30 = *(long *)(lVar4 + 0x2a8);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar4 = lStack_38;
+    if (-1 < local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    IVar3 = FUN_01d9fb90(ppuVar1,lVar4);
+    if (local_30 < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x4439040);
+  (*pcVar2)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -matchType 0x4439064
+  if (((*(byte *)(param_1 + 0x28) & 1) != 0) &&
+     (uVar2 = *(uint *)(*(long *)(param_1 + 0x18) + 0x3f4), uVar2 < 0x29)) {
+    FUN_00b89b80(&local_40,(&PTR_s_url_what_you_typed_0e1dcfc8)[uVar2],&uStack_21);
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)cStack_29) {
+      ppuVar1 = &local_40;
+    }
+    if (-1 < cStack_29) {
+      lStack_38 = (long)cStack_29;
+    }
+    IVar4 = FUN_01c391bc(ppuVar1,lStack_38);
+    if (cStack_29 < '\0') {
+      FUN_00005810(local_40,CONCAT17(cStack_29,local_30) & 0x7fffffffffffffff);
+    }
+    return IVar4;
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x44390fc);
+  (*pcVar3)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -providerType 0x4439120
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    FUN_0433190c(&local_38,param_1 + 0x18);
+    pppuVar1 = (undefined8 ***)local_38;
+    if (-1 < (long)cStack_21) {
+      pppuVar1 = &local_38;
+    }
+    if (-1 < cStack_21) {
+      lStack_30 = (long)cStack_21;
+    }
+    IVar3 = FUN_01c391bc(pppuVar1,lStack_30);
+    if (cStack_21 < '\0') {
+      FUN_00005810(local_38,CONCAT17(cStack_21,local_28) & 0x7fffffffffffffff);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x443919c);
+  (*pcVar2)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -inlineAutocompleteText 0x44391c0
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    lVar4 = *(long *)(param_1 + 0x18);
+    if (*(char *)(lVar4 + 0x5f) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0x48),*(undefined8 *)(lVar4 + 0x50));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0x50);
+      local_40 = *(undefined1 **)(lVar4 + 0x48);
+      local_30 = *(long *)(lVar4 + 0x58);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar4 = lStack_38;
+    if (-1 < local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    IVar3 = FUN_01d9fb90(ppuVar1,lVar4);
+    if (local_30 < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x443925c);
+  (*pcVar2)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -description 0x4439280
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    lVar4 = *(long *)(param_1 + 0x18);
+    if (*(char *)(lVar4 + 0x2df) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0x2c8),*(undefined8 *)(lVar4 + 0x2d0));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0x2d0);
+      local_40 = *(undefined1 **)(lVar4 + 0x2c8);
+      local_30 = *(long *)(lVar4 + 0x2d8);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar4 = lStack_38;
+    if (-1 < local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    IVar3 = FUN_01d9fb90(ppuVar1,lVar4);
+    if (local_30 < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x4439324);
+  (*pcVar2)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -additionalData 0x4439348
+  if ((*(byte *)(param_1 + 0x28) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x4439518);
+    (*pcVar4)();
+  }
+  lVar9 = *(long *)(param_1 + 0x18);
+  local_78 = (undefined8 *******)0x0;
+  local_70 = 0;
+  local_80 = &local_78;
+  if (*(long *)(lVar9 + 0x4f8) != 0) {
+    local_78 = (undefined8 *******)FUN_000d14e0(&local_80,*(undefined8 *)(lVar9 + 0x4f0),&local_80);
+    local_78[2] = &local_78;
+    pppppppuVar11 = local_78;
+    do {
+      local_80 = pppppppuVar11;
+      pppppppuVar11 = (undefined8 *******)*local_80;
+    } while ((undefined8 *******)*local_80 != (undefined8 *******)0x0);
+    local_70 = *(undefined8 *)(lVar9 + 0x4f8);
+  }
+  self = NSMutableArray::arrayWithCapacity_
+                   ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",local_70);
+  pppppppuVar11 = local_80;
+  while ((undefined8 ********)pppppppuVar11 != &local_78) {
+    IVar6 = _objc_alloc(&objc::class_t::ArcAutocompleteMatchAdditionalData);
+    cVar3 = *(char *)((long)pppppppuVar11 + 0x37);
+    pppppppuVar1 = (undefined8 *******)pppppppuVar1
+
+### ArcAutocompleteMatch  -hasTabMatch 0x443953c
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    if (*(char *)(*(long *)(param_1 + 0x18) + 0x419) == '\0') {
+      uVar2 = 0;
+    }
+    else {
+      uVar2 = (uint)*(byte *)(*(long *)(param_1 + 0x18) + 0x418);
+    }
+    return uVar2 & 1;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4439568);
+  (*pcVar1)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -allowedToBeDefaultMatch 0x4439568
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return (bool)*(byte *)(*(long *)(param_1 + 0x18) + 100);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4439580);
+  (*pcVar1)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -deletable 0x4439580
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return (bool)*(byte *)(*(long *)(param_1 + 0x18) + 0x14);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4439598);
+  (*pcVar1)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -swapContentsAndDescription 0x4439598
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return (bool)*(byte *)(*(long *)(param_1 + 0x18) + 0x330);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x44395b0);
+  (*pcVar1)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -isFromPrevious 0x44395b0
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return (bool)*(byte *)(*(long *)(param_1 + 0x18) + 0x478);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x44395c8);
+  (*pcVar1)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -isFromKeyword 0x44395c8
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return (bool)*(byte *)(*(long *)(param_1 + 0x18) + 0x450);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x44395e0);
+  (*pcVar1)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -keyword 0x44395e0
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    lVar4 = *(long *)(param_1 + 0x18);
+    if (*(char *)(lVar4 + 0x44f) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0x438),*(undefined8 *)(lVar4 + 0x440));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0x440);
+      local_40 = *(undefined1 **)(lVar4 + 0x438);
+      local_30 = *(long *)(lVar4 + 0x448);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar4 = lStack_38;
+    if (-1 < local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    IVar3 = FUN_01d9fb90(ppuVar1,lVar4);
+    if (local_30 < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x4439684);
+  (*pcVar2)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -fillIntoEdit 0x44396a8
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    lVar4 = *(long *)(param_1 + 0x18);
+    if (*(char *)(lVar4 + 0x2f) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0x18),*(undefined8 *)(lVar4 + 0x20));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0x20);
+      local_40 = *(undefined1 **)(lVar4 + 0x18);
+      local_30 = *(long *)(lVar4 + 0x28);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar4 = lStack_38;
+    if (-1 < local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    IVar3 = FUN_01d9fb90(ppuVar1,lVar4);
+    if (local_30 < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x4439744);
+  (*pcVar2)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -fillIntoEditAdditionalText 0x4439768
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    lVar4 = *(long *)(param_1 + 0x18);
+    if (*(char *)(lVar4 + 0x47) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0x30),*(undefined8 *)(lVar4 + 0x38));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0x38);
+      local_40 = *(undefined1 **)(lVar4 + 0x30);
+      local_30 = *(long *)(lVar4 + 0x40);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar4 = lStack_38;
+    if (-1 < local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    IVar3 = FUN_01d9fb90(ppuVar1,lVar4);
+    if (local_30 < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x4439804);
+  (*pcVar2)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -transition 0x4439828
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    FUN_04331c6c(&local_38,param_1 + 0x18);
+    pppuVar1 = (undefined8 ***)local_38;
+    if (-1 < (long)cStack_21) {
+      pppuVar1 = &local_38;
+    }
+    if (-1 < cStack_21) {
+      lStack_30 = (long)cStack_21;
+    }
+    IVar3 = FUN_01c391bc(pppuVar1,lStack_30);
+    if (cStack_21 < '\0') {
+      FUN_00005810(local_38,CONCAT17(cStack_21,local_28) & 0x7fffffffffffffff);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x44398a4);
+  (*pcVar2)();
+}
+
+
+
+
+### ArcAutocompleteMatch  -duplicates 0x44398c8
+  IVar4 = *(ID *)(param_1 + 8);
+  if (IVar4 == 0) {
+    if ((*(byte *)(param_1 + 0x28) & 1) == 0) {
+LAB_04439aa8:
+                    /* WARNING: Does not return */
+      pcVar6 = (code *)SoftwareBreakpoint(1,0x4439aac);
+      (*pcVar6)();
+    }
+    FUN_04331ae4(&local_78,*(undefined8 *)(param_1 + 0x18));
+    IVar4 = NSMutableArray::arrayWithCapacity_
+                      ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",local_70);
+    pvVar1 = local_78;
+    pvVar2 = local_78;
+    for (lVar8 = local_70 << 4; local_78 = pvVar2, lVar8 != 0; lVar8 = lVar8 + -0x10) {
+      IVar5 = _objc_alloc(&objc::class_t::ArcAutocompleteMatch);
+      IVar5 = initWithAutocompleteMatch_(IVar5,"initWithAutocompleteMatch:",pvVar1);
+      NSMutableArray::addObject_(IVar4,"addObject:",IVar5);
+      pvVar1 = (const_void__)((long)pvVar1 + 0x10);
+      pvVar2 = local_78;
+    }
+    *(ID *)(param_1 + 8) = IVar4;
+    if (pvVar2 != (const_void__)0x0) {
+      if (local_70 * 0x10 != 0) {
+        lVar8 = local_70 * -0x10;
+        pvVar1 = (const_void__)(local_70 * 0x10 + (long)pvVar2);
+        do {
+          i
+
+### ArcAutocompleteMatch  -associatedKeyword 0x4439ba8
+  if (*(ID *)(param_1 + 0x10) != 0) {
+    return *(ID *)(param_1 + 0x10);
+  }
+  if ((*(byte *)(param_1 + 0x28) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x4439cd0);
+    (*pcVar4)();
+  }
+  pvVar2 = (const_void__)FUN_043319d8(*(undefined8 *)(param_1 + 0x18));
+  if (pvVar2 == (const_void__)0x0) {
+    return 0;
+  }
+  IVar3 = _objc_alloc(&objc::class_t::ArcAutocompleteMatch);
+  IVar3 = initWithAutocompleteMatch_(IVar3,"initWithAutocompleteMatch:",pvVar2);
+  *(ID *)(param_1 + 0x10) = IVar3;
+  plVar5 = *(long **)((long)pvVar2 + 8);
+  if (plVar5 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar5[1];
+    plVar5[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar5 + 0x10))(plVar5);
+      if (plVar5[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar5[2];
+        plVar5[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04439c34;
+      }
+      pcVar4 = *(code **)(*plVar5 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+   
+
+### ArcAutocompleteMatch  -autocomplete_match 0x4414800
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x28) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::AutocompleteMatch> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x4414840);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x20);
+    pIVar4 = *(Impl **)(param_1 + 0x18);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x20);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+### ArcAutocompleteMatch  -.cxx_destruct 0x4439d80
+  if ((*(char *)(param_1 + 0x28) != '\0') &&
+     (plVar3 = *(long **)(param_1 + 0x20), plVar3 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04439db4;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_04439db4:
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+
+### ArcAutocompleteMatch  -.cxx_construct 0x4439e5c
+  *(undefined1 *)(param_1 + 0x18) = 0;
+  *(undefined1 *)(param_1 + 0x28) = 0;
+  return param_1;
+}
+
+
+

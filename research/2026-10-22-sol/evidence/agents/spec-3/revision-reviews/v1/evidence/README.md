@@ -1,0 +1,7 @@
+All engine addresses in this evidence directory, including the bounded read-function helper captures, are **ArcCore-1.170.0.arm64 unslid Mach-O VAs**, SHA-256 `69276adaca785a46f2554e7fd18926e7fcdd6aba44ba64400a337427817db3dd`. Filenames under bodies encode these VAs. They do not encode file offsets or assert correct Ghidra boundaries.
+
+The separate app-call-checks.tsv addresses identify **Arc-1.168.0.arm64 unslid Mach-O app VAs**, SHA-256 `4c03750e2a2c4f8843dec4b90db2e0f1c5e4ba01ef2140e3961a6194bcc9d682`. Other copied historical material retains its explicit image context. Hexadecimal field offsets and instruction words are not VAs.
+
+body-checks.tsv distinguishes complete bounded original helper reads from absent exact exported headers. The manual-method-sample.tsv selection describes actual fresh semantic inspection; the larger read/hash inventory does not imply semantic review of every body. Instructions are independently decoded copied-binary bytes. Twelve undecoded words retain raw bytes without assigned semantics. Requested instruction windows are not recovered function extents.
+
+Source records identify exact Chromium/CEF revisions, local files, hashes and numbered windows. They do not establish binary ABI or unchanged implementation. protected-before.json records a before-review hash snapshot; historical preservation is checked separately against available original manifests.

@@ -1,0 +1,71 @@
+# Protocol/callback and older-encoding audit
+
+The pristine Arc **1.168.0 arm64** app corroborates all **26 guide protocols and 200 unique (protocol, kind, selector) identities**. Their 235 physical method entries include 35 duplicate rows with identical raw and extended encodings. All 200 identities have metadata-backed implementations across **18 explicit app adopter classes**, producing 270 class/method implementation rows. This is a declaration/implementation census, not 200 observed engine-to-app callbacks.
+
+Two protocols, **ArcDevToolsProtocolCommand** and **ArcDevToolsProtocolEvent**, are values consumed by execute/subscription APIs. Their five getter identities are explicitly non-callback values. The other 24 protocols contain **195 candidate callback or app-service identities**. Bounded binary checks corroborate static selector sends for **189**, with six left uncorroborated. These are static calls to dynamic receivers, not proof that a particular app instance receives them or that they execute in a real session. No complete behavioral-equivalence claim is made.
+
+The six older encoding unknowns in `../abi/initial/contract.tsv` are **resolved** against pristine ArcCore **1.168.0**, independently keyed by class, category, kind and selector. All six raw encodings match ArcCore **1.170.0**, and their relevant superclass/ObjC ivar layouts match. This does not establish native C++ ABI, callback ownership or complete behavioral equivalence.
+
+## Deliverables and scope
+
+- [protocols.tsv](protocols.tsv): exactly 26 rows, with classification, inheritance, binary corroboration, actual adopters and limits.
+- [callbacks.tsv](callbacks.tsv): exactly 200 identities, preserving required/optional, raw and extended types, app implementation anchors, engine-send evidence, ownership/thread limits and questions.
+- [protocol-specs/](protocol-specs/): 26 declarative/partial semantic specifications, including every typed declaration and exact app IMP/method-entry and engine-send VAs.
+- [older-encoding-audit.tsv](older-encoding-audit.tsv): the six resolved older associations, raw encodings, entry/list/type/IMP VAs and relevant layouts.
+- [actual-metadata-only.tsv](actual-metadata-only.tsv): 7,426 additional physical protocol-method records from parsed non-Arc protocols in the three images, retaining image/protocol/kind/selector and metadata anchors. They are supplementary metadata, not extra Arc callback claims. No additional Arc-named protocol definitions were found beyond the app's 26.
+- [coverage.json](coverage.json), [validation.json](validation.json), [next-requests.tsv](next-requests.tsv), [evidence/](evidence/), [tools/](tools/), [artifacts.sha256](artifacts.sha256).
+
+Read the common context/lead gates, ABI/CEF/Arc-layer/quality stage reports and four class-writer reports before this bounded audit. The inputs remained read only. No older engine code was read or decompiled, and no Ghidra/build/runtime test, remote-machine connection, integration, message send or agent delegation was used. This role wrote only beneath `/home/exedev/work/agents/protocols`.
+
+## Independent metadata and usage evidence
+
+The new parser uses bounded seek/read Mach-O accesses, LC_SEGMENT_64 VA translation, documented chained-pointer formats 2/6, relative/absolute method lists, actual class/category/metaclass lists, protocol lists and fixup-bound superclass names. The small seek/read base is locally adapted from the completed ABI parser; protocol, full app-adopter and older association logic are in [audit.py](tools/audit.py). The validator independently decodes every retained Arc protocol/implementation method entry from its own list flags. It never joins dyld and otool rows by order or treats a protocol entry's third word as an implementation address.
+
+The app has 385 parsed protocol descriptors; both engines have 69 each. The engines' descriptors are non-Arc platform/Chromium protocols. Arc callback sends do not require Arc protocol descriptors to exist in an engine list. This distinction is preserved in every protocol row. All three binary SHA-256 values match the user-provided hashes in [input-pins.tsv](evidence/input-pins.tsv).
+
+Typed declarations use the app's own extended method type array, not guessed names from pseudocode. Pairing follows `getExtendedTypesIndexesForMethod` in Apple objc4 revision **fb265098298302243cd7eeaa1f63f0ba7786dd9a**, [`runtime/objc-runtime-new.mm:4885–4924`](https://github.com/apple-oss-distributions/objc4/blob/fb265098298302243cd7eeaa1f63f0ba7786dd9a/runtime/objc-runtime-new.mm#L4885): prefix counts of preceding required-instance/required-class/optional-instance/optional-class lists plus the actual entry index. Every extended encoding erases exactly to that entry's raw encoding. `protocol_t` and `class_ro_t` layouts are pinned in the matching header at lines 1516 and 1598. [primary-sources.tsv](evidence/primary-sources.tsv) pins local source hashes. These sources explain structures; they do not identify the runtime revision Arc was built with.
+
+The parser scans all 1,937 app classes, rather than only an ADK prefix. It finds URLLoaderClientImpl DataDelegate/StreamDelegate and ADKClientLive BrowserExtensionsLifeCycleManager, which an ADK-only filter omits. Explicit category conformance and methods on adopting classes are preserved. Dynamic classes, inherited subclass conformance and runtime method replacement remain outside this census. Thirteen app implementation encodings add class/block annotations relative to the protocol entry; all 13 match after annotation erasure. Raw strings remain in [app-contract-joins.tsv](evidence/app-contract-joins.tsv).
+
+Both app preference update IMPs `0x1004e82e8/0x1004e82ec` lack exact app export headers. Independent instruction decoding shows **branch veneers to `0x1004e530c`**, whose app body is retained. Their entry instructions are branches, not RET leaves; substantive handling by the shared routine remains unestablished. The app implementation count includes metadata-backed entry points and does not imply substantive handling by every adopter.
+
+The corpus scan verifies all **199 shard hashes**, streams **567,959 headers**, and finds **194 source-send candidates across 153 guide selectors**. Source candidates remain separate from instruction evidence. The binary recognizer checks bounded source candidates plus the 5 MiB Arc-area instruction interval `0x4000000–0x4500000`, tracking selector values into x1 and resolving actual branches/range islands to `_objc_msgSend`. It fails closed on unsupported instructions. An independent focus check supplies one SIMD-related false negative (`updateDevToolsToolbox:`: modifying d1 does not modify x1). Combined evidence has **195 static send sites across 192 selectors / 194 guide identities**: 189 callback/service identities plus the five value identities. [engine-all-static-sends.tsv](evidence/engine-all-static-sends.tsv) is the combined table; receiver ownership and runtime execution remain separately qualified.
+
+All selected text snapshots are capped at 32 KiB and retain immutable source path/offset/length/hash. Export headers and saved function min/end spans do not certify coherent, contiguous function bodies. No body-byte sums or unmatched-stock counts measure proprietary volume, maintenance effort or compatibility. The historical two-level handoff closure is not used as an exhaustive callback graph.
+
+## Consequential contracts
+
+**Startup, profiles and termination.** `0x43eb374` sends `didInitializeBrowserProcess` after a weak load. Native `0x42b1200/0x42b13c4` supplies initialized-state gating and an `InvokeAsync` path; exact task-to-ObjC linkage, queue and global cardinality remain unresolved. Termination `0x43e6ee0` owns copied block storage beyond its caller's temporary copy; profile creation `0x43e8368` reaches `0x42b3d74/0x42b3f34`, but its ObjC completion adapter `0x43eb7a0` has no exact exported header. These two block APIs are additional to the guide's protocol census. Independent app selector-stub branches for initialization, profile creation, termination and delegate registration are in [focus-app-calls.tsv](evidence/focus-app-calls.tsv).
+
+**Downloads and filename selection.** Created/updated/removed bridges `0x404257c/0x4042610/0x404269c` wrap native items and send to weak-loaded app/context references. Vtable `0xdd2bfe0` points to headerless filename bridge `0x4042728`; send `0x404281c` is independently selector-decoded. The declaration includes a double timeout and `void (^)(NSString *)` completion. Instruction `0x40427b0` converts uint32 to double; it does not identify units. App `0x1004e9748` copies completion and helper `0x1004e9ac4` falls back to the default filename when its own weak app delegate is absent. Engine weak-target expiration, timeout units/defaults, late completion and exactly-once behavior remain distinct open questions. Downloads/context setters `0x4041fec/0x43ed9a8` do not share navigation's nil-unregister behavior.
+
+**Navigation.** Bridge `0x4445a58` sends policy at `0x4445abc`, immediately consumes the signed-int64 metadata return and accepts only unsigned **0–11** (`cmp x0,#12`, `b.hs`). Policy ordinal names remain unestablished; a similarly shaped upstream enum is insufficient. `setNavigationDelegate:nil` clears native registration through `0x4375b40`, without proving queued callback cancellation or wrapper bridge destruction.
+
+**Permission and JavaScript dialogs.** UI registration `0x444112c` stores weak app/owner references and vtable `0xda89030`. Vtable targets `0x44462cc`, `0x4446470`, `0x4446608`, `0x4446944`, `0x4446bc8` have no exact corpus headers, but actual alert/confirm/text/before-unload/permission sends are instruction-backed. App extended types declare void, BOOL, NSString and uint64 completion shapes. Alert/confirm retain their constructed block before calling the app. Permission response adapter **`0x4446dcc`** passes unsigned 0–2 through and maps all larger values to 3 before invoking native callable storage. Quiet-UI reason input normalizes 1–5 to themselves and other values to 0 at `0x4446cc0–0x4446ccc`. Names, exactly-once/cancel behavior and presentation-thread guarantees remain unknown. [focus-instructions.tsv](evidence/focus-instructions.tsv) preserves the bytes and resolved import symbols, and [focus-vtables.tsv](evidence/focus-vtables.tsv) preserves bounded slot discovery without certifying the table's full extent.
+
+**DevTools, media and thumbnails.** Command/event value objects are consumed at `0x4415520/0x4415838`, separate from frontend delegate sends (`0x4415fe0/0x441604c/0x44160b8/0x441610c`) and raw transport/event completion blocks. Media position bridge `0x441c08c` constructs ArcMediaPosition; thumbnail bridge `0x441cccc` can send nil for empty native image storage. These local conversions do not prove payload units, queue identity, native view ownership or post-removal delivery guarantees. App main-executor expectations from the ABI report are not promoted to universal engine scheduling guarantees.
+
+## Older unknowns
+
+| Class/category | Selectors | Matching raw encoding |
+|---|---|---|
+| ArcBrowserContext(Extensions) | chatClosed:withReason:; productConnectionClosed:withReason: | `v32@0:8@16@24` |
+| ArcBrowserContext(Extensions) | getChangedContentSettingsForOrigin:; getChangedPermissionsForOrigin: | `@24@0:8@16` |
+| ArcNotification | browserContextQualifiedID | `@16@0:8` |
+| ArcSessionID | identifier | `q16@0:8` |
+
+Shared IMPs remain separate identities: the two context getter names share old/new `0x41491c0/0x43ee38c`, and the two close notifications share `0x4150520/0x43f5cd4`. Superclasses resolve to NSObject; context/notification/session ObjC sizes are 96/40/16 bytes in both versions. The audit compares ivar names/types/offsets/sizes/alignment and strong/weak layout maps, not C++ pointed-to object layouts. No old engine instruction or body comparison was performed.
+
+## Reproduction, validation and remaining work
+
+From `/home/exedev/work/agents/protocols`, the exact full run is:
+
+```sh
+flock /home/exedev/work/heavy.lock /usr/bin/time -v bash initial/tools/reproduce.sh > initial/validation-run.log 2>&1
+```
+
+[validation.json](validation.json) and [validation-run.log](validation-run.log) record **PASS**: 4,471 metadata-entry checks, 512 exact text snapshots, 195 static selector/branch checks, 1,344 instruction byte/file-offset checks, six older encodings and all 199 shard hashes. The full run took **36.20 seconds**, one CPU, **68,220 KiB maximum RSS**. The initial ungated-regex scan took 10:18.87 at 18 MiB RSS; the final tool gates regex work on actual msgSend text. Neither provenance validation nor a source pin is a runtime compatibility test. No package was installed. The analyzer uses bounded file reads, streamed hashes and the preinstalled public LLVM C disassembler API.
+
+Six callback/service selectors still lack a corroborated send: optional Dia resource request, optional extension pinned-order notification, optional `browserContextDidExtensionSystemReady:`, notification `display:`/`close:`, and provisional-navigation redirect. Five have selector references in both engines; redirect was not found in their parsed selrefs. This is an explicit evidence limit, not proof of non-use. [unresolved-selector-refs.tsv](evidence/unresolved-selector-refs.tsv) pins the actual refs.
+
+Next work is specific: repair the function boundaries listed in [next-requests.tsv](next-requests.tsv), especially the five dialog bridges and profile/filename completion adapters; recover permission/navigation enum names and callback cancellation/cardinality; identify delegate task runners and AppKit sequence requirements; trace the six uncorroborated selector routes; and use a future authorized macOS behavioral harness for timeout, late completion, delegate replacement/removal and destruction cases. All shards are present, so these are boundary/semantic requests, not another shard-transfer request. The guide is bounded: separate block APIs and the engine ivar's name-only `ArcWebContentsUserActivityDelegate` reference remain outside its 26 definitions. No complete reachable interface or maintenance-cost estimate follows from this audit.

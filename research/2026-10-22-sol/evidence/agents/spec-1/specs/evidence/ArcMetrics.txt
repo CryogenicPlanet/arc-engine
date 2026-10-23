@@ -1,0 +1,207 @@
+{
+  "class_name": "ArcMetrics",
+  "metadata_va": "0xe37d2e8",
+  "metadata_file_offset": "0xe37d2e8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2aa950",
+  "instance_start": 8,
+  "instance_size": 32,
+  "ivars": [
+    {
+      "record_va": "0xe2aa918",
+      "offset": 8,
+      "name": "_browser_context_metrics",
+      "type": "{optional<arc::BrowserContext::Metrics>=\"\"(?=\"__null_state_\"c\"__val_\"{Metrics=\"impl_\"{shared_ptr<arc::BrowserContext::Metrics::Impl>=\"__ptr_\"^{Impl}\"__cntrl_\"^{__shared_weak_count}}})\"__engaged_\"B}",
+      "size": 24,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2aa940",
+      "name": "browser_context_metrics",
+      "attributes": "T{optional<arc::BrowserContext::Metrics>=(?=c{Metrics={shared_ptr<arc::BrowserContext::Metrics::Impl>=^{Impl}^{__shared_weak_count}}})B},R,N,V_browser_context_metrics"
+    }
+  ]
+}
+
+###  -initWithBrowserContextMetrics: 0x442dcf0 @24@0:8r^v16 available
+
+  ID IVar2;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcMetrics;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x18) == '\0') goto LAB_0442dd50;
+  plVar4 = *(long **)(IVar2 + 0x10);
+  if (plVar4 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar4[1];
+    plVar4[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar4[2];
+        plVar4[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_0442dd4c;
+      }
+      pcVar3 = *(code **)(*plVar4 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*pcVar3)(plVar4);
+      }
+    }
+  }
+LAB_0442dd4c:
+  *(undefined1 *)(IVar2 + 0x18) = 0;
+LAB_0442dd50:
+  *(undefined8 *)(IVar2 + 8) = *(undefined8 *)param_3;
+  lVar1 = *(long *)((long)param_3 + 8);
+  *(long *)(IVar2 + 0x10) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = *(long *)(lVar1 + 8) + 1;
+  }
+  *(undefined1 *)(IVar2 + 0x18) = 1;
+  return IVar2;
+}
+
+
+
+
+###  -getAllSiteEngagementDetails 0x442de14 @16@0:8 available
+
+  const_void__ pvVar1;
+  const_void__ pvVar3;
+  ID self;
+  ID IVar5;
+  const_void__ local_68;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    FUN_042efb64(&local_68,*(undefined8 *)(param_1 + 8));
+    self = NSMutableArray::arrayWithCapacity_
+                     ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",local_60);
+    pvVar1 = local_68;
+    pvVar3 = local_68;
+    for (lVar7 = local_60 << 5; local_68 = pvVar3, lVar7 != 0; lVar7 = lVar7 + -0x20) {
+      IVar5 = _objc_alloc(&objc::class_t::ArcSiteEngagementDetails);
+      IVar5 = ArcSiteEngagementDetails::initWithSiteEngagementDetails_
+                        (IVar5,"initWithSiteEngagementDetails:",pvVar1);
+      NSMutableArray::addObject_(self,"addObject:",IVar5);
+      pvVar1 = (const_void__)((long)pvVar1 + 0x20);
+      pvVar3 = local_68;
+    }
+    if (pvVar3 != (const_void__)0x0) {
+      if (local_60 * 0x20 != 0) {
+        lVar7 = local_60 * -0x20;
+        puVar2 = (undefined8 *)(local_60 * 0x20 + (long)pvVar3);
+        do {
+          puVar6 = puVar2 + -4;
+          if (puVar6 == (undefined8 *)0x0) goto LAB_0442df7c;
+          if (*(char *)((long)puVar2 + -9) < '\0') {
+            FUN_00005810(*puVar6,puVar2[-2] & 0x7fffffffffffffff);
+          }
+          lVar7 = lVar7 + 0x20;
+          puVar2 = puVar6;
+        } while (lVar7 != 0);
+      }
+      local_60 = (long)pvVar3 - (long)local_68 >> 5;
+      FUN_00005810(local_68,local_58 << 5);
+    }
+    return self;
+  }
+LAB_0442df7c:
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x442df80);
+  (*pcVar4)();
+}
+
+
+
+
+###  -browser_context_metrics 0x43df53c {optional<arc::BrowserContext::Metrics>=(?=c{Metrics={shared_ptr<arc::BrowserContext::Metrics::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8 available
+
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::AIAgent> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43df57c);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x10);
+    pIVar4 = *(Impl **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x43df69c v16@0:8 available
+
+  
+  if ((*(char *)(param_1 + 0x18) != '\0') &&
+     (plVar2 = *(long **)(param_1 + 0x10), plVar2 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x043df75c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x43df760 @16@0:8 available
+
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+

@@ -1,0 +1,229 @@
+{
+  "class_name": "ArcVisitCategory",
+  "metadata_va": "0xe37d068",
+  "metadata_file_offset": "0xe37d068",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2aa180",
+  "instance_start": 8,
+  "instance_size": 48,
+  "ivars": [
+    {
+      "record_va": "0xe2aa128",
+      "offset": 8,
+      "name": "_visit_category",
+      "type": "{optional<arc::VisitCategory>=\"\"(?=\"__null_state_\"c\"__val_\"{VisitCategory=\"id\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"weight\"i})\"__engaged_\"B}",
+      "size": 40,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2aa150",
+      "name": "visit_category",
+      "attributes": "T{optional<arc::VisitCategory>=(?=c{VisitCategory={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}i})B},R,N,V_visit_category"
+    },
+    {
+      "record_va": "0xe2aa160",
+      "name": "categoryId",
+      "attributes": "T@\"NSString\",R,C,N"
+    },
+    {
+      "record_va": "0xe2aa170",
+      "name": "weight",
+      "attributes": "Ti,R,N"
+    }
+  ]
+}
+
+###  -mutableVisitCategory 0x442c260 ^v16@0:8 available
+
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return (void *)(param_1 + 8);
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_04b08a00();
+}
+
+
+
+
+###  -initCategoryId:weight: 0x442c27c @28@0:8@16i24 available
+
+  ID IVar2;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcVisitCategory;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 != 0) {
+    if ((*(char *)(IVar2 + 0x28) != '\0') && (*(char *)(IVar2 + 0x1f) < '\0')) {
+      FUN_00005810(*(undefined8 *)(IVar2 + 8),*(ulong *)(IVar2 + 0x18) & 0x7fffffffffffffff);
+    }
+    *(undefined8 *)(IVar2 + 0x20) = 0;
+    *(undefined8 *)(IVar2 + 0x18) = 0;
+    *(undefined8 *)(IVar2 + 0x10) = 0;
+    *(undefined8 *)(IVar2 + 8) = 0;
+    *(undefined1 *)(IVar2 + 0x28) = 1;
+    if (param_3 == 0) {
+      local_58 = 0;
+      uStack_50 = 0;
+      local_48 = 0;
+    }
+    else {
+      FUN_01b356b8(&local_58,param_3);
+    }
+    if ((*(byte *)(IVar2 + 0x28) & 1) == 0) {
+LAB_0442c394:
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442c398);
+      (*pcVar1)();
+    }
+    if (*(char *)(IVar2 + 0x1f) < '\0') {
+      FUN_00005810(*(undefined8 *)(IVar2 + 8),*(ulong *)(IVar2 + 0x18) & 0x7fffffffffffffff);
+      *(undefined8 *)(IVar2 + 0x10) = uStack_50;
+      *(undefined8 *)(IVar2 + 8) = local_58;
+      *(undefined8 *)(IVar2 + 0x18) = local_48;
+      if ((*(byte *)(IVar2 + 0x28) & 1) == 0) goto LAB_0442c394;
+    }
+    else {
+      *(undefined8 *)(IVar2 + 0x10) = uStack_50;
+      *(undefined8 *)(IVar2 + 8) = local_58;
+      *(undefined8 *)(IVar2 + 0x18) = local_48;
+    }
+    *(int *)(IVar2 + 0x20) = param_4;
+  }
+  return IVar2;
+}
+
+
+
+
+###  -initWithVisitCategory: 0x442c398 @24@0:8r^v16 available
+
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcVisitCategory;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0x28) != '\0') {
+      if (*(char *)(IVar1 + 0x1f) < '\0') {
+        FUN_00005810(*(undefined8 *)(IVar1 + 8),*(ulong *)(IVar1 + 0x18) & 0x7fffffffffffffff);
+      }
+      *(undefined1 *)(IVar1 + 0x28) = 0;
+    }
+    if (*(char *)((long)param_3 + 0x17) < '\0') {
+      FUN_00060a60(IVar1 + 8,*(undefined8 *)param_3,*(undefined8 *)((long)param_3 + 8));
+    }
+    else {
+      uVar3 = *(undefined8 *)((long)param_3 + 8);
+      uVar2 = *(undefined8 *)param_3;
+      *(undefined8 *)(IVar1 + 0x18) = *(undefined8 *)((long)param_3 + 0x10);
+      *(undefined8 *)(IVar1 + 0x10) = uVar3;
+      *(undefined8 *)(IVar1 + 8) = uVar2;
+    }
+    *(undefined4 *)(IVar1 + 0x20) = *(undefined4 *)((long)param_3 + 0x18);
+    *(undefined1 *)(IVar1 + 0x28) = 1;
+  }
+  return IVar1;
+}
+
+
+
+
+###  -categoryId 0x43ed470 @16@0:8 available
+
+  ID IVar5;
+  
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    cVar3 = *(char *)(param_1 + 0x1f);
+    plVar1 = (long *)*(long *)(param_1 + 8);
+    if (-1 < (long)cVar3) {
+      plVar1 = (long *)(param_1 + 8);
+    }
+    lVar2 = *(long *)(param_1 + 0x10);
+    if (-1 < cVar3) {
+      lVar2 = (long)cVar3;
+    }
+    IVar5 = FUN_01c391bc(plVar1,lVar2);
+    return IVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x43ed4a0);
+  (*pcVar4)();
+}
+
+
+
+
+###  -weight 0x442c440 i16@0:8 available
+
+  
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return *(int *)(param_1 + 0x20);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442c454);
+  (*pcVar1)();
+}
+
+
+
+
+###  -visit_category 0x442c454 {optional<arc::VisitCategory>=(?=c{VisitCategory={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}i})B}16@0:8 available
+
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  __return_storage_ptr__[1].field0_0x0.field0 = '\0';
+  if (*(char *)(param_1 + 0x28) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::CommandBarRankingModel> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442c4f0);
+      (*pcVar1)();
+    }
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      FUN_00060a60(__return_storage_ptr__,*(undefined8 *)(param_1 + 8),
+                   *(undefined8 *)(param_1 + 0x10));
+    }
+    else {
+      uVar2 = *(undefined8 *)(param_1 + 8);
+      *(undefined8 *)((long)&__return_storage_ptr__->field0_0x0 + 8) =
+           *(undefined8 *)(param_1 + 0x10);
+      *(undefined8 *)&__return_storage_ptr__->field0_0x0 = uVar2;
+      *(undefined8 *)((long)&__return_storage_ptr__->field0_0x0 + 0x10) =
+           *(undefined8 *)(param_1 + 0x18);
+    }
+    (__return_storage_ptr__->field0_0x0).field1.field1_0x18 = *(int *)(param_1 + 0x20);
+    __return_storage_ptr__[1].field0_0x0.field0 = '\x01';
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x43ed510 v16@0:8 available
+
+  if ((*(char *)(param_1 + 0x28) != '\0') && (*(char *)(param_1 + 0x1f) < '\0')) {
+    FUN_00005810(*(undefined8 *)(param_1 + 8),*(ulong *)(param_1 + 0x18) & 0x7fffffffffffffff);
+    return;
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x43ed538 @16@0:8 available
+
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x28) = 0;
+  return param_1;
+}
+
+
+

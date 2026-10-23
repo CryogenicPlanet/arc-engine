@@ -1,0 +1,95 @@
+// ==== 0x43e05dc  ArcBookmarkTreeNode::liveChildren  (516 bytes)
+
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcBookmarkTreeNode::liveChildren(ID param_1,SEL param_2)
+
+{
+  const_void__ pvVar1;
+  const_void__ pvVar2;
+  long lVar3;
+  ID IVar4;
+  ID IVar5;
+  code *pcVar6;
+  long *plVar7;
+  long lVar8;
+  const_void__ local_80;
+  long lStack_78;
+  long local_70;
+  ulong local_68;
+  
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    lStack_78 = 0;
+    local_80 = (const_void__)0x0;
+    local_68 = 0;
+    local_70 = 0;
+    FUN_042b00f4(&local_80,*(undefined8 *)(param_1 + 8));
+    if ((char)local_68 != '\0') {
+      IVar4 = NSMutableArray::new((ID)&_OBJC_CLASS___NSMutableArray,"new");
+      if ((local_68 & 1) != 0) {
+        pvVar1 = local_80;
+        for (lVar8 = lStack_78 << 4; lVar8 != 0; lVar8 = lVar8 + -0x10) {
+          IVar5 = _objc_alloc(&objc::class_t::ArcBookmarkTreeNode);
+          IVar5 = initWithBookmarkTreeNode_(IVar5,"initWithBookmarkTreeNode:",pvVar1);
+          NSMutableArray::addObject_(IVar4,"addObject:",IVar5);
+          pvVar1 = (const_void__)((long)pvVar1 + 0x10);
+        }
+        IVar4 = NSMutableArray::copy(IVar4,"copy");
+        pvVar1 = local_80;
+        if ((char)local_68 == '\0') {
+          return IVar4;
+        }
+        if (local_80 == (const_void__)0x0) {
+          return IVar4;
+        }
+        if (lStack_78 * 0x10 != 0) {
+          lVar8 = lStack_78 * -0x10;
+          pvVar2 = (const_void__)(lStack_78 * 0x10 + (long)local_80);
+          do {
+            if ((const_void__)((long)pvVar2 + -0x10) == (const_void__)0x0) goto LAB_043e07dc;
+            plVar7 = *(long **)((long)pvVar2 + -8);
+            if (plVar7 != (long *)0x0) {
+              LOAcquire();
+              lVar3 = plVar7[1];
+              plVar7[1] = lVar3 + -1;
+              LORelease();
+              if (lVar3 == 0) {
+                (**(code **)(*plVar7 + 0x10))(plVar7);
+                if (plVar7[2] != 0) {
+                  LOAcquire();
+                  lVar3 = plVar7[2];
+                  plVar7[2] = lVar3 + -1;
+                  LORelease();
+                  if (lVar3 != 0) goto LAB_043e0760;
+                }
+                pcVar6 = *(code **)(*plVar7 + 0x20);
+                if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) ||
+                   (pcVar6 == FUN_013efb40)) {
+                  FUN_00005810(plVar7,0x20);
+                }
+                else {
+                  (*pcVar6)(plVar7);
+                }
+              }
+            }
+LAB_043e0760:
+            lVar8 = lVar8 + 0x10;
+            pvVar2 = (const_void__)((long)pvVar2 + -0x10);
+          } while (lVar8 != 0);
+        }
+        lStack_78 = (long)pvVar1 - (long)local_80 >> 4;
+        FUN_00005810(local_80,local_70 << 4);
+        return IVar4;
+      }
+LAB_043e07dc:
+                    /* WARNING: Does not return */
+      pcVar6 = (code *)SoftwareBreakpoint(1,0x43e07e0);
+      (*pcVar6)();
+    }
+  }
+  return 0;
+}
+
+

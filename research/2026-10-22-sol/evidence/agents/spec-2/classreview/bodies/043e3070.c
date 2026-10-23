@@ -1,0 +1,20 @@
+// ==== 0x43e3070  ArcBrowserSidePanel::sidePanelDelegate  (32 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+shared_ptr<(anonymous_namespace)::SidePanelDelegateBridge>
+ArcBrowserSidePanel::sidePanelDelegate(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  shared_ptr<(anonymous_namespace)::SidePanelDelegateBridge> sVar2;
+  
+  sVar2 = *(shared_ptr<(anonymous_namespace)::SidePanelDelegateBridge> *)(param_1 + 0x18);
+  if (*(long *)(param_1 + 0x20) != 0) {
+    plVar1 = (long *)(*(long *)(param_1 + 0x20) + 8);
+    *plVar1 = *plVar1 + 1;
+  }
+  return sVar2;
+}
+
+

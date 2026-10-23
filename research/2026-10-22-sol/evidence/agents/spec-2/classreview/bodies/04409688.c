@@ -1,0 +1,121 @@
+// ==== 0x4409688  ArcNotification::buttons  (736 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcNotification::buttons(ID param_1,SEL param_2)
+
+{
+  undefined8 *puVar1;
+  char cVar2;
+  code *pcVar3;
+  long lVar4;
+  ID IVar5;
+  ID IVar6;
+  ID IVar7;
+  undefined8 *puVar8;
+  long lVar9;
+  long lVar10;
+  long lVar11;
+  long local_78;
+  long local_70;
+  long local_68;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    FUN_0433e888(&local_78,*(undefined8 *)(param_1 + 0x10));
+    lVar9 = local_70;
+    lVar11 = local_78;
+    if (local_78 != 0) {
+      if (local_70 * 0x50 != 0) {
+        lVar4 = local_70 * 0x50 + local_78;
+        lVar10 = local_70 * -0x50;
+        do {
+          if (lVar4 == 0x50) goto LAB_04409978;
+          lVar4 = FUN_0433e338();
+          lVar10 = lVar10 + 0x50;
+        } while (lVar10 != 0);
+      }
+      local_70 = (lVar11 - local_78 >> 4) * -0x3333333333333333;
+      FUN_00005810(local_78,local_68 * 0x50);
+    }
+    if (lVar9 == 0) {
+      IVar5 = 0;
+    }
+    else {
+      IVar5 = _objc_alloc_init(&_OBJC_CLASS___NSMutableArray);
+      if ((*(byte *)(param_1 + 0x20) & 1) == 0) goto LAB_04409978;
+      FUN_0433e888(&local_78,*(undefined8 *)(param_1 + 0x10));
+      lVar11 = local_70 * 0x50;
+      if (lVar11 != 0) {
+        puVar8 = (undefined8 *)(local_78 + 0x30);
+        do {
+          IVar6 = _objc_alloc(&objc::class_t::ArcNotificationButton);
+          cVar2 = *(char *)((long)puVar8 + -0x19);
+          puVar1 = (undefined8 *)puVar8[-6];
+          if (-1 < (long)cVar2) {
+            puVar1 = puVar8 + -6;
+          }
+          lVar9 = puVar8[-5];
+          if (-1 < cVar2) {
+            lVar9 = (long)cVar2;
+          }
+          IVar7 = FUN_01d9fb90(puVar1,lVar9);
+          AXAnnouncementSpec::setAnnouncement_(IVar6,"setTitle:",IVar7);
+          if ((*(long *)puVar8[-2] == 0) || (*(long *)(*(long *)puVar8[-2] + 0x18) == 0)) {
+            IVar7 = 0;
+          }
+          else {
+            IVar7 = FUN_02a02ccc();
+          }
+          AXAnnouncementSpec::setWindow_(IVar6,"setIcon:",IVar7);
+          if (*(char *)(puVar8 + 3) == '\0') {
+            IVar7 = 0;
+          }
+          else {
+            cVar2 = *(char *)((long)puVar8 + 0x17);
+            puVar1 = (undefined8 *)*puVar8;
+            if (-1 < (long)cVar2) {
+              puVar1 = puVar8;
+            }
+            lVar9 = puVar8[1];
+            if (-1 < cVar2) {
+              lVar9 = (long)cVar2;
+            }
+            IVar7 = FUN_01d9fb90(puVar1,lVar9);
+          }
+          RTCVideoEncoderSettings::setName_(IVar6,"setPlaceholder:",IVar7);
+          AXAnnouncementSpec::setPolite_(IVar6,"setIsTextInput:",(uint)*(byte *)(puVar8 + 3));
+          NSMutableArray::addObject_(IVar5,"addObject:",IVar6);
+          puVar8 = puVar8 + 10;
+          lVar11 = lVar11 + -0x50;
+        } while (lVar11 != 0);
+      }
+      lVar11 = local_78;
+      if (local_78 != 0) {
+        if (local_70 * 0x50 != 0) {
+          lVar10 = local_70 * 0x50 + local_78;
+          lVar9 = local_70 * -0x50;
+          do {
+            if (lVar10 == 0x50) goto LAB_04409978;
+            lVar10 = FUN_0433e338();
+            lVar9 = lVar9 + 0x50;
+          } while (lVar9 != 0);
+        }
+        local_70 = (lVar11 - local_78 >> 4) * -0x3333333333333333;
+        FUN_00005810(local_78,local_68 * 0x50);
+      }
+      IVar5 = NSMutableArray::copy(IVar5,"copy");
+    }
+    return IVar5;
+  }
+LAB_04409978:
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x440997c);
+  (*pcVar3)();
+}
+
+

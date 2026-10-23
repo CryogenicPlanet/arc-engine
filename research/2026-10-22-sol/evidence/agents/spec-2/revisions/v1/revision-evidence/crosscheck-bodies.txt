@@ -1,0 +1,153 @@
+INDEX 0x4415b60 ArcWebContentsDevTools::openProtocolConnection:error: path=/home/exedev/work/inputs/decompile/0x44.c offset=488812 C_bytes=2352 failed=0
+// ==== 0x4415b60  ArcWebContentsDevTools::openProtocolConnection:error:  (344 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+ID ArcWebContentsDevTools::openProtocolConnection_error_
+             (ID param_1,SEL param_2,ID param_3,undefined4 param_4,ID *param_5)
+
+{
+  code *pcVar1;
+  uint uVar2;
+  ulong uVar3;
+  ID IVar4;
+  uint *puVar5;
+  uint *local_70;
+  uint *local_68;
+  ulong local_60;
+  ID *local_58 [2];
+  undefined1 *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  if ((*(byte *)(param_1 + 0x30) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x4415cac);
+    (*pcVar1)();
+  }
+  local_58[0] = (ID *)FUN_00008790(8);
+  local_68 = (uint *)0x0;
+  local_60 = 0;
+  *local_58[0] = param_3;
+  local_48 = &LAB_04416690;
+  local_40 = &PTR_FUN_0df6bc88;
+  FUN_04355df8(&local_68,*(undefined8 *)(param_1 + 0x20),local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58[0]);
+  }
+  local_70 = local_68;
+  puVar5 = local_68;
+  if (((ulong)local_68 & 1) == 0) {
+    uVar2 = *local_68;
+    *local_68 = uVar2 + 1;
+    puVar5 = (uint *)(ulong)uVar2;
+  }
+  uVar3 = FUN_04402548(puVar5,&local_70,param_4);
+  if (((ulong)local_70 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if ((uVar3 & 1) == 0) {
+    IVar4 = 0;
+  }
+  else {
+    if (local_68 != (uint *)((long)&MACH_HEADER.magic + 1)) {
+                    /* WARNING: Subroutine does not return */
+      FUN_04b37e18(&local_68);
+    }
+    IVar4 = NSNumber::numberWithInt_
+                      ((ID)&_OBJC_CLASS___NSNumber,"numberWithInt:",local_60 & 0xffffffff);
+  }
+  if (((ulong)local_68 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_38) {
+    return IVar4;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(0);
+}
+
+
+
+INDEX 0x24e39c0 FUN_024e39c0 path=/home/exedev/work/inputs/decompile-extra/batch-f025e06f4ec94a9fb1a918545284f407/0x24.c offset=5575360 C_bytes=1802 failed=0
+// ==== 0x24e39c0  FUN_024e39c0  (304 bytes)
+
+void FUN_024e39c0(long param_1,undefined8 param_2)
+
+{
+  byte bVar1;
+  long lVar2;
+  undefined8 *puVar3;
+  long local_90;
+  undefined8 local_88;
+  undefined1 local_80 [8];
+  undefined8 local_78;
+  undefined2 local_70;
+  undefined8 local_68;
+  undefined8 uStack_60;
+  undefined8 local_58;
+  undefined8 uStack_50;
+  undefined8 local_48;
+  undefined6 uStack_40;
+  undefined2 uStack_3a;
+  undefined6 uStack_38;
+  
+  local_90 = 0;
+  local_88 = 0;
+  FUN_01bd6a88(&local_90);
+  FUN_024e3ca4(param_1 + 0x860);
+  lVar2 = *(long *)(param_1 + 0x58) << 3;
+  if (lVar2 != 0) {
+    puVar3 = *(undefined8 **)(param_1 + 0x50);
+    do {
+      (**(code **)(*(long *)*puVar3 + 0x10))((long *)*puVar3,param_2);
+      lVar2 = lVar2 + -8;
+      puVar3 = puVar3 + 1;
+    } while (lVar2 != 0);
+  }
+  FUN_02835204(param_1,7);
+  FUN_009de658(param_1 + 0x7e8);
+  *(undefined1 *)(param_1 + 0x858) = 0;
+  if (*(long *)(param_1 + 0x640) == 0) {
+    bVar1 = *(byte *)(param_1 + 0x668);
+  }
+  else {
+    bVar1 = 1;
+  }
+  if ((int)param_2 == 0) {
+    local_80[0] = 0;
+    local_78 = 0;
+    local_70 = 0;
+    uStack_60 = 0;
+    local_68 = 0;
+    uStack_50 = 0;
+    local_58 = 0;
+    uStack_40 = 0;
+    local_48 = 0;
+    uStack_3a = 0;
+    uStack_38 = 0;
+    FUN_024e3c20(param_1 + 0x5d8,local_80);
+    FUN_02037160(local_80);
+    FUN_024e3af0(param_1 + 0x570);
+    if ((bVar1 & 1) == 0) goto LAB_024e3a84;
+  }
+  else if (((((int)param_2 != 2) || (0x27 < *(uint *)(param_1 + 0x1b0))) ||
+           ((0xbf80000000U >> ((ulong)*(uint *)(param_1 + 0x1b0) & 0x3f) & 1) == 0)) ||
+          (*(long *)(param_1 + 0x578) != 0)) goto LAB_024e3a84;
+  FUN_04704c1c(param_1);
+LAB_024e3a84:
+  if ((char)local_88 != '\0') {
+    *(int *)(local_90 + 0x48) = *(int *)(local_90 + 0x48) + -1;
+  }
+  return;
+}
+
+
+

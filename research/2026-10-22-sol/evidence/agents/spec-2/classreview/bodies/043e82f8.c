@@ -1,0 +1,19 @@
+// ==== 0x43e82f8  ArcBrowserApplication::setIntFeatureValue:value:  (112 bytes)
+
+/* Function Stack Size: 0x20 bytes */
+
+void ArcBrowserApplication::setIntFeatureValue_value_
+               (ID param_1,SEL param_2,unsigned_long_long param_3,long_long param_4)
+
+{
+  int iVar1;
+  
+  if (((DAT_0e4acbd0 & 1) == 0) && (iVar1 = thunk_FUN_0c44b610(&DAT_0e4acbd0), iVar1 != 0)) {
+    FUN_044d8594(&DAT_0e4acb80,param_3);
+    thunk_FUN_0c44b760(&DAT_0e4acbd0);
+  }
+  FUN_044d9f3c(&DAT_0e4acb80,param_3,param_4);
+  return;
+}
+
+

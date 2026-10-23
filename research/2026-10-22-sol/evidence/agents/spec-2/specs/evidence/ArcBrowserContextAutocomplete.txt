@@ -1,0 +1,217 @@
+{
+  "class_name": "ArcBrowserContextAutocomplete",
+  "metadata_va": "0xe37bee8",
+  "metadata_file_offset": "0xe37bee8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a54b0",
+  "instance_start": 8,
+  "instance_size": 16,
+  "ivars": [
+    {
+      "record_va": "0xe2a5490",
+      "offset": 8,
+      "name": "_controller",
+      "type": "{unique_ptr<arc::ArcAutocompleteController, std::default_delete<arc::ArcAutocompleteController>>=\"__ptr_\"^{ArcAutocompleteController}}",
+      "alignment": 3,
+      "size": 8
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcBrowserContextAutocomplete", "category": "", "protocol": "", "kind": "-", "selector": "initWithAutocompleteController:", "type_encoding": "@24@0:8{unique_ptr<arc::ArcAutocompleteController, std::default_delete<arc::ArcAutocompleteController>>=^{ArcAutocompleteController}}16", "imp": "0x43ecb50", "method_record_va": "0xd7783a0", "selector_va": "0xd758204", "dyld_line": 1524, "imp_file_offset": "0x43ecb50", "body_name": "ArcBrowserContextAutocomplete::initWithAutocompleteController:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4452043, "body_length": 1341, "failed": 0, "truncated": false}
+// ==== 0x43ecb50  ArcBrowserContextAutocomplete::initWithAutocompleteController:  (176 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcBrowserContextAutocomplete::initWithAutocompleteController_
+             (ID param_1,SEL param_2,
+             unique_ptr<arc::ArcAutocompleteController,_std::default_delete<arc::ArcAutocompleteController>>
+             param_3)
+
+{
+  ID IVar1;
+  long lVar2;
+  long *plVar3;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcBrowserContextAutocomplete;
+  local_40 = param_1;
+  IVar1 = NSObject::init((ID)&local_40,"init");
+  if (IVar1 == 0) {
+    if (param_3.field0_0x0 != (ArcAutocompleteController *)0x0) {
+      lVar2 = *(long *)param_3.field0_0x0;
+      *(undefined8 *)param_3.field0_0x0 = 0;
+      if (lVar2 != 0) {
+        FUN_042c33cc();
+      }
+      FUN_00005810(param_3.field0_0x0,8);
+    }
+  }
+  else {
+    plVar3 = *(long **)(IVar1 + 8);
+    *(ArcAutocompleteController **)(IVar1 + 8) = param_3.field0_0x0;
+    if (plVar3 != (long *)0x0) {
+      lVar2 = *plVar3;
+      *plVar3 = 0;
+      if (lVar2 != 0) {
+        FUN_042c33cc();
+      }
+      FUN_00005810(plVar3,8);
+    }
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAutocomplete", "category": "", "protocol": "", "kind": "-", "selector": "autocomplete:cursorPosition:preventInlineAutocomplete:completion:", "type_encoding": "v44@0:8@16q24B32@?36", "imp": "0x43ecc2c", "method_record_va": "0xd7783ac", "selector_va": "0xd758224", "dyld_line": 1525, "imp_file_offset": "0x43ecc2c", "body_name": "ArcBrowserContextAutocomplete::autocomplete:cursorPosition:preventInlineAutocomplete:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4453384, "body_length": 1988, "failed": 0, "truncated": false}
+// ==== 0x43ecc2c  ArcBrowserContextAutocomplete::autocomplete:cursorPosition:preventInlineAutocomplete:completion:  (392 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x2c bytes */
+
+void ArcBrowserContextAutocomplete::
+     autocomplete_cursorPosition_preventInlineAutocomplete_completion_
+               (ID param_1,SEL param_2,ID param_3,long_long param_4,bool param_5,ID param_6,
+               undefined4 param_7)
+
+{
+  ID *pIVar1;
+  ID *pIVar2;
+  undefined **ppuVar3;
+  long *plVar4;
+  undefined8 local_90;
+  undefined8 uStack_88;
+  ulong local_80;
+  ID *local_78;
+  undefined8 uStack_70;
+  code *local_68;
+  undefined **local_60;
+  long local_58;
+  
+  local_58 = *(long *)PTR____stack_chk_guard_0d824020;
+  pIVar1 = (ID *)FUN_00008790(8);
+  *pIVar1 = param_6;
+  plVar4 = *(long **)(param_1 + 8);
+  if (param_3 == 0) {
+    local_90 = 0;
+    uStack_88 = 0;
+    local_80 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_90,param_3);
+  }
+  pIVar2 = (ID *)FUN_00008790(8);
+  *pIVar2 = *pIVar1;
+  ppuVar3 = &PTR_FUN_0df6b868;
+  if (*plVar4 != 0) {
+    uStack_70 = 0;
+    local_68 = FUN_043eceb0;
+    local_60 = &PTR_FUN_0df6b868;
+    local_78 = pIVar2;
+    FUN_042c35e4(*plVar4,&local_90,param_4,param_5,&local_78);
+    if ((code *)local_60[1] != (code *)0x0) {
+      (*(code *)local_60[1])(local_78);
+    }
+    ppuVar3 = (undefined **)&DAT_0c4b3500;
+  }
+  if ((code *)ppuVar3[1] != (code *)0x0) {
+    (*(code *)ppuVar3[1])(pIVar2);
+  }
+  if ((long)local_80 < 0) {
+    FUN_00005810(local_90,local_80 & 0x7fffffffffffffff);
+  }
+  if (pIVar1 != (ID *)0x0) {
+    FUN_00005810(pIVar1,8);
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_58) {
+    return;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(0);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAutocomplete", "category": "", "protocol": "", "kind": "-", "selector": "stop", "type_encoding": "v16@0:8", "imp": "0x43ece08", "method_record_va": "0xd7783b8", "selector_va": "0xd755363", "dyld_line": 1526, "imp_file_offset": "0x43ece08", "body_name": "ArcBrowserContextAutocomplete::stop", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4455372, "body_length": 870, "failed": 0, "truncated": false}
+// ==== 0x43ece08  ArcBrowserContextAutocomplete::stop  (96 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcBrowserContextAutocomplete::stop(ID param_1,SEL param_2)
+
+{
+  code *UNRECOVERED_JUMPTABLE;
+  long lVar1;
+  long lVar2;
+  
+  lVar2 = **(long **)(param_1 + 8);
+  if ((lVar2 != 0) && (*(long *)(lVar2 + 0x70) != 0)) {
+    FUN_024e39c0(*(undefined8 *)(lVar2 + 0x30),0);
+    lVar1 = *(long *)(lVar2 + 0x50);
+    *(undefined8 *)(lVar2 + 0x48) = 0;
+    *(undefined8 **)(lVar2 + 0x50) = &DAT_0c4b3500;
+    UNRECOVERED_JUMPTABLE = *(code **)(lVar1 + 8);
+    if (UNRECOVERED_JUMPTABLE != (code *)0x0) {
+                    /* WARNING: Could not recover jumptable at 0x043ece58. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+      (*UNRECOVERED_JUMPTABLE)(*(undefined8 *)(lVar2 + 0x38));
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAutocomplete", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x43ece68", "method_record_va": "0xd7783c4", "selector_va": "0xd744a39", "dyld_line": 1527, "imp_file_offset": "0x43ece68", "body_name": "ArcBrowserContextAutocomplete::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4456242, "body_length": 475, "failed": 0, "truncated": false}
+// ==== 0x43ece68  ArcBrowserContextAutocomplete::.cxx_destruct  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcBrowserContextAutocomplete::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  long *plVar2;
+  
+  plVar2 = *(long **)(param_1 + 8);
+  *(undefined8 *)(param_1 + 8) = 0;
+  if (plVar2 != (long *)0x0) {
+    lVar1 = *plVar2;
+    *plVar2 = 0;
+    if (lVar1 != 0) {
+      FUN_042c33cc();
+    }
+    FUN_00005810(plVar2,8);
+    return;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAutocomplete", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x407ab00", "method_record_va": "0xd7783d0", "selector_va": "0xd744a47", "dyld_line": 1528, "imp_file_offset": "0x407ab00", "body_name": "RemoteCommandCenterDelegateCocoa::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x40.c", "body_offset": 4117533, "body_length": 256, "failed": 0, "truncated": false}
+// ==== 0x407ab00  RemoteCommandCenterDelegateCocoa::.cxx_construct  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID RemoteCommandCenterDelegateCocoa::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 8) = 0;
+  return param_1;
+}
+
+
+

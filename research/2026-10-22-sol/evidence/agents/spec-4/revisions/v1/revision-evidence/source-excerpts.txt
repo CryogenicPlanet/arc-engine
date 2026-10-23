@@ -1,0 +1,103 @@
+/home/exedev/work/inputs/chromium-156/base/values.h @ d0c02bfad08ec92a6ffcf989e53cd995e6381a4c
+740:   // Constructor for `Value::Type::INT`.
+741:   explicit Value(int value);
+742: 
+743:   // Constructor for `Value::Type::DOUBLE`.
+744:   explicit Value(double value);
+745: 
+746:   // Constructors for `Value::Type::STRING`.
+747:   explicit Value(std::string_view value);
+748:   explicit Value(std::u16string_view value);
+749:   // `char*` and `char16_t*` are needed to provide a more specific overload than
+750:   // the deleted `const T*` overload above.
+751:   explicit Value(const char* value);
+752:   explicit Value(const char16_t* value);
+753:   // `std::string&&` allows for efficient move construction.
+754:   explicit Value(std::string&& value) noexcept;
+755: 
+
+/home/exedev/work/inputs/chromium-156/base/values.cc @ d0c02bfad08ec92a6ffcf989e53cd995e6381a4c
+176: 
+177: Value::Value(int value) : data_(value) {}
+178: 
+179: Value::Value(double value)
+180:     : data_(std::in_place_type_t<DoubleStorage>(), value) {}
+181: 
+182: Value::Value(std::string_view value) : Value(std::string(value)) {}
+183: 
+184: Value::Value(std::u16string_view value) : Value(UTF16ToUTF8(value)) {}
+185: 
+186: Value::Value(const char* value) : Value(std::string(value)) {}
+187: 
+188: Value::Value(const char16_t* value) : Value(UTF16ToUTF8(value)) {}
+189: 
+190: Value::Value(std::string&& value) noexcept : data_(std::move(value)) {
+191:   DCHECK(IsStringUTF8AllowingNoncharacters(GetString()));
+192: }
+193: 
+
+/home/exedev/work/inputs/chromium-156/components/sessions/core/session_types.h @ d0c02bfad08ec92a6ffcf989e53cd995e6381a4c
+180:     TYPE_DEVTOOLS = 3,
+181:     TYPE_APP_POPUP = 4,
+182:   };
+183: 
+184:   // Identifier of the window.
+185:   SessionID window_id;
+186: 
+187:   // Bounds of the window.
+188:   gfx::Rect bounds;
+189: 
+190:   // The workspace in which the window resides.
+191:   std::string workspace;
+192: 
+193:   // Whether the window is visible on all workspaces or not.
+194:   bool visible_on_all_workspaces;
+195: 
+196:   // Index of the selected tab in tabs; -1 if no tab is selected. After restore
+197:   // this value is guaranteed to be a valid index into tabs.
+198:   //
+199:   // NOTE: when the service is creating SessionWindows, initially this
+200:   // corresponds to SessionTab.tab_visual_index, not the index in
+201:   // tabs. When done creating though, this is set to the index in
+202:   // tabs.
+203:   int selected_tab_index;
+204: 
+205:   // Type of the window. Note: This type is used to determine if the window gets
+
+/home/exedev/work/inputs/chromium-156/content/public/browser/web_ui_message_handler.h @ d0c02bfad08ec92a6ffcf989e53cd995e6381a4c
+70:   // OnJavascriptAllowed has been called. Subclasses should override this method
+71:   // to deregister or disabled observers that push JavaScript calls to the page.
+72:   // Any WeakPtrFactory used for async tasks that would talk to the renderer
+73:   // must by invalidated by the subclass when this is called.
+74:   virtual void OnJavascriptDisallowed() {}
+75: 
+76:   // Helper method for responding to Javascript requests initiated with
+77:   // cr.sendWithPromise() (defined in cr.js) for the case where the returned
+78:   // promise should be resolved (request succeeded).
+79:   void ResolveJavascriptCallback(const base::ValueView callback_id,
+80:                                  const base::ValueView response);
+81: 
+82:   // Helper method for responding to Javascript requests initiated with
+83:   // cr.sendWithPromise() (defined in cr.js), for the case where the returned
+84:   // promise should be rejected (request failed).
+85:   void RejectJavascriptCallback(const base::ValueView callback_id,
+86:                                 const base::ValueView response);
+87: 
+88:   // Helper method for notifying Javascript listeners added with
+89:   // cr.addWebUIListener() (defined in cr.js).
+90:   template <typename... Values>
+91:   void FireWebUIListener(std::string_view event_name, const Values&... values) {
+92:     // cr.webUIListenerCallback is a global JS function exposed from cr.js.
+93:     CallJavascriptFunction("cr.webUIListenerCallback", base::Value(event_name),
+94:                            values...);
+95:   }
+96: 
+97:   // Call a Javascript function by sending its name and arguments down to
+98:   // the renderer.  This is asynchronous; there's no way to get the result
+99:   // of the call, and should be thought of more like sending a message to
+100:   // the page.
+101:   // All function names in WebUI must consist of only ASCII characters.
+102:   // These functions will crash if JavaScript is not currently allowed.
+103:   template <typename... Values>
+104:   void CallJavascriptFunction(std::string_view function_name,
+105:                               const Values&... values) {

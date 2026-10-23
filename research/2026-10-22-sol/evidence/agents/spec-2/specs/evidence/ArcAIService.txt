@@ -1,0 +1,2045 @@
+{
+  "class_name": "ArcAIService",
+  "metadata_va": "0xe37db58",
+  "metadata_file_offset": "0xe37db58",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2acc30",
+  "instance_start": 8,
+  "instance_size": 32,
+  "ivars": [
+    {
+      "record_va": "0xe2acbf8",
+      "offset": 8,
+      "name": "_ai_service",
+      "type": "{optional<arc::AIService>=\"\"(?=\"__null_state_\"c\"__val_\"{AIService=\"impl_\"{shared_ptr<arc::AIService::Impl>=\"__ptr_\"^{Impl}\"__cntrl_\"^{__shared_weak_count}}})\"__engaged_\"B}",
+      "alignment": 3,
+      "size": 24
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcAIService", "category": "", "protocol": "", "kind": "-", "selector": "initWithAIService:", "type_encoding": "@24@0:8r^v16", "imp": "0x4439e68", "method_record_va": "0xd77bfe8", "selector_va": "0xd7574e7", "dyld_line": 2821, "imp_file_offset": "0x4439e68", "body_name": "ArcAIService::initWithAIService:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1359415, "body_length": 1468, "failed": 0, "truncated": false}
+// ==== 0x4439e68  ArcAIService::initWithAIService:  (292 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcAIService::initWithAIService_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  long lVar1;
+  ID IVar2;
+  code *pcVar3;
+  long *plVar4;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcAIService;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x18) == '\0') goto LAB_04439ec8;
+  plVar4 = *(long **)(IVar2 + 0x10);
+  if (plVar4 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar4[1];
+    plVar4[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar4[2];
+        plVar4[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04439ec4;
+      }
+      pcVar3 = *(code **)(*plVar4 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*pcVar3)(plVar4);
+      }
+    }
+  }
+LAB_04439ec4:
+  *(undefined1 *)(IVar2 + 0x18) = 0;
+LAB_04439ec8:
+  *(undefined8 *)(IVar2 + 8) = *(undefined8 *)param_3;
+  lVar1 = *(long *)((long)param_3 + 8);
+  *(long *)(IVar2 + 0x10) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = *(long *)(lVar1 + 8) + 1;
+  }
+  *(undefined1 *)(IVar2 + 0x18) = 1;
+  return IVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "", "protocol": "", "kind": "-", "selector": "ai_service", "type_encoding": "{optional<arc::AIService>=(?=c{AIService={shared_ptr<arc::AIService::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8", "imp": "0x43df53c", "method_record_va": "0xd77bff4", "selector_va": "0xd755793", "dyld_line": 2822, "imp_file_offset": "0x43df53c", "body_name": "ArcWebContentsAIAgent::web_contents_ai_agent", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4214856, "body_length": 1155, "failed": 0, "truncated": false}
+// ==== 0x43df53c  ArcWebContentsAIAgent::web_contents_ai_agent  (64 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsAIAgent::web_contents_ai_agent
+               (optional<arc::WebContents::AIAgent> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  long lVar3;
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::AIAgent> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43df57c);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x10);
+    pIVar4 = *(Impl **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x43df69c", "method_record_va": "0xd77c000", "selector_va": "0xd744a39", "dyld_line": 2823, "imp_file_offset": "0x43df69c", "body_name": "ArcWebContentsAIAgent::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4217592, "body_length": 1206, "failed": 0, "truncated": false}
+// ==== 0x43df69c  ArcWebContentsAIAgent::.cxx_destruct  (196 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsAIAgent::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  code *UNRECOVERED_JUMPTABLE;
+  long *plVar2;
+  
+  if ((*(char *)(param_1 + 0x18) != '\0') &&
+     (plVar2 = *(long **)(param_1 + 0x10), plVar2 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x043df75c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x43df760", "method_record_va": "0xd77c00c", "selector_va": "0xd744a47", "dyld_line": 2824, "imp_file_offset": "0x43df760", "body_name": "ArcWebContentsAIAgent::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4218798, "body_length": 274, "failed": 0, "truncated": false}
+// ==== 0x43df760  ArcWebContentsAIAgent::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcWebContentsAIAgent::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "type:", "type_encoding": "v24@0:8@?16", "imp": "0x43d6168", "method_record_va": "0xd7775c8", "selector_va": "0xd75579e", "dyld_line": 4855, "imp_file_offset": "0x43d6168", "body_name": "objc::Categories::ArcAIService_Extensions_::type:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4059920, "body_length": 2025, "failed": 0, "truncated": false}
+// ==== 0x43d6168  objc::Categories::ArcAIService_Extensions_::type:  (388 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::type_
+               (ID param_1,SEL param_2,ID param_3,uint param_4)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_70;
+  long *local_68;
+  byte local_60;
+  ID *local_58 [2];
+  code *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",&local_70,param_3,(ulong)param_4);
+  if ((local_60 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d62e8);
+    (*pcVar2)();
+  }
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_3;
+  local_48 = FUN_043db3b4;
+  local_40 = &PTR_FUN_0df6b298;
+  FUN_042986f8(local_70,local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58[0]);
+  }
+  if ((local_60 != 0) && (local_68 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_68[1];
+    local_68[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_68 + 0x10))(local_68);
+      if (local_68[2] != 0) {
+        LOAcquire();
+        lVar1 = local_68[2];
+        local_68[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d622c;
+      }
+      pcVar2 = *(code **)(*local_68 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_68,0x20);
+      }
+      else {
+        (*pcVar2)(local_68);
+      }
+    }
+  }
+LAB_043d622c:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_38) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "isAvailable", "type_encoding": "B16@0:8", "imp": "0x43d63a0", "method_record_va": "0xd7775d4", "selector_va": "0xd7557a4", "dyld_line": 4856, "imp_file_offset": "0x43d63a0", "body_name": "objc::Categories::ArcAIService_Extensions_::isAvailable", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4061945, "body_length": 1597, "failed": 0, "truncated": false}
+// ==== 0x43d63a0  objc::Categories::ArcAIService_Extensions_::isAvailable  (284 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool objc::Categories::ArcAIService_Extensions_::isAvailable(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  ulong uVar2;
+  code *pcVar3;
+  uint uVar4;
+  long local_48;
+  long *local_40;
+  byte local_38;
+  
+  _objc_msgSend(param_1,"ai_service",&local_48);
+  if ((local_38 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x43d64b8);
+    (*pcVar3)();
+  }
+  lVar1 = *(long *)(local_48 + 0x188);
+  uVar4 = (uint)(*(long *)(local_48 + 400) != 0);
+  if (lVar1 != 0) {
+    uVar2 = FUN_001c5f40(lVar1 + 0x1f8,0);
+    if ((uVar2 & 1) == 0) {
+                    /* WARNING: Does not return */
+      pcVar3 = (code *)SoftwareBreakpoint(0,0x43d64bc);
+      (*pcVar3)();
+    }
+    uVar4 = *(byte *)(lVar1 + 0x1a0) ^ 1;
+    if (local_38 == 0) goto LAB_043d6418;
+  }
+  if (local_40 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = local_40[1];
+    local_40[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_40 + 0x10))(local_40);
+      if (local_40[2] != 0) {
+        LOAcquire();
+        lVar1 = local_40[2];
+        local_40[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d6418;
+      }
+      pcVar3 = *(code **)(*local_40 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(local_40,0x20);
+      }
+      else {
+        (*pcVar3)(local_40);
+      }
+    }
+  }
+LAB_043d6418:
+  return uVar4 & 1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "initialize:callback:", "type_encoding": "v32@0:8@16@?24", "imp": "0x43d64c4", "method_record_va": "0xd7775e0", "selector_va": "0xd7557b0", "dyld_line": 4857, "imp_file_offset": "0x43d64c4", "body_name": "objc::Categories::ArcAIService_Extensions_::initialize:callback:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4063542, "body_length": 3254, "failed": 0, "truncated": false}
+// ==== 0x43d64c4  objc::Categories::ArcAIService_Extensions_::initialize:callback:  (528 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::initialize_callback_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,undefined4 param_5)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined1 auStack_1a8 [144];
+  undefined1 auStack_118 [8];
+  long *local_110;
+  byte local_108;
+  undefined8 local_100;
+  undefined8 uStack_f8;
+  undefined8 local_f0;
+  undefined8 uStack_e8;
+  undefined8 uStack_e0;
+  undefined8 uStack_d8;
+  undefined8 local_d0;
+  undefined8 uStack_c8;
+  undefined8 uStack_c0;
+  undefined8 uStack_b8;
+  undefined8 local_b0;
+  undefined8 uStack_a8;
+  undefined8 uStack_a0;
+  undefined8 uStack_98;
+  undefined8 local_90;
+  undefined8 uStack_88;
+  undefined8 uStack_80;
+  undefined8 uStack_78;
+  ulong local_70;
+  ID *local_68 [2];
+  undefined1 *local_58;
+  undefined **local_50;
+  long local_48;
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  local_70 = 0;
+  uStack_88 = 0;
+  local_90 = 0;
+  uStack_78 = 0;
+  uStack_80 = 0;
+  uStack_a8 = 0;
+  local_b0 = 0;
+  uStack_98 = 0;
+  uStack_a0 = 0;
+  uStack_c8 = 0;
+  local_d0 = 0;
+  uStack_b8 = 0;
+  uStack_c0 = 0;
+  uStack_e8 = 0;
+  local_f0 = 0;
+  uStack_d8 = 0;
+  uStack_e0 = 0;
+  uStack_f8 = 0;
+  local_100 = 0;
+  FUN_043dc8b4(&local_100,param_3);
+  if ((local_70 & 1) == 0) {
+    (**(code **)(param_4 + 0x10))(param_4,1);
+  }
+  else {
+    _objc_msgSend(param_1,"ai_service",auStack_118);
+    if (((local_108 & 1) == 0) || ((local_70 & 1) == 0)) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43d66d0);
+      (*pcVar2)();
+    }
+    FUN_043da310(auStack_1a8,&local_100);
+    local_58 = &LAB_043db42c;
+    local_50 = &PTR_FUN_0df6b2b8;
+    local_68[0] = (ID *)FUN_00008790(8);
+    *local_68[0] = param_4;
+    FUN_04330db4(auStack_118,auStack_1a8,local_68);
+    if ((code *)local_50[1] != (code *)0x0) {
+      (*(code *)local_50[1])(local_68[0]);
+    }
+    FUN_042a3344(auStack_1a8);
+    if ((local_108 != 0) && (local_110 != (long *)0x0)) {
+      LOAcquire();
+      lVar1 = local_110[1];
+      local_110[1] = lVar1 + -1;
+      LORelease();
+      if (lVar1 == 0) {
+        (**(code **)(*local_110 + 0x10))(local_110);
+        if (local_110[2] != 0) {
+          LOAcquire();
+          lVar1 = local_110[2];
+          local_110[2] = lVar1 + -1;
+          LORelease();
+          if (lVar1 != 0) goto LAB_043d663c;
+        }
+        pcVar2 = *(code **)(*local_110 + 0x20);
+        if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+          FUN_00005810(local_110,0x20);
+        }
+        else {
+          (*pcVar2)(local_110);
+        }
+      }
+    }
+  }
+LAB_043d663c:
+  if ((local_70 & 1) != 0) {
+    FUN_042a3344(&local_100);
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_48) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "setUser:email:callback:", "type_encoding": "v40@0:8@16@24@?32", "imp": "0x43d67d0", "method_record_va": "0xd7775ec", "selector_va": "0xd7557c5", "dyld_line": 4858, "imp_file_offset": "0x43d67d0", "body_name": "objc::Categories::ArcAIService_Extensions_::setUser:email:callback:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4066796, "body_length": 2665, "failed": 0, "truncated": false}
+// ==== 0x43d67d0  objc::Categories::ArcAIService_Extensions_::setUser:email:callback:  (580 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x28 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::setUser_email_callback_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5,undefined4 param_6)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_b0;
+  undefined8 uStack_a8;
+  ulong local_a0;
+  undefined8 local_98;
+  undefined8 uStack_90;
+  ulong local_88;
+  undefined8 local_80;
+  long *local_78;
+  byte local_70;
+  ID *local_68 [2];
+  undefined1 *local_58;
+  undefined **local_50;
+  long local_48;
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",&local_80);
+  if ((local_70 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d6a10);
+    (*pcVar2)();
+  }
+  if (param_3 == 0) {
+    local_98 = 0;
+    uStack_90 = 0;
+    local_88 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_98,param_3);
+  }
+  if (param_4 == 0) {
+    local_b0 = 0;
+    uStack_a8 = 0;
+    local_a0 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_b0,param_4);
+  }
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_5;
+  local_58 = &LAB_043db42c;
+  local_50 = &PTR_FUN_0df6b2d8;
+  FUN_04299d84(local_80,&local_98,&local_b0,local_68);
+  if ((code *)local_50[1] != (code *)0x0) {
+    (*(code *)local_50[1])(local_68[0]);
+  }
+  if ((long)local_a0 < 0) {
+    FUN_00005810(local_b0,local_a0 & 0x7fffffffffffffff);
+  }
+  if ((long)local_88 < 0) {
+    FUN_00005810(local_98,local_88 & 0x7fffffffffffffff);
+  }
+  if ((local_70 != 0) && (local_78 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_78[1];
+    local_78[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_78 + 0x10))(local_78);
+      if (local_78[2] != 0) {
+        LOAcquire();
+        lVar1 = local_78[2];
+        local_78[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d6940;
+      }
+      pcVar2 = *(code **)(*local_78 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_78,0x20);
+      }
+      else {
+        (*pcVar2)(local_78);
+      }
+    }
+  }
+LAB_043d6940:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_48) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "enableDataDogTracing:callback:", "type_encoding": "v28@0:8c16@?20", "imp": "0x43d6b08", "method_record_va": "0xd7775f8", "selector_va": "0xd7557dd", "dyld_line": 4859, "imp_file_offset": "0x43d6b08", "body_name": "objc::Categories::ArcAIService_Extensions_::enableDataDogTracing:callback:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4069461, "body_length": 2137, "failed": 0, "truncated": false}
+// ==== 0x43d6b08  objc::Categories::ArcAIService_Extensions_::enableDataDogTracing:callback:  (396 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x1c bytes */
+
+void objc::Categories::ArcAIService_Extensions_::enableDataDogTracing_callback_
+               (ID param_1,SEL param_2,char param_3,ID param_4,uint param_5)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_70;
+  long *local_68;
+  byte local_60;
+  ID *local_58 [2];
+  undefined1 *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",&local_70,(ulong)(byte)param_3,param_4,(ulong)param_5);
+  if ((local_60 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d6c90);
+    (*pcVar2)();
+  }
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_4;
+  local_48 = &LAB_043db42c;
+  local_40 = &PTR_FUN_0df6b2f8;
+  FUN_0429a2e0(local_70,(ulong)(byte)param_3,local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58[0]);
+  }
+  if ((local_60 != 0) && (local_68 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_68[1];
+    local_68[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_68 + 0x10))(local_68);
+      if (local_68[2] != 0) {
+        LOAcquire();
+        lVar1 = local_68[2];
+        local_68[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d6bd4;
+      }
+      pcVar2 = *(code **)(*local_68 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_68,0x20);
+      }
+      else {
+        (*pcVar2)(local_68);
+      }
+    }
+  }
+LAB_043d6bd4:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_38) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "waitForDebuggerToAttach:", "type_encoding": "v20@0:8i16", "imp": "0x43d6d48", "method_record_va": "0xd777604", "selector_va": "0xd7557fc", "dyld_line": 4860, "imp_file_offset": "0x43d6d48", "body_name": "objc::Categories::ArcAIService_Extensions_::waitForDebuggerToAttach:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4071598, "body_length": 1270, "failed": 0, "truncated": false}
+// ==== 0x43d6d48  objc::Categories::ArcAIService_Extensions_::waitForDebuggerToAttach:  (240 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::waitForDebuggerToAttach_
+               (ID param_1,SEL param_2,int param_3)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_38;
+  long *local_30;
+  byte local_28;
+  
+  _objc_msgSend(param_1,"ai_service",&local_38);
+  if ((local_28 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d6e38);
+    (*pcVar2)();
+  }
+  FUN_0429a708(local_38,param_3);
+  if ((local_28 != 0) && (local_30 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_30[1];
+    local_30[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_30 + 0x10))(local_30);
+      if (local_30[2] != 0) {
+        LOAcquire();
+        lVar1 = local_30[2];
+        local_30[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      pcVar2 = *(code **)(*local_30 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_30,0x20);
+      }
+      else {
+        (*pcVar2)(local_30);
+      }
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "crash", "type_encoding": "v16@0:8", "imp": "0x43d6e38", "method_record_va": "0xd777610", "selector_va": "0xd755815", "dyld_line": 4861, "imp_file_offset": "0x43d6e38", "body_name": "objc::Categories::ArcAIService_Extensions_::crash", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4072868, "body_length": 1196, "failed": 0, "truncated": false}
+// ==== 0x43d6e38  objc::Categories::ArcAIService_Extensions_::crash  (232 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::crash(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_38;
+  long *local_30;
+  byte local_28;
+  
+  _objc_msgSend(param_1,"ai_service",&local_38);
+  if ((local_28 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d6f20);
+    (*pcVar2)();
+  }
+  FUN_0429a804(local_38);
+  if ((local_28 != 0) && (local_30 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_30[1];
+    local_30[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_30 + 0x10))(local_30);
+      if (local_30[2] != 0) {
+        LOAcquire();
+        lVar1 = local_30[2];
+        local_30[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      pcVar2 = *(code **)(*local_30 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_30,0x20);
+      }
+      else {
+        (*pcVar2)(local_30);
+      }
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "updateFeatureFlags:completion:", "type_encoding": "v32@0:8@16@?24", "imp": "0x43d6f20", "method_record_va": "0xd77761c", "selector_va": "0xd75581b", "dyld_line": 4862, "imp_file_offset": "0x43d6f20", "body_name": "objc::Categories::ArcAIService_Extensions_::updateFeatureFlags:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4074064, "body_length": 2397, "failed": 0, "truncated": false}
+// ==== 0x43d6f20  objc::Categories::ArcAIService_Extensions_::updateFeatureFlags:completion:  (480 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::updateFeatureFlags_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_88;
+  undefined8 uStack_80;
+  ulong local_78;
+  undefined8 local_70;
+  long *local_68;
+  byte local_60;
+  ID *local_58 [2];
+  undefined1 *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",&local_70,param_3,param_4,(ulong)param_5);
+  if ((local_60 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d70fc);
+    (*pcVar2)();
+  }
+  if (param_3 == 0) {
+    local_88 = 0;
+    uStack_80 = 0;
+    local_78 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_88,param_3);
+  }
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_4;
+  local_48 = &LAB_04045100;
+  local_40 = &PTR_FUN_0df6b318;
+  FUN_0429a920(local_70,&local_88,local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58[0]);
+  }
+  if ((long)local_78 < 0) {
+    FUN_00005810(local_88,local_78 & 0x7fffffffffffffff);
+  }
+  if ((local_60 != 0) && (local_68 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_68[1];
+    local_68[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_68 + 0x10))(local_68);
+      if (local_68[2] != 0) {
+        LOAcquire();
+        lVar1 = local_68[2];
+        local_68[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d7038;
+      }
+      pcVar2 = *(code **)(*local_68 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_68,0x20);
+      }
+      else {
+        (*pcVar2)(local_68);
+      }
+    }
+  }
+LAB_043d7038:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_38) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "embeddingsFor:method:model:completion:", "type_encoding": "v48@0:8@16q24q32@?40", "imp": "0x43d71d4", "method_record_va": "0xd777628", "selector_va": "0xd75583a", "dyld_line": 4863, "imp_file_offset": "0x43d71d4", "body_name": "objc::Categories::ArcAIService_Extensions_::embeddingsFor:method:model:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4076461, "body_length": 4099, "failed": 0, "truncated": false}
+// ==== 0x43d71d4  objc::Categories::ArcAIService_Extensions_::embeddingsFor:method:model:completion:  (768 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x30 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::embeddingsFor_method_model_completion_
+               (ID param_1,SEL param_2,ID param_3,long_long param_4,long_long param_5,ID param_6,
+               undefined4 param_7)
+
+{
+  undefined8 *puVar1;
+  undefined8 uVar2;
+  uint uVar3;
+  code *pcVar4;
+  long lVar5;
+  ID IVar6;
+  undefined8 *puVar7;
+  long lVar8;
+  undefined1 auStack_d0 [8];
+  long *local_c8;
+  byte local_c0;
+  undefined *local_b8;
+  undefined8 uStack_b0;
+  undefined1 *local_a8;
+  undefined *puStack_a0;
+  long *local_98;
+  long local_90;
+  long local_88;
+  ID local_80;
+  undefined4 local_78;
+  undefined4 uStack_74;
+  uint local_70;
+  ID *local_68 [2];
+  undefined1 *local_58;
+  undefined **local_50;
+  long local_48;
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  local_90 = 0;
+  local_88 = 0;
+  local_80 = 0;
+  IVar6 = _objc_msgSend(param_3,"count");
+  if (IVar6 != 0) {
+    if (0xaaaaaaaaaaaaaaa < IVar6) {
+                    /* WARNING: Subroutine does not return */
+      FUN_04047380();
+    }
+    local_90 = FUN_00008790(IVar6 * 0x18);
+    local_88 = 0;
+    local_80 = IVar6;
+  }
+  local_b8 = PTR___NSConcreteGlobalBlock_0d824130;
+  uStack_b0 = 0xd0800000;
+  local_a8 = &LAB_043d763c;
+  puStack_a0 = &DAT_0df6b218;
+  local_98 = &local_90;
+  _objc_msgSend(param_3,"enumerateObjectsUsingBlock:",&local_b8);
+  _objc_msgSend(param_1,"ai_service",auStack_d0);
+  if ((local_c0 & 1) == 0) {
+LAB_043d74c0:
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x43d74c4);
+    (*pcVar4)();
+  }
+  local_70 = 0;
+  local_78 = (undefined4)param_4;
+  if (4 < param_5 + 1) {
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(0x550b,0x43d74c8);
+    (*pcVar4)();
+  }
+  uStack_74 = (undefined4)*(undefined8 *)(&DAT_0c9d7ce0 + (param_5 + 1) * 8);
+  local_70 = (uint)(byte)((ulong)*(undefined8 *)(&DAT_0c9d7ce0 + (param_5 + 1) * 8) >> 0x20);
+  uVar3 = local_70;
+  uVar2 = CONCAT44(uStack_74,local_78);
+  local_58 = &LAB_043db45c;
+  local_50 = &PTR_FUN_0df6b338;
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_6;
+  FUN_04330f4c(auStack_d0,&local_90,uVar2,uVar3,local_68);
+  if ((code *)local_50[1] != (code *)0x0) {
+    (*(code *)local_50[1])(local_68[0]);
+  }
+  if ((local_c0 != 0) && (local_c8 != (long *)0x0)) {
+    LOAcquire();
+    lVar5 = local_c8[1];
+    local_c8[1] = lVar5 + -1;
+    LORelease();
+    if (lVar5 == 0) {
+      (**(code **)(*local_c8 + 0x10))(local_c8);
+      if (local_c8[2] != 0) {
+        LOAcquire();
+        lVar5 = local_c8[2];
+        local_c8[2] = lVar5 + -1;
+        LORelease();
+        if (lVar5 != 0) goto LAB_043d734c;
+      }
+      pcVar4 = *(code **)(*local_c8 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+        FUN_00005810(local_c8,0x20);
+      }
+      else {
+        (*pcVar4)(local_c8);
+      }
+    }
+  }
+LAB_043d734c:
+  lVar5 = local_90;
+  if (local_90 != 0) {
+    if (local_88 * 0x18 != 0) {
+      lVar8 = local_88 * -0x18;
+      puVar1 = (undefined8 *)(local_88 * 0x18 + local_90);
+      do {
+        puVar7 = puVar1 + -3;
+        if (puVar7 == (undefined8 *)0x0) goto LAB_043d74c0;
+        if (*(char *)((long)puVar1 + -1) < '\0') {
+          FUN_00005810(*puVar7,puVar1[-1] & 0x7fffffffffffffff);
+        }
+        lVar8 = lVar8 + 0x18;
+        puVar1 = puVar7;
+      } while (lVar8 != 0);
+    }
+    local_88 = (lVar5 - local_90 >> 3) * -0x5555555555555555;
+    FUN_00005810(local_90,local_80 * 0x18);
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_48) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "loadInferenceModel:completion:", "type_encoding": "v32@0:8@16@?24", "imp": "0x43d77b0", "method_record_va": "0xd777634", "selector_va": "0xd755861", "dyld_line": 4864, "imp_file_offset": "0x43d77b0", "body_name": "objc::Categories::ArcAIService_Extensions_::loadInferenceModel:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4080560, "body_length": 2358, "failed": 0, "truncated": false}
+// ==== 0x43d77b0  objc::Categories::ArcAIService_Extensions_::loadInferenceModel:completion:  (444 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::loadInferenceModel_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined1 auStack_90 [8];
+  undefined8 local_88;
+  undefined7 local_78;
+  char cStack_71;
+  undefined1 auStack_70 [8];
+  long *local_68;
+  byte local_60;
+  ID *local_58 [2];
+  undefined1 *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",auStack_70,param_3,param_4,(ulong)param_5);
+  if ((local_60 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d7968);
+    (*pcVar2)();
+  }
+  FUN_0443a21c(auStack_90,param_3);
+  local_48 = &LAB_043db42c;
+  local_40 = &PTR_FUN_0df6b358;
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_4;
+  FUN_04330fd4(auStack_70,auStack_90,local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58[0]);
+  }
+  if (cStack_71 < '\0') {
+    FUN_00005810(local_88,CONCAT17(cStack_71,local_78) & 0x7fffffffffffffff);
+  }
+  if ((local_60 != 0) && (local_68 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_68[1];
+    local_68[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_68 + 0x10))(local_68);
+      if (local_68[2] != 0) {
+        LOAcquire();
+        lVar1 = local_68[2];
+        local_68[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d78a4;
+      }
+      pcVar2 = *(code **)(*local_68 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_68,0x20);
+      }
+      else {
+        (*pcVar2)(local_68);
+      }
+    }
+  }
+LAB_043d78a4:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_38) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "streamInference:configuration:model:partialResultCallback:completion:", "type_encoding": "S56@0:8@16@24@32@?40@?48", "imp": "0x43d7a5c", "method_record_va": "0xd777640", "selector_va": "0xd755880", "dyld_line": 4865, "imp_file_offset": "0x43d7a5c", "body_name": "objc::Categories::ArcAIService_Extensions_::streamInference:configuration:model:partialResultCallback:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4082918, "body_length": 3171, "failed": 0, "truncated": false}
+// ==== 0x43d7a5c  objc::Categories::ArcAIService_Extensions_::streamInference:configuration:model:partialResultCallback:completion:  (688 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x38 bytes */
+
+unsigned_short
+objc::Categories::ArcAIService_Extensions_::
+streamInference_configuration_model_partialResultCallback_completion_
+          (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5,ID param_6,uint param_7,
+          ID param_8,undefined4 param_9)
+
+{
+  long lVar1;
+  unsigned_short uVar2;
+  undefined8 uVar3;
+  code *pcVar4;
+  undefined1 auStack_e8 [8];
+  undefined8 local_e0;
+  undefined7 local_d0;
+  char cStack_c9;
+  undefined8 local_c8;
+  undefined8 uStack_c0;
+  ulong local_b8;
+  undefined1 auStack_b0 [8];
+  long *local_a8;
+  byte local_a0;
+  ulong *local_98 [2];
+  undefined1 *local_88;
+  undefined **local_80;
+  ID *local_78 [2];
+  undefined1 *local_68;
+  undefined **local_60;
+  long local_58;
+  
+  local_58 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",auStack_b0);
+  if ((local_a0 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x43d7d08);
+    (*pcVar4)();
+  }
+  if (param_3 == 0) {
+    local_c8 = 0;
+    uStack_c0 = 0;
+    local_b8 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_c8,param_3);
+  }
+  uVar3 = FUN_0443a40c(param_4);
+  FUN_0443a21c(auStack_e8,param_5);
+  local_68 = &LAB_043db694;
+  local_60 = &PTR_FUN_0df6b378;
+  local_78[0] = (ID *)FUN_00008790(8);
+  *local_78[0] = param_6;
+  local_88 = &LAB_043db42c;
+  local_80 = &PTR_FUN_0df6b398;
+  local_98[0] = (ulong *)FUN_00008790(8);
+  *local_98[0] = (ulong)param_7;
+  uVar2 = FUN_043310bc(auStack_b0,&local_c8,uVar3,auStack_e8,local_78,local_98);
+  if ((code *)local_80[1] != (code *)0x0) {
+    (*(code *)local_80[1])(local_98[0]);
+  }
+  if ((code *)local_60[1] != (code *)0x0) {
+    (*(code *)local_60[1])(local_78[0]);
+  }
+  if (cStack_c9 < '\0') {
+    FUN_00005810(local_e0,CONCAT17(cStack_c9,local_d0) & 0x7fffffffffffffff);
+  }
+  if ((long)local_b8 < 0) {
+    FUN_00005810(local_c8,local_b8 & 0x7fffffffffffffff);
+  }
+  if ((local_a0 != 0) && (local_a8 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_a8[1];
+    local_a8[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_a8 + 0x10))(local_a8);
+      if (local_a8[2] != 0) {
+        LOAcquire();
+        lVar1 = local_a8[2];
+        local_a8[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d7c20;
+      }
+      pcVar4 = *(code **)(*local_a8 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+        FUN_00005810(local_a8,0x20);
+      }
+      else {
+        (*pcVar4)(local_a8);
+      }
+    }
+  }
+LAB_043d7c20:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_58) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return uVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "loadClassifier:completion:", "type_encoding": "v32@0:8@16@?24", "imp": "0x43d7e40", "method_record_va": "0xd77764c", "selector_va": "0xd7558c6", "dyld_line": 4866, "imp_file_offset": "0x43d7e40", "body_name": "objc::Categories::ArcAIService_Extensions_::loadClassifier:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4086089, "body_length": 2840, "failed": 0, "truncated": false}
+// ==== 0x43d7e40  objc::Categories::ArcAIService_Extensions_::loadClassifier:completion:  (516 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::loadClassifier_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_d8 [2];
+  undefined7 local_c8;
+  char cStack_c1;
+  undefined8 local_c0;
+  undefined7 local_b0;
+  char cStack_a9;
+  undefined8 local_a8;
+  undefined7 local_98;
+  char cStack_91;
+  undefined8 local_90;
+  undefined7 local_80;
+  char cStack_79;
+  undefined1 auStack_70 [8];
+  long *local_68;
+  byte local_60;
+  ID *local_58 [2];
+  undefined1 *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",auStack_70,param_3,param_4,(ulong)param_5);
+  if ((local_60 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d8040);
+    (*pcVar2)();
+  }
+  FUN_0443a8bc(local_d8,param_3);
+  local_48 = &LAB_043db42c;
+  local_40 = &PTR_FUN_0df6b3b8;
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_4;
+  FUN_04331204(auStack_70,local_d8,local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58[0]);
+  }
+  if (cStack_79 < '\0') {
+    FUN_00005810(local_90,CONCAT17(cStack_79,local_80) & 0x7fffffffffffffff);
+  }
+  if (cStack_91 < '\0') {
+    FUN_00005810(local_a8,CONCAT17(cStack_91,local_98) & 0x7fffffffffffffff);
+  }
+  if (cStack_a9 < '\0') {
+    FUN_00005810(local_c0,CONCAT17(cStack_a9,local_b0) & 0x7fffffffffffffff);
+  }
+  if (cStack_c1 < '\0') {
+    FUN_00005810(local_d8[0],CONCAT17(cStack_c1,local_c8) & 0x7fffffffffffffff);
+  }
+  if ((local_60 != 0) && (local_68 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_68[1];
+    local_68[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_68 + 0x10))(local_68);
+      if (local_68[2] != 0) {
+        LOAcquire();
+        lVar1 = local_68[2];
+        local_68[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d7f7c;
+      }
+      pcVar2 = *(code **)(*local_68 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_68,0x20);
+      }
+      else {
+        (*pcVar2)(local_68);
+      }
+    }
+  }
+LAB_043d7f7c:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_38) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "isClassifierLoaded:completion:", "type_encoding": "v32@0:8@16@?24", "imp": "0x43d817c", "method_record_va": "0xd777658", "selector_va": "0xd7558e1", "dyld_line": 4867, "imp_file_offset": "0x43d817c", "body_name": "objc::Categories::ArcAIService_Extensions_::isClassifierLoaded:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4088929, "body_length": 2841, "failed": 0, "truncated": false}
+// ==== 0x43d817c  objc::Categories::ArcAIService_Extensions_::isClassifierLoaded:completion:  (516 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::isClassifierLoaded_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_d8 [2];
+  undefined7 local_c8;
+  char cStack_c1;
+  undefined8 local_c0;
+  undefined7 local_b0;
+  char cStack_a9;
+  undefined8 local_a8;
+  undefined7 local_98;
+  char cStack_91;
+  undefined8 local_90;
+  undefined7 local_80;
+  char cStack_79;
+  undefined1 auStack_70 [8];
+  long *local_68;
+  byte local_60;
+  ID *local_58 [2];
+  code *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",auStack_70,param_3,param_4,(ulong)param_5);
+  if ((local_60 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d837c);
+    (*pcVar2)();
+  }
+  FUN_0443a8bc(local_d8,param_3);
+  local_48 = FUN_043db750;
+  local_40 = &PTR_FUN_0df6b3d8;
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_4;
+  FUN_043313bc(auStack_70,local_d8,local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58[0]);
+  }
+  if (cStack_79 < '\0') {
+    FUN_00005810(local_90,CONCAT17(cStack_79,local_80) & 0x7fffffffffffffff);
+  }
+  if (cStack_91 < '\0') {
+    FUN_00005810(local_a8,CONCAT17(cStack_91,local_98) & 0x7fffffffffffffff);
+  }
+  if (cStack_a9 < '\0') {
+    FUN_00005810(local_c0,CONCAT17(cStack_a9,local_b0) & 0x7fffffffffffffff);
+  }
+  if (cStack_c1 < '\0') {
+    FUN_00005810(local_d8[0],CONCAT17(cStack_c1,local_c8) & 0x7fffffffffffffff);
+  }
+  if ((local_60 != 0) && (local_68 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_68[1];
+    local_68[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_68 + 0x10))(local_68);
+      if (local_68[2] != 0) {
+        LOAcquire();
+        lVar1 = local_68[2];
+        local_68[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d82b8;
+      }
+      pcVar2 = *(code **)(*local_68 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_68,0x20);
+      }
+      else {
+        (*pcVar2)(local_68);
+      }
+    }
+  }
+LAB_043d82b8:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_38) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "getClassificationFor:classifier:completion:", "type_encoding": "v40@0:8@16@24@?32", "imp": "0x43d84b8", "method_record_va": "0xd777664", "selector_va": "0xd755900", "dyld_line": 4868, "imp_file_offset": "0x43d84b8", "body_name": "objc::Categories::ArcAIService_Extensions_::getClassificationFor:classifier:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4091770, "body_length": 3160, "failed": 0, "truncated": false}
+// ==== 0x43d84b8  objc::Categories::ArcAIService_Extensions_::getClassificationFor:classifier:completion:  (616 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x28 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::getClassificationFor_classifier_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5,undefined4 param_6)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_100 [2];
+  undefined7 local_f0;
+  char cStack_e9;
+  undefined8 local_e8;
+  undefined7 local_d8;
+  char cStack_d1;
+  undefined8 local_d0;
+  undefined7 local_c0;
+  char cStack_b9;
+  undefined8 local_b8;
+  undefined7 local_a8;
+  char cStack_a1;
+  undefined8 local_98;
+  undefined8 uStack_90;
+  ulong local_88;
+  undefined1 auStack_80 [8];
+  long *local_78;
+  byte local_70;
+  ID *local_68 [2];
+  undefined1 *local_58;
+  undefined **local_50;
+  long local_48;
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",auStack_80);
+  if ((local_70 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d871c);
+    (*pcVar2)();
+  }
+  if (param_3 == 0) {
+    local_98 = 0;
+    uStack_90 = 0;
+    local_88 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_98,param_3);
+  }
+  FUN_0443a8bc(local_100,param_4);
+  local_58 = &LAB_043db7c8;
+  local_50 = &PTR_FUN_0df6b3f8;
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_5;
+  FUN_04331574(auStack_80,&local_98,local_100,local_68);
+  if ((code *)local_50[1] != (code *)0x0) {
+    (*(code *)local_50[1])(local_68[0]);
+  }
+  if (cStack_a1 < '\0') {
+    FUN_00005810(local_b8,CONCAT17(cStack_a1,local_a8) & 0x7fffffffffffffff);
+  }
+  if (cStack_b9 < '\0') {
+    FUN_00005810(local_d0,CONCAT17(cStack_b9,local_c0) & 0x7fffffffffffffff);
+  }
+  if (cStack_d1 < '\0') {
+    FUN_00005810(local_e8,CONCAT17(cStack_d1,local_d8) & 0x7fffffffffffffff);
+  }
+  if (cStack_e9 < '\0') {
+    FUN_00005810(local_100[0],CONCAT17(cStack_e9,local_f0) & 0x7fffffffffffffff);
+  }
+  if ((long)local_88 < 0) {
+    FUN_00005810(local_98,local_88 & 0x7fffffffffffffff);
+  }
+  if ((local_70 != 0) && (local_78 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_78[1];
+    local_78[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_78 + 0x10))(local_78);
+      if (local_78[2] != 0) {
+        LOAcquire();
+        lVar1 = local_78[2];
+        local_78[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d864c;
+      }
+      pcVar2 = *(code **)(*local_78 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_78,0x20);
+      }
+      else {
+        (*pcVar2)(local_78);
+      }
+    }
+  }
+LAB_043d864c:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_48) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "loadNomicEmbedText:completion:", "type_encoding": "v32@0:8@16@?24", "imp": "0x43d8878", "method_record_va": "0xd777670", "selector_va": "0xd75592c", "dyld_line": 4869, "imp_file_offset": "0x43d8878", "body_name": "objc::Categories::ArcAIService_Extensions_::loadNomicEmbedText:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4094930, "body_length": 2332, "failed": 0, "truncated": false}
+// ==== 0x43d8878  objc::Categories::ArcAIService_Extensions_::loadNomicEmbedText:completion:  (444 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::loadNomicEmbedText_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_90 [2];
+  undefined7 local_80;
+  char cStack_79;
+  undefined1 auStack_70 [8];
+  long *local_68;
+  byte local_60;
+  ID *local_58 [2];
+  undefined1 *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",auStack_70,param_3,param_4,(ulong)param_5);
+  if ((local_60 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d8a30);
+    (*pcVar2)();
+  }
+  FUN_0442d470(local_90,param_3);
+  local_48 = &LAB_043db42c;
+  local_40 = &PTR_FUN_0df6b418;
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_4;
+  FUN_04331734(auStack_70,local_90,local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58[0]);
+  }
+  if (cStack_79 < '\0') {
+    FUN_00005810(local_90[0],CONCAT17(cStack_79,local_80) & 0x7fffffffffffffff);
+  }
+  if ((local_60 != 0) && (local_68 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_68[1];
+    local_68[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_68 + 0x10))(local_68);
+      if (local_68[2] != 0) {
+        LOAcquire();
+        lVar1 = local_68[2];
+        local_68[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d896c;
+      }
+      pcVar2 = *(code **)(*local_68 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_68,0x20);
+      }
+      else {
+        (*pcVar2)(local_68);
+      }
+    }
+  }
+LAB_043d896c:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_38) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "nomicEmbed:completion:", "type_encoding": "v32@0:8@16@?24", "imp": "0x43d8b24", "method_record_va": "0xd77767c", "selector_va": "0xd75594b", "dyld_line": 4870, "imp_file_offset": "0x43d8b24", "body_name": "objc::Categories::ArcAIService_Extensions_::nomicEmbed:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4097262, "body_length": 3551, "failed": 0, "truncated": false}
+// ==== 0x43d8b24  objc::Categories::ArcAIService_Extensions_::nomicEmbed:completion:  (764 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Removing unreachable block (ram,0x043d8bfc) */
+/* WARNING: Removing unreachable block (ram,0x043d8c1c) */
+/* Function Stack Size: 0x20 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::nomicEmbed_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+
+{
+  ID IVar1;
+  code *pcVar2;
+  long lVar3;
+  ID *pIVar4;
+  undefined8 local_d0;
+  long *local_c8;
+  byte local_c0;
+  undefined *local_b8;
+  undefined8 uStack_b0;
+  undefined1 *local_a8;
+  undefined *puStack_a0;
+  ID *local_98;
+  ID local_90;
+  long local_88;
+  ulong local_80;
+  ID *local_78;
+  ID *local_70;
+  undefined1 *local_68;
+  undefined **local_60;
+  long local_58;
+  
+  local_58 = *(long *)PTR____stack_chk_guard_0d824020;
+  local_90 = 0;
+  local_88 = 0;
+  local_80 = 0;
+  IVar1 = _objc_msgSend(param_3,"count",param_3,param_4,(ulong)param_5);
+  lVar3 = local_88;
+  if (local_80 < IVar1) {
+    if (0x555555555555555 < IVar1) {
+                    /* WARNING: Subroutine does not return */
+      FUN_040416c0();
+    }
+    local_78 = (ID *)FUN_00008790(IVar1 * 0x30);
+    local_70 = local_78 + lVar3 * 6;
+    local_68 = (undefined1 *)0x0;
+    local_60 = (undefined **)IVar1;
+    FUN_043da48c(&local_78,&local_90,&local_88,&local_80);
+    if ((long)local_68 * 0x30 != 0) {
+      lVar3 = 0;
+      pIVar4 = local_70;
+      do {
+        if (pIVar4 + (long)local_68 * 6 == (ID *)0x30) goto LAB_043d8e14;
+        pIVar4 = pIVar4 + -6;
+        lVar3 = lVar3 + 0x30;
+      } while ((long)local_68 * 0x30 - lVar3 != 0);
+    }
+    if (local_78 != (ID *)0x0) {
+      FUN_00005810(local_78,(long)local_60 * 0x30);
+    }
+  }
+  local_b8 = PTR___NSConcreteGlobalBlock_0d824130;
+  uStack_b0 = 0xd0800000;
+  local_a8 = &LAB_043d8f80;
+  puStack_a0 = &DAT_0df6b238;
+  local_98 = &local_90;
+  _objc_msgSend(param_3,"enumerateObjectsUsingBlock:",&local_b8);
+  _objc_msgSend(param_1,"ai_service",&local_d0);
+  if ((local_c0 & 1) == 0) {
+LAB_043d8e14:
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d8e18);
+    (*pcVar2)();
+  }
+  local_78 = (ID *)FUN_00008790(8);
+  *local_78 = param_4;
+  local_68 = &LAB_043dba14;
+  local_60 = &PTR_FUN_0df6b438;
+  FUN_0429b3d0(local_d0,&local_90,&local_78);
+  if ((code *)local_60[1] != (code *)0x0) {
+    (*(code *)local_60[1])(local_78);
+  }
+  if ((local_c0 != 0) && (local_c8 != (long *)0x0)) {
+    LOAcquire();
+    lVar3 = local_c8[1];
+    local_c8[1] = lVar3 + -1;
+    LORelease();
+    if (lVar3 == 0) {
+      (**(code **)(*local_c8 + 0x10))(local_c8);
+      if (local_c8[2] != 0) {
+        LOAcquire();
+        lVar3 = local_c8[2];
+        local_c8[2] = lVar3 + -1;
+        LORelease();
+        if (lVar3 != 0) goto LAB_043d8d3c;
+      }
+      pcVar2 = *(code **)(*local_c8 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_c8,0x20);
+      }
+      else {
+        (*pcVar2)(local_c8);
+      }
+    }
+  }
+LAB_043d8d3c:
+  local_78 = &local_90;
+  FUN_043da8c8(&local_78);
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_58) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "loadCommandBarRanking:completion:", "type_encoding": "v32@0:8@16@?24", "imp": "0x43d9144", "method_record_va": "0xd777688", "selector_va": "0xd755962", "dyld_line": 4871, "imp_file_offset": "0x43d9144", "body_name": "objc::Categories::ArcAIService_Extensions_::loadCommandBarRanking:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4100813, "body_length": 2338, "failed": 0, "truncated": false}
+// ==== 0x43d9144  objc::Categories::ArcAIService_Extensions_::loadCommandBarRanking:completion:  (444 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::loadCommandBarRanking_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+
+{
+  long lVar1;
+  code *pcVar2;
+  undefined8 local_90 [2];
+  undefined7 local_80;
+  char cStack_79;
+  undefined1 auStack_70 [8];
+  long *local_68;
+  byte local_60;
+  ID *local_58 [2];
+  undefined1 *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  _objc_msgSend(param_1,"ai_service",auStack_70,param_3,param_4,(ulong)param_5);
+  if ((local_60 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x43d92fc);
+    (*pcVar2)();
+  }
+  FUN_04432b04(local_90,param_3);
+  local_48 = &LAB_043db42c;
+  local_40 = &PTR_FUN_0df6b458;
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_4;
+  FUN_04331820(auStack_70,local_90,local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58[0]);
+  }
+  if (cStack_79 < '\0') {
+    FUN_00005810(local_90[0],CONCAT17(cStack_79,local_80) & 0x7fffffffffffffff);
+  }
+  if ((local_60 != 0) && (local_68 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_68[1];
+    local_68[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_68 + 0x10))(local_68);
+      if (local_68[2] != 0) {
+        LOAcquire();
+        lVar1 = local_68[2];
+        local_68[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d9238;
+      }
+      pcVar2 = *(code **)(*local_68 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(local_68,0x20);
+      }
+      else {
+        (*pcVar2)(local_68);
+      }
+    }
+  }
+LAB_043d9238:
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_38) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "rankCommandBar:candidates:completion:", "type_encoding": "v40@0:8@16@24@?32", "imp": "0x43d93f0", "method_record_va": "0xd777694", "selector_va": "0xd755984", "dyld_line": 4872, "imp_file_offset": "0x43d93f0", "body_name": "objc::Categories::ArcAIService_Extensions_::rankCommandBar:candidates:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4103151, "body_length": 3561, "failed": 0, "truncated": false}
+// ==== 0x43d93f0  objc::Categories::ArcAIService_Extensions_::rankCommandBar:candidates:completion:  (748 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x28 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::rankCommandBar_candidates_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5,undefined4 param_6)
+
+{
+  code *pcVar1;
+  long lVar2;
+  ID IVar3;
+  long lVar4;
+  long lVar5;
+  undefined8 local_d8;
+  long *local_d0;
+  byte local_c8;
+  undefined *local_c0;
+  undefined8 uStack_b8;
+  undefined1 *local_b0;
+  undefined *puStack_a8;
+  long *local_a0;
+  long local_98;
+  long local_90;
+  long local_88;
+  long local_80;
+  long local_78;
+  long local_70;
+  ID *local_68 [2];
+  undefined1 *local_58;
+  undefined **local_50;
+  long local_48;
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  local_80 = 0;
+  local_78 = 0;
+  local_70 = 0;
+  FUN_04432fcc(&local_80,param_3);
+  local_98 = 0;
+  local_90 = 0;
+  local_88 = 0;
+  IVar3 = _objc_msgSend(param_4,"count");
+  FUN_043d9858(&local_98,IVar3);
+  local_c0 = PTR___NSConcreteGlobalBlock_0d824130;
+  uStack_b8 = 0xd0800000;
+  local_b0 = &LAB_043d9990;
+  puStack_a8 = &DAT_0df6b258;
+  local_a0 = &local_98;
+  _objc_msgSend(param_4,"enumerateObjectsUsingBlock:",&local_c0);
+  _objc_msgSend(param_1,"ai_service",&local_d8);
+  if ((local_c8 & 1) == 0) {
+LAB_043d96a8:
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x43d96ac);
+    (*pcVar1)();
+  }
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_5;
+  local_58 = &LAB_043dbdbc;
+  local_50 = &PTR_FUN_0df6b478;
+  FUN_0429c81c(local_d8,&local_80,&local_98,local_68);
+  if ((code *)local_50[1] != (code *)0x0) {
+    (*(code *)local_50[1])(local_68[0]);
+  }
+  if ((local_c8 != 0) && (local_d0 != (long *)0x0)) {
+    LOAcquire();
+    lVar2 = local_d0[1];
+    local_d0[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 == 0) {
+      (**(code **)(*local_d0 + 0x10))(local_d0);
+      if (local_d0[2] != 0) {
+        LOAcquire();
+        lVar2 = local_d0[2];
+        local_d0[2] = lVar2 + -1;
+        LORelease();
+        if (lVar2 != 0) goto LAB_043d9550;
+      }
+      pcVar1 = *(code **)(*local_d0 + 0x20);
+      if (((pcVar1 == FUN_00f01bc0) || (pcVar1 == FUN_00f01bc0)) || (pcVar1 == FUN_013efb40)) {
+        FUN_00005810(local_d0,0x20);
+      }
+      else {
+        (*pcVar1)(local_d0);
+      }
+    }
+  }
+LAB_043d9550:
+  lVar2 = local_98;
+  if (local_98 != 0) {
+    if (local_90 * 0xa8 != 0) {
+      lVar4 = local_90 * 0xa8 + local_98;
+      lVar5 = local_90 * -0xa8;
+      do {
+        if (lVar4 == 0xa8) goto LAB_043d96a8;
+        lVar4 = FUN_042a3ff4();
+        lVar5 = lVar5 + 0xa8;
+      } while (lVar5 != 0);
+    }
+    local_90 = (lVar2 - local_98 >> 3) * -0x30c30c30c30c30c3;
+    FUN_00005810(local_98,local_88 * 0xa8);
+  }
+  if (local_80 != 0) {
+    if (local_78 * 4 != 0) {
+      lVar2 = local_78 * -4;
+      lVar5 = local_78 * 4 + local_80;
+      do {
+        lVar5 = lVar5 + -4;
+        if (lVar5 == 0) goto LAB_043d96a8;
+        lVar2 = lVar2 + 4;
+      } while (lVar2 != 0);
+    }
+    local_78 = 0;
+    FUN_00005810(local_80,local_70 << 2);
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_48) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "evaluateCommandBarRanking:completion:", "type_encoding": "v32@0:8@16@?24", "imp": "0x43d9ab8", "method_record_va": "0xd7776a0", "selector_va": "0xd7559aa", "dyld_line": 4873, "imp_file_offset": "0x43d9ab8", "body_name": "objc::Categories::ArcAIService_Extensions_::evaluateCommandBarRanking:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4108118, "body_length": 3125, "failed": 0, "truncated": false}
+// ==== 0x43d9ab8  objc::Categories::ArcAIService_Extensions_::evaluateCommandBarRanking:completion:  (604 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Type propagation algorithm not settling */
+/* Function Stack Size: 0x20 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::evaluateCommandBarRanking_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+
+{
+  long lVar1;
+  ID IVar2;
+  code *pcVar3;
+  undefined8 local_b0;
+  long *local_a8;
+  byte local_a0;
+  undefined *local_98;
+  undefined8 uStack_90;
+  undefined1 *local_88;
+  undefined *puStack_80;
+  ID *local_78;
+  ID local_70;
+  undefined8 uStack_68;
+  undefined8 local_60;
+  ID *local_58;
+  ID *pIStack_50;
+  undefined1 *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  local_70 = 0;
+  uStack_68 = 0;
+  local_60 = 0;
+  IVar2 = _objc_msgSend(param_3,"count",param_3,param_4,(ulong)param_5);
+  if (IVar2 != 0) {
+    if (0x492492492492492 < IVar2) {
+                    /* WARNING: Subroutine does not return */
+      FUN_040416c0();
+    }
+    local_58 = (ID *)FUN_00008790(IVar2 * 0x38);
+    local_48 = (undefined1 *)0x0;
+    pIStack_50 = local_58;
+    local_40 = (undefined **)IVar2;
+    FUN_043dab74(&local_58,&local_70,&uStack_68,&local_60);
+    FUN_043daef4(&local_58);
+  }
+  local_98 = PTR___NSConcreteGlobalBlock_0d824130;
+  uStack_90 = 0xd0800000;
+  local_88 = &LAB_043d9df4;
+  puStack_80 = &DAT_0df6b278;
+  local_78 = &local_70;
+  _objc_msgSend(param_3,"enumerateObjectsUsingBlock:",&local_98);
+  _objc_msgSend(param_1,"ai_service",&local_b0);
+  if ((local_a0 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x43d9d0c);
+    (*pcVar3)();
+  }
+  local_58 = (ID *)FUN_00008790(8);
+  *local_58 = param_4;
+  local_48 = &LAB_043dc050;
+  local_40 = &PTR_FUN_0df6b4a8;
+  FUN_0429d6b8(local_b0,&local_70,&local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58);
+  }
+  if ((local_a0 != 0) && (local_a8 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_a8[1];
+    local_a8[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_a8 + 0x10))(local_a8);
+      if (local_a8[2] != 0) {
+        LOAcquire();
+        lVar1 = local_a8[2];
+        local_a8[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043d9c38;
+      }
+      pcVar3 = *(code **)(*local_a8 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(local_a8,0x20);
+      }
+      else {
+        (*pcVar3)(local_a8);
+      }
+    }
+  }
+LAB_043d9c38:
+  local_58 = &local_70;
+  FUN_043db22c(&local_58);
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_38) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIService", "category": "Extensions", "protocol": "", "kind": "-", "selector": "trainCommandBarRanking:completion:", "type_encoding": "v32@0:8@16@?24", "imp": "0x43d9fd4", "method_record_va": "0xd7776ac", "selector_va": "0xd7559d0", "dyld_line": 4874, "imp_file_offset": "0x43d9fd4", "body_name": "objc::Categories::ArcAIService_Extensions_::trainCommandBarRanking:completion:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4111243, "body_length": 3106, "failed": 0, "truncated": false}
+// ==== 0x43d9fd4  objc::Categories::ArcAIService_Extensions_::trainCommandBarRanking:completion:  (604 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Type propagation algorithm not settling */
+/* Function Stack Size: 0x20 bytes */
+
+void objc::Categories::ArcAIService_Extensions_::trainCommandBarRanking_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+
+{
+  long lVar1;
+  ID IVar2;
+  code *pcVar3;
+  undefined8 local_b0;
+  long *local_a8;
+  byte local_a0;
+  undefined *local_98;
+  undefined8 uStack_90;
+  undefined1 *local_88;
+  undefined *puStack_80;
+  ID *local_78;
+  ID local_70;
+  undefined8 uStack_68;
+  undefined8 local_60;
+  ID *local_58;
+  ID *pIStack_50;
+  code *local_48;
+  undefined **local_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  local_70 = 0;
+  uStack_68 = 0;
+  local_60 = 0;
+  IVar2 = _objc_msgSend(param_3,"count",param_3,param_4,(ulong)param_5);
+  if (IVar2 != 0) {
+    if (0x492492492492492 < IVar2) {
+                    /* WARNING: Subroutine does not return */
+      FUN_040416c0();
+    }
+    local_58 = (ID *)FUN_00008790(IVar2 * 0x38);
+    local_48 = (code *)0x0;
+    pIStack_50 = local_58;
+    local_40 = (undefined **)IVar2;
+    FUN_043dab74(&local_58,&local_70,&uStack_68,&local_60);
+    FUN_043daef4(&local_58);
+  }
+  local_98 = PTR___NSConcreteGlobalBlock_0d824130;
+  uStack_90 = 0xd0800000;
+  local_88 = &LAB_043d9df4;
+  puStack_80 = &DAT_0df6b278;
+  local_78 = &local_70;
+  _objc_msgSend(param_3,"enumerateObjectsUsingBlock:",&local_98);
+  _objc_msgSend(param_1,"ai_service",&local_b0);
+  if ((local_a0 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x43da228);
+    (*pcVar3)();
+  }
+  local_58 = (ID *)FUN_00008790(8);
+  *local_58 = param_4;
+  local_48 = FUN_043dc3c8;
+  local_40 = &PTR_FUN_0df6b4c8;
+  FUN_0429e884(local_b0,&local_70,&local_58);
+  if ((code *)local_40[1] != (code *)0x0) {
+    (*(code *)local_40[1])(local_58);
+  }
+  if ((local_a0 != 0) && (local_a8 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = local_a8[1];
+    local_a8[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_a8 + 0x10))(local_a8);
+      if (local_a8[2] != 0) {
+        LOAcquire();
+        lVar1 = local_a8[2];
+        local_a8[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043da154;
+      }
+      pcVar3 = *(code **)(*local_a8 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(local_a8,0x20);
+      }
+      else {
+        (*pcVar3)(local_a8);
+      }
+    }
+  }
+LAB_043da154:
+  local_58 = &local_70;
+  FUN_043db22c(&local_58);
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_38) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+

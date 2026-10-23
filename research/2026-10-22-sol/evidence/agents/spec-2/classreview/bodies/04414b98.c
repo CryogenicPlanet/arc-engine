@@ -1,0 +1,12 @@
+// ==== 0x4414b98  ArcWebContentsConfiguration::setDisallowAutoplay:  (8 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcWebContentsConfiguration::setDisallowAutoplay_(ID param_1,SEL param_2,bool param_3)
+
+{
+  *(char *)(param_1 + 0xe) = (char)param_3;
+  return;
+}
+
+

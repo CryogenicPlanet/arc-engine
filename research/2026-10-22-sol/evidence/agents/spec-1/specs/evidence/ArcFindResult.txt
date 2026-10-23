@@ -1,0 +1,75 @@
+{
+  "class_name": "ArcFindResult",
+  "metadata_va": "0xe37cc08",
+  "metadata_file_offset": "0xe37cc08",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a9180",
+  "instance_start": 8,
+  "instance_size": 24,
+  "ivars": [
+    {
+      "record_va": "0xe2a9118",
+      "offset": 8,
+      "name": "_numMatches",
+      "type": "q",
+      "size": 8,
+      "alignment": 3
+    },
+    {
+      "record_va": "0xe2a9138",
+      "offset": 16,
+      "name": "_activeMatchOrdinal",
+      "type": "q",
+      "size": 8,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a9160",
+      "name": "numMatches",
+      "attributes": "Tq,R,N,V_numMatches"
+    },
+    {
+      "record_va": "0xe2a9170",
+      "name": "activeMatchOrdinal",
+      "attributes": "Tq,R,N,V_activeMatchOrdinal"
+    }
+  ]
+}
+
+###  -initWithFindResult: 0x440e120 @24@0:8r^{FindResult=ii}16 available
+
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcFindResult;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    *(long *)(IVar1 + 8) = (long)(int)param_3->field0_0x0;
+    *(long *)(IVar1 + 0x10) = (long)(int)param_3->field1_0x4;
+  }
+  return IVar1;
+}
+
+
+
+
+###  -numMatches 0x2d0fb40 q16@0:8 available
+
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+
+###  -activeMatchOrdinal 0x2cb140 q16@0:8 available
+
+  return *(ID *)(param_1 + 0x10);
+}
+
+
+

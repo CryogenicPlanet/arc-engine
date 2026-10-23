@@ -1,0 +1,196 @@
+{
+  "class_name": "ArcNavigationAction",
+  "metadata_va": "0xe37c668",
+  "metadata_file_offset": "0xe37c668",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a7878",
+  "instance_start": 8,
+  "instance_size": 96,
+  "ivars": [
+    {
+      "record_va": "0xe2a7800",
+      "offset": 8,
+      "name": "_nativeNavigationAction",
+      "type": "{NavigationAction=\"navigation_type\"i\"navigation_disposition\"i\"request\"{URLRequest=\"url\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"referrer\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"initiator_origin\"{optional<std::string>=\"\"(?=\"__null_state_\"c\"__val_\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})})\"__engaged_\"B}}}",
+      "alignment": 3,
+      "size": 88
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcNavigationAction", "category": "", "protocol": "", "kind": "-", "selector": "initWithNavigationAction:", "type_encoding": "@24@0:8r^v16", "imp": "0x44084e4", "method_record_va": "0xd77965c", "selector_va": "0xd75c097", "dyld_line": 1873, "imp_file_offset": "0x44084e4", "body_name": "ArcNavigationAction::initWithNavigationAction:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 197978, "body_length": 542, "failed": 0, "truncated": false}
+// ==== 0x44084e4  ArcNavigationAction::initWithNavigationAction:  (96 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcNavigationAction::initWithNavigationAction_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcNavigationAction;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    *(undefined8 *)(IVar1 + 8) = *(undefined8 *)param_3;
+    FUN_043452d8(IVar1 + 0x10,(long)param_3 + 8);
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNavigationAction", "category": "", "protocol": "", "kind": "-", "selector": "url", "type_encoding": "@16@0:8", "imp": "0x4408544", "method_record_va": "0xd779668", "selector_va": "0xd75187a", "dyld_line": 1874, "imp_file_offset": "0x4408544", "body_name": "ArcNavigationAction::url", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 198520, "body_length": 225, "failed": 0, "truncated": false}
+// ==== 0x4408544  ArcNavigationAction::url  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcNavigationAction::url(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  
+  IVar1 = FUN_043abd34(param_1 + 0x10);
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNavigationAction", "category": "", "protocol": "", "kind": "-", "selector": "referrer", "type_encoding": "@16@0:8", "imp": "0x440854c", "method_record_va": "0xd779674", "selector_va": "0xd75c0b1", "dyld_line": 1875, "imp_file_offset": "0x440854c", "body_name": "ArcNavigationAction::referrer", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 198745, "body_length": 235, "failed": 0, "truncated": false}
+// ==== 0x440854c  ArcNavigationAction::referrer  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcNavigationAction::referrer(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  
+  IVar1 = FUN_043abd34(param_1 + 0x28);
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNavigationAction", "category": "", "protocol": "", "kind": "-", "selector": "navigationType", "type_encoding": "Q16@0:8", "imp": "0x4408554", "method_record_va": "0xd779680", "selector_va": "0xd75c0ba", "dyld_line": 1876, "imp_file_offset": "0x4408554", "body_name": "ArcNavigationAction::navigationType", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 198980, "body_length": 305, "failed": 0, "truncated": false}
+// ==== 0x4408554  ArcNavigationAction::navigationType  (16 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+unsigned_long_long ArcNavigationAction::navigationType(ID param_1,SEL param_2)
+
+{
+  uint uVar1;
+  
+  uVar1 = *(uint *)(param_1 + 8);
+  if (4 < uVar1) {
+    uVar1 = 1;
+  }
+  return (ulong)uVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNavigationAction", "category": "", "protocol": "", "kind": "-", "selector": "navigationDisposition", "type_encoding": "q16@0:8", "imp": "0x4408564", "method_record_va": "0xd77968c", "selector_va": "0xd75c0c9", "dyld_line": 1877, "imp_file_offset": "0x4408564", "body_name": "ArcNavigationAction::navigationDisposition", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 199285, "body_length": 428, "failed": 0, "truncated": false}
+// ==== 0x4408564  ArcNavigationAction::navigationDisposition  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcNavigationAction::navigationDisposition(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if (*(uint *)(param_1 + 0xc) < 0xc) {
+    return (ulong)*(uint *)(param_1 + 0xc);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(0x550b,0x4408578);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNavigationAction", "category": "", "protocol": "", "kind": "-", "selector": "nativeNavigationAction", "type_encoding": "{NavigationAction=ii{URLRequest={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{optional<std::string>=(?=c{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})})B}}}16@0:8", "imp": "0x4408578", "method_record_va": "0xd779698", "selector_va": "0xd75c0df", "dyld_line": 1878, "imp_file_offset": "0x4408578", "body_name": "ArcNavigationAction::nativeNavigationAction", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 199713, "body_length": 512, "failed": 0, "truncated": false}
+// ==== 0x4408578  ArcNavigationAction::nativeNavigationAction  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcNavigationAction::nativeNavigationAction
+               (NavigationAction *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  undefined8 uVar1;
+  
+  uVar1 = *(undefined8 *)(param_1 + 8);
+  __return_storage_ptr__->field0_0x0 = (int)uVar1;
+  __return_storage_ptr__->field1_0x4 = (int)((ulong)uVar1 >> 0x20);
+  FUN_04345224(&__return_storage_ptr__->field2_0x8,param_1 + 0x10);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNavigationAction", "category": "", "protocol": "", "kind": "-", "selector": "setNativeNavigationAction:", "type_encoding": "v104@0:8{NavigationAction=ii{URLRequest={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{optional<std::string>=(?=c{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})})B}}}16", "imp": "0x440858c", "method_record_va": "0xd7796a4", "selector_va": "0xd75c0f6", "dyld_line": 1879, "imp_file_offset": "0x440858c", "body_name": "ArcNavigationAction::setNativeNavigationAction:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 200225, "body_length": 365, "failed": 0, "truncated": false}
+// ==== 0x440858c  ArcNavigationAction::setNativeNavigationAction:  (20 bytes)
+
+/* Function Stack Size: 0x68 bytes */
+
+void ArcNavigationAction::setNativeNavigationAction_
+               (ID param_1,SEL param_2,NavigationAction *param_3)
+
+{
+  *(undefined8 *)(param_1 + 8) = *(undefined8 *)param_3;
+  FUN_043452d8(param_1 + 0x10,&param_3->field2_0x8);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNavigationAction", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x44085a0", "method_record_va": "0xd7796b0", "selector_va": "0xd744a39", "dyld_line": 1880, "imp_file_offset": "0x44085a0", "body_name": "ArcNavigationAction::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 200590, "body_length": 218, "failed": 0, "truncated": false}
+// ==== 0x44085a0  ArcNavigationAction::.cxx_destruct  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcNavigationAction::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  FUN_041ab210(param_1 + 0x10);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNavigationAction", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x44085a8", "method_record_va": "0xd7796bc", "selector_va": "0xd744a47", "dyld_line": 1881, "imp_file_offset": "0x44085a8", "body_name": "ArcNavigationAction::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 200808, "body_length": 553, "failed": 0, "truncated": false}
+// ==== 0x44085a8  ArcNavigationAction::.cxx_construct  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcNavigationAction::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 8) = 0xb00000004;
+  *(undefined1 *)(param_1 + 0x58) = 0;
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 0x28) = 0;
+  *(undefined8 *)(param_1 + 0x20) = 0;
+  *(undefined8 *)(param_1 + 0x38) = 0;
+  *(undefined8 *)(param_1 + 0x30) = 0;
+  *(undefined1 *)(param_1 + 0x40) = 0;
+  return param_1;
+}
+
+
+

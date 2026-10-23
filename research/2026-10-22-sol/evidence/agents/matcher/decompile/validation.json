@@ -1,0 +1,39 @@
+{
+  "status": "passed_artifact_and_anchor_checks_not_semantic_equivalence",
+  "exact_bodies_materialized": 30,
+  "curated_source_comparisons": 10,
+  "source_files_hashed": 12,
+  "app_callsite_rows": 9,
+  "native_host_tail_branch": {
+    "image": "ArcCore-1.170.0.arm64",
+    "address_basis": "unslid engine VA",
+    "va": "0x4410bb4",
+    "file_offset": "0x4410bb4",
+    "bytes": "4aa10c14",
+    "instruction_word": "0x140ca14a",
+    "decode": "AArch64 B immediate, signed imm26 times four",
+    "target": "0x47390dc",
+    "target_body": {
+      "va": "0x47390dc",
+      "name": "FUN_047390dc",
+      "path": "/home/exedev/work/inputs/decompile/0x47.c",
+      "offset": 1053067,
+      "length": 418,
+      "sha256": "31910f8c96d3f7358f47e636b363579c01d9472696721259421695136629cd38",
+      "local_body": "bodies/0x47390dc.c",
+      "in_syntactic_closure": false
+    },
+    "limitation": "4-byte branch only; no general disassembler or body membership inferred"
+  },
+  "corpus_headers": 567959,
+  "source_pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c",
+  "engine_sha256": "69276adaca785a46f2554e7fd18926e7fcdd6aba44ba64400a337427817db3dd",
+  "validation_scope": [
+    "manifest SHA and length checks in audit_closure.py",
+    "exact header/address, failed flag and complete byte-range body extraction",
+    "manual source anchors present; source hashes recorded",
+    "metadata identity audit independent of Ghidra symbol name",
+    "missing requests checked against read-only index",
+    "no dynamic execution, ABI proof, general binary equivalence, or patch count"
+  ]
+}

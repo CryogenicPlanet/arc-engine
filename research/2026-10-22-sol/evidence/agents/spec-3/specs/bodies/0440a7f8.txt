@@ -1,0 +1,26 @@
+INDEX 0x440a7f8 ArcOverscrollParams::init path=/home/exedev/work/inputs/decompile/0x44.c offset=251492 C_bytes=586 failed=0
+// ==== 0x440a7f8  ArcOverscrollParams::init  (100 bytes)
+
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcOverscrollParams::init(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  undefined8 uVar2;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcOverscrollParams;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    uVar2 = _objc_alloc_init(&objc::class_t::ArcOverscrollBehavior);
+    *(undefined8 *)(IVar1 + 8) = uVar2;
+  }
+  return IVar1;
+}
+
+
+

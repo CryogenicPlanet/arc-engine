@@ -1,0 +1,354 @@
+{
+  "class_name": "ArcNavigation",
+  "metadata_va": "0xe37cd48",
+  "metadata_file_offset": "0xe37cd48",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a96a0",
+  "instance_start": 8,
+  "instance_size": 40,
+  "ivars": [
+    {
+      "record_va": "0xe2a9608",
+      "offset": 8,
+      "name": "_responseHeaders",
+      "type": "@\"NSDictionary\"",
+      "size": 8,
+      "alignment": 3
+    },
+    {
+      "record_va": "0xe2a9628",
+      "offset": 16,
+      "name": "_nativeNavigation",
+      "type": "{optional<arc::WebContents::Navigation>=\"\"(?=\"__null_state_\"c\"__val_\"{Navigation=\"impl_\"{shared_ptr<arc::WebContents::Navigation::Impl>=\"__ptr_\"^{Impl}\"__cntrl_\"^{__shared_weak_count}}})\"__engaged_\"B}",
+      "size": 24,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a9650",
+      "name": "nativeNavigation",
+      "attributes": "T{optional<arc::WebContents::Navigation>=(?=c{Navigation={shared_ptr<arc::WebContents::Navigation::Impl>=^{Impl}^{__shared_weak_count}}})B},R,N,V_nativeNavigation"
+    },
+    {
+      "record_va": "0xe2a9660",
+      "name": "url",
+      "attributes": "T@\"NSString\",R,N"
+    },
+    {
+      "record_va": "0xe2a9670",
+      "name": "didRedirectToOtherTab",
+      "attributes": "TB,R,N"
+    },
+    {
+      "record_va": "0xe2a9680",
+      "name": "responseStatusCode",
+      "attributes": "Tq,R,N"
+    },
+    {
+      "record_va": "0xe2a9690",
+      "name": "responseHeaders",
+      "attributes": "T@\"NSDictionary\",R,N"
+    }
+  ]
+}
+
+###  -init: 0x4416808 @32@0:8{Navigation={shared_ptr<arc::WebContents::Navigation::Impl>=^{Impl}^{__shared_weak_count}}}16 available
+
+  ID IVar2;
+  ID self;
+  Impl *pIVar5;
+  ID local_50;
+  class_t *pcStack_48;
+  
+  pIVar5 = param_3.field0_0x0.field0_0x0;
+  pcStack_48 = &objc::class_t::ArcNavigation;
+  local_50 = param_1;
+  IVar2 = NSObject::init((ID)&local_50,"init",pIVar5,param_3.field0_0x0.field1_0x8);
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x20) == '\0') goto LAB_0441686c;
+  plVar7 = *(long **)(IVar2 + 0x18);
+  if (plVar7 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar7[1];
+    plVar7[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar7 + 0x10))(plVar7);
+      if (plVar7[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar7[2];
+        plVar7[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04416868;
+      }
+      pcVar6 = *(code **)(*plVar7 + 0x20);
+      if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40)) {
+        FUN_00005810(plVar7,0x20);
+      }
+      else {
+        (*pcVar6)(plVar7);
+      }
+    }
+  }
+LAB_04416868:
+  *(undefined1 *)(IVar2 + 0x20) = 0;
+LAB_0441686c:
+  lVar8 = *(long *)pIVar5;
+  *(long *)(IVar2 + 0x10) = lVar8;
+  lVar1 = *(long *)(pIVar5 + 8);
+  *(long *)(IVar2 + 0x18) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = *(long *)(lVar1 + 8) + 1;
+    lVar8 = *(long *)(IVar2 + 0x10);
+  }
+  *(undefined1 *)(IVar2 + 0x20) = 1;
+  if (*(long *)(lVar8 + 0x38) != 0) {
+    self = NSMutableDictionary::dictionaryWithCapacity_
+                     ((ID)&_OBJC_CLASS___NSMutableDictionary,"dictionaryWithCapacity:");
+    for (plVar7 = *(long **)(lVar8 + 0x30); plVar7 != (long *)0x0; plVar7 = (long *)*plVar7) {
+      lVar1 = (long)*(char *)((long)plVar7 + 0x3f);
+      if (lVar1 < 0) {
+        lVar8 = plVar7[5];
+        lVar1 = plVar7[6];
+      }
+      else {
+        lVar8 = (long)(plVar7 + 5);
+      }
+      uVar3 = FUN_01c391bc(lVar8,lVar1);
+      lVar1 = (long)*(char *)((long)plVar7 + 0x27);
+      if (lVar1 < 0) {
+        lVar8 = plVar7[2];
+        lVar1 = plVar7[3];
+      }
+      else {
+        lVar8 = (long)(plVar7 + 2);
+      }
+      uVar4 = FUN_01c391bc(lVar8,lVar1);
+      NSMutableDictionary::setObject_forKeyedSubscript_
+                (self,"setObject:forKeyedSubscript:",uVar3,uVar4);
+    }
+    *(ID *)(IVar2 + 8) = self;
+  }
+  return IVar2;
+}
+
+
+
+
+###  -isEqual: 0x44169e8 B24@0:8@16 available
+
+  ID IVar2;
+  byte local_38;
+  
+  if (param_1 == param_3) {
+    return 1;
+  }
+  if (param_3 != 0) {
+    IVar2 = _objc_msgSend((ID)&objc::class_t::ArcNavigation,"class");
+    IVar2 = _objc_msgSend(param_3,"isKindOfClass:",IVar2);
+    if ((int)IVar2 != 0) {
+      _objc_msgSend(param_3,"nativeNavigation",&local_48);
+      if ((local_38 & *(byte *)(param_1 + 0x20)) == 0) {
+        bVar4 = (bool)(*(byte *)(param_1 + 0x20) == local_38);
+        if (local_38 == 0) {
+          return bVar4;
+        }
+      }
+      else {
+        if ((local_38 & 1) == 0) {
+                    /* WARNING: Does not return */
+          pcVar3 = (code *)SoftwareBreakpoint(1,0x4416b58);
+          (*pcVar3)();
+        }
+        bVar4 = (bool)(*(long *)(param_1 + 0x10) == local_48);
+      }
+      if (local_40 == (long *)0x0) {
+        return bVar4;
+      }
+      LOAcquire();
+      lVar1 = local_40[1];
+      local_40[1] = lVar1 + -1;
+      LORelease();
+      if (lVar1 != 0) {
+        return bVar4;
+      }
+      (**(code **)(*local_40 + 0x10))(local_40);
+      if (local_40[2] != 0) {
+        LOAcquire();
+        lVar1 = local_40[2];
+        local_40[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return bVar4;
+        }
+      }
+      pcVar3 = *(code **)(*local_40 + 0x20);
+      if (((pcVar3 != FUN_00f01bc0) && (pcVar3 != FUN_00f01bc0)) && (pcVar3 != FUN_013efb40)) {
+        (*pcVar3)(local_40);
+        return bVar4;
+      }
+      FUN_00005810(local_40,0x20);
+      return bVar4;
+    }
+  }
+  return 0;
+}
+
+
+
+
+###  -hash 0x4416b58 Q16@0:8 available
+
+  unsigned_long_long uVar1;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    local_18 = *(undefined8 *)(param_1 + 0x10);
+    uVar1 = FUN_00018f3c(&local_18,8);
+    return uVar1;
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_04b08a00();
+}
+
+
+
+
+###  -url 0x4416b90 @16@0:8 available
+
+  ID IVar5;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    puVar6 = *(undefined8 **)(param_1 + 0x10);
+    cVar3 = *(char *)((long)puVar6 + 0x17);
+    puVar1 = (undefined8 *)*puVar6;
+    if (-1 < (long)cVar3) {
+      puVar1 = puVar6;
+    }
+    lVar2 = puVar6[1];
+    if (-1 < cVar3) {
+      lVar2 = (long)cVar3;
+    }
+    IVar5 = FUN_01c391bc(puVar1,lVar2);
+    return IVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x4416bbc);
+  (*pcVar4)();
+}
+
+
+
+
+###  -didRedirectToOtherTab 0x4416bbc B16@0:8 available
+
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    return (bool)*(byte *)(*(long *)(param_1 + 0x10) + 0x18);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4416bd4);
+  (*pcVar1)();
+}
+
+
+
+
+###  -responseStatusCode 0x4416bd4 q16@0:8 available
+
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    return (long)*(int *)(*(long *)(param_1 + 0x10) + 0x48);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4416bec);
+  (*pcVar1)();
+}
+
+
+
+
+###  -responseHeaders 0x43dd450 @16@0:8 available
+
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+
+###  -nativeNavigation 0x440a2ac {optional<arc::WebContents::Navigation>=(?=c{Navigation={shared_ptr<arc::WebContents::Navigation::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8 available
+
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x20) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::MenuModel> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x440a2ec);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x18);
+    pIVar4 = *(Impl **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x18);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x440a40c v16@0:8 available
+
+  
+  if ((*(char *)(param_1 + 0x20) != '\0') &&
+     (plVar3 = *(long **)(param_1 + 0x18), plVar3 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_0440a440;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_0440a440:
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x440a4dc @16@0:8 available
+
+  *(undefined1 *)(param_1 + 0x10) = 0;
+  *(undefined1 *)(param_1 + 0x20) = 0;
+  return param_1;
+}
+
+
+

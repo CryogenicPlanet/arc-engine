@@ -1,0 +1,63 @@
+INDEX 0x442fa70 ArcDownloadItem::webContents path=/home/exedev/work/inputs/decompile/0x44.c offset=1091205 C_bytes=1898 failed=0
+// ==== 0x442fa70  ArcDownloadItem::webContents  (324 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcDownloadItem::webContents(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  ID IVar2;
+  code *pcVar3;
+  undefined1 auStack_48 [8];
+  long *local_40;
+  byte local_38;
+  
+  if (*(ID *)(param_1 + 8) != 0) {
+    return *(ID *)(param_1 + 8);
+  }
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    if ((*(long *)(param_1 + 0x10) == 0) || (FUN_0430e1e8(auStack_48), local_38 == 0)) {
+      return 0;
+    }
+    IVar2 = _objc_alloc(&objc::class_t::ArcWebContents);
+    if ((local_38 & 1) != 0) {
+      IVar2 = ArcWebContents::initWithWebContents_(IVar2,"initWithWebContents:",auStack_48);
+      *(ID *)(param_1 + 8) = IVar2;
+      if ((local_38 != 0) && (local_40 != (long *)0x0)) {
+        LOAcquire();
+        lVar1 = local_40[1];
+        local_40[1] = lVar1 + -1;
+        LORelease();
+        if (lVar1 == 0) {
+          (**(code **)(*local_40 + 0x10))(local_40);
+          if (local_40[2] != 0) {
+            LOAcquire();
+            lVar1 = local_40[2];
+            local_40[2] = lVar1 + -1;
+            LORelease();
+            if (lVar1 != 0) goto LAB_0442fb24;
+          }
+          pcVar3 = *(code **)(*local_40 + 0x20);
+          if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+            FUN_00005810(local_40,0x20);
+          }
+          else {
+            (*pcVar3)(local_40);
+          }
+        }
+      }
+LAB_0442fb24:
+      return *(ID *)(param_1 + 8);
+    }
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x442fbb4);
+  (*pcVar3)();
+}
+
+
+

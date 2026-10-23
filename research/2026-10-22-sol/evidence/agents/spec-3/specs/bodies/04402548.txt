@@ -1,0 +1,40 @@
+INDEX 0x4402548 FUN_04402548 path=/home/exedev/work/inputs/decompile/0x44.c offset=64179 C_bytes=867 failed=0
+// ==== 0x4402548  FUN_04402548  (148 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+bool FUN_04402548(long *param_1,long *param_2)
+
+{
+  bool bVar1;
+  int iVar2;
+  long lVar3;
+  int *piVar4;
+  int *local_38;
+  
+  local_38 = (int *)*param_1;
+  piVar4 = local_38;
+  if (((ulong)local_38 & 1) == 0) {
+    iVar2 = *local_38;
+    *local_38 = iVar2 + 1;
+    piVar4 = (int *)CONCAT44((int)((ulong)local_38 >> 0x20),iVar2);
+  }
+  lVar3 = FUN_044025f4(piVar4,&local_38);
+  if (((ulong)local_38 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if ((param_2 == (long *)0x0) || (lVar3 == 0)) {
+    bVar1 = *param_1 == 1;
+  }
+  else {
+    _objc_retainAutorelease(lVar3);
+    bVar1 = false;
+    *param_2 = lVar3;
+  }
+  return bVar1;
+}
+
+
+

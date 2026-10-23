@@ -1,0 +1,118 @@
+# ArcBrowser
+
+ArcCore **1.170.0 arm64**, unslid engine VAs. 40 declared identities. Superclass `NSObject`; class metadata `0xe37bda8`, class RO `0xe2a4f18`; raw otool `objc170.txt:23197`. Method identity is `(class, category, kind, selector)`; inherited methods are outside this declared inventory.
+
+Chromium source comparisons use commit `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c` (156.0.8078.48). CEF comparisons use `426920c33ef22551e0b8f48cf343d623ac25642d`. Files/lines cited below are pinned source-backed comparisons; anonymous engine functions retain their VAs unless independently identified. Sources and hashes: [source manifest](../evidence/sources.json).
+
+This is an ownership and Chrome-service bridge. Init stores an optional shared native Browser, creates side-panel and creation-parameter wrappers (0x43e0c34); destruction releases those fields and delegate/native control blocks (0x43e320c). setDelegate builds weak delegate/self references or updates/clears the existing bridge (0x43e1284). Raw vtable prefix 0xda87798 links callbacks 0x43e33c4 (browser:didCreateNewWebContents:isActive:), 0x43e3458 (browser:didRestoreWebContents:withSessionId:), and extension-popup/action callbacks 0x43e3514, 0x43e35d4, 0x43e367c, 0x43e370c. This is a bounded prefix, not the full delegate protocol.
+
+createWebContents passes native configuration through 0x42faa84, whose Arc browser_impl.cc path and tab/navigation creation calls establish a browser-layer route (0x43e154c → 0x42faa84). setWindow reaches platform association 0x43c8b18 through 0x42fa9fc (0x43e14d4); that helper keeps the initial association when already set, but the exact platform pointer/NSWindow/NSView contract still needs ABI review. takeOwnershipOfWebContents is a separate path with browser-liveness failure (0x43e1734 → 0x437b014).
+
+Close completion storage is conditional (0x43e1190 → 0x42fa5c8). The native dead/invalid/already-closing branch invokes active completion directly before return; the live branch copies transport into pending-callback storage at +0x160/+0x168/+0x170. Pending storage identifies no dispatch queue and gives no asynchronous-only guarantee. The skip flag reaches native unload handling; live-path completion timing remains unresolved. Cookies, autocomplete, extensions, and session restore use distinct service bridges (0x43e18cc, 0x43e1f80, 0x43e23c0, 0x43e2b9c). 0x42fbd80 contains browser-deinitialized/unknown-keyword failures and captures incremental autocomplete completion. Exact invocation threads and teardown races remain unresolved. CEF supports browser creation/navigation (include/cef_browser.h:301,82), but its macOS parent_view forces Alloy (include/internal/cef_types_mac.h:110-153). Matching this native embedding contract plus Chrome service dependencies is a route gate; no drop-in CEF parity is claimed.
+
+Revision evidence for corrected annotations: bounded original bodies, segment-translated instructions and limits are recorded in [revision notes](../revision-evidence/notes.md).
+
+State/layout below is independently decoded from Mach-O metadata; offsets are bytes from self. Encoded C++/ObjC ownership markers are declarations, not proof of runtime lifetime. Property `C` means declared copy, `&` strong, `W` weak; `N` nonatomic. See exact method bodies for observed operations.
+
+Instance start `8`, instance size `64`. Protocol declarations: `none in class metadata`.
+
+| Ivar | Offset | Size | Type | Metadata record VA |
+|---|---:|---:|---|---|
+| _sidePanel | 8 | 8 | `@"ArcBrowserSidePanel"` | 0xe2a4e10 |
+| _browserCreateParams | 16 | 8 | `@"ArcBrowserCreateParams"` | 0xe2a4e30 |
+| _browserDelegate | 24 | 16 | `{shared_ptr<(anonymous namespace)::BrowserDelegateBridge>="__ptr_"^{BrowserDelegateBridge}"__cntrl_"^{__shared_weak_count}}` | 0xe2a4e50 |
+| _nativeBrowser | 40 | 24 | `{optional<arc::Browser>=""(?="__null_state_"c"__val_"{Browser="impl_"{shared_ptr<arc::Browser::Impl>="__ptr_"^{Impl}"__cntrl_"^{__shared_weak_count}}})"__engaged_"B}` | 0xe2a4e70 |
+
+| Property | Raw attributes | Metadata record VA |
+|---|---|---|
+| browserDelegate | `T{shared_ptr<(anonymous namespace)::BrowserDelegateBridge>=^{BrowserDelegateBridge}^{__shared_weak_count}},N,V_browserDelegate` | 0xe2a4e98 |
+| nativeBrowser | `T{optional<arc::Browser>=(?=c{Browser={shared_ptr<arc::Browser::Impl>=^{Impl}^{__shared_weak_count}}})B},N,V_nativeBrowser` | 0xe2a4ea8 |
+| type | `Tq,R,N` | 0xe2a4eb8 |
+| context | `T@"ArcBrowserContext",R,N` | 0xe2a4ec8 |
+| windowIdentifier | `T@"NSString",&,N` | 0xe2a4ed8 |
+| sidePanel | `T@"ArcBrowserSidePanel",R,N,V_sidePanel` | 0xe2a4ee8 |
+| browserCreateParams | `T@"ArcBrowserCreateParams",R,N,V_browserCreateParams` | 0xe2a4ef8 |
+| sessionId | `T@"ArcSessionID",R,N` | 0xe2a4f08 |
+
+Categories in assignment: none. No base/category selector collision was found in these assigned classes. Shared IMPs remain separate rows; their Ghidra display names are not receiver identities.
+
+The matrix records local pseudocode observations, not runtime verification. `literal_verified` means a literal leaf load/store/return matched its exact body, not full ABI or thread verification. `local_review`/`partial_review` are bounded human review. `unresolved` rows preserve declared identity and concrete evidence without inferred behavior. No callback queue is guaranteed unless class notes give an explicit source/address anchor.
+
+| Category | +/- selector | Type encoding | IMP VA / exact body | Behavior | Backend/callees | Evidence | Confidence / status |
+|---|---|---|---|---|---|---|---|
+| (base) | `-sessionId` | `@16@0:8` | [0x43e0a50](../bodies/043e0a50.txt) | Requires engaged Browser; obtains native session ID through 0x42fb310 and wraps ArcSessionID. | 0x42fb310 | metadata `0xd777dec`; dobjc170.txt:1397 | medium-partial; available; partial_review |
+| (base) | `-windowIdentifier` | `@16@0:8` | [0x43e0a9c](../bodies/043e0a9c.txt) | Converts native field-derived string data through 0x1c391bc (CFStringCreateWithBytes converter inspected in evidence/string-url-converters.txt). Exact source reads and optional/nil guards remain visible in body. | 0x42fb498,0x1c391bc | metadata `0xd777df8`; dobjc170.txt:1398 | medium-local; available; conversion_partial |
+| (base) | `-setWindowIdentifier:` | `v24@0:8@16` | [0x43e0b9c](../bodies/043e0b9c.txt) | Requires engaged Browser; nil window identifier becomes empty string; converts and assigns through 0x43341e4. | 0x1b356b8,0x43341e4 | metadata `0xd777e04`; dobjc170.txt:1399 | medium-partial; available; partial_review |
+| (base) | `-initWithBrowser:` | `@32@0:8{Browser={shared_ptr<arc::Browser::Impl>=^{Impl}^{__shared_weak_count}}}16` | [0x43e0c34](../bodies/043e0c34.txt) | Calls NSObject init; installs native Browser shared handle, creates ArcBrowserSidePanel and ArcBrowserCreateParams wrappers; C++ control blocks are retained. | 0x42c8400,0x43334c8,0x50d342c | metadata `0xd777e10`; dobjc170.txt:1400 | medium-partial; available; partial_review |
+| (base) | `-isEqual:` | `B24@0:8@16` | [0x43e1020](../bodies/043e1020.txt) | Behavior unresolved beyond local wrapper evidence. Observed selector operands: isKindOfClass:. | No direct FUN call; see body for field/ObjC/indirect operations | metadata `0xd777e1c`; dobjc170.txt:1401 | low-unresolved; available; unresolved |
+| (base) | `-tryToCloseSkipBeforeUnloadHandlers:callback:` | `v28@0:8B16@?20` | [0x43e1190](../bodies/043e1190.txt) | Requires engaged wrapper storage, captures callback and passes skip flag to 0x42fa5c8. That bridge invokes active completion directly for dead/invalid/already-closing native state; otherwise copies it into pending-callback storage (+0x160/+0x168/+0x170). Wrapper releases local transport after return. Pending storage does not establish asynchronous dispatch. | 0x42fa5c8 | metadata `0xd777e28`; dobjc170.txt:1402 | medium-partial; available; partial_review |
+| (base) | `-setDelegate:` | `v24@0:8@16` | [0x43e1284](../bodies/043e1284.txt) | Nil clears/releases BrowserDelegateBridge; existing bridge replaces delegate; first non-nil delegate creates bridge with weak references to delegate and self, then registers it via 0x4332a34. | 0x4332a34 | metadata `0xd777e34`; dobjc170.txt:1403 | medium-partial; available; partial_review |
+| (base) | `-isInitialized` | `B16@0:8` | [0x43e149c](../bodies/043e149c.txt) | Requires engaged nativeBrowser (otherwise traps); checks native liveness token and underlying browser pointer. | No direct FUN call; see body for field/ObjC/indirect operations | metadata `0xd777e40`; dobjc170.txt:1404 | medium-local; available; local_review |
+| (base) | `-setWindow:` | `v24@0:8@16` | [0x43e14d4](../bodies/043e14d4.txt) | Requires engaged browser and forwards window object address to 0x42fa9fc; native bridge reaches window association helper 0x43c8b18. | 0x42fa9fc | metadata `0xd777e4c`; dobjc170.txt:1405 | medium-partial; available; partial_review |
+| (base) | `-createWebContents:` | `@24@0:8@16` | [0x43e154c](../bodies/043e154c.txt) | Reads nativeWebContentsConfiguration from input; creates via 0x42faa84 and wraps result as ArcWebContents. | 0x42faa84 | metadata `0xd777e58`; dobjc170.txt:1406 | medium-partial; available; partial_review |
+| (base) | `-takeOwnershipOfWebContents:` | `v24@0:8@16` | [0x43e1734](../bodies/043e1734.txt) | Extracts incoming web_contents optional; checks browser liveness, reports browser deinitialized on failure, and forwards live native handle to 0x437b014. | 0x4b37104,0x437b014 | metadata `0xd777e64`; dobjc170.txt:1407 | medium-partial; available; partial_review |
+| (base) | `-getAllCookies:` | `v24@0:8@?16` | [0x43e18cc](../bodies/043e18cc.txt) | Captures completion block; obtains native context via 0x433410c and requests cookies through 0x42cba00 using adapter 0x43e5ef8. | 0x433410c,0x42cba00 | metadata `0xd777e70`; dobjc170.txt:1408 | medium-partial; available; partial_review |
+| (base) | `-getAllCookies:completion:` | `v32@0:8@16@?24` | [0x43e1a78](../bodies/043e1a78.txt) | Converts URL filter through 0x43abdf8 and passes callback plus native context to 0x42cba00. | 0x433410c,0x43abdf8,0x42cba00 | metadata `0xd777e7c`; dobjc170.txt:1409 | medium-partial; available; partial_review |
+| (base) | `-setCookie:withCookie:` | `v32@0:8@16@24` | [0x43e1ce8](../bodies/043e1ce8.txt) | Converts URL, extracts native cookie, obtains browser context and delegates to 0x4333fe4. | 0x43abdf8,0x4333fe4 | metadata `0xd777e88`; dobjc170.txt:1410 | medium-partial; available; partial_review |
+| (base) | `-removeCookie:withName:` | `v32@0:8@16@24` | [0x43e1e70](../bodies/043e1e70.txt) | Converts URL/name and delegates deletion to 0x4334078. | 0x43abdf8,0x1b356b8,0x4334078 | metadata `0xd777e94`; dobjc170.txt:1411 | medium-partial; available; partial_review |
+| (base) | `-saveCookiesToDisk` | `v16@0:8` | [0x43e1f6c](../bodies/043e1f6c.txt) | Requires engaged native Browser and forwards flush request to 0x42fbc80. | 0x42fbc80 | metadata `0xd777ea0`; dobjc170.txt:1412 | medium-partial; available; partial_review |
+| (base) | `-autocomplete:cursorPosition:preventInlineAutocomplete:startFresh:keyword:error:completion:` | `B60@0:8@16i24B28B32@36^@44@?52` | [0x43e1f80](../bodies/043e1f80.txt) | Converts text and optional keyword, captures completion; forwards cursor/flags to 0x42fbd80 and translates immediate status via 0x4402548 into BOOL/error. | 0x1b356b8,0x42fbd80,0x4402548 | metadata `0xd777eac`; dobjc170.txt:1413 | medium-partial; available_with_decompiler_limits; partial_review |
+| (base) | `-deleteAutocompleteMatch:` | `v24@0:8@16` | [0x43e21d8](../bodies/043e21d8.txt) | Extracts native autocomplete_match and calls 0xbd58aa0 using browser autocomplete controller; retains/releases shared transport. | 0xbd58aa0 | metadata `0xd777eb8`; dobjc170.txt:1414 | medium-partial; available; partial_review |
+| (base) | `-executeExtensionAction:` | `v24@0:8@16` | [0x43e23c0](../bodies/043e23c0.txt) | Converts extension ID then forwards action execution to 0x42fc5d8. | 0x1b356b8,0x42fc5d8 | metadata `0xd777ec4`; dobjc170.txt:1415 | medium-partial; available; partial_review |
+| (base) | `-pinExtension:` | `v24@0:8@16` | [0x43e2454](../bodies/043e2454.txt) | Converts extension ID and forwards through 0x4969fc/0x43b6c18 with pin-state argument. | 0x1b356b8,0x4969fc,0x43b6c18 | metadata `0xd777ed0`; dobjc170.txt:1416 | medium-partial; available_with_decompiler_limits; partial_review |
+| (base) | `-unpinExtension:` | `v24@0:8@16` | [0x43e2540](../bodies/043e2540.txt) | Converts extension ID and forwards through 0x4969fc/0x43b6c18 with unpin-state argument. | 0x1b356b8,0x4969fc,0x43b6c18 | metadata `0xd777edc`; dobjc170.txt:1417 | medium-partial; available_with_decompiler_limits; partial_review |
+| (base) | `-showExtensionContextMenu:` | `v24@0:8@16` | [0x43e262c](../bodies/043e262c.txt) | Converts extension ID then dispatches through 0x4969fc/0x43b5ebc. | 0x1b356b8,0x4969fc,0x43b5ebc | metadata `0xd777ee8`; dobjc170.txt:1418 | medium-partial; available_with_decompiler_limits; partial_review |
+| (base) | `-moveExtension:targetIndex:` | `v32@0:8@16Q24` | [0x43e2714](../bodies/043e2714.txt) | Converts extension ID then forwards target index through 0x4969fc/0x43b606c. | 0x1b356b8,0x4969fc,0x43b606c | metadata `0xd777ef4`; dobjc170.txt:1419 | medium-partial; available_with_decompiler_limits; partial_review |
+| (base) | `-triggerExtensionOmniboxInput:inputText:disposition:` | `v40@0:8@16@24q32` | [0x43e280c](../bodies/043e280c.txt) | Converts extension ID and text, forwards disposition to 0x42fc76c. | 0x1b356b8,0x42fc76c | metadata `0xd777f00`; dobjc170.txt:1420 | medium-partial; available_with_decompiler_limits; partial_review |
+| (base) | `-type` | `q16@0:8` | [0x43e293c](../bodies/043e293c.txt) | Requires engaged Browser then queries native type through 0x42fad78. | 0x42fad78 | metadata `0xd777f0c`; dobjc170.txt:1421 | medium-partial; available; partial_review |
+| (base) | `-context` | `@16@0:8` | [0x43e2970](../bodies/043e2970.txt) | Obtains native context via 0x433410c, wraps ArcBrowserContext and releases shared temporary. | 0x433410c | metadata `0xd777f18`; dobjc170.txt:1422 | medium-partial; available; partial_review |
+| (base) | `-canRestoreWebContentsWithSessionId:` | `B24@0:8@16` | [0x43e2b20](../bodies/043e2b20.txt) | Extracts sessionId and queries restoration eligibility through 0x42fae00. | 0x42fae00 | metadata `0xd777f24`; dobjc170.txt:1423 | medium-partial; available; partial_review |
+| (base) | `-restoreWebContentsWithSessionId:` | `v24@0:8@16` | [0x43e2b9c](../bodies/043e2b9c.txt) | Extracts sessionId and forwards restoration request to 0x42faed0. | 0x42faed0 | metadata `0xd777f30`; dobjc170.txt:1424 | medium-partial; available; partial_review |
+| (base) | `-restoreForeignTab:` | `@24@0:8@16` | [0x43e2c10](../bodies/043e2c10.txt) | Extracts session_tab, calls 0x42fb100 and wraps returned native object as ArcWebContents. | 0x42fb100 | metadata `0xd777f3c`; dobjc170.txt:1425 | medium-partial; available; partial_review |
+| (base) | `-isJavaScriptFromAppleEventsAllowed` | `B16@0:8` | [0x43e2e9c](../bodies/043e2e9c.txt) | Requires engaged Browser then queries bool through 0x42fb370. | 0x42fb370 | metadata `0xd777f48`; dobjc170.txt:1426 | medium-partial; available; partial_review |
+| (base) | `-isCastEnabled` | `B16@0:8` | [0x43e2eb0](../bodies/043e2eb0.txt) | Requires engaged Browser then queries bool through 0x42fb3e4. | 0x42fb3e4 | metadata `0xd777f54`; dobjc170.txt:1427 | medium-partial; available; partial_review |
+| (base) | `-toggleJavaScriptFromAppleEventsAllowed` | `v16@0:8` | [0x43e2ec4](../bodies/043e2ec4.txt) | Behavior unresolved beyond local wrapper evidence. Direct bridge/helper calls: 0x7edcf74. | 0x7edcf74 | metadata `0xd777f60`; dobjc170.txt:1428 | low-unresolved; available; unresolved |
+| (base) | `-browserCreateParams` | `@16@0:8` | [0x420b5f8](../bodies/0420b5f8.txt) | Literal return: *(ID *)(param_1 + 0x10). Use this row metadata type; shared Ghidra name/type may differ. Runtime annotation identifies objc_retainAutoreleaseReturnValue; this is an object return with retain/autorelease handling, not a caller-owned independent copy. | No direct FUN call; see body for field/ObjC/indirect operations | metadata `0xd777f6c`; dobjc170.txt:1429 | high-local; available; literal_verified |
+| (base) | `-nativeBrowser` | `{optional<arc::Browser>=(?=c{Browser={shared_ptr<arc::Browser::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8` | [0x43e2f10](../bodies/043e2f10.txt) | Copies optional native shared handle from self+0x28 into aggregate return storage, increments non-null control block; source engagement is at self+0x38. Ghidra display type may name a different IMP alias. | No direct FUN call; see body for field/ObjC/indirect operations | metadata `0xd777f78`; dobjc170.txt:1430 | medium-local; available; local_review |
+| (base) | `-setNativeBrowser:` | `v40@0:8{optional<arc::Browser>=(?=c{Browser={shared_ptr<arc::Browser::Impl>=^{Impl}^{__shared_weak_count}}})B}16` | [0x43e2f50](../bodies/043e2f50.txt) | Replaces optional native shared handle at self+0x28, retaining/releasing control blocks as presence changes; engagement byte self+0x38. | 0x4331e20 | metadata `0xd777f84`; dobjc170.txt:1431 | medium-local; available; local_review |
+| (base) | `-browserDelegate` | `{shared_ptr<(anonymous namespace)::BrowserDelegateBridge>=^{BrowserDelegateBridge}^{__shared_weak_count}}16@0:8` | [0x43e3070](../bodies/043e3070.txt) | Behavior unresolved beyond local wrapper evidence. Native field or indirect-dispatch operations require further review. | No direct FUN call; see body for field/ObjC/indirect operations | metadata `0xd777f90`; dobjc170.txt:1432 | low-unresolved; available; unresolved |
+| (base) | `-setBrowserDelegate:` | `v32@0:8{shared_ptr<(anonymous namespace)::BrowserDelegateBridge>=^{BrowserDelegateBridge}^{__shared_weak_count}}16` | [0x43e3090](../bodies/043e3090.txt) | Behavior unresolved beyond local wrapper evidence. Native field or indirect-dispatch operations require further review. | No direct FUN call; see body for field/ObjC/indirect operations | metadata `0xd777f9c`; dobjc170.txt:1433 | low-unresolved; available_with_decompiler_limits; unresolved |
+| (base) | `-sidePanel` | `@16@0:8` | [0x2d0fb40](../bodies/02d0fb40.txt) | Literal return: *(ID *)(param_1 + 8). Use this row metadata type; shared Ghidra name/type may differ. | No direct FUN call; see body for field/ObjC/indirect operations | metadata `0xd777fa8`; dobjc170.txt:1434 | high-local; available; literal_verified |
+| (base) | `-.cxx_destruct` | `v16@0:8` | [0x43e320c](../bodies/043e320c.txt) | Native destruction body is available; cleanup/control-block/ObjC runtime operations must be interpreted with this class layout. | No direct FUN call; see body for field/ObjC/indirect operations | metadata `0xd777fb4`; dobjc170.txt:1435 | medium-local; available_with_decompiler_limits; literal_partial |
+| (base) | `-.cxx_construct` | `@16@0:8` | [0x43e3384](../bodies/043e3384.txt) | Native construction body initializes local storage; literal stores are retained in method-observations.json. No default ownership/queue inference. | No direct FUN call; see body for field/ObjC/indirect operations | metadata `0xd777fc0`; dobjc170.txt:1436 | medium-local; available; literal_partial |
+
+Unresolved engineering questions (method-specific evidence above):
+
+- Session identity stability across restore.
+- Native field semantics, optional/empty-string policy and producer invariants require method-specific validation.
+- Identifier persistence and callback effects in native setter.
+- Lifetime of underlying Chrome Browser after native handle survives shutdown.
+- Native backend semantics, ownership and queue beyond literal wrapper operations remain unresolved.
+- Direct completion can reenter before return; live-path completion timing, exactly-once behavior, queue and before-unload cancellation remain unproved.
+- Does clearing the wrapper unregister immediately or leave an expiring native weak bridge?
+- Exact platform window type, replacement behavior, and pane ownership.
+- Actual NSView ownership, attachment, and Chrome Browser tab insertion rules.
+- What transfers from the former owner, and which observers/delegates survive?
+- Cookie partition scope, callback queue, cancellation and error delivery.
+- Filter semantics and cookie partition scope.
+- Cookie acceptance errors, same-site and partition-key policy.
+- Which domain/path/partition matches are deleted?
+- No completion barrier shown here; when are cookies durable?
+- Incremental completion ordering, cancellation, and callback queue.
+- Provider-specific deletion and history persistence effects.
+- Native extension activation, permission and popup behavior.
+- Pin-state argument, persistence and callback order.
+- Context menu ownership and native window placement.
+- Bounds checking, toolbar ordering and persistence.
+- Disposition mapping and omnibox extension API dispatch.
+- Exposed type-enum mapping.
+- Wrapper equality and profile lifetime across shutdown.
+- Eligibility conditions and lifetime.
+- Restore completion and eligibility after service shutdown.
+- Full foreign-session semantics and profile matching.
+- Preference/policy source and enforcement of Apple Events JavaScript.
+- Cast service availability and policy.
+- Confirm aggregate ABI and native service lifetime independently of shared handle retention.
+- No ObjC cached-field refresh or underlying service lifetime guarantee is established by this setter.
+- Underlying resource destruction, observer cancellation and required sequence are not established by this wrapper cleanup.
+- Confirm nontrivial native default-constructor semantics before translating layout.

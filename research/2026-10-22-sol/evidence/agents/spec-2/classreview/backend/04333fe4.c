@@ -1,0 +1,36 @@
+// ==== 0x4333fe4  FUN_04333fe4  (148 bytes)
+
+void FUN_04333fe4(undefined8 *param_1,undefined8 *param_2,undefined8 param_3)
+
+{
+  undefined8 *puVar1;
+  long lVar2;
+  char cVar3;
+  undefined8 uVar4;
+  undefined8 local_a8 [2];
+  undefined7 local_98;
+  char cStack_91;
+  undefined1 auStack_88 [80];
+  undefined1 auStack_38 [8];
+  
+  uVar4 = *param_1;
+  cVar3 = *(char *)((long)param_2 + 0x17);
+  puVar1 = (undefined8 *)*param_2;
+  if (-1 < (long)cVar3) {
+    puVar1 = param_2;
+  }
+  lVar2 = param_2[1];
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  FUN_00c28450(local_a8,puVar1,lVar2);
+  FUN_042fb680(uVar4,local_a8,param_3);
+  FUN_000282bc(auStack_38,0);
+  FUN_0002827c(auStack_88);
+  if (cStack_91 < '\0') {
+    FUN_00005810(local_a8[0],CONCAT17(cStack_91,local_98) & 0x7fffffffffffffff);
+  }
+  return;
+}
+
+

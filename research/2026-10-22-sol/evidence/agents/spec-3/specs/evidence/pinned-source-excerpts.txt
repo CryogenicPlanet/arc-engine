@@ -1,0 +1,593 @@
+
+base/time/time.h:537-548
+537: // Time is stored internally as microseconds since the Windows epoch (1601).
+538: class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
+539:  public:
+540:   // Offset of UNIX epoch (1970-01-01 00:00:00 UTC) from Windows FILETIME epoch
+541:   // (1601-01-01 00:00:00 UTC), in microseconds. This value is derived from the
+542:   // following: ((1970-1601)*365+89)*24*60*60*1000*1000, where 89 is the number
+543:   // of leap year days between 1601 and 1970: (1970-1601)/4 excluding 1700,
+544:   // 1800, and 1900.
+545:   static constexpr int64_t kMicrosecondsFromWindowsToUnixEpoch =
+546:       INT64_C(11644473600000000);
+547: 
+548: #if BUILDFLAG(IS_WIN)
+
+components/omnibox/browser/autocomplete_match.h:860-902
+860:   // How many times this result was typed in / selected from the omnibox.
+861:   // Only set for some providers and result_types.  If it is not set,
+862:   // its value is -1.  At the time of writing this comment, it is only
+863:   // set for matches from HistoryURL and HistoryQuickProvider.
+864:   int typed_count = -1;
+865: 
+866:   // True if the user should be able to delete this match.
+867:   bool deletable = false;
+868: 
+869:   // This string is loaded into the location bar when the item is selected
+870:   // by pressing the arrow keys. This may be different than a URL, for example,
+871:   // for search suggestions, this would just be the search terms.
+872:   std::u16string fill_into_edit;
+873: 
+874:   // This string is displayed adjacent to the omnibox if this match is the
+875:   // default. Will usually be URL when autocompleting a title, and empty
+876:   // otherwise.
+877:   std::u16string additional_text;
+878: 
+879:   // The inline autocompletion to display after the user's input in the
+880:   // omnibox, if this match becomes the default match.  It may be empty.
+881:   std::u16string inline_autocompletion;
+882:   // Whether rich autocompletion triggered; i.e. this suggestion *is or could
+883:   // have been* rich autocompleted.
+884:   // TODO(manukh): remove `rich_autocompletion_triggered` when counterfactual
+885:   //  experiments end.
+886:   RichAutocompletionType rich_autocompletion_triggered =
+887:       RichAutocompletionType::kNone;
+888: 
+889:   // If false, the omnibox should prevent this match from being the
+890:   // default match.  Providers should set this to true only if the
+891:   // user's input, plus any inline autocompletion on this match, would
+892:   // lead the user to expect a navigation to this match's destination.
+893:   // For example, with input "foo", a search for "bar" or navigation
+894:   // to "bar.com" should not set this flag; a navigation to "foo.com"
+895:   // should only set this flag if ".com" will be inline autocompleted;
+896:   // and a navigation to "foo/" (an intranet host) or search for "foo"
+897:   // should set this flag.
+898:   bool allowed_to_be_default_match = false;
+899: 
+900:   // The URL to actually load when the autocomplete item is selected. This URL
+901:   // should be canonical so we can compare URLs with strcmp to avoid dupes.
+902:   // It may be empty if there is no possible navigation.
+
+components/omnibox/browser/autocomplete_match.h:980-985
+980:   // The transition type to use when the user opens this match.  By default,
+981:   // this is TYPED.  Providers whose matches do not look like URLs should set
+982:   // it to GENERATED.
+983:   ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
+984: 
+985:   // Type of this match.
+
+components/omnibox/browser/autocomplete_match.h:1080-1094
+1080: 
+1081:   // Information dictionary into which each provider can optionally record a
+1082:   // property and associated value and which is presented in chrome://omnibox.
+1083:   AdditionalInfo additional_info;
+1084: 
+1085:   // A vector of matches culled during de-duplication process, sorted from
+1086:   // second-best to worst according to the de-duplication preference criteria.
+1087:   // This vector is retained so that if the user deletes a match, all the
+1088:   // duplicates are deleted as well. This is also used for re-duping Search
+1089:   // Entity vs. plain Search suggestions.
+1090:   std::vector<AutocompleteMatch> duplicate_matches;
+1091: 
+1092:   // A list of navsuggest tiles to be shown as part of this match.
+1093:   // This object is only populated for TILE_NAVSUGGEST AutocompleteMatches.
+1094:   std::vector<SuggestTile> suggest_tiles;
+
+components/download/public/common/download_item.h:190-217
+190:   // download file, and invokes |callback| with the path to the temp
+191:   // copy. The caller is responsible for cleanup.  Note: It is important
+192:   // for |callback| to be valid since the downloaded file will not be
+193:   // cleaned up if the callback fails.
+194:   virtual void CopyDownload(AcquireFileCallback callback) = 0;
+195: 
+196:   // Pause a download.  Will have no effect if the download is already
+197:   // paused.
+198:   virtual void Pause() = 0;
+199: 
+200:   // Resume a download that has been paused or interrupted. Will have no effect
+201:   // if the download is neither. Only does something if CanResume() returns
+202:   // true.
+203:   virtual void Resume(bool user_resume) = 0;
+204: 
+205:   // Cancel the download operation.
+206:   //
+207:   // Set |user_cancel| to true if the cancellation was triggered by an explicit
+208:   // user action. Non-user-initiated cancels typically happen when the browser
+209:   // is being closed with in-progress downloads.
+210:   virtual void Cancel(bool user_cancel) = 0;
+211: 
+212:   // Removes the download from the views and history. If the download was
+213:   // in-progress or interrupted, then the intermediate file will also be
+214:   // deleted.
+215:   virtual void Remove() = 0;
+216: 
+217:   // Open the file associated with this download.  If the download is
+
+components/download/public/common/download_item.h:265-274
+265:   // DEPRECATED. True if this is a temporary download and should not be
+266:   // persisted.
+267:   virtual bool IsTemporary() const = 0;
+268: 
+269:   // Returns true if the download can be resumed. A download can be resumed if
+270:   // an in-progress download was paused or if an interrupted download requires
+271:   // user-interaction to resume.
+272:   virtual bool CanResume() const = 0;
+273: 
+274:   // Returns true if the download is in a terminal state. This includes
+
+components/download/public/common/download_item.h:474-505
+474: 
+475:   //    Progress State accessors -----------------------------------------------
+476: 
+477:   // Simple calculation of the amount of time remaining to completion. Fills
+478:   // |*remaining| with the amount of time remaining if successful. Fails and
+479:   // returns false if we do not have the number of bytes or the speed so can
+480:   // not estimate.
+481:   virtual bool TimeRemaining(base::TimeDelta* remaining) const = 0;
+482: 
+483:   // Simple speed estimate in bytes/s
+484:   virtual int64_t CurrentSpeed() const = 0;
+485: 
+486:   // Rough percent complete. Returns -1 if progress is unknown. 100 if the
+487:   // download is already complete.
+488:   virtual int PercentComplete() const = 0;
+489: 
+490:   // Returns true if this download has saved all of its data. A download may
+491:   // have saved all its data but still be waiting for some other process to
+492:   // complete before the download is considered complete. E.g. A dangerous
+493:   // download needs to be accepted by the user before the file is renamed to its
+494:   // final name.
+495:   virtual bool AllDataSaved() const = 0;
+496: 
+497:   // Total number of expected bytes. Returns 0 if the total size is unknown.
+498:   virtual int64_t GetTotalBytes() const = 0;
+499: 
+500:   // Total number of bytes that have been received and written to the download
+501:   // file.
+502:   virtual int64_t GetReceivedBytes() const = 0;
+503: 
+504:   // Return the slices that have been received so far, ordered by their offset.
+505:   // This is only used when parallel downloading is enabled.
+
+components/sessions/core/session_types.h:30-110
+30: 
+31: namespace sessions {
+32: 
+33: // SessionTab ----------------------------------------------------------------
+34: 
+35: // SessionTab corresponds to a NavigationController.
+36: struct SESSIONS_EXPORT SessionTab {
+37:   SessionTab();
+38: 
+39:   SessionTab(const SessionTab&) = delete;
+40:   SessionTab& operator=(const SessionTab&) = delete;
+41: 
+42:   ~SessionTab();
+43: 
+44:   // Since the current_navigation_index can be larger than the index for number
+45:   // of navigations in the current sessions (chrome://newtab is not stored), we
+46:   // must perform bounds checking.
+47:   // Returns a normalized bounds-checked navigation_index.
+48:   int normalized_navigation_index() const {
+49:     return std::max(0, std::min(current_navigation_index,
+50:                                 static_cast<int>(navigations.size() - 1)));
+51:   }
+52: 
+53:   // Unique id of the window.
+54:   SessionID window_id;
+55: 
+56:   // Unique id of the tab.
+57:   SessionID tab_id;
+58: 
+59:   // Visual index of the tab within its window. There may be gaps in these
+60:   // values.
+61:   //
+62:   // NOTE: this is really only useful for the SessionService during
+63:   // restore, others can likely ignore this and use the order of the
+64:   // tabs in SessionWindow.tabs.
+65:   int tab_visual_index;
+66: 
+67:   // Identifies the index of the current navigation in navigations. For
+68:   // example, if this is 2 it means the current navigation is navigations[2].
+69:   //
+70:   // NOTE: when the service is creating SessionTabs, initially this corresponds
+71:   // to SerializedNavigationEntry.index, not the index in navigations. When done
+72:   // creating though, this is set to the index in navigations.
+73:   //
+74:   // NOTE 2: this value can be larger than the size of |navigations|, due to
+75:   // only valid url's being stored (ie chrome://newtab is not stored). Bounds
+76:   // checking must be performed before indexing into |navigations|.
+77:   int current_navigation_index;
+78: 
+79:   // The tab's group ID, if any.
+80:   std::optional<tab_groups::TabGroupId> group;
+81: 
+82:   // The tab's split ID, if any.
+83:   std::optional<split_tabs::SplitTabId> split_id;
+84: 
+85:   // True if the tab is pinned.
+86:   bool pinned;
+87: 
+88:   // If non-empty, this tab is an app tab and this is the id of the extension.
+89:   std::string extension_app_id;
+90: 
+91:   // If non-empty, this string is used as the user agent whenever the tab's
+92:   // NavigationEntries need it overridden.
+93:   SerializedUserAgentOverride user_agent_override;
+94: 
+95:   // Timestamp for when this tab was last modified.
+96:   base::Time timestamp;
+97: 
+98:   // Timestamp for when this tab was last activated.
+99:   // Corresponds to WebContents::GetLastActiveTime().
+100:   base::Time last_active_time;
+101: 
+102:   std::vector<sessions::SerializedNavigationEntry> navigations;
+103: 
+104:   // For reassociating sessionStorage.
+105:   std::string session_storage_persistent_id;
+106: 
+107:   // guid associated with the tab, may be empty.
+108:   std::string guid;
+109: 
+110:   // Data associated with the tab by the embedder.
+
+base/trace_event/memory_dump_manager.h:80-110
+80:   // Args:
+81:   //  - mdp: the MemoryDumpProvider instance to be registered. MemoryDumpManager
+82:   //      does NOT take memory ownership of |mdp|, which is expected to either
+83:   //      be a singleton or unregister itself.
+84:   //  - name: a name for the provider, which must be a member of the
+85:   //      MemoryDumpProviderName histogram variant. Used for metrics, debugging
+86:   //      and run-time profiling of memory-infra internals. Must be a long-lived
+87:   //      C string. Duplicates are allowed, but all providers registered with
+88:   //      the same name should be instances of the same class, because their
+89:   //      metrics will be aggregated.
+90:   //  - task_runner: either a SingleThreadTaskRunner or SequencedTaskRunner. All
+91:   //      the calls to |mdp| will be run on the given |task_runner|. If passed
+92:   //      null |mdp| should be able to handle calls on arbitrary threads.
+93:   //  - options: extra optional arguments. See memory_dump_provider.h.
+94:   void RegisterDumpProvider(MemoryDumpProvider* mdp,
+95:                             MemoryDumpProvider::Name name,
+96:                             scoped_refptr<SingleThreadTaskRunner> task_runner);
+97:   void RegisterDumpProvider(MemoryDumpProvider* mdp,
+98:                             MemoryDumpProvider::Name name,
+99:                             scoped_refptr<SingleThreadTaskRunner> task_runner,
+100:                             MemoryDumpProvider::Options options);
+101:   void RegisterDumpProviderWithSequencedTaskRunner(
+102:       MemoryDumpProvider* mdp,
+103:       MemoryDumpProvider::Name name,
+104:       scoped_refptr<SequencedTaskRunner> task_runner,
+105:       MemoryDumpProvider::Options options);
+106:   void UnregisterDumpProvider(MemoryDumpProvider* mdp);
+107: 
+108:   // Unregisters an unbound dump provider and takes care about its deletion
+109:   // asynchronously. Can be used only for for dump providers with no
+110:   // task-runner affinity.
+
+ui/base/models/menu_model.h:216-228
+216:   // Called when the item has been activated with given event flags.
+217:   // (for the case where the activation involves a navigation).
+218:   // |event_flags| is a bit mask of ui::EventFlags.
+219:   virtual void ActivatedAt(size_t index, int event_flags);
+220: 
+221:   // Called when the menu is about to be shown.
+222:   virtual void MenuWillShow() {}
+223: 
+224:   // Called when the menu is about to be closed. The MenuRunner, and |this|
+225:   // should not be deleted here.
+226:   virtual void MenuWillClose() {}
+227: 
+228:   // Set the MenuModelDelegate, owned by the caller of this function. We allow
+
+content/public/browser/navigation_controller.h:565-592
+565:   // LoadURLWithParamsForResult() instead if you need to know *why* a navigation
+566:   // failed to start.
+567:   CONTENT_EXPORT base::WeakPtr<NavigationHandle> LoadURLWithParams(
+568:       const LoadURLParams& params);
+569: 
+570:   // Same as LoadURLWithParams(), but reports why no navigation is in flight
+571:   // when one could not be started.
+572:   //
+573:   // On success, returns the NavigationHandle of the navigation that is now in
+574:   // flight. The returned WeakPtr is non-null at the moment of return; it is
+575:   // invalidated later if the navigation is cancelled or replaced, which is why
+576:   // WebContentsObserver::DidFinishNavigation() may never be dispatched for it.
+577:   //
+578:   // On failure, returns the NavigationNotStartedReason explaining why no
+579:   // navigation is in flight.
+580:   //
+581:   // Most errors mean the navigation never got as far as creating a
+582:   // NavigationRequest. kCancelledDuringStart is the exception: the request was
+583:   // created and handed to the Navigator, but something cancelled it
+584:   // synchronously while it was still starting up, i.e. before Navigate()
+585:   // returned and therefore before this method had a handle to give back. A
+586:   // NavigationThrottle cancelling during BeginNavigation() is the common case.
+587:   // Because a NavigationHandle did briefly exist, observers may already have
+588:   // been given DidStartNavigation() and DidFinishNavigation() for it by the
+589:   // time this method returns.
+590:   virtual base::expected<base::WeakPtr<NavigationHandle>,
+591:                          NavigationNotStartedReason>
+592:   LoadURLWithParamsForResult(const LoadURLParams& params) = 0;
+
+content/public/browser/navigation_controller.h:647-695
+647:   virtual bool CanGoBack() = 0;
+648:   virtual bool CanGoForward() = 0;
+649:   virtual bool CanGoToOffset(int offset) = 0;
+650: 
+651:   // Whether the back and forward buttons should be enabled in the browser UI.
+652:   // These need to be decoupled from the corresponding `CanGo*` methods; if
+653:   // there are only skippable entries in the navigation history for a direction,
+654:   // we should enable that direction's button so that the user can long-press to
+655:   // select a skippable entry if they choose. However, in this situation
+656:   // `CanGo*` will be false, and a direct click on the button will do nothing,
+657:   // in order to prevent a poor user experience in the case of history
+658:   // manipulation. See
+659:   // https://chromium.googlesource.com/chromium/src/+/main/docs/history_manipulation_intervention.md
+660:   // for more details.
+661:   virtual bool ShouldEnableBackButton() = 0;
+662:   virtual bool ShouldEnableForwardButton() = 0;
+663: 
+664:   // Returns a vector of weak pointers to the NavigationHandles created for this
+665:   // navigation. There may be multiple NavigationHandles if more than one frame
+666:   // needs to navigate, or there may be none if the navigation is immediately
+667:   // canceled. Keep in mind that the NavigationHandles may not immediately start
+668:   // (e.g., if a beforeunload handler must run) and may be silently deleted if
+669:   // they are canceled before starting (e.g., subframe traverses canceled by the
+670:   // navigation API). `CanGoBack`/`CanGoForward` are preconditions for these
+671:   // respective methods.
+672:   // TODO(crbug.com/417756996): In cases where the navigation is canceled before
+673:   // starting, there isn't currently a notification option in the public API.
+674:   // Existing code polls for this but an API would make this more ergonomic.
+675:   virtual WeakNavigationHandleVector GoBack() = 0;
+676:   virtual WeakNavigationHandleVector GoForward() = 0;
+677: 
+678:   // Navigates to the specified absolute index. Should only be used for
+679:   // browser-initiated navigations.
+680:   virtual WeakNavigationHandleVector GoToIndex(int index) = 0;
+681: 
+682:   // Navigates to the specified offset from the "current entry". Does nothing if
+683:   // the offset is out of bounds.
+684:   virtual void GoToOffset(int offset) = 0;
+685: 
+686:   // Reloads the current entry under the specified ReloadType.  If
+687:   // |check_for_repost| is true and the current entry has POST data the user is
+688:   // prompted to see if they really want to reload the page.  In nearly all
+689:   // cases pass in true in production code, but would do false for testing, or
+690:   // in cases where no user interface is available for prompting.
+691:   // NOTE: |reload_type| should never be NONE.
+692:   virtual void Reload(ReloadType reload_type, bool check_for_repost) = 0;
+693: 
+694:   // Removing of entries -------------------------------------------------------
+695: 
+
+content/public/browser/reload_type.h:10-22
+10: // Used to specify detailed behavior on requesting reloads. NONE is used in
+11: // general, but behaviors depend on context. If NONE is used for tab restore, or
+12: // history navigation, it loads preferring cache (which may be stale).
+13: enum class ReloadType {
+14:   // Normal load, restore, or history navigation.
+15:   NONE,
+16:   // Reloads the current entry validating only the main resource.
+17:   NORMAL,
+18:   // Reloads the current entry bypassing the cache (shift-reload).
+19:   BYPASSING_CACHE
+20: };
+21: 
+22: }  // namespace content
+
+ui/base/page_transition_types.h:30-44
+30:   PAGE_TRANSITION_FIRST = 0,
+31: 
+32:   // User got to this page by clicking a link on another page.
+33:   PAGE_TRANSITION_LINK = PAGE_TRANSITION_FIRST,
+34: 
+35:   // User got this page by typing the URL in the URL bar.  This should not be
+36:   // used for cases where the user selected a choice that didn't look at all
+37:   // like a URL; see GENERATED below.
+38:   //
+39:   // We also use this for other "explicit" navigation actions.
+40:   PAGE_TRANSITION_TYPED = 1,
+41: 
+42:   // User got to this page through a suggestion in the UI, for example)
+43:   // through the destinations page.
+44:   PAGE_TRANSITION_AUTO_BOOKMARK = 2,
+
+ui/base/page_transition_types.h:110-135
+110:   // ADDING NEW CORE VALUE? Be sure to update the LAST_CORE and CORE_MASK
+111:   // values below.  Also update CoreTransitionString().
+112:   PAGE_TRANSITION_LAST_CORE = PAGE_TRANSITION_KEYWORD_GENERATED,
+113:   PAGE_TRANSITION_CORE_MASK = 0xFF,
+114: 
+115:   // Qualifiers
+116:   // Any of the core values above can be augmented by one or more qualifiers.
+117:   // These qualifiers further define the transition.
+118: 
+119:   // The values 0x00200000 (PAGE_TRANSITION_FROM_API_3) and 0x00400000
+120:   // (PAGE_TRANSITION_FROM_API_2) were used for experiments and were removed
+121:   // around 6/2021. The experiments ended well before 6/2021, but it's possible
+122:   // some databases still have the values. See https://crbug.com/1141501 for
+123:   // more.
+124: 
+125:   // A managed user attempted to visit a URL but was blocked.
+126:   PAGE_TRANSITION_BLOCKED = 0x00800000,
+127: 
+128:   // User used the Forward or Back button to navigate among browsing history.
+129:   PAGE_TRANSITION_FORWARD_BACK = 0x01000000,
+130: 
+131:   // User used the address bar to trigger this navigation.
+132:   PAGE_TRANSITION_FROM_ADDRESS_BAR = 0x02000000,
+133: 
+134:   // User is navigating to the home page.
+135:   PAGE_TRANSITION_HOME_PAGE = 0x04000000,
+
+include/internal/cef_types_mac.h:100-154
+100:   cef_string_t window_name;
+101: 
+102:   ///
+103:   /// Initial window bounds.
+104:   ///
+105:   cef_rect_t bounds;
+106: 
+107:   ///
+108:   /// Set to true (1) to create the view initially hidden.
+109:   ///
+110:   int hidden;
+111: 
+112:   ///
+113:   /// NSView pointer for the parent view.
+114:   ///
+115:   cef_window_handle_t parent_view;
+116: 
+117:   ///
+118:   /// Set to true (1) to create the browser using windowless (off-screen)
+119:   /// rendering. No view will be created for the browser and all rendering will
+120:   /// occur via the CefRenderHandler interface. The |parent_view| value will be
+121:   /// used to identify monitor info and to act as the parent view for dialogs,
+122:   /// context menus, etc. If |parent_view| is not provided then the main screen
+123:   /// monitor will be used and some functionality that requires a parent view
+124:   /// may not function correctly. In order to create windowless browsers the
+125:   /// CefSettings.windowless_rendering_enabled value must be set to true.
+126:   /// Transparent painting is enabled by default but can be disabled by setting
+127:   /// CefBrowserSettings.background_color to an opaque value.
+128:   ///
+129:   int windowless_rendering_enabled;
+130: 
+131:   ///
+132:   /// Set to true (1) to enable shared textures for windowless rendering. Only
+133:   /// valid if windowless_rendering_enabled above is also set to true. Currently
+134:   /// only supported on Windows (D3D11).
+135:   ///
+136:   int shared_texture_enabled;
+137: 
+138:   ///
+139:   /// Set to true (1) to enable the ability to issue BeginFrame from the client
+140:   /// application.
+141:   ///
+142:   int external_begin_frame_enabled;
+143: 
+144:   ///
+145:   /// NSView pointer for the new browser view. Only used with windowed
+146:   /// rendering.
+147:   ///
+148:   cef_window_handle_t view;
+149: 
+150:   ///
+151:   /// Optionally change the runtime style. Alloy style will always be used if
+152:   /// |windowless_rendering_enabled| is true or if |parent_view| is provided.
+153:   /// See cef_runtime_style_t documentation for details.
+154:   ///
+
+include/cef_browser.h:80-120
+80:   ///
+81:   /*--cef()--*/
+82:   virtual bool CanGoBack() = 0;
+83: 
+84:   ///
+85:   /// Navigate backwards.
+86:   ///
+87:   /*--cef()--*/
+88:   virtual void GoBack() = 0;
+89: 
+90:   ///
+91:   /// Returns true if the browser can navigate forwards.
+92:   ///
+93:   /*--cef()--*/
+94:   virtual bool CanGoForward() = 0;
+95: 
+96:   ///
+97:   /// Navigate forwards.
+98:   ///
+99:   /*--cef()--*/
+100:   virtual void GoForward() = 0;
+101: 
+102:   ///
+103:   /// Returns true if the browser is currently loading.
+104:   ///
+105:   /*--cef()--*/
+106:   virtual bool IsLoading() = 0;
+107: 
+108:   ///
+109:   /// Reload the current page.
+110:   ///
+111:   /*--cef()--*/
+112:   virtual void Reload() = 0;
+113: 
+114:   ///
+115:   /// Reload the current page ignoring any cached data.
+116:   ///
+117:   /*--cef()--*/
+118:   virtual void ReloadIgnoreCache() = 0;
+119: 
+120:   ///
+
+include/cef_browser.h:285-324
+285:   typedef cef_file_dialog_mode_t FileDialogMode;
+286:   typedef cef_mouse_button_type_t MouseButtonType;
+287:   typedef cef_paint_element_type_t PaintElementType;
+288: 
+289:   ///
+290:   /// Create a new browser using the window parameters specified by
+291:   /// |windowInfo|. All values will be copied internally and the actual window
+292:   /// (if any) will be created on the UI thread. If |request_context| is empty
+293:   /// the global request context will be used. This method can be called on any
+294:   /// browser process thread and will not block. The optional |extra_info|
+295:   /// parameter provides an opportunity to specify extra information specific to
+296:   /// the created browser that will be passed to
+297:   /// CefRenderProcessHandler::OnBrowserCreated() in the render process.
+298:   ///
+299:   /*--cef(optional_param=client,optional_param=url,
+300:           optional_param=request_context,optional_param=extra_info)--*/
+301:   static bool CreateBrowser(const CefWindowInfo& windowInfo,
+302:                             CefRefPtr<CefClient> client,
+303:                             const CefString& url,
+304:                             const CefBrowserSettings& settings,
+305:                             CefRefPtr<CefDictionaryValue> extra_info,
+306:                             CefRefPtr<CefRequestContext> request_context);
+307: 
+308:   ///
+309:   /// Create a new browser using the window parameters specified by
+310:   /// |windowInfo|. If |request_context| is empty the global request context
+311:   /// will be used. This method can only be called on the browser process UI
+312:   /// thread. The optional |extra_info| parameter provides an opportunity to
+313:   /// specify extra information specific to the created browser that will be
+314:   /// passed to CefRenderProcessHandler::OnBrowserCreated() in the render
+315:   /// process.
+316:   ///
+317:   /*--cef(optional_param=client,optional_param=url,
+318:           optional_param=request_context,optional_param=extra_info)--*/
+319:   static CefRefPtr<CefBrowser> CreateBrowserSync(
+320:       const CefWindowInfo& windowInfo,
+321:       CefRefPtr<CefClient> client,
+322:       const CefString& url,
+323:       const CefBrowserSettings& settings,
+324:       CefRefPtr<CefDictionaryValue> extra_info,
+
+include/cef_browser.h:659-675
+659:   /*--cef()--*/
+660:   virtual CefRefPtr<CefRegistration> AddDevToolsMessageObserver(
+661:       CefRefPtr<CefDevToolsMessageObserver> observer) = 0;
+662: 
+663:   ///
+664:   /// Retrieve a snapshot of current navigation entries as values sent to the
+665:   /// specified visitor. If |current_only| is true only the current navigation
+666:   /// entry will be sent, otherwise all navigation entries will be sent.
+667:   ///
+668:   /*--cef()--*/
+669:   virtual void GetNavigationEntries(
+670:       CefRefPtr<CefNavigationEntryVisitor> visitor,
+671:       bool current_only) = 0;
+672: 
+673:   ///
+674:   /// If a misspelled word is currently selected in an editable node calling
+675:   /// this method will replace it with the specified |word|.

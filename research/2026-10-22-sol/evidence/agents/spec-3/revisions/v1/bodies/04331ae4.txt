@@ -1,0 +1,85 @@
+INDEX 0x4331ae4 FUN_04331ae4 path=/home/exedev/work/inputs/decompile/0x43.c offset=972614 C_bytes=2185 failed=0
+// ==== 0x4331ae4  FUN_04331ae4  (392 bytes)
+
+void FUN_04331ae4(long *param_1,long param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  long *plVar3;
+  long *plVar4;
+  code *pcVar5;
+  long lVar6;
+  long lVar7;
+  long *local_70;
+  long *local_68;
+  
+  *param_1 = 0;
+  param_1[1] = 0;
+  param_1[2] = 0;
+  lVar7 = *(long *)(param_2 + 0x508) * 0x6b0;
+  if (lVar7 != 0) {
+    lVar6 = *(long *)(param_2 + 0x500);
+    do {
+      plVar3 = (long *)FUN_00008790(0x6c8);
+      plVar3[1] = 0;
+      plVar3[2] = 0;
+      *plVar3 = (long)&PTR_viewWillStartLiveResize_0da7e770;
+      plVar1 = plVar3 + 3;
+      FUN_02b5a308(plVar3 + 3,lVar6);
+      local_70 = plVar1;
+      local_68 = plVar3;
+      if (param_1[1] == param_1[2]) {
+        plVar4 = (long *)FUN_041e7c00(param_1,&local_70);
+      }
+      else {
+        plVar4 = (long *)(*param_1 + param_1[1] * 0x10);
+        if (plVar4 == (long *)0x0) goto LAB_04331c58;
+        *plVar4 = (long)plVar1;
+        plVar4[1] = (long)plVar3;
+        plVar4 = plVar4 + 2;
+        local_70 = (long *)0x0;
+        local_68 = (long *)0x0;
+      }
+      plVar1 = local_68;
+      param_1[1] = (long)plVar4 - *param_1 >> 4;
+      if ((long)plVar4 - *param_1 == 0) {
+LAB_04331c58:
+                    /* WARNING: Does not return */
+        pcVar5 = (code *)SoftwareBreakpoint(1,0x4331c5c);
+        (*pcVar5)();
+      }
+      if (local_68 != (long *)0x0) {
+        LOAcquire();
+        lVar2 = local_68[1];
+        local_68[1] = lVar2 + -1;
+        LORelease();
+        if (lVar2 == 0) {
+          plVar3 = local_68 + 2;
+          (**(code **)(*local_68 + 0x10))(local_68);
+          if (*plVar3 != 0) {
+            LOAcquire();
+            lVar2 = plVar1[2];
+            plVar1[2] = lVar2 + -1;
+            LORelease();
+            if (lVar2 != 0) goto LAB_04331b78;
+          }
+          pcVar5 = *(code **)(*plVar1 + 0x20);
+          if (((pcVar5 == FUN_00f01bc0) || (pcVar5 == FUN_00f01bc0)) || (pcVar5 == FUN_013efb40)) {
+            FUN_00005810(plVar1,0x20);
+          }
+          else {
+            (*pcVar5)(plVar1);
+          }
+        }
+      }
+LAB_04331b78:
+      lVar6 = lVar6 + 0x6b0;
+      lVar7 = lVar7 + -0x6b0;
+    } while (lVar7 != 0);
+  }
+  return;
+}
+
+
+

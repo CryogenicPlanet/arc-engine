@@ -1,0 +1,34 @@
+INDEX 0x4408c68 ArcNotification::priority path=/home/exedev/work/inputs/decompile/0x44.c offset=211321 C_bytes=717 failed=0
+// ==== 0x4408c68  ArcNotification::priority  (52 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcNotification::priority(ID param_1,SEL param_2)
+
+{
+  uint uVar1;
+  long_long lVar2;
+  int iVar3;
+  code *pcVar4;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x4408c98);
+    (*pcVar4)();
+  }
+  iVar3 = *(int *)(*(long *)(param_1 + 0x10) + 0x220);
+  if (iVar3 + 2U < 6) {
+    uVar1 = iVar3 + 1;
+    lVar2 = 0;
+    if (uVar1 < 5) {
+      lVar2 = (ulong)uVar1 + 1;
+    }
+    return lVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(0,0x4408c9c);
+  (*pcVar4)();
+}
+
+
+

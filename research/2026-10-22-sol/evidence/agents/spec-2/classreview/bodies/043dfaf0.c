@@ -1,0 +1,62 @@
+// ==== 0x43dfaf0  ArcBackForwardList::setNativeBackForwardList:  (288 bytes)
+
+/* Function Stack Size: 0x28 bytes */
+
+void ArcBackForwardList::setNativeBackForwardList_
+               (ID param_1,SEL param_2,optional<arc::BackForwardList> *param_3)
+
+{
+  char cVar1;
+  long lVar2;
+  __shared_weak_count *p_Var3;
+  code *pcVar4;
+  long *plVar5;
+  
+  cVar1 = *(char *)(param_1 + 0x40);
+  if (cVar1 == (char)param_3->field1_0x10) {
+    if (cVar1 == '\0') {
+      return;
+    }
+    FUN_04331e20(param_1 + 0x30,param_3);
+    return;
+  }
+  if (cVar1 == '\0') {
+    *(Impl **)(param_1 + 0x30) = (param_3->field0_0x0).field1.field0_0x0.field0_0x0;
+    p_Var3 = (param_3->field0_0x0).field1.field0_0x0.field1_0x8;
+    *(__shared_weak_count **)(param_1 + 0x38) = p_Var3;
+    if (p_Var3 != (__shared_weak_count *)0x0) {
+      *(long *)(p_Var3 + 8) = *(long *)(p_Var3 + 8) + 1;
+    }
+    *(undefined1 *)(param_1 + 0x40) = 1;
+    return;
+  }
+  plVar5 = *(long **)(param_1 + 0x38);
+  if (plVar5 != (long *)0x0) {
+    LOAcquire();
+    lVar2 = plVar5[1];
+    plVar5[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 == 0) {
+      (**(code **)(*plVar5 + 0x10))(plVar5);
+      if (plVar5[2] != 0) {
+        LOAcquire();
+        lVar2 = plVar5[2];
+        plVar5[2] = lVar2 + -1;
+        LORelease();
+        if (lVar2 != 0) goto LAB_043dfb4c;
+      }
+      pcVar4 = *(code **)(*plVar5 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+        FUN_00005810(plVar5,0x20);
+      }
+      else {
+        (*pcVar4)(plVar5);
+      }
+    }
+  }
+LAB_043dfb4c:
+  *(undefined1 *)(param_1 + 0x40) = 0;
+  return;
+}
+
+

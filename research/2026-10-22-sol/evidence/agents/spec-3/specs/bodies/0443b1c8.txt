@@ -1,0 +1,26 @@
+INDEX 0x443b1c8 ArcColor4f::initWithColor4f: path=/home/exedev/work/inputs/decompile/0x44.c offset=1399491 C_bytes=562 failed=0
+// ==== 0x443b1c8  ArcColor4f::initWithColor4f:  (76 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcColor4f::initWithColor4f_(ID param_1,SEL param_2,const_Color4f__ param_3)
+
+{
+  ID IVar1;
+  undefined8 uVar2;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcColor4f;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    uVar2 = *(undefined8 *)param_3;
+    *(undefined8 *)(IVar1 + 0x10) = *(undefined8 *)&param_3->field2_0x8;
+    *(undefined8 *)(IVar1 + 8) = uVar2;
+  }
+  return IVar1;
+}
+
+
+

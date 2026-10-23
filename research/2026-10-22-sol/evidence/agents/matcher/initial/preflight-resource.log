@@ -1,0 +1,33 @@
+Traceback (most recent call last):
+  File "/home/exedev/work/agents/matcher/tools/engine_match.py", line 545, in <module>
+    main()
+  File "/home/exedev/work/agents/matcher/tools/engine_match.py", line 341, in main
+    ab, coverage = read_arc(args.ghidra_tsv, arc, db)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/exedev/work/agents/matcher/tools/engine_match.py", line 117, in read_arc
+    raise ValueError(f'TSV row {line}: span not inside __text')
+ValueError: TSV row 604206: span not inside __text
+Command exited with non-zero status 1
+	Command being timed: "python3 -u tools/engine_match.py --arc /home/exedev/work/inputs/binaries/ArcCore-1.170.0.arm64 --stock /home/exedev/work/inputs/binaries/ChromiumFramework-156.arm64 --ghidra-tsv /home/exedev/work/inputs/metadata/decomp/arccore-1.170.0-functions.tsv --objc-dyld /home/exedev/work/inputs/context/analysis/data/dobjc170.txt --out initial/run --controls 384 --sample 512 --requests 40"
+	User time (seconds): 8.31
+	System time (seconds): 0.11
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:08.47
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 77576
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 3
+	Minor (reclaiming a frame) page faults: 19364
+	Voluntary context switches: 38
+	Involuntary context switches: 189
+	Swaps: 0
+	File system inputs: 3240
+	File system outputs: 288
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

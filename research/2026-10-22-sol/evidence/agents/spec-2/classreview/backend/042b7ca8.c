@@ -1,0 +1,37 @@
+// ==== 0x42b7ca8  FUN_042b7ca8  (136 bytes)
+
+void FUN_042b7ca8(undefined8 param_1,undefined8 *param_2)
+
+{
+  undefined8 uVar1;
+  undefined8 uVar2;
+  long lVar3;
+  code *pcVar4;
+  long lVar5;
+  undefined8 uVar6;
+  undefined8 uVar7;
+  
+  lVar3 = FUN_043289d0();
+  uVar7 = param_2[3];
+  uVar6 = param_2[2];
+  if (*(long *)(param_2[3] + 8) != 0) {
+    param_2[2] = 0;
+    param_2[3] = &DAT_0c4b3500;
+  }
+  uVar1 = *param_2;
+  uVar2 = param_2[1];
+  lVar5 = *(long *)(lVar3 + 0x230);
+  *(undefined8 **)(lVar3 + 0x230) = &DAT_0c4b3500;
+  *(undefined8 *)(lVar3 + 0x228) = 0;
+  pcVar4 = *(code **)(lVar5 + 8);
+  if (pcVar4 != (code *)0x0) {
+    (*pcVar4)(*(undefined8 *)(lVar3 + 0x218));
+  }
+  *(undefined8 *)(lVar3 + 0x218) = uVar1;
+  *(undefined8 *)(lVar3 + 0x220) = uVar2;
+  *(undefined8 *)(lVar3 + 0x230) = uVar7;
+  *(undefined8 *)(lVar3 + 0x228) = uVar6;
+  return;
+}
+
+

@@ -1,0 +1,42 @@
+INDEX 0x473e20c FUN_0473e20c path=/home/exedev/work/inputs/decompile/0x47.c offset=1147729 C_bytes=1480 failed=0
+// ==== 0x473e20c  FUN_0473e20c  (364 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+undefined8 FUN_0473e20c(ID *param_1,int param_2)
+
+{
+  ID IVar1;
+  ID self;
+  cfstringStruct *pcVar2;
+  undefined8 extraout_d0;
+  undefined8 uVar3;
+  undefined8 uVar4;
+  
+  self = *param_1;
+  if (param_2 - 2U < 4) {
+    pcVar2 = (cfstringStruct *)(&PTR_cfstringStruct_0e21b208)[param_2 - 2U];
+  }
+  else {
+    pcVar2 = &cf___;
+  }
+  uVar3 = *(undefined8 *)PTR__NSZeroPoint_0d825658;
+  uVar4 = *(undefined8 *)(PTR__NSZeroPoint_0d825658 + 8);
+  IVar1 = NSProcessInfo::processInfo((ID)&_OBJC_CLASS___NSProcessInfo,"processInfo");
+  NSProcessInfo::systemUptime(IVar1,"systemUptime");
+  IVar1 = _objc_msgSend(self,"window");
+  IVar1 = _objc_msgSend(IVar1,"windowNumber");
+  IVar1 = NSEvent::
+          keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCode_
+                    ((ID)&_OBJC_CLASS___NSEvent,
+                     "keyEventWithType:location:modifierFlags:timestamp:windowNumber:context:characters:charactersIgnoringModifiers:isARepeat:keyCode:"
+                     ,uVar3,uVar4,extraout_d0,10,0,IVar1,0,pcVar2,pcVar2,0);
+  _objc_msgSend(self,"keyDown:",IVar1);
+  return 0;
+}
+
+
+

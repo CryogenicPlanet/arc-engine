@@ -1,0 +1,462 @@
+
+SOURCE /home/exedev/work/inputs/chromium-156/content/browser/renderer_host/render_widget_host_view_mac.mm
+SHA256 17b9ac1271936dc3dcc2840544c556edf680cd5c54642115c5c8c24fd6b650df
+1220: 
+1221: void RenderWidgetHostViewMac::OnDidUpdateVisualPropertiesComplete(
+1222:     const cc::RenderFrameMetadata& metadata) {
+1223:   browser_compositor_->UpdateSurfaceFromChild(
+1224:       host()->auto_resize_enabled(), metadata.device_scale_factor,
+1225:       metadata.viewport_size_in_pixels,
+1226:       metadata.local_surface_id.value_or(viz::LocalSurfaceId()));
+1227: }
+1228: 
+1229: void RenderWidgetHostViewMac::TakeFallbackContentFrom(
+1230:     RenderWidgetHostView* view) {
+1231:   CHECK(!static_cast<RenderWidgetHostViewBase*>(view)
+1232:              ->IsRenderWidgetHostViewChildFrame(),
+1233:         base::NotFatalUntil::M152);
+1234:   RenderWidgetHostViewMac* view_mac =
+1235:       static_cast<RenderWidgetHostViewMac*>(view);
+1236:   ScopedCAActionDisabler disabler;
+1237:   CopyBackgroundColorIfPresentFrom(*view);
+1238: 
+1239:   // Make the NSView for |this| display the same content as is being displayed
+1240:   // in the NSView for |view_mac|.
+1241:   const gfx::CALayerParams* ca_layer_params =
+1242:       view_mac->browser_compositor_->GetLastCALayerParams();
+1243:   if (ca_layer_params)
+1244:     ns_view_->SetCALayerParams(ca_layer_params->CloneWithoutFence());
+1245:   browser_compositor_->TakeFallbackContentFrom(
+1246:       view_mac->browser_compositor_.get());
+1247: }
+1248: 
+1249: bool RenderWidgetHostViewMac::IsHTMLFormPopup() const {
+1250:   return !!popup_parent_host_view_;
+1251: }
+1252: 
+1253: uint64_t RenderWidgetHostViewMac::GetNSViewId() const {
+1254:   return ns_view_id_;
+1255: }
+1256: 
+1257: void RenderWidgetHostViewMac::SetShouldUseDefaultDeadlineOnResize(bool enable) {
+1258:   use_default_deadline_on_resize_ = enable;
+1259: }
+1260: 
+1261: bool RenderWidgetHostViewMac::GetLineBreakIndex(
+1262:     const std::vector<gfx::Rect>& bounds,
+1263:     const gfx::Range& range,
+1264:     size_t* line_break_point) {
+1265:   CHECK(line_break_point, base::NotFatalUntil::M152);
+1266:   if (range.start() >= bounds.size() || range.is_reversed() || range.is_empty())
+1267:     return false;
+1268: 
+1269:   // We can't check line breaking completely from only rectangle array. Thus we
+1270:   // assume the line breaking as the next character's y offset is larger than
+1271:   // a threshold. Currently the threshold is determined as minimum y offset plus
+1272:   // 75% of maximum height.
+1273:   // TODO(nona): Check the threshold is reliable or not.
+1274:   // TODO(nona): Bidi support.
+1275:   const size_t loop_end_idx =
+1276:       std::min(bounds.size(), static_cast<size_t>(range.end()));
+1277:   int max_height = 0;
+1278:   int min_y_offset = std::numeric_limits<int32_t>::max();
+
+SOURCE /home/exedev/work/agents/spec-1/revisions/v1/sources/cef/include/internal/cef_types_mac.h
+SHA256 112154288332dac0dfb9b147d4910a18995cb11942267ecbf9731938723c9845
+135:   ///
+136:   int shared_texture_enabled;
+137: 
+138:   ///
+139:   /// Set to true (1) to enable the ability to issue BeginFrame from the client
+140:   /// application.
+141:   ///
+142:   int external_begin_frame_enabled;
+143: 
+144:   ///
+145:   /// NSView pointer for the new browser view. Only used with windowed
+146:   /// rendering.
+147:   ///
+148:   cef_window_handle_t view;
+149: 
+150:   ///
+151:   /// Optionally change the runtime style. Alloy style will always be used if
+152:   /// |windowless_rendering_enabled| is true or if |parent_view| is provided.
+153:   /// See cef_runtime_style_t documentation for details.
+154:   ///
+155:   cef_runtime_style_t runtime_style;
+156: } cef_window_info_t;
+157: 
+158: ///
+159: /// Structure containing shared texture information for the OnAcceleratedPaint
+160: /// callback. Resources will be released to the underlying pool for reuse when
+161: /// the callback returns from client code.
+162: ///
+163: typedef struct _cef_accelerated_paint_info_t {
+164:   ///
+165:   /// Size of this structure.
+
+SOURCE /home/exedev/work/agents/spec-1/revisions/v1/sources/cef/include/cef_browser.h
+SHA256 8429b3d0390fcbb9694368cdb51d8deebc9d038903c67d91dcfdde02aadf6ea7
+495:   /// delimited using "|" and ";" (e.g. "Image Types|.png;.gif;.jpg").
+496:   /// |callback| will be executed after the dialog is dismissed or immediately
+497:   /// if another dialog is already pending. The dialog will be initiated
+498:   /// asynchronously on the UI thread.
+499:   ///
+500:   /*--cef(optional_param=title,optional_param=default_file_path,
+501:           optional_param=accept_filters)--*/
+502:   virtual void RunFileDialog(FileDialogMode mode,
+503:                              const CefString& title,
+504:                              const CefString& default_file_path,
+505:                              const std::vector<CefString>& accept_filters,
+506:                              CefRefPtr<CefRunFileDialogCallback> callback) = 0;
+507: 
+508:   ///
+509:   /// Download the file at |url| using CefDownloadHandler.
+510:   ///
+511:   /*--cef()--*/
+512:   virtual void StartDownload(const CefString& url) = 0;
+513: 
+514:   ///
+515:   /// Download |image_url| and execute |callback| on completion with the images
+516:   /// received from the renderer. If |is_favicon| is true then cookies are not
+517:   /// sent and not accepted during download. Images with density independent
+518:   /// pixel (DIP) sizes larger than |max_image_size| are filtered out from the
+519:   /// image results. Versions of the image at different scale factors may be
+520:   /// downloaded up to the maximum scale factor supported by the system. If
+521:   /// there are no image results <= |max_image_size| then the smallest image is
+522:   /// resized to |max_image_size| and is the only result. A |max_image_size| of
+523:   /// 0 means unlimited. If |bypass_cache| is true then |image_url| is requested
+524:   /// from the server even if it is present in the browser cache.
+525:   ///
+526:   /*--cef()--*/
+527:   virtual void DownloadImage(const CefString& image_url,
+528:                              bool is_favicon,
+529:                              uint32_t max_image_size,
+530:                              bool bypass_cache,
+531:                              CefRefPtr<CefDownloadImageCallback> callback) = 0;
+532: 
+533:   ///
+534:   /// Print the current browser contents.
+535:   ///
+536:   /*--cef()--*/
+537:   virtual void Print() = 0;
+538: 
+539:   ///
+540:   /// Print the current browser contents to the PDF file specified by |path| and
+541:   /// execute |callback| on completion. The caller is responsible for deleting
+542:   /// |path| when done. For PDF printing to work on Linux you must implement the
+543:   /// CefPrintHandler::GetPdfPaperSize method.
+544:   ///
+545:   /*--cef(optional_param=callback)--*/
+546:   virtual void PrintToPDF(const CefString& path,
+547:                           const CefPdfPrintSettings& settings,
+548:                           CefRefPtr<CefPdfPrintCallback> callback) = 0;
+549: 
+550:   ///
+551:   /// Search for |searchText|. |forward| indicates whether to search forward or
+552:   /// backward within the page. |matchCase| indicates whether the search should
+553:   /// be case-sensitive. |findNext| indicates whether this is the first request
+554:   /// or a follow-up. The search will be restarted if |searchText| or
+555:   /// |matchCase| change. The search will be stopped if |searchText| is empty.
+556:   /// The CefFindHandler instance, if any, returned via
+557:   /// CefClient::GetFindHandler will be called to report find results.
+558:   ///
+
+SOURCE /home/exedev/work/agents/spec-1/revisions/v1/sources/chromium/services/media_session/public/cpp/media_position.cc
+SHA256 9ee5a46cd95b066e53f95ab144be2feec53c5b7317a20a7839b39a4b1dec9813
+35: double MediaPosition::playback_rate() const {
+36:   return playback_rate_;
+37: }
+38: 
+39: base::TimeTicks MediaPosition::last_updated_time() const {
+40:   return last_updated_time_;
+41: }
+42: 
+43: base::TimeDelta MediaPosition::GetPosition() const {
+44:   return GetPositionAtTime(base::TimeTicks::Now());
+45: }
+46: 
+47: base::TimeDelta MediaPosition::GetPositionAtTime(base::TimeTicks time) const {
+48:   base::TimeDelta delta = time - last_updated_time_;
+49: 
+50:   // It's possible to get a time query that is *before* the last updated time
+51:   // since |time| and |last_updated_time| generally come from different
+52:   // processes. When we get a negative value, just assume effectively no time
+53:   // has passed.
+54:   if (delta.is_negative()) {
+55:     DCHECK(!base::TimeTicks::IsConsistentAcrossProcesses());
+56:     delta = base::Microseconds(0);
+57:   }
+58: 
+59:   base::TimeDelta start = base::Seconds(0);
+60: 
+61:   base::TimeDelta elapsed_time = playback_rate_ * delta;
+62:   if (elapsed_time.is_min()) {
+63:     // If the elapsed time is negative infinity, then assume we made it to the
+64:     // start.
+65:     return start;
+66:   } else if (elapsed_time.is_max()) {
+67:     // If the elapsed time is positive infinity, then assume we made it to the
+68:     // end.
+69:     return duration_;
+70:   }
+71: 
+72:   base::TimeDelta updated_position = position_ + elapsed_time;
+73:   if (updated_position <= start)
+74:     return start;
+75:   else if (updated_position >= duration_)
+76:     return duration_;
+77:   else
+78:     return updated_position;
+79: }
+80: 
+
+SOURCE /home/exedev/work/agents/spec-1/revisions/v1/sources/chromium/services/media_session/public/cpp/media_position.h
+SHA256 26f165a81d72426a04a99e760ca718dc0e4c9f9088228e6fe29482637cb929f5
+60: 
+61:   // Return the time the position state was last updated.
+62:   base::TimeTicks last_updated_time() const;
+63: 
+64:   // Return whether playback has reached the end of media. This can be true
+65:   // even when GetPosition() < duration(), because the duration is not exact in
+66:   // general.
+67:   bool end_of_media() const { return end_of_media_; }
+68: 
+69:   // Return the updated position of the media, assuming current time is
+70:   // |time|.
+
+SOURCE /home/exedev/work/agents/spec-1/revisions/v1/sources/chromium/components/security_state/core/security_state.h
+SHA256 3150d2f5c1c3af52ce870152c57516cf9d0385c1b0cae39a008f6438154426c3
+35: //
+36: // A Java counterpart will be generated for this enum.
+37: // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.security_state
+38: // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ConnectionSecurityLevel
+39: enum SecurityLevel {
+40:   // Neutral; neither positively secure nor insecure. Used for e.g. some types
+41:   // of non-http/https URLs.
+42:   NONE = 0,
+43: 
+44:   // HTTP, in a case where we want to show a visible warning about the page's
+45:   // lack of security.
+46:   //
+47:   // The criteria used to classify pages as NONE vs. HTTP_SHOW_WARNING will
+48:   // change over time. Eventually, NONE will be eliminated.
+49:   // See https://crbug.com/647754.
+50:   // DEPRECATED: Use WARNING instead in most cases.
+51:   // HTTP_SHOW_WARNING = 1,
+52: 
+53:   // HTTPS with valid EV cert.
+54:   // DEPRECATED: EV certs no longer receive special UI treatment.
+55:   // See https://crbug.com/1006943.
+56:   // EV_SECURE = 2,
+57: 
+58:   // HTTPS (non-EV) with valid cert.
+59:   SECURE = 3,
+60: 
+61:   // HTTPS, but a certificate chain anchored to a root certificate installed
+62:   // by the system administrator has been observed in this profile, suggesting
+63:   // a MITM was present.
+64:   // DEPRECATED: This behaviour no longer exists.
+65:   // SECURE_WITH_POLICY_INSTALLED_CERT = 4,
+66: 
+67:   // Attempted HTTPS and failed, page not authenticated, HTTPS with
+68:   // insecure active content on the page, malware, phishing, or any other
+69:   // serious security issue that could be dangerous.
+70:   DANGEROUS = 5,
+71: 
+72:   // Pages deemed insecure, where we should show a warning indicator. This
+73:   // includes HTTP pages (previously these were HTTP_SHOW_WARNING) and cases
+74:   // where we consider an HTTPS page to be insecure (e.g., legacy TLS versions).
+75:   WARNING = 6,
+76: 
+
+SOURCE /home/exedev/work/inputs/chromium-156/components/site_engagement/content/site_engagement_service.h
+SHA256 8e659e38b216ed3423821898646f8be3bce5428444b5f629ca4b7674abe8c9ab
+65: // and adding it to the homescreen will increase the site engagement score. If
+66: // a site's score does not increase for some time, it will decay, eventually
+67: // reaching zero with further disuse.
+68: //
+69: // The SiteEngagementService object must be created and used on the UI thread
+70: // only. Engagement scores may be queried in a read-only fashion from other
+71: // threads using SiteEngagementService::GetScoreFromSettings, but use of this
+72: // method is discouraged unless it is not possible to use the UI thread.
+73: class SiteEngagementService : public KeyedService,
+74:                               public SiteEngagementScoreProvider {
+75:  public:
+
+SOURCE /home/exedev/work/inputs/chromium-156/components/site_engagement/content/site_engagement_service.h
+SHA256 8e659e38b216ed3423821898646f8be3bce5428444b5f629ca4b7674abe8c9ab
+115:   // score from the Browser Context that the incognito session was created from,
+116:   // and will increase and decrease as usual. Engagement earned or decayed in
+117:   // incognito will not be persisted or reflected in the original Browser
+118:   // Context.
+119:   //
+120:   // This method must be called on the UI thread.
+121:   static SiteEngagementService* Get(content::BrowserContext* browser_context);
+122: 
+123:   // Returns the maximum possible amount of engagement that a site can accrue.
+124:   static double GetMaxPoints();
+125: 
+
+SOURCE /home/exedev/work/inputs/chromium-156/components/site_engagement/content/site_engagement_service.h
+SHA256 8e659e38b216ed3423821898646f8be3bce5428444b5f629ca4b7674abe8c9ab
+165:   // be applied.
+166:   //
+167:   // Note that this method is quite expensive, so try to avoid calling it in
+168:   // performance-critical code.
+169:   std::vector<mojom::SiteEngagementDetails> GetAllDetails(
+170:       URLSets::Type url_set = URLSets::HTTP) const;
+171: 
+172:   // Update the engagement score of |url| for a notification interaction.
+173:   void HandleNotificationInteraction(const GURL& url);
+174: 
+175:   // Returns whether the engagement service has enough data to make meaningful
+
+SOURCE /home/exedev/work/agents/spec-1/revisions/v1/sources/chromium/chrome/browser/ui/toolbar/toolbar_actions_model.h
+SHA256 bb132f358b2a42252e68bbad2f1168421454460c9fb2f8d9ad70ab5637526047
+118:   void RemoveObserver(Observer* observer);
+119: 
+120:   bool actions_initialized() const { return actions_initialized_; }
+121: 
+122:   const base::flat_set<ActionId>& action_ids() const { return action_ids_; }
+123: 
+124:   void SetActionVisibility(const ActionId& action_id, bool visible);
+125: 
+126:   // Returns the extension name corresponding to the `action_id`.
+127:   const std::u16string GetExtensionName(const ActionId& action_id) const;
+128: 
+129:   // Returns true if `action_id` is in the toolbar model.
+130:   bool HasAction(const ActionId& action_id) const;
+131: 
+132:   // Returns if `url` is restricted for all extensions with actions in the
+133:   // toolbar.
+134:   bool IsRestrictedUrl(const GURL& url) const;
+
+SOURCE /home/exedev/work/agents/spec-1/revisions/v1/sources/chromium/chrome/browser/ui/toolbar/toolbar_actions_model.cc
+SHA256 af43ceaf3dca0ea0639a257ee18091e4a43759f0be732326eb9b171d16f14d5a
+680:   // toolbar.
+681:   base::flat_set<ActionId> incognito_ids = original_model->action_ids_;
+682:   base::EraseIf(incognito_ids, [this](const ActionId& id) {
+683:     return !ShouldAddExtension(GetExtensionById(id));
+684:   });
+685:   action_ids_ = std::move(incognito_ids);
+686: }
+687: 
+688: void ToolbarActionsModel::SetActionVisibility(const ActionId& action_id,
+689:                                               bool is_now_visible) {
+690:   DCHECK_NE(is_now_visible, IsActionPinned(action_id));
+691:   DCHECK(!IsActionForcePinned(action_id));
+692:   DCHECK(!profile_->IsOffTheRecord())
+693:       << "Changing action pin state is disallowed in incognito.";
+694: 
+695:   auto stored_pinned_action_ids = extension_prefs_->GetPinnedExtensions();
+696:   DCHECK_NE(is_now_visible,
+697:             std::ranges::contains(stored_pinned_action_ids, action_id));
+698:   if (is_now_visible) {
+699:     stored_pinned_action_ids.push_back(action_id);
+700:   } else {
+701:     std::erase(stored_pinned_action_ids, action_id);
+702:   }
+703:   extension_prefs_->SetPinnedExtensions(stored_pinned_action_ids);
+704:   // The |pinned_action_ids_| should be updated as a result of updating the
+
+SOURCE /home/exedev/work/agents/spec-1/revisions/v1/sources/chromium/chrome/browser/ui/toolbar/toolbar_actions_model.cc
+SHA256 af43ceaf3dca0ea0639a257ee18091e4a43759f0be732326eb9b171d16f14d5a
+758: void ToolbarActionsModel::UpdatePinnedActionIds() {
+759:   // If extensions are not ready, defer to later `Populate()` call.
+760:   if (!actions_initialized_) {
+761:     return;
+762:   }
+763: 
+764:   std::vector<ActionId> pinned_extensions = GetFilteredPinnedActionIds();
+765:   if (pinned_extensions == pinned_action_ids_) {
+766:     return;
+767:   }
+768: 
+769:   pinned_action_ids_ = pinned_extensions;
+770: }
+771: 
+772: void ToolbarActionsModel::NotifyPinnedActionIdsChanged() {
+773:   for (Observer& observer : observers_) {
+774:     observer.OnToolbarPinnedActionsChanged();
+775:   }
+776: }
+
+SOURCE /home/exedev/work/agents/spec-1/revisions/v1/sources/chromium/components/sessions/core/serialized_navigation_entry.h
+SHA256 d65f69dfa0c0932ca66c7a42f7ab203bba08eadf9c8ed1addfb6585d48a77bde
+78:   }
+79:   ui::PageTransition transition_type() const {
+80:     return transition_type_;
+81:   }
+82:   void set_transition_type(ui::PageTransition transition_type) {
+83:     transition_type_ = transition_type;
+84:   }
+85:   bool has_post_data() const { return has_post_data_; }
+86:   int64_t post_id() const { return post_id_; }
+87:   bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
+88:   base::Time timestamp() const { return timestamp_; }
+89:   void set_timestamp(base::Time timestamp) { timestamp_ = timestamp; }
+90: 
+91:   BlockedState blocked_state() const { return blocked_state_; }
+92:   void set_blocked_state(BlockedState blocked_state) {
+93:     blocked_state_ = blocked_state;
+94:   }
+95: 
+96:   PasswordState password_state() const { return password_state_; }
+97:   void set_password_state(PasswordState password_state) {
+98:     password_state_ = password_state;
+99:   }
+100: 
+101:   const GURL& virtual_url() const { return virtual_url_; }
+102:   void set_virtual_url(const GURL& virtual_url) { virtual_url_ = virtual_url; }
+103: 
+104:   const std::string& encoded_page_state() const { return encoded_page_state_; }
+105:   void set_encoded_page_state(const std::string& encoded_page_state) {
+
+SOURCE /home/exedev/work/inputs/chromium-156/content/public/browser/web_contents.h
+SHA256 da515b8bc2254be8c7211e8cb975c4c4e7588507a47ed0ce092e88303a142eca
+1235:   virtual void ExecuteCustomContextMenuCommand(int action,
+1236:                                                const GURL& link_followed) = 0;
+1237: 
+1238:   // Views and focus -----------------------------------------------------------
+1239: 
+1240:   // Returns the native widget that contains the contents of the tab.
+1241:   virtual gfx::NativeView GetNativeView() = 0;
+1242: 
+1243:   // Returns the native widget with the main content of the tab (i.e. the main
+1244:   // render view host, though there may be many popups in the tab as children of
+1245:   // the container).
+1246:   virtual gfx::NativeView GetContentNativeView() = 0;
+1247: 
+1248:   // Returns the outermost native view. This will be used as the parent for
+1249:   // dialog boxes.
+1250:   virtual gfx::NativeWindow GetTopLevelNativeWindow() = 0;
+1251: 
+1252:   // Computes the rectangle for the native widget that contains the contents of
+1253:   // the tab in the screen coordinate system.
+1254:   virtual gfx::Rect GetContainerBounds() = 0;
+1255: 
+
+SOURCE /home/exedev/work/inputs/chromium-156/content/browser/web_contents/web_contents_view_mac.mm
+SHA256 068b7938942a1e5feb54917b31fc4827d2a1de749a811219f5b0bcfda851d329
+130:   in_process_ns_view_bridge_.reset();
+131: }
+132: 
+133: WebContentsViewCocoa* WebContentsViewMac::GetInProcessNSView() const {
+134:   return in_process_ns_view_bridge_ ? in_process_ns_view_bridge_->GetNSView()
+135:                                     : nil;
+136: }
+137: 
+138: gfx::NativeView WebContentsViewMac::GetNativeView() const {
+139:   return gfx::NativeView(GetInProcessNSView());
+140: }
+141: 
+142: gfx::NativeView WebContentsViewMac::GetContentNativeView() const {
+143:   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+144:   if (!rwhv) {
+145:     return gfx::NativeView();
+146:   }
+147:   return rwhv->GetNativeView();
+148: }
+149: 
+150: gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {

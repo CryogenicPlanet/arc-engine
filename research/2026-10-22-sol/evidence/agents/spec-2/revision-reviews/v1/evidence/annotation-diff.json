@@ -1,0 +1,364 @@
+[
+  {
+    "identity": [
+      "ArcMetaTagSelector",
+      "",
+      "-",
+      "initWithKind:value:"
+    ],
+    "imp_va": "0x43dd458",
+    "changes": {
+      "behavior": [
+        "After NSObject init, stores kind and an explicit copy of value.",
+        "After NSObject init, stores scalar kind and an explicit copy of value. Its kind/value shape is compatible with conversion input, but the untyped enumeration at 0x43de074 does not establish that its receivers are ArcMetaTagSelector instances."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x43dd458; corpus /home/exedev/work/inputs/decompile/0x43.c@4167195+726; metadata method_record_va 0xd77779c; dobjc170.txt:1245; objc170.txt:21975,21976",
+        "ArcCore-1.170.0 IMP 0x43dd458; corpus /home/exedev/work/inputs/decompile/0x43.c@4167195+726; metadata method_record_va 0xd77779c; dobjc170.txt:1245; objc170.txt:21975,21976; revision-evidence/rechecked-bodies.txt"
+      ],
+      "unresolved_question": [
+        "Selector kind enum and conversion-service matching rules.",
+        "Concrete conversion-element receiver class requires producer/caller dataflow; selector kind enum and service matching rules remain unknown."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcContentConversionService",
+      "",
+      "-",
+      "convertHtmlToMarkdown:url:linkStyle:strategy:urlTransform:skipNoscript:passThroughInputElements:metaTagsToCapture:deduplicateMetaTagContent:completion:"
+    ],
+    "imp_va": "0x43de074",
+    "changes": {
+      "behavior": [
+        "Marshals HTML, optional URL, conversion options/flags and kind/value meta-tag vector; captures completion and invokes 0x42a75b4, which reaches content_conversion.mojom.ContentConversionService.",
+        "Marshals HTML, optional URL, options/flags and a native vector from kind/value messages to untyped enumerated input elements; captures completion and calls 0x42a75b4, reaching content_conversion.mojom.ContentConversionService. ArcMetaTagSelector has a compatible candidate shape; this path allocates/checks no such class and does not establish concrete receiver identity."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x43de074; corpus /home/exedev/work/inputs/decompile/0x43.c@4181328+8464; metadata method_record_va 0xd7778b0; dobjc170.txt:1272; objc170.txt:22230,22231",
+        "ArcCore-1.170.0 IMP 0x43de074; corpus /home/exedev/work/inputs/decompile/0x43.c@4181328+8464; metadata method_record_va 0xd7778b0; dobjc170.txt:1272; objc170.txt:22230,22231; revision-evidence/rechecked-bodies.txt"
+      ],
+      "unresolved_question": [
+        "Exact option enums, result/error adapter, algorithm/library and callback queue.",
+        "Producer/caller dataflow establishing element class, exact option enums, result/error adapter, algorithm/library and callback queue remain unverified."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcBrowserContextAutocomplete",
+      "",
+      "-",
+      "initWithAutocompleteController:"
+    ],
+    "imp_va": "0x43ecb50",
+    "changes": {
+      "behavior": [
+        "Moves the incoming native controller pointer into self+8, nulls source owner, and disposes previous pointer via 0x42c33cc.",
+        "Adopts the supplied by-value native controller owner into self+8 and disposes the previous owner via 0x42c33cc and 0x5810. The successful path does not zero the incoming source; zero stores are old-owner or failed-init cleanup. Caller-side move and full ownership ABI remain unverified."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x43ecb50; corpus /home/exedev/work/inputs/decompile/0x43.c@4452043+1341; metadata method_record_va 0xd7783a0; dobjc170.txt:1524; objc170.txt:23880,23881",
+        "ArcCore-1.170.0 IMP 0x43ecb50; corpus /home/exedev/work/inputs/decompile/0x43.c@4452043+1341; metadata method_record_va 0xd7783a0; dobjc170.txt:1524; objc170.txt:23880,23881; revision-evidence/rechecked-bodies.txt; revision-evidence/instructions.txt"
+      ],
+      "unresolved_question": [
+        "Controller construction/observer registration and external lifetime.",
+        "Caller-side move/aggregate ABI, controller construction/observer registration and external lifetime remain unverified."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcBrowserContextAutocomplete",
+      "",
+      "-",
+      "stop"
+    ],
+    "imp_va": "0x43ece08",
+    "changes": {
+      "behavior": [
+        "If controller is present, invokes native stop-like virtual method and clears saved completion callable storage; cleanup uses 0x24e39c0.",
+        "Loads the controller through its stored owner; if native controller and state at +0x70 are nonnull, directly calls 0x24e39c0(controller+0x30 value, 0), then resets saved completion storage. The later indirect operation cleans the saved callable; exact upstream Stop identity remains provisional."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x43ece08; corpus /home/exedev/work/inputs/decompile/0x43.c@4455372+870; metadata method_record_va 0xd7783b8; dobjc170.txt:1526; objc170.txt:23886,23887",
+        "ArcCore-1.170.0 IMP 0x43ece08; corpus /home/exedev/work/inputs/decompile/0x43.c@4455372+870; metadata method_record_va 0xd7783b8; dobjc170.txt:1526; objc170.txt:23886,23887; revision-evidence/rechecked-bodies.txt; revision-evidence/instructions.txt"
+      ],
+      "unresolved_question": [
+        "Whether a pending completion fires during stop; exact native stop reason.",
+        "Whether pending completion fires during stop, null-owner behavior, exact native stop reason and upstream identity remain unverified."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcAnnotatedVisit",
+      "",
+      "-",
+      "relatedSearches"
+    ],
+    "imp_va": "0x43ff558",
+    "changes": {
+      "behavior": [
+        "Converts native byte-string value to ObjC string using 0x1c391bc (CFStringCreateWithBytes encoding 0x08000100). Self offsets: 0x10, 0x8. Engagement guard/trap is visible.",
+        "Returns an array of strings: absent native optional returns the empty NSArray singleton; engaged state enumerates 24-byte native string entries, converts each via 0x1c391bc, adds it to NSMutableArray and returns a copy. Invalid nonzero engagement can trap."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x43ff558; corpus /home/exedev/work/inputs/decompile/0x43.c@4751441+1645; metadata method_record_va 0xd778a14; dobjc170.txt:1597; objc170.txt:24286,24287",
+        "ArcCore-1.170.0 IMP 0x43ff558; corpus /home/exedev/work/inputs/decompile/0x43.c@4751441+1645; metadata method_record_va 0xd778a14; dobjc170.txt:1597; objc170.txt:24286,24287; revision-evidence/rechecked-bodies.txt"
+      ],
+      "unresolved_question": [
+        "Producer meaning, invalid-string behavior and snapshot freshness.",
+        "Producer meaning, invalid-string behavior and snapshot freshness remain unverified."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcURLLoadConfiguration",
+      "",
+      "-",
+      "headers"
+    ],
+    "imp_va": "0x440d9f8",
+    "changes": {
+      "behavior": [
+        "Converts native byte-string value to ObjC string using 0x1c391bc (CFStringCreateWithBytes encoding 0x08000100). Self offsets: 0x78.",
+        "Returns a copied dictionary snapshot. Iterates native linked header entries, converts each key/value byte string with 0x1c391bc and sends setValue:forKey: to NSMutableDictionary; no entries produces an empty copied dictionary."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x440d9f8; corpus /home/exedev/work/inputs/decompile/0x44.c@334741+1430; metadata method_record_va 0xd77a034; dobjc170.txt:2104; objc170.txt:28127,28128",
+        "ArcCore-1.170.0 IMP 0x440d9f8; corpus /home/exedev/work/inputs/decompile/0x44.c@334741+1430; metadata method_record_va 0xd77a034; dobjc170.txt:2104; objc170.txt:28127,28128; revision-evidence/rechecked-bodies.txt"
+      ],
+      "unresolved_question": [
+        "Producer meaning, invalid-string behavior and snapshot freshness.",
+        "Duplicate-key/case handling, invalid-string conversion and snapshot freshness remain unverified."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcWebContentsDevTools",
+      "",
+      "-",
+      "openProtocolConnection:error:"
+    ],
+    "imp_va": "0x4415b60",
+    "changes": {
+      "body_status": [
+        "available",
+        "available_signature_artifact"
+      ],
+      "behavior": [
+        "Captures notification sink; 0x4355df8 can reject disabled/unavailable/attach-failed state; boxes connection ID and converts error.",
+        "Captures notification sink; 0x4355df8 can reject disabled/unavailable/attach-failed state; returns boxed connection ID on success or nil after error conversion. Ghidra adds a spurious parameter: raw 0x4415b74 saves the NSError-out argument from x3 and 0x4415c18 forwards it to 0x4402548."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x4415b60; corpus /home/exedev/work/inputs/decompile/0x44.c@488812+2352; metadata method_record_va 0xd77a4e8; dobjc170.txt:2183; objc170.txt:28589,28590",
+        "ArcCore-1.170.0 IMP 0x4415b60; corpus /home/exedev/work/inputs/decompile/0x44.c@488812+2352; metadata method_record_va 0xd77a4e8; dobjc170.txt:2183; objc170.txt:28589,28590; revision-evidence/crosscheck-bodies.txt; revision-evidence/instructions.txt"
+      ],
+      "unresolved_question": [
+        "Connection ID reuse, sink lifetime and close/disconnect notification.",
+        "Protocol message/result adapter, callback delivery sequence, cancellation/drain ordering and native frontend lifetime remain unverified."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcWebContentsMediaSession",
+      "",
+      "-",
+      "init:forWebContents:"
+    ],
+    "imp_va": "0x441a1c4",
+    "changes": {
+      "body_status": [
+        "available",
+        "available_signature_artifact"
+      ],
+      "behavior": [
+        "Initializes object/native state after NSObject init; conversion/helper calls and assignment branches are preserved in exact body.",
+        "Copies native shared-handle state and stores a weak owner after NSObject init. Ghidra signature/argument-propagation artifact: unused param_4 and owner rendered from the aggregate. Raw entry saves x2 as the handle address and x3 as owner; handle words are loaded through saved x2 and saved x3 feeds the weak-store call. This is local register evidence, not a complete C++ ABI guarantee."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x441a1c4; corpus /home/exedev/work/inputs/decompile/0x44.c@557227+1902; metadata method_record_va 0xd77a6bc; dobjc170.txt:2226; objc170.txt:28885,28886",
+        "ArcCore-1.170.0 IMP 0x441a1c4; corpus /home/exedev/work/inputs/decompile/0x44.c@557227+1902; metadata method_record_va 0xd77a6bc; dobjc170.txt:2226; objc170.txt:28885,28886; revision-evidence/rechecked-bodies.txt; revision-evidence/instructions.txt"
+      ],
+      "unresolved_question": [
+        "Validate native copy/move ownership, defaults and input validation in referenced helper(s).",
+        "Caller-side aggregate passing, native copy/move ownership, defaults and input validation remain unverified."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcWebContentsMediaSession",
+      "",
+      "-",
+      "getMediaContentTypes:"
+    ],
+    "imp_va": "0x441a848",
+    "changes": {
+      "behavior": [
+        "Requires engaged native session; forwards native action/input then converts returned status to BOOL and optional NSError via 0x4402548.",
+        "Requires engaged native session or traps. Builds NSMutableIndexSet from native result values below 4 and returns its copy on success, including an empty set; on failure calls 0x4402548 for NSError conversion and returns nil. Result is an object, not BOOL."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x441a848; corpus /home/exedev/work/inputs/decompile/0x44.c@566681+2244; metadata method_record_va 0xd77a710; dobjc170.txt:2233; objc170.txt:28906,28907",
+        "ArcCore-1.170.0 IMP 0x441a848; corpus /home/exedev/work/inputs/decompile/0x44.c@566681+2244; metadata method_record_va 0xd77a710; dobjc170.txt:2233; objc170.txt:28906,28907; revision-evidence/rechecked-bodies.txt"
+      ],
+      "unresolved_question": [
+        "Action support, numeric units/range, native error branch and service callback thread.",
+        "Content-type enum names, producer meaning of values, invalid-value filtering and NSError edge cases remain unverified."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcWebContentsThumbnailsGenerator",
+      "",
+      "-",
+      "init:forWebContents:"
+    ],
+    "imp_va": "0x441c3c0",
+    "changes": {
+      "body_status": [
+        "available",
+        "available_signature_artifact"
+      ],
+      "behavior": [
+        "Initializes object/native state after NSObject init; conversion/helper calls and assignment branches are preserved in exact body.",
+        "Copies native shared-handle state and stores a weak owner after NSObject init. Ghidra signature/argument-propagation artifact: unused param_4 and owner rendered from the aggregate. Raw entry saves x2 as the handle address and x3 as owner; handle words are loaded through saved x2 and saved x3 feeds the weak-store call. This is local register evidence, not a complete C++ ABI guarantee."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x441c3c0; corpus /home/exedev/work/inputs/decompile/0x44.c@596213+1930; metadata method_record_va 0xd77a894; dobjc170.txt:2268; objc170.txt:29122,29123",
+        "ArcCore-1.170.0 IMP 0x441c3c0; corpus /home/exedev/work/inputs/decompile/0x44.c@596213+1930; metadata method_record_va 0xd77a894; dobjc170.txt:2268; objc170.txt:29122,29123; revision-evidence/rechecked-bodies.txt; revision-evidence/instructions.txt"
+      ],
+      "unresolved_question": [
+        "Validate native copy/move ownership, defaults and input validation in referenced helper(s).",
+        "Caller-side aggregate passing, native copy/move ownership, defaults and input validation remain unverified."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcContextMenuElementInfo",
+      "",
+      "-",
+      "dictionarySuggestions"
+    ],
+    "imp_va": "0x443f654",
+    "changes": {
+      "behavior": [
+        "Converts native UTF-16 storage to ObjC string using 0x1d9fb90 (length \u00d7 2; CF encoding 0x14000100). Self offsets: 0x18, 0x8. Engagement guard/trap is visible.",
+        "Requires engaged native state or traps. Gets a temporary suggestion vector via 0x43342a4, converts each UTF-16 element with 0x1d9fb90 and returns the constructed NSMutableArray, including an empty array; no copy is sent."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x443f654; corpus /home/exedev/work/inputs/decompile/0x44.c@1516057+2208; metadata method_record_va 0xd77cd04; dobjc170.txt:3142; objc170.txt:35379,35380",
+        "ArcCore-1.170.0 IMP 0x443f654; corpus /home/exedev/work/inputs/decompile/0x44.c@1516057+2208; metadata method_record_va 0xd77cd04; dobjc170.txt:3142; objc170.txt:35379,35380; revision-evidence/rechecked-bodies.txt"
+      ],
+      "unresolved_question": [
+        "Producer meaning and invalid-string/absence behavior.",
+        "Suggestion producer, ordering, invalid-string behavior and caller mutation expectations remain unverified."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcAIService",
+      "Extensions",
+      "-",
+      "evaluateCommandBarRanking:completion:"
+    ],
+    "imp_va": "0x43d9ab8",
+    "changes": {
+      "body_status": [
+        "available",
+        "available_signature_artifact"
+      ],
+      "behavior": [
+        "Copies native service handle, marshals inputs and captures supplied callback(s) into native callable state, then forwards to 0x040416c0, 0x043dab74, 0x043daef4, 0x0429d6b8, 0x043db22c.",
+        "Enumerates input examples, copies the native service handle and captures completion before forwarding to 0x429d6b8; collection helpers include 0x43dab74, 0x43daef4 and 0x43db22c. Ghidra explicitly warns Type propagation algorithm not settling; displayed extra arguments and aggregate semantics are untrusted. Export remains available; function-boundary corruption is not established."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x43d9ab8; corpus /home/exedev/work/inputs/decompile/0x43.c@4108118+3125; metadata method_record_va 0xd7776a0; dobjc170.txt:4873; objc170.txt:61431,61432",
+        "ArcCore-1.170.0 IMP 0x43d9ab8; corpus /home/exedev/work/inputs/decompile/0x43.c@4108118+3125; metadata method_record_va 0xd7776a0; dobjc170.txt:4873; objc170.txt:61431,61432; revision-evidence/rechecked-bodies.txt"
+      ],
+      "confidence": [
+        "medium",
+        "low"
+      ],
+      "unresolved_question": [
+        "Exact result/error adapter, callback ownership/once-versus-repeated behavior, delivery queue and unavailable/cancellation behavior.",
+        "Argument/aggregate recovery, exact result/error adapter, callback ownership/once-versus-repeated behavior, queue and unavailable/cancellation behavior remain unresolved."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcAIService",
+      "Extensions",
+      "-",
+      "trainCommandBarRanking:completion:"
+    ],
+    "imp_va": "0x43d9fd4",
+    "changes": {
+      "body_status": [
+        "available",
+        "available_signature_artifact"
+      ],
+      "behavior": [
+        "Copies native service handle, marshals inputs and captures supplied callback(s) into native callable state, then forwards to 0x040416c0, 0x043dab74, 0x043daef4, 0x0429e884, 0x043db22c.",
+        "Enumerates input examples, copies the native service handle and captures completion before forwarding to 0x429e884; collection helpers include 0x43dab74, 0x43daef4 and 0x43db22c. Ghidra explicitly warns Type propagation algorithm not settling; displayed extra arguments and aggregate semantics are untrusted. Export remains available; function-boundary corruption is not established."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x43d9fd4; corpus /home/exedev/work/inputs/decompile/0x43.c@4111243+3106; metadata method_record_va 0xd7776ac; dobjc170.txt:4874; objc170.txt:61434,61435",
+        "ArcCore-1.170.0 IMP 0x43d9fd4; corpus /home/exedev/work/inputs/decompile/0x43.c@4111243+3106; metadata method_record_va 0xd7776ac; dobjc170.txt:4874; objc170.txt:61434,61435; revision-evidence/rechecked-bodies.txt"
+      ],
+      "confidence": [
+        "medium",
+        "low"
+      ],
+      "unresolved_question": [
+        "Exact result/error adapter, callback ownership/once-versus-repeated behavior, delivery queue and unavailable/cancellation behavior.",
+        "Argument/aggregate recovery, exact result/error adapter, callback ownership/once-versus-repeated behavior, queue and unavailable/cancellation behavior remain unresolved."
+      ]
+    }
+  },
+  {
+    "identity": [
+      "ArcCommandBarRankingExample",
+      "Extensions",
+      "-",
+      "candidates"
+    ],
+    "imp_va": "0x4401f34",
+    "changes": {
+      "body_status": [
+        "available",
+        "available_incoherent_pseudocode"
+      ],
+      "behavior": [
+        "Extensions category copies native example and constructs array of ArcCommandBarRankingCandidate wrappers.",
+        "Incoherent pseudocode: apparent temporary-vector cleanup/count reset precedes array construction/reuse; candidate initializer arguments contain object-to-bool casts and in_stack values. Array and ArcCommandBarRankingCandidate allocations show conversion intent only. Array contents, argument mapping and lifetime are unresolved; no actual engine use-after-free, empty-result or corrupt-boundary conclusion follows."
+      ],
+      "evidence": [
+        "ArcCore-1.170.0 IMP 0x4401f34; corpus /home/exedev/work/inputs/decompile/0x44.c@55196+5800; metadata method_record_va 0xd778dc8; dobjc170.txt:4962; objc170.txt:62610,62611",
+        "ArcCore-1.170.0 IMP 0x4401f34; corpus /home/exedev/work/inputs/decompile/0x44.c@55196+5800; metadata method_record_va 0xd778dc8; dobjc170.txt:4962; objc170.txt:62610,62611; revision-evidence/rechecked-bodies.txt; revision-evidence/instructions.txt; revision-evidence/related-bodies.txt"
+      ],
+      "confidence": [
+        "medium",
+        "low"
+      ],
+      "unresolved_question": [
+        "Nested conversions and candidate ordering.",
+        "Recover coherent control flow, temporary ownership and constructor argument mapping across 0x443366c, 0x4433528 and 0x43dad44 before asserting array contents, ordering or wrapper lifetime."
+      ],
+      "semantic_status": [
+        "bounded_review",
+        "unresolved"
+      ]
+    }
+  }
+]

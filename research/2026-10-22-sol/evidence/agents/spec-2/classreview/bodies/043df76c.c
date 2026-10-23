@@ -1,0 +1,127 @@
+// ==== 0x43df76c  ArcBackForwardList::initWithBackForwardList:  (836 bytes)
+
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcBackForwardList::initWithBackForwardList_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  long lVar1;
+  uint uVar2;
+  code *pcVar3;
+  long lVar4;
+  ID IVar5;
+  ID IVar6;
+  ID IVar7;
+  long lVar8;
+  undefined8 uVar9;
+  long *plVar10;
+  const_void__ pvVar11;
+  ID local_70;
+  class_t *pcStack_68;
+  
+  pcStack_68 = &objc::class_t::ArcBackForwardList;
+  local_70 = param_1;
+  IVar5 = NSObject::init((ID)&local_70,"init");
+  if (IVar5 == 0) goto LAB_043df800;
+  if (*(char *)(IVar5 + 0x40) != '\0') {
+    plVar10 = *(long **)(IVar5 + 0x38);
+    if (plVar10 != (long *)0x0) {
+      LOAcquire();
+      lVar4 = plVar10[1];
+      plVar10[1] = lVar4 + -1;
+      LORelease();
+      if (lVar4 == 0) {
+        (**(code **)(*plVar10 + 0x10))(plVar10);
+        if (plVar10[2] != 0) {
+          LOAcquire();
+          lVar4 = plVar10[2];
+          plVar10[2] = lVar4 + -1;
+          LORelease();
+          if (lVar4 != 0) goto LAB_043df7d4;
+        }
+        pcVar3 = *(code **)(*plVar10 + 0x20);
+        if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+          FUN_00005810(plVar10,0x20);
+        }
+        else {
+          (*pcVar3)(plVar10);
+        }
+      }
+    }
+LAB_043df7d4:
+    *(undefined1 *)(IVar5 + 0x40) = 0;
+  }
+  *(undefined8 *)(IVar5 + 0x30) = *(undefined8 *)param_3;
+  lVar4 = *(long *)((long)param_3 + 8);
+  *(long *)(IVar5 + 0x38) = lVar4;
+  if (lVar4 != 0) {
+    *(long *)(lVar4 + 8) = *(long *)(lVar4 + 8) + 1;
+  }
+  *(undefined1 *)(IVar5 + 0x40) = 1;
+LAB_043df800:
+  IVar6 = NSMutableArray::new((ID)&_OBJC_CLASS___NSMutableArray,"new");
+  if ((*(byte *)(IVar5 + 0x40) & 1) != 0) {
+    uVar2 = *(uint *)(*(long *)(IVar5 + 0x30) + 0x50);
+    lVar4 = (ulong)uVar2 << 4;
+    if ((int)uVar2 < 1) {
+      lVar4 = 0;
+    }
+    if (lVar4 != 0) {
+      pvVar11 = *(const_void__ *)(*(long *)(IVar5 + 0x30) + 0x38);
+      do {
+        IVar7 = _objc_alloc(&objc::class_t::ArcBackForwardListItem);
+        IVar7 = ArcBackForwardListItem::initWithBackForwardListItem_
+                          (IVar7,"initWithBackForwardListItem:",pvVar11);
+        NSMutableArray::addObject_(IVar6,"addObject:",IVar7);
+        pvVar11 = (const_void__)((long)pvVar11 + 0x10);
+        lVar4 = lVar4 + -0x10;
+      } while (lVar4 != 0);
+    }
+    *(ID *)(IVar5 + 0x20) = IVar6;
+    IVar6 = NSMutableArray::new((ID)&_OBJC_CLASS___NSMutableArray,"new");
+    if ((*(byte *)(IVar5 + 0x40) & 1) != 0) {
+      lVar8 = *(long *)(IVar5 + 0x30);
+      lVar4 = *(long *)(lVar8 + 0x38);
+      lVar1 = *(long *)(lVar8 + 0x40);
+      pvVar11 = (const_void__)(lVar4 + (long)*(int *)(lVar8 + 0x50) * 0x10);
+      while (pvVar11 = (const_void__)((long)pvVar11 + 0x10),
+            pvVar11 != (const_void__)(lVar4 + lVar1 * 0x10)) {
+        IVar7 = _objc_alloc(&objc::class_t::ArcBackForwardListItem);
+        IVar7 = ArcBackForwardListItem::initWithBackForwardListItem_
+                          (IVar7,"initWithBackForwardListItem:",pvVar11);
+        NSMutableArray::addObject_(IVar6,"addObject:",IVar7);
+      }
+      *(ID *)(IVar5 + 0x28) = IVar6;
+      IVar6 = _objc_alloc(&objc::class_t::ArcBackForwardListItem);
+      if ((*(byte *)(IVar5 + 0x40) & 1) != 0) {
+        pvVar11 = (const_void__)FUN_042ae870(*(undefined8 *)(IVar5 + 0x30));
+        IVar6 = ArcBackForwardListItem::initWithBackForwardListItem_
+                          (IVar6,"initWithBackForwardListItem:",pvVar11);
+        uVar9 = *(undefined8 *)(IVar5 + 8);
+        *(ID *)(IVar5 + 8) = IVar6;
+        IVar6 = _objc_alloc(uVar9,&objc::class_t::ArcBackForwardListItem);
+        if ((*(byte *)(IVar5 + 0x40) & 1) != 0) {
+          uVar9 = FUN_042ae8ac(*(undefined8 *)(IVar5 + 0x30));
+          IVar6 = _objc_msgSend(IVar6,"initWithBackForwardListItem:",uVar9);
+          uVar9 = *(undefined8 *)(IVar5 + 0x10);
+          *(ID *)(IVar5 + 0x10) = IVar6;
+          IVar6 = _objc_alloc(uVar9,&objc::class_t::ArcBackForwardListItem);
+          if ((*(byte *)(IVar5 + 0x40) & 1) != 0) {
+            uVar9 = FUN_042ae8e0(*(undefined8 *)(IVar5 + 0x30));
+            IVar6 = _objc_msgSend(IVar6,"initWithBackForwardListItem:",uVar9);
+            *(ID *)(IVar5 + 0x18) = IVar6;
+            return IVar5;
+          }
+        }
+      }
+    }
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x43dfa84);
+  (*pcVar3)();
+}
+
+

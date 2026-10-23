@@ -1,0 +1,94 @@
+// ==== 0x43e7b94  ArcBrowserApplication::tracingController  (460 bytes)
+
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retainAutoreleaseReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcBrowserApplication::tracingController(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  ID IVar3;
+  __shared_weak_count *in_x3;
+  code *pcVar4;
+  long *plVar5;
+  TracingController TVar6;
+  undefined8 local_50;
+  long *plStack_48;
+  undefined8 local_40;
+  long *plStack_38;
+  
+  if (*(ID *)(param_1 + 0x10) != 0) {
+    return *(ID *)(param_1 + 0x10);
+  }
+  local_40 = 0;
+  plStack_38 = (long *)0x0;
+  FUN_042b7738(&local_40,**(undefined8 **)(param_1 + 0x20));
+  IVar3 = _objc_alloc(&objc::class_t::ArcTracingController);
+  plStack_48 = plStack_38;
+  local_50 = local_40;
+  if (plStack_38 != (long *)0x0) {
+    plStack_38[1] = plStack_38[1] + 1;
+  }
+  TVar6.field0_0x0.field1_0x8 = in_x3;
+  TVar6.field0_0x0.field0_0x0 = (Impl *)&local_50;
+  IVar3 = ArcTracingController::init_(IVar3,"init:",TVar6);
+  plVar1 = plStack_48;
+  *(ID *)(param_1 + 0x10) = IVar3;
+  if (plStack_48 != (long *)0x0) {
+    LOAcquire();
+    lVar2 = plStack_48[1];
+    plStack_48[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 == 0) {
+      plVar5 = plStack_48 + 2;
+      (**(code **)(*plStack_48 + 0x10))(plStack_48);
+      if (*plVar5 != 0) {
+        LOAcquire();
+        lVar2 = plVar1[2];
+        plVar1[2] = lVar2 + -1;
+        LORelease();
+        if (lVar2 != 0) goto LAB_043e7c28;
+      }
+      pcVar4 = *(code **)(*plVar1 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+        FUN_00005810(plVar1,0x20);
+      }
+      else {
+        (*pcVar4)(plVar1);
+      }
+    }
+  }
+LAB_043e7c28:
+  plVar1 = plStack_38;
+  if (plStack_38 != (long *)0x0) {
+    LOAcquire();
+    lVar2 = plStack_38[1];
+    plStack_38[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 == 0) {
+      plVar5 = plStack_38 + 2;
+      (**(code **)(*plStack_38 + 0x10))(plStack_38);
+      if (*plVar5 != 0) {
+        LOAcquire();
+        lVar2 = plVar1[2];
+        plVar1[2] = lVar2 + -1;
+        LORelease();
+        if (lVar2 != 0) goto LAB_043e7c40;
+      }
+      pcVar4 = *(code **)(*plVar1 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+        FUN_00005810(plVar1,0x20);
+      }
+      else {
+        (*pcVar4)(plVar1);
+      }
+    }
+  }
+LAB_043e7c40:
+  return *(ID *)(param_1 + 0x10);
+}
+
+

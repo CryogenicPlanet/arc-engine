@@ -1,0 +1,169 @@
+{
+  "class_name": "ArcAIInferenceConfiguration",
+  "metadata_va": "0xe37dbf8",
+  "metadata_file_offset": "0xe37dbf8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2ace10",
+  "instance_start": 8,
+  "instance_size": 20,
+  "ivars": [
+    {
+      "record_va": "0xe2acdb8",
+      "offset": 8,
+      "name": "_ai_inference_configuration",
+      "type": "{optional<arc::AIStreamedInferenceConfiguration>=\"\"(?=\"__null_state_\"c\"__val_\"{AIStreamedInferenceConfiguration=\"max_tokens\"i\"stream_after_every_n_tokens\"s})\"__engaged_\"B}",
+      "alignment": 2,
+      "size": 12
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcAIInferenceConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "mutableAIInferenceConfiguration", "type_encoding": "^{AIStreamedInferenceConfiguration=is}16@0:8", "imp": "0x443a2fc", "method_record_va": "0xd77c088", "selector_va": "0xd7658a2", "dyld_line": 2837, "imp_file_offset": "0x443a2fc", "body_name": "ArcAIInferenceConfiguration::mutableAIInferenceConfiguration", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1367466, "body_length": 451, "failed": 0, "truncated": false}
+// ==== 0x443a2fc  ArcAIInferenceConfiguration::mutableAIInferenceConfiguration  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+AIStreamedInferenceConfiguration *
+ArcAIInferenceConfiguration::mutableAIInferenceConfiguration(ID param_1,SEL param_2)
+
+{
+  if ((*(byte *)(param_1 + 0x10) & 1) != 0) {
+    return (AIStreamedInferenceConfiguration *)(param_1 + 8);
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_04b08a00();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIInferenceConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "init:streamAfterEveryNTokens:", "type_encoding": "@24@0:8i16i20", "imp": "0x443a318", "method_record_va": "0xd77c094", "selector_va": "0xd7658c2", "dyld_line": 2838, "imp_file_offset": "0x443a318", "body_name": "ArcAIInferenceConfiguration::init:streamAfterEveryNTokens:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1367917, "body_length": 640, "failed": 0, "truncated": false}
+// ==== 0x443a318  ArcAIInferenceConfiguration::init:streamAfterEveryNTokens:  (92 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcAIInferenceConfiguration::init_streamAfterEveryNTokens_
+             (ID param_1,SEL param_2,int param_3,int param_4)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcAIInferenceConfiguration;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    *(undefined8 *)(IVar1 + 8) = 0;
+    *(undefined1 *)(IVar1 + 0x10) = 1;
+    *(int *)(IVar1 + 8) = param_3;
+    *(short *)(IVar1 + 0xc) = (short)param_4;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIInferenceConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "initWithAIInferenceConfiguration:", "type_encoding": "@24@0:8r^{AIStreamedInferenceConfiguration=is}16", "imp": "0x443a374", "method_record_va": "0xd77c0a0", "selector_va": "0xd7658e0", "dyld_line": 2839, "imp_file_offset": "0x443a374", "body_name": "ArcAIInferenceConfiguration::initWithAIInferenceConfiguration:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1368557, "body_length": 703, "failed": 0, "truncated": false}
+// ==== 0x443a374  ArcAIInferenceConfiguration::initWithAIInferenceConfiguration:  (96 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcAIInferenceConfiguration::initWithAIInferenceConfiguration_
+             (ID param_1,SEL param_2,const_AIStreamedInferenceConfiguration__ param_3)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcAIInferenceConfiguration;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0x10) != '\0') {
+      *(undefined1 *)(IVar1 + 0x10) = 0;
+    }
+    *(undefined8 *)(IVar1 + 8) = *(undefined8 *)param_3;
+    *(undefined1 *)(IVar1 + 0x10) = 1;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIInferenceConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "maxTokens", "type_encoding": "i16@0:8", "imp": "0x443a3d4", "method_record_va": "0xd77c0ac", "selector_va": "0xd765902", "dyld_line": 2840, "imp_file_offset": "0x443a3d4", "body_name": "ArcAIInferenceConfiguration::maxTokens", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1369260, "body_length": 405, "failed": 0, "truncated": false}
+// ==== 0x443a3d4  ArcAIInferenceConfiguration::maxTokens  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcAIInferenceConfiguration::maxTokens(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x10) & 1) != 0) {
+    return *(int *)(param_1 + 8);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443a3e8);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIInferenceConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "streamAfterEveryNTokens", "type_encoding": "i16@0:8", "imp": "0x443a3e8", "method_record_va": "0xd77c0b8", "selector_va": "0xd76590c", "dyld_line": 2841, "imp_file_offset": "0x443a3e8", "body_name": "ArcAIInferenceConfiguration::streamAfterEveryNTokens", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1369665, "body_length": 442, "failed": 0, "truncated": false}
+// ==== 0x443a3e8  ArcAIInferenceConfiguration::streamAfterEveryNTokens  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcAIInferenceConfiguration::streamAfterEveryNTokens(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x10) & 1) != 0) {
+    return (int)*(short *)(param_1 + 0xc);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443a3fc);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIInferenceConfiguration", "category": "", "protocol": "", "kind": "-", "selector": "ai_inference_configuration", "type_encoding": "{optional<arc::AIStreamedInferenceConfiguration>=(?=c{AIStreamedInferenceConfiguration=is})B}16@0:8", "imp": "0x443a3fc", "method_record_va": "0xd77c0c4", "selector_va": "0xd765924", "dyld_line": 2842, "imp_file_offset": "0x443a3fc", "body_name": "ArcAIInferenceConfiguration::ai_inference_configuration", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1370107, "body_length": 338, "failed": 0, "truncated": false}
+// ==== 0x443a3fc  ArcAIInferenceConfiguration::ai_inference_configuration  (16 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+optional<arc::AIStreamedInferenceConfiguration>
+ArcAIInferenceConfiguration::ai_inference_configuration(ID param_1,SEL param_2)
+
+{
+  return *(optional<arc::AIStreamedInferenceConfiguration> *)(param_1 + 8);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAIInferenceConfiguration", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x4400f4c", "method_record_va": "0xd77c0d0", "selector_va": "0xd744a47", "dyld_line": 2843, "imp_file_offset": "0x4400f4c", "body_name": "ArcFreezingVoteToken::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 28963, "body_length": 272, "failed": 0, "truncated": false}
+// ==== 0x4400f4c  ArcFreezingVoteToken::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcFreezingVoteToken::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x10) = 0;
+  return param_1;
+}
+
+
+

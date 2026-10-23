@@ -1,0 +1,83 @@
+// ==== 0x43e1734  ArcBrowser::takeOwnershipOfWebContents:  (408 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcBrowser::takeOwnershipOfWebContents_(ID param_1,SEL param_2,ID param_3)
+
+{
+  ID IVar1;
+  undefined8 uVar2;
+  long lVar3;
+  code *pcVar4;
+  undefined8 local_50;
+  long *local_48;
+  ulong local_40;
+  ulong local_38;
+  
+  if ((*(byte *)(param_1 + 0x38) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x43e18c0);
+    (*pcVar4)();
+  }
+  if (param_3 == 0) {
+    local_50 = 0;
+    local_48 = (long *)0x0;
+    local_40 = 0;
+    IVar1 = 0;
+  }
+  else {
+    IVar1 = _objc_msgSend(param_3,"web_contents",&local_50);
+    if ((local_40 & 1) != 0) {
+      lVar3 = *(long *)(param_1 + 0x28);
+      if (((*(long *)(lVar3 + 0xf0) == 0) || (*(char *)(*(long *)(lVar3 + 0xf0) + 4) != '\0')) ||
+         (*(long *)(lVar3 + 0xf8) == 0)) {
+        local_38 = FUN_04b37104(0x25,"browser deinitialized",0x15,0x1dc,
+                                "../../arc/browser/browser_impl.cc");
+      }
+      else {
+        if ((*(long *)(lVar3 + 0xf0) == 0) || (*(char *)(*(long *)(lVar3 + 0xf0) + 4) != '\0')) {
+          uVar2 = 0;
+        }
+        else {
+          uVar2 = *(undefined8 *)(lVar3 + 0xf8);
+        }
+        FUN_0437b014(&local_38,local_50,uVar2);
+      }
+      if ((local_38 & 1) == 0) {
+        FUN_04b35898();
+      }
+      if (((char)local_40 != '\0') && (local_48 != (long *)0x0)) {
+        LOAcquire();
+        lVar3 = local_48[1];
+        local_48[1] = lVar3 + -1;
+        LORelease();
+        if (lVar3 == 0) {
+          (**(code **)(*local_48 + 0x10))(local_48);
+          if (local_48[2] != 0) {
+            LOAcquire();
+            lVar3 = local_48[2];
+            local_48[2] = lVar3 + -1;
+            LORelease();
+            if (lVar3 != 0) {
+              return;
+            }
+          }
+          pcVar4 = *(code **)(*local_48 + 0x20);
+          if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+            FUN_00005810(local_48,0x20);
+          }
+          else {
+            (*pcVar4)(local_48);
+          }
+        }
+      }
+      return;
+    }
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_04b08a00(IVar1);
+}
+
+

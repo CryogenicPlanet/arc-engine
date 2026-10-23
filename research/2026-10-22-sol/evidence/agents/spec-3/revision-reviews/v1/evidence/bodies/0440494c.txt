@@ -1,0 +1,69 @@
+INDEX 0x440494c ArcImage::init path=/home/exedev/work/inputs/decompile/0x44.c offset=124794 C_bytes=1630 failed=0
+// ==== 0x440494c  ArcImage::init  (304 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcImage::init(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  ID IVar3;
+  code *pcVar4;
+  long *plVar5;
+  undefined **local_58;
+  long *local_50;
+  long *local_48;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcImage;
+  local_40 = param_1;
+  IVar3 = NSObject::init((ID)&local_40,"init");
+  if (IVar3 != 0) {
+    local_58 = &PTR_FUN_0da7eed0;
+    local_48 = (long *)FUN_00008790(0x20);
+    local_48[1] = 0;
+    local_48[2] = 0;
+    *local_48 = (long)&PTR_viewWillStartLiveResize_0da7ef60;
+    local_50 = local_48 + 3;
+    if (local_50 == (long *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar4 = (code *)SoftwareBreakpoint(1,0x4404a7c);
+      (*pcVar4)();
+    }
+    local_48[3] = 0;
+    FUN_043381c0(IVar3 + 8,&local_58);
+    plVar1 = local_48;
+    if (local_48 != (long *)0x0) {
+      LOAcquire();
+      lVar2 = local_48[1];
+      local_48[1] = lVar2 + -1;
+      LORelease();
+      if (lVar2 == 0) {
+        plVar5 = local_48 + 2;
+        (**(code **)(*local_48 + 0x10))(local_48);
+        if (*plVar5 != 0) {
+          LOAcquire();
+          lVar2 = plVar1[2];
+          plVar1[2] = lVar2 + -1;
+          LORelease();
+          if (lVar2 != 0) {
+            return IVar3;
+          }
+        }
+        pcVar4 = *(code **)(*plVar1 + 0x20);
+        if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+          FUN_00005810(plVar1,0x20);
+        }
+        else {
+          (*pcVar4)(plVar1);
+        }
+      }
+    }
+  }
+  return IVar3;
+}
+
+
+

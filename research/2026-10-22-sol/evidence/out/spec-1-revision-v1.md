@@ -1,0 +1,3 @@
+Corrected all four findings in [report.md](/home/exedev/work/agents/spec-1/revisions/v1/report.md), with one disposition per finding in [corrections.tsv](/home/exedev/work/agents/spec-1/revisions/v1/corrections.tsv).
+
+Validation passed for all 34 classes and 491 method identities. Types, IMPs, categories, kinds and copied evidence remain unchanged. ABI and runtime behavior gaps remain explicitly documented.

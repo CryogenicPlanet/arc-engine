@@ -1,0 +1,93 @@
+{
+  "scope": "491 copied original body/annotation rows; consistency heuristics, not complete semantic review",
+  "image": "ArcCore-1.170.0.arm64; all IMP VAs unslid",
+  "counts": {
+    "collection_under_scalar_string_description": 3,
+    "bool_description_on_object_return": 1,
+    "source_zeroing_claim": 1,
+    "unsettled_type_warning": 3,
+    "weak_store_in_initializer": 2
+  },
+  "matches": {
+    "collection_under_scalar_string_description": [
+      {
+        "class_name": "ArcAnnotatedVisit",
+        "category": "",
+        "kind": "-",
+        "selector": "relatedSearches",
+        "imp_va": "0x43ff558"
+      },
+      {
+        "class_name": "ArcURLLoadConfiguration",
+        "category": "",
+        "kind": "-",
+        "selector": "headers",
+        "imp_va": "0x440d9f8"
+      },
+      {
+        "class_name": "ArcContextMenuElementInfo",
+        "category": "",
+        "kind": "-",
+        "selector": "dictionarySuggestions",
+        "imp_va": "0x443f654"
+      }
+    ],
+    "bool_description_on_object_return": [
+      {
+        "class_name": "ArcWebContentsMediaSession",
+        "category": "",
+        "kind": "-",
+        "selector": "getMediaContentTypes:",
+        "imp_va": "0x441a848"
+      }
+    ],
+    "source_zeroing_claim": [
+      {
+        "class_name": "ArcBrowserContextAutocomplete",
+        "category": "",
+        "kind": "-",
+        "selector": "initWithAutocompleteController:",
+        "imp_va": "0x43ecb50"
+      }
+    ],
+    "unsettled_type_warning": [
+      {
+        "class_name": "ArcAnnotatedVisit",
+        "category": "",
+        "kind": "-",
+        "selector": "toAnnotatedVisit",
+        "imp_va": "0x4400d54"
+      },
+      {
+        "class_name": "ArcAIService",
+        "category": "Extensions",
+        "kind": "-",
+        "selector": "evaluateCommandBarRanking:completion:",
+        "imp_va": "0x43d9ab8"
+      },
+      {
+        "class_name": "ArcAIService",
+        "category": "Extensions",
+        "kind": "-",
+        "selector": "trainCommandBarRanking:completion:",
+        "imp_va": "0x43d9fd4"
+      }
+    ],
+    "weak_store_in_initializer": [
+      {
+        "class_name": "ArcWebContentsMediaSession",
+        "category": "",
+        "kind": "-",
+        "selector": "init:forWebContents:",
+        "imp_va": "0x441a1c4"
+      },
+      {
+        "class_name": "ArcWebContentsThumbnailsGenerator",
+        "category": "",
+        "kind": "-",
+        "selector": "init:forWebContents:",
+        "imp_va": "0x441c3c0"
+      }
+    ]
+  }
+}

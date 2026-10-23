@@ -1,0 +1,37 @@
+// ==== 0x43f88dc  FUN_043f88dc  (120 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+undefined8 FUN_043f88dc(undefined8 *param_1,undefined8 *param_2)
+
+{
+  undefined8 *puVar1;
+  long lVar2;
+  char cVar3;
+  undefined8 uVar4;
+  long lVar5;
+  
+  lVar5 = *(long *)*param_1;
+  if (*(char *)(param_2 + 3) == '\0') {
+                    /* WARNING: Could not recover jumptable at 0x043f890c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+    uVar4 = (**(code **)(lVar5 + 0x10))(lVar5,0);
+    return uVar4;
+  }
+  cVar3 = *(char *)((long)param_2 + 0x17);
+  puVar1 = (undefined8 *)*param_2;
+  if (-1 < (long)cVar3) {
+    puVar1 = param_2;
+  }
+  lVar2 = param_2[1];
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  uVar4 = FUN_01c391bc(puVar1,lVar2);
+  (**(code **)(lVar5 + 0x10))(lVar5,uVar4);
+  return 0;
+}
+
+

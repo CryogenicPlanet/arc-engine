@@ -1,0 +1,22 @@
+// ==== 0x43e0564  ArcBookmarkTreeNode::dateFolderModified  (72 bytes)
+
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcBookmarkTreeNode::dateFolderModified(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  
+  if ((*(char *)(param_1 + 0x18) != '\0') && (*(char *)(*(long *)(param_1 + 8) + 0x2c) != '\0')) {
+    IVar1 = NSDate::dateWithTimeIntervalSince1970_
+                      ((ID)&_OBJC_CLASS___NSDate,"dateWithTimeIntervalSince1970:",
+                       *(undefined8 *)(*(long *)(param_1 + 8) + 0xd8));
+    return IVar1;
+  }
+  return 0;
+}
+
+

@@ -1,0 +1,42 @@
+53018: // ==== 0x1005426a0  FUN_1005426a0  (36 bytes)
+53019: 
+53020: /* WARNING: Function: _objc_retainAutoreleasedReturnValue replaced with injection:
+53021:    _objc_retain_fixup */
+53022: 
+53023: ID FUN_1005426a0(void)
+53024: 
+53025: {
+53026:   ID IVar1;
+53027:   long unaff_x20;
+53028:   
+53029:   IVar1 = objc_stub::createPaneHostView(*(ID *)(unaff_x20 + _TtC3ADK18WebContentChromium::webView));
+53030:   return IVar1;
+53031: }
+53032: 
+53033: 
+53034: // ==== 0x1005426c4  FUN_1005426c4  (20 bytes)
+53035: 
+53036: void FUN_1005426c4(undefined8 param_1)
+53037: 
+53038: {
+53039:   long unaff_x20;
+53040:   
+53041:   objc_stub::attachToPaneHostView_
+53042:             (*(ID *)(unaff_x20 + _TtC3ADK18WebContentChromium::webView),param_1);
+53043:   return;
+53044: }
+53045: 
+53046: 
+53047: // ==== 0x1005426d8  FUN_1005426d8  (20 bytes)
+53048: 
+53049: void FUN_1005426d8(undefined8 param_1)
+53050: 
+53051: {
+53052:   long unaff_x20;
+53053:   
+53054:   objc_stub::detachFromPaneHostView_
+53055:             (*(ID *)(unaff_x20 + _TtC3ADK18WebContentChromium::webView),param_1);
+53056:   return;
+53057: }
+53058: 
+53059: 

@@ -1,0 +1,48 @@
+INDEX 0x43e793c ArcBrowserApplication::createAIService: path=/home/exedev/work/inputs/decompile/0x43.c offset=4368751 C_bytes=1244 failed=0
+// ==== 0x43e793c  ArcBrowserApplication::createAIService:  (260 bytes)
+
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcBrowserApplication::createAIService_(ID param_1,SEL param_2,ID *param_3)
+
+{
+  long lVar1;
+  ID IVar2;
+  code *pcVar3;
+  undefined1 auStack_40 [8];
+  long *local_38;
+  
+  IVar2 = _objc_alloc(&objc::class_t::ArcAIService);
+  FUN_042b3ae0(auStack_40,**(undefined8 **)(param_1 + 0x20));
+  IVar2 = ArcAIService::initWithAIService_(IVar2,"initWithAIService:",auStack_40);
+  if (local_38 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = local_38[1];
+    local_38[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*local_38 + 0x10))(local_38);
+      if (local_38[2] != 0) {
+        LOAcquire();
+        lVar1 = local_38[2];
+        local_38[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return IVar2;
+        }
+      }
+      pcVar3 = *(code **)(*local_38 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(local_38,0x20);
+      }
+      else {
+        (*pcVar3)(local_38);
+      }
+    }
+  }
+  return IVar2;
+}
+
+
+

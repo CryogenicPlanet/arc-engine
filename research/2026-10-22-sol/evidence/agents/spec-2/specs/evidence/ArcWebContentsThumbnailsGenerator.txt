@@ -1,0 +1,1065 @@
+{
+  "class_name": "ArcWebContentsThumbnailsGenerator",
+  "metadata_va": "0xe37ce88",
+  "metadata_file_offset": "0xe37ce88",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a9b60",
+  "instance_start": 8,
+  "instance_size": 64,
+  "ivars": [
+    {
+      "record_va": "0xe2a9ac8",
+      "offset": 8,
+      "name": "_owner",
+      "type": "@\"ArcWebContents\"",
+      "alignment": 3,
+      "size": 8
+    },
+    {
+      "record_va": "0xe2a9ae8",
+      "offset": 16,
+      "name": "_thumbnailsGenerator",
+      "type": "{optional<arc::WebContents::ThumbnailsGenerator>=\"\"(?=\"__null_state_\"c\"__val_\"{ThumbnailsGenerator=\"impl_\"{shared_ptr<arc::WebContents::ThumbnailsGenerator::Impl>=\"__ptr_\"^{Impl}\"__cntrl_\"^{__shared_weak_count}}})\"__engaged_\"B}",
+      "alignment": 3,
+      "size": 24
+    },
+    {
+      "record_va": "0xe2a9b08",
+      "offset": 40,
+      "name": "_observers",
+      "type": "{vector<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>, std::allocator<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>>>=\"__layout_\"{__vector_layout<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>, std::allocator<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>>>=\"__begin_\"^v\"__size_\"Q\"__capacity_\"Q}}",
+      "alignment": 3,
+      "size": 24
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "init:forWebContents:", "type_encoding": "@40@0:8{ThumbnailsGenerator={shared_ptr<arc::WebContents::ThumbnailsGenerator::Impl>=^{Impl}^{__shared_weak_count}}}16@32", "imp": "0x441c3c0", "method_record_va": "0xd77a894", "selector_va": "0xd75df81", "dyld_line": 2268, "imp_file_offset": "0x441c3c0", "body_name": "ArcWebContentsThumbnailsGenerator::init:forWebContents:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 596213, "body_length": 1930, "failed": 0, "truncated": false}
+// ==== 0x441c3c0  ArcWebContentsThumbnailsGenerator::init:forWebContents:  (336 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_storeWeak replaced with injection: _objc_store_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x28 bytes */
+
+ID ArcWebContentsThumbnailsGenerator::init_forWebContents_
+             (ID param_1,SEL param_2,ThumbnailsGenerator param_3,ID param_4)
+
+{
+  long lVar1;
+  ID IVar2;
+  code *pcVar3;
+  long *plVar4;
+  ID local_50;
+  class_t *pcStack_48;
+  
+  pcStack_48 = &objc::class_t::ArcWebContentsThumbnailsGenerator;
+  local_50 = param_1;
+  IVar2 = NSObject::init((ID)&local_50,"init");
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x20) == '\0') goto LAB_0441c434;
+  plVar4 = *(long **)(IVar2 + 0x18);
+  if (plVar4 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar4[1];
+    plVar4[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar4[2];
+        plVar4[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_0441c430;
+      }
+      pcVar3 = *(code **)(*plVar4 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*pcVar3)(plVar4);
+      }
+    }
+  }
+LAB_0441c430:
+  *(undefined1 *)(IVar2 + 0x20) = 0;
+LAB_0441c434:
+  *(undefined8 *)(IVar2 + 0x10) = *(undefined8 *)param_3.field0_0x0.field0_0x0;
+  lVar1 = *(long *)(param_3.field0_0x0.field0_0x0 + 8);
+  *(long *)(IVar2 + 0x18) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = *(long *)(lVar1 + 8) + 1;
+  }
+  *(undefined1 *)(IVar2 + 0x20) = 1;
+  *(__shared_weak_count **)(IVar2 + 8) = param_3.field0_0x0.field1_0x8;
+  return IVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "isEqual:", "type_encoding": "B24@0:8@16", "imp": "0x441c510", "method_record_va": "0xd77a8a0", "selector_va": "0xd7442bb", "dyld_line": 2269, "imp_file_offset": "0x441c510", "body_name": "ArcWebContentsThumbnailsGenerator::isEqual:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 598143, "body_length": 1991, "failed": 0, "truncated": false}
+// ==== 0x441c510  ArcWebContentsThumbnailsGenerator::isEqual:  (368 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+bool ArcWebContentsThumbnailsGenerator::isEqual_(ID param_1,SEL param_2,ID param_3)
+
+{
+  long lVar1;
+  ID IVar2;
+  code *pcVar3;
+  bool bVar4;
+  long local_48;
+  long *local_40;
+  byte local_38;
+  
+  if (param_1 == param_3) {
+    return 1;
+  }
+  if (param_3 != 0) {
+    IVar2 = _objc_msgSend((ID)&objc::class_t::ArcWebContentsThumbnailsGenerator,"class");
+    IVar2 = _objc_msgSend(param_3,"isKindOfClass:",IVar2);
+    if ((int)IVar2 != 0) {
+      _objc_msgSend(param_3,"thumbnailsGenerator",&local_48);
+      if ((local_38 & *(byte *)(param_1 + 0x20)) == 0) {
+        bVar4 = (bool)(*(byte *)(param_1 + 0x20) == local_38);
+        if (local_38 == 0) {
+          return bVar4;
+        }
+      }
+      else {
+        if ((local_38 & 1) == 0) {
+                    /* WARNING: Does not return */
+          pcVar3 = (code *)SoftwareBreakpoint(1,0x441c680);
+          (*pcVar3)();
+        }
+        bVar4 = (bool)(*(long *)(param_1 + 0x10) == local_48);
+      }
+      if (local_40 == (long *)0x0) {
+        return bVar4;
+      }
+      LOAcquire();
+      lVar1 = local_40[1];
+      local_40[1] = lVar1 + -1;
+      LORelease();
+      if (lVar1 != 0) {
+        return bVar4;
+      }
+      (**(code **)(*local_40 + 0x10))(local_40);
+      if (local_40[2] != 0) {
+        LOAcquire();
+        lVar1 = local_40[2];
+        local_40[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return bVar4;
+        }
+      }
+      pcVar3 = *(code **)(*local_40 + 0x20);
+      if (((pcVar3 != FUN_00f01bc0) && (pcVar3 != FUN_00f01bc0)) && (pcVar3 != FUN_013efb40)) {
+        (*pcVar3)(local_40);
+        return bVar4;
+      }
+      FUN_00005810(local_40,0x20);
+      return bVar4;
+    }
+  }
+  return 0;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "hash", "type_encoding": "Q16@0:8", "imp": "0x4416b58", "method_record_va": "0xd77a8ac", "selector_va": "0xd7442c4", "dyld_line": 2270, "imp_file_offset": "0x4416b58", "body_name": "ArcWebContentsThumbnailsGenerator::hash", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 501522, "body_length": 490, "failed": 0, "truncated": false}
+// ==== 0x4416b58  ArcWebContentsThumbnailsGenerator::hash  (56 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+unsigned_long_long ArcWebContentsThumbnailsGenerator::hash(ID param_1,SEL param_2)
+
+{
+  unsigned_long_long uVar1;
+  undefined8 local_18;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    local_18 = *(undefined8 *)(param_1 + 0x10);
+    uVar1 = FUN_00018f3c(&local_18,8);
+    return uVar1;
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_04b08a00();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "addObserver:", "type_encoding": "v24@0:8@16", "imp": "0x441c680", "method_record_va": "0xd77a8b8", "selector_va": "0xd74d7c9", "dyld_line": 2271, "imp_file_offset": "0x441c680", "body_name": "ArcWebContentsThumbnailsGenerator::addObserver:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 600134, "body_length": 4746, "failed": 0, "truncated": false}
+// ==== 0x441c680  ArcWebContentsThumbnailsGenerator::addObserver:  (712 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_loadWeakRetained replaced with injection: _objc_load_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcWebContentsThumbnailsGenerator::addObserver_(ID param_1,SEL param_2,ID param_3)
+
+{
+  ulong uVar1;
+  long *plVar2;
+  undefined8 uVar3;
+  long lVar4;
+  ulong uVar5;
+  long *plVar6;
+  code *pcVar7;
+  ulong uVar8;
+  long *plVar9;
+  long lVar10;
+  size_t sVar11;
+  long *plVar12;
+  
+  plVar9 = *(long **)(param_1 + 0x28);
+  lVar10 = *(long *)(param_1 + 0x30) << 4;
+  plVar2 = plVar9;
+  if (lVar10 != 0) {
+    plVar12 = plVar9 + *(long *)(param_1 + 0x30) * 2;
+    do {
+      plVar2 = plVar9;
+      if (*(ID *)(*plVar9 + 8) == param_3) break;
+      plVar9 = plVar9 + 2;
+      lVar10 = lVar10 + -0x10;
+      plVar2 = plVar12;
+    } while (lVar10 != 0);
+  }
+  if (plVar2 != (long *)(*(long *)(param_1 + 0x28) + *(long *)(param_1 + 0x30) * 0x10)) {
+    return;
+  }
+  plVar2 = (long *)FUN_00008790(0x30);
+  plVar12 = plVar2 + 1;
+  *plVar12 = 0;
+  plVar2[2] = 0;
+  *plVar2 = (long)&PTR_viewWillStartLiveResize_0da88428;
+  plVar9 = plVar2 + 3;
+  if (plVar9 != (long *)0x0) {
+    uVar3 = *(undefined8 *)(param_1 + 8);
+    plVar2[3] = (long)&PTR_FUN_0da88460;
+    _objc_initWeak(plVar2 + 4,param_3);
+    _objc_initWeak(plVar2 + 5,uVar3);
+    uVar5 = (ulong)*(byte *)(param_1 + 0x20);
+    if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+      if (plVar2 != (long *)0x0) {
+        uVar5 = plVar2[2];
+        plVar2[2] = uVar5 + 1;
+      }
+      FUN_0436d904(uVar5,*(undefined8 *)(param_1 + 0x10),plVar9,plVar2);
+      uVar5 = *(ulong *)(param_1 + 0x30);
+      if (uVar5 == *(ulong *)(param_1 + 0x38)) {
+        uVar1 = uVar5 + 1;
+        if (uVar1 >> 0x3c != 0) {
+                    /* WARNING: Subroutine does not return */
+          FUN_040416c0();
+        }
+        uVar8 = uVar5 * 2;
+        if (uVar8 < uVar1 || uVar8 - uVar1 == 0) {
+          uVar8 = uVar1;
+        }
+        if (0x7fffffffffffffe < uVar5) {
+          uVar8 = 0xfffffffffffffff;
+        }
+        if (uVar8 == 0) {
+          lVar10 = 0;
+        }
+        else {
+          if (uVar8 >> 0x3c != 0) {
+                    /* WARNING: Subroutine does not return */
+            FUN_04b087f0();
+          }
+          lVar10 = FUN_00008790(uVar8 << 4);
+        }
+        plVar6 = (long *)(lVar10 + uVar5 * 0x10);
+        if (plVar6 == (long *)0x0) goto LAB_0441c93c;
+        *plVar6 = (long)plVar9;
+        plVar6[1] = (long)plVar2;
+        if (plVar2 != (long *)0x0) {
+          *plVar12 = *plVar12 + 1;
+        }
+        lVar10 = *(long *)(param_1 + 0x30);
+        sVar11 = lVar10 * 0x10;
+        _memcpy(plVar6 + lVar10 * -2,*(void **)(param_1 + 0x28),sVar11);
+        lVar4 = *(long *)(param_1 + 0x28);
+        *(long **)(param_1 + 0x28) = plVar6 + lVar10 * -2;
+        *(long *)(param_1 + 0x30) = (long)(sVar11 + 0x10) >> 4;
+        lVar10 = *(long *)(param_1 + 0x38);
+        *(ulong *)(param_1 + 0x38) = uVar8;
+        if (lVar4 != 0) {
+          FUN_00005810(lVar4,lVar10 << 4);
+        }
+        plVar6 = plVar6 + 2;
+      }
+      else {
+        plVar6 = (long *)(*(long *)(param_1 + 0x28) + uVar5 * 0x10);
+        if (plVar6 == (long *)0x0) goto LAB_0441c93c;
+        *plVar6 = (long)plVar9;
+        plVar6[1] = (long)plVar2;
+        if (plVar2 != (long *)0x0) {
+          *plVar12 = *plVar12 + 1;
+        }
+        plVar6 = plVar6 + 2;
+        *(long *)(param_1 + 0x30) = (long)plVar6 - *(long *)(param_1 + 0x28) >> 4;
+      }
+      lVar10 = (long)plVar6 - *(long *)(param_1 + 0x28);
+      *(long *)(param_1 + 0x30) = lVar10 >> 4;
+      if (lVar10 != 0) {
+        if (plVar2 != (long *)0x0) {
+          LOAcquire();
+          lVar10 = *plVar12;
+          *plVar12 = lVar10 + -1;
+          LORelease();
+          if (lVar10 == 0) {
+            (**(code **)(*plVar2 + 0x10))(plVar2);
+            if (plVar2[2] != 0) {
+              LOAcquire();
+              lVar10 = plVar2[2];
+              plVar2[2] = lVar10 + -1;
+              LORelease();
+              if (lVar10 != 0) {
+                return;
+              }
+            }
+            pcVar7 = *(code **)(*plVar2 + 0x20);
+            if (((pcVar7 == FUN_00f01bc0) || (pcVar7 == FUN_00f01bc0)) || (pcVar7 == FUN_013efb40))
+            {
+              FUN_00005810(plVar2,0x20);
+            }
+            else {
+              (*pcVar7)(plVar2);
+            }
+          }
+        }
+        return;
+      }
+    }
+  }
+LAB_0441c93c:
+                    /* WARNING: Does not return */
+  pcVar7 = (code *)SoftwareBreakpoint(1,0x441c940);
+  (*pcVar7)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "removeObserver:", "type_encoding": "v24@0:8@16", "imp": "0x441c9e4", "method_record_va": "0xd77a8c4", "selector_va": "0xd747083", "dyld_line": 2272, "imp_file_offset": "0x441c9e4", "body_name": "ArcWebContentsThumbnailsGenerator::removeObserver:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 604880, "body_length": 4243, "failed": 0, "truncated": false}
+// ==== 0x441c9e4  ArcWebContentsThumbnailsGenerator::removeObserver:  (628 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_loadWeakRetained replaced with injection: _objc_load_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcWebContentsThumbnailsGenerator::removeObserver_(ID param_1,SEL param_2,ID param_3)
+
+{
+  ulong *puVar1;
+  long *plVar2;
+  ulong uVar3;
+  code *pcVar4;
+  long *plVar5;
+  long *plVar6;
+  long *plVar7;
+  long lVar8;
+  long lVar9;
+  
+  plVar6 = *(long **)(param_1 + 0x28);
+  lVar8 = *(long *)(param_1 + 0x30) << 4;
+  plVar7 = plVar6;
+  if (lVar8 != 0) {
+    plVar5 = plVar6 + *(long *)(param_1 + 0x30) * 2;
+    do {
+      plVar7 = plVar6;
+      if (*(ID *)(*plVar6 + 8) == param_3) break;
+      plVar6 = plVar6 + 2;
+      lVar8 = lVar8 + -0x10;
+      plVar7 = plVar5;
+    } while (lVar8 != 0);
+  }
+  if (plVar7 == (long *)(*(long *)(param_1 + 0x28) + *(long *)(param_1 + 0x30) * 0x10)) {
+    return;
+  }
+  uVar3 = (ulong)*(byte *)(param_1 + 0x20);
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    lVar8 = *plVar7;
+    if (plVar7[1] != 0) {
+      puVar1 = (ulong *)(plVar7[1] + 0x10);
+      uVar3 = *puVar1;
+      *puVar1 = uVar3 + 1;
+    }
+    FUN_0436de50(uVar3,*(undefined8 *)(param_1 + 0x10),lVar8);
+    lVar8 = *(long *)(param_1 + 0x28);
+    lVar9 = *(long *)(param_1 + 0x30);
+    plVar6 = (long *)(lVar8 + lVar9 * 0x10);
+    if (plVar7 != plVar6) {
+      plVar5 = plVar7;
+      if ((long)plVar7 + (0x10 - lVar8) != lVar9 * 0x10) {
+        do {
+          lVar9 = plVar7[3];
+          lVar8 = plVar7[2];
+          plVar7[3] = 0;
+          plVar7[2] = 0;
+          plVar5 = (long *)plVar7[1];
+          plVar7[1] = lVar9;
+          *plVar7 = lVar8;
+          if (plVar5 != (long *)0x0) {
+            LOAcquire();
+            lVar8 = plVar5[1];
+            plVar5[1] = lVar8 + -1;
+            LORelease();
+            if (lVar8 == 0) {
+              (**(code **)(*plVar5 + 0x10))(plVar5);
+              if (plVar5[2] != 0) {
+                LOAcquire();
+                lVar8 = plVar5[2];
+                plVar5[2] = lVar8 + -1;
+                LORelease();
+                if (lVar8 != 0) goto LAB_0441cae0;
+              }
+              pcVar4 = *(code **)(*plVar5 + 0x20);
+              if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)
+                 ) {
+                FUN_00005810(plVar5,0x20);
+              }
+              else {
+                (*pcVar4)(plVar5);
+              }
+            }
+          }
+LAB_0441cae0:
+          plVar5 = plVar7 + 2;
+          plVar2 = plVar7 + 4;
+          plVar7 = plVar5;
+        } while (plVar2 != plVar6);
+        lVar8 = *(long *)(param_1 + 0x28);
+        lVar9 = *(long *)(param_1 + 0x30);
+      }
+      plVar6 = (long *)(lVar8 + lVar9 * 0x10);
+      if (plVar5 != plVar6) {
+        do {
+          plVar7 = plVar6 + -2;
+          if (plVar7 == (long *)0x0) goto LAB_0441cc54;
+          plVar6 = (long *)plVar6[-1];
+          if (plVar6 != (long *)0x0) {
+            LOAcquire();
+            lVar8 = plVar6[1];
+            plVar6[1] = lVar8 + -1;
+            LORelease();
+            if (lVar8 == 0) {
+              (**(code **)(*plVar6 + 0x10))(plVar6);
+              if (plVar6[2] != 0) {
+                LOAcquire();
+                lVar8 = plVar6[2];
+                plVar6[2] = lVar8 + -1;
+                LORelease();
+                if (lVar8 != 0) goto LAB_0441cbd4;
+              }
+              pcVar4 = *(code **)(*plVar6 + 0x20);
+              if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)
+                 ) {
+                FUN_00005810(plVar6,0x20);
+              }
+              else {
+                (*pcVar4)(plVar6);
+              }
+            }
+          }
+LAB_0441cbd4:
+          plVar6 = plVar7;
+        } while (plVar7 != plVar5);
+        lVar8 = *(long *)(param_1 + 0x28);
+      }
+      *(long *)(param_1 + 0x30) = (long)plVar5 - lVar8 >> 4;
+      return;
+    }
+  }
+LAB_0441cc54:
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x441cc58);
+  (*pcVar4)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "requestThumbnail:", "type_encoding": "B24@0:8^@16", "imp": "0x441cc58", "method_record_va": "0xd77a8d0", "selector_va": "0xd75f633", "dyld_line": 2273, "imp_file_offset": "0x441cc58", "body_name": "ArcWebContentsThumbnailsGenerator::requestThumbnail:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 609123, "body_length": 627, "failed": 0, "truncated": false}
+// ==== 0x441cc58  ArcWebContentsThumbnailsGenerator::requestThumbnail:  (92 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+bool ArcWebContentsThumbnailsGenerator::requestThumbnail_(ID param_1,SEL param_2,ID *param_3)
+
+{
+  code *pcVar1;
+  bool bVar2;
+  ulong local_28;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    FUN_0436df2c(&local_28,*(undefined8 *)(param_1 + 0x10));
+    bVar2 = FUN_04402548(&local_28,param_3);
+    if ((local_28 & 1) == 0) {
+      FUN_04b35898();
+    }
+    return bVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x441ccb4);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "thumbnailsGenerator", "type_encoding": "{optional<arc::WebContents::ThumbnailsGenerator>=(?=c{ThumbnailsGenerator={shared_ptr<arc::WebContents::ThumbnailsGenerator::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8", "imp": "0x440a2ac", "method_record_va": "0xd77a8dc", "selector_va": "0xd75dfab", "dyld_line": 2274, "imp_file_offset": "0x440a2ac", "body_name": "ArcMenuModel::menu_model", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 243910, "body_length": 1096, "failed": 0, "truncated": false}
+// ==== 0x440a2ac  ArcMenuModel::menu_model  (64 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcMenuModel::menu_model
+               (optional<arc::MenuModel> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  long lVar3;
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x20) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::MenuModel> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x440a2ec);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x18);
+    pIVar4 = *(Impl **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x18);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "observers", "type_encoding": "{vector<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>, std::allocator<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>>>={__vector_layout<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>, std::allocator<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>>>=^vQQ}}16@0:8", "imp": "0x4418c3c", "method_record_va": "0xd77a8e8", "selector_va": "0xd75eb7b", "dyld_line": 2275, "imp_file_offset": "0x4418c3c", "body_name": "ArcWebContentsThumbnailsGenerator::observers", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 540556, "body_length": 1757, "failed": 0, "truncated": false}
+// ==== 0x4418c3c  ArcWebContentsThumbnailsGenerator::observers  (168 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsThumbnailsGenerator::observers
+               (vector<std::shared_ptr<(anonymous_namespace)::WebContentsThumbnailsGeneratorObserverBridge>,_std::allocator<std::shared_ptr<(anonymous_namespace)::WebContentsThumbnailsGeneratorObserverBridge>>>
+                *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  undefined8 *puVar1;
+  code *pcVar2;
+  undefined8 *puVar3;
+  undefined8 *puVar4;
+  long lVar5;
+  undefined8 *puVar6;
+  ulong uVar7;
+  
+  (__return_storage_ptr__->field0_0x0).field0_0x0 = (void *)0x0;
+  (__return_storage_ptr__->field0_0x0).field1_0x8 = 0;
+  (__return_storage_ptr__->field0_0x0).field2_0x10 = 0;
+  uVar7 = *(ulong *)(param_1 + 0x30);
+  if (uVar7 != 0) {
+    if (uVar7 >> 0x3c != 0) {
+                    /* WARNING: Subroutine does not return */
+      FUN_040416c0();
+    }
+    puVar6 = *(undefined8 **)(param_1 + 0x28);
+    puVar1 = puVar6 + uVar7 * 2;
+    puVar3 = (undefined8 *)FUN_00008790(uVar7 << 4);
+    (__return_storage_ptr__->field0_0x0).field0_0x0 = puVar3;
+    (__return_storage_ptr__->field0_0x0).field2_0x10 = uVar7;
+    puVar4 = puVar3;
+    do {
+      if (puVar4 == (undefined8 *)0x0) {
+                    /* WARNING: Does not return */
+        pcVar2 = (code *)SoftwareBreakpoint(1,0x4418ce0);
+        (*pcVar2)();
+      }
+      *puVar4 = *puVar6;
+      lVar5 = puVar6[1];
+      puVar4[1] = lVar5;
+      if (lVar5 != 0) {
+        *(long *)(lVar5 + 8) = *(long *)(lVar5 + 8) + 1;
+      }
+      puVar6 = puVar6 + 2;
+      puVar4 = puVar4 + 2;
+    } while (puVar6 != puVar1);
+    (__return_storage_ptr__->field0_0x0).field1_0x8 = (long)puVar4 - (long)puVar3 >> 4;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "setObservers:", "type_encoding": "v40@0:8{vector<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>, std::allocator<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>>>={__vector_layout<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>, std::allocator<std::shared_ptr<(anonymous namespace)::WebContentsThumbnailsGeneratorObserverBridge>>>=^vQQ}}16", "imp": "0x4418ce4", "method_record_va": "0xd77a8f4", "selector_va": "0xd75eb85", "dyld_line": 2276, "imp_file_offset": "0x4418ce4", "body_name": "ArcWebContentsThumbnailsGenerator::setObservers:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 542313, "body_length": 10134, "failed": 0, "truncated": false}
+// ==== 0x4418ce4  ArcWebContentsThumbnailsGenerator::setObservers:  (1268 bytes)
+
+/* Function Stack Size: 0x28 bytes */
+
+void ArcWebContentsThumbnailsGenerator::setObservers_
+               (ID param_1,SEL param_2,
+               vector<std::shared_ptr<(anonymous_namespace)::WebContentsThumbnailsGeneratorObserverBridge>,_std::allocator<std::shared_ptr<(anonymous_namespace)::WebContentsThumbnailsGeneratorObserverBridge>>>
+               *param_3)
+
+{
+  vector<std::shared_ptr<(anonymous_namespace)::WebContentsThumbnailsGeneratorObserverBridge>,_std::allocator<std::shared_ptr<(anonymous_namespace)::WebContentsThumbnailsGeneratorObserverBridge>>>
+  *pvVar1;
+  undefined8 *puVar2;
+  unsigned_long_long uVar3;
+  ulong uVar4;
+  void *pvVar5;
+  undefined8 *puVar6;
+  SEL extraout_x1;
+  SEL extraout_x1_00;
+  SEL extraout_x1_01;
+  ulong uVar7;
+  undefined8 *puVar8;
+  undefined8 *puVar9;
+  code *pcVar10;
+  ulong uVar11;
+  long lVar12;
+  void *pvVar13;
+  long *plVar14;
+  long *plVar15;
+  long *plVar16;
+  long lVar17;
+  long lVar18;
+  
+  pvVar1 = (vector<std::shared_ptr<(anonymous_namespace)::WebContentsThumbnailsGeneratorObserverBridge>,_std::allocator<std::shared_ptr<(anonymous_namespace)::WebContentsThumbnailsGeneratorObserverBridge>>>
+            *)(param_1 + 0x28);
+  if (pvVar1 != param_3) {
+    puVar8 = (param_3->field0_0x0).field0_0x0;
+    uVar3 = (param_3->field0_0x0).field1_0x8;
+    lVar17 = uVar3 << 4;
+    puVar2 = puVar8 + uVar3 * 2;
+    uVar4 = (long)(uVar3 << 4) >> 4;
+    uVar7 = *(ulong *)(param_1 + 0x38);
+    if (uVar7 < uVar4) {
+      pvVar13 = (pvVar1->field0_0x0).field0_0x0;
+      if (pvVar13 != (void *)0x0) {
+        lVar12 = *(long *)(param_1 + 0x30) * 0x10;
+        pvVar5 = pvVar13;
+        if (lVar12 != 0) {
+          lVar18 = *(long *)(param_1 + 0x30) * -0x10;
+          pvVar5 = (void *)(lVar12 + (long)pvVar13);
+          do {
+            if ((void *)((long)pvVar5 + -0x10) == (void *)0x0) goto LAB_04418fc0;
+            plVar14 = *(long **)((long)pvVar5 + -8);
+            if (plVar14 != (long *)0x0) {
+              LOAcquire();
+              lVar12 = plVar14[1];
+              plVar14[1] = lVar12 + -1;
+              LORelease();
+              if (lVar12 == 0) {
+                (**(code **)(*plVar14 + 0x10))(plVar14);
+                if (plVar14[2] != 0) {
+                  LOAcquire();
+                  lVar12 = plVar14[2];
+                  plVar14[2] = lVar12 + -1;
+                  LORelease();
+                  if (lVar12 != 0) goto LAB_04418f2c;
+                }
+                pcVar10 = *(code **)(*plVar14 + 0x20);
+                if (((pcVar10 == FUN_00f01bc0) || (pcVar10 == FUN_00f01bc0)) ||
+                   (pcVar10 == FUN_013efb40)) {
+                  FUN_00005810(plVar14,0x20);
+                }
+                else {
+                  (*pcVar10)(plVar14);
+                }
+              }
+            }
+LAB_04418f2c:
+            lVar18 = lVar18 + 0x10;
+            pvVar5 = (void *)((long)pvVar5 + -0x10);
+          } while (lVar18 != 0);
+          uVar7 = *(ulong *)(param_1 + 0x38);
+          pvVar5 = *(void **)(param_1 + 0x28);
+        }
+        *(long *)(param_1 + 0x30) = (long)pvVar13 - (long)pvVar5 >> 4;
+        FUN_00005810(pvVar5,uVar7 << 4);
+        uVar7 = 0;
+        *(undefined8 *)(param_1 + 0x28) = 0;
+        *(undefined8 *)(param_1 + 0x30) = 0;
+        *(undefined8 *)(param_1 + 0x38) = 0;
+      }
+      if (uVar4 >> 0x3c != 0) {
+LAB_044191d4:
+                    /* WARNING: Subroutine does not return */
+        FUN_040416c0();
+      }
+      uVar11 = uVar7 * 2;
+      if (uVar11 < uVar4 || uVar11 - uVar4 == 0) {
+        uVar11 = uVar4;
+      }
+      if (0x7fffffffffffffe < uVar7) {
+        uVar11 = 0xfffffffffffffff;
+      }
+      if (uVar11 >> 0x3c != 0) goto LAB_044191d4;
+      puVar6 = (undefined8 *)FUN_00008790(uVar11 << 4);
+      *(undefined8 **)(param_1 + 0x28) = puVar6;
+      *(undefined8 *)(param_1 + 0x30) = 0;
+      *(ulong *)(param_1 + 0x38) = uVar11;
+      puVar9 = puVar6;
+      if (lVar17 != 0) {
+        do {
+          if (puVar6 == (undefined8 *)0x0) {
+LAB_04418fc0:
+                    /* WARNING: Does not return */
+            pcVar10 = (code *)SoftwareBreakpoint(1,0x4418fc4);
+            (*pcVar10)();
+          }
+          *puVar6 = *puVar8;
+          lVar17 = puVar8[1];
+          puVar6[1] = lVar17;
+          if (lVar17 != 0) {
+            *(long *)(lVar17 + 8) = *(long *)(lVar17 + 8) + 1;
+          }
+          puVar8 = puVar8 + 2;
+          puVar6 = puVar6 + 2;
+        } while (puVar8 != puVar2);
+        puVar9 = *(undefined8 **)(param_1 + 0x28);
+      }
+      lVar17 = (long)puVar6 - (long)puVar9;
+    }
+    else {
+      uVar7 = *(ulong *)(param_1 + 0x30);
+      if (uVar7 < uVar4) {
+        pvVar13 = (pvVar1->field0_0x0).field0_0x0;
+        puVar6 = puVar8;
+        if ((0 < (long)uVar7) && (lVar17 = uVar7 << 4, lVar17 != 0)) {
+          puVar6 = puVar8 + uVar7 * 2;
+          plVar14 = (long *)((long)pvVar13 + 8);
+          plVar16 = puVar8 + 1;
+          do {
+            lVar18 = *plVar16;
+            lVar12 = plVar16[-1];
+            if (*plVar16 != 0) {
+              plVar15 = (long *)(*plVar16 + 8);
+              *plVar15 = *plVar15 + 1;
+            }
+            plVar15 = (long *)*plVar14;
+            *plVar14 = lVar18;
+            plVar14[-1] = lVar12;
+            if (plVar15 != (long *)0x0) {
+              LOAcquire();
+              lVar12 = plVar15[1];
+              plVar15[1] = lVar12 + -1;
+              LORelease();
+              if (lVar12 == 0) {
+                (**(code **)(*plVar15 + 0x10))(plVar15,param_2);
+                if (plVar15[2] != 0) {
+                  LOAcquire();
+                  lVar12 = plVar15[2];
+                  plVar15[2] = lVar12 + -1;
+                  LORelease();
+                  param_2 = extraout_x1;
+                  if (lVar12 != 0) goto LAB_04418fd0;
+                }
+                pcVar10 = *(code **)(*plVar15 + 0x20);
+                if (((pcVar10 == FUN_00f01bc0) || (pcVar10 == FUN_00f01bc0)) ||
+                   (pcVar10 == FUN_013efb40)) {
+                  FUN_00005810(plVar15,0x20);
+                  param_2 = extraout_x1_00;
+                }
+                else {
+                  (*pcVar10)(plVar15);
+                  param_2 = extraout_x1_01;
+                }
+              }
+            }
+LAB_04418fd0:
+            plVar16 = plVar16 + 2;
+            plVar14 = plVar14 + 2;
+            lVar17 = lVar17 + -0x10;
+          } while (lVar17 != 0);
+          pvVar13 = *(void **)(param_1 + 0x28);
+          uVar7 = *(ulong *)(param_1 + 0x30);
+        }
+        puVar8 = (undefined8 *)((long)pvVar13 + uVar7 * 0x10);
+        if (puVar6 != puVar2) {
+          do {
+            if (puVar8 == (undefined8 *)0x0) goto LAB_04418fc0;
+            *puVar8 = *puVar6;
+            lVar17 = puVar6[1];
+            puVar8[1] = lVar17;
+            if (lVar17 != 0) {
+              *(long *)(lVar17 + 8) = *(long *)(lVar17 + 8) + 1;
+            }
+            puVar6 = puVar6 + 2;
+            puVar8 = puVar8 + 2;
+          } while (puVar6 != puVar2);
+          pvVar13 = *(void **)(param_1 + 0x28);
+        }
+        lVar17 = (long)puVar8 - (long)pvVar13;
+      }
+      else {
+        plVar16 = (pvVar1->field0_0x0).field0_0x0;
+        plVar14 = plVar16;
+        if (lVar17 != 0) {
+          plVar16 = puVar8 + 1;
+          do {
+            lVar18 = *plVar16;
+            lVar12 = plVar16[-1];
+            if (*plVar16 != 0) {
+              plVar15 = (long *)(*plVar16 + 8);
+              *plVar15 = *plVar15 + 1;
+            }
+            plVar15 = (long *)plVar14[1];
+            plVar14[1] = lVar18;
+            *plVar14 = lVar12;
+            if (plVar15 != (long *)0x0) {
+              LOAcquire();
+              lVar12 = plVar15[1];
+              plVar15[1] = lVar12 + -1;
+              LORelease();
+              if (lVar12 == 0) {
+                (**(code **)(*plVar15 + 0x10))(plVar15);
+                if (plVar15[2] != 0) {
+                  LOAcquire();
+                  lVar12 = plVar15[2];
+                  plVar15[2] = lVar12 + -1;
+                  LORelease();
+                  if (lVar12 != 0) goto LAB_04419080;
+                }
+                pcVar10 = *(code **)(*plVar15 + 0x20);
+                if (((pcVar10 == FUN_00f01bc0) || (pcVar10 == FUN_00f01bc0)) ||
+                   (pcVar10 == FUN_013efb40)) {
+                  FUN_00005810(plVar15,0x20);
+                }
+                else {
+                  (*pcVar10)(plVar15);
+                }
+              }
+            }
+LAB_04419080:
+            plVar16 = plVar16 + 2;
+            plVar14 = plVar14 + 2;
+            lVar17 = lVar17 + -0x10;
+          } while (lVar17 != 0);
+          plVar16 = *(long **)(param_1 + 0x28);
+          uVar7 = *(ulong *)(param_1 + 0x30);
+        }
+        plVar15 = plVar16 + uVar7 * 2;
+        if (plVar14 != plVar15) {
+          do {
+            plVar16 = plVar15 + -2;
+            if (plVar16 == (long *)0x0) goto LAB_04418fc0;
+            plVar15 = (long *)plVar15[-1];
+            if (plVar15 != (long *)0x0) {
+              LOAcquire();
+              lVar17 = plVar15[1];
+              plVar15[1] = lVar17 + -1;
+              LORelease();
+              if (lVar17 == 0) {
+                (**(code **)(*plVar15 + 0x10))(plVar15);
+                if (plVar15[2] != 0) {
+                  LOAcquire();
+                  lVar17 = plVar15[2];
+                  plVar15[2] = lVar17 + -1;
+                  LORelease();
+                  if (lVar17 != 0) goto LAB_0441914c;
+                }
+                pcVar10 = *(code **)(*plVar15 + 0x20);
+                if (((pcVar10 == FUN_00f01bc0) || (pcVar10 == FUN_00f01bc0)) ||
+                   (pcVar10 == FUN_013efb40)) {
+                  FUN_00005810(plVar15,0x20);
+                }
+                else {
+                  (*pcVar10)(plVar15);
+                }
+              }
+            }
+LAB_0441914c:
+            plVar15 = plVar16;
+          } while (plVar16 != plVar14);
+          plVar16 = *(long **)(param_1 + 0x28);
+        }
+        lVar17 = (long)plVar14 - (long)plVar16;
+      }
+    }
+    *(long *)(param_1 + 0x30) = lVar17 >> 4;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "owner", "type_encoding": "@16@0:8", "imp": "0x43fe200", "method_record_va": "0xd77a900", "selector_va": "0xd744290", "dyld_line": 2277, "imp_file_offset": "0x43fe200", "body_name": "ImmersiveModeMapper::originalHostingWindow", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4717687, "body_length": 410, "failed": 0, "truncated": false}
+// ==== 0x43fe200  ImmersiveModeMapper::originalHostingWindow  (24 bytes)
+
+/* WARNING: Function: _objc_loadWeakRetained replaced with injection: _objc_load_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ImmersiveModeMapper::originalHostingWindow(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": "setOwner:", "type_encoding": "v24@0:8@16", "imp": "0x43fe218", "method_record_va": "0xd77a90c", "selector_va": "0xd759501", "dyld_line": 2278, "imp_file_offset": "0x43fe218", "body_name": "ImmersiveModeMapper::setOriginalHostingWindow:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4718097, "body_length": 340, "failed": 0, "truncated": false}
+// ==== 0x43fe218  ImmersiveModeMapper::setOriginalHostingWindow:  (12 bytes)
+
+/* WARNING: Function: _objc_storeWeak replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ImmersiveModeMapper::setOriginalHostingWindow_(ID param_1,SEL param_2,ID param_3)
+
+{
+  *(ID *)(param_1 + 8) = param_3;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x44191d8", "method_record_va": "0xd77a918", "selector_va": "0xd744a39", "dyld_line": 2279, "imp_file_offset": "0x44191d8", "body_name": "ArcWebContentsThumbnailsGenerator::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 552447, "body_length": 2696, "failed": 0, "truncated": false}
+// ==== 0x44191d8  ArcWebContentsThumbnailsGenerator::.cxx_destruct  (468 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsThumbnailsGenerator::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  SEL extraout_x1;
+  SEL extraout_x1_00;
+  SEL extraout_x1_01;
+  code *pcVar2;
+  long lVar3;
+  long *plVar4;
+  long lVar5;
+  long lVar6;
+  
+  lVar5 = *(long *)(param_1 + 0x28);
+  if (lVar5 != 0) {
+    lVar3 = *(long *)(param_1 + 0x30) * 0x10;
+    lVar6 = lVar5;
+    if (lVar3 != 0) {
+      lVar6 = *(long *)(param_1 + 0x30) * -0x10;
+      lVar3 = lVar3 + lVar5;
+      do {
+        if (lVar3 + -0x10 == 0) {
+                    /* WARNING: Does not return */
+          pcVar2 = (code *)SoftwareBreakpoint(1,0x4419380);
+          (*pcVar2)();
+        }
+        plVar4 = *(long **)(lVar3 + -8);
+        if (plVar4 != (long *)0x0) {
+          LOAcquire();
+          lVar1 = plVar4[1];
+          plVar4[1] = lVar1 + -1;
+          LORelease();
+          if (lVar1 == 0) {
+            (**(code **)(*plVar4 + 0x10))(plVar4,param_2);
+            if (plVar4[2] != 0) {
+              LOAcquire();
+              lVar1 = plVar4[2];
+              plVar4[2] = lVar1 + -1;
+              LORelease();
+              param_2 = extraout_x1;
+              if (lVar1 != 0) goto LAB_04419244;
+            }
+            pcVar2 = *(code **)(*plVar4 + 0x20);
+            if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40))
+            {
+              FUN_00005810(plVar4,0x20);
+              param_2 = extraout_x1_00;
+            }
+            else {
+              (*pcVar2)(plVar4);
+              param_2 = extraout_x1_01;
+            }
+          }
+        }
+LAB_04419244:
+        lVar6 = lVar6 + 0x10;
+        lVar3 = lVar3 + -0x10;
+      } while (lVar6 != 0);
+      lVar6 = *(long *)(param_1 + 0x28);
+    }
+    *(long *)(param_1 + 0x30) = lVar5 - lVar6 >> 4;
+    FUN_00005810(lVar6,*(long *)(param_1 + 0x38) << 4);
+  }
+  if ((*(char *)(param_1 + 0x20) != '\0') &&
+     (plVar4 = *(long **)(param_1 + 0x18), plVar4 != (long *)0x0)) {
+    LOAcquire();
+    lVar5 = plVar4[1];
+    plVar4[1] = lVar5 + -1;
+    LORelease();
+    if (lVar5 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar5 = plVar4[2];
+        plVar4[2] = lVar5 + -1;
+        LORelease();
+        if (lVar5 != 0) goto LAB_04419304;
+      }
+      pcVar2 = *(code **)(*plVar4 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*pcVar2)(plVar4);
+      }
+    }
+  }
+LAB_04419304:
+  _objc_destroyWeak(param_1 + 8);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcWebContentsThumbnailsGenerator", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x44193ac", "method_record_va": "0xd77a924", "selector_va": "0xd744a47", "dyld_line": 2280, "imp_file_offset": "0x44193ac", "body_name": "ArcWebContentsThumbnailsGenerator::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 555143, "body_length": 418, "failed": 0, "truncated": false}
+// ==== 0x44193ac  ArcWebContentsThumbnailsGenerator::.cxx_construct  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcWebContentsThumbnailsGenerator::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 0x10) = 0;
+  *(undefined1 *)(param_1 + 0x20) = 0;
+  *(undefined8 *)(param_1 + 0x30) = 0;
+  *(undefined8 *)(param_1 + 0x38) = 0;
+  *(undefined8 *)(param_1 + 0x28) = 0;
+  return param_1;
+}
+
+
+

@@ -1,0 +1,29 @@
+// ==== 0x43e14d4  ArcBrowser::setWindow:  (120 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcBrowser::setWindow_(ID param_1,SEL param_2,ID param_3)
+
+{
+  code *pcVar1;
+  undefined8 uVar2;
+  ID local_28;
+  
+  if ((*(byte *)(param_1 + 0x38) & 1) != 0) {
+    _os_retain(param_3);
+    uVar2 = *(undefined8 *)(param_1 + 0x28);
+    local_28 = param_3;
+    _os_retain(param_3);
+    FUN_042fa9fc(uVar2,&local_28);
+    _os_release(local_28);
+    _os_release(param_3);
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x43e154c);
+  (*pcVar1)();
+}
+
+

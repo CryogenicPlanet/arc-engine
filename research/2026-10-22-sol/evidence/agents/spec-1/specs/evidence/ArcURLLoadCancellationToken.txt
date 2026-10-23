@@ -1,0 +1,147 @@
+{
+  "class_name": "ArcURLLoadCancellationToken",
+  "metadata_va": "0xe37cb68",
+  "metadata_file_offset": "0xe37cb68",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a8ef0",
+  "instance_start": 8,
+  "instance_size": 32,
+  "ivars": [
+    {
+      "record_va": "0xe2a8eb8",
+      "offset": 8,
+      "name": "_token",
+      "type": "{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}",
+      "size": 24,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a8ee0",
+      "name": "token",
+      "attributes": "T{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})},N,V_token"
+    }
+  ]
+}
+
+###  -initWithToken: 0x440d37c @24@0:8r^v16 available
+
+  byte bVar3;
+  const_void__ pvVar4;
+  ID IVar5;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcURLLoadCancellationToken;
+  local_30 = param_1;
+  IVar5 = NSObject::init((ID)&local_30,"init");
+  puVar1 = (undefined8 *)(IVar5 + 8);
+  if (IVar5 != 0 && puVar1 != param_3) {
+    bVar3 = *(byte *)((long)param_3 + 0x17);
+    if (*(char *)(IVar5 + 0x1f) < '\0') {
+      uVar2 = *(ulong *)((long)param_3 + 8);
+      pvVar4 = *(const_void__ *)param_3;
+      if (-1 < (char)bVar3) {
+        uVar2 = (ulong)bVar3;
+        pvVar4 = param_3;
+      }
+      FUN_00359ad8(puVar1,pvVar4,uVar2);
+    }
+    else if ((char)bVar3 < '\0') {
+      FUN_00359998(puVar1,*(undefined8 *)param_3,*(undefined8 *)((long)param_3 + 8));
+    }
+    else {
+      uVar7 = *(undefined8 *)((long)param_3 + 8);
+      uVar6 = *(undefined8 *)param_3;
+      *(undefined8 *)(IVar5 + 0x18) = *(undefined8 *)((long)param_3 + 0x10);
+      *(undefined8 *)(IVar5 + 0x10) = uVar7;
+      *puVar1 = uVar6;
+    }
+  }
+  return IVar5;
+}
+
+
+
+
+###  -token 0xef938c {basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}16@0:8 available
+
+  
+  if (-1 < *(char *)(param_1 + 0x1f)) {
+    pcVar1 = *(char **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field1.field1_0x8 = *(unsigned_long_long *)(param_1 + 0x10)
+    ;
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0 = pcVar1;
+    (__return_storage_ptr__->field0_0x0).field1.field2_0x10 =
+         *(AnonymousBitField1 *)(param_1 + 0x18);
+    return;
+  }
+  FUN_00060a60(__return_storage_ptr__,*(undefined8 *)(param_1 + 8),*(undefined8 *)(param_1 + 0x10));
+  return;
+}
+
+
+
+
+###  -setToken: 0x440d41c v40@0:8{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}16 available
+
+  basic_string<char,_std::char_traits<char>,_std::allocator<char>> *pbVar1;
+  byte bVar2;
+  basic_string<char,_std::char_traits<char>,_std::allocator<char>> *pbVar3;
+  unsigned_long_long uVar5;
+  
+  pbVar1 = (basic_string<char,_std::char_traits<char>,_std::allocator<char>> *)(param_1 + 8);
+  if (pbVar1 != param_3) {
+    bVar2 = *(byte *)((long)&param_3->field0_0x0 + 0x17);
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      uVar5 = (param_3->field0_0x0).field1.field1_0x8;
+      pbVar3 = (basic_string<char,_std::char_traits<char>,_std::allocator<char>> *)
+               (param_3->field0_0x0).field1.field0_0x0;
+      if (-1 < (char)bVar2) {
+        uVar5 = (ulong)bVar2;
+        pbVar3 = param_3;
+      }
+      FUN_00359ad8(pbVar1,pbVar3,uVar5);
+      return;
+    }
+    if ((char)bVar2 < '\0') {
+      FUN_00359998(pbVar1,(param_3->field0_0x0).field1.field0_0x0,
+                   (param_3->field0_0x0).field1.field1_0x8);
+      return;
+    }
+    uVar5 = (param_3->field0_0x0).field1.field1_0x8;
+    pcVar4 = (param_3->field0_0x0).field1.field0_0x0;
+    *(AnonymousBitField1 *)(param_1 + 0x18) = (param_3->field0_0x0).field1.field2_0x10;
+    *(unsigned_long_long *)(param_1 + 0x10) = uVar5;
+    (pbVar1->field0_0x0).field1.field0_0x0 = pcVar4;
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x440d470 v16@0:8 available
+
+  if (-1 < *(char *)(param_1 + 0x1f)) {
+    return;
+  }
+  FUN_00005810(*(undefined8 *)(param_1 + 8),*(ulong *)(param_1 + 0x18) & 0x7fffffffffffffff);
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x416a680 @16@0:8 available
+
+  *(undefined8 *)(param_1 + 8) = 0;
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+

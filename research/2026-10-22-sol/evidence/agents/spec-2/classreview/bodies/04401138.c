@@ -1,0 +1,23 @@
+// ==== 0x4401138  ArcBrowserCreateParams::pipSize  (44 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+CGSize ArcBrowserCreateParams::pipSize(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  long lVar2;
+  CGSize CVar3;
+  
+  if (((*(byte *)(param_1 + 0x18) & 1) != 0) &&
+     (lVar2 = *(long *)(param_1 + 8), (*(byte *)(lVar2 + 200) & 1) != 0)) {
+    CVar3.field0_0x0 = (double)*(int *)(lVar2 + 0xb0);
+    CVar3.field1_0x8 = (double)*(int *)(lVar2 + 0xb8);
+    return CVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4401164);
+  (*pcVar1)();
+}
+
+

@@ -1,0 +1,80 @@
+{
+  "class_name": "ArcAdhocHistogramSamples",
+  "metadata_va": "0xe37c2a8",
+  "metadata_file_offset": "0xe37c2a8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a6c00",
+  "instance_start": 8,
+  "instance_size": 16,
+  "ivars": [
+    {
+      "record_va": "0xe2a6bc8",
+      "offset": 8,
+      "name": "_samples",
+      "type": "@\"NSMutableArray\"",
+      "size": 8,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a6bf0",
+      "name": "samples",
+      "attributes": "T@\"NSMutableArray\",R,N,V_samples"
+    }
+  ]
+}
+
+###  -initWithAdhocHistogramSample: 0x4403504 @24@0:8r^v16 available
+
+  ID IVar3;
+  ID IVar5;
+  ID local_60;
+  class_t *pcStack_58;
+  
+  pcStack_58 = &objc::class_t::ArcAdhocHistogramSamples;
+  local_60 = param_1;
+  IVar3 = NSObject::init((ID)&local_60,"init");
+  if (IVar3 != 0) {
+    uVar4 = _objc_alloc_init(&_OBJC_CLASS___NSMutableArray);
+    *(undefined8 *)(IVar3 + 8) = uVar4;
+    if ((*(ulong *)((long)param_3 + 0x10) & 0x1fffffffffffffff) != 0) {
+      puVar6 = *(uint **)((long)param_3 + 8);
+      puVar1 = puVar6 + *(ulong *)((long)param_3 + 0x10) * 2;
+      do {
+        IVar5 = _objc_alloc_init(&objc::class_t::ArcAdhocHistogramSample);
+        if (4 < *puVar6) {
+                    /* WARNING: Does not return */
+          pcVar2 = (code *)SoftwareBreakpoint(0x550b,0x440360c);
+          (*pcVar2)();
+        }
+        AlertBridgeHelper::setAlertBridge_(IVar5,"setType:",(void *)(ulong)*puVar6);
+        ArcAdhocHistogramSample::setValue_(IVar5,"setValue:",puVar6[1]);
+        _objc_msgSend(*(ID *)(IVar3 + 8),"addObject:",IVar5);
+        puVar6 = puVar6 + 2;
+      } while (puVar6 != puVar1);
+    }
+  }
+  return IVar3;
+}
+
+
+
+
+###  -samples 0x2d0fb40 @16@0:8 available
+
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+
+###  -.cxx_destruct 0x4166068 v16@0:8 available
+
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+

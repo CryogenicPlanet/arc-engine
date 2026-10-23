@@ -1,0 +1,131 @@
+{
+  "class_name": "ArcHistogramSample",
+  "metadata_va": "0xe37c1b8",
+  "metadata_file_offset": "0xe37c1b8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a62a0",
+  "instance_start": 8,
+  "instance_size": 24,
+  "ivars": [
+    {
+      "record_va": "0xe2a61d8",
+      "offset": 8,
+      "name": "_browserIsVisible",
+      "type": "B",
+      "size": 1,
+      "alignment": 0
+    },
+    {
+      "record_va": "0xe2a61f8",
+      "offset": 9,
+      "name": "_browserInSession",
+      "type": "B",
+      "size": 1,
+      "alignment": 0
+    },
+    {
+      "record_va": "0xe2a6218",
+      "offset": 10,
+      "name": "_browserIsPlayingAudio",
+      "type": "B",
+      "size": 1,
+      "alignment": 0
+    },
+    {
+      "record_va": "0xe2a6238",
+      "offset": 16,
+      "name": "_value",
+      "type": "@\"NSNumber\"",
+      "size": 8,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a6260",
+      "name": "value",
+      "attributes": "T@\"NSNumber\",R,N,V_value"
+    },
+    {
+      "record_va": "0xe2a6270",
+      "name": "browserIsVisible",
+      "attributes": "TB,R,N,V_browserIsVisible"
+    },
+    {
+      "record_va": "0xe2a6280",
+      "name": "browserInSession",
+      "attributes": "TB,R,N,V_browserInSession"
+    },
+    {
+      "record_va": "0xe2a6290",
+      "name": "browserIsPlayingAudio",
+      "attributes": "TB,R,N,V_browserIsPlayingAudio"
+    }
+  ]
+}
+
+###  -initWithHistogramSample: 0x4402a3c @24@0:8r^{HistogramSample=i{BrowserState=b1b1b1b29}}16 available
+
+  ID IVar1;
+  ID IVar2;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcHistogramSample;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    IVar2 = NSNumber::numberWithInt_
+                      ((ID)&_OBJC_CLASS___NSNumber,"numberWithInt:",(ulong)param_3->field0_0x0);
+    *(ID *)(IVar1 + 0x10) = IVar2;
+    *(byte *)(IVar1 + 8) = *(byte *)&(param_3->field1_0x4).field0_0x0 & 1;
+    *(byte *)(IVar1 + 9) = *(byte *)&(param_3->field1_0x4).field0_0x0 >> 1 & 1;
+    *(byte *)(IVar1 + 10) = *(byte *)&(param_3->field1_0x4).field0_0x0 >> 2 & 1;
+  }
+  return IVar1;
+}
+
+
+
+
+###  -value 0x2cb140 @16@0:8 available
+
+  return *(ID *)(param_1 + 0x10);
+}
+
+
+
+
+###  -browserIsVisible 0x40b1230 B16@0:8 available
+
+  return;
+}
+
+
+
+
+###  -browserInSession 0x43ecb04 B16@0:8 available
+
+  return (bool)*(byte *)(param_1 + 9);
+}
+
+
+
+
+###  -browserIsPlayingAudio 0x43ecb0c B16@0:8 available
+
+  return *(unsigned_char *)(param_1 + 10);
+}
+
+
+
+
+###  -.cxx_destruct 0x425b6d8 v16@0:8 available
+
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  return;
+}
+
+
+

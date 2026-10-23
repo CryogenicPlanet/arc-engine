@@ -1,0 +1,90 @@
+// ==== 0x444075c  ArcMenuModel::items  (484 bytes)
+
+/* WARNING: Function: _objc_retainAutoreleaseReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcMenuModel::items(ID param_1,SEL param_2)
+
+{
+  const_void__ pvVar1;
+  const_void__ pvVar2;
+  long lVar3;
+  ID IVar4;
+  ID IVar5;
+  code *pcVar6;
+  long *plVar7;
+  long lVar8;
+  const_void__ local_78;
+  long local_70;
+  long local_68;
+  
+  IVar4 = *(ID *)(param_1 + 8);
+  if (IVar4 == 0) {
+    if ((*(byte *)(param_1 + 0x20) & 1) == 0) {
+LAB_0444093c:
+                    /* WARNING: Does not return */
+      pcVar6 = (code *)SoftwareBreakpoint(1,0x4440940);
+      (*pcVar6)();
+    }
+    FUN_0432c5e4(&local_78,*(undefined8 *)(param_1 + 0x10));
+    IVar4 = NSMutableArray::arrayWithCapacity_
+                      ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",local_70);
+    pvVar1 = local_78;
+    pvVar2 = local_78;
+    for (lVar8 = local_70 << 4; local_78 = pvVar2, lVar8 != 0; lVar8 = lVar8 + -0x10) {
+      IVar5 = _objc_alloc(&objc::class_t::ArcMenuItemModel);
+      IVar5 = ArcMenuItemModel::initWithMenuItemModel_(IVar5,"initWithMenuItemModel:",pvVar1);
+      NSMutableArray::addObject_(IVar4,"addObject:",IVar5);
+      pvVar1 = (const_void__)((long)pvVar1 + 0x10);
+      pvVar2 = local_78;
+    }
+    *(ID *)(param_1 + 8) = IVar4;
+    if (pvVar2 != (const_void__)0x0) {
+      if (local_70 * 0x10 != 0) {
+        lVar8 = local_70 * -0x10;
+        pvVar1 = (const_void__)(local_70 * 0x10 + (long)pvVar2);
+        do {
+          if ((const_void__)((long)pvVar1 + -0x10) == (const_void__)0x0) goto LAB_0444093c;
+          plVar7 = *(long **)((long)pvVar1 + -8);
+          if (plVar7 != (long *)0x0) {
+            LOAcquire();
+            lVar3 = plVar7[1];
+            plVar7[1] = lVar3 + -1;
+            LORelease();
+            if (lVar3 == 0) {
+              (**(code **)(*plVar7 + 0x10))(plVar7);
+              if (plVar7[2] != 0) {
+                LOAcquire();
+                lVar3 = plVar7[2];
+                plVar7[2] = lVar3 + -1;
+                LORelease();
+                if (lVar3 != 0) goto LAB_044408c0;
+              }
+              pcVar6 = *(code **)(*plVar7 + 0x20);
+              if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40)
+                 ) {
+                FUN_00005810(plVar7,0x20);
+              }
+              else {
+                (*pcVar6)(plVar7);
+              }
+            }
+          }
+LAB_044408c0:
+          lVar8 = lVar8 + 0x10;
+          pvVar1 = (const_void__)((long)pvVar1 + -0x10);
+        } while (lVar8 != 0);
+      }
+      local_70 = (long)pvVar2 - (long)local_78 >> 4;
+      FUN_00005810(local_78,local_68 << 4);
+    }
+    IVar4 = *(ID *)(param_1 + 8);
+  }
+  return IVar4;
+}
+
+

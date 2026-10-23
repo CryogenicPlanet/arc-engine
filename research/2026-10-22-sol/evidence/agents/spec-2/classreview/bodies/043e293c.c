@@ -1,0 +1,25 @@
+// ==== 0x43e293c  ArcBrowser::type  (52 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcBrowser::type(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  uint uVar2;
+  
+  if ((*(byte *)(param_1 + 0x38) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x43e296c);
+    (*pcVar1)();
+  }
+  uVar2 = FUN_042fad78(*(undefined8 *)(param_1 + 0x28));
+  if (uVar2 < 4) {
+    return (ulong)uVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(0x550b,0x43e2970);
+  (*pcVar1)();
+}
+
+

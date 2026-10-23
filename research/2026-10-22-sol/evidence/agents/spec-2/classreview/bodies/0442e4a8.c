@@ -1,0 +1,28 @@
+// ==== 0x442e4a8  ArcHistoryItem::visitTime  (76 bytes)
+
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryItem::visitTime(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x442e4f4);
+    (*pcVar1)();
+  }
+  if ((*(uint *)(*(long *)(param_1 + 8) + 0xc0) & 1) == 0) {
+    return 0;
+  }
+  IVar2 = NSDate::dateWithTimeIntervalSince1970_
+                    ((ID)&_OBJC_CLASS___NSDate,"dateWithTimeIntervalSince1970:",
+                     *(undefined8 *)(*(long *)(param_1 + 8) + 0xb8));
+  return IVar2;
+}
+
+

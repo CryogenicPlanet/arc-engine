@@ -1,0 +1,26 @@
+// ==== 0x43e6fc8  ArcBrowserApplication::initialize:  (128 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+long_long ArcBrowserApplication::initialize_(ID param_1,SEL param_2,ID param_3)
+
+{
+  int iVar1;
+  undefined8 *puVar2;
+  undefined8 uVar3;
+  undefined1 auStack_f0 [104];
+  undefined1 auStack_88 [104];
+  
+  puVar2 = *(undefined8 **)(param_1 + 0x20);
+  FUN_043ec404(auStack_f0,param_3);
+  uVar3 = *puVar2;
+  FUN_0433260c(auStack_88,auStack_f0);
+  iVar1 = FUN_042b0850(uVar3,auStack_88);
+  FUN_04332524(auStack_88);
+  FUN_04332524(auStack_f0);
+  return (long)iVar1;
+}
+
+

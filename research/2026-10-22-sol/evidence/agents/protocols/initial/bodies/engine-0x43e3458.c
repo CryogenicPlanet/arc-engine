@@ -1,0 +1,22 @@
+// ==== 0x43e3458  FUN_043e3458  (188 bytes)
+
+/* WARNING: Function: _objc_loadWeakRetained replaced with injection: _objc_load_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+undefined8
+FUN_043e3458(long param_1,undefined8 param_2,const_void__ param_3,const_SessionID__ param_4)
+
+{
+  ID IVar1;
+  ID IVar2;
+  
+  IVar1 = _objc_alloc(&objc::class_t::ArcWebContents);
+  IVar1 = ArcWebContents::initWithWebContents_(IVar1,"initWithWebContents:",param_3);
+  IVar2 = _objc_alloc(&objc::class_t::ArcSessionID);
+  IVar2 = ArcSessionID::initWithSessionId_(IVar2,"initWithSessionId:",param_4);
+  _objc_msgSend(*(ID *)(param_1 + 8),"browser:didRestoreWebContents:withSessionId:",
+                *(undefined8 *)(param_1 + 0x10),IVar1,IVar2);
+  return 0;
+}
+
+

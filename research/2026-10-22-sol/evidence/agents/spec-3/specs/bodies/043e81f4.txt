@@ -1,0 +1,21 @@
+INDEX 0x43e81f4 ArcBrowserApplication::setFeatureEnabled:enabled: path=/home/exedev/work/inputs/decompile/0x43.c offset=4377438 C_bytes=515 failed=0
+// ==== 0x43e81f4  ArcBrowserApplication::setFeatureEnabled:enabled:  (124 bytes)
+
+/* Function Stack Size: 0x1c bytes */
+
+void ArcBrowserApplication::setFeatureEnabled_enabled_
+               (ID param_1,SEL param_2,unsigned_long_long param_3,bool param_4)
+
+{
+  int iVar1;
+  
+  if (((DAT_0e4acbd0 & 1) == 0) && (iVar1 = thunk_FUN_0c44b610(&DAT_0e4acbd0), iVar1 != 0)) {
+    FUN_044d8594(&DAT_0e4acb80,param_3);
+    thunk_FUN_0c44b760(&DAT_0e4acbd0);
+  }
+  FUN_044d9734(&DAT_0e4acb80,param_3,param_4);
+  return;
+}
+
+
+

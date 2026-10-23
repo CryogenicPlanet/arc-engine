@@ -1,0 +1,23 @@
+// ==== 0x43e149c  ArcBrowser::isInitialized  (56 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcBrowser::isInitialized(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  long lVar2;
+  
+  if ((*(byte *)(param_1 + 0x38) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x43e14d4);
+    (*pcVar1)();
+  }
+  lVar2 = *(long *)(*(long *)(param_1 + 0x28) + 0xf0);
+  if ((lVar2 != 0) && (*(char *)(lVar2 + 4) == '\0')) {
+    return (bool)(*(long *)(*(long *)(param_1 + 0x28) + 0xf8) != 0);
+  }
+  return 0;
+}
+
+

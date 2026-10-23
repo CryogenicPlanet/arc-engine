@@ -1,0 +1,22 @@
+// ==== 0x4414c88  ArcWebContentsConfiguration::nativeWebContentsConfiguration  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsConfiguration::nativeWebContentsConfiguration
+               (WebContentsConfiguration *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  undefined8 uVar1;
+  undefined8 uVar2;
+  
+  uVar2 = *(undefined8 *)(param_1 + 0x10);
+  uVar1 = *(undefined8 *)(param_1 + 8);
+  __return_storage_ptr__->field2_0x8 = (int)uVar2;
+  __return_storage_ptr__->field3_0xc = (int)((ulong)uVar2 >> 0x20);
+  __return_storage_ptr__->field0_0x0 = (int)uVar1;
+  __return_storage_ptr__->field1_0x4 = (int)((ulong)uVar1 >> 0x20);
+  *(undefined8 *)((long)&__return_storage_ptr__->field3_0xc + 1) = *(undefined8 *)(param_1 + 0x15);
+  return;
+}
+
+

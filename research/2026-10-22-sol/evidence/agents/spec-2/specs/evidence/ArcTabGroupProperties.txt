@@ -1,0 +1,383 @@
+{
+  "class_name": "ArcTabGroupProperties",
+  "metadata_va": "0xe37e288",
+  "metadata_file_offset": "0xe37e288",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2ae390",
+  "instance_start": 8,
+  "instance_size": 56,
+  "ivars": [
+    {
+      "record_va": "0xe2ae328",
+      "offset": 8,
+      "name": "_tab_group_properties",
+      "type": "{TabGroupProperties=\"title\"{optional<std::string>=\"\"(?=\"__null_state_\"c\"__val_\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})})\"__engaged_\"B}\"color\"{optional<arc::bindings::TabGroupColor>=\"\"(?=\"__null_state_\"c\"__val_\"i)\"__engaged_\"B}\"collapsed\"{optional<bool>=\"\"(?=\"__null_state_\"c\"__val_\"B)\"__engaged_\"B}}",
+      "alignment": 3,
+      "size": 48
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": "init", "type_encoding": "@16@0:8", "imp": "0x443d8e0", "method_record_va": "0xd77c9b8", "selector_va": "0xd744859", "dyld_line": 3061, "imp_file_offset": "0x443d8e0", "body_name": "ArcTabGroupProperties::init", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1469315, "body_length": 843, "failed": 0, "truncated": false}
+// ==== 0x443d8e0  ArcTabGroupProperties::init  (136 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcTabGroupProperties::init(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  undefined1 local_60;
+  undefined7 uStack_5f;
+  undefined7 local_50;
+  char cStack_49;
+  char local_48;
+  undefined1 local_40;
+  undefined1 local_3c;
+  undefined2 local_38;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcTabGroupProperties;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    local_60 = 0;
+    local_48 = '\0';
+    local_40 = 0;
+    local_3c = 0;
+    local_38 = 0;
+    FUN_0441e9f0(IVar1 + 8,&local_60);
+    if ((local_48 != '\0') && (cStack_49 < '\0')) {
+      FUN_00005810(CONCAT71(uStack_5f,local_60),CONCAT17(cStack_49,local_50) & 0x7fffffffffffffff);
+    }
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": "initWithTabGroupProperties:", "type_encoding": "@24@0:8r^v16", "imp": "0x443d994", "method_record_va": "0xd77c9c4", "selector_va": "0xd7571be", "dyld_line": 3062, "imp_file_offset": "0x443d994", "body_name": "ArcTabGroupProperties::initWithTabGroupProperties:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1470158, "body_length": 482, "failed": 0, "truncated": false}
+// ==== 0x443d994  ArcTabGroupProperties::initWithTabGroupProperties:  (88 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcTabGroupProperties::initWithTabGroupProperties_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcTabGroupProperties;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    FUN_0441e8ec(IVar1 + 8,param_3);
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": "title", "type_encoding": "@16@0:8", "imp": "0x443d9ec", "method_record_va": "0xd77c9d0", "selector_va": "0xd743944", "dyld_line": 3063, "imp_file_offset": "0x443d9ec", "body_name": "ArcTabGroupProperties::title", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1470640, "body_length": 1395, "failed": 0, "truncated": false}
+// ==== 0x443d9ec  ArcTabGroupProperties::title  (180 bytes)
+
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcTabGroupProperties::title(ID param_1,SEL param_2)
+
+{
+  undefined1 **ppuVar1;
+  long lVar2;
+  ID IVar3;
+  undefined1 *local_40;
+  long lStack_38;
+  undefined8 local_30;
+  undefined8 local_28;
+  
+  lStack_38 = 0;
+  local_40 = (undefined1 *)0x0;
+  local_28 = 0;
+  local_30 = 0;
+  if (*(char *)(param_1 + 0x20) == '\0') {
+    IVar3 = 0;
+  }
+  else {
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      FUN_00060a60(&local_40,*(undefined8 *)(param_1 + 8),*(undefined8 *)(param_1 + 0x10));
+    }
+    else {
+      lStack_38 = *(long *)(param_1 + 0x10);
+      local_40 = *(undefined1 **)(param_1 + 8);
+      local_30 = *(ulong *)(param_1 + 0x18);
+    }
+    local_28 = CONCAT71(local_28._1_7_,1);
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar2 = lStack_38;
+    if (-1 < (long)local_30) {
+      lVar2 = (long)local_30._7_1_;
+    }
+    IVar3 = FUN_01c391bc(ppuVar1,lVar2);
+    if (((char)local_28 != '\0') && ((long)local_30 < 0)) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+  }
+  return IVar3;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": "setTitle:", "type_encoding": "v24@0:8@16", "imp": "0x443dad0", "method_record_va": "0xd77c9dc", "selector_va": "0xd74d361", "dyld_line": 3064, "imp_file_offset": "0x443dad0", "body_name": "ArcTabGroupProperties::setTitle:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1472035, "body_length": 1852, "failed": 0, "truncated": false}
+// ==== 0x443dad0  ArcTabGroupProperties::setTitle:  (308 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcTabGroupProperties::setTitle_(ID param_1,SEL param_2,ID param_3)
+
+{
+  char cVar1;
+  bool bVar2;
+  undefined8 uVar3;
+  ulong unaff_x21;
+  undefined8 unaff_x22;
+  undefined8 local_48;
+  undefined8 local_40;
+  ulong local_38;
+  
+  if (param_3 == 0) {
+    uVar3 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_48,param_3);
+    unaff_x21 = local_38;
+    unaff_x22 = local_40;
+    uVar3 = local_48;
+    local_40 = 0;
+    local_38 = 0;
+    local_48 = 0;
+  }
+  bVar2 = param_3 != 0;
+  cVar1 = *(char *)(param_1 + 0x20);
+  if ((bool)cVar1 == bVar2) {
+    if (cVar1 != '\0') {
+      if (*(char *)(param_1 + 0x1f) < '\0') {
+        FUN_00005810(*(undefined8 *)(param_1 + 8),*(ulong *)(param_1 + 0x18) & 0x7fffffffffffffff);
+      }
+      *(undefined8 *)(param_1 + 8) = uVar3;
+      *(undefined8 *)(param_1 + 0x10) = unaff_x22;
+      *(ulong *)(param_1 + 0x18) = unaff_x21;
+      goto LAB_0443db44;
+    }
+  }
+  else {
+    if (cVar1 == '\0') {
+      *(undefined8 *)(param_1 + 8) = uVar3;
+      *(undefined8 *)(param_1 + 0x10) = unaff_x22;
+      *(ulong *)(param_1 + 0x18) = unaff_x21;
+      *(undefined1 *)(param_1 + 0x20) = 1;
+      goto LAB_0443db44;
+    }
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      FUN_00005810(*(undefined8 *)(param_1 + 8),*(ulong *)(param_1 + 0x18) & 0x7fffffffffffffff);
+    }
+    *(undefined1 *)(param_1 + 0x20) = 0;
+  }
+  if ((bVar2) && ((long)unaff_x21 < 0)) {
+    FUN_00005810(uVar3,unaff_x21 & 0x7fffffffffffffff);
+  }
+LAB_0443db44:
+  if ((param_3 != 0) && ((long)local_38 < 0)) {
+    FUN_00005810(local_48,local_38 & 0x7fffffffffffffff);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": "color", "type_encoding": "@16@0:8", "imp": "0x443dc04", "method_record_va": "0xd77c9e8", "selector_va": "0xd756965", "dyld_line": 3065, "imp_file_offset": "0x443dc04", "body_name": "ArcTabGroupProperties::color", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1473887, "body_length": 644, "failed": 0, "truncated": false}
+// ==== 0x443dc04  ArcTabGroupProperties::color  (60 bytes)
+
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcTabGroupProperties::color(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  
+  if ((*(ulong *)(param_1 + 0x28) >> 0x20 & 1) == 0) {
+    return 0;
+  }
+  IVar1 = NSNumber::numberWithInteger_
+                    ((ID)&_OBJC_CLASS___NSNumber,"numberWithInteger:",
+                     (long)(int)*(ulong *)(param_1 + 0x28));
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": "setColor:", "type_encoding": "v24@0:8@16", "imp": "0x443dc40", "method_record_va": "0xd77c9f4", "selector_va": "0xd75696b", "dyld_line": 3066, "imp_file_offset": "0x443dc40", "body_name": "ArcTabGroupProperties::setColor:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1474531, "body_length": 452, "failed": 0, "truncated": false}
+// ==== 0x443dc40  ArcTabGroupProperties::setColor:  (72 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcTabGroupProperties::setColor_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined4 uVar1;
+  ID IVar2;
+  
+  if (param_3 == 0) {
+    uVar1 = 0;
+  }
+  else {
+    IVar2 = _objc_msgSend(param_3,"integerValue");
+    uVar1 = (undefined4)IVar2;
+  }
+  *(undefined4 *)(param_1 + 0x28) = uVar1;
+  *(bool *)(param_1 + 0x2c) = param_3 != 0;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": "collapsed", "type_encoding": "@16@0:8", "imp": "0x443dc88", "method_record_va": "0xd77ca00", "selector_va": "0xd756975", "dyld_line": 3067, "imp_file_offset": "0x443dc88", "body_name": "ArcTabGroupProperties::collapsed", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1474983, "body_length": 647, "failed": 0, "truncated": false}
+// ==== 0x443dc88  ArcTabGroupProperties::collapsed  (60 bytes)
+
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcTabGroupProperties::collapsed(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  
+  if ((*(ushort *)(param_1 + 0x30) >> 8 & 1) == 0) {
+    return 0;
+  }
+  IVar1 = NSNumber::numberWithBool_
+                    ((ID)&_OBJC_CLASS___NSNumber,"numberWithBool:",
+                     (ulong)(*(ushort *)(param_1 + 0x30) & 1));
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": "setCollapsed:", "type_encoding": "v24@0:8@16", "imp": "0x443dcc4", "method_record_va": "0xd77ca0c", "selector_va": "0xd75697f", "dyld_line": 3068, "imp_file_offset": "0x443dcc4", "body_name": "ArcTabGroupProperties::setCollapsed:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1475630, "body_length": 431, "failed": 0, "truncated": false}
+// ==== 0x443dcc4  ArcTabGroupProperties::setCollapsed:  (72 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcTabGroupProperties::setCollapsed_(ID param_1,SEL param_2,ID param_3)
+
+{
+  ushort uVar1;
+  ID IVar2;
+  
+  if (param_3 == 0) {
+    uVar1 = 0;
+  }
+  else {
+    IVar2 = _objc_msgSend(param_3,"boolValue");
+    uVar1 = (ushort)IVar2;
+  }
+  *(ushort *)(param_1 + 0x30) = uVar1 | (ushort)(param_3 != 0) << 8;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": "tab_group_properties", "type_encoding": "{TabGroupProperties={optional<std::string>=(?=c{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})})B}{optional<arc::bindings::TabGroupColor>=(?=ci)B}{optional<bool>=(?=cB)B}}16@0:8", "imp": "0x8374f04", "method_record_va": "0xd77ca18", "selector_va": "0xd767b53", "dyld_line": 3069, "imp_file_offset": "0x8374f04", "body_name": "ArcTabGroupProperties::tab_group_properties", "body_path": "/home/exedev/work/inputs/decompile/0x83.c", "body_offset": 2243294, "body_length": 475, "failed": 0, "truncated": false}
+// ==== 0x8374f04  ArcTabGroupProperties::tab_group_properties  (56 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcTabGroupProperties::tab_group_properties
+               (TabGroupProperties *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  
+  lVar1 = FUN_05533b24(__return_storage_ptr__,param_1 + 8);
+  *(undefined8 *)(lVar1 + 0x20) = *(undefined8 *)(param_1 + 0x28);
+  *(undefined2 *)(lVar1 + 0x28) = *(undefined2 *)(param_1 + 0x30);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": "setTab_group_properties:", "type_encoding": "v64@0:8{TabGroupProperties={optional<std::string>=(?=c{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})})B}{optional<arc::bindings::TabGroupColor>=(?=ci)B}{optional<bool>=(?=cB)B}}16", "imp": "0x443dd0c", "method_record_va": "0xd77ca24", "selector_va": "0xd767b68", "dyld_line": 3070, "imp_file_offset": "0x443dd0c", "body_name": "ArcTabGroupProperties::setTab_group_properties:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1476061, "body_length": 294, "failed": 0, "truncated": false}
+// ==== 0x443dd0c  ArcTabGroupProperties::setTab_group_properties:  (12 bytes)
+
+/* Function Stack Size: 0x40 bytes */
+
+void ArcTabGroupProperties::setTab_group_properties_
+               (ID param_1,SEL param_2,TabGroupProperties *param_3)
+
+{
+  FUN_0441e8ec(param_1 + 8,param_3);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x443dd18", "method_record_va": "0xd77ca30", "selector_va": "0xd744a39", "dyld_line": 3071, "imp_file_offset": "0x443dd18", "body_name": "ArcTabGroupProperties::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1476355, "body_length": 386, "failed": 0, "truncated": false}
+// ==== 0x443dd18  ArcTabGroupProperties::.cxx_destruct  (40 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcTabGroupProperties::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if ((*(char *)(param_1 + 0x20) != '\0') && (*(char *)(param_1 + 0x1f) < '\0')) {
+    FUN_00005810(*(undefined8 *)(param_1 + 8),*(ulong *)(param_1 + 0x18) & 0x7fffffffffffffff);
+    return;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcTabGroupProperties", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x443dd40", "method_record_va": "0xd77ca3c", "selector_va": "0xd744a47", "dyld_line": 3072, "imp_file_offset": "0x443dd40", "body_name": "ArcTabGroupProperties::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1476741, "body_length": 391, "failed": 0, "truncated": false}
+// ==== 0x443dd40  ArcTabGroupProperties::.cxx_construct  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcTabGroupProperties::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x20) = 0;
+  *(undefined1 *)(param_1 + 0x28) = 0;
+  *(undefined1 *)(param_1 + 0x2c) = 0;
+  *(undefined2 *)(param_1 + 0x30) = 0;
+  return param_1;
+}
+
+
+

@@ -1,0 +1,97 @@
+// ==== 0x4439348  ArcAutocompleteMatch::additionalData  (464 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* WARNING: Type propagation algorithm not settling */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAutocompleteMatch::additionalData(ID param_1,SEL param_2)
+
+{
+  undefined8 *******pppppppuVar1;
+  undefined8 ******ppppppuVar2;
+  char cVar3;
+  code *pcVar4;
+  bool bVar5;
+  ID self;
+  ID IVar6;
+  ID IVar7;
+  ID IVar8;
+  long lVar9;
+  undefined8 *******pppppppuVar10;
+  undefined8 *******pppppppuVar11;
+  undefined8 *******local_80;
+  undefined8 *******local_78;
+  undefined8 local_70;
+  undefined1 *local_68;
+  
+  if ((*(byte *)(param_1 + 0x28) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x4439518);
+    (*pcVar4)();
+  }
+  lVar9 = *(long *)(param_1 + 0x18);
+  local_78 = (undefined8 *******)0x0;
+  local_70 = 0;
+  local_80 = &local_78;
+  if (*(long *)(lVar9 + 0x4f8) != 0) {
+    local_78 = (undefined8 *******)FUN_000d14e0(&local_80,*(undefined8 *)(lVar9 + 0x4f0),&local_80);
+    local_78[2] = &local_78;
+    pppppppuVar11 = local_78;
+    do {
+      local_80 = pppppppuVar11;
+      pppppppuVar11 = (undefined8 *******)*local_80;
+    } while ((undefined8 *******)*local_80 != (undefined8 *******)0x0);
+    local_70 = *(undefined8 *)(lVar9 + 0x4f8);
+  }
+  self = NSMutableArray::arrayWithCapacity_
+                   ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",local_70);
+  pppppppuVar11 = local_80;
+  while ((undefined8 ********)pppppppuVar11 != &local_78) {
+    IVar6 = _objc_alloc(&objc::class_t::ArcAutocompleteMatchAdditionalData);
+    cVar3 = *(char *)((long)pppppppuVar11 + 0x37);
+    pppppppuVar1 = (undefined8 *******)pppppppuVar11[4];
+    if (-1 < (long)cVar3) {
+      pppppppuVar1 = pppppppuVar11 + 4;
+    }
+    ppppppuVar2 = pppppppuVar11[5];
+    if (-1 < cVar3) {
+      ppppppuVar2 = (undefined8 ******)(long)cVar3;
+    }
+    IVar7 = FUN_01c391bc(pppppppuVar1,ppppppuVar2);
+    cVar3 = *(char *)((long)pppppppuVar11 + 0x4f);
+    pppppppuVar1 = (undefined8 *******)pppppppuVar11[7];
+    if (-1 < (long)cVar3) {
+      pppppppuVar1 = pppppppuVar11 + 7;
+    }
+    ppppppuVar2 = pppppppuVar11[8];
+    if (-1 < cVar3) {
+      ppppppuVar2 = (undefined8 ******)(long)cVar3;
+    }
+    IVar8 = FUN_01c391bc(pppppppuVar1,ppppppuVar2);
+    IVar6 = ArcAutocompleteMatchAdditionalData::init_value_(IVar6,"init:value:",IVar7,IVar8);
+    NSMutableArray::addObject_(self,"addObject:",IVar6);
+    pppppppuVar1 = (undefined8 *******)pppppppuVar11[1];
+    pppppppuVar10 = pppppppuVar11;
+    if ((undefined8 *******)pppppppuVar11[1] == (undefined8 *******)0x0) {
+      do {
+        pppppppuVar11 = (undefined8 *******)pppppppuVar10[2];
+        bVar5 = pppppppuVar10 != (undefined8 *******)*pppppppuVar11;
+        pppppppuVar10 = pppppppuVar11;
+      } while (bVar5);
+    }
+    else {
+      do {
+        pppppppuVar11 = pppppppuVar1;
+        pppppppuVar1 = (undefined8 *******)*pppppppuVar11;
+      } while ((undefined8 *******)*pppppppuVar11 != (undefined8 *******)0x0);
+    }
+  }
+  local_68 = (undefined1 *)&local_80;
+  FUN_003f9ab0(&local_68,local_78);
+  return self;
+}
+
+

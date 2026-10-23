@@ -1,0 +1,521 @@
+{
+  "image": "ArcCore 1.170.0 arm64",
+  "chromium_version": "156.0.8078.48",
+  "chromium_commit": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c",
+  "assignment": "spec-4",
+  "assigned_class_count": 38,
+  "assigned_method_rows": 491,
+  "actual_class_specs": 38,
+  "actual_method_rows": 491,
+  "unique_method_identity_count": 491,
+  "identity_key": [
+    "class_name",
+    "category",
+    "kind",
+    "selector"
+  ],
+  "unique_imp_count": 418,
+  "metadata_reconciliation": {
+    "assigned_classes": 38,
+    "method_rows": 491,
+    "unique_imps": 418,
+    "by_body_status": {
+      "available": 491
+    },
+    "binary_equals_initial": true,
+    "binary_equals_raw_dyld": true,
+    "categories": [
+      {
+        "class_name": "ArcBrowserContextHistory",
+        "category": "Extensions",
+        "metadata_va": "0xe296dd8",
+        "protocols": ""
+      },
+      {
+        "class_name": "ArcSearchEngine",
+        "category": "Extensions",
+        "metadata_va": "0xe2a54f8",
+        "protocols": ""
+      },
+      {
+        "class_name": "ArcBrowserContext",
+        "category": "Extensions",
+        "metadata_va": "0xe2a5728",
+        "protocols": ""
+      },
+      {
+        "class_name": "ArcBrowserContextEffects",
+        "category": "Extensions",
+        "metadata_va": "0xe2a57a8",
+        "protocols": ""
+      },
+      {
+        "class_name": "ArcBrowserContextPreferences",
+        "category": "Extensions",
+        "metadata_va": "0xe2a5828",
+        "protocols": ""
+      },
+      {
+        "class_name": "ArcCommandBarRankingTrainingResult",
+        "category": "Extensions",
+        "metadata_va": "0xe2a6078",
+        "protocols": ""
+      },
+      {
+        "class_name": "ArcMenuItemModel",
+        "category": "Extensions",
+        "metadata_va": "0xe2a7770",
+        "protocols": ""
+      }
+    ],
+    "inputs_sha256": {
+      "/home/exedev/work/inputs/binaries/ArcCore-1.170.0.arm64": "69276adaca785a46f2554e7fd18926e7fcdd6aba44ba64400a337427817db3dd",
+      "/home/exedev/work/inputs/context/analysis/data/dobjc170.txt": "8de71507f955743197ee3551089daf2ac081e3645d80c261c6c06d239b1acf1f",
+      "/home/exedev/work/inputs/context/analysis/data/objc170.txt": "f7781c2a806d3f10359e66149fc41b7266b4a40601bc16011ef33711cf0e95c6"
+    }
+  },
+  "exported_body_rows": 491,
+  "export_failed_rows": 0,
+  "missing_rows": 0,
+  "truncated_rows": 0,
+  "body_status_counts": {
+    "available": 483,
+    "available_pseudocode_incorrect_raw_verified": 4,
+    "available_prototype_malformed": 3,
+    "available_semantics_suspect": 1
+  },
+  "semantic_status_counts": {
+    "local_body_observed": 169,
+    "local_field_observed": 115,
+    "bridge_reviewed_partial": 206,
+    "unresolved": 1
+  },
+  "semantically_unresolved_rows": 1,
+  "full_dynamic_semantic_verification_rows": 0,
+  "rows_with_unresolved_questions": 491,
+  "partial_native_semantics_rows": 206,
+  "all_rows_have_remaining_validation_questions": true,
+  "deeper_bridge_bodies_read": 87,
+  "bridge_truncated_count": 0,
+  "bridge_failed_count": 0,
+  "category_override_count": 6,
+  "category_overrides": [
+    {
+      "class_name": "ArcBrowserContext",
+      "kind": "-",
+      "selector": "metrics",
+      "definitions": [
+        {
+          "category": "",
+          "imp_va": "0x2d0fb40",
+          "type_encoding": "@16@0:8"
+        },
+        {
+          "category": "Extensions",
+          "imp_va": "0x43f5648",
+          "type_encoding": "@16@0:8"
+        }
+      ]
+    },
+    {
+      "class_name": "ArcBrowserContext",
+      "kind": "-",
+      "selector": "extensions",
+      "definitions": [
+        {
+          "category": "",
+          "imp_va": "0x2cb140",
+          "type_encoding": "@16@0:8"
+        },
+        {
+          "category": "Extensions",
+          "imp_va": "0x43f598c",
+          "type_encoding": "@16@0:8"
+        }
+      ]
+    },
+    {
+      "class_name": "ArcBrowserContext",
+      "kind": "-",
+      "selector": "id",
+      "definitions": [
+        {
+          "category": "",
+          "imp_va": "0x4084dc0",
+          "type_encoding": "@16@0:8"
+        },
+        {
+          "category": "Extensions",
+          "imp_va": "0x43f541c",
+          "type_encoding": "@16@0:8"
+        }
+      ]
+    },
+    {
+      "class_name": "ArcMenuItemModel",
+      "kind": "-",
+      "selector": "hasAccelerator",
+      "definitions": [
+        {
+          "category": "",
+          "imp_va": "0x40b1230",
+          "type_encoding": "B16@0:8"
+        },
+        {
+          "category": "Extensions",
+          "imp_va": "0x44080f8",
+          "type_encoding": "B16@0:8"
+        }
+      ]
+    },
+    {
+      "class_name": "ArcMenuItemModel",
+      "kind": "-",
+      "selector": "accelerator",
+      "definitions": [
+        {
+          "category": "",
+          "imp_va": "0x2cb140",
+          "type_encoding": "@16@0:8"
+        },
+        {
+          "category": "Extensions",
+          "imp_va": "0x44081f0",
+          "type_encoding": "@16@0:8"
+        }
+      ]
+    },
+    {
+      "class_name": "ArcMenuItemModel",
+      "kind": "-",
+      "selector": "icon",
+      "definitions": [
+        {
+          "category": "",
+          "imp_va": "0x4084dc0",
+          "type_encoding": "@16@0:8"
+        },
+        {
+          "category": "Extensions",
+          "imp_va": "0x4408318",
+          "type_encoding": "@16@0:8"
+        }
+      ]
+    }
+  ],
+  "by_class": {
+    "ArcAutocompleteMatchAdditionalData": {
+      "methods": 8,
+      "body_available": 8,
+      "unresolved": 0,
+      "kinds": {
+        "-": 8
+      }
+    },
+    "ArcBreadcrumb": {
+      "methods": 10,
+      "body_available": 10,
+      "unresolved": 0,
+      "kinds": {
+        "-": 10
+      }
+    },
+    "ArcBrowserApplicationConfiguration": {
+      "methods": 11,
+      "body_available": 11,
+      "unresolved": 0,
+      "kinds": {
+        "-": 11
+      }
+    },
+    "ArcBrowserContext": {
+      "methods": 60,
+      "body_available": 60,
+      "unresolved": 0,
+      "kinds": {
+        "-": 60
+      }
+    },
+    "ArcBrowserContextEffects": {
+      "methods": 19,
+      "body_available": 19,
+      "unresolved": 0,
+      "kinds": {
+        "-": 19
+      }
+    },
+    "ArcBrowserContextHistory": {
+      "methods": 29,
+      "body_available": 29,
+      "unresolved": 0,
+      "kinds": {
+        "-": 29
+      }
+    },
+    "ArcBrowserContextPreferences": {
+      "methods": 42,
+      "body_available": 42,
+      "unresolved": 0,
+      "kinds": {
+        "-": 42
+      }
+    },
+    "ArcBrowserSidePanel": {
+      "methods": 13,
+      "body_available": 13,
+      "unresolved": 0,
+      "kinds": {
+        "-": 13
+      }
+    },
+    "ArcBrowserSidePanelEntryInfo": {
+      "methods": 7,
+      "body_available": 7,
+      "unresolved": 0,
+      "kinds": {
+        "-": 7
+      }
+    },
+    "ArcCommandBarRankingModel": {
+      "methods": 8,
+      "body_available": 8,
+      "unresolved": 0,
+      "kinds": {
+        "-": 8
+      }
+    },
+    "ArcCommandBarRankingTrainingResult": {
+      "methods": 18,
+      "body_available": 18,
+      "unresolved": 1,
+      "kinds": {
+        "-": 18
+      }
+    },
+    "ArcCookie": {
+      "methods": 26,
+      "body_available": 26,
+      "unresolved": 0,
+      "kinds": {
+        "-": 26
+      }
+    },
+    "ArcCpuInfo": {
+      "methods": 29,
+      "body_available": 29,
+      "unresolved": 0,
+      "kinds": {
+        "-": 29
+      }
+    },
+    "ArcCrashKeysReporter": {
+      "methods": 1,
+      "body_available": 1,
+      "unresolved": 0,
+      "kinds": {
+        "+": 1
+      }
+    },
+    "ArcCreditCardInfoSaveRequest": {
+      "methods": 6,
+      "body_available": 6,
+      "unresolved": 0,
+      "kinds": {
+        "-": 6
+      }
+    },
+    "ArcExtensionCommand": {
+      "methods": 10,
+      "body_available": 10,
+      "unresolved": 0,
+      "kinds": {
+        "-": 10
+      }
+    },
+    "ArcExtensionRuntimeErrorStackFrame": {
+      "methods": 8,
+      "body_available": 8,
+      "unresolved": 0,
+      "kinds": {
+        "-": 8
+      }
+    },
+    "ArcExternalProtocolDialog": {
+      "methods": 9,
+      "body_available": 9,
+      "unresolved": 0,
+      "kinds": {
+        "-": 9
+      }
+    },
+    "ArcFindTextWithDirectiveResult": {
+      "methods": 7,
+      "body_available": 7,
+      "unresolved": 0,
+      "kinds": {
+        "-": 7
+      }
+    },
+    "ArcImportSourceProfile": {
+      "methods": 14,
+      "body_available": 14,
+      "unresolved": 0,
+      "kinds": {
+        "-": 14
+      }
+    },
+    "ArcLocalState": {
+      "methods": 12,
+      "body_available": 12,
+      "unresolved": 0,
+      "kinds": {
+        "-": 12
+      }
+    },
+    "ArcLoginCredentialsSaveRequest": {
+      "methods": 8,
+      "body_available": 8,
+      "unresolved": 0,
+      "kinds": {
+        "-": 8
+      }
+    },
+    "ArcMemoryDumpMetric": {
+      "methods": 5,
+      "body_available": 5,
+      "unresolved": 0,
+      "kinds": {
+        "-": 5
+      }
+    },
+    "ArcMenuItemModel": {
+      "methods": 24,
+      "body_available": 24,
+      "unresolved": 0,
+      "kinds": {
+        "-": 24
+      }
+    },
+    "ArcMetaTagEntry": {
+      "methods": 4,
+      "body_available": 4,
+      "unresolved": 0,
+      "kinds": {
+        "-": 4
+      }
+    },
+    "ArcMostVisitedURL": {
+      "methods": 7,
+      "body_available": 7,
+      "unresolved": 0,
+      "kinds": {
+        "-": 7
+      }
+    },
+    "ArcNomicEmbedTextModel": {
+      "methods": 8,
+      "body_available": 8,
+      "unresolved": 0,
+      "kinds": {
+        "-": 8
+      }
+    },
+    "ArcPerformanceController": {
+      "methods": 6,
+      "body_available": 6,
+      "unresolved": 0,
+      "kinds": {
+        "+": 6
+      }
+    },
+    "ArcReference": {
+      "methods": 4,
+      "body_available": 4,
+      "unresolved": 0,
+      "kinds": {
+        "-": 4
+      }
+    },
+    "ArcSearchEngine": {
+      "methods": 14,
+      "body_available": 14,
+      "unresolved": 0,
+      "kinds": {
+        "-": 14
+      }
+    },
+    "ArcSessionID": {
+      "methods": 8,
+      "body_available": 8,
+      "unresolved": 0,
+      "kinds": {
+        "-": 8
+      }
+    },
+    "ArcSessionTabGroup": {
+      "methods": 9,
+      "body_available": 9,
+      "unresolved": 0,
+      "kinds": {
+        "-": 9
+      }
+    },
+    "ArcSessionWindow": {
+      "methods": 11,
+      "body_available": 11,
+      "unresolved": 0,
+      "kinds": {
+        "-": 11
+      }
+    },
+    "ArcSpake2Context": {
+      "methods": 5,
+      "body_available": 5,
+      "unresolved": 0,
+      "kinds": {
+        "-": 5
+      }
+    },
+    "ArcTracingController": {
+      "methods": 13,
+      "body_available": 13,
+      "unresolved": 0,
+      "kinds": {
+        "-": 13
+      }
+    },
+    "ArcURLUtilities": {
+      "methods": 2,
+      "body_available": 2,
+      "unresolved": 0,
+      "kinds": {
+        "+": 2
+      }
+    },
+    "ArcWebContentsBoostIDE": {
+      "methods": 10,
+      "body_available": 10,
+      "unresolved": 0,
+      "kinds": {
+        "-": 10
+      }
+    },
+    "ArcWebContentsMediaSessionPiPController": {
+      "methods": 6,
+      "body_available": 6,
+      "unresolved": 0,
+      "kinds": {
+        "-": 6
+      }
+    }
+  },
+  "limits": [
+    "Declared methods, not measured app calls",
+    "No old engine semantics or live macOS execution",
+    "No complete call closure; bridge bodies selected explicitly",
+    "No summed Ghidra bounds or rewrite/effort estimate",
+    "No claim CEF API absence from missing mirrored files",
+    "Shared IMP identity independently retained per metadata record",
+    "Corrupt prototypes and uncertain lifetime ordering explicitly flagged"
+  ]
+}

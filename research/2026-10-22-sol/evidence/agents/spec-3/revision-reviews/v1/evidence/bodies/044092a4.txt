@@ -1,0 +1,23 @@
+INDEX 0x44092a4 ArcNotification::permanent path=/home/exedev/work/inputs/decompile/0x44.c offset=223010 C_bytes=502 failed=0
+// ==== 0x44092a4  ArcNotification::permanent  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcNotification::permanent(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x44092d4);
+    (*pcVar1)();
+  }
+  if ((*(byte *)(*(long *)(param_1 + 0x10) + 0x224) & 1) != 0) {
+    return 1;
+  }
+  return (bool)(*(int *)(*(long *)(param_1 + 0x10) + 0x360) == 0);
+}
+
+
+

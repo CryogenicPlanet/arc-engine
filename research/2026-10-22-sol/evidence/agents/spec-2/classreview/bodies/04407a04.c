@@ -1,0 +1,39 @@
+// ==== 0x4407a04  ArcMemoryDumpProvider::dealloc  (192 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcMemoryDumpProvider::dealloc(ID param_1,SEL param_2)
+
+{
+  undefined8 uVar1;
+  undefined8 *puVar2;
+  undefined8 *puVar3;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  puVar2 = *(undefined8 **)(param_1 + 8);
+  *(undefined8 *)(param_1 + 8) = 0;
+  if (puVar2 != (undefined8 *)0x0) {
+    puVar3 = (undefined8 *)*puVar2;
+    *puVar2 = 0;
+    if (puVar3 != (undefined8 *)0x0) {
+      *puVar3 = &PTR_FUN_0da7e4c0;
+      uVar1 = FUN_00f80684();
+      FUN_01e3d3f8(uVar1,puVar3,0);
+      if (*(char *)((long)puVar3 + 0x3f) < '\0') {
+        FUN_00005810(puVar3[5],puVar3[7] & 0x7fffffffffffffff);
+      }
+      if (*(code **)(puVar3[4] + 8) != (code *)0x0) {
+        (**(code **)(puVar3[4] + 8))(puVar3[1]);
+      }
+      FUN_00005810(puVar3,0x40);
+    }
+    FUN_00005810(puVar2,8);
+  }
+  pcStack_38 = &objc::class_t::ArcMemoryDumpProvider;
+  local_40 = param_1;
+  NSObject::dealloc((ID)&local_40,"dealloc");
+  return;
+}
+
+

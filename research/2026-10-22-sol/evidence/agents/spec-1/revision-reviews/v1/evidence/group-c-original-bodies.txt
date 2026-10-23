@@ -1,0 +1,758 @@
+INDEX 0x4416808 ArcNavigation::init: path=/home/exedev/work/inputs/decompile/0x44.c offset=496850 C_bytes=2744 failed=0
+// ==== 0x4416808  ArcNavigation::init:  (480 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+ID ArcNavigation::init_(ID param_1,SEL param_2,Navigation param_3)
+
+{
+  long lVar1;
+  ID IVar2;
+  ID self;
+  undefined8 uVar3;
+  undefined8 uVar4;
+  Impl *pIVar5;
+  code *pcVar6;
+  long *plVar7;
+  long lVar8;
+  ID local_50;
+  class_t *pcStack_48;
+  
+  pIVar5 = param_3.field0_0x0.field0_0x0;
+  pcStack_48 = &objc::class_t::ArcNavigation;
+  local_50 = param_1;
+  IVar2 = NSObject::init((ID)&local_50,"init",pIVar5,param_3.field0_0x0.field1_0x8);
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x20) == '\0') goto LAB_0441686c;
+  plVar7 = *(long **)(IVar2 + 0x18);
+  if (plVar7 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar7[1];
+    plVar7[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar7 + 0x10))(plVar7);
+      if (plVar7[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar7[2];
+        plVar7[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04416868;
+      }
+      pcVar6 = *(code **)(*plVar7 + 0x20);
+      if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40)) {
+        FUN_00005810(plVar7,0x20);
+      }
+      else {
+        (*pcVar6)(plVar7);
+      }
+    }
+  }
+LAB_04416868:
+  *(undefined1 *)(IVar2 + 0x20) = 0;
+LAB_0441686c:
+  lVar8 = *(long *)pIVar5;
+  *(long *)(IVar2 + 0x10) = lVar8;
+  lVar1 = *(long *)(pIVar5 + 8);
+  *(long *)(IVar2 + 0x18) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = *(long *)(lVar1 + 8) + 1;
+    lVar8 = *(long *)(IVar2 + 0x10);
+  }
+  *(undefined1 *)(IVar2 + 0x20) = 1;
+  if (*(long *)(lVar8 + 0x38) != 0) {
+    self = NSMutableDictionary::dictionaryWithCapacity_
+                     ((ID)&_OBJC_CLASS___NSMutableDictionary,"dictionaryWithCapacity:");
+    for (plVar7 = *(long **)(lVar8 + 0x30); plVar7 != (long *)0x0; plVar7 = (long *)*plVar7) {
+      lVar1 = (long)*(char *)((long)plVar7 + 0x3f);
+      if (lVar1 < 0) {
+        lVar8 = plVar7[5];
+        lVar1 = plVar7[6];
+      }
+      else {
+        lVar8 = (long)(plVar7 + 5);
+      }
+      uVar3 = FUN_01c391bc(lVar8,lVar1);
+      lVar1 = (long)*(char *)((long)plVar7 + 0x27);
+      if (lVar1 < 0) {
+        lVar8 = plVar7[2];
+        lVar1 = plVar7[3];
+      }
+      else {
+        lVar8 = (long)(plVar7 + 2);
+      }
+      uVar4 = FUN_01c391bc(lVar8,lVar1);
+      NSMutableDictionary::setObject_forKeyedSubscript_
+                (self,"setObject:forKeyedSubscript:",uVar3,uVar4);
+    }
+    *(ID *)(IVar2 + 8) = self;
+  }
+  return IVar2;
+}
+
+
+
+INDEX 0x440a85c objc::Categories::ArcPermissionRequest_Extensions_::additionalData path=/home/exedev/work/inputs/decompile/0x44.c offset=252078 C_bytes=2451 failed=0
+// ==== 0x440a85c  objc::Categories::ArcPermissionRequest_Extensions_::additionalData  (460 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID objc::Categories::ArcPermissionRequest_Extensions_::additionalData(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  char cVar2;
+  int iVar3;
+  long lVar4;
+  ID IVar5;
+  undefined8 uVar6;
+  ID IVar7;
+  code *pcVar8;
+  long *plVar9;
+  long local_68;
+  long *plStack_60;
+  byte local_58;
+  
+  IVar5 = NSMutableDictionary::dictionary((ID)&_OBJC_CLASS___NSMutableDictionary,"dictionary");
+  _objc_msgSend(param_1,"permission_request",&local_68);
+  if ((local_58 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar8 = (code *)SoftwareBreakpoint(1,0x440aa28);
+    (*pcVar8)();
+  }
+  if (plStack_60 != (long *)0x0) {
+    LOAcquire();
+    lVar4 = plStack_60[1];
+    plStack_60[1] = lVar4 + -1;
+    LORelease();
+    if (lVar4 == 0) {
+      (**(code **)(*plStack_60 + 0x10))(plStack_60);
+      if (plStack_60[2] != 0) {
+        LOAcquire();
+        lVar4 = plStack_60[2];
+        plStack_60[2] = lVar4 + -1;
+        LORelease();
+        if (lVar4 != 0) goto LAB_0440a8cc;
+      }
+      pcVar8 = *(code **)(*plStack_60 + 0x20);
+      if (((pcVar8 == FUN_00f01bc0) || (pcVar8 == FUN_00f01bc0)) || (pcVar8 == FUN_013efb40)) {
+        FUN_00005810(plStack_60,0x20);
+      }
+      else {
+        (*pcVar8)(plStack_60);
+      }
+    }
+  }
+LAB_0440a8cc:
+  if (*(char *)(local_68 + 0x48) != '\0') {
+    for (plVar9 = *(long **)(local_68 + 0x30); plVar9 != (long *)0x0; plVar9 = (long *)*plVar9) {
+      iVar3 = *(int *)(plVar9 + 2);
+      cVar2 = *(char *)((long)plVar9 + 0x2f);
+      plVar1 = (long *)plVar9[3];
+      if (-1 < (long)cVar2) {
+        plVar1 = plVar9 + 3;
+      }
+      lVar4 = plVar9[4];
+      if (-1 < cVar2) {
+        lVar4 = (long)cVar2;
+      }
+      uVar6 = FUN_01c391bc(plVar1,lVar4);
+      IVar7 = NSNumber::numberWithUnsignedInteger_
+                        ((ID)&_OBJC_CLASS___NSNumber,"numberWithUnsignedInteger:",(long)iVar3);
+      NSMutableDictionary::setObject_forKey_(IVar5,"setObject:forKey:",uVar6,IVar7);
+    }
+  }
+  IVar5 = NSMutableDictionary::copy(IVar5,"copy");
+  return IVar5;
+}
+
+
+
+INDEX 0x440ab4c ArcSecureContext::state path=/home/exedev/work/inputs/decompile/0x44.c offset=256017 C_bytes=625 failed=0
+// ==== 0x440ab4c  ArcSecureContext::state  (60 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+unsigned_long_long ArcSecureContext::state(ID param_1,SEL param_2)
+
+{
+  unsigned_long_long uVar1;
+  unsigned_long_long uVar2;
+  code *pcVar3;
+  int iVar4;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    iVar4 = FUN_03c2b700(**(undefined8 **)(param_1 + 8));
+    uVar1 = 1;
+    if (iVar4 != 3) {
+      uVar1 = 2;
+    }
+    uVar2 = 0;
+    if (iVar4 != 0) {
+      uVar2 = uVar1;
+    }
+    return uVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x440ab88);
+  (*pcVar3)();
+}
+
+
+
+INDEX 0x443cadc ArcSessionNavigation::timestamp path=/home/exedev/work/inputs/decompile/0x44.c offset=1452144 C_bytes=1058 failed=0
+// ==== 0x443cadc  ArcSessionNavigation::timestamp  (164 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcSessionNavigation::timestamp(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  code *pcVar2;
+  ID IVar3;
+  long lVar4;
+  double dVar5;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x443cb80);
+    (*pcVar2)();
+  }
+  lVar4 = *(long *)(**(long **)(param_1 + 8) + 0x1c0);
+  if (lVar4 == 0) {
+    dVar5 = 0.0;
+  }
+  else if (lVar4 + 0x8000000000000001U < 2) {
+    dVar5 = -INFINITY;
+    if (-1 < lVar4) {
+      dVar5 = INFINITY;
+    }
+  }
+  else {
+    lVar1 = -0x8000000000000000;
+    if (!SCARRY8(lVar4,-0x295e9648864000)) {
+      lVar1 = lVar4 + -0x295e9648864000;
+    }
+    if (lVar1 == -0x8000000000000000) {
+      dVar5 = -INFINITY;
+    }
+    else {
+      dVar5 = (double)lVar1 / 1000000.0;
+    }
+  }
+  IVar3 = NSDate::dateWithTimeIntervalSince1970_
+                    ((ID)&_OBJC_CLASS___NSDate,"dateWithTimeIntervalSince1970:",dVar5);
+  return IVar3;
+}
+
+
+
+INDEX 0x440bcb0 ArcSiteSettingInfo::siteSetting path=/home/exedev/work/inputs/decompile/0x44.c offset=282613 C_bytes=758 failed=0
+// ==== 0x440bcb0  ArcSiteSettingInfo::siteSetting  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+unsigned_long_long ArcSiteSettingInfo::siteSetting(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  long lVar2;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x440bcf4);
+    (*pcVar1)();
+  }
+  lVar2 = *(long *)(param_1 + 8);
+  if ((*(char *)(lVar2 + 0x18) != '\0') && (*(char *)(lVar2 + 0x14) == '\0')) {
+    if (*(uint *)(lVar2 + 0xc) < 6) {
+      return (ulong)(byte)(&DAT_0c9d8188)[*(uint *)(lVar2 + 0xc)];
+    }
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(0x550b,0x440bcf8);
+    (*pcVar1)();
+  }
+  return 0;
+}
+
+
+
+INDEX 0x440c764 ArcTracingConfiguration::setFilePath: path=/home/exedev/work/inputs/decompile/0x44.c offset=300981 C_bytes=979 failed=0
+// ==== 0x440c764  ArcTracingConfiguration::setFilePath:  (156 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcTracingConfiguration::setFilePath_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined8 local_38;
+  undefined8 uStack_30;
+  undefined8 local_28;
+  
+  *(ID *)(param_1 + 8) = param_3;
+  if (param_3 == 0) {
+    local_38 = 0;
+    uStack_30 = 0;
+    local_28 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_38,param_3);
+  }
+  if (*(char *)(param_1 + 0x2f) < '\0') {
+    FUN_00005810(*(undefined8 *)(param_1 + 0x18),*(ulong *)(param_1 + 0x28) & 0x7fffffffffffffff);
+  }
+  *(undefined8 *)(param_1 + 0x20) = uStack_30;
+  *(undefined8 *)(param_1 + 0x18) = local_38;
+  *(undefined8 *)(param_1 + 0x28) = local_28;
+  return;
+}
+
+
+
+INDEX 0x440d41c ArcURLLoadCancellationToken::setToken: path=/home/exedev/work/inputs/decompile/0x44.c offset=321315 C_bytes=1570 failed=0
+// ==== 0x440d41c  ArcURLLoadCancellationToken::setToken:  (84 bytes)
+
+/* Function Stack Size: 0x28 bytes */
+
+void ArcURLLoadCancellationToken::setToken_
+               (ID param_1,SEL param_2,
+               basic_string<char,_std::char_traits<char>,_std::allocator<char>> *param_3)
+
+{
+  basic_string<char,_std::char_traits<char>,_std::allocator<char>> *pbVar1;
+  byte bVar2;
+  basic_string<char,_std::char_traits<char>,_std::allocator<char>> *pbVar3;
+  char *pcVar4;
+  unsigned_long_long uVar5;
+  
+  pbVar1 = (basic_string<char,_std::char_traits<char>,_std::allocator<char>> *)(param_1 + 8);
+  if (pbVar1 != param_3) {
+    bVar2 = *(byte *)((long)&param_3->field0_0x0 + 0x17);
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      uVar5 = (param_3->field0_0x0).field1.field1_0x8;
+      pbVar3 = (basic_string<char,_std::char_traits<char>,_std::allocator<char>> *)
+               (param_3->field0_0x0).field1.field0_0x0;
+      if (-1 < (char)bVar2) {
+        uVar5 = (ulong)bVar2;
+        pbVar3 = param_3;
+      }
+      FUN_00359ad8(pbVar1,pbVar3,uVar5);
+      return;
+    }
+    if ((char)bVar2 < '\0') {
+      FUN_00359998(pbVar1,(param_3->field0_0x0).field1.field0_0x0,
+                   (param_3->field0_0x0).field1.field1_0x8);
+      return;
+    }
+    uVar5 = (param_3->field0_0x0).field1.field1_0x8;
+    pcVar4 = (param_3->field0_0x0).field1.field0_0x0;
+    *(AnonymousBitField1 *)(param_1 + 0x18) = (param_3->field0_0x0).field1.field2_0x10;
+    *(unsigned_long_long *)(param_1 + 0x10) = uVar5;
+    (pbVar1->field0_0x0).field1.field0_0x0 = pcVar4;
+  }
+  return;
+}
+
+
+
+INDEX 0x442c440 ArcCommandBarRankingEvaluation::numExamplesEvaluated path=/home/exedev/work/inputs/decompile/0x44.c offset=980740 C_bytes=436 failed=0
+// ==== 0x442c440  ArcCommandBarRankingEvaluation::numExamplesEvaluated  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcCommandBarRankingEvaluation::numExamplesEvaluated(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return *(int *)(param_1 + 0x20);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442c454);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x436c99c FUN_0436c99c path=/home/exedev/work/inputs/decompile/0x43.c offset=2162746 C_bytes=2066 failed=0
+// ==== 0x436c99c  FUN_0436c99c  (400 bytes)
+
+void FUN_0436c99c(undefined8 *param_1,long *param_2,undefined8 *param_3)
+
+{
+  long lVar1;
+  undefined8 uVar2;
+  char *pcVar3;
+  undefined8 uVar4;
+  undefined8 uVar5;
+  ulong uVar6;
+  undefined8 local_60;
+  undefined8 uStack_58;
+  undefined8 uStack_50;
+  long local_48;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  if (*param_2 == 0) {
+    pcVar3 = "The object is in detached state";
+    uVar2 = 0x25;
+    uVar4 = 0x1f;
+    uVar5 = 0x14;
+LAB_0436caac:
+    uVar2 = FUN_04b37104(uVar2,pcVar3,uVar4,uVar5,
+                         "../../arc/browser/web_contents/pdf_controller_impl.cc");
+    *param_1 = uVar2;
+  }
+  else {
+    lVar1 = FUN_000805e0(*param_2 + 8,&DAT_0c6ca550);
+    if (lVar1 == 0) {
+      pcVar3 = "Internal error: glue_layer is null";
+      uVar2 = 0x35;
+      uVar4 = 0x22;
+      uVar5 = 0x1a;
+      goto LAB_0436caac;
+    }
+    uVar6 = *(ulong *)(lVar1 + 0x20);
+    if ((uVar6 & 0xfffffffc00000000) == DAT_0e2f2208) {
+      FUN_0000ffa8(uVar6);
+    }
+    if (uVar6 == 0) {
+      uVar2 = FUN_04b37104(0x35,"Internal error: pdf_controller is null",0x26,0x1f,
+                           "../../arc/browser/web_contents/pdf_controller_impl.cc");
+      *param_1 = uVar2;
+    }
+    else {
+      uStack_58 = param_3[1];
+      local_60 = *param_3;
+      local_48 = param_3[3];
+      uStack_50 = param_3[2];
+      if (*(code **)param_3[3] != (code *)0x0) {
+        local_60 = (**(code **)param_3[3])(*param_3);
+      }
+      FUN_041a7920(uVar6,&local_60);
+      if (*(code **)(local_48 + 8) != (code *)0x0) {
+        (**(code **)(local_48 + 8))(local_60);
+      }
+      *param_1 = 1;
+    }
+    if ((uVar6 & 0xfffffffc00000000) == DAT_0e2f2208) {
+      if (*(long *)PTR____stack_chk_guard_0d824020 == local_38) {
+        FUN_0001fee4(uVar6);
+        return;
+      }
+      goto LAB_0436cb28;
+    }
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_38) {
+    return;
+  }
+LAB_0436cb28:
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail();
+}
+
+
+
+INDEX 0x441cf64 ArcWebDialog::webContents path=/home/exedev/work/inputs/decompile/0x44.c offset=615454 C_bytes=1699 failed=0
+// ==== 0x441cf64  ArcWebDialog::webContents  (280 bytes)
+
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcWebDialog::webContents(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  long lVar2;
+  bool bVar3;
+  long lVar4;
+  ID IVar5;
+  code *pcVar6;
+  long *plVar7;
+  const_void__ pvVar8;
+  
+  plVar7 = *(long **)(param_1 + 0x50);
+  if (plVar7 != (long *)0x0) {
+    lVar4 = plVar7[1];
+    do {
+      if (lVar4 == -1) goto LAB_0441d114;
+      lVar1 = lVar4 + 1;
+      lVar2 = plVar7[1];
+      bVar3 = lVar2 != lVar4;
+      lVar4 = lVar2;
+    } while (bVar3);
+    plVar7[1] = lVar1;
+    pvVar8 = *(const_void__ *)(param_1 + 0x48);
+    if (pvVar8 != (const_void__)0x0) {
+      IVar5 = _objc_alloc(&objc::class_t::ArcWebContents);
+      IVar5 = ArcWebContents::initWithWebContents_(IVar5,"initWithWebContents:",pvVar8);
+      LOAcquire();
+      lVar4 = plVar7[1];
+      plVar7[1] = lVar4 + -1;
+      LORelease();
+      if (lVar4 == 0) {
+        (**(code **)(*plVar7 + 0x10))(plVar7);
+        if (plVar7[2] != 0) {
+          LOAcquire();
+          lVar4 = plVar7[2];
+          plVar7[2] = lVar4 + -1;
+          LORelease();
+          if (lVar4 != 0) {
+            return IVar5;
+          }
+        }
+        pcVar6 = *(code **)(*plVar7 + 0x20);
+        if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40)) {
+          FUN_00005810(plVar7,0x20);
+        }
+        else {
+          (*pcVar6)(plVar7);
+        }
+      }
+      return IVar5;
+    }
+  }
+LAB_0441d114:
+                    /* WARNING: Does not return */
+  pcVar6 = (code *)SoftwareBreakpoint(0,0x441d118);
+  (*pcVar6)();
+}
+
+
+
+INDEX 0x435c8fc FUN_0435c8fc path=/home/exedev/work/inputs/decompile/0x43.c offset=1887805 C_bytes=1893 failed=0
+// ==== 0x435c8fc  FUN_0435c8fc  (296 bytes)
+
+void FUN_0435c8fc(long param_1,long *param_2)
+
+{
+  code *pcVar1;
+  long *plVar2;
+  undefined4 *puVar3;
+  undefined8 uVar4;
+  undefined8 *puVar5;
+  long lVar6;
+  undefined8 *puVar7;
+  long lVar8;
+  undefined1 auStack_50 [32];
+  
+  if ((*(byte *)(*(long *)(param_1 + 0x20) + 0x10) & 1) == 0) {
+    plVar2 = (long *)(*(code *)PTR___tlv_bootstrap_0e379858)();
+    if (((undefined8 *)*plVar2 == (undefined8 *)0x0) ||
+       (puVar7 = *(undefined8 **)*plVar2, puVar7 == (undefined8 *)0x0)) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(0,0x435ca24);
+      (*pcVar1)();
+    }
+    FUN_00029e40(auStack_50,"Notify","../../arc/browser/web_contents/devtools_impl.cc",0x6e);
+    puVar3 = (undefined4 *)FUN_00008790(0x68);
+    *puVar3 = 1;
+    *(code **)(puVar3 + 2) = FUN_0435ca2c;
+    *(undefined **)(puVar3 + 4) = &DAT_0435cb18;
+    *(code **)(puVar3 + 6) = FUN_00b77080;
+    uVar4 = *(undefined8 *)(param_1 + 8);
+    *(undefined8 *)(puVar3 + 0xc) = *(undefined8 *)(param_1 + 0x10);
+    *(undefined8 *)(puVar3 + 10) = uVar4;
+    puVar5 = *(undefined8 **)(param_1 + 0x20);
+    uVar4 = *(undefined8 *)(param_1 + 0x18);
+    *(undefined8 *)(puVar3 + 0x10) = *(undefined8 *)(param_1 + 0x20);
+    *(undefined8 *)(puVar3 + 0xe) = uVar4;
+    if ((code *)*puVar5 != (code *)0x0) {
+      uVar4 = (*(code *)*puVar5)(*(undefined8 *)(param_1 + 8));
+      *(undefined8 *)(puVar3 + 10) = uVar4;
+    }
+    lVar6 = *param_2;
+    if (lVar6 == 1) {
+      lVar8 = param_2[1];
+      *(long *)(puVar3 + 0x16) = param_2[2];
+      *(long *)(puVar3 + 0x14) = lVar8;
+      *(long *)(puVar3 + 0x18) = param_2[3];
+      param_2[2] = 0;
+      param_2[3] = 0;
+      param_2[1] = 0;
+    }
+    else {
+      *param_2 = 0x37;
+    }
+    *(long *)(puVar3 + 0x12) = lVar6;
+    (**(code **)*puVar7)(puVar7,auStack_50,puVar3,0);
+  }
+  return;
+}
+
+
+
+INDEX 0x435ca2c FUN_0435ca2c path=/home/exedev/work/inputs/decompile/0x43.c offset=1889698 C_bytes=1502 failed=0
+// ==== 0x435ca2c  FUN_0435ca2c  (236 bytes)
+
+void FUN_0435ca2c(long param_1)
+
+{
+  ulong local_60;
+  undefined8 local_58;
+  undefined8 local_50;
+  ulong uStack_48;
+  undefined8 local_40;
+  undefined8 uStack_38;
+  code *local_30;
+  long local_28;
+  long local_18;
+  
+  local_18 = *(long *)PTR____stack_chk_guard_0d824020;
+  uStack_38 = *(undefined8 *)(param_1 + 0x30);
+  local_40 = *(undefined8 *)(param_1 + 0x28);
+  local_30 = *(code **)(param_1 + 0x38);
+  local_28 = *(long *)(param_1 + 0x40);
+  if (*(long *)(local_28 + 8) != 0) {
+    *(undefined8 *)(param_1 + 0x38) = 0;
+    *(undefined8 **)(param_1 + 0x40) = &DAT_0c4b3500;
+  }
+  local_60 = *(ulong *)(param_1 + 0x48);
+  if (local_60 == 1) {
+    local_58 = *(undefined8 *)(param_1 + 0x50);
+    uStack_48 = *(ulong *)(param_1 + 0x60);
+    local_50 = *(undefined8 *)(param_1 + 0x58);
+    *(undefined8 *)(param_1 + 0x58) = 0;
+    *(undefined8 *)(param_1 + 0x60) = 0;
+    *(undefined8 *)(param_1 + 0x50) = 0;
+  }
+  else {
+    *(undefined8 *)(param_1 + 0x48) = 0x37;
+  }
+  (*local_30)(&local_40,&local_60);
+  if (local_60 == 1) {
+    if ((long)uStack_48 < 0) {
+      FUN_00005810(local_58,uStack_48 & 0x7fffffffffffffff);
+    }
+  }
+  else if ((local_60 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (*(code **)(local_28 + 8) != (code *)0x0) {
+    (**(code **)(local_28 + 8))(local_40);
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_18) {
+    return;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail();
+}
+
+
+
+INDEX 0x6846c88 FUN_06846c88 path=/home/exedev/work/inputs/decompile-extra/batch-f025e06f4ec94a9fb1a918545284f407/0x68.c offset=1328617 C_bytes=3055 failed=0
+// ==== 0x6846c88  FUN_06846c88  (572 bytes)
+
+void FUN_06846c88(long param_1,undefined8 *param_2)
+
+{
+  code *pcVar1;
+  uint *puVar2;
+  long *plVar3;
+  ulong local_a8;
+  undefined **local_a0;
+  undefined8 local_98;
+  int local_90;
+  undefined8 local_8c;
+  uint local_84;
+  ulong local_80;
+  undefined **local_78;
+  undefined8 local_70;
+  int local_68;
+  undefined8 local_64;
+  uint local_5c;
+  undefined1 auStack_58 [8];
+  undefined1 auStack_50 [32];
+  
+  if ((undefined **)*param_2 == &PTR_LAB_0dd2f188) {
+    FUN_0837a430(auStack_50,"../../content/browser/renderer_host/render_widget_host_view_mac.mm",
+                 0x5b2);
+    FUN_08375df4(auStack_58,
+                 "!static_cast<RenderWidgetHostViewBase*>(view) ->IsRenderWidgetHostViewChildFrame()"
+                 ,0x98,auStack_50);
+    FUN_0837612c(auStack_58);
+  }
+  CATransaction::begin((ID)&_OBJC_CLASS___CATransaction,"begin");
+  CATransaction::setValue_forKey_
+            ((ID)&_OBJC_CLASS___CATransaction,"setValue:forKey:",PTR____kCFBooleanTrue_0d824a00,
+             *(undefined8 *)PTR__kCATransactionDisableActions_0d8254e8);
+  FUN_066ad888(param_1,param_2);
+  puVar2 = (uint *)FUN_041670b0(param_2[0x3e]);
+  if (puVar2 != (uint *)0x0) {
+    plVar3 = *(long **)(param_1 + 0x438);
+    local_78 = &PTR_FUN_0dd281b0;
+    local_70 = 0;
+    local_80 = (ulong)*puVar2;
+    local_68 = 0;
+    if (puVar2[6] != 0) {
+      local_68 = FUN_04d8dff8(puVar2[6]);
+    }
+    local_64 = *(undefined8 *)(puVar2 + 7);
+    local_5c = puVar2[9];
+    (**(code **)(*plVar3 + 0x38))(plVar3,&local_80);
+    if (local_68 != 0) {
+      FUN_04d8e080();
+    }
+    local_78 = &PTR_FUN_0dd281b0;
+    if (local_70._4_1_ != '\0') {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(0,0x6846ee0);
+      (*pcVar1)();
+    }
+    if ((int)local_70 != 0) {
+      FUN_00433750();
+      local_70 = local_70 & 0xffffffff00000000;
+    }
+  }
+  FUN_04167a60(*(undefined8 *)(param_1 + 0x1f0),param_2[0x3e]);
+  puVar2 = (uint *)FUN_041670b0(*(undefined8 *)(param_1 + 0x1f0));
+  if (puVar2 != (uint *)0x0) {
+    plVar3 = *(long **)(param_1 + 0x438);
+    local_a0 = &PTR_FUN_0dd281b0;
+    local_98 = 0;
+    local_a8 = (ulong)*puVar2;
+    local_90 = 0;
+    if (puVar2[6] != 0) {
+      local_90 = FUN_04d8dff8(puVar2[6]);
+    }
+    local_8c = *(undefined8 *)(puVar2 + 7);
+    local_84 = puVar2[9];
+    (**(code **)(*plVar3 + 0x38))(plVar3,&local_a8);
+    if (local_90 != 0) {
+      FUN_04d8e080();
+    }
+    local_a0 = &PTR_FUN_0dd281b0;
+    if (local_98._4_1_ != '\0') {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(0,0x6846ef8);
+      (*pcVar1)();
+    }
+    if ((int)local_98 != 0) {
+      FUN_00433750();
+      local_98 = local_98 & 0xffffffff00000000;
+    }
+    if (*(int *)(param_1 + 0x4f0) != *(int *)(param_1 + 0x4ec)) {
+      *(int *)(param_1 + 0x4ec) = *(int *)(param_1 + 0x4f0);
+      (**(code **)(**(long **)(param_1 + 0x438) + 0x40))();
+    }
+  }
+  CATransaction::commit((ID)&_OBJC_CLASS___CATransaction,"commit");
+  return;
+}
+
+
+

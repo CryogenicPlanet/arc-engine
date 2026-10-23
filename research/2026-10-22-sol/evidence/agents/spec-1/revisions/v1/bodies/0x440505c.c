@@ -1,0 +1,12 @@
+// ==== 0x440505c  ArcImageRep::setImageRep:  (12 bytes)
+
+/* Function Stack Size: 0x28 bytes */
+
+void ArcImageRep::setImageRep_(ID param_1,SEL param_2,ImageRep *param_3)
+
+{
+  FUN_043380d4(param_1 + 8,param_3);
+  return;
+}
+
+

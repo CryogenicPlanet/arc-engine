@@ -1,0 +1,222 @@
+INDEX 0x443d0c8 ArcSessionTab::setNavigations: path=/home/exedev/work/inputs/decompile/0x44.c offset=1460951 C_bytes=6375 failed=0
+// ==== 0x443d0c8  ArcSessionTab::setNavigations:  (1108 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcSessionTab::setNavigations_(ID param_1,SEL param_2,ID param_3)
+
+{
+  long lVar1;
+  long lVar2;
+  long lVar3;
+  ID IVar4;
+  ID self;
+  undefined8 *puVar5;
+  code *pcVar6;
+  long *plVar7;
+  long *plVar8;
+  ulong uVar9;
+  long lVar10;
+  long local_180;
+  long local_178;
+  long lStack_170;
+  undefined8 local_168;
+  long *local_160;
+  byte local_158;
+  undefined8 local_150;
+  long lStack_148;
+  long *local_140;
+  undefined8 uStack_138;
+  undefined8 local_130;
+  undefined8 uStack_128;
+  undefined8 uStack_120;
+  undefined8 uStack_118;
+  long local_108;
+  long local_100;
+  long lStack_f8;
+  undefined1 auStack_f0 [128];
+  long local_70;
+  
+  local_70 = *(long *)PTR____stack_chk_guard_0d824020;
+  *(ID *)(param_1 + 8) = param_3;
+  local_108 = 0;
+  local_100 = 0;
+  lStack_f8 = 0;
+  lStack_148 = 0;
+  local_150 = 0;
+  uStack_138 = 0;
+  local_140 = (long *)0x0;
+  uStack_128 = 0;
+  local_130 = 0;
+  uStack_118 = 0;
+  uStack_120 = 0;
+  IVar4 = _objc_msgSend(param_3,"countByEnumeratingWithState:objects:count:",&local_150,auStack_f0,
+                        0x10);
+  if (IVar4 != 0) {
+    uVar9 = 0;
+    lVar10 = *local_140;
+    lVar2 = lVar10;
+    do {
+      if (lVar2 != lVar10) {
+        _objc_enumerationMutation(param_3);
+      }
+      self = *(ID *)(lStack_148 + uVar9 * 8);
+      if ((self == 0) || (_objc_msgSend(self,"session_navigation",&local_168), (local_158 & 1) == 0)
+         ) goto LAB_0443d32c;
+      if (local_100 == lStack_f8) {
+        puVar5 = (undefined8 *)FUN_041e7c00(&local_108,&local_168);
+      }
+      else {
+        puVar5 = (undefined8 *)(local_108 + local_100 * 0x10);
+        if (puVar5 == (undefined8 *)0x0) goto LAB_0443d32c;
+        *puVar5 = local_168;
+        puVar5[1] = local_160;
+        local_168 = 0;
+        local_160 = (long *)0x0;
+        puVar5 = puVar5 + 2;
+      }
+      plVar7 = local_160;
+      local_100 = (long)puVar5 - local_108 >> 4;
+      if ((long)puVar5 - local_108 == 0) goto LAB_0443d32c;
+      if ((local_158 != 0) && (local_160 != (long *)0x0)) {
+        LOAcquire();
+        lVar2 = local_160[1];
+        local_160[1] = lVar2 + -1;
+        LORelease();
+        if (lVar2 == 0) {
+          plVar8 = local_160 + 2;
+          (**(code **)(*local_160 + 0x10))(local_160);
+          if (*plVar8 != 0) {
+            LOAcquire();
+            lVar2 = plVar7[2];
+            plVar7[2] = lVar2 + -1;
+            LORelease();
+            if (lVar2 != 0) goto LAB_0443d1f4;
+          }
+          pcVar6 = *(code **)(*plVar7 + 0x20);
+          if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40)) {
+            FUN_00005810(plVar7,0x20);
+          }
+          else {
+            (*pcVar6)(plVar7);
+          }
+        }
+      }
+LAB_0443d1f4:
+      uVar9 = uVar9 + 1;
+      if (IVar4 <= uVar9) {
+        IVar4 = _objc_msgSend(param_3,"countByEnumeratingWithState:objects:count:",&local_150,
+                              auStack_f0,0x10);
+        if (IVar4 == 0) break;
+        uVar9 = 0;
+      }
+      lVar2 = *local_140;
+    } while( true );
+  }
+  lVar10 = lStack_f8;
+  lVar2 = local_100;
+  if ((*(byte *)(param_1 + 0x20) & 1) == 0) {
+LAB_0443d32c:
+                    /* WARNING: Does not return */
+    pcVar6 = (code *)SoftwareBreakpoint(1,0x443d330);
+    (*pcVar6)();
+  }
+  local_180 = local_108;
+  local_108 = 0;
+  local_100 = 0;
+  lStack_f8 = 0;
+  lStack_170 = lVar10;
+  local_178 = lVar2;
+  FUN_04340c10(param_1 + 0x10,&local_180);
+  lVar2 = local_180;
+  if (local_180 != 0) {
+    if (local_178 * 0x10 != 0) {
+      lVar10 = local_178 * -0x10;
+      lVar1 = local_178 * 0x10 + local_180;
+      do {
+        if (lVar1 + -0x10 == 0) goto LAB_0443d32c;
+        plVar7 = *(long **)(lVar1 + -8);
+        if (plVar7 != (long *)0x0) {
+          LOAcquire();
+          lVar3 = plVar7[1];
+          plVar7[1] = lVar3 + -1;
+          LORelease();
+          if (lVar3 == 0) {
+            (**(code **)(*plVar7 + 0x10))(plVar7);
+            if (plVar7[2] != 0) {
+              LOAcquire();
+              lVar3 = plVar7[2];
+              plVar7[2] = lVar3 + -1;
+              LORelease();
+              if (lVar3 != 0) goto LAB_0443d33c;
+            }
+            pcVar6 = *(code **)(*plVar7 + 0x20);
+            if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40))
+            {
+              FUN_00005810(plVar7,0x20);
+            }
+            else {
+              (*pcVar6)(plVar7);
+            }
+          }
+        }
+LAB_0443d33c:
+        lVar10 = lVar10 + 0x10;
+        lVar1 = lVar1 + -0x10;
+      } while (lVar10 != 0);
+    }
+    local_178 = lVar2 - local_180 >> 4;
+    FUN_00005810(local_180,lStack_170 << 4);
+  }
+  lVar2 = local_108;
+  if (local_108 != 0) {
+    if (local_100 * 0x10 != 0) {
+      lVar10 = local_100 * -0x10;
+      lVar1 = local_100 * 0x10 + local_108;
+      do {
+        if (lVar1 + -0x10 == 0) goto LAB_0443d32c;
+        plVar7 = *(long **)(lVar1 + -8);
+        if (plVar7 != (long *)0x0) {
+          LOAcquire();
+          lVar3 = plVar7[1];
+          plVar7[1] = lVar3 + -1;
+          LORelease();
+          if (lVar3 == 0) {
+            (**(code **)(*plVar7 + 0x10))(plVar7);
+            if (plVar7[2] != 0) {
+              LOAcquire();
+              lVar3 = plVar7[2];
+              plVar7[2] = lVar3 + -1;
+              LORelease();
+              if (lVar3 != 0) goto LAB_0443d428;
+            }
+            pcVar6 = *(code **)(*plVar7 + 0x20);
+            if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40))
+            {
+              FUN_00005810(plVar7,0x20);
+            }
+            else {
+              (*pcVar6)(plVar7);
+            }
+          }
+        }
+LAB_0443d428:
+        lVar10 = lVar10 + 0x10;
+        lVar1 = lVar1 + -0x10;
+      } while (lVar10 != 0);
+    }
+    local_100 = lVar2 - local_108 >> 4;
+    FUN_00005810(local_108,lStack_f8 << 4);
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_70) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0);
+  }
+  return;
+}
+
+
+

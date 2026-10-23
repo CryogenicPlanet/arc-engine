@@ -1,0 +1,65 @@
+// ==== 0x43e8f44  ArcBrowserApplication::debugProperties  (408 bytes)
+
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcBrowserApplication::debugProperties(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  ID IVar2;
+  long lVar3;
+  char *pcVar4;
+  __rep local_b0;
+  __rep local_98;
+  long local_80;
+  long local_78;
+  long *local_68;
+  
+  IVar1 = _objc_alloc_init(&_OBJC_CLASS___NSMutableArray);
+  FUN_042b66bc(&local_80,**(undefined8 **)(param_1 + 0x20));
+  lVar3 = local_78 * 0x30;
+  if (lVar3 != 0) {
+    pcVar4 = (char *)(local_80 + 0x17);
+    do {
+      IVar2 = _objc_alloc(&objc::class_t::ArcBrowserApplicationDebugProperty);
+      if (*pcVar4 < '\0') {
+        FUN_00060a60(&local_b0,*(undefined8 *)(pcVar4 + -0x17),*(undefined8 *)(pcVar4 + -0xf));
+      }
+      else {
+        local_b0.field1.field1_0x8 = *(undefined8 *)(pcVar4 + -0xf);
+        local_b0.field1.field0_0x0 = (char *)*(undefined8 *)(pcVar4 + -0x17);
+        local_b0.field1.field2_0x10 = *(AnonymousBitField1 *)(pcVar4 + -7);
+      }
+      if (pcVar4[0x18] < '\0') {
+        FUN_00060a60(&local_98,*(undefined8 *)(pcVar4 + 1),*(undefined8 *)(pcVar4 + 9));
+      }
+      else {
+        local_98.field1.field1_0x8 = *(undefined8 *)(pcVar4 + 9);
+        local_98.field1.field0_0x0 = (char *)*(undefined8 *)(pcVar4 + 1);
+        local_98.field1.field2_0x10 =
+             (AnonymousBitField1)((AnonymousBitField1 *)(pcVar4 + 0x11))->bitField0_63;
+      }
+      IVar2 = ArcBrowserApplicationDebugProperty::initWithDebugProperty_
+                        (IVar2,"initWithDebugProperty:",(DebugProperty *)&local_b0.field0);
+      NSMutableArray::addObject_(IVar1,"addObject:",IVar2);
+      if ((long)local_98.field1.field2_0x10 < 0) {
+        FUN_00005810(local_98.field1.field0_0x0,
+                     (ulong)local_98.field1.field2_0x10 & 0x7fffffffffffffff);
+      }
+      if ((long)local_b0.field1.field2_0x10 < 0) {
+        FUN_00005810(local_b0.field1.field0_0x0,
+                     (ulong)local_b0.field1.field2_0x10 & 0x7fffffffffffffff);
+      }
+      pcVar4 = pcVar4 + 0x30;
+      lVar3 = lVar3 + -0x30;
+    } while (lVar3 != 0);
+  }
+  local_68 = &local_80;
+  FUN_043da8c8(&local_68);
+  IVar1 = NSMutableArray::copy(IVar1,"copy");
+  return IVar1;
+}
+
+

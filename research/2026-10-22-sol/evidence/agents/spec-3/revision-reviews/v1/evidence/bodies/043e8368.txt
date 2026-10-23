@@ -1,0 +1,80 @@
+INDEX 0x43e8368 ArcBrowserApplication::createBrowserContext:isHidden:type:completion:error: path=/home/exedev/work/inputs/decompile/0x43.c offset=4379237 C_bytes=2276 failed=0
+// ==== 0x43e8368  ArcBrowserApplication::createBrowserContext:isHidden:type:completion:error:  (412 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x34 bytes */
+
+bool ArcBrowserApplication::createBrowserContext_isHidden_type_completion_error_
+               (ID param_1,SEL param_2,ID param_3,bool param_4,unsigned_long_long param_5,ID param_6
+               ,undefined4 param_7,ID *param_8)
+
+{
+  code *pcVar1;
+  uint uVar2;
+  bool bVar3;
+  SEL extraout_x1;
+  uint *puVar4;
+  undefined8 *puVar5;
+  uint *local_a0;
+  undefined8 local_98;
+  undefined8 uStack_90;
+  ulong local_88;
+  uint *local_80;
+  ID *local_78 [2];
+  undefined1 *local_68;
+  undefined **local_60;
+  long local_58;
+  
+  local_58 = *(long *)PTR____stack_chk_guard_0d824020;
+  puVar5 = *(undefined8 **)(param_1 + 0x20);
+  if ((param_5 != 0) && (param_5 != 1)) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(0x550b,0x43e8504);
+    (*pcVar1)();
+  }
+  local_80 = (uint *)0x0;
+  if (param_3 == 0) {
+    local_98 = 0;
+    uStack_90 = 0;
+    local_88 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_98,param_3);
+    param_2 = extraout_x1;
+  }
+  local_78[0] = (ID *)FUN_00008790(8,param_2);
+  *local_78[0] = param_6;
+  local_68 = &LAB_043eb7a0;
+  local_60 = &PTR_FUN_0df6b748;
+  FUN_042b3d74(&local_80,*puVar5,param_5,param_4,&local_98,local_78);
+  if ((code *)local_60[1] != (code *)0x0) {
+    (*(code *)local_60[1])(local_78[0]);
+  }
+  if ((long)local_88 < 0) {
+    FUN_00005810(local_98,local_88 & 0x7fffffffffffffff);
+  }
+  local_a0 = local_80;
+  puVar4 = local_80;
+  if (((ulong)local_80 & 1) == 0) {
+    uVar2 = *local_80;
+    *local_80 = uVar2 + 1;
+    puVar4 = (uint *)(ulong)uVar2;
+  }
+  bVar3 = FUN_04402548(puVar4,&local_a0,param_7);
+  if (((ulong)local_a0 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (((ulong)local_80 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_58) {
+    return bVar3;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(0);
+}
+
+
+

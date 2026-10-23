@@ -28,6 +28,10 @@ ENGINE_ROLES = ('abi', 'cef', 'arc-layer', 'matcher', 'quality', 'protocols')
 OMIT = 'agents/cef/initial/sources/cef-build-index.json'
 COMPRESS = 'agents/quality/initial/warning-bodies.tsv'
 ASSIGN = 'inputs/context/class-assignments.json'
+EMPTY_REVIEW_ARTIFACTS = {
+    'agents/spec-1/revision-reviews/v1/9',
+    'agents/review/9',
+}
 FIELDS = ('class_name', 'category', 'kind', 'selector', 'type_encoding')
 TEXT_SUFFIXES = {'.md', '.tsv', '.csv', '.json', '.txt', '.c', '.cc', '.cpp',
                  '.h', '.hpp', '.py', '.sh', '.bash', '.js', '.ts', '.html',
@@ -81,6 +85,12 @@ def check_excerpt_size(name, size):
             f'Instruction excerpt exceeds the 4096-byte scope limit: {name}')
 
 
+def check_artifact_size(name, size):
+    check_excerpt_size(name, size)
+    require(name not in EMPTY_REVIEW_ARTIFACTS or size == 0,
+            f'Known empty review artifact unexpectedly has content: {name}')
+
+
 def json_bytes(data):
     return (json.dumps(data, indent=2, sort_keys=True) + '\n').encode()
 
@@ -94,7 +104,7 @@ class Local:
         p = self.root / name
         require(p.is_file() and not p.is_symlink(), f'Missing regular collected file: {name}')
         require(p.resolve().is_relative_to(self.root), f'Escaping collected path: {name}')
-        check_excerpt_size(name, p.stat().st_size)
+        check_artifact_size(name, p.stat().st_size)
         return p
 
     def read(self, name):
@@ -123,7 +133,7 @@ class Packaged:
         record = self.records[name]
         p = self.root / record['output_path']
         data = gzip.decompress(p.read_bytes()) if record['transform'] == 'gzip' else p.read_bytes()
-        check_excerpt_size(name, len(data))
+        check_artifact_size(name, len(data))
         return data
 
     def inventory(self, directory):
@@ -336,8 +346,8 @@ def scope_files(store):
             if excluded(name):
                 continue
             excerpt = instruction_excerpt(name)
-            check_excerpt_size(name, p.stat().st_size)
-            require(excerpt or p.suffix.lower() in TEXT_SUFFIXES or p.name in ('README', 'SHA256SUMS', 'READY', 'VERSION'),
+            check_artifact_size(name, p.stat().st_size)
+            require(excerpt or name in EMPTY_REVIEW_ARTIFACTS or p.suffix.lower() in TEXT_SUFFIXES or p.name in ('README', 'SHA256SUMS', 'READY', 'VERSION'),
                     f'Unclassified file; inspect scope before packaging: {name}')
             require(p.stat().st_size <= 16 * 1024 * 1024 or name in (COMPRESS, OMIT),
                     f'Unexpected large evidence file: {name}')
@@ -629,6 +639,9 @@ profiles and credentials are excluded.
 Bounded protocol-audit instruction excerpts under agents/protocols/initial/bodies/
 are retained byte-for-byte with SHA256; only engine/app VA filenames up to 4096
 bytes each qualify. These are evidence snippets, not complete executable images.
+Two exact zero-byte reviewer artifacts, agents/review/9 and
+agents/spec-1/revision-reviews/v1/9, are retained and hashed as original files.
+Only those paths qualify, and verification requires that both remain empty.
 Chromium source links are pinned upstream
 when retained provenance establishes the pin; other absent links are reported in
 link-issues.json. Original historical Markdown can have Linux paths and broken
@@ -669,7 +682,7 @@ def verify(root):
         require(re.fullmatch('[0-9a-f]{64}', record.get('source_sha256', '')) is not None
                 and isinstance(record.get('source_bytes'), int) and record['source_bytes'] >= 0,
                 f'Invalid original hash/size record: {name}')
-        check_excerpt_size(name, record['source_bytes'])
+        check_artifact_size(name, record['source_bytes'])
         target = record['output_path']
         transform = record['transform']
         if target:

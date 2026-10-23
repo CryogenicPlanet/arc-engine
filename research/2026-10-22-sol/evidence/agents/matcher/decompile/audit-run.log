@@ -1,0 +1,49 @@
+{
+  "input_hashes": {
+    "/home/exedev/work/inputs/corpus-index.sqlite": "593c0765e21672fe7c5fd44fbec5cd04e69199951df2b197bd4212c18c3b1ba5",
+    "/home/exedev/work/inputs/metadata/decomp/arccore-1.170.0-functions.tsv": "b99f9aa95efba5986eb39d8dca82dd67516b09e439b63ca5c1b64286d4526d7f",
+    "/home/exedev/work/inputs/claude-handoff/results/arc-layer-functions.tsv": "28e8cce266ead2135fcc98f596de76fdc2deb543ac82bf3bc4dad189c1565685",
+    "/home/exedev/work/inputs/claude-handoff/scripts/arc_layer.py": "b885d7b9add358e31383cb85b596abac843040b667f12129da897237515da754"
+  },
+  "input_corpus": {
+    "headers": 567959,
+    "failed": 79
+  },
+  "manifest_entries_verified": 199,
+  "unique_shards": 199,
+  "manifest_bytes_streamed": 1114106346,
+  "handoff_rows": 5846,
+  "handoff_reason_counts": {
+    "arc-objc": 1378,
+    "arc-path": 524,
+    "export": 6,
+    "callee": 3938
+  },
+  "handoff_size_sum_invalid_as_coverage": 26801592,
+  "handoff_size_sum_excluding_known_bad_still_invalid": 2454560,
+  "zero_size_handoff_rows": 524,
+  "unresolved_handoff_names": [],
+  "distinct_addresses_represented_by_handoff": 5847,
+  "exact_seed_counts": {
+    "export": 6,
+    "arc-objc": 1379,
+    "arc-path": 524
+  },
+  "reconstructed_counts": {
+    "0:export": 6,
+    "0:arc-objc": 1379,
+    "0:arc-path": 523,
+    "1:callee": 1392,
+    "2:callee": 2149
+  },
+  "reconstructed_addresses": 5449,
+  "syntactic_edges": 12273,
+  "missing_callee_bodies": 0,
+  "malformed_triage_rows": 1,
+  "limits": [
+    "header machine sizes are not independently verified ranges",
+    "syntactic FUN_ calls include possible decompiler artifacts and exclude all indirect dispatch",
+    "known malformed 0x421f778 excluded before expansion; other flags require review",
+    "no proprietary-code, edit count, ABI equivalence, or executable-coverage measure"
+  ]
+}

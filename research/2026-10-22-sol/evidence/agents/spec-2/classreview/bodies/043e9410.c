@@ -1,0 +1,78 @@
+// ==== 0x43e9410  ArcBrowserApplication::isEncryptionAvailable  (228 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcBrowserApplication::isEncryptionAvailable(ID param_1,SEL param_2)
+
+{
+  ulong uVar1;
+  long *plVar2;
+  size_t sVar3;
+  char cVar4;
+  void *pvVar5;
+  int iVar6;
+  uint uVar7;
+  long lVar8;
+  ulong uVar9;
+  long *plVar10;
+  
+  lVar8 = *(long *)(**(long **)(param_1 + 0x20) + 0x338);
+  uVar7 = 0;
+  if (lVar8 != 0) {
+    uVar9 = (ulong)*(char *)(lVar8 + 0x3f);
+    uVar1 = uVar9;
+    if ((long)uVar9 < 0) {
+      uVar1 = *(ulong *)(lVar8 + 0x30);
+    }
+    if (uVar1 != 0) {
+      plVar10 = *(long **)(lVar8 + 0x18);
+      if (plVar10 != (long *)0x0) {
+        pvVar5 = *(void **)(lVar8 + 0x28);
+        uVar1 = *(ulong *)(lVar8 + 0x30);
+        if (-1 < *(char *)(lVar8 + 0x3f)) {
+          pvVar5 = (void *)(lVar8 + 0x28);
+          uVar1 = uVar9;
+        }
+        do {
+          while( true ) {
+            cVar4 = *(char *)((long)plVar10 + 0x37);
+            plVar2 = (long *)plVar10[4];
+            if (-1 < (long)cVar4) {
+              plVar2 = plVar10 + 4;
+            }
+            uVar9 = plVar10[5];
+            if (-1 < cVar4) {
+              uVar9 = (long)cVar4;
+            }
+            sVar3 = uVar9;
+            if (uVar1 <= uVar9) {
+              sVar3 = uVar1;
+            }
+            iVar6 = _memcmp(pvVar5,plVar2,sVar3);
+            if (iVar6 != 0) break;
+            if (uVar1 == uVar9) {
+              if (plVar10 != (long *)(lVar8 + 0x18)) {
+                uVar7 = (uint)*(byte *)(plVar10 + 0xb);
+                goto LAB_043e94c0;
+              }
+              goto LAB_043e94a4;
+            }
+            if (uVar1 < uVar9) goto LAB_043e94dc;
+LAB_043e949c:
+            plVar10 = (long *)plVar10[1];
+            if (plVar10 == (long *)0x0) goto LAB_043e94a4;
+          }
+          if (-1 < iVar6) goto LAB_043e949c;
+LAB_043e94dc:
+          plVar10 = (long *)*plVar10;
+        } while (plVar10 != (long *)0x0);
+      }
+    }
+LAB_043e94a4:
+    uVar7 = 0;
+  }
+LAB_043e94c0:
+  return uVar7 & 1;
+}
+
+

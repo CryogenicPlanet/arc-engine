@@ -1,0 +1,168 @@
+INDEX 0x43e7048 ArcBrowserApplication::createBrowser:withDelegate:forWindow: path=/home/exedev/work/inputs/decompile/0x43.c offset=4360444 C_bytes=4534 failed=0
+// ==== 0x43e7048  ArcBrowserApplication::createBrowser:withDelegate:forWindow:  (900 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x28 bytes */
+
+ID ArcBrowserApplication::createBrowser_withDelegate_forWindow_
+             (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5)
+
+{
+  bool bVar1;
+  long *plVar2;
+  long lVar3;
+  ID IVar4;
+  __shared_weak_count *p_Var5;
+  code *pcVar6;
+  undefined8 *puVar7;
+  undefined8 uVar8;
+  long *plVar9;
+  Browser BVar10;
+  undefined8 local_b0;
+  long *plStack_a8;
+  undefined8 local_a0;
+  undefined8 uStack_98;
+  ulong local_90;
+  undefined8 local_88;
+  long *local_80;
+  ulong local_78;
+  undefined8 local_70;
+  long *plStack_68;
+  undefined8 local_60;
+  undefined8 uStack_58;
+  ulong local_50;
+  
+  local_70 = 0;
+  plStack_68 = (long *)0x0;
+  if (param_3 == 0) {
+    local_88 = 0;
+    local_80 = (long *)0x0;
+    local_78 = 0;
+    IVar4 = param_5;
+LAB_043e73c8:
+                    /* WARNING: Subroutine does not return */
+    FUN_04b08a00(IVar4);
+  }
+  puVar7 = *(undefined8 **)(param_1 + 0x20);
+  p_Var5 = (__shared_weak_count *)param_4;
+  IVar4 = _objc_msgSend(param_3,"browser_context",&local_88);
+  if ((local_78 & 1) == 0) goto LAB_043e73c8;
+  if (param_5 == 0) {
+    local_a0 = 0;
+    uStack_98 = 0;
+    local_90 = 0;
+    uVar8 = *puVar7;
+LAB_043e711c:
+    bVar1 = false;
+    uStack_58 = uStack_98;
+    local_60 = local_a0;
+    local_50 = local_90;
+  }
+  else {
+    FUN_01b356b8(&local_a0,param_5);
+    uVar8 = *puVar7;
+    if (-1 < (long)local_90) goto LAB_043e711c;
+    FUN_00060a60(&local_60,local_a0,uStack_98);
+    bVar1 = true;
+  }
+  FUN_042b32d0(&local_70,uVar8,&local_88,&local_60);
+  if ((long)local_50 < 0) {
+    FUN_00005810(local_60,local_50 & 0x7fffffffffffffff);
+  }
+  if (bVar1) {
+    FUN_00005810(local_a0,local_90 & 0x7fffffffffffffff);
+  }
+  if (((char)local_78 != '\0') && (local_80 != (long *)0x0)) {
+    LOAcquire();
+    lVar3 = local_80[1];
+    local_80[1] = lVar3 + -1;
+    LORelease();
+    if (lVar3 == 0) {
+      (**(code **)(*local_80 + 0x10))(local_80);
+      if (local_80[2] != 0) {
+        LOAcquire();
+        lVar3 = local_80[2];
+        local_80[2] = lVar3 + -1;
+        LORelease();
+        if (lVar3 != 0) goto LAB_043e7180;
+      }
+      pcVar6 = *(code **)(*local_80 + 0x20);
+      if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40)) {
+        FUN_00005810(local_80,0x20);
+      }
+      else {
+        (*pcVar6)(local_80);
+      }
+    }
+  }
+LAB_043e7180:
+  IVar4 = _objc_alloc(&objc::class_t::ArcBrowser);
+  plStack_a8 = plStack_68;
+  local_b0 = local_70;
+  if (plStack_68 != (long *)0x0) {
+    plStack_68[1] = plStack_68[1] + 1;
+  }
+  BVar10.field0_0x0.field1_0x8 = p_Var5;
+  BVar10.field0_0x0.field0_0x0 = (Impl *)&local_b0;
+  IVar4 = ArcBrowser::initWithBrowser_(IVar4,"initWithBrowser:",BVar10);
+  plVar2 = plStack_a8;
+  if (plStack_a8 != (long *)0x0) {
+    LOAcquire();
+    lVar3 = plStack_a8[1];
+    plStack_a8[1] = lVar3 + -1;
+    LORelease();
+    if (lVar3 == 0) {
+      plVar9 = plStack_a8 + 2;
+      (**(code **)(*plStack_a8 + 0x10))(plStack_a8);
+      if (*plVar9 != 0) {
+        LOAcquire();
+        lVar3 = plVar2[2];
+        plVar2[2] = lVar3 + -1;
+        LORelease();
+        if (lVar3 != 0) goto LAB_043e71d4;
+      }
+      pcVar6 = *(code **)(*plVar2 + 0x20);
+      if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40)) {
+        FUN_00005810(plVar2,0x20);
+      }
+      else {
+        (*pcVar6)(plVar2);
+      }
+    }
+  }
+LAB_043e71d4:
+  ArcBrowser::setDelegate_(IVar4,"setDelegate:",param_4);
+  plVar2 = plStack_68;
+  if (plStack_68 != (long *)0x0) {
+    LOAcquire();
+    lVar3 = plStack_68[1];
+    plStack_68[1] = lVar3 + -1;
+    LORelease();
+    if (lVar3 == 0) {
+      plVar9 = plStack_68 + 2;
+      (**(code **)(*plStack_68 + 0x10))(plStack_68);
+      if (*plVar9 != 0) {
+        LOAcquire();
+        lVar3 = plVar2[2];
+        plVar2[2] = lVar3 + -1;
+        LORelease();
+        if (lVar3 != 0) {
+          return IVar4;
+        }
+      }
+      pcVar6 = *(code **)(*plVar2 + 0x20);
+      if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40)) {
+        FUN_00005810(plVar2,0x20);
+      }
+      else {
+        (*pcVar6)(plVar2);
+      }
+    }
+  }
+  return IVar4;
+}
+
+
+

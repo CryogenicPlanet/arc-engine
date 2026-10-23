@@ -1,0 +1,665 @@
+{
+  "class_name": "ArcCommandBarRankingExample",
+  "metadata_va": "0xe37d798",
+  "metadata_file_offset": "0xe37d798",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2abbf0",
+  "instance_start": 8,
+  "instance_size": 72,
+  "ivars": [
+    {
+      "record_va": "0xe2abb88",
+      "offset": 8,
+      "name": "_command_bar_ranking_example",
+      "type": "{optional<arc::CommandBarRankingExample>=\"\"(?=\"__null_state_\"c\"__val_\"{CommandBarRankingExample=\"input\"{CommandBarRankingInput=\"query_embedding\"{vector<float, std::allocator<float>>=\"__layout_\"{__vector_layout<float, std::allocator<float>>=\"__begin_\"^f\"__size_\"Q\"__capacity_\"Q}}}\"candidates\"{vector<arc::CommandBarRankingCandidate, std::allocator<arc::CommandBarRankingCandidate>>=\"__layout_\"{__vector_layout<arc::CommandBarRankingCandidate, std::allocator<arc::CommandBarRankingCandidate>>=\"__begin_\"^{CommandBarRankingCandidate}\"__size_\"Q\"__capacity_\"Q}}\"selected_index\"i})\"__engaged_\"B}",
+      "alignment": 3,
+      "size": 64
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcCommandBarRankingExample", "category": "", "protocol": "", "kind": "-", "selector": "mutableCommandBarRankingExample", "type_encoding": "^v16@0:8", "imp": "0x4433108", "method_record_va": "0xd77b7cc", "selector_va": "0xd7638d5", "dyld_line": 2632, "imp_file_offset": "0x4433108", "body_name": "ArcCommandBarRankingExample::mutableCommandBarRankingExample", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1190154, "body_length": 395, "failed": 0, "truncated": false}
+// ==== 0x4433108  ArcCommandBarRankingExample::mutableCommandBarRankingExample  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void * ArcCommandBarRankingExample::mutableCommandBarRankingExample(ID param_1,SEL param_2)
+
+{
+  if ((*(byte *)(param_1 + 0x40) & 1) != 0) {
+    return (void *)(param_1 + 8);
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_04b08a00();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcCommandBarRankingExample", "category": "", "protocol": "", "kind": "-", "selector": "init:candidates:selectedIndex:", "type_encoding": "@36@0:8@16@24i32", "imp": "0x4433124", "method_record_va": "0xd77b7d8", "selector_va": "0xd7638f5", "dyld_line": 2633, "imp_file_offset": "0x4433124", "body_name": "ArcCommandBarRankingExample::init:candidates:selectedIndex:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1190549, "body_length": 5429, "failed": 0, "truncated": false}
+// ==== 0x4433124  ArcCommandBarRankingExample::init:candidates:selectedIndex:  (908 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x24 bytes */
+
+ID ArcCommandBarRankingExample::init_candidates_selectedIndex_
+             (ID param_1,SEL param_2,ID param_3,ID param_4,int param_5)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  ID IVar3;
+  ID IVar4;
+  long lVar5;
+  long lVar6;
+  ulong uVar7;
+  long lVar8;
+  long lVar9;
+  long local_1f8;
+  long local_1f0;
+  long local_1e8;
+  undefined8 local_150;
+  long lStack_148;
+  long *local_140;
+  undefined8 uStack_138;
+  undefined8 local_130;
+  undefined8 uStack_128;
+  undefined8 uStack_120;
+  undefined8 uStack_118;
+  ID local_108;
+  class_t *pcStack_100;
+  undefined1 auStack_f8 [128];
+  long local_78;
+  
+  local_78 = *(long *)PTR____stack_chk_guard_0d824020;
+  pcStack_100 = &objc::class_t::ArcCommandBarRankingExample;
+  local_108 = param_1;
+  IVar3 = NSObject::init((ID)&local_108,"init");
+  if (IVar3 == 0) {
+LAB_0443343c:
+    if (*(long *)PTR____stack_chk_guard_0d824020 != local_78) {
+                    /* WARNING: Subroutine does not return */
+      ___stack_chk_fail(0);
+    }
+    return IVar3;
+  }
+  plVar1 = (long *)(IVar3 + 8);
+  if (*(char *)(IVar3 + 0x40) != '\0') {
+    lVar8 = *(long *)(IVar3 + 0x20);
+    if (lVar8 != 0) {
+      lVar5 = *(long *)(IVar3 + 0x28) * 0xa8;
+      lVar9 = lVar8;
+      if (lVar5 != 0) {
+        lVar5 = lVar5 + lVar8;
+        lVar9 = *(long *)(IVar3 + 0x28) * -0xa8;
+        do {
+          if (lVar5 == 0xa8) goto LAB_04433488;
+          lVar5 = FUN_042a3ff4();
+          lVar9 = lVar9 + 0xa8;
+        } while (lVar9 != 0);
+        lVar9 = *(long *)(IVar3 + 0x20);
+      }
+      *(long *)(IVar3 + 0x28) = (lVar8 - lVar9 >> 3) * -0x30c30c30c30c30c3;
+      FUN_00005810(lVar9,*(long *)(IVar3 + 0x30) * 0xa8);
+    }
+    lVar8 = *plVar1;
+    if (lVar8 != 0) {
+      lVar5 = *(long *)(IVar3 + 0x10) * 4;
+      if (lVar5 != 0) {
+        lVar9 = *(long *)(IVar3 + 0x10) * -4;
+        lVar5 = lVar5 + lVar8;
+        do {
+          lVar5 = lVar5 + -4;
+          if (lVar5 == 0) goto LAB_04433488;
+          lVar9 = lVar9 + 4;
+        } while (lVar9 != 0);
+      }
+      *(undefined8 *)(IVar3 + 0x10) = 0;
+      FUN_00005810(lVar8,*(long *)(IVar3 + 0x18) << 2);
+    }
+  }
+  *(undefined8 *)(IVar3 + 0x38) = 0;
+  *(undefined8 *)(IVar3 + 0x20) = 0;
+  *(undefined8 *)(IVar3 + 0x18) = 0;
+  *(undefined8 *)(IVar3 + 0x30) = 0;
+  *(undefined8 *)(IVar3 + 0x28) = 0;
+  *(undefined8 *)(IVar3 + 0x10) = 0;
+  *plVar1 = 0;
+  *(undefined1 *)(IVar3 + 0x40) = 1;
+  FUN_04432fcc(&local_1f8,param_3);
+  if ((*(byte *)(IVar3 + 0x40) & 1) != 0) {
+    if (plVar1 != &local_1f8) {
+      FUN_015cdd2c(IVar3 + 8,local_1f8,local_1f8 + local_1f0 * 4,(local_1f0 << 2) >> 2);
+    }
+    if (local_1f8 != 0) {
+      if (local_1f0 * 4 != 0) {
+        lVar8 = local_1f0 * -4;
+        lVar5 = local_1f0 * 4 + local_1f8;
+        do {
+          lVar5 = lVar5 + -4;
+          if (lVar5 == 0) goto LAB_04433488;
+          lVar8 = lVar8 + 4;
+        } while (lVar8 != 0);
+      }
+      local_1f0 = 0;
+      FUN_00005810(local_1f8,local_1e8 << 2);
+    }
+    if ((*(byte *)(IVar3 + 0x40) & 1) != 0) {
+      IVar4 = _objc_msgSend(param_4,"count");
+      FUN_043d9858(IVar3 + 0x20,IVar4);
+      uStack_128 = 0;
+      local_130 = 0;
+      uStack_118 = 0;
+      uStack_120 = 0;
+      lStack_148 = 0;
+      local_150 = 0;
+      uStack_138 = 0;
+      local_140 = (long *)0x0;
+      IVar4 = _objc_msgSend(param_4,"countByEnumeratingWithState:objects:count:",&local_150,
+                            auStack_f8,0x10);
+      if (IVar4 == 0) {
+LAB_04433424:
+        if ((*(byte *)(IVar3 + 0x40) & 1) != 0) {
+          *(int *)(IVar3 + 0x38) = param_5;
+          goto LAB_0443343c;
+        }
+      }
+      else {
+        uVar7 = 0;
+        lVar5 = *local_140;
+        lVar8 = lVar5;
+        while( true ) {
+          if (lVar8 != lVar5) {
+            _objc_enumerationMutation(param_4);
+          }
+          if ((*(byte *)(IVar3 + 0x40) & 1) == 0) break;
+          FUN_04434c34(&local_1f8,*(undefined8 *)(lStack_148 + uVar7 * 8));
+          if (*(long *)(IVar3 + 0x28) == *(long *)(IVar3 + 0x30)) {
+            lVar8 = FUN_043da9d0(IVar3 + 0x20,&local_1f8);
+            lVar9 = *(long *)(IVar3 + 0x20);
+            lVar6 = (lVar8 - lVar9 >> 3) * -0x30c30c30c30c30c3;
+          }
+          else {
+            lVar8 = *(long *)(IVar3 + 0x20) + *(long *)(IVar3 + 0x28) * 0xa8;
+            if (lVar8 == 0) break;
+            FUN_042a3ea8(lVar8,&local_1f8);
+            lVar8 = lVar8 + 0xa8;
+            lVar9 = *(long *)(IVar3 + 0x20);
+            lVar6 = (lVar8 - lVar9 >> 3) * -0x30c30c30c30c30c3;
+            *(long *)(IVar3 + 0x28) = lVar6;
+          }
+          *(long *)(IVar3 + 0x28) = lVar6;
+          if (lVar8 == lVar9) break;
+          FUN_042a3ff4(&local_1f8);
+          uVar7 = uVar7 + 1;
+          if (IVar4 <= uVar7) {
+            IVar4 = _objc_msgSend(param_4,"countByEnumeratingWithState:objects:count:",&local_150,
+                                  auStack_f8,0x10);
+            if (IVar4 == 0) goto LAB_04433424;
+            uVar7 = 0;
+          }
+          lVar8 = *local_140;
+        }
+      }
+    }
+  }
+LAB_04433488:
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x443348c);
+  (*pcVar2)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcCommandBarRankingExample", "category": "", "protocol": "", "kind": "-", "selector": "initWithCommandBarRankingExample:", "type_encoding": "@24@0:8r^v16", "imp": "0x4433528", "method_record_va": "0xd77b7e4", "selector_va": "0xd763914", "dyld_line": 2634, "imp_file_offset": "0x4433528", "body_name": "ArcCommandBarRankingExample::initWithCommandBarRankingExample:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1195978, "body_length": 1965, "failed": 0, "truncated": false}
+// ==== 0x4433528  ArcCommandBarRankingExample::initWithCommandBarRankingExample:  (304 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcCommandBarRankingExample::initWithCommandBarRankingExample_
+             (ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  long lVar3;
+  long lVar4;
+  long lVar5;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcCommandBarRankingExample;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 != 0) {
+    if (*(char *)(IVar2 + 0x40) != '\0') {
+      lVar4 = *(long *)(IVar2 + 0x20);
+      if (lVar4 != 0) {
+        lVar3 = *(long *)(IVar2 + 0x28) * 0xa8;
+        lVar5 = lVar4;
+        if (lVar3 != 0) {
+          lVar3 = lVar3 + lVar4;
+          lVar5 = *(long *)(IVar2 + 0x28) * -0xa8;
+          do {
+            if (lVar3 == 0xa8) goto LAB_04433654;
+            lVar3 = FUN_042a3ff4();
+            lVar5 = lVar5 + 0xa8;
+          } while (lVar5 != 0);
+          lVar5 = *(long *)(IVar2 + 0x20);
+        }
+        *(long *)(IVar2 + 0x28) = (lVar4 - lVar5 >> 3) * -0x30c30c30c30c30c3;
+        FUN_00005810(lVar5,*(long *)(IVar2 + 0x30) * 0xa8);
+      }
+      lVar4 = *(long *)(IVar2 + 8);
+      if (lVar4 != 0) {
+        lVar3 = *(long *)(IVar2 + 0x10) * 4;
+        if (lVar3 != 0) {
+          lVar5 = *(long *)(IVar2 + 0x10) * -4;
+          lVar3 = lVar3 + lVar4;
+          do {
+            lVar3 = lVar3 + -4;
+            if (lVar3 == 0) {
+LAB_04433654:
+                    /* WARNING: Does not return */
+              pcVar1 = (code *)SoftwareBreakpoint(1,0x4433658);
+              (*pcVar1)();
+            }
+            lVar5 = lVar5 + 4;
+          } while (lVar5 != 0);
+        }
+        *(undefined8 *)(IVar2 + 0x10) = 0;
+        FUN_00005810(lVar4,*(long *)(IVar2 + 0x18) << 2);
+      }
+      *(undefined1 *)(IVar2 + 0x40) = 0;
+    }
+    FUN_043dad44(IVar2 + 8,param_3);
+    *(undefined1 *)(IVar2 + 0x40) = 1;
+  }
+  return IVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcCommandBarRankingExample", "category": "", "protocol": "", "kind": "-", "selector": "selectedIndex", "type_encoding": "i16@0:8", "imp": "0x4433658", "method_record_va": "0xd77b7f0", "selector_va": "0xd763936", "dyld_line": 2635, "imp_file_offset": "0x4433658", "body_name": "ArcCommandBarRankingExample::selectedIndex", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1197943, "body_length": 416, "failed": 0, "truncated": false}
+// ==== 0x4433658  ArcCommandBarRankingExample::selectedIndex  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcCommandBarRankingExample::selectedIndex(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x40) & 1) != 0) {
+    return *(int *)(param_1 + 0x38);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443366c);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcCommandBarRankingExample", "category": "", "protocol": "", "kind": "-", "selector": "command_bar_ranking_example", "type_encoding": "{optional<arc::CommandBarRankingExample>=(?=c{CommandBarRankingExample={CommandBarRankingInput={vector<float, std::allocator<float>>={__vector_layout<float, std::allocator<float>>=^fQQ}}}{vector<arc::CommandBarRankingCandidate, std::allocator<arc::CommandBarRankingCandidate>>={__vector_layout<arc::CommandBarRankingCandidate, std::allocator<arc::CommandBarRankingCandidate>>=^{CommandBarRankingCandidate}QQ}}i})B}16@0:8", "imp": "0x443366c", "method_record_va": "0xd77b7fc", "selector_va": "0xd75a1b9", "dyld_line": 2636, "imp_file_offset": "0x443366c", "body_name": "ArcCommandBarRankingExample::command_bar_ranking_example", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1198359, "body_length": 594, "failed": 0, "truncated": false}
+// ==== 0x443366c  ArcCommandBarRankingExample::command_bar_ranking_example  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcCommandBarRankingExample::command_bar_ranking_example
+               (optional<arc::CommandBarRankingExample> *__return_storage_ptr__,ID param_1,
+               SEL param_2)
+
+{
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  __return_storage_ptr__[1].field0_0x0.field0 = '\0';
+  if (*(char *)(param_1 + 0x40) != '\0') {
+    FUN_043dad44(__return_storage_ptr__,param_1 + 8);
+    __return_storage_ptr__[1].field0_0x0.field0 = '\x01';
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcCommandBarRankingExample", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x4433768", "method_record_va": "0xd77b808", "selector_va": "0xd744a39", "dyld_line": 2637, "imp_file_offset": "0x4433768", "body_name": "ArcCommandBarRankingExample::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1198953, "body_length": 1648, "failed": 0, "truncated": false}
+// ==== 0x4433768  ArcCommandBarRankingExample::.cxx_destruct  (244 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcCommandBarRankingExample::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  long lVar2;
+  long lVar3;
+  long lVar4;
+  undefined1 auVar5 [16];
+  
+  if (*(char *)(param_1 + 0x40) != '\0') {
+    lVar3 = *(long *)(param_1 + 0x20);
+    if (lVar3 != 0) {
+      lVar2 = *(long *)(param_1 + 0x28) * 0xa8;
+      lVar4 = lVar3;
+      if (lVar2 != 0) {
+        lVar2 = lVar2 + lVar3;
+        lVar4 = *(long *)(param_1 + 0x28) * -0xa8;
+        do {
+          if (lVar2 + -0xa8 == 0) goto LAB_04433858;
+          auVar5 = FUN_042a3ff4(lVar2 + -0xa8,param_2);
+          param_2 = auVar5._8_8_;
+          lVar2 = auVar5._0_8_;
+          lVar4 = lVar4 + 0xa8;
+        } while (lVar4 != 0);
+        lVar4 = *(long *)(param_1 + 0x20);
+      }
+      *(long *)(param_1 + 0x28) = (lVar3 - lVar4 >> 3) * -0x30c30c30c30c30c3;
+      FUN_00005810(lVar4,*(long *)(param_1 + 0x30) * 0xa8);
+    }
+    lVar3 = *(long *)(param_1 + 8);
+    if (lVar3 != 0) {
+      lVar2 = *(long *)(param_1 + 0x10) * 4;
+      if (lVar2 != 0) {
+        lVar4 = *(long *)(param_1 + 0x10) * -4;
+        lVar2 = lVar2 + lVar3;
+        do {
+          lVar2 = lVar2 + -4;
+          if (lVar2 == 0) {
+LAB_04433858:
+                    /* WARNING: Does not return */
+            pcVar1 = (code *)SoftwareBreakpoint(1,0x443385c);
+            (*pcVar1)();
+          }
+          lVar4 = lVar4 + 4;
+        } while (lVar4 != 0);
+      }
+      *(undefined8 *)(param_1 + 0x10) = 0;
+      FUN_00005810(lVar3,*(long *)(param_1 + 0x18) << 2);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcCommandBarRankingExample", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x442cf84", "method_record_va": "0xd77b814", "selector_va": "0xd744a47", "dyld_line": 2638, "imp_file_offset": "0x442cf84", "body_name": "ArcExtensionRuntimeErrorStackFrame::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1000558, "body_length": 300, "failed": 0, "truncated": false}
+// ==== 0x442cf84  ArcExtensionRuntimeErrorStackFrame::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionRuntimeErrorStackFrame::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x40) = 0;
+  return param_1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcCommandBarRankingExample", "category": "Extensions", "protocol": "", "kind": "-", "selector": "input", "type_encoding": "@16@0:8", "imp": "0x4401ca0", "method_record_va": "0xd778dbc", "selector_va": "0xd75a1d5", "dyld_line": 4961, "imp_file_offset": "0x4401ca0", "body_name": "objc::Categories::ArcCommandBarRankingExample_Extensions_::input", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 52708, "body_length": 2488, "failed": 0, "truncated": false}
+// ==== 0x4401ca0  objc::Categories::ArcCommandBarRankingExample_Extensions_::input  (452 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID objc::Categories::ArcCommandBarRankingExample_Extensions_::input(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  ID self;
+  ID IVar3;
+  long lVar4;
+  undefined4 *puVar5;
+  long lVar6;
+  long lVar7;
+  undefined4 *local_90;
+  ulong local_88;
+  long local_80;
+  long local_78;
+  long local_70;
+  long local_68;
+  byte local_58;
+  
+  _objc_msgSend(param_1,"command_bar_ranking_example",&local_90);
+  if ((local_58 & 1) != 0) {
+    IVar2 = _objc_alloc(&class_t::ArcCommandBarRankingInput);
+    self = NSMutableArray::arrayWithCapacity_
+                     ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",local_88);
+    puVar5 = local_90;
+    for (lVar7 = local_88 << 2; lVar7 != 0; lVar7 = lVar7 + -4) {
+      IVar3 = NSNumber::numberWithFloat_((ID)&_OBJC_CLASS___NSNumber,"numberWithFloat:",*puVar5);
+      NSMutableArray::addObject_(self,"addObject:",IVar3);
+      puVar5 = puVar5 + 1;
+    }
+    IVar2 = ArcCommandBarRankingInput::init_(IVar2,"init:",self);
+    lVar7 = local_78;
+    if (local_58 != 0) {
+      if (local_78 != 0) {
+        if (local_70 * 0xa8 != 0) {
+          lVar4 = local_70 * 0xa8 + local_78;
+          lVar6 = local_70 * -0xa8;
+          do {
+            if (lVar4 == 0xa8) goto LAB_04401e74;
+            lVar4 = FUN_042a3ff4();
+            lVar6 = lVar6 + 0xa8;
+          } while (lVar6 != 0);
+        }
+        local_70 = (lVar7 - local_78 >> 3) * -0x30c30c30c30c30c3;
+        FUN_00005810(local_78,local_68 * 0xa8);
+      }
+      if (local_90 != (undefined4 *)0x0) {
+        if ((local_88 & 0x3fffffffffffffff) != 0) {
+          lVar7 = local_88 * -4;
+          puVar5 = local_90 + local_88;
+          do {
+            puVar5 = puVar5 + -1;
+            if (puVar5 == (undefined4 *)0x0) goto LAB_04401e74;
+            lVar7 = lVar7 + 4;
+          } while (lVar7 != 0);
+        }
+        local_88 = 0;
+        FUN_00005810(local_90,local_80 << 2);
+      }
+    }
+    return IVar2;
+  }
+LAB_04401e74:
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4401e78);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcCommandBarRankingExample", "category": "Extensions", "protocol": "", "kind": "-", "selector": "candidates", "type_encoding": "@16@0:8", "imp": "0x4401f34", "method_record_va": "0xd778dc8", "selector_va": "0xd7488ac", "dyld_line": 4962, "imp_file_offset": "0x4401f34", "body_name": "objc::Categories::ArcCommandBarRankingExample_Extensions_::candidates", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 55196, "body_length": 5800, "failed": 0, "truncated": false}
+// ==== 0x4401f34  objc::Categories::ArcCommandBarRankingExample_Extensions_::candidates  (932 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID objc::Categories::ArcCommandBarRankingExample_Extensions_::candidates(ID param_1,SEL param_2)
+
+{
+  int iVar1;
+  int iVar2;
+  undefined1 uVar3;
+  undefined1 uVar4;
+  undefined1 uVar5;
+  char cVar6;
+  code *pcVar7;
+  undefined8 *puVar8;
+  ID self;
+  ID IVar9;
+  ID IVar10;
+  ID IVar11;
+  ID IVar12;
+  ID IVar13;
+  ID IVar14;
+  ID IVar15;
+  ID self_00;
+  long lVar16;
+  long lVar17;
+  undefined8 *puVar18;
+  uint *puVar19;
+  float fVar20;
+  int in_stack_fffffffffffffec8;
+  undefined1 uVar21;
+  bool in_stack_fffffffffffffed8;
+  char *pcVar22;
+  char *op;
+  long local_b8;
+  long local_b0;
+  long local_a8;
+  undefined8 *local_a0;
+  long local_98;
+  long local_90;
+  byte local_80;
+  
+  _objc_msgSend(param_1,"command_bar_ranking_example",&local_b8);
+  puVar18 = local_a0;
+  if ((local_80 & 1) == 0) {
+LAB_044022d4:
+                    /* WARNING: Does not return */
+    pcVar7 = (code *)SoftwareBreakpoint(1,0x44022d8);
+    (*pcVar7)();
+  }
+  if (local_a0 != (undefined8 *)0x0) {
+    if (local_98 * 0xa8 != 0) {
+      puVar8 = local_a0 + local_98 * 0x15;
+      lVar17 = local_98 * -0xa8;
+      do {
+        if ((dword *)puVar8 == &section_00000068.flags) goto LAB_044022d4;
+        puVar8 = (undefined8 *)FUN_042a3ff4();
+        lVar17 = lVar17 + 0xa8;
+      } while (lVar17 != 0);
+    }
+    local_98 = ((long)puVar18 - (long)local_a0 >> 3) * -0x30c30c30c30c30c3;
+    FUN_00005810(local_a0,local_90 * 0xa8);
+  }
+  if (local_b8 != 0) {
+    if (local_b0 * 4 != 0) {
+      lVar17 = local_b0 * -4;
+      lVar16 = local_b0 * 4 + local_b8;
+      do {
+        lVar16 = lVar16 + -4;
+        if (lVar16 == 0) goto LAB_044022d4;
+        lVar17 = lVar17 + 4;
+      } while (lVar17 != 0);
+    }
+    local_b0 = 0;
+    FUN_00005810(local_b8,local_a8 << 2);
+  }
+  self = NSMutableArray::arrayWithCapacity_
+                   ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",local_98);
+  if (local_98 * 0xa8 != 0) {
+    lVar17 = local_98 * 0x15;
+    pcVar22 = 
+    "init:archetype:destination:title:url:lastNavSeconds:freqEver:typedCount:siteEngagement:isExactURLMatch:isBaseDomainMatch:isTitlePrefix:titleEmbedding:"
+    ;
+    op = "addObject:";
+    puVar18 = local_a0;
+    do {
+      IVar10 = _objc_alloc(&class_t::ArcCommandBarRankingCandidate);
+      cVar6 = *(char *)((long)puVar18 + 0x17);
+      puVar8 = (undefined8 *)*puVar18;
+      if (-1 < (long)cVar6) {
+        puVar8 = puVar18;
+      }
+      lVar16 = puVar18[1];
+      if (-1 < cVar6) {
+        lVar16 = (long)cVar6;
+      }
+      IVar11 = FUN_01c391bc(puVar8,lVar16);
+      cVar6 = *(char *)((long)puVar18 + 0x2f);
+      puVar8 = (undefined8 *)puVar18[3];
+      if (-1 < (long)cVar6) {
+        puVar8 = puVar18 + 3;
+      }
+      lVar16 = puVar18[4];
+      if (-1 < cVar6) {
+        lVar16 = (long)cVar6;
+      }
+      IVar12 = FUN_01c391bc(puVar8,lVar16);
+      cVar6 = *(char *)((long)puVar18 + 0x47);
+      puVar8 = (undefined8 *)puVar18[6];
+      if (-1 < (long)cVar6) {
+        puVar8 = puVar18 + 6;
+      }
+      lVar16 = puVar18[7];
+      if (-1 < cVar6) {
+        lVar16 = (long)cVar6;
+      }
+      IVar13 = FUN_01c391bc(puVar8,lVar16);
+      cVar6 = *(char *)((long)puVar18 + 0x5f);
+      puVar8 = (undefined8 *)puVar18[9];
+      if (-1 < (long)cVar6) {
+        puVar8 = puVar18 + 9;
+      }
+      lVar16 = puVar18[10];
+      if (-1 < cVar6) {
+        lVar16 = (long)cVar6;
+      }
+      IVar14 = FUN_01c391bc(puVar8,lVar16);
+      cVar6 = *(char *)((long)puVar18 + 0x77);
+      puVar8 = (undefined8 *)puVar18[0xc];
+      if (-1 < (long)cVar6) {
+        puVar8 = puVar18 + 0xc;
+      }
+      lVar16 = puVar18[0xd];
+      if (-1 < cVar6) {
+        lVar16 = (long)cVar6;
+      }
+      IVar15 = FUN_01c391bc(puVar8,lVar16);
+      iVar1 = *(int *)(puVar18 + 0xf);
+      iVar2 = *(int *)((long)puVar18 + 0x7c);
+      fVar20 = *(float *)((long)puVar18 + 0x84);
+      uVar3 = *(undefined1 *)(puVar18 + 0x11);
+      uVar4 = *(undefined1 *)((long)puVar18 + 0x89);
+      uVar5 = *(undefined1 *)((long)puVar18 + 0x8a);
+      self_00 = NSMutableArray::arrayWithCapacity_
+                          ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",puVar18[0x13]);
+      uVar21 = (undefined1)(in_stack_fffffffffffffec8 >> 0x18);
+      lVar16 = puVar18[0x13] << 2;
+      if (lVar16 != 0) {
+        puVar19 = (uint *)puVar18[0x12];
+        do {
+          IVar9 = NSNumber::numberWithFloat_
+                            ((ID)&_OBJC_CLASS___NSNumber,"numberWithFloat:",(ulong)*puVar19);
+          NSMutableArray::addObject_(self_00,"addObject:",IVar9);
+          uVar21 = (undefined1)(in_stack_fffffffffffffec8 >> 0x18);
+          lVar16 = lVar16 + -4;
+          puVar19 = puVar19 + 1;
+        } while (lVar16 != 0);
+      }
+      in_stack_fffffffffffffec8 = CONCAT31(CONCAT21(CONCAT11(uVar21,uVar5),uVar4),uVar3);
+      IVar10 = ArcCommandBarRankingCandidate::
+               init_archetype_destination_title_url_lastNavSeconds_freqEver_typedCount_siteEngagement_isExactURLMatch_isBaseDomainMatch_isTitlePrefix_titleEmbedding_
+                         (IVar10,pcVar22,IVar11,IVar12,IVar13,IVar14,IVar15,iVar1,iVar2,
+                          in_stack_fffffffffffffec8,fVar20,(bool)self_00,in_stack_fffffffffffffed8,
+                          (bool)pcVar22,(ID)op);
+      NSMutableArray::addObject_(self,op,IVar10);
+      puVar18 = puVar18 + 0x15;
+    } while (puVar18 != local_a0 + lVar17);
+  }
+  return self;
+}
+
+
+

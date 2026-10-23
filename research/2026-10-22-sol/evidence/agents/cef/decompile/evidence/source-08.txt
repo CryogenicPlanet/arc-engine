@@ -1,0 +1,19 @@
+1229: void RenderWidgetHostViewMac::TakeFallbackContentFrom(
+1230:     RenderWidgetHostView* view) {
+1231:   CHECK(!static_cast<RenderWidgetHostViewBase*>(view)
+1232:              ->IsRenderWidgetHostViewChildFrame(),
+1233:         base::NotFatalUntil::M152);
+1234:   RenderWidgetHostViewMac* view_mac =
+1235:       static_cast<RenderWidgetHostViewMac*>(view);
+1236:   ScopedCAActionDisabler disabler;
+1237:   CopyBackgroundColorIfPresentFrom(*view);
+1238: 
+1239:   // Make the NSView for |this| display the same content as is being displayed
+1240:   // in the NSView for |view_mac|.
+1241:   const gfx::CALayerParams* ca_layer_params =
+1242:       view_mac->browser_compositor_->GetLastCALayerParams();
+1243:   if (ca_layer_params)
+1244:     ns_view_->SetCALayerParams(ca_layer_params->CloneWithoutFence());
+1245:   browser_compositor_->TakeFallbackContentFrom(
+1246:       view_mac->browser_compositor_.get());
+1247: }

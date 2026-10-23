@@ -1,0 +1,283 @@
+{
+  "class_name": "ArcHungRendererDialog",
+  "metadata_va": "0xe37c348",
+  "metadata_file_offset": "0xe37c348",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a6e00",
+  "instance_start": 8,
+  "instance_size": 32,
+  "ivars": [
+    {
+      "record_va": "0xe2a6dc8",
+      "offset": 8,
+      "name": "_dialog",
+      "type": "{optional<arc::HungRendererDialog>=\"\"(?=\"__null_state_\"c\"__val_\"{HungRendererDialog=\"impl_\"{shared_ptr<arc::HungRendererDialog::Impl>=\"__ptr_\"^{Impl}\"__cntrl_\"^{__shared_weak_count}}})\"__engaged_\"B}",
+      "size": 24,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a6df0",
+      "name": "dialog",
+      "attributes": "T{optional<arc::HungRendererDialog>=(?=c{HungRendererDialog={shared_ptr<arc::HungRendererDialog::Impl>=^{Impl}^{__shared_weak_count}}})B},N,V_dialog"
+    }
+  ]
+}
+
+###  -initWithHungRendererDialog: 0x4403b80 @24@0:8r^v16 available
+
+  ID IVar2;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcHungRendererDialog;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x18) == '\0') goto LAB_04403be0;
+  plVar4 = *(long **)(IVar2 + 0x10);
+  if (plVar4 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar4[1];
+    plVar4[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar4[2];
+        plVar4[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04403bdc;
+      }
+      pcVar3 = *(code **)(*plVar4 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*pcVar3)(plVar4);
+      }
+    }
+  }
+LAB_04403bdc:
+  *(undefined1 *)(IVar2 + 0x18) = 0;
+LAB_04403be0:
+  *(undefined8 *)(IVar2 + 8) = *(undefined8 *)param_3;
+  lVar1 = *(long *)((long)param_3 + 8);
+  *(long *)(IVar2 + 0x10) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = *(long *)(lVar1 + 8) + 1;
+  }
+  *(undefined1 *)(IVar2 + 0x18) = 1;
+  return IVar2;
+}
+
+
+
+
+###  -crashProcess 0x4403ca4 v16@0:8 available
+
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    FUN_0435f150(*(undefined8 *)(param_1 + 8));
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4403cb8);
+  (*pcVar1)();
+}
+
+
+
+
+###  -wait 0x4403cb8 v16@0:8 available
+
+  pid_t pVar2;
+  
+  if ((*(byte *)(param_1 + 6) & 1) != 0) {
+    pVar2 = FUN_0435f1ac(*(undefined8 *)(param_1 + 2));
+    return pVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4403ccc);
+  (*pcVar1)();
+}
+
+
+
+
+###  -dialog 0x43df53c {optional<arc::HungRendererDialog>=(?=c{HungRendererDialog={shared_ptr<arc::HungRendererDialog::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8 available
+
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::AIAgent> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43df57c);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x10);
+    pIVar4 = *(Impl **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+###  -setDialog: 0x4403ccc v40@0:8{optional<arc::HungRendererDialog>=(?=c{HungRendererDialog={shared_ptr<arc::HungRendererDialog::Impl>=^{Impl}^{__shared_weak_count}}})B}16 available
+
+  __shared_weak_count *p_Var3;
+  Impl *pIVar5;
+  __shared_weak_count *p_Var6;
+  
+  cVar1 = *(char *)(param_1 + 0x18);
+  if (cVar1 == (char)param_3->field1_0x10) {
+    if (cVar1 == '\0') {
+      return;
+    }
+    p_Var3 = (param_3->field0_0x0).field1.field0_0x0.field1_0x8;
+    p_Var6 = (param_3->field0_0x0).field1.field0_0x0.field1_0x8;
+    pIVar5 = (param_3->field0_0x0).field1.field0_0x0.field0_0x0;
+    if (p_Var3 != (__shared_weak_count *)0x0) {
+      p_Var3 = p_Var3 + 8;
+      *(long *)p_Var3 = *(long *)p_Var3 + 1;
+    }
+    plVar4 = *(long **)(param_1 + 0x10);
+    *(__shared_weak_count **)(param_1 + 0x10) = p_Var6;
+    *(Impl **)(param_1 + 8) = pIVar5;
+    if (plVar4 == (long *)0x0) {
+      return;
+    }
+    LOAcquire();
+    lVar2 = plVar4[1];
+    plVar4[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 != 0) {
+      return;
+    }
+    (**(code **)(*plVar4 + 0x10))(plVar4);
+    if (plVar4[2] != 0) {
+      LOAcquire();
+      lVar2 = plVar4[2];
+      plVar4[2] = lVar2 + -1;
+      LORelease();
+      if (lVar2 != 0) {
+        return;
+      }
+    }
+    UNRECOVERED_JUMPTABLE = *(code **)(*plVar4 + 0x20);
+    if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+       (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x04403e98. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+      (*UNRECOVERED_JUMPTABLE)(plVar4);
+      return;
+    }
+    FUN_00005810(plVar4,0x20);
+    return;
+  }
+  if (cVar1 == '\0') {
+    *(Impl **)(param_1 + 8) = (param_3->field0_0x0).field1.field0_0x0.field0_0x0;
+    p_Var3 = (param_3->field0_0x0).field1.field0_0x0.field1_0x8;
+    *(__shared_weak_count **)(param_1 + 0x10) = p_Var3;
+    if (p_Var3 != (__shared_weak_count *)0x0) {
+      *(long *)(p_Var3 + 8) = *(long *)(p_Var3 + 8) + 1;
+    }
+    *(undefined1 *)(param_1 + 0x18) = 1;
+    return;
+  }
+  plVar4 = *(long **)(param_1 + 0x10);
+  if (plVar4 != (long *)0x0) {
+    LOAcquire();
+    lVar2 = plVar4[1];
+    plVar4[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar2 = plVar4[2];
+        plVar4[2] = lVar2 + -1;
+        LORelease();
+        if (lVar2 != 0) goto LAB_04403d0c;
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar4 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE == FUN_00f01bc0) || (UNRECOVERED_JUMPTABLE == FUN_00f01bc0)) ||
+         (UNRECOVERED_JUMPTABLE == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*UNRECOVERED_JUMPTABLE)(plVar4);
+      }
+    }
+  }
+LAB_04403d0c:
+  *(undefined1 *)(param_1 + 0x18) = 0;
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x43df69c v16@0:8 available
+
+  
+  if ((*(char *)(param_1 + 0x18) != '\0') &&
+     (plVar2 = *(long **)(param_1 + 0x10), plVar2 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x043df75c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x43df760 @16@0:8 available
+
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+

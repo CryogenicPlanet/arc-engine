@@ -1,0 +1,907 @@
+{
+  "arc_symbol_stats": {
+    "distinct_text_symbol_addresses": 7,
+    "records": 2947,
+    "symbol_addresses_also_LC_FUNCTION_STARTS": 0,
+    "symbol_addresses_without_LC_FUNCTION_STARTS_not_used_as_body_bounds": 7,
+    "text_N_SECT_records": 7
+  },
+  "argv": [
+    "tools/engine_match.py",
+    "--arc",
+    "/home/exedev/work/inputs/binaries/ArcCore-1.170.0.arm64",
+    "--stock",
+    "/home/exedev/work/inputs/binaries/ChromiumFramework-156.arm64",
+    "--ghidra-tsv",
+    "/home/exedev/work/inputs/metadata/decomp/arccore-1.170.0-functions.tsv",
+    "--objc-dyld",
+    "/home/exedev/work/inputs/context/analysis/data/dobjc170.txt",
+    "--out",
+    "initial",
+    "--controls",
+    "384",
+    "--sample",
+    "512",
+    "--requests",
+    "40"
+  ],
+  "artifact_checks": {
+    "all_rows_have_required_fields": true,
+    "expected_rows": 514,
+    "matches_rows": 514,
+    "request_addresses_present_in_TSV": true,
+    "sqlite_integrity_check": "ok"
+  },
+  "candidate_pairs_total": 833,
+  "checked_ambiguous_equal_signatures": [
+    {
+      "arc_va": "0xc30a7a8",
+      "import_context_agrees": false,
+      "long_anchor_count": 2,
+      "status": "ambiguous",
+      "stock_names": [
+        "__ZN4base8internal7InvokerINS0_13FunctorTraitsIOZN33SupervisedUserErrorPageController21RequestUrlAccessLocalEvE3$_0JEEENS0_9BindStateILb0ELb0ELb0ES4_JEEEFvbEE7RunOnceEPNS0_13BindStateBaseEb"
+      ],
+      "stock_va": "0x1320d66c"
+    },
+    {
+      "arc_va": "0xc3229e8",
+      "import_context_agrees": false,
+      "long_anchor_count": 2,
+      "status": "ambiguous",
+      "stock_names": [
+        "__ZN25ReadAnythingAppController11OnDistilledEi"
+      ],
+      "stock_va": "0x13237564"
+    },
+    {
+      "arc_va": "0xc2385d0",
+      "import_context_agrees": false,
+      "long_anchor_count": 2,
+      "status": "ambiguous",
+      "stock_names": [
+        "__ZN4base8internal7InvokerINS0_13FunctorTraitsIOZN9reporting13StorageModule13ReportSuccessENS3_19SequenceInformationEbE3$_0JEEENS0_9BindStateILb0ELb0ELb0ES6_JEEEFvNS3_6StatusEEE7RunOnceEPNS0_13BindStateBaseEOSB_"
+      ],
+      "stock_va": "0x13097bf4"
+    },
+    {
+      "arc_va": "0xc3109c8",
+      "import_context_agrees": false,
+      "long_anchor_count": 1,
+      "status": "ambiguous",
+      "stock_names": [
+        "__ZNK12_GLOBAL__N_18V8Module16GetDebugBasenameEv"
+      ],
+      "stock_va": "0x13219bf8"
+    },
+    {
+      "arc_va": "0xc3ea700",
+      "import_context_agrees": false,
+      "long_anchor_count": 0,
+      "status": "ambiguous",
+      "stock_names": [
+        "__ZN8zucchini12_GLOBAL__N_19FileNamesC1Ev"
+      ],
+      "stock_va": "0x133b5600"
+    },
+    {
+      "arc_va": "0xc2fc3fc",
+      "import_context_agrees": false,
+      "long_anchor_count": 1,
+      "status": "ambiguous",
+      "stock_names": [
+        "__ZN29StartupPasswordsImportServiceC2EP7Profile"
+      ],
+      "stock_va": "0x131ee2e4"
+    }
+  ],
+  "counts": {
+    "arc": {
+      "cstring_locations_length_ge_8": 208570,
+      "detected_string_reference_sites": 5495
+    },
+    "stock": {
+      "cstring_locations_length_ge_8": 382494,
+      "detected_string_reference_sites": 2769107
+    }
+  },
+  "coverage": {
+    "body_bytes_sum_not_coverage": 858548775,
+    "body_equals_span_rows": 607294,
+    "excluded_region_examples": {
+      "__DATA_CONST,__const": {
+        "body": 1,
+        "end_exclusive": "0xdf6d611",
+        "name": "FUN_0df6d610",
+        "row": 605991,
+        "start": "0xdf6d610"
+      },
+      "__TEXT,__const": {
+        "body": 1,
+        "end_exclusive": "0xc4fb5c1",
+        "name": "FUN_0c4fb5c0",
+        "row": 605988,
+        "start": "0xc4fb5c0"
+      },
+      "__TEXT,__objc_stubs": {
+        "body": 20,
+        "end_exclusive": "0xc4aa634",
+        "name": "objc_stub::countByEnumeratingWithState:objects:count:",
+        "row": 605839,
+        "start": "0xc4aa620"
+      },
+      "__TEXT,__stubs": {
+        "body": 12,
+        "end_exclusive": "0xc4a59a0",
+        "name": "_dispatch_once_f",
+        "row": 604206,
+        "start": "0xc4a5994"
+      },
+      "unmapped_or_not_file_backed_possible_Ghidra_external_space": {
+        "body": 1,
+        "end_exclusive": "0xe608102",
+        "name": "NSBundle::mainBundle",
+        "row": 605992,
+        "start": "0xe608101"
+      }
+    },
+    "excluded_regions": {
+      "__DATA_CONST,__const": 1,
+      "__TEXT,__const": 3,
+      "__TEXT,__objc_stubs": 149,
+      "__TEXT,__stubs": 1633,
+      "unmapped_or_not_file_backed_possible_Ghidra_external_space": 1303
+    },
+    "isolated_body_equals_span_rows": 24528,
+    "other_rows": 571809,
+    "rows": 607294,
+    "rows_starting_inside_prior_span": 579666,
+    "span_bytes_sum_not_coverage": 858548775,
+    "text_rows": 604205,
+    "thunks": 35485
+  },
+  "decompile_request_count": 56,
+  "duplicate_controls": 11,
+  "duplicate_signature_controls": [
+    {
+      "arc_va": "0xfbc0",
+      "comparison": {
+        "arc_compared_size": 4,
+        "arc_direct_calls": 0,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "110f46b5b35c069160560c6ad6786f647dd44e8760a52a46fc22dbbcd7630b91",
+        "arc_raw_sha256": "110f46b5b35c069160560c6ad6786f647dd44e8760a52a46fc22dbbcd7630b91",
+        "arc_span": 4,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": true,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 4,
+        "stock_direct_calls": 0,
+        "stock_import_sequence": [],
+        "stock_interval": 4,
+        "stock_normalized_sha256": "110f46b5b35c069160560c6ad6786f647dd44e8760a52a46fc22dbbcd7630b91",
+        "stock_raw_sha256": "110f46b5b35c069160560c6ad6786f647dd44e8760a52a46fc22dbbcd7630b91",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "synthetic_identical_RET_from_real_Arc_body"
+    },
+    {
+      "comparison": {
+        "arc_compared_size": 16,
+        "arc_direct_calls": 0,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "eb2df88df0fdd68cfb4c914c036a60da9ab76ca3a6765431f83396d5a512a528",
+        "arc_raw_sha256": "5f7f50eb3d81a551e1aa4a0d6b519f894ae4d18c79b967b8e846915298dd631c",
+        "arc_span": 16,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 16,
+        "stock_direct_calls": 0,
+        "stock_import_sequence": [],
+        "stock_interval": 16,
+        "stock_normalized_sha256": "eb2df88df0fdd68cfb4c914c036a60da9ab76ca3a6765431f83396d5a512a528",
+        "stock_raw_sha256": "5ab78ba700553cb4094a11515101fdb2e7960227e0d17779ba5b718390bc01a7",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "real_distinct_stock_tiny_functions_same_masked_signature",
+      "left_identity": "+[ChromeSwizzleServicesMenuUpdater storeFilteredEntriesForTestingInArray:]",
+      "left_stock_va": "0x8198b08",
+      "right_identity": "+[RenderWidgetHostViewCocoa setDeferredResignKeyWindow:]",
+      "right_stock_va": "0x5b155a8"
+    },
+    {
+      "comparison": {
+        "arc_compared_size": 4,
+        "arc_direct_calls": 0,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "a7911cdfdc28e6a1867e359ba426081aacfa692fdeb3e978d2a68dd924fa8c3e",
+        "arc_raw_sha256": "0edf5c6f419b7b6fc6c44fb5b0a1f36ef18b4df8a4ac29e8c6491f77c286398b",
+        "arc_span": 4,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 4,
+        "stock_direct_calls": 0,
+        "stock_import_sequence": [],
+        "stock_interval": 4,
+        "stock_normalized_sha256": "a7911cdfdc28e6a1867e359ba426081aacfa692fdeb3e978d2a68dd924fa8c3e",
+        "stock_raw_sha256": "2b6fd7f9256c335c0decbfe4765c16fae8f3e24d6b560e557dfff3c18909fb7f",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "real_distinct_stock_tiny_functions_same_masked_signature",
+      "left_identity": "+[RenderWidgetHostViewCocoa initialize]",
+      "left_stock_va": "0x5b0dbbc",
+      "right_identity": "-[AXPlatformNodeCocoa AXChildren]",
+      "right_stock_va": "0x5b16260"
+    },
+    {
+      "comparison": {
+        "arc_compared_size": 12,
+        "arc_direct_calls": 0,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "db2b58402fe32d4e081fccfc34e7e9d87a83a2e5d76d6564732d1495333707bd",
+        "arc_raw_sha256": "3c758bba5730f3d0a9a031ebb314de6b8fc91502bbd64af852ba7fe4a4e2bca5",
+        "arc_span": 12,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 12,
+        "stock_direct_calls": 0,
+        "stock_import_sequence": [],
+        "stock_interval": 12,
+        "stock_normalized_sha256": "db2b58402fe32d4e081fccfc34e7e9d87a83a2e5d76d6564732d1495333707bd",
+        "stock_raw_sha256": "b8fbf5606692d16f418fd63585294546d0e334a60f5a7c675bb0cc024de7adb3",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "real_distinct_stock_tiny_functions_same_masked_signature",
+      "left_identity": "+[WebContentsOcclusionCheckerMac sharedOcclusionChecker]",
+      "left_stock_va": "0x5b1d408",
+      "right_identity": "-[AXPlatformNodeCocoa AXInsertionPointLineNumber]",
+      "right_stock_va": "0xc1b4c88"
+    },
+    {
+      "comparison": {
+        "arc_compared_size": 12,
+        "arc_direct_calls": 0,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "c86c15b80bd2f75ef9d16e696b26bae58950040cd43fc96b15214a78cc5925fe",
+        "arc_raw_sha256": "cb1d9eb6b1678531c62f6db9f164d46406fc74f5f2886f2b8c2dced3a2e62a3d",
+        "arc_span": 12,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 12,
+        "stock_direct_calls": 0,
+        "stock_import_sequence": [
+          "_objc_storeWeak"
+        ],
+        "stock_interval": 12,
+        "stock_normalized_sha256": "c86c15b80bd2f75ef9d16e696b26bae58950040cd43fc96b15214a78cc5925fe",
+        "stock_raw_sha256": "929e9983134b7bb776d070d28abf01510830bd8f121645fe7fe97fad7cc0d8a6",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "real_distinct_stock_tiny_functions_same_masked_signature",
+      "left_identity": "-[AXAnnouncementSpec setAnnouncement:]",
+      "left_stock_va": "0x81761b4",
+      "right_identity": "-[ImmersiveModeMapper setOriginalBrowserWindow:]",
+      "right_stock_va": "0xc30be40"
+    },
+    {
+      "comparison": {
+        "arc_compared_size": 12,
+        "arc_direct_calls": 0,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "3403a768b5b37b076548ee9611dc47c48dbb96831b55083a529fbf078370f172",
+        "arc_raw_sha256": "d3c3ae29a472ea97eabf515648e83a84a64613bb7e4a447f644233937374e973",
+        "arc_span": 12,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 12,
+        "stock_direct_calls": 0,
+        "stock_import_sequence": [],
+        "stock_interval": 12,
+        "stock_normalized_sha256": "3403a768b5b37b076548ee9611dc47c48dbb96831b55083a529fbf078370f172",
+        "stock_raw_sha256": "9acdd4da1b4c73ba66f9e517b715b90eb8289c7c58507164825bf8ef3830073d",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "real_distinct_stock_tiny_functions_same_masked_signature",
+      "left_identity": "-[AXAnnouncementSpec setWindow:]",
+      "left_stock_va": "0xb8b0380",
+      "right_identity": "-[CommandDispatcher setDelegate:]",
+      "right_stock_va": "0xa390e00"
+    },
+    {
+      "comparison": {
+        "arc_compared_size": 24,
+        "arc_direct_calls": 1,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "0a37258c99e280aab20f0d6b011063ead3e8c314246386c6f69bea308f788aa2",
+        "arc_raw_sha256": "5a0c270fc47135c88d90f3c17b9212f4366bb0558193e2b796b6a90e8e19c646",
+        "arc_span": 24,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 24,
+        "stock_direct_calls": 1,
+        "stock_import_sequence": [],
+        "stock_interval": 24,
+        "stock_normalized_sha256": "0a37258c99e280aab20f0d6b011063ead3e8c314246386c6f69bea308f788aa2",
+        "stock_raw_sha256": "ea25e5b02e6e98ca08ce5bdb73db8d86d8adbf7489b7ba0107fef63ffd6ffc75",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "real_distinct_stock_tiny_functions_same_masked_signature",
+      "left_identity": "-[AXPlatformNodeCocoa accessibilityIsIgnored]",
+      "left_stock_va": "0xc1b0bc0",
+      "right_identity": "-[NativeWidgetMacNSWindow _canMiniaturize]",
+      "right_stock_va": "0xc314760"
+    },
+    {
+      "comparison": {
+        "arc_compared_size": 8,
+        "arc_direct_calls": 0,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "35a192e065543e70a1a31909e95c62640c2f8d8503a3c70b2fb8ca7acf49177a",
+        "arc_raw_sha256": "403ef9a6e6dc69e9d02dfa2c7ffbd9a621e0d9270ea4a54358d82728da30109b",
+        "arc_span": 8,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 8,
+        "stock_direct_calls": 0,
+        "stock_import_sequence": [],
+        "stock_interval": 8,
+        "stock_normalized_sha256": "35a192e065543e70a1a31909e95c62640c2f8d8503a3c70b2fb8ca7acf49177a",
+        "stock_raw_sha256": "a099d4944f8c010786b2b444bda6930f463e7ba215387284760a8c99a432e72e",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "real_distinct_stock_tiny_functions_same_masked_signature",
+      "left_identity": "-[AlertBridgeHelper alert]",
+      "left_stock_va": "0xa3940e4",
+      "right_identity": "-[AppShimRenderWidgetHostViewMacDelegate viewThatWantsHistoryOverlay]",
+      "right_stock_va": "0x92d6c54"
+    },
+    {
+      "comparison": {
+        "arc_compared_size": 8,
+        "arc_direct_calls": 0,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "efb99802ba4e31ef61274d632c42beb8fab36ce0d2bfa42df051f2f650bf6149",
+        "arc_raw_sha256": "1d0049a8540912c7b6cb868efcc88fc250f5f4daaefe477fc8e699673c92f814",
+        "arc_span": 8,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 8,
+        "stock_direct_calls": 0,
+        "stock_import_sequence": [],
+        "stock_interval": 8,
+        "stock_normalized_sha256": "efb99802ba4e31ef61274d632c42beb8fab36ce0d2bfa42df051f2f650bf6149",
+        "stock_raw_sha256": "8ad08a5081b0ddd76f5242e4de0dcf2be09611dd51e3edb75b4a889330af0c36",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "real_distinct_stock_tiny_functions_same_masked_signature",
+      "left_identity": "-[AppShimRenderWidgetHostViewMacDelegate handleEvent:]",
+      "left_stock_va": "0x92d6c1c",
+      "right_identity": "-[AppShimRenderWidgetHostViewMacDelegate rendererHandledGestureScrollEvent:consumed:]",
+      "right_stock_va": "0x92d6c44"
+    },
+    {
+      "comparison": {
+        "arc_compared_size": 12,
+        "arc_direct_calls": 0,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "1559650f2e329efbca8942be525d1d74cd5af889288ec1ce8c86f4fe20aaad20",
+        "arc_raw_sha256": "cac2b2c68bb9affac5a529035f12aee164bb3040b2c4a53dbb682f4f517fc468",
+        "arc_span": 12,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": true,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 12,
+        "stock_direct_calls": 0,
+        "stock_import_sequence": [],
+        "stock_interval": 12,
+        "stock_normalized_sha256": "1559650f2e329efbca8942be525d1d74cd5af889288ec1ce8c86f4fe20aaad20",
+        "stock_raw_sha256": "cac2b2c68bb9affac5a529035f12aee164bb3040b2c4a53dbb682f4f517fc468",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "real_distinct_stock_tiny_functions_same_masked_signature",
+      "left_identity": "-[BluetoothLowEnergyCentralManagerDelegate centralManager:didConnectPeripheral:]",
+      "left_stock_va": "0xc28c760",
+      "right_identity": "-[BluetoothLowEnergyPeripheralDelegate peripheral:didDiscoverServices:]",
+      "right_stock_va": "0xc28ce68"
+    },
+    {
+      "comparison": {
+        "arc_compared_size": 16,
+        "arc_direct_calls": 0,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "633f7af11053dceff68fae6f66de4e318aabd80ce78e5b155391e67fadab1411",
+        "arc_raw_sha256": "3ee9025c6fa67edd65b0738a8bba5a5eb44a74ab0b32c526b93e248293175be7",
+        "arc_span": 16,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 1.0,
+        "long_unique_anchor_ids": [],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": true,
+        "raw_equal": true,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "ambiguous",
+        "stock_compared_size": 16,
+        "stock_direct_calls": 0,
+        "stock_import_sequence": [],
+        "stock_interval": 16,
+        "stock_normalized_sha256": "633f7af11053dceff68fae6f66de4e318aabd80ce78e5b155391e67fadab1411",
+        "stock_raw_sha256": "3ee9025c6fa67edd65b0738a8bba5a5eb44a74ab0b32c526b93e248293175be7",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "real_distinct_stock_tiny_functions_same_masked_signature",
+      "left_identity": "-[BluetoothLowEnergyCentralManagerDelegate centralManager:didDisconnectPeripheral:error:]",
+      "left_stock_va": "0xc28c9ec",
+      "right_identity": "-[BluetoothLowEnergyCentralManagerDelegate centralManager:didFailToConnectPeripheral:error:]",
+      "right_stock_va": "0xc28c898"
+    }
+  ],
+  "empirical_precision_among_tested_acceptances": null,
+  "false_accepts_in_explicit_negative_controls": 0,
+  "gate_rule": ">=5 accepted named identity controls, zero accepted explicit decoys and zero wrong blind identity matches",
+  "image_hashes": {
+    "arc": "69276adaca785a46f2554e7fd18926e7fcdd6aba44ba64400a337427817db3dd",
+    "stock": "39647a537f42460da18576c0a5856171dfec2250ed505698dbbdd99a40b75645"
+  },
+  "input_hashes": {
+    "/home/exedev/work/inputs/context/analysis/data/dobjc170.txt": "8de71507f955743197ee3551089daf2ac081e3645d80c261c6c06d239b1acf1f",
+    "/home/exedev/work/inputs/metadata/decomp/arccore-1.170.0-functions.tsv": "b99f9aa95efba5986eb39d8dca82dd67516b09e439b63ca5c1b64286d4526d7f"
+  },
+  "limitations": [
+    "No engine pseudocode consulted; files absent at start",
+    "No full Ghidra AddressSet body map; gaps excluded and equality of body/span remains metadata evidence",
+    "Stock LC_FUNCTION_STARTS intervals are inferred bounds and may contain padding/data",
+    "Adjacent ADRP+ADD only, exact __cstring entry addresses, length >=8; no ownership or ABI inference",
+    "Unknown sample selected by strongest observed anchors; unmatched is not proprietary/modified",
+    "Different build/LTO/inlining/ICF can explain all mismatches; no byte-percentage estimate"
+  ],
+  "named_control_count": 2,
+  "named_control_status_counts": {
+    "ambiguous": 1,
+    "unmatched": 1
+  },
+  "named_controls": [
+    {
+      "arc_va": "0x41c8",
+      "blind_unique_string_candidates": [],
+      "comparison": {
+        "arc_compared_size": 288,
+        "arc_direct_calls": 9,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "6e157bb80b84cb82f51efa0338fd2c2425f5b22d4ec65e18900189290d84f58e",
+        "arc_raw_sha256": "5d74ce066f0f397b24200e4f4ca99b3525eab493c7d4f3f2c9aa98fe6511ecf8",
+        "arc_span": 288,
+        "arc_trimmed_nops": 0,
+        "confidence": "none",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 0.115385,
+        "long_unique_anchor_ids": [],
+        "method": "anchor_candidate",
+        "normalized_equal": false,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "unmatched",
+        "stock_compared_size": 1168,
+        "stock_direct_calls": 49,
+        "stock_import_sequence": [],
+        "stock_interval": 1168,
+        "stock_normalized_sha256": "bc74958654201dd970ac58d95b146b3f5074e82cf3139e24a03e33f99808b4f0",
+        "stock_raw_sha256": "e39d4b0b1b6105decf0fd3929eda666fb8fa4c99d24624c7fde73ad2ebc5f15b",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "identity": "_ChromeMain",
+      "stock_va": "0x4cc0",
+      "wrong_accepted": []
+    },
+    {
+      "arc_va": "0x4000",
+      "blind_unique_string_candidates": [
+        {
+          "status": "ambiguous",
+          "stock_va": "0x4000"
+        }
+      ],
+      "comparison": {
+        "arc_compared_size": 328,
+        "arc_direct_calls": 21,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "724aac40b985d34f0cf90facd76e0c23788c638690399d2b4ac2ea4078bba3a7",
+        "arc_raw_sha256": "0ccc72e678b409607b7166b8996f6877d9880c9a051d65c1eeb9124ebff3abdc",
+        "arc_span": 328,
+        "arc_trimmed_nops": 0,
+        "confidence": "low",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 0.598039,
+        "long_unique_anchor_ids": [
+          102933
+        ],
+        "method": "strings_or_masked_signature_insufficient",
+        "normalized_equal": false,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [
+          102933
+        ],
+        "status": "ambiguous",
+        "stock_compared_size": 488,
+        "stock_direct_calls": 29,
+        "stock_import_sequence": [],
+        "stock_interval": 488,
+        "stock_normalized_sha256": "bb3b8d36ecf575e42d337a46ad75009c3da1aeb8582b7badeea9089709231232",
+        "stock_raw_sha256": "57d87d75b841ce540486021eda6eeca9bce1fc30252ecc5c1f116fc72d1387c3",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": [
+          102933
+        ]
+      },
+      "identity": "_ChromeAppModeStart_v8",
+      "stock_va": "0x4000",
+      "wrong_accepted": []
+    }
+  ],
+  "named_controls_available_before_cap": 2,
+  "negative_controls": [
+    {
+      "arc_identity": "_ChromeMain",
+      "arc_va": "0x41c8",
+      "comparison": {
+        "arc_compared_size": 288,
+        "arc_direct_calls": 9,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "6e157bb80b84cb82f51efa0338fd2c2425f5b22d4ec65e18900189290d84f58e",
+        "arc_raw_sha256": "5d74ce066f0f397b24200e4f4ca99b3525eab493c7d4f3f2c9aa98fe6511ecf8",
+        "arc_span": 288,
+        "arc_trimmed_nops": 0,
+        "confidence": "none",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 0.195876,
+        "long_unique_anchor_ids": [],
+        "method": "anchor_candidate",
+        "normalized_equal": false,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "unmatched",
+        "stock_compared_size": 488,
+        "stock_direct_calls": 29,
+        "stock_import_sequence": [],
+        "stock_interval": 488,
+        "stock_normalized_sha256": "bb3b8d36ecf575e42d337a46ad75009c3da1aeb8582b7badeea9089709231232",
+        "stock_raw_sha256": "57d87d75b841ce540486021eda6eeca9bce1fc30252ecc5c1f116fc72d1387c3",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "rotated_named_identity",
+      "stock_identity": "_ChromeAppModeStart_v8",
+      "stock_va": "0x4000"
+    },
+    {
+      "arc_identity": "_ChromeAppModeStart_v8",
+      "arc_va": "0x4000",
+      "comparison": {
+        "arc_compared_size": 328,
+        "arc_direct_calls": 21,
+        "arc_import_sequence": [],
+        "arc_normalized_sha256": "724aac40b985d34f0cf90facd76e0c23788c638690399d2b4ac2ea4078bba3a7",
+        "arc_raw_sha256": "0ccc72e678b409607b7166b8996f6877d9880c9a051d65c1eeb9124ebff3abdc",
+        "arc_span": 328,
+        "arc_trimmed_nops": 0,
+        "confidence": "none",
+        "import_context_agrees": false,
+        "instruction_multiset_similarity_not_semantics": 0.197861,
+        "long_unique_anchor_ids": [],
+        "method": "anchor_candidate",
+        "normalized_equal": false,
+        "raw_equal": false,
+        "reasons": [
+          "Arc body-byte count equals span; no overlapping candidate span",
+          "Stock range is LC_FUNCTION_STARTS interval, with trailing NOPs trimmed only for normalized signature",
+          "String uniqueness is scoped to detected adjacent-pair references in eligible ranges",
+          "No ABI or semantic-equivalence claim"
+        ],
+        "shared_string_ids": [],
+        "status": "unmatched",
+        "stock_compared_size": 1168,
+        "stock_direct_calls": 49,
+        "stock_import_sequence": [],
+        "stock_interval": 1168,
+        "stock_normalized_sha256": "bc74958654201dd970ac58d95b146b3f5074e82cf3139e24a03e33f99808b4f0",
+        "stock_raw_sha256": "e39d4b0b1b6105decf0fd3929eda666fb8fa4c99d24624c7fde73ad2ebc5f15b",
+        "stock_trimmed_nops": 0,
+        "unique_anchor_ids": []
+      },
+      "kind": "rotated_named_identity",
+      "stock_identity": "_ChromeMain",
+      "stock_va": "0x4cc0"
+    }
+  ],
+  "negative_identity_controls": 2,
+  "peak_rss_kib": 256288,
+  "positive_identity_controls_accepted": 0,
+  "precision_scope": "Named identity correspondence on selected controls only; does not establish semantics, ABI, or population-wide precision",
+  "primary_sources": [
+    {
+      "commit": "a1e26a70f38d1d7daa7b49b258e2f8538ad81650",
+      "local": "sources/loader.h",
+      "path": "EXTERNAL_HEADERS/mach-o/loader.h",
+      "revision": "xnu-11417.121.6",
+      "sha256": "8780a1e622375833b563f488bc820422c2fb5b8727bb8df8ceaa73ab6f0f88e3",
+      "url": "https://github.com/apple-oss-distributions/xnu/blob/a1e26a70f38d1d7daa7b49b258e2f8538ad81650/EXTERNAL_HEADERS/mach-o/loader.h"
+    },
+    {
+      "commit": "a1e26a70f38d1d7daa7b49b258e2f8538ad81650",
+      "local": "sources/nlist.h",
+      "path": "EXTERNAL_HEADERS/mach-o/nlist.h",
+      "revision": "xnu-11417.121.6",
+      "sha256": "9e1a328c1a9632fae48d4d95b09d377f5007374ddb8addad97e0841052304c96",
+      "url": "https://github.com/apple-oss-distributions/xnu/blob/a1e26a70f38d1d7daa7b49b258e2f8538ad81650/EXTERNAL_HEADERS/mach-o/nlist.h"
+    },
+    {
+      "commit": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+      "local": "sources/basic-a64-instructions.s",
+      "path": "llvm/test/MC/AArch64/basic-a64-instructions.s",
+      "revision": "llvmorg-20.1.8",
+      "sha256": "6f06a2ae7d5fcbb0093f4f5b1da2ee2d868f2391c94c3ef95b352a38f0e44afe",
+      "url": "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/llvm/test/MC/AArch64/basic-a64-instructions.s"
+    }
+  ],
+  "python": "3.12.3",
+  "stock_symbol_stats": {
+    "distinct_text_symbol_addresses": 921881,
+    "records": 3067492,
+    "stab_records": 1491436,
+    "symbol_addresses_also_LC_FUNCTION_STARTS": 887032,
+    "symbol_addresses_without_LC_FUNCTION_STARTS_not_used_as_body_bounds": 34849,
+    "text_N_SECT_records": 1373940
+  },
+  "supplemental_entry_window_validation": {
+    "details_file": "entry-validation.json",
+    "fixed_width_results": {
+      "128": {
+        "closed_set_unique_identity_precision": 1.0,
+        "counts": {
+          "no_exact_masked_prefix_candidate": 795,
+          "unique_correct_identity": 3
+        },
+        "eligible_identity_pairs": 798,
+        "rotated_wrong_identity_equal_prefixes": 0
+      },
+      "16": {
+        "closed_set_unique_identity_precision": 0.6033057851239669,
+        "counts": {
+          "ambiguous": 1191,
+          "no_exact_masked_prefix_candidate": 382,
+          "unique_correct_identity": 73,
+          "unique_wrong_identity": 48
+        },
+        "eligible_identity_pairs": 1694,
+        "rotated_wrong_identity_equal_prefixes": 146
+      },
+      "64": {
+        "closed_set_unique_identity_precision": 0.967741935483871,
+        "counts": {
+          "ambiguous": 1,
+          "no_exact_masked_prefix_candidate": 1217,
+          "unique_correct_identity": 30,
+          "unique_wrong_identity": 1
+        },
+        "eligible_identity_pairs": 1249,
+        "rotated_wrong_identity_equal_prefixes": 0
+      }
+    },
+    "full_window_normalized_different": 1617,
+    "full_window_normalized_equal": 77,
+    "full_window_raw_equal": 7,
+    "identity_pairs": 1694
+  },
+  "tool_hashes": {
+    "tools/engine_match.py": "ffb04f8154c8734b5bd2d6170dc1acac16559100521e8899af97e1dbe8ef7e4c",
+    "tools/export_requested_ranges.py": "41ff56d2f3968e8bd29838ae4394db02ff932aa140ffd548390aa6277a710acb",
+    "tools/finalize.py": "92d10af0060d6b2de144b8d1c7b6af41a619cd37e7e7a60ddba77a92347d88a2",
+    "tools/macho.py": "8f0f68342b9d8e014d6717a0684a96744fef83551e992524ae44aaccc549051c",
+    "tools/probe_entries.py": "4290bbaafa85657b01b5ae2307894191c7982a55aed25428849cbcafb368600f",
+    "tools/run.sh": "755185c54d8080308d4ed9b3efdc7c2540a29d061487dfc836da23b88c5c61f8",
+    "tools/test_matcher.py": "fabb9e35200d093b9986870a6008f64f4d74adca3409409482717677bcfb9f29"
+  },
+  "unique_detected_string_anchors": 1757,
+  "unit_tests": {
+    "errors": 0,
+    "failures": 0,
+    "scope": "Mach-O malformed fixtures, VA mapping, bounded ownership, pinned LLVM vectors",
+    "successful": true,
+    "tests_run": 15
+  },
+  "unknown_high_confidence_gate": false,
+  "unnamed_sample_distinct_arc_functions": 506,
+  "unnamed_sample_pairs": 512,
+  "unnamed_status_counts": {
+    "ambiguous": 512
+  },
+  "version": "initial-1",
+  "version_string_locations": [
+    {
+      "image": "arc",
+      "va": "0xd008946",
+      "value": "156.0.8078.48"
+    },
+    {
+      "image": "stock",
+      "va": "0x13c39b60",
+      "value": "156.0.8078.48"
+    }
+  ],
+  "wrong_named_blind_accepts": 0
+}

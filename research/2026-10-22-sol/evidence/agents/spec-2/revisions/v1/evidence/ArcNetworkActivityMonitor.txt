@@ -1,0 +1,414 @@
+{
+  "class_name": "ArcNetworkActivityMonitor",
+  "metadata_va": "0xe37c6b8",
+  "metadata_file_offset": "0xe37c6b8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a7958",
+  "instance_start": 8,
+  "instance_size": 32,
+  "ivars": [
+    {
+      "record_va": "0xe2a7910",
+      "offset": 8,
+      "name": "_networkActivityMonitor",
+      "type": "{optional<arc::BrowserApplication::NetworkActivityMonitor>=\"\"(?=\"__null_state_\"c\"__val_\"{NetworkActivityMonitor=\"impl_\"{shared_ptr<arc::BrowserApplication::NetworkActivityMonitor::Impl>=\"__ptr_\"^{Impl}\"__cntrl_\"^{__shared_weak_count}}})\"__engaged_\"B}",
+      "alignment": 3,
+      "size": 24
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcNetworkActivityMonitor", "category": "", "protocol": "", "kind": "-", "selector": "init:", "type_encoding": "@32@0:8{NetworkActivityMonitor={shared_ptr<arc::BrowserApplication::NetworkActivityMonitor::Impl>=^{Impl}^{__shared_weak_count}}}16", "imp": "0x44085cc", "method_record_va": "0xd7796d0", "selector_va": "0xd7574bd", "dyld_line": 1884, "imp_file_offset": "0x44085cc", "body_name": "ArcNetworkActivityMonitor::init:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 201361, "body_length": 1578, "failed": 0, "truncated": false}
+// ==== 0x44085cc  ArcNetworkActivityMonitor::init:  (292 bytes)
+
+/* Function Stack Size: 0x20 bytes */
+
+ID ArcNetworkActivityMonitor::init_(ID param_1,SEL param_2,NetworkActivityMonitor param_3)
+
+{
+  long lVar1;
+  ID IVar2;
+  Impl *pIVar3;
+  code *pcVar4;
+  long *plVar5;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pIVar3 = param_3.field0_0x0.field0_0x0;
+  pcStack_38 = &objc::class_t::ArcNetworkActivityMonitor;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init",pIVar3,param_3.field0_0x0.field1_0x8);
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x18) == '\0') goto LAB_0440862c;
+  plVar5 = *(long **)(IVar2 + 0x10);
+  if (plVar5 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar5[1];
+    plVar5[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar5 + 0x10))(plVar5);
+      if (plVar5[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar5[2];
+        plVar5[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04408628;
+      }
+      pcVar4 = *(code **)(*plVar5 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+        FUN_00005810(plVar5,0x20);
+      }
+      else {
+        (*pcVar4)(plVar5);
+      }
+    }
+  }
+LAB_04408628:
+  *(undefined1 *)(IVar2 + 0x18) = 0;
+LAB_0440862c:
+  *(undefined8 *)(IVar2 + 8) = *(undefined8 *)pIVar3;
+  lVar1 = *(long *)(pIVar3 + 8);
+  *(long *)(IVar2 + 0x10) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = *(long *)(lVar1 + 8) + 1;
+  }
+  *(undefined1 *)(IVar2 + 0x18) = 1;
+  return IVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkActivityMonitor", "category": "", "protocol": "", "kind": "-", "selector": "isEqual:", "type_encoding": "B24@0:8@16", "imp": "0x44086f0", "method_record_va": "0xd7796dc", "selector_va": "0xd7442bb", "dyld_line": 1885, "imp_file_offset": "0x44086f0", "body_name": "ArcNetworkActivityMonitor::isEqual:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 202939, "body_length": 1967, "failed": 0, "truncated": false}
+// ==== 0x44086f0  ArcNetworkActivityMonitor::isEqual:  (368 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+bool ArcNetworkActivityMonitor::isEqual_(ID param_1,SEL param_2,ID param_3)
+
+{
+  long lVar1;
+  ID IVar2;
+  code *pcVar3;
+  bool bVar4;
+  long local_48;
+  long *local_40;
+  byte local_38;
+  
+  if (param_1 == param_3) {
+    return 1;
+  }
+  if (param_3 != 0) {
+    IVar2 = _objc_msgSend((ID)&objc::class_t::ArcNetworkActivityMonitor,"class");
+    IVar2 = _objc_msgSend(param_3,"isKindOfClass:",IVar2);
+    if ((int)IVar2 != 0) {
+      _objc_msgSend(param_3,"networkActivityMonitor",&local_48);
+      if ((local_38 & *(byte *)(param_1 + 0x18)) == 0) {
+        bVar4 = (bool)(*(byte *)(param_1 + 0x18) == local_38);
+        if (local_38 == 0) {
+          return bVar4;
+        }
+      }
+      else {
+        if ((local_38 & 1) == 0) {
+                    /* WARNING: Does not return */
+          pcVar3 = (code *)SoftwareBreakpoint(1,0x4408860);
+          (*pcVar3)();
+        }
+        bVar4 = (bool)(*(long *)(param_1 + 8) == local_48);
+      }
+      if (local_40 == (long *)0x0) {
+        return bVar4;
+      }
+      LOAcquire();
+      lVar1 = local_40[1];
+      local_40[1] = lVar1 + -1;
+      LORelease();
+      if (lVar1 != 0) {
+        return bVar4;
+      }
+      (**(code **)(*local_40 + 0x10))(local_40);
+      if (local_40[2] != 0) {
+        LOAcquire();
+        lVar1 = local_40[2];
+        local_40[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return bVar4;
+        }
+      }
+      pcVar3 = *(code **)(*local_40 + 0x20);
+      if (((pcVar3 != FUN_00f01bc0) && (pcVar3 != FUN_00f01bc0)) && (pcVar3 != FUN_013efb40)) {
+        (*pcVar3)(local_40);
+        return bVar4;
+      }
+      FUN_00005810(local_40,0x20);
+      return bVar4;
+    }
+  }
+  return 0;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkActivityMonitor", "category": "", "protocol": "", "kind": "-", "selector": "hash", "type_encoding": "Q16@0:8", "imp": "0x4408860", "method_record_va": "0xd7796e8", "selector_va": "0xd7442c4", "dyld_line": 1886, "imp_file_offset": "0x4408860", "body_name": "ArcNetworkActivityMonitor::hash", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 204906, "body_length": 471, "failed": 0, "truncated": false}
+// ==== 0x4408860  ArcNetworkActivityMonitor::hash  (56 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+unsigned_long_long ArcNetworkActivityMonitor::hash(ID param_1,SEL param_2)
+
+{
+  unsigned_long_long uVar1;
+  undefined8 local_18;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    local_18 = *(undefined8 *)(param_1 + 8);
+    uVar1 = FUN_00018f3c(&local_18,8);
+    return uVar1;
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_04b08a00();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkActivityMonitor", "category": "", "protocol": "", "kind": "-", "selector": "isLogging", "type_encoding": "B16@0:8", "imp": "0x4408898", "method_record_va": "0xd7796f4", "selector_va": "0xd75c2ee", "dyld_line": 1887, "imp_file_offset": "0x4408898", "body_name": "ArcNetworkActivityMonitor::isLogging", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 205377, "body_length": 456, "failed": 0, "truncated": false}
+// ==== 0x4408898  ArcNetworkActivityMonitor::isLogging  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcNetworkActivityMonitor::isLogging(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  bool bVar2;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    bVar2 = FUN_0432c834(*(undefined8 *)(param_1 + 8));
+    return bVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x44088ac);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkActivityMonitor", "category": "", "protocol": "", "kind": "-", "selector": "startLogging:with:error:", "type_encoding": "B40@0:8@16@24^@32", "imp": "0x44088ac", "method_record_va": "0xd779700", "selector_va": "0xd75c2f8", "dyld_line": 1888, "imp_file_offset": "0x44088ac", "body_name": "ArcNetworkActivityMonitor::startLogging:with:error:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 205833, "body_length": 2687, "failed": 0, "truncated": false}
+// ==== 0x44088ac  ArcNetworkActivityMonitor::startLogging:with:error:  (468 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x28 bytes */
+
+bool ArcNetworkActivityMonitor::startLogging_with_error_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,ID *param_5)
+
+{
+  uint uVar1;
+  long lVar2;
+  bool bVar3;
+  ID IVar4;
+  uint *puVar5;
+  code *pcVar6;
+  uint *local_90;
+  undefined8 local_88;
+  long *local_80;
+  ulong local_78;
+  undefined8 local_70;
+  undefined8 uStack_68;
+  ulong local_60;
+  undefined8 uStack_58;
+  uint *local_48;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar6 = (code *)SoftwareBreakpoint(1,0x4408a74);
+    (*pcVar6)();
+  }
+  local_48 = (uint *)0x0;
+  if (param_3 == 0) {
+    uStack_68 = 0;
+    local_70 = 0;
+    uStack_58 = 0;
+    local_60 = 0;
+    if (param_4 == 0) {
+      IVar4 = 0;
+      goto LAB_04408a74;
+    }
+  }
+  else {
+    IVar4 = _objc_msgSend(param_3,"network_logging_configuration",&local_70);
+    if (param_4 == 0) {
+LAB_04408a74:
+      local_88 = 0;
+      local_80 = (long *)0x0;
+      local_78 = 0;
+      goto LAB_04408a7c;
+    }
+  }
+  IVar4 = _objc_msgSend(param_4,"browser_context",&local_88);
+  if ((local_78 & 1) == 0) {
+LAB_04408a7c:
+                    /* WARNING: Subroutine does not return */
+    FUN_04b08a00(IVar4);
+  }
+  FUN_0432c950(&local_48,*(undefined8 *)(param_1 + 8),&local_70,&local_88);
+  if (((char)local_78 != '\0') && (local_80 != (long *)0x0)) {
+    LOAcquire();
+    lVar2 = local_80[1];
+    local_80[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 == 0) {
+      (**(code **)(*local_80 + 0x10))(local_80);
+      if (local_80[2] != 0) {
+        LOAcquire();
+        lVar2 = local_80[2];
+        local_80[2] = lVar2 + -1;
+        LORelease();
+        if (lVar2 != 0) goto LAB_0440895c;
+      }
+      pcVar6 = *(code **)(*local_80 + 0x20);
+      if (((pcVar6 == FUN_00f01bc0) || (pcVar6 == FUN_00f01bc0)) || (pcVar6 == FUN_013efb40)) {
+        FUN_00005810(local_80,0x20);
+      }
+      else {
+        (*pcVar6)(local_80);
+      }
+    }
+  }
+LAB_0440895c:
+  if ((long)local_60 < 0) {
+    FUN_00005810(local_70,local_60 & 0x7fffffffffffffff);
+  }
+  local_90 = local_48;
+  puVar5 = local_48;
+  if (((ulong)local_48 & 1) == 0) {
+    uVar1 = *local_48;
+    *local_48 = uVar1 + 1;
+    puVar5 = (uint *)(ulong)uVar1;
+  }
+  bVar3 = FUN_04402548(puVar5,&local_90,param_5);
+  if (((ulong)local_90 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (((ulong)local_48 & 1) == 0) {
+    FUN_04b35898();
+  }
+  return bVar3;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkActivityMonitor", "category": "", "protocol": "", "kind": "-", "selector": "networkActivityMonitor", "type_encoding": "{optional<arc::BrowserApplication::NetworkActivityMonitor>=(?=c{NetworkActivityMonitor={shared_ptr<arc::BrowserApplication::NetworkActivityMonitor::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8", "imp": "0x43df53c", "method_record_va": "0xd77970c", "selector_va": "0xd75766d", "dyld_line": 1889, "imp_file_offset": "0x43df53c", "body_name": "ArcWebContentsAIAgent::web_contents_ai_agent", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4214856, "body_length": 1155, "failed": 0, "truncated": false}
+// ==== 0x43df53c  ArcWebContentsAIAgent::web_contents_ai_agent  (64 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsAIAgent::web_contents_ai_agent
+               (optional<arc::WebContents::AIAgent> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  long lVar3;
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::AIAgent> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43df57c);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x10);
+    pIVar4 = *(Impl **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkActivityMonitor", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x43df69c", "method_record_va": "0xd779718", "selector_va": "0xd744a39", "dyld_line": 1890, "imp_file_offset": "0x43df69c", "body_name": "ArcWebContentsAIAgent::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4217592, "body_length": 1206, "failed": 0, "truncated": false}
+// ==== 0x43df69c  ArcWebContentsAIAgent::.cxx_destruct  (196 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsAIAgent::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  code *UNRECOVERED_JUMPTABLE;
+  long *plVar2;
+  
+  if ((*(char *)(param_1 + 0x18) != '\0') &&
+     (plVar2 = *(long **)(param_1 + 0x10), plVar2 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x043df75c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcNetworkActivityMonitor", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x43df760", "method_record_va": "0xd779724", "selector_va": "0xd744a47", "dyld_line": 1891, "imp_file_offset": "0x43df760", "body_name": "ArcWebContentsAIAgent::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4218798, "body_length": 274, "failed": 0, "truncated": false}
+// ==== 0x43df760  ArcWebContentsAIAgent::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcWebContentsAIAgent::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+

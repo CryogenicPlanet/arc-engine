@@ -1,0 +1,62 @@
+INDEX 0x44193c0 FUN_044193c0 path=/home/exedev/work/inputs/decompile/0x44.c offset=555561 C_bytes=1666 failed=0
+// ==== 0x44193c0  FUN_044193c0  (336 bytes)
+
+/* WARNING: Function: _objc_loadWeakRetained replaced with injection: _objc_load_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+undefined8
+FUN_044193c0(long param_1,undefined8 param_2,undefined8 *param_3,__shared_weak_count *param_4)
+
+{
+  long *plVar1;
+  long lVar2;
+  ID IVar3;
+  code *pcVar4;
+  long *plVar5;
+  Navigation NVar6;
+  undefined8 local_40;
+  long *plStack_38;
+  
+  IVar3 = _objc_alloc(&objc::class_t::ArcNavigation);
+  plStack_38 = (long *)param_3[1];
+  local_40 = *param_3;
+  if (param_3[1] != 0) {
+    plVar1 = (long *)(param_3[1] + 8);
+    *plVar1 = *plVar1 + 1;
+  }
+  NVar6.field0_0x0.field1_0x8 = param_4;
+  NVar6.field0_0x0.field0_0x0 = (Impl *)&local_40;
+  IVar3 = ArcNavigation::init_(IVar3,"init:",NVar6);
+  plVar1 = plStack_38;
+  if (plStack_38 != (long *)0x0) {
+    LOAcquire();
+    lVar2 = plStack_38[1];
+    plStack_38[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 == 0) {
+      plVar5 = plStack_38 + 2;
+      (**(code **)(*plStack_38 + 0x10))(plStack_38);
+      if (*plVar5 != 0) {
+        LOAcquire();
+        lVar2 = plVar1[2];
+        plVar1[2] = lVar2 + -1;
+        LORelease();
+        if (lVar2 != 0) goto LAB_04419430;
+      }
+      pcVar4 = *(code **)(*plVar1 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+        FUN_00005810(plVar1,0x20);
+      }
+      else {
+        (*pcVar4)(plVar1);
+      }
+    }
+  }
+LAB_04419430:
+  _objc_msgSend(*(ID *)(param_1 + 8),"webContents:didStartProvisionalNavigation:",
+                *(undefined8 *)(param_1 + 0x10),IVar3);
+  return 0;
+}
+
+
+

@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "ArcMod engine-swap test",
+  "version": "1.0",
+  "description": "Marks local test pages to prove content scripts run.",
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [{ "matches": ["http://127.0.0.1/*"], "js": ["content.js"], "run_at": "document_start" }]
+}

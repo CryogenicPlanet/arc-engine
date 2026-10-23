@@ -1,0 +1,52 @@
+961: void ManagePasswordsUIController::SavePassword(
+962:     const std::u16string& username,
+963:     const password_manager::PasswordString& password) {
+964:   if (const password_manager::StoredCredential*
+965:           changed_password_form_with_backup =
+966:               password_manager_util::FindChangedPasswordLoginWithBackup(
+967:                   *passwords_data_.form_manager())) {
+968:     HandlePasswordRecoveryFinished(
+969:         username, password,
+970:         changed_password_form_with_backup->GetPasswordBackup().value());
+971:   }
+972:   UpdatePasswordFormUsernameAndPassword(username, password,
+973:                                         passwords_data_.form_manager());
+974: 
+975:   if (auto* sentiment_service =
+976:           TrustSafetySentimentServiceFactory::GetForProfile(
+977:               Profile::FromBrowserContext(
+978:                   web_contents()->GetBrowserContext()))) {
+979:     sentiment_service->SavedPassword();
+980:     if (IsPendingPasswordPhished()) {
+981:       sentiment_service->PhishedPasswordUpdateFinished();
+982:     }
+983:   }
+984: 
+985:   if (GetPasswordFormMetricsRecorder() && BubbleIsManualFallbackForSaving()) {
+986:     GetPasswordFormMetricsRecorder()->RecordDetailedUserAction(
+987:         password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
+988:             kTriggeredManualFallbackForSaving);
+989:   }
+990:   save_fallback_timer_.Stop();
+991:   passwords_data_.form_manager()->Save();
+992: 
+993:   // If we just saved a password to the account store, notify the IPH tracker
+994:   // about it (so it can decide not to show the IPH again).
+995:   if (GetPasswordFeatureManager()->IsAccountStorageActive()) {
+996:     feature_engagement::TrackerFactory::GetForBrowserContext(
+997:         Profile::FromBrowserContext(web_contents()->GetBrowserContext()))
+998:         ->NotifyEvent("passwords_account_storage_used");
+999:   }
+1000: 
+1001:   post_save_compromised_helper_ =
+1002:       std::make_unique<password_manager::PostSaveCompromisedHelper>(
+1003:           passwords_data_.form_manager()->GetInsecureCredentials(), username);
+1004:   post_save_compromised_helper_->AnalyzeLeakedCredentials(
+1005:       passwords_data_.client()->GetProfilePasswordStore(),
+1006:       passwords_data_.client()->GetAccountPasswordStore(),
+1007:       Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+1008:           ->GetPrefs(),
+1009:       base::BindOnce(
+1010:           &ManagePasswordsUIController::OnTriggerPostSaveCompromisedBubble,
+1011:           weak_ptr_factory_.GetWeakPtr()));
+1012: 

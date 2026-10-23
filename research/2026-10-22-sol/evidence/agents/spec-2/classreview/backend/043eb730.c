@@ -1,0 +1,34 @@
+// ==== 0x43eb730  FUN_043eb730  (112 bytes)
+
+/* WARNING: Function: _objc_loadWeakRetained replaced with injection: _objc_load_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+undefined8 FUN_043eb730(undefined8 *param_1,undefined8 *param_2)
+
+{
+  undefined8 *puVar1;
+  long lVar2;
+  char cVar3;
+  ID self;
+  undefined8 uVar4;
+  
+  self = *(ID *)*param_1;
+  if (self != 0) {
+    cVar3 = *(char *)((long)param_2 + 0x17);
+    puVar1 = (undefined8 *)*param_2;
+    if (-1 < (long)cVar3) {
+      puVar1 = param_2;
+    }
+    lVar2 = param_2[1];
+    if (-1 < cVar3) {
+      lVar2 = (long)cVar3;
+    }
+    uVar4 = FUN_01c391bc(puVar1,lVar2);
+    _objc_msgSend(self,"accessibilityModeChanged:",uVar4);
+  }
+  return 0;
+}
+
+

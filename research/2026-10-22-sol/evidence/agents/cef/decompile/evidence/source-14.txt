@@ -1,0 +1,13 @@
+136: 
+137: void WebstoreStandaloneInstaller::ProceedWithInstallPrompt() {
+138:   install_prompt_ = CreateInstallPrompt();
+139:   if (install_prompt_.get()) {
+140:     ShowInstallUI();
+141:     // Control flow finishes up in OnInstallPromptDone().
+142:   } else {
+143:     OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload(
+144:         ExtensionInstallPrompt::Result::ACCEPTED));
+145:   }
+146: }
+147: 
+148: scoped_refptr<const Extension>

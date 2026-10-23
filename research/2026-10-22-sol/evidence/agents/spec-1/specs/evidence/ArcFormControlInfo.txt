@@ -1,0 +1,367 @@
+{
+  "class_name": "ArcFormControlInfo",
+  "metadata_va": "0xe37cfc8",
+  "metadata_file_offset": "0xe37cfc8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a9f80",
+  "instance_start": 8,
+  "instance_size": 160,
+  "ivars": [
+    {
+      "record_va": "0xe2a9ea8",
+      "offset": 8,
+      "name": "_selectOptions",
+      "type": "@\"NSArray\"",
+      "size": 8,
+      "alignment": 3
+    },
+    {
+      "record_va": "0xe2a9ec8",
+      "offset": 16,
+      "name": "_form_control_info",
+      "type": "{optional<arc::FormControlInfo>=\"\"(?=\"__null_state_\"c\"__val_\"{FormControlInfo=\"control_type\"i\"field_name\"{optional<std::string>=\"\"(?=\"__null_state_\"c\"__val_\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})})\"__engaged_\"B}\"field_value\"{optional<std::string>=\"\"(?=\"__null_state_\"c\"__val_\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})})\"__engaged_\"B}\"placeholder\"{optional<std::string>=\"\"(?=\"__null_state_\"c\"__val_\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})})\"__engaged_\"B}\"select_options\"{vector<arc::SelectOption, std::allocator<arc::SelectOption>>=\"__layout_\"{__vector_layout<arc::SelectOption, std::allocator<arc::SelectOption>>=\"__begin_\"^{SelectOption}\"__size_\"Q\"__capacity_\"Q}}\"is_checked\"B\"is_required\"B\"is_redacted\"B})\"__engaged_\"B}",
+      "size": 144,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a9ef0",
+      "name": "form_control_info",
+      "attributes": "T{optional<arc::FormControlInfo>=(?=c{FormControlInfo=i{optional<std::string>=(?=c{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})})B}{optional<std::string>=(?=c{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})})B}{optional<std::string>=(?=c{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})})B}{vector<arc::SelectOption, std::allocator<arc::SelectOption>>={__vector_layout<arc::SelectOption, std::allocator<arc::SelectOption>>=^{SelectOption}QQ}}BBB})B},R,N,V_form_control_info"
+    },
+    {
+      "record_va": "0xe2a9f00",
+      "name": "controlType",
+      "attributes": "Tq,R,N"
+    },
+    {
+      "record_va": "0xe2a9f10",
+      "name": "fieldName",
+      "attributes": "T@\"NSString\",R,C,N"
+    },
+    {
+      "record_va": "0xe2a9f20",
+      "name": "fieldValue",
+      "attributes": "T@\"NSString\",R,C,N"
+    },
+    {
+      "record_va": "0xe2a9f30",
+      "name": "placeholder",
+      "attributes": "T@\"NSString\",R,C,N"
+    },
+    {
+      "record_va": "0xe2a9f40",
+      "name": "isChecked",
+      "attributes": "TB,R,N"
+    },
+    {
+      "record_va": "0xe2a9f50",
+      "name": "isRequired",
+      "attributes": "TB,R,N"
+    },
+    {
+      "record_va": "0xe2a9f60",
+      "name": "isRedacted",
+      "attributes": "TB,R,N"
+    },
+    {
+      "record_va": "0xe2a9f70",
+      "name": "selectOptions",
+      "attributes": "T@\"NSArray\",R,N,V_selectOptions"
+    }
+  ]
+}
+
+###  -initWithFormControlInfo: 0x442b9ec @24@0:8r^v16 available
+
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcFormControlInfo;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0x98) != '\0') {
+      FUN_04294a84(IVar1 + 0x10);
+      *(undefined1 *)(IVar1 + 0x98) = 0;
+    }
+    FUN_04294be4(IVar1 + 0x10,param_3);
+    *(undefined1 *)(IVar1 + 0x98) = 1;
+  }
+  return IVar1;
+}
+
+
+
+
+###  -controlType 0x442ba60 q16@0:8 available
+
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    return (long)*(int *)(param_1 + 0x10);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442ba74);
+  (*pcVar1)();
+}
+
+
+
+
+###  -fieldName 0x442ba74 @16@0:8 available
+
+  ID IVar4;
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    if (*(char *)(param_1 + 0x30) == '\0') {
+      IVar4 = 0;
+    }
+    else {
+      lStack_38 = 0;
+      local_40 = (undefined1 *)0x0;
+      local_28 = 0;
+      local_30 = 0;
+      if (*(char *)(param_1 + 0x2f) < '\0') {
+        FUN_00060a60(&local_40,*(undefined8 *)(param_1 + 0x18),*(undefined8 *)(param_1 + 0x20));
+      }
+      else {
+        lStack_38 = *(long *)(param_1 + 0x20);
+        local_40 = *(undefined1 **)(param_1 + 0x18);
+        local_30 = *(ulong *)(param_1 + 0x28);
+      }
+      local_28 = CONCAT71(local_28._1_7_,1);
+      ppuVar1 = (undefined1 **)local_40;
+      if (-1 < (long)local_30._7_1_) {
+        ppuVar1 = &local_40;
+      }
+      lVar2 = lStack_38;
+      if (-1 < (long)local_30) {
+        lVar2 = (long)local_30._7_1_;
+      }
+      IVar4 = FUN_01c391bc(ppuVar1,lVar2);
+      if (((char)local_28 != '\0') && ((long)local_30 < 0)) {
+        FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+      }
+    }
+    return IVar4;
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x442bb24);
+  (*pcVar3)();
+}
+
+
+
+
+###  -fieldValue 0x442bb64 @16@0:8 available
+
+  ID IVar4;
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    if (*(char *)(param_1 + 0x50) == '\0') {
+      IVar4 = 0;
+    }
+    else {
+      lStack_38 = 0;
+      local_40 = (undefined1 *)0x0;
+      local_28 = 0;
+      local_30 = 0;
+      if (*(char *)(param_1 + 0x4f) < '\0') {
+        FUN_00060a60(&local_40,*(undefined8 *)(param_1 + 0x38),*(undefined8 *)(param_1 + 0x40));
+      }
+      else {
+        lStack_38 = *(long *)(param_1 + 0x40);
+        local_40 = *(undefined1 **)(param_1 + 0x38);
+        local_30 = *(ulong *)(param_1 + 0x48);
+      }
+      local_28 = CONCAT71(local_28._1_7_,1);
+      ppuVar1 = (undefined1 **)local_40;
+      if (-1 < (long)local_30._7_1_) {
+        ppuVar1 = &local_40;
+      }
+      lVar2 = lStack_38;
+      if (-1 < (long)local_30) {
+        lVar2 = (long)local_30._7_1_;
+      }
+      IVar4 = FUN_01c391bc(ppuVar1,lVar2);
+      if (((char)local_28 != '\0') && ((long)local_30 < 0)) {
+        FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+      }
+    }
+    return IVar4;
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x442bc14);
+  (*pcVar3)();
+}
+
+
+
+
+###  -placeholder 0x442bc54 @16@0:8 available
+
+  ID IVar4;
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    if (*(char *)(param_1 + 0x70) == '\0') {
+      IVar4 = 0;
+    }
+    else {
+      lStack_38 = 0;
+      local_40 = (undefined1 *)0x0;
+      local_28 = 0;
+      local_30 = 0;
+      if (*(char *)(param_1 + 0x6f) < '\0') {
+        FUN_00060a60(&local_40,*(undefined8 *)(param_1 + 0x58),*(undefined8 *)(param_1 + 0x60));
+      }
+      else {
+        lStack_38 = *(long *)(param_1 + 0x60);
+        local_40 = *(undefined1 **)(param_1 + 0x58);
+        local_30 = *(ulong *)(param_1 + 0x68);
+      }
+      local_28 = CONCAT71(local_28._1_7_,1);
+      ppuVar1 = (undefined1 **)local_40;
+      if (-1 < (long)local_30._7_1_) {
+        ppuVar1 = &local_40;
+      }
+      lVar2 = lStack_38;
+      if (-1 < (long)local_30) {
+        lVar2 = (long)local_30._7_1_;
+      }
+      IVar4 = FUN_01c391bc(ppuVar1,lVar2);
+      if (((char)local_28 != '\0') && ((long)local_30 < 0)) {
+        FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+      }
+    }
+    return IVar4;
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x442bd04);
+  (*pcVar3)();
+}
+
+
+
+
+###  -isChecked 0x442bd44 B16@0:8 available
+
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x90);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442bd58);
+  (*pcVar1)();
+}
+
+
+
+
+###  -isRequired 0x442bd58 B16@0:8 available
+
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x91);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442bd6c);
+  (*pcVar1)();
+}
+
+
+
+
+###  -isRedacted 0x442bd6c B16@0:8 available
+
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x92);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442bd80);
+  (*pcVar1)();
+}
+
+
+
+
+###  -selectOptions 0x442bd80 @16@0:8 available
+
+  ID IVar2;
+  ID IVar3;
+  const_void__ pvVar4;
+  
+  IVar2 = *(ID *)(param_1 + 8);
+  if (IVar2 == 0) {
+    if ((*(byte *)(param_1 + 0x98) & 1) == 0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442be5c);
+      (*pcVar1)();
+    }
+    IVar2 = NSMutableArray::arrayWithCapacity_
+                      ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",
+                       *(undefined8 *)(param_1 + 0x80));
+    lVar5 = *(long *)(param_1 + 0x80) * 0x48;
+    if (lVar5 != 0) {
+      pvVar4 = *(const_void__ *)(param_1 + 0x78);
+      do {
+        IVar3 = _objc_alloc(&objc::class_t::ArcSelectOption);
+        IVar3 = ArcSelectOption::initWithSelectOption_(IVar3,"initWithSelectOption:",pvVar4);
+        NSMutableArray::addObject_(IVar2,"addObject:",IVar3);
+        pvVar4 = (const_void__)((long)pvVar4 + 0x48);
+        lVar5 = lVar5 + -0x48;
+      } while (lVar5 != 0);
+    }
+    *(ID *)(param_1 + 8) = IVar2;
+    IVar2 = *(ID *)(param_1 + 8);
+  }
+  return IVar2;
+}
+
+
+
+
+###  -form_control_info 0x442be5c {optional<arc::FormControlInfo>=(?=c{FormControlInfo=i{optional<std::string>=(?=c{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})})B}{optional<std::string>=(?=c{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})})B}{optional<std::string>=(?=c{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})})B}{vector<arc::SelectOption, std::allocator<arc::SelectOption>>={__vector_layout<arc::SelectOption, std::allocator<arc::SelectOption>>=^{SelectOption}QQ}}BBB})B}16@0:8 available
+
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)((long)&__return_storage_ptr__[1].field0_0x0 + 8) = 0;
+  if (*(char *)(param_1 + 0x98) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::FormControlInfo> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442bea4);
+      (*pcVar1)();
+    }
+    FUN_04294be4(__return_storage_ptr__,param_1 + 0x10);
+    *(undefined1 *)((long)&__return_storage_ptr__[1].field0_0x0 + 8) = 1;
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x442bea4 v16@0:8 available
+
+  if (*(char *)(param_1 + 0x98) != '\0') {
+    FUN_04294a84(param_1 + 0x10);
+  }
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x442bed8 @16@0:8 available
+
+  *(undefined1 *)(param_1 + 0x10) = 0;
+  *(undefined1 *)(param_1 + 0x98) = 0;
+  return param_1;
+}
+
+
+

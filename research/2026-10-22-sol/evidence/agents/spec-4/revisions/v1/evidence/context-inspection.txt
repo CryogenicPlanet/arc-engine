@@ -1,0 +1,806 @@
+
+### ArcBrowserContext  -initWithBrowserContext: 0x443739c
+// ==== 0x443739c  ArcBrowserContext::initWithBrowserContext:  (292 bytes)
+ID ArcBrowserContext::initWithBrowserContext_(ID param_1,SEL param_2,const_void__ param_3)
+  pcStack_38 = &objc::class_t::ArcBrowserContext;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+    return 0;
+  *(undefined8 *)(IVar2 + 0x30) = *(undefined8 *)param_3;
+  lVar1 = *(long *)((long)param_3 + 8);
+  return IVar2;
+
+### ArcBrowserContext  -preferences 0x44374c0
+// ==== 0x44374c0  ArcBrowserContext::preferences  (332 bytes)
+ID ArcBrowserContext::preferences(ID param_1,SEL param_2)
+  IVar2 = _objc_getAssociatedObject(param_1,"preferences");
+    return IVar2;
+  IVar2 = _objc_alloc(&objc::class_t::ArcBrowserContextPreferences);
+  if ((*(byte *)(param_1 + 0x40) & 1) == 0) {
+  FUN_042c8400(auStack_50,*(undefined8 *)(*(long *)(param_1 + 0x30) + 0x140));
+  IVar2 = ArcBrowserContextPreferences::initWithBrowserContextPreferences_forBrowserContext_
+                    (IVar2,"initWithBrowserContextPreferences:forBrowserContext:",auStack_50,param_1
+  _objc_setAssociatedObject(param_1,"preferences",IVar2,1);
+  return IVar2;
+
+### ArcBrowserContext  -history 0x44376b0
+// ==== 0x44376b0  ArcBrowserContext::history  (332 bytes)
+int ArcBrowserContext::history(History *param_1,HistEvent *param_2,int param_3,...)
+  IVar2 = _objc_getAssociatedObject(param_1,"history",param_3);
+  IVar2 = _objc_alloc(&objc::class_t::ArcBrowserContextHistory);
+  FUN_042c8400(auStack_50,*(undefined8 *)(*(long *)(param_1 + 0x30) + 0x110));
+  IVar2 = ArcBrowserContextHistory::initWithBrowserContextHistory_forBrowserContext_
+                    (IVar2,"initWithBrowserContextHistory:forBrowserContext:",auStack_50,(ID)param_1
+  _objc_setAssociatedObject(param_1,"history",IVar2,1);
+  return (int)IVar2;
+
+### ArcBrowserContext  -downloads 0x44378a0
+// ==== 0x44378a0  ArcBrowserContext::downloads  (332 bytes)
+ID ArcBrowserContext::downloads(ID param_1,SEL param_2)
+  IVar2 = _objc_getAssociatedObject(param_1,"downloads");
+    return IVar2;
+  IVar2 = _objc_alloc(&objc::class_t::ArcBrowserContextDownloads);
+  if ((*(byte *)(param_1 + 0x40) & 1) == 0) {
+  FUN_042df1ec(auStack_50,*(undefined8 *)(*(long *)(param_1 + 0x30) + 0xe0));
+  IVar2 = ArcBrowserContextDownloads::initWithBrowserContextDownloads_forBrowserContext_
+                    (IVar2,"initWithBrowserContextDownloads:forBrowserContext:",auStack_50,param_1);
+  _objc_setAssociatedObject(param_1,"downloads",IVar2,1);
+  return IVar2;
+
+### ArcBrowserContext  -effects 0x4437a90
+// ==== 0x4437a90  ArcBrowserContext::effects  (332 bytes)
+ID ArcBrowserContext::effects(ID param_1,SEL param_2)
+  IVar2 = _objc_getAssociatedObject(param_1,"effects");
+    return IVar2;
+  IVar2 = _objc_alloc(&objc::class_t::ArcBrowserContextEffects);
+  if ((*(byte *)(param_1 + 0x40) & 1) == 0) {
+  FUN_04298600(auStack_50,*(undefined8 *)(*(long *)(param_1 + 0x30) + 0xf0));
+  IVar2 = ArcBrowserContextEffects::initWithBrowserContextEffects_forBrowserContext_
+                    (IVar2,"initWithBrowserContextEffects:forBrowserContext:",auStack_50,param_1);
+  _objc_setAssociatedObject(param_1,"effects",IVar2,1);
+  return IVar2;
+
+### ArcBrowserContext  -pageContentExtraction 0x4437c80
+// ==== 0x4437c80  ArcBrowserContext::pageContentExtraction  (364 bytes)
+ID ArcBrowserContext::pageContentExtraction(ID param_1,SEL param_2)
+  IVar1 = _objc_getAssociatedObject(param_1,"pageContentExtraction");
+    return IVar1;
+  IVar1 = _objc_alloc(&objc::class_t::ArcBrowserContextPageContentExtraction);
+  if ((*(byte *)(param_1 + 0x40) & 1) == 0) {
+  puVar3 = *(undefined8 **)(*(long *)(param_1 + 0x30) + 0x130);
+    lVar2 = FUN_00641d68();
+      FUN_043334c8(auStack_50,uVar5,lVar2);
+      IVar1 = ArcBrowserContextPageContentExtraction::
+                        (IVar1,"initWithBrowserContextPageContentExtraction:forBrowserContext:",
+      _objc_setAssociatedObject(param_1,"pageContentExtraction",IVar1,1);
+      return IVar1;
+  FUN_050d342c();
+
+### ArcBrowserContext  -userVisibleName 0x4437e90
+// ==== 0x4437e90  ArcBrowserContext::userVisibleName  (156 bytes)
+ID ArcBrowserContext::userVisibleName(ID param_1,SEL param_2)
+  if ((*(byte *)(param_1 + 0x40) & 1) != 0) {
+    lVar4 = *(long *)(param_1 + 0x30);
+      FUN_00060a60(&local_40,*(undefined8 *)(lVar4 + 0xb0),*(undefined8 *)(lVar4 + 0xb8));
+    IVar3 = FUN_01c391bc(ppuVar1,lVar4);
+    return IVar3;
+
+### ArcBrowserContext  -setUserVisibleName: 0x4437f50
+// ==== 0x4437f50  ArcBrowserContext::setUserVisibleName:  (148 bytes)
+void ArcBrowserContext::setUserVisibleName_(ID param_1,SEL param_2,ID param_3)
+  if ((*(byte *)(param_1 + 0x40) & 1) != 0) {
+    if (param_3 == 0) {
+      FUN_01b356b8(&local_38,param_3);
+    FUN_042d717c(*(undefined8 *)(param_1 + 0x30),&local_38);
+
+### ArcBrowserContext  -browser_context 0x43dfab0
+// ==== 0x43dfab0  ArcWebContentsMediaSession::nativeMediaSession  (64 bytes)
+void ArcWebContentsMediaSession::nativeMediaSession
+               (optional<arc::WebContents::MediaSession> *__return_storage_ptr__,ID param_1,
+  if (*(char *)(param_1 + 0x40) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::MediaSession> *)0x0) {
+    lVar3 = *(long *)(param_1 + 0x38);
+    pIVar4 = *(Impl **)(param_1 + 0x30);
+         *(__shared_weak_count **)(param_1 + 0x38);
+
+### ArcBrowserContext  -metrics 0x2d0fb40
+// ==== 0x2d0fb40  WebNNMLFeatureProvider::featureNames  (8 bytes)
+ID WebNNMLFeatureProvider::featureNames(ID param_1,SEL param_2)
+  return *(ID *)(param_1 + 8);
+
+### ArcBrowserContext  -extensions 0x2cb140
+// ==== 0x2cb140  WebNNMLFeatureProvider::featureValues  (8 bytes)
+ID WebNNMLFeatureProvider::featureValues(ID param_1,SEL param_2)
+  return *(ID *)(param_1 + 0x10);
+
+### ArcBrowserContext  -id 0x4084dc0
+// ==== 0x4084dc0  AXAnnouncementSpec::window  (8 bytes)
+ID AXAnnouncementSpec::window(ID param_1,SEL param_2)
+  return *(ID *)(param_1 + 0x18);
+
+### ArcBrowserContext  -contextDelegate 0x43eaaf4
+// ==== 0x43eaaf4  ArcWebContentsMediaSession::bridge  (32 bytes)
+shared_ptr<(anonymous_namespace)::WebContentsMediaSessionDelegateBridge>
+ArcWebContentsMediaSession::bridge(ID param_1,SEL param_2)
+  shared_ptr<(anonymous_namespace)::WebContentsMediaSessionDelegateBridge> sVar2;
+  sVar2 = *(shared_ptr<(anonymous_namespace)::WebContentsMediaSessionDelegateBridge> *)
+           (param_1 + 0x20);
+  if (*(long *)(param_1 + 0x28) != 0) {
+    plVar1 = (long *)(*(long *)(param_1 + 0x28) + 8);
+  return sVar2;
+
+### ArcBrowserContext  -setContextDelegate: 0x43eab14
+// ==== 0x43eab14  ArcWebContentsMediaSession::setBridge:  (380 bytes)
+ArcWebContentsMediaSession::setBridge_
+          shared_ptr<(anonymous_namespace)::WebContentsMediaSessionDelegateBridge> param_3)
+  pWVar2 = param_3.field0_0x0;
+
+### ArcBrowserContext  -bookmarkObservers 0x4437fe4
+// ==== 0x4437fe4  ArcBrowserContext::bookmarkObservers  (168 bytes)
+void ArcBrowserContext::bookmarkObservers
+               (vector<std::shared_ptr<ArcBookmarkModelObserverBridge>,_std::allocator<std::shared_ptr<ArcBookmarkModelObserverBridge>>>
+  uVar7 = *(ulong *)(param_1 + 0x50);
+      FUN_040416c0();
+    puVar6 = *(undefined8 **)(param_1 + 0x48);
+    puVar3 = (undefined8 *)FUN_00008790(uVar7 << 4);
+
+### ArcBrowserContext  -setBookmarkObservers: 0x443808c
+// ==== 0x443808c  ArcBrowserContext::setBookmarkObservers:  (1268 bytes)
+void ArcBrowserContext::setBookmarkObservers_
+               vector<std::shared_ptr<ArcBookmarkModelObserverBridge>,_std::allocator<std::shared_ptr<ArcBookmarkModelObserverBridge>>>
+               *param_3)
+  vector<std::shared_ptr<ArcBookmarkModelObserverBridge>,_std::allocator<std::shared_ptr<ArcBookmarkModelObserverBridge>>>
+  pvVar1 = (vector<std::shared_ptr<ArcBookmarkModelObserverBridge>,_std::allocator<std::shared_ptr<ArcBookmarkModelObserverBridge>>>
+            *)(param_1 + 0x48);
+  if (pvVar1 != param_3) {
+    puVar8 = (param_3->field0_0x0).field0_0x0;
+    uVar3 = (param_3->field0_0x0).field1_0x8;
+    uVar7 = *(ulong *)(param_1 + 0x58);
+        lVar12 = *(long *)(param_1 + 0x50) * 0x10;
+          lVar18 = *(long *)(param_1 + 0x50) * -0x10;
+          uVar7 = *(ulong *)(param_1 + 0x58);
+          pvVar5 = *(void **)(param_1 + 0x48);
+        *(long *)(param_1 + 0x50) = (long)pvVar13 - (long)pvVar5 >> 4;
+        *(undefined8 *)(param_1 + 0x48) = 0;
+        *(undefined8 *)(param_1 + 0x50) = 0;
+        *(undefined8 *)(param_1 + 0x58) = 0;
+        FUN_040416c0();
+      puVar6 = (undefined8 *)FUN_00008790(uVar11 << 4);
+      *(undefined8 **)(param_1 + 0x48) = puVar6;
+      *(undefined8 *)(param_1 + 0x50) = 0;
+      *(ulong *)(param_1 + 0x58) = uVar11;
+        puVar9 = *(undefined8 **)(param_1 + 0x48);
+      uVar7 = *(ulong *)(param_1 + 0x50);
+          pvVar13 = *(void **)(param_1 + 0x48);
+          uVar7 = *(ulong *)(param_1 + 0x50);
+          pvVar13 = *(void **)(param_1 + 0x48);
+          plVar16 = *(long **)(param_1 + 0x48);
+          uVar7 = *(ulong *)(param_1 + 0x50);
+          plVar16 = *(long **)(param_1 + 0x48);
+    *(long *)(param_1 + 0x50) = lVar17 >> 4;
+
+### ArcBrowserContext  -.cxx_destruct 0x4438580
+// ==== 0x4438580  ArcBrowserContext::.cxx_destruct  (652 bytes)
+void ArcBrowserContext::_cxx_destruct(ID param_1,SEL param_2)
+  lVar5 = *(long *)(param_1 + 0x48);
+    lVar3 = *(long *)(param_1 + 0x50) * 0x10;
+      lVar6 = *(long *)(param_1 + 0x50) * -0x10;
+      lVar6 = *(long *)(param_1 + 0x48);
+    *(long *)(param_1 + 0x50) = lVar5 - lVar6 >> 4;
+  if ((*(char *)(param_1 + 0x40) != '\0') &&
+     (plVar4 = *(long **)(param_1 + 0x38), plVar4 != (long *)0x0)) {
+  plVar4 = *(long **)(param_1 + 0x28);
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 8) = 0;
+
+### ArcBrowserContext  -.cxx_construct 0x443880c
+// ==== 0x443880c  ArcBrowserContext::.cxx_construct  (24 bytes)
+ID ArcBrowserContext::_cxx_construct(ID param_1,SEL param_2)
+  *(undefined1 *)(param_1 + 0x40) = 0;
+  *(undefined8 *)(param_1 + 0x20) = 0;
+  *(undefined8 *)(param_1 + 0x28) = 0;
+  *(undefined1 *)(param_1 + 0x30) = 0;
+  *(undefined8 *)(param_1 + 0x50) = 0;
+  *(undefined8 *)(param_1 + 0x58) = 0;
+  *(undefined8 *)(param_1 + 0x48) = 0;
+  return param_1;
+
+### ArcBrowserContext Extensions -isEqual: 0x43ed5d8
+// ==== 0x43ed5d8  objc::Categories::ArcBrowserContext_Extensions_::isEqual:  (552 bytes)
+bool objc::Categories::ArcBrowserContext_Extensions_::isEqual_(ID param_1,SEL param_2,ID param_3)
+  if (param_1 == param_3) {
+    return 1;
+  if (param_3 == 0) {
+    return 0;
+  IVar2 = _objc_msgSend((ID)&class_t::ArcBrowserContext,"class");
+  IVar2 = _objc_msgSend(param_3,"isKindOfClass:",IVar2);
+    return 0;
+  _objc_msgSend(param_1,"browser_context",&local_48);
+  _objc_msgSend(param_3,"browser_context",&local_60);
+    return bVar4;
+    return bVar4;
+    return bVar4;
+      return bVar4;
+    return bVar4;
+  return bVar4;
+
+### ArcBrowserContext Extensions -hash 0x43ed8ac
+// ==== 0x43ed8ac  objc::Categories::ArcBrowserContext_Extensions_::hash  (252 bytes)
+unsigned_long_long objc::Categories::ArcBrowserContext_Extensions_::hash(ID param_1,SEL param_2)
+  _objc_msgSend(param_1,"browser_context",&local_50);
+    FUN_04b08a00();
+  uVar2 = FUN_00018f3c(&local_38,8);
+          return uVar2;
+  return uVar2;
+
+### ArcBrowserContext Extensions -setDelegate: 0x43ed9a8
+// ==== 0x43ed9a8  objc::Categories::ArcBrowserContext_Extensions_::setDelegate:  (1116 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::setDelegate_
+               (ID param_1,SEL param_2,ID param_3)
+  IVar2 = _objc_msgSend(param_1,"contextDelegate");
+  if (param_3 == 0) {
+    plVar3 = (long *)FUN_00008790(0x30);
+    plVar3[3] = (long)&PTR_FUN_0da879e8;
+    _objc_initWeak(plVar3 + 4,param_3);
+    _objc_initWeak(plVar3 + 5,param_1);
+      _objc_msgSend(param_1,"setContextDelegate:",plVar3 + 3,plVar3);
+    _objc_msgSend(param_1,"browser_context",auStack_58);
+    IVar2 = _objc_msgSend(param_1,"contextDelegate");
+      FUN_04333868(auStack_58,IVar2,0);
+      FUN_04333868(lVar1,auStack_58,IVar2,extraout_x1_01);
+    IVar2 = _objc_msgSend(param_1,"contextDelegate");
+    *(ID *)(IVar2 + 8) = param_3;
+
+### ArcBrowserContext Extensions -loadUrl:withDelegate: 0x43edeb0
+// ==== 0x43edeb0  objc::Categories::ArcBrowserContext_Extensions_::loadUrl:withDelegate:  (468 bytes)
+ID objc::Categories::ArcBrowserContext_Extensions_::loadUrl_withDelegate_
+             (ID param_1,SEL param_2,ID param_3,ID param_4)
+  _objc_msgSend(param_1,"browser_context",&local_70);
+  if (param_3 == 0) {
+    _objc_msgSend(param_3,"config",&local_110);
+  puVar2 = (undefined8 *)FUN_00008790(0x10);
+  *puVar2 = &PTR_FUN_0da87ed8;
+  puVar2[1] = param_4;
+  FUN_042c8c30(&local_58,local_70,&local_110,puVar2);
+  FUN_0836de40(&local_110);
+  IVar3 = _objc_alloc(&class_t::ArcURLLoadCancellationToken);
+  IVar3 = ArcURLLoadCancellationToken::initWithToken_(IVar3,"initWithToken:",&local_58);
+  return IVar3;
+
+### ArcBrowserContext Extensions -cancelUrlLoad: 0x43ee15c
+// ==== 0x43ee15c  objc::Categories::ArcBrowserContext_Extensions_::cancelUrlLoad:  (388 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::cancelUrlLoad_
+               (ID param_1,SEL param_2,ID param_3)
+  _objc_msgSend(param_1,"browser_context",&local_48);
+  if (param_3 == 0) {
+    _objc_msgSend(param_3,"token",&local_60);
+    FUN_0434f448(lVar3,&local_60);
+
+### ArcBrowserContext Extensions -getChangedContentSettingsForOrigin: 0x43ee38c
+// ==== 0x43ee38c  objc::Categories::ArcBrowserContext_Extensions_::getChangedPermissionsForOrigin:  (732 bytes)
+ID objc::Categories::ArcBrowserContext_Extensions_::getChangedPermissionsForOrigin_
+             (ID param_1,SEL param_2,ID param_3)
+  _objc_msgSend(param_1,"browser_context",&local_90);
+  FUN_043abdf8(local_a8,param_3);
+  FUN_042c8da8(&local_78,local_90,local_a8);
+  IVar5 = NSMutableArray::new((ID)&_OBJC_CLASS___NSMutableArray,"new");
+    IVar6 = _objc_alloc(&class_t::ArcSiteSettingInfo);
+    IVar6 = ArcSiteSettingInfo::initWithSiteSettingInfo_(IVar6,"initWithSiteSettingInfo:",pvVar1);
+    NSMutableArray::addObject_(IVar5,"addObject:",IVar6);
+  IVar5 = NSMutableArray::copy(IVar5,"copy");
+  return IVar5;
+
+### ArcBrowserContext Extensions -getChangedPermissionsForOrigin: 0x43ee38c
+// ==== 0x43ee38c  objc::Categories::ArcBrowserContext_Extensions_::getChangedPermissionsForOrigin:  (732 bytes)
+ID objc::Categories::ArcBrowserContext_Extensions_::getChangedPermissionsForOrigin_
+             (ID param_1,SEL param_2,ID param_3)
+  _objc_msgSend(param_1,"browser_context",&local_90);
+  FUN_043abdf8(local_a8,param_3);
+  FUN_042c8da8(&local_78,local_90,local_a8);
+  IVar5 = NSMutableArray::new((ID)&_OBJC_CLASS___NSMutableArray,"new");
+    IVar6 = _objc_alloc(&class_t::ArcSiteSettingInfo);
+    IVar6 = ArcSiteSettingInfo::initWithSiteSettingInfo_(IVar6,"initWithSiteSettingInfo:",pvVar1);
+    NSMutableArray::addObject_(IVar5,"addObject:",IVar6);
+  IVar5 = NSMutableArray::copy(IVar5,"copy");
+  return IVar5;
+
+### ArcBrowserContext Extensions -getContentSettingForOrigin:withContentSettingType: 0x43ee808
+// ==== 0x43ee808  objc::Categories::ArcBrowserContext_Extensions_::getContentSettingForOrigin:withContentSettingType:  (628 bytes)
+ID objc::Categories::ArcBrowserContext_Extensions_::
+             (ID param_1,SEL param_2,ID param_3,unsigned_long_long param_4)
+  _objc_msgSend(param_1,"browser_context",&local_60);
+  FUN_043abdf8(local_78,param_3);
+    if (param_4 <= puVar5[uVar8 * 2]) {
+  if ((puVar1 == &DAT_0c9d7f58) || (param_4 < *puVar1)) {
+  FUN_042c9600(&local_48,local_60,local_78,(int)puVar1[1]);
+    IVar4 = _objc_alloc(&class_t::ArcSiteSettingInfo);
+    IVar4 = ArcSiteSettingInfo::initWithSiteSettingInfo_(IVar4,"initWithSiteSettingInfo:",&local_48)
+            return IVar4;
+  return IVar4;
+
+### ArcBrowserContext Extensions -setPermissionsForOrigin:withPermissionTypes:withSiteSetting: 0x43eeb48
+// ==== 0x43eeb48  objc::Categories::ArcBrowserContext_Extensions_::setPermissionsForOrigin:withPermissionTypes:withSiteSetting:  (748 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::
+               (ID param_1,SEL param_2,ID param_3,ID param_4,unsigned_long_long param_5)
+  _objc_msgSend(param_1,"browser_context",auStack_78);
+    FUN_043abdf8(local_90,param_3);
+      IVar6 = _objc_msgSend(param_4,"containsIndex:",*(undefined8 *)(puVar12 + -2));
+            FUN_040416c0();
+              FUN_04b087f0();
+            puVar7 = (undefined4 *)FUN_00008790(uVar11 << 2);
+    if (4 < param_5) {
+    FUN_04333920(auStack_78,local_90,&local_a8,param_5);
+
+### ArcBrowserContext Extensions -setContentSettingsForOrigin:withContentSettingTypes:withSiteSetting: 0x43eef70
+// ==== 0x43eef70  objc::Categories::ArcBrowserContext_Extensions_::setContentSettingsForOrigin:withContentSettingTypes:withSiteSetting:  (596 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::
+               (ID param_1,SEL param_2,ID param_3,ID param_4,unsigned_long_long param_5)
+  _objc_msgSend(param_1,"browser_context",auStack_a0);
+    FUN_043abdf8(local_b8,param_3);
+      IVar2 = _objc_msgSend(param_4,"containsIndex:",*(undefined8 *)(puVar4 + -2));
+        FUN_042da3c8(local_c8 != local_c0,&local_70,&local_88);
+    if (4 < param_5) {
+    FUN_043339fc(auStack_a0,local_b8,&local_d0,param_5);
+
+### ArcBrowserContext Extensions -getImportedBookmarksTree: 0x43ef2fc
+// ==== 0x43ef2fc  objc::Categories::ArcBrowserContext_Extensions_::getImportedBookmarksTree:  (408 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::getImportedBookmarksTree_
+               (ID param_1,SEL param_2,ID param_3,uint param_4)
+  _objc_msgSend(param_1,"browser_context",&local_70,param_3,(ulong)param_4);
+  local_48 = FUN_043f834c;
+  local_40 = &PTR_FUN_0df6b948;
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_3;
+  FUN_042c9d24(local_70,local_58);
+
+### ArcBrowserContext Extensions -clearBookmarks 0x43ef494
+// ==== 0x43ef494  objc::Categories::ArcBrowserContext_Extensions_::clearBookmarks  (540 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::clearBookmarks(ID param_1,SEL param_2)
+  self = _objc_msgSend(param_1,"getBookmarksTree");
+  _objc_msgSend(param_1,"browser_context",&local_68);
+  _objc_msgSend(self,"node",auStack_80);
+    FUN_04b08a00();
+  if (((*(long *)(local_68 + 0x88) != 0) && (lVar1 = FUN_00881874(), lVar1 != 0)) &&
+    FUN_00029e40(auStack_50,"ClearBookmarks",
+                 "../../arc/browser/browser_context/browser_context_impl.cc",0x2c7);
+    FUN_09f4e2b8(lVar1,auStack_50);
+
+### ArcBrowserContext Extensions -getBookmarksTree 0x43ef75c
+// ==== 0x43ef75c  objc::Categories::ArcBrowserContext_Extensions_::getBookmarksTree  (476 bytes)
+ID objc::Categories::ArcBrowserContext_Extensions_::getBookmarksTree(ID param_1,SEL param_2)
+  _objc_msgSend(param_1,"browser_context",&local_60);
+  FUN_042c9f90(&local_48,local_60);
+    IVar3 = _objc_alloc(&class_t::ArcBookmarkTreeNode);
+      FUN_04b08a00();
+    IVar3 = ArcBookmarkTreeNode::initWithBookmarkTreeNode_
+                      (IVar3,"initWithBookmarkTreeNode:",&local_48);
+            return IVar3;
+  return IVar3;
+
+### ArcBrowserContext Extensions -addBookmark:withUrl:withParent:withIndexInParent:withUuid: 0x43ef9e4
+// ==== 0x43ef9e4  objc::Categories::ArcBrowserContext_Extensions_::addBookmark:withUrl:withParent:withIndexInParent:withUuid:  (1084 bytes)
+bool objc::Categories::ArcBrowserContext_Extensions_::
+               (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5,long_long param_6,ID param_7
+  if (param_5 == 0) {
+    return 0;
+  _objc_msgSend(param_5,"node",&local_80);
+    return 0;
+  if (param_7 == 0) {
+    FUN_01b356b8(&local_80,param_7);
+  _objc_msgSend(param_1,"browser_context",&local_98);
+  if (param_3 == 0) {
+    FUN_083b1228(&local_b0,param_3);
+  FUN_043abdf8(local_c8,param_4);
+  _objc_msgSend(param_5,"node",auStack_e0);
+    FUN_04b08a00();
+  if (param_7 == 0) {
+  local_68 = param_7 != 0;
+  bVar2 = FUN_042ca218(local_98,&local_b0,local_c8,auStack_e0,param_6,&local_80);
+  if (param_7 == 0) {
+    return bVar2;
+    return bVar2;
+  return bVar2;
+
+### ArcBrowserContext Extensions -renameBookmark:withTitle: 0x43eff2c
+// ==== 0x43eff2c  objc::Categories::ArcBrowserContext_Extensions_::renameBookmark:withTitle:  (824 bytes)
+bool objc::Categories::ArcBrowserContext_Extensions_::renameBookmark_withTitle_
+               (ID param_1,SEL param_2,ID param_3,ID param_4)
+  if ((param_3 == 0) || (_objc_msgSend(param_3,"node",&local_58), plVar1 = local_50, local_48 == 0))
+    return 0;
+  _objc_msgSend(param_1,"browser_context",&local_58);
+  if (param_4 == 0) {
+    FUN_083b1228(&local_70,param_4);
+  _objc_msgSend(param_3,"node",&local_88);
+    FUN_04b08a00();
+    lVar2 = FUN_00881874();
+      if ((*(char *)(lVar2 + 0x21) == '\0') || (lVar3 = FUN_042affa0(local_88), lVar3 == 0))
+      FUN_09f4f5c4(lVar2,lVar3,&local_70,0);
+          return bVar5;
+  return bVar5;
+
+### ArcBrowserContext Extensions -editBookmark:withNewURL: 0x43f0330
+// ==== 0x43f0330  objc::Categories::ArcBrowserContext_Extensions_::editBookmark:withNewURL:  (736 bytes)
+bool objc::Categories::ArcBrowserContext_Extensions_::editBookmark_withNewURL_
+               (ID param_1,SEL param_2,ID param_3,ID param_4)
+  if ((param_3 == 0) || (_objc_msgSend(param_3,"node",&local_58), plVar1 = local_50, local_48 == 0))
+    return 0;
+  _objc_msgSend(param_1,"browser_context",&local_58);
+  FUN_043abdf8(local_70,param_4);
+  _objc_msgSend(param_3,"node",auStack_88);
+    FUN_04b08a00();
+  bVar3 = FUN_042ca078(local_58,local_70,auStack_88);
+          return bVar3;
+  return bVar3;
+
+### ArcBrowserContext Extensions -addBookmarkFolder:withParent:withIndexInParent:withUuid: 0x43f06dc
+// ==== 0x43f06dc  objc::Categories::ArcBrowserContext_Extensions_::addBookmarkFolder:withParent:withIndexInParent:withUuid:  (992 bytes)
+bool objc::Categories::ArcBrowserContext_Extensions_::
+               (ID param_1,SEL param_2,ID param_3,ID param_4,long_long param_5,ID param_6)
+  if (param_4 == 0) {
+    return 0;
+  _objc_msgSend(param_4,"node",&local_80);
+    return 0;
+  if (param_6 == 0) {
+    FUN_01b356b8(&local_80,param_6);
+  _objc_msgSend(param_1,"browser_context",&local_98);
+  if (param_3 == 0) {
+    FUN_083b1228(&local_b0,param_3);
+  _objc_msgSend(param_4,"node",auStack_c8);
+    FUN_04b08a00();
+  if (param_6 == 0) {
+  local_68 = param_6 != 0;
+  bVar2 = FUN_042ca500(local_98,&local_b0,auStack_c8,param_5,&local_80);
+  if (param_6 == 0) {
+    return bVar2;
+    return bVar2;
+  return bVar2;
+
+### ArcBrowserContext Extensions -removeBookmark:withParent: 0x43f0ba8
+// ==== 0x43f0ba8  objc::Categories::ArcBrowserContext_Extensions_::removeBookmark:withParent:  (900 bytes)
+bool objc::Categories::ArcBrowserContext_Extensions_::removeBookmark_withParent_
+               (ID param_1,SEL param_2,ID param_3,ID param_4)
+  if ((param_3 == 0) || (_objc_msgSend(param_3,"node",&local_58), plVar1 = local_50, local_48 == 0))
+    return 0;
+  _objc_msgSend(param_1,"browser_context",&local_58);
+  _objc_msgSend(param_3,"node",auStack_70);
+    FUN_04b08a00();
+  if (param_4 == 0) {
+  _objc_msgSend(param_4,"node",&local_88);
+  bVar3 = FUN_042ca6d4(local_58,auStack_70,&local_88);
+          return bVar3;
+  return bVar3;
+
+### ArcBrowserContext Extensions -moveBookmark:newParent:atIndex: 0x43f1080
+// ==== 0x43f1080  objc::Categories::ArcBrowserContext_Extensions_::moveBookmark:newParent:atIndex:  (1296 bytes)
+bool objc::Categories::ArcBrowserContext_Extensions_::moveBookmark_newParent_atIndex_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,long_long param_5)
+  if (param_3 == 0) {
+    return 0;
+  _objc_msgSend(param_3,"node",auStack_68);
+    return 0;
+  if ((param_4 == 0) ||
+     (_objc_msgSend(param_4,"node",&local_80), plVar2 = plStack_78, local_70 == 0)) {
+    return 0;
+  _objc_msgSend(param_1,"browser_context",auStack_68);
+  _objc_msgSend(param_3,"node",&local_80);
+    FUN_04b08a00();
+  if (param_4 == 0) {
+  _objc_msgSend(param_4,"node",&local_a8);
+  bVar4 = FUN_04333ad8(auStack_68,&local_90,&local_a8,param_5);
+    return bVar4;
+    return bVar4;
+    return bVar4;
+      return bVar4;
+    return bVar4;
+  return bVar4;
+
+### ArcBrowserContext Extensions -isBookmarked: 0x43f1780
+// ==== 0x43f1780  objc::Categories::ArcBrowserContext_Extensions_::isBookmarked:  (316 bytes)
+bool objc::Categories::ArcBrowserContext_Extensions_::isBookmarked_
+               (ID param_1,SEL param_2,ID param_3)
+  _objc_msgSend(param_1,"browser_context",&local_48);
+  FUN_043abdf8(local_60,param_3);
+  bVar2 = FUN_042ca760(local_48,local_60);
+          return bVar2;
+  return bVar2;
+
+### ArcBrowserContext Extensions -addBookmarkModelObserver: 0x43f1968
+// ==== 0x43f1968  objc::Categories::ArcBrowserContext_Extensions_::addBookmarkModelObserver:  (1456 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::addBookmarkModelObserver_
+               (ID param_1,SEL param_2,ID param_3)
+  _objc_msgSend(param_1,"bookmarkObservers",&local_78);
+    if (*(ID *)(*plVar10 + 8) == param_3) goto LAB_043f1d08;
+  plVar4 = (long *)FUN_00008790(0x28);
+  plVar4[3] = (long)&PTR_FUN_0da87ad0;
+  _objc_initWeak(plVar4 + 4,param_3);
+  _objc_msgSend(param_1,"browser_context",auStack_90);
+  FUN_04333c0c(uVar5,auStack_90,plVar10,plVar4);
+        FUN_04b087f0();
+      lVar11 = FUN_00008790(uVar7 << 4);
+    FUN_040416c0();
+  local_a8 = (long *)FUN_00008790();
+  _objc_msgSend(param_1,"setBookmarkObservers:",&local_a8);
+
+### ArcBrowserContext Extensions -removeBookmarkModelObserver: 0x43f21a8
+// ==== 0x43f21a8  objc::Categories::ArcBrowserContext_Extensions_::removeBookmarkModelObserver:  (1460 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::removeBookmarkModelObserver_
+               (ID param_1,SEL param_2,ID param_3)
+  _objc_msgSend(param_1,"bookmarkObservers",&local_78);
+      if (*(ID *)(*plVar4 + 8) == param_3) break;
+  _objc_msgSend(param_1,"browser_context",auStack_90);
+  FUN_04333cc4(uVar5,auStack_90,lVar10);
+      FUN_040416c0();
+    local_a8 = (long *)FUN_00008790();
+  _objc_msgSend(param_1,"setBookmarkObservers:",&local_a8);
+
+### ArcBrowserContext Extensions -deleteAllCookies: 0x43f2954
+// ==== 0x43f2954  objc::Categories::ArcBrowserContext_Extensions_::deleteAllCookies:  (408 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::deleteAllCookies_
+               (ID param_1,SEL param_2,ID param_3,uint param_4)
+  _objc_msgSend(param_1,"browser_context",&local_70,param_3,(ulong)param_4);
+  local_40 = &PTR_FUN_0df6b968;
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_3;
+  FUN_042cb3b4(local_70,local_58);
+
+### ArcBrowserContext Extensions -getAllCookies: 0x43f2aec
+// ==== 0x43f2aec  objc::Categories::ArcBrowserContext_Extensions_::getAllCookies:  (444 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::getAllCookies_
+               (ID param_1,SEL param_2,ID param_3,uint param_4)
+  _objc_msgSend(param_1,"browser_context",&local_70,param_3,(ulong)param_4);
+  local_48 = FUN_043e5ef8;
+  local_40 = &PTR_FUN_0df6b988;
+  local_58[0] = (ID *)FUN_00008790(8);
+  *local_58[0] = param_3;
+  FUN_042cba00(local_70,&local_88,local_58);
+
+### ArcBrowserContext Extensions -getAllCookies:completion: 0x43f2ca8
+// ==== 0x43f2ca8  objc::Categories::ArcBrowserContext_Extensions_::getAllCookies:completion:  (476 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::getAllCookies_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+  _objc_msgSend(param_1,"browser_context",&local_80,param_3,param_4,(ulong)param_5);
+  FUN_043abdf8(local_98,param_3);
+  local_58 = FUN_043e5ef8;
+  local_50 = &PTR_FUN_0df6b9a8;
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_4;
+  FUN_042cba00(local_80,local_98,local_68);
+
+### ArcBrowserContext Extensions -getLocalStorage:key:completion: 0x43f2f30
+// ==== 0x43f2f30  objc::Categories::ArcBrowserContext_Extensions_::getLocalStorage:key:completion:  (568 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::getLocalStorage_key_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5,undefined4 param_6)
+  _objc_msgSend(param_1,"browser_context",&local_80);
+  FUN_043abdf8(local_98,param_3);
+  if (param_4 == 0) {
+    FUN_01b356b8(&local_b0,param_4);
+  local_58 = FUN_043f88dc;
+  local_50 = &PTR_FUN_0df6b9c8;
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_5;
+  FUN_042cc3f0(local_80,local_98,&local_b0,local_68);
+
+### ArcBrowserContext Extensions -setLocalStorage:key:value:completion: 0x43f3234
+// ==== 0x43f3234  objc::Categories::ArcBrowserContext_Extensions_::setLocalStorage:key:value:completion:  (668 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::setLocalStorage_key_value_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5,ID param_6,
+               undefined4 param_7)
+  _objc_msgSend(param_1,"browser_context",&local_90);
+  FUN_043abdf8(local_a8,param_3);
+  if (param_4 == 0) {
+    FUN_01b356b8(&local_c0,param_4);
+  if (param_5 == 0) {
+    FUN_01b356b8(&local_d8,param_5);
+  local_60 = &PTR_FUN_0df6b9e8;
+  local_78[0] = (ID *)FUN_00008790(8);
+  *local_78[0] = param_6;
+  FUN_042ccef8(local_90,local_a8,&local_c0,&local_d8,local_78);
+
+### ArcBrowserContext Extensions -createWebContents: 0x43f35bc
+// ==== 0x43f35bc  objc::Categories::ArcBrowserContext_Extensions_::createWebContents:  (508 bytes)
+ID objc::Categories::ArcBrowserContext_Extensions_::createWebContents_
+             (ID param_1,SEL param_2,ID param_3)
+  _objc_msgSend(param_1,"browser_context",&local_58);
+  if (param_3 == 0) {
+    _objc_msgSend(param_3,"nativeWebContentsConfiguration",&local_70);
+  FUN_042d7064(&local_40,local_58,&local_70);
+  IVar3 = _objc_alloc(&class_t::ArcWebContents);
+  IVar3 = ArcWebContents::initWithWebContents_(IVar3,"initWithWebContents:",&local_40);
+          return IVar3;
+  return IVar3;
+
+### ArcBrowserContext Extensions -import:withCategories:withAllowedExtensions:withBookmarkImportTargets:skipExistingCookies:withDelegate:error: 0x43f3874
+// ==== 0x43f3874  objc::Categories::ArcBrowserContext_Extensions_::import:withCategories:withAllowedExtensions:withBookmarkImportTargets:skipExistingCookies:withDelegate:error:  (1732 bytes)
+bool objc::Categories::ArcBrowserContext_Extensions_::
+               (ID param_1,SEL param_2,ID param_3,long_long param_4,ID param_5,ID param_6,
+               bool param_7,ID param_8,ID *param_9)
+  if (param_5 != 0) {
+    IVar8 = _objc_msgSend(param_5,"count");
+        FUN_04047380();
+      pvVar11 = (void *)FUN_00008790(IVar8 * 0x18);
+    _objc_msgSend(param_5,"enumerateObjectsUsingBlock:",&local_b8);
+  if (param_6 != 0) {
+    IVar9 = _objc_msgSend(param_6,"targetNodeForBookmarkBarBookmarks");
+    if ((((IVar9 == 0) || (_objc_msgSend(IVar9,"node",&local_100), (local_f0 & 1) == 0)) ||
+        (IVar9 = _objc_msgSend(param_6,"targetNodeForOtherBookmarks"), IVar9 == 0)) ||
+       (_objc_msgSend(IVar9,"node",&local_120), (local_110 & 1) == 0)) goto LAB_043f3e18;
+      FUN_04333708(&local_e0);
+  _objc_msgSend(param_1,"browser_context",&local_100);
+  if (param_3 == 0) {
+    FUN_04b08a00();
+  _objc_msgSend(param_3,"profile",&local_120);
+  puVar10 = (undefined8 *)FUN_00008790(0x10);
+  *puVar10 = &PTR_FUN_0da87958;
+  _objc_initWeak(puVar10 + 1,param_8);
+  FUN_04333d7c(&local_128,&local_100,&local_120,(uint)param_4 & 0xfff,&local_148,puVar10,&local_170,
+               param_7);
+    FUN_04333708(&local_170);
+  bVar7 = FUN_04402548(puVar12,&local_178,param_9);
+    FUN_04b35898();
+    FUN_04b35898();
+    FUN_04333708(&local_e0);
+  return bVar7;
+
+### ArcBrowserContext Extensions -importPasswords: 0x43f4390
+// ==== 0x43f4390  objc::Categories::ArcBrowserContext_Extensions_::importPasswords:  (340 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::importPasswords_
+               (ID param_1,SEL param_2,ID param_3)
+  _objc_msgSend(param_1,"browser_context",&local_48);
+  if (param_3 == 0) {
+    FUN_01b356b8(&local_60,param_3);
+  FUN_042d5d2c(local_48,&local_60);
+
+### ArcBrowserContext Extensions -favicon:completion: 0x43f4590
+// ==== 0x43f4590  objc::Categories::ArcBrowserContext_Extensions_::favicon:completion:  (516 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::favicon_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,undefined4 param_5)
+  FUN_043abdf8(&local_68,param_3);
+  _objc_msgSend(param_1,"browser_context",&local_d8);
+  local_58 = FUN_043f8954;
+  local_50 = &PTR_FUN_0df6ba08;
+  local_68 = (ID *)FUN_00008790(8);
+  *local_68 = param_4;
+  FUN_042d5f00(local_d8,&local_c0,&local_68);
+  FUN_041ab210(&local_c0);
+
+### ArcBrowserContext Extensions -favicon:iconTypes:sizeInPixels:fallbackToHost:completion: 0x43f47ac
+// ==== 0x43f47ac  objc::Categories::ArcBrowserContext_Extensions_::favicon:iconTypes:sizeInPixels:fallbackToHost:completion:  (508 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::
+               (ID param_1,SEL param_2,ID param_3,long_long param_4,long_long param_5,bool param_6,
+               ID param_7,undefined4 param_8)
+  _objc_msgSend(param_1,"browser_context",&local_90);
+  FUN_043abdf8(local_a8,param_3);
+  local_68 = FUN_043f8954;
+  local_60 = &PTR_FUN_0df6ba28;
+  local_78[0] = (ID *)FUN_00008790(8);
+  *local_78[0] = param_7;
+  FUN_042d6548(local_90,local_a8,(uint)param_4 & 0x1f,param_5,param_6,local_78);
+
+### ArcBrowserContext Extensions -faviconTempFileForPage:iconTypes:sizeInPixels:fallbackToHost:completion: 0x43f4a54
+// ==== 0x43f4a54  objc::Categories::ArcBrowserContext_Extensions_::faviconTempFileForPage:iconTypes:sizeInPixels:fallbackToHost:completion:  (192 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::
+               (ID param_1,SEL param_2,ID param_3,long_long param_4,long_long param_5,bool param_6,
+               ID param_7,uint param_8)
+  local_58 = param_7;
+  _objc_msgSend(param_1,"favicon:iconTypes:sizeInPixels:fallbackToHost:completion:",param_3,param_4,
+                param_5,(ulong)param_6,&local_78,(ulong)param_8);
+
+### ArcBrowserContext Extensions -setFavicon:forPage:iconURL:iconType:completion: 0x43f4b48
+// ==== 0x43f4b48  objc::Categories::ArcBrowserContext_Extensions_::setFavicon:forPage:iconURL:iconType:completion:  (752 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::
+               (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5,long_long param_6,ID param_7
+               ,undefined4 param_8)
+  _objc_msgSend(param_1,"browser_context",&local_80);
+  FUN_043abdf8(local_98,param_4);
+  FUN_043abdf8(local_b0,param_5);
+  if (param_3 == 0) {
+    _objc_msgSend(param_3,"image",&local_c8);
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_7;
+  local_50 = &PTR_FUN_0df6ba48;
+  FUN_042d6b6c(local_80,local_98,local_b0,(uint)param_6 & 0x1f,&local_c8,local_68);
+  local_c8 = &PTR_FUN_0da7eed0;
+
+### ArcBrowserContext Extensions -setFaviconData:forPage:iconURL:iconType:completion: 0x43f4fd8
+// ==== 0x43f4fd8  objc::Categories::ArcBrowserContext_Extensions_::setFaviconData:forPage:iconURL:iconType:completion:  (372 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::
+               (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5,long_long param_6,ID param_7
+               ,undefined4 param_8)
+  IVar1 = _objc_retainAutorelease(param_3);
+  IVar1 = _objc_msgSend(IVar1,"bytes");
+  IVar2 = _objc_msgSend(param_3,"length");
+  local_70 = &PTR_FUN_0df6ba88;
+  local_88[0] = (ID *)FUN_00008790(0x28);
+  local_88[0][1] = param_4;
+  local_88[0][2] = param_5;
+  local_88[0][3] = param_6;
+  local_88[0][4] = param_7;
+  FUN_04338920(0x3f800000,IVar1,IVar2,local_88,0,0,0);
+
+### ArcBrowserContext Extensions -getAdBlockDebugInfo:completion: 0x43f5194
+// ==== 0x43f5194  objc::Categories::ArcBrowserContext_Extensions_::getAdBlockDebugInfo:completion:  (476 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::getAdBlockDebugInfo_completion_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,uint param_5)
+  _objc_msgSend(param_1,"browser_context",&local_80,param_3,param_4,(ulong)param_5);
+  FUN_043abdf8(local_98,param_3);
+  local_58 = FUN_043f8ed0;
+  local_50 = &PTR_FUN_0df6baa8;
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_4;
+  FUN_042d6edc(local_80,local_98,local_68);
+
+### ArcBrowserContext Extensions -id 0x43f541c
+// ==== 0x43f541c  objc::Categories::ArcBrowserContext_Extensions_::id  (360 bytes)
+ID objc::Categories::ArcBrowserContext_Extensions_::id(ID param_1,SEL param_2)
+  IVar2 = _objc_alloc(&class_t::ArcBrowserContextID);
+  _objc_msgSend(param_1,"browser_context",&local_68);
+    FUN_00060a60(&local_50,*(undefined8 *)(local_68 + 0x90),*(undefined8 *)(local_68 + 0x98));
+  IVar2 = ArcBrowserContextID::initWithBrowserContextID_
+                    (IVar2,"initWithBrowserContextID:",&local_50);
+          return IVar2;
+  return IVar2;
+
+### ArcBrowserContext Extensions -metrics 0x43f5648
+// ==== 0x43f5648  objc::Categories::ArcBrowserContext_Extensions_::metrics  (512 bytes)
+ID objc::Categories::ArcBrowserContext_Extensions_::metrics(ID param_1,SEL param_2)
+  IVar2 = _objc_getAssociatedObject(param_1,"metrics");
+    return IVar2;
+  IVar2 = _objc_alloc(&class_t::ArcMetrics);
+  _objc_msgSend(param_1,"browser_context",&local_68);
+  FUN_04298600(auStack_50,*(undefined8 *)(local_68 + 0x120));
+  IVar2 = ArcMetrics::initWithBrowserContextMetrics_
+                    (IVar2,"initWithBrowserContextMetrics:",auStack_50);
+  _objc_setAssociatedObject(param_1,"metrics",IVar2,1);
+  return IVar2;
+
+### ArcBrowserContext Extensions -extensions 0x43f598c
+// ==== 0x43f598c  objc::Categories::ArcBrowserContext_Extensions_::extensions  (516 bytes)
+ID objc::Categories::ArcBrowserContext_Extensions_::extensions(ID param_1,SEL param_2)
+  IVar2 = _objc_getAssociatedObject(param_1,"extensions");
+    return IVar2;
+  IVar2 = _objc_alloc(&class_t::ArcBrowserContextExtensions);
+  _objc_msgSend(param_1,"browser_context",&local_68);
+  FUN_042c8400(auStack_50,*(undefined8 *)(local_68 + 0x100));
+  IVar2 = ArcBrowserContextExtensions::initWithBrowserContextExtensions_forBrowserContext_
+                    (IVar2,"initWithBrowserContextExtensions:forBrowserContext:",auStack_50,param_1)
+  _objc_setAssociatedObject(param_1,"extensions",IVar2,1);
+  return IVar2;
+
+### ArcBrowserContext Extensions -chatClosed:withReason: 0x43f5cd4
+// ==== 0x43f5cd4  objc::Categories::ArcBrowserContext_Extensions_::productConnectionClosed:withReason:  (448 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::productConnectionClosed_withReason_
+               (ID param_1,SEL param_2,ID param_3,ID param_4)
+  _objc_msgSend(param_1,"browser_context",&local_48);
+  if (param_3 == 0) {
+    FUN_01b356b8(&local_60,param_3);
+  if (param_4 == 0) {
+    FUN_01b356b8(&local_78,param_4);
+    uVar2 = FUN_04135760(*(undefined8 *)(*(long *)(local_48 + 0x88) + 0x18));
+    FUN_0416cc3c(uVar2,&local_60,&local_78);
+
+### ArcBrowserContext Extensions -productConnectionClosed:withReason: 0x43f5cd4
+// ==== 0x43f5cd4  objc::Categories::ArcBrowserContext_Extensions_::productConnectionClosed:withReason:  (448 bytes)
+void objc::Categories::ArcBrowserContext_Extensions_::productConnectionClosed_withReason_
+               (ID param_1,SEL param_2,ID param_3,ID param_4)
+  _objc_msgSend(param_1,"browser_context",&local_48);
+  if (param_3 == 0) {
+    FUN_01b356b8(&local_60,param_3);
+  if (param_4 == 0) {
+    FUN_01b356b8(&local_78,param_4);
+    uVar2 = FUN_04135760(*(undefined8 *)(*(long *)(local_48 + 0x88) + 0x18));
+    FUN_0416cc3c(uVar2,&local_60,&local_78);
+
+### ArcBrowserContext Extensions -createAutocompleteControllerWithProviders: 0x43f5f60
+// ==== 0x43f5f60  objc::Categories::ArcBrowserContext_Extensions_::createAutocompleteControllerWithProviders:  (352 bytes)
+ID objc::Categories::ArcBrowserContext_Extensions_::createAutocompleteControllerWithProviders_
+             (ID param_1,SEL param_2,unsigned_long_long param_3)
+  unique_ptr<arc::ArcAutocompleteController,_std::default_delete<arc::ArcAutocompleteController>>
+  _objc_msgSend(param_1,"browser_context",&local_48);
+  uVar2 = FUN_00008790(0x78);
+  FUN_042c2f5c(uVar2,*(undefined8 *)(local_48 + 0x88),(uint)param_3 & 3);
+  uVar3.field0_0x0 = (ArcAutocompleteController *)FUN_00008790(8);
+  IVar4 = _objc_alloc(&class_t::ArcBrowserContextAutocomplete);
+        FUN_042c33cc();
+    IVar4 = ArcBrowserContextAutocomplete::initWithAutocompleteController_
+                      (IVar4,"initWithAutocompleteController:",uVar3);
+  return IVar4;

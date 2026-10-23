@@ -1,0 +1,2530 @@
+{
+  "class_name": "ArcAnnotatedVisit",
+  "metadata_va": "0xe37c028",
+  "metadata_file_offset": "0xe37c028",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a5be0",
+  "instance_start": 8,
+  "instance_size": 24,
+  "ivars": [
+    {
+      "record_va": "0xe2a59e8",
+      "offset": 8,
+      "name": "_visit",
+      "type": "{optional<arc::AnnotatedVisit>=\"\"(?=\"__null_state_\"c\"__val_\"{AnnotatedVisit=\"impl_\"{unique_ptr<arc::AnnotatedVisit::Impl, std::default_delete<arc::AnnotatedVisit::Impl>>=\"__ptr_\"^{Impl}}})\"__engaged_\"B}",
+      "alignment": 3,
+      "size": 16
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "init", "type_encoding": "@16@0:8", "imp": "0x43fed80", "method_record_va": "0xd778900", "selector_va": "0xd744859", "dyld_line": 1574, "imp_file_offset": "0x43fed80", "body_name": "ArcAnnotatedVisit::init", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4735674, "body_length": 2356, "failed": 0, "truncated": false}
+// ==== 0x43fed80  ArcAnnotatedVisit::init  (224 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::init(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  long lVar2;
+  undefined8 uVar3;
+  undefined8 *puVar4;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcAnnotatedVisit;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0x10) != '\0') {
+      lVar2 = *(long *)(IVar1 + 8);
+      *(undefined8 *)(IVar1 + 8) = 0;
+      if (lVar2 != 0) {
+        uVar3 = FUN_04336e98();
+        FUN_00005810(uVar3,0x150);
+      }
+    }
+    puVar4 = (undefined8 *)FUN_00008790(0x150);
+    puVar4[1] = 0;
+    *puVar4 = 0;
+    puVar4[3] = 0;
+    puVar4[2] = 0;
+    puVar4[5] = 0;
+    puVar4[4] = 0;
+    puVar4[7] = 0;
+    puVar4[6] = 0;
+    puVar4[9] = 0;
+    puVar4[8] = 0;
+    puVar4[0xb] = 0;
+    puVar4[10] = 0;
+    puVar4[0xd] = 0;
+    puVar4[0xc] = 0;
+    puVar4[0xf] = 0;
+    puVar4[0xe] = 0;
+    puVar4[0x11] = 0;
+    puVar4[0x10] = 0;
+    puVar4[0x13] = 0;
+    puVar4[0x12] = 0;
+    puVar4[0x15] = 0;
+    puVar4[0x14] = 0;
+    puVar4[0x17] = 0;
+    puVar4[0x16] = 0;
+    puVar4[0x1b] = 0;
+    puVar4[0x1a] = 0;
+    puVar4[0x1d] = 0;
+    puVar4[0x1c] = 0;
+    puVar4[0x1f] = 0;
+    puVar4[0x1e] = 0;
+    puVar4[0x21] = 0;
+    puVar4[0x20] = 0;
+    puVar4[0x23] = 0;
+    puVar4[0x22] = 0;
+    puVar4[0x25] = 0;
+    puVar4[0x24] = 0;
+    puVar4[0x27] = 0;
+    puVar4[0x26] = 0;
+    puVar4[0x29] = 0;
+    puVar4[0x28] = 0;
+    puVar4[0x19] = 0;
+    puVar4[0x18] = 0;
+    puVar4[0x12] = 0xffffffffffffffff;
+    puVar4[0x11] = 0xffffffffffffffff;
+    puVar4[0x10] = 0xffffffffffffffff;
+    puVar4[0x14] = 0;
+    puVar4[0x13] = 0;
+    puVar4[0x16] = 0;
+    puVar4[0x15] = 0;
+    *(undefined8 *)((long)puVar4 + 0xb5) = 0;
+    puVar4[0x19] = 0;
+    puVar4[0x18] = 0;
+    puVar4[0x1b] = 0;
+    puVar4[0x1a] = 0;
+    puVar4[0x1d] = 0;
+    puVar4[0x1c] = 0;
+    puVar4[0x1f] = 0;
+    puVar4[0x1e] = 0;
+    puVar4[0x21] = 0;
+    puVar4[0x20] = 0;
+    puVar4[0x23] = 0;
+    puVar4[0x22] = 0;
+    puVar4[0x25] = 0;
+    puVar4[0x24] = 0;
+    puVar4[0x27] = 0;
+    puVar4[0x26] = 0;
+    *(undefined8 *)((long)puVar4 + 0x141) = 0;
+    *(undefined8 *)((long)puVar4 + 0x139) = 0;
+    *(undefined8 **)(IVar1 + 8) = puVar4;
+    *(undefined1 *)(IVar1 + 0x10) = 1;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "initWithAnnotatedVisit:", "type_encoding": "@24@0:8r^v16", "imp": "0x43fee60", "method_record_va": "0xd77890c", "selector_va": "0xd7446e8", "dyld_line": 1575, "imp_file_offset": "0x43fee60", "body_name": "ArcAnnotatedVisit::initWithAnnotatedVisit:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4738030, "body_length": 930, "failed": 0, "truncated": false}
+// ==== 0x43fee60  ArcAnnotatedVisit::initWithAnnotatedVisit:  (144 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcAnnotatedVisit::initWithAnnotatedVisit_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ID IVar1;
+  long lVar2;
+  undefined8 uVar3;
+  undefined8 uVar4;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcAnnotatedVisit;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0x10) != '\0') {
+      lVar2 = *(long *)(IVar1 + 8);
+      *(undefined8 *)(IVar1 + 8) = 0;
+      if (lVar2 != 0) {
+        uVar3 = FUN_04336e98();
+        FUN_00005810(uVar3,0x150);
+      }
+      *(undefined1 *)(IVar1 + 0x10) = 0;
+    }
+    uVar4 = *(undefined8 *)param_3;
+    uVar3 = FUN_00008790(0x150);
+    uVar3 = FUN_04336aac(uVar3,uVar4);
+    *(undefined8 *)(IVar1 + 8) = uVar3;
+    *(undefined1 *)(IVar1 + 0x10) = 1;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "url", "type_encoding": "@16@0:8", "imp": "0x43feef0", "method_record_va": "0xd778918", "selector_va": "0xd75187a", "dyld_line": 1576, "imp_file_offset": "0x43feef0", "body_name": "ArcAnnotatedVisit::url", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4738960, "body_length": 988, "failed": 0, "truncated": false}
+// ==== 0x43feef0  ArcAnnotatedVisit::url  (136 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::url(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  SEL extraout_x1;
+  undefined8 *puVar2;
+  undefined8 local_40;
+  undefined8 uStack_38;
+  ulong local_30;
+  
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    IVar1 = 0;
+  }
+  else {
+    puVar2 = *(undefined8 **)(param_1 + 8);
+    if (*(char *)((long)puVar2 + 0x17) < '\0') {
+      FUN_00060a60(&local_40,*puVar2,puVar2[1]);
+      param_2 = extraout_x1;
+    }
+    else {
+      uStack_38 = puVar2[1];
+      local_40 = *puVar2;
+      local_30 = puVar2[2];
+    }
+    IVar1 = FUN_043abd34(&local_40,param_2);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "title", "type_encoding": "@16@0:8", "imp": "0x43fef9c", "method_record_va": "0xd778924", "selector_va": "0xd743944", "dyld_line": 1577, "imp_file_offset": "0x43fef9c", "body_name": "ArcAnnotatedVisit::title", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4739948, "body_length": 1255, "failed": 0, "truncated": false}
+// ==== 0x43fef9c  ArcAnnotatedVisit::title  (164 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::title(ID param_1,SEL param_2)
+
+{
+  undefined1 **ppuVar1;
+  cfstringStruct *pcVar2;
+  long lVar3;
+  undefined1 *local_40;
+  long lStack_38;
+  undefined8 local_30;
+  
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    pcVar2 = &cf___;
+  }
+  else {
+    lVar3 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar3 + 0x2f) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar3 + 0x18),*(undefined8 *)(lVar3 + 0x20));
+    }
+    else {
+      lStack_38 = *(long *)(lVar3 + 0x20);
+      local_40 = *(undefined1 **)(lVar3 + 0x18);
+      local_30 = *(long *)(lVar3 + 0x28);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar3 = lStack_38;
+    if (-1 < local_30) {
+      lVar3 = (long)local_30._7_1_;
+    }
+    pcVar2 = (cfstringStruct *)FUN_01d9fb90(ppuVar1,lVar3);
+    if (local_30 < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+  }
+  return (ID)pcVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "visitTime", "type_encoding": "@16@0:8", "imp": "0x43ff064", "method_record_va": "0xd778930", "selector_va": "0xd7598d2", "dyld_line": 1578, "imp_file_offset": "0x43ff064", "body_name": "ArcAnnotatedVisit::visitTime", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4741203, "body_length": 729, "failed": 0, "truncated": false}
+// ==== 0x43ff064  ArcAnnotatedVisit::visitTime  (88 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::visitTime(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  
+  if ((*(byte *)(param_1 + 0x10) & 1) == 0) {
+    IVar1 = NSDate::date((ID)&_OBJC_CLASS___NSDate,"date");
+  }
+  else {
+    IVar1 = NSDate::dateWithTimeIntervalSince1970_
+                      ((ID)&_OBJC_CLASS___NSDate,"dateWithTimeIntervalSince1970:",
+                       *(undefined8 *)(*(long *)(param_1 + 8) + 0x30));
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "visitDuration", "type_encoding": "d16@0:8", "imp": "0x43ff0bc", "method_record_va": "0xd77893c", "selector_va": "0xd7598dc", "dyld_line": 1579, "imp_file_offset": "0x43ff0bc", "body_name": "ArcAnnotatedVisit::visitDuration", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4741932, "body_length": 328, "failed": 0, "truncated": false}
+// ==== 0x43ff0bc  ArcAnnotatedVisit::visitDuration  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+double ArcAnnotatedVisit::visitDuration(ID param_1,SEL param_2)
+
+{
+  double dVar1;
+  
+  dVar1 = 0.0;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    dVar1 = *(double *)(*(long *)(param_1 + 8) + 0x38);
+  }
+  return dVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "transition", "type_encoding": "q16@0:8", "imp": "0x43ff0d4", "method_record_va": "0xd778948", "selector_va": "0xd7598ea", "dyld_line": 1580, "imp_file_offset": "0x43ff0d4", "body_name": "ArcAnnotatedVisit::transition", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4742260, "body_length": 491, "failed": 0, "truncated": false}
+// ==== 0x43ff0d4  ArcAnnotatedVisit::transition  (40 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcAnnotatedVisit::transition(ID param_1,SEL param_2)
+
+{
+  uint uVar1;
+  code *pcVar2;
+  
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0;
+  }
+  uVar1 = *(uint *)(*(long *)(param_1 + 8) + 0x40);
+  if (uVar1 < 0xb) {
+    return (ulong)uVar1;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(0x550b,0x43ff0fc);
+  (*pcVar2)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "redirectChain", "type_encoding": "@16@0:8", "imp": "0x43ff0fc", "method_record_va": "0xd778954", "selector_va": "0xd7598f5", "dyld_line": 1581, "imp_file_offset": "0x43ff0fc", "body_name": "ArcAnnotatedVisit::redirectChain", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4742751, "body_length": 1367, "failed": 0, "truncated": false}
+// ==== 0x43ff0fc  ArcAnnotatedVisit::redirectChain  (236 bytes)
+
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::redirectChain(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID self;
+  ID IVar2;
+  undefined *puVar3;
+  const_void__ pvVar4;
+  long lVar5;
+  
+  puVar3 = PTR____NSArray0__struct_0d824938;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    self = _objc_alloc_init(&_OBJC_CLASS___NSMutableArray);
+    if ((*(byte *)(param_1 + 0x10) & 1) == 0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x43ff1e8);
+      (*pcVar1)();
+    }
+    lVar5 = *(long *)(*(long *)(param_1 + 8) + 0x50) * 0x38;
+    if (lVar5 != 0) {
+      pvVar4 = *(const_void__ *)(*(long *)(param_1 + 8) + 0x48);
+      do {
+        IVar2 = _objc_alloc(&objc::class_t::ArcRedirectEntry);
+        IVar2 = ArcRedirectEntry::initWithRedirectEntry_(IVar2,"initWithRedirectEntry:",pvVar4);
+        NSMutableArray::addObject_(self,"addObject:",IVar2);
+        pvVar4 = (const_void__)((long)pvVar4 + 0x38);
+        lVar5 = lVar5 + -0x38;
+      } while (lVar5 != 0);
+    }
+    puVar3 = (undefined *)NSMutableArray::copy(self,"copy");
+  }
+  return (ID)puVar3;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "isRedirectChainStartIncomplete", "type_encoding": "B16@0:8", "imp": "0x43ff1e8", "method_record_va": "0xd778960", "selector_va": "0xd759903", "dyld_line": 1582, "imp_file_offset": "0x43ff1e8", "body_name": "ArcAnnotatedVisit::isRedirectChainStartIncomplete", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4744118, "body_length": 358, "failed": 0, "truncated": false}
+// ==== 0x43ff1e8  ArcAnnotatedVisit::isRedirectChainStartIncomplete  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcAnnotatedVisit::isRedirectChainStartIncomplete(ID param_1,SEL param_2)
+
+{
+  byte bVar1;
+  
+  bVar1 = 0;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    bVar1 = *(byte *)(*(long *)(param_1 + 8) + 0x60);
+  }
+  return bVar1 & 1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "isRedirectChainEndIncomplete", "type_encoding": "B16@0:8", "imp": "0x43ff200", "method_record_va": "0xd77896c", "selector_va": "0xd759922", "dyld_line": 1583, "imp_file_offset": "0x43ff200", "body_name": "ArcAnnotatedVisit::isRedirectChainEndIncomplete", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4744476, "body_length": 354, "failed": 0, "truncated": false}
+// ==== 0x43ff200  ArcAnnotatedVisit::isRedirectChainEndIncomplete  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcAnnotatedVisit::isRedirectChainEndIncomplete(ID param_1,SEL param_2)
+
+{
+  byte bVar1;
+  
+  bVar1 = 0;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    bVar1 = *(byte *)(*(long *)(param_1 + 8) + 0x61);
+  }
+  return bVar1 & 1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "referringVisitId", "type_encoding": "q16@0:8", "imp": "0x43ff218", "method_record_va": "0xd778978", "selector_va": "0xd75993f", "dyld_line": 1584, "imp_file_offset": "0x43ff218", "body_name": "ArcAnnotatedVisit::referringVisitId", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4744830, "body_length": 301, "failed": 0, "truncated": false}
+// ==== 0x43ff218  ArcAnnotatedVisit::referringVisitId  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcAnnotatedVisit::referringVisitId(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0;
+  }
+  return *(long_long *)(*(long *)(param_1 + 8) + 0x68);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "openerVisitId", "type_encoding": "q16@0:8", "imp": "0x43ff234", "method_record_va": "0xd778984", "selector_va": "0xd759950", "dyld_line": 1585, "imp_file_offset": "0x43ff234", "body_name": "ArcAnnotatedVisit::openerVisitId", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4745131, "body_length": 295, "failed": 0, "truncated": false}
+// ==== 0x43ff234  ArcAnnotatedVisit::openerVisitId  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcAnnotatedVisit::openerVisitId(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0;
+  }
+  return *(long_long *)(*(long *)(param_1 + 8) + 0x70);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "windowId", "type_encoding": "i16@0:8", "imp": "0x43ff250", "method_record_va": "0xd778990", "selector_va": "0xd75995e", "dyld_line": 1586, "imp_file_offset": "0x43ff250", "body_name": "ArcAnnotatedVisit::windowId", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4745426, "body_length": 273, "failed": 0, "truncated": false}
+// ==== 0x43ff250  ArcAnnotatedVisit::windowId  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcAnnotatedVisit::windowId(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0;
+  }
+  return *(int *)(*(long *)(param_1 + 8) + 0x78);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "tabId", "type_encoding": "i16@0:8", "imp": "0x43ff26c", "method_record_va": "0xd77899c", "selector_va": "0xd759967", "dyld_line": 1587, "imp_file_offset": "0x43ff26c", "body_name": "ArcAnnotatedVisit::tabId", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4745699, "body_length": 267, "failed": 0, "truncated": false}
+// ==== 0x43ff26c  ArcAnnotatedVisit::tabId  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcAnnotatedVisit::tabId(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0;
+  }
+  return *(int *)(*(long *)(param_1 + 8) + 0x7c);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "taskId", "type_encoding": "q16@0:8", "imp": "0x43ff288", "method_record_va": "0xd7789a8", "selector_va": "0xd75996d", "dyld_line": 1588, "imp_file_offset": "0x43ff288", "body_name": "ArcAnnotatedVisit::taskId", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4745966, "body_length": 298, "failed": 0, "truncated": false}
+// ==== 0x43ff288  ArcAnnotatedVisit::taskId  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcAnnotatedVisit::taskId(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0xffffffffffffffff;
+  }
+  return *(long_long *)(*(long *)(param_1 + 8) + 0x80);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "rootTaskId", "type_encoding": "q16@0:8", "imp": "0x43ff2a4", "method_record_va": "0xd7789b4", "selector_va": "0xd759974", "dyld_line": 1589, "imp_file_offset": "0x43ff2a4", "body_name": "ArcAnnotatedVisit::rootTaskId", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4746264, "body_length": 306, "failed": 0, "truncated": false}
+// ==== 0x43ff2a4  ArcAnnotatedVisit::rootTaskId  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcAnnotatedVisit::rootTaskId(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0xffffffffffffffff;
+  }
+  return *(long_long *)(*(long *)(param_1 + 8) + 0x88);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "parentTaskId", "type_encoding": "q16@0:8", "imp": "0x43ff2c0", "method_record_va": "0xd7789c0", "selector_va": "0xd75997f", "dyld_line": 1590, "imp_file_offset": "0x43ff2c0", "body_name": "ArcAnnotatedVisit::parentTaskId", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4746570, "body_length": 310, "failed": 0, "truncated": false}
+// ==== 0x43ff2c0  ArcAnnotatedVisit::parentTaskId  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcAnnotatedVisit::parentTaskId(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0xffffffffffffffff;
+  }
+  return *(long_long *)(*(long *)(param_1 + 8) + 0x90);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "httpResponseCode", "type_encoding": "i16@0:8", "imp": "0x43ff2dc", "method_record_va": "0xd7789cc", "selector_va": "0xd75998c", "dyld_line": 1591, "imp_file_offset": "0x43ff2dc", "body_name": "ArcAnnotatedVisit::httpResponseCode", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4746880, "body_length": 289, "failed": 0, "truncated": false}
+// ==== 0x43ff2dc  ArcAnnotatedVisit::httpResponseCode  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcAnnotatedVisit::httpResponseCode(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0;
+  }
+  return *(int *)(*(long *)(param_1 + 8) + 0x98);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "browserType", "type_encoding": "q16@0:8", "imp": "0x43ff300", "method_record_va": "0xd7789d8", "selector_va": "0xd75999d", "dyld_line": 1592, "imp_file_offset": "0x43ff300", "body_name": "ArcAnnotatedVisit::browserType", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4747169, "body_length": 369, "failed": 0, "truncated": false}
+// ==== 0x43ff300  ArcAnnotatedVisit::browserType  (40 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcAnnotatedVisit::browserType(ID param_1,SEL param_2)
+
+{
+  uint uVar1;
+  
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0;
+  }
+  uVar1 = *(uint *)(*(long *)(param_1 + 8) + 0x9c);
+  if (3 < uVar1 - 1) {
+    uVar1 = 0;
+  }
+  return (ulong)uVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "pageLanguage", "type_encoding": "@16@0:8", "imp": "0x43ff328", "method_record_va": "0xd7789e4", "selector_va": "0xd7599a9", "dyld_line": 1593, "imp_file_offset": "0x43ff328", "body_name": "ArcAnnotatedVisit::pageLanguage", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4747538, "body_length": 1298, "failed": 0, "truncated": false}
+// ==== 0x43ff328  ArcAnnotatedVisit::pageLanguage  (164 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::pageLanguage(ID param_1,SEL param_2)
+
+{
+  undefined1 **ppuVar1;
+  cfstringStruct *pcVar2;
+  long lVar3;
+  undefined1 *local_40;
+  long lStack_38;
+  undefined8 local_30;
+  
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    pcVar2 = &cf___;
+  }
+  else {
+    lVar3 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar3 + 0xb7) < '\0') {
+      FUN_00060a60(&local_40,*(undefined8 *)(lVar3 + 0xa0),*(undefined8 *)(lVar3 + 0xa8));
+    }
+    else {
+      lStack_38 = *(long *)(lVar3 + 0xa8);
+      local_40 = *(undefined1 **)(lVar3 + 0xa0);
+      local_30 = *(ulong *)(lVar3 + 0xb0);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar3 = lStack_38;
+    if (-1 < (long)local_30) {
+      lVar3 = (long)local_30._7_1_;
+    }
+    pcVar2 = (cfstringStruct *)FUN_01c391bc(ppuVar1,lVar3);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+  }
+  return (ID)pcVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "passwordState", "type_encoding": "q16@0:8", "imp": "0x43ff3f0", "method_record_va": "0xd7789f0", "selector_va": "0xd7599b6", "dyld_line": 1594, "imp_file_offset": "0x43ff3f0", "body_name": "ArcAnnotatedVisit::passwordState", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4748836, "body_length": 432, "failed": 0, "truncated": false}
+// ==== 0x43ff3f0  ArcAnnotatedVisit::passwordState  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcAnnotatedVisit::passwordState(ID param_1,SEL param_2)
+
+{
+  long_long lVar1;
+  int iVar2;
+  
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0;
+  }
+  iVar2 = *(int *)(*(long *)(param_1 + 8) + 0xb8);
+  lVar1 = 2;
+  if (iVar2 != 2) {
+    lVar1 = 0;
+  }
+  if (iVar2 == 1) {
+    lVar1 = 1;
+  }
+  return lVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "hasUrlKeyedImage", "type_encoding": "B16@0:8", "imp": "0x43ff420", "method_record_va": "0xd7789fc", "selector_va": "0xd7599c4", "dyld_line": 1595, "imp_file_offset": "0x43ff420", "body_name": "ArcAnnotatedVisit::hasUrlKeyedImage", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4749268, "body_length": 330, "failed": 0, "truncated": false}
+// ==== 0x43ff420  ArcAnnotatedVisit::hasUrlKeyedImage  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcAnnotatedVisit::hasUrlKeyedImage(ID param_1,SEL param_2)
+
+{
+  byte bVar1;
+  
+  bVar1 = 0;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    bVar1 = *(byte *)(*(long *)(param_1 + 8) + 0xbc);
+  }
+  return bVar1 & 1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "categories", "type_encoding": "@16@0:8", "imp": "0x43ff438", "method_record_va": "0xd778a08", "selector_va": "0xd7599d5", "dyld_line": 1596, "imp_file_offset": "0x43ff438", "body_name": "ArcAnnotatedVisit::categories", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4749598, "body_length": 1843, "failed": 0, "truncated": false}
+// ==== 0x43ff438  ArcAnnotatedVisit::categories  (288 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::categories(ID param_1,SEL param_2)
+
+{
+  undefined8 *puVar1;
+  long lVar2;
+  char cVar3;
+  code *pcVar4;
+  ID self;
+  ID IVar5;
+  ID IVar6;
+  undefined *puVar7;
+  long lVar8;
+  undefined8 *puVar9;
+  
+  puVar7 = PTR____NSArray0__struct_0d824938;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    self = _objc_alloc_init(&_OBJC_CLASS___NSMutableArray);
+    if ((*(byte *)(param_1 + 0x10) & 1) == 0) {
+                    /* WARNING: Does not return */
+      pcVar4 = (code *)SoftwareBreakpoint(1,0x43ff558);
+      (*pcVar4)();
+    }
+    lVar8 = *(long *)(*(long *)(param_1 + 8) + 200) << 5;
+    if (lVar8 != 0) {
+      puVar9 = *(undefined8 **)(*(long *)(param_1 + 8) + 0xc0);
+      do {
+        IVar5 = _objc_alloc(&objc::class_t::ArcVisitCategory);
+        cVar3 = *(char *)((long)puVar9 + 0x17);
+        puVar1 = (undefined8 *)*puVar9;
+        if (-1 < (long)cVar3) {
+          puVar1 = puVar9;
+        }
+        lVar2 = puVar9[1];
+        if (-1 < cVar3) {
+          lVar2 = (long)cVar3;
+        }
+        IVar6 = FUN_01c391bc(puVar1,lVar2);
+        IVar5 = ArcVisitCategory::initCategoryId_weight_
+                          (IVar5,"initCategoryId:weight:",IVar6,*(int *)(puVar9 + 3));
+        NSMutableArray::addObject_(self,"addObject:",IVar5);
+        puVar9 = puVar9 + 4;
+        lVar8 = lVar8 + -0x20;
+      } while (lVar8 != 0);
+    }
+    puVar7 = (undefined *)NSMutableArray::copy(self,"copy");
+  }
+  return (ID)puVar7;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "relatedSearches", "type_encoding": "@16@0:8", "imp": "0x43ff558", "method_record_va": "0xd778a14", "selector_va": "0xd7599e0", "dyld_line": 1597, "imp_file_offset": "0x43ff558", "body_name": "ArcAnnotatedVisit::relatedSearches", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4751441, "body_length": 1645, "failed": 0, "truncated": false}
+// ==== 0x43ff558  ArcAnnotatedVisit::relatedSearches  (228 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::relatedSearches(ID param_1,SEL param_2)
+
+{
+  undefined8 *puVar1;
+  long lVar2;
+  char cVar3;
+  code *pcVar4;
+  ID self;
+  undefined8 uVar5;
+  undefined *puVar6;
+  long lVar7;
+  undefined8 *puVar8;
+  
+  puVar6 = PTR____NSArray0__struct_0d824938;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    self = _objc_alloc_init(&_OBJC_CLASS___NSMutableArray);
+    if ((*(byte *)(param_1 + 0x10) & 1) == 0) {
+                    /* WARNING: Does not return */
+      pcVar4 = (code *)SoftwareBreakpoint(1,0x43ff63c);
+      (*pcVar4)();
+    }
+    lVar7 = *(long *)(*(long *)(param_1 + 8) + 0xe0) * 0x18;
+    if (lVar7 != 0) {
+      puVar8 = *(undefined8 **)(*(long *)(param_1 + 8) + 0xd8);
+      do {
+        cVar3 = *(char *)((long)puVar8 + 0x17);
+        puVar1 = (undefined8 *)*puVar8;
+        if (-1 < (long)cVar3) {
+          puVar1 = puVar8;
+        }
+        lVar2 = puVar8[1];
+        if (-1 < cVar3) {
+          lVar2 = (long)cVar3;
+        }
+        uVar5 = FUN_01c391bc(puVar1,lVar2);
+        NSMutableArray::addObject_(self,"addObject:",uVar5);
+        puVar8 = puVar8 + 3;
+        lVar7 = lVar7 + -0x18;
+      } while (lVar7 != 0);
+    }
+    puVar6 = (undefined *)NSMutableArray::copy(self,"copy");
+  }
+  return (ID)puVar6;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "faviconUrl", "type_encoding": "@16@0:8", "imp": "0x43ff63c", "method_record_va": "0xd778a20", "selector_va": "0xd756792", "dyld_line": 1598, "imp_file_offset": "0x43ff63c", "body_name": "ArcAnnotatedVisit::faviconUrl", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4753086, "body_length": 1424, "failed": 0, "truncated": false}
+// ==== 0x43ff63c  ArcAnnotatedVisit::faviconUrl  (180 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::faviconUrl(ID param_1,SEL param_2)
+
+{
+  ulong uVar1;
+  ID IVar2;
+  SEL extraout_x1;
+  long lVar3;
+  undefined8 local_40;
+  ulong uStack_38;
+  undefined8 local_30;
+  
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    IVar2 = 0;
+  }
+  else {
+    local_40 = 0;
+    uStack_38 = 0;
+    local_30 = 0;
+    lVar3 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar3 + 0x107) < '\0') {
+      FUN_00060a60(&local_40,*(undefined8 *)(lVar3 + 0xf0),*(undefined8 *)(lVar3 + 0xf8));
+      param_2 = extraout_x1;
+    }
+    else {
+      uStack_38 = *(ulong *)(lVar3 + 0xf8);
+      local_40 = *(undefined8 *)(lVar3 + 0xf0);
+      local_30 = *(ulong *)(lVar3 + 0x100);
+    }
+    uVar1 = uStack_38;
+    if (-1 < (char)local_30._7_1_) {
+      uVar1 = (ulong)local_30._7_1_;
+    }
+    if (uVar1 == 0) {
+      IVar2 = 0;
+      if (((uint)(int)(char)local_30._7_1_ >> 7 & 1) == 0) {
+        return 0;
+      }
+    }
+    else {
+      IVar2 = FUN_043abd34(&local_40,param_2);
+      if (-1 < (long)local_30) {
+        return IVar2;
+      }
+    }
+    FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+  }
+  return IVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "referrerUrl", "type_encoding": "@16@0:8", "imp": "0x43ff714", "method_record_va": "0xd778a2c", "selector_va": "0xd7599f0", "dyld_line": 1599, "imp_file_offset": "0x43ff714", "body_name": "ArcAnnotatedVisit::referrerUrl", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4754510, "body_length": 1430, "failed": 0, "truncated": false}
+// ==== 0x43ff714  ArcAnnotatedVisit::referrerUrl  (184 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::referrerUrl(ID param_1,SEL param_2)
+
+{
+  ulong uVar1;
+  ID IVar2;
+  SEL extraout_x1;
+  long lVar3;
+  undefined8 local_40;
+  ulong uStack_38;
+  undefined8 local_30;
+  
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    IVar2 = 0;
+  }
+  else {
+    local_40 = 0;
+    uStack_38 = 0;
+    local_30 = 0;
+    lVar3 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar3 + 0x11f) < '\0') {
+      FUN_00060a60(&local_40,*(undefined8 *)(lVar3 + 0x108),*(undefined8 *)(lVar3 + 0x110));
+      param_2 = extraout_x1;
+    }
+    else {
+      uStack_38 = *(ulong *)(lVar3 + 0x110);
+      local_40 = *(undefined8 *)(lVar3 + 0x108);
+      local_30 = *(ulong *)(lVar3 + 0x118);
+    }
+    uVar1 = uStack_38;
+    if (-1 < (char)local_30._7_1_) {
+      uVar1 = (ulong)local_30._7_1_;
+    }
+    if (uVar1 == 0) {
+      IVar2 = 0;
+      if (((uint)(int)(char)local_30._7_1_ >> 7 & 1) == 0) {
+        return 0;
+      }
+    }
+    else {
+      IVar2 = FUN_043abd34(&local_40,param_2);
+      if (-1 < (long)local_30) {
+        return IVar2;
+      }
+    }
+    FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+  }
+  return IVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "clusterId", "type_encoding": "q16@0:8", "imp": "0x43ff7f0", "method_record_va": "0xd778a38", "selector_va": "0xd7599fc", "dyld_line": 1600, "imp_file_offset": "0x43ff7f0", "body_name": "ArcAnnotatedVisit::clusterId", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4755940, "body_length": 288, "failed": 0, "truncated": false}
+// ==== 0x43ff7f0  ArcAnnotatedVisit::clusterId  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcAnnotatedVisit::clusterId(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0;
+  }
+  return *(long_long *)(*(long *)(param_1 + 8) + 0x120);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "isHidden", "type_encoding": "B16@0:8", "imp": "0x43ff80c", "method_record_va": "0xd778a44", "selector_va": "0xd748b4f", "dyld_line": 1601, "imp_file_offset": "0x43ff80c", "body_name": "ArcAnnotatedVisit::isHidden", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4756228, "body_length": 315, "failed": 0, "truncated": false}
+// ==== 0x43ff80c  ArcAnnotatedVisit::isHidden  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcAnnotatedVisit::isHidden(ID param_1,SEL param_2)
+
+{
+  byte bVar1;
+  
+  bVar1 = 0;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    bVar1 = *(byte *)(*(long *)(param_1 + 8) + 0x148);
+  }
+  return bVar1 & 1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "originatorCacheGuid", "type_encoding": "@16@0:8", "imp": "0x43ff824", "method_record_va": "0xd778a50", "selector_va": "0xd759a06", "dyld_line": 1602, "imp_file_offset": "0x43ff824", "body_name": "ArcAnnotatedVisit::originatorCacheGuid", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4756543, "body_length": 1318, "failed": 0, "truncated": false}
+// ==== 0x43ff824  ArcAnnotatedVisit::originatorCacheGuid  (168 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAnnotatedVisit::originatorCacheGuid(ID param_1,SEL param_2)
+
+{
+  undefined1 **ppuVar1;
+  cfstringStruct *pcVar2;
+  long lVar3;
+  undefined1 *local_40;
+  long lStack_38;
+  undefined8 local_30;
+  
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    pcVar2 = &cf___;
+  }
+  else {
+    lVar3 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar3 + 0x13f) < '\0') {
+      FUN_00060a60(&local_40,*(undefined8 *)(lVar3 + 0x128),*(undefined8 *)(lVar3 + 0x130));
+    }
+    else {
+      lStack_38 = *(long *)(lVar3 + 0x130);
+      local_40 = *(undefined1 **)(lVar3 + 0x128);
+      local_30 = *(ulong *)(lVar3 + 0x138);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar3 = lStack_38;
+    if (-1 < (long)local_30) {
+      lVar3 = (long)local_30._7_1_;
+    }
+    pcVar2 = (cfstringStruct *)FUN_01c391bc(ppuVar1,lVar3);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+  }
+  return (ID)pcVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "originatorVisitId", "type_encoding": "q16@0:8", "imp": "0x43ff8f0", "method_record_va": "0xd778a5c", "selector_va": "0xd759a1a", "dyld_line": 1603, "imp_file_offset": "0x43ff8f0", "body_name": "ArcAnnotatedVisit::originatorVisitId", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4757861, "body_length": 304, "failed": 0, "truncated": false}
+// ==== 0x43ff8f0  ArcAnnotatedVisit::originatorVisitId  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcAnnotatedVisit::originatorVisitId(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    return 0;
+  }
+  return *(long_long *)(*(long *)(param_1 + 8) + 0x140);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setUrl:", "type_encoding": "v24@0:8@16", "imp": "0x43ff90c", "method_record_va": "0xd778a68", "selector_va": "0xd759a2c", "dyld_line": 1604, "imp_file_offset": "0x43ff90c", "body_name": "ArcAnnotatedVisit::setUrl:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4758165, "body_length": 1523, "failed": 0, "truncated": false}
+// ==== 0x43ff90c  ArcAnnotatedVisit::setUrl:  (208 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setUrl_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined8 **ppuVar1;
+  undefined8 ***pppuVar2;
+  undefined8 ***pppuVar3;
+  undefined8 **local_38;
+  undefined8 *puStack_30;
+  undefined8 *local_28;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    if (param_3 == 0) {
+      local_38 = (undefined8 ***)0x0;
+      puStack_30 = (undefined8 **)0x0;
+      local_28 = (undefined8 **)0x0;
+    }
+    else {
+      FUN_043abdf8(&local_38,param_3);
+    }
+    pppuVar3 = *(undefined8 ****)(param_1 + 8);
+    if (pppuVar3 != &local_38) {
+      if (*(char *)((long)pppuVar3 + 0x17) < '\0') {
+        ppuVar1 = (undefined8 **)puStack_30;
+        pppuVar2 = (undefined8 ***)local_38;
+        if (-1 < (long)local_28) {
+          ppuVar1 = (undefined8 **)((ulong)local_28 >> 0x38);
+          pppuVar2 = &local_38;
+        }
+        FUN_00359ad8(pppuVar3,pppuVar2,ppuVar1);
+      }
+      else if ((long)local_28 < 0) {
+        FUN_00359998(pppuVar3,local_38,puStack_30);
+      }
+      else {
+        pppuVar3[2] = (undefined8 **)local_28;
+        pppuVar3[1] = (undefined8 **)puStack_30;
+        *pppuVar3 = local_38;
+      }
+    }
+    if ((long)local_28 < 0) {
+      FUN_00005810(local_38,(ulong)local_28 & 0x7fffffffffffffff);
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setTitle:", "type_encoding": "v24@0:8@16", "imp": "0x43ff9dc", "method_record_va": "0xd778a74", "selector_va": "0xd74d361", "dyld_line": 1605, "imp_file_offset": "0x43ff9dc", "body_name": "ArcAnnotatedVisit::setTitle:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4759688, "body_length": 1435, "failed": 0, "truncated": false}
+// ==== 0x43ff9dc  ArcAnnotatedVisit::setTitle:  (228 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setTitle_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined8 ***pppuVar1;
+  ulong uVar2;
+  undefined8 ***pppuVar3;
+  long lVar4;
+  undefined8 **local_38;
+  ulong uStack_30;
+  ulong local_28;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    if (param_3 == 0) {
+      local_38 = (undefined8 ***)0x0;
+      uStack_30 = 0;
+      local_28 = 0;
+    }
+    else {
+      FUN_083b1228(&local_38,param_3);
+    }
+    lVar4 = *(long *)(param_1 + 8);
+    pppuVar1 = (undefined8 ***)(lVar4 + 0x18);
+    if (pppuVar1 != &local_38) {
+      if (*(char *)(lVar4 + 0x2f) < '\0') {
+        uVar2 = uStack_30;
+        pppuVar3 = (undefined8 ***)local_38;
+        if (-1 < (long)local_28) {
+          uVar2 = local_28 >> 0x38;
+          pppuVar3 = &local_38;
+        }
+        FUN_007ab764(pppuVar1,pppuVar3,uVar2);
+      }
+      else if ((long)local_28 < 0) {
+        FUN_007ab624(pppuVar1,local_38,uStack_30);
+      }
+      else {
+        *(ulong *)(lVar4 + 0x28) = local_28;
+        *(ulong *)(lVar4 + 0x20) = uStack_30;
+        *pppuVar1 = local_38;
+      }
+    }
+    if ((long)local_28 < 0) {
+      FUN_00005810(local_38,local_28 << 1);
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setVisitTime:", "type_encoding": "v24@0:8@16", "imp": "0x43ffac0", "method_record_va": "0xd778a80", "selector_va": "0xd759a34", "dyld_line": 1606, "imp_file_offset": "0x43ffac0", "body_name": "ArcAnnotatedVisit::setVisitTime:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4761123, "body_length": 388, "failed": 0, "truncated": false}
+// ==== 0x43ffac0  ArcAnnotatedVisit::setVisitTime:  (60 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setVisitTime_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined8 extraout_d0;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    _objc_msgSend(param_3,"timeIntervalSince1970");
+    *(undefined8 *)(*(long *)(param_1 + 8) + 0x30) = extraout_d0;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setVisitDuration:", "type_encoding": "v24@0:8d16", "imp": "0x43ffafc", "method_record_va": "0xd778a8c", "selector_va": "0xd759a42", "dyld_line": 1607, "imp_file_offset": "0x43ffafc", "body_name": "ArcAnnotatedVisit::setVisitDuration:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4761511, "body_length": 311, "failed": 0, "truncated": false}
+// ==== 0x43ffafc  ArcAnnotatedVisit::setVisitDuration:  (20 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setVisitDuration_(ID param_1,SEL param_2,double param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(double *)(*(long *)(param_1 + 8) + 0x38) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setTransition:", "type_encoding": "v24@0:8q16", "imp": "0x43ffb10", "method_record_va": "0xd778a98", "selector_va": "0xd759a54", "dyld_line": 1608, "imp_file_offset": "0x43ffb10", "body_name": "ArcAnnotatedVisit::setTransition:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4761822, "body_length": 406, "failed": 0, "truncated": false}
+// ==== 0x43ffb10  ArcAnnotatedVisit::setTransition:  (32 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setTransition_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  int iVar1;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    iVar1 = 0;
+    if (param_3 - 1 < 10) {
+      iVar1 = (int)(param_3 - 1) + 1;
+    }
+    *(int *)(*(long *)(param_1 + 8) + 0x40) = iVar1;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setRedirectChain:", "type_encoding": "v24@0:8@16", "imp": "0x43ffb30", "method_record_va": "0xd778aa4", "selector_va": "0xd759a63", "dyld_line": 1609, "imp_file_offset": "0x43ffb30", "body_name": "ArcAnnotatedVisit::setRedirectChain:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4762228, "body_length": 6628, "failed": 0, "truncated": false}
+// ==== 0x43ffb30  ArcAnnotatedVisit::setRedirectChain:  (964 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setRedirectChain_(ID param_1,SEL param_2,ID param_3)
+
+{
+  ulong uVar1;
+  code *pcVar2;
+  ID IVar3;
+  undefined8 *puVar4;
+  SEL extraout_x1;
+  long lVar5;
+  ulong uVar6;
+  undefined8 *puVar7;
+  undefined8 *puVar8;
+  undefined8 *puVar9;
+  undefined8 *puVar10;
+  undefined8 *puVar11;
+  ulong uVar12;
+  ulong uVar13;
+  ulong uVar14;
+  long lVar15;
+  undefined8 uVar16;
+  undefined8 uVar17;
+  undefined8 local_168;
+  undefined8 uStack_160;
+  ulong local_158;
+  undefined8 local_150;
+  undefined8 uStack_148;
+  long local_140;
+  undefined8 local_138;
+  undefined8 local_130;
+  long lStack_128;
+  long *local_120;
+  undefined8 uStack_118;
+  undefined8 local_110;
+  undefined8 uStack_108;
+  undefined8 uStack_100;
+  undefined8 uStack_f8;
+  undefined1 auStack_f0 [128];
+  long local_70;
+  
+  local_70 = *(long *)PTR____stack_chk_guard_0d824020;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    uStack_108 = 0;
+    local_110 = 0;
+    uStack_f8 = 0;
+    uStack_100 = 0;
+    lStack_128 = 0;
+    local_130 = 0;
+    uStack_118 = 0;
+    local_120 = (long *)0x0;
+    IVar3 = _objc_msgSend(param_3,"countByEnumeratingWithState:objects:count:",&local_130,auStack_f0
+                          ,0x10);
+    if (IVar3 != 0) {
+      uVar14 = 0;
+      uVar12 = 0;
+      lVar15 = *local_120;
+      lVar5 = lVar15;
+      puVar11 = (undefined8 *)0x0;
+      uVar13 = 0;
+      do {
+        if (lVar5 != lVar15) {
+          _objc_enumerationMutation(param_3);
+        }
+        FUN_0442cf90(&local_168,*(undefined8 *)(lStack_128 + uVar12 * 8));
+        if (uVar14 == uVar13) {
+          uVar1 = uVar14 + 1;
+          if (0x492492492492492 < uVar1) {
+                    /* WARNING: Subroutine does not return */
+            FUN_04047380();
+          }
+          uVar6 = uVar13 * 2;
+          if (uVar6 < uVar1 || uVar6 - uVar1 == 0) {
+            uVar6 = uVar1;
+          }
+          if (0x249249249249248 < uVar13) {
+            uVar6 = 0x492492492492492;
+          }
+          if (uVar6 == 0) {
+            puVar4 = (undefined8 *)0x0;
+          }
+          else {
+            if (0x492492492492492 < uVar6) {
+                    /* WARNING: Subroutine does not return */
+              FUN_04b087f0();
+            }
+            puVar4 = (undefined8 *)FUN_00008790(uVar6 * 0x38);
+          }
+          puVar10 = puVar4 + uVar14 * 7;
+          if (puVar10 == (undefined8 *)0x0) goto LAB_043ffd54;
+          puVar10[2] = local_158;
+          puVar10[1] = uStack_160;
+          *puVar10 = local_168;
+          uStack_160 = 0;
+          local_158 = 0;
+          local_168 = 0;
+          puVar10[5] = local_140;
+          puVar10[4] = uStack_148;
+          puVar10[3] = local_150;
+          uStack_148 = 0;
+          local_140 = 0;
+          local_150 = 0;
+          puVar10[6] = local_138;
+          puVar10 = puVar10 + uVar14 * -7;
+          if (uVar14 != 0) {
+            lVar5 = uVar14 * 0x38;
+            puVar7 = puVar11;
+            puVar9 = puVar10;
+            do {
+              if (puVar9 == (undefined8 *)0x0) goto LAB_043ffd54;
+              uVar17 = puVar7[1];
+              uVar16 = *puVar7;
+              puVar9[2] = puVar7[2];
+              puVar9[1] = uVar17;
+              *puVar9 = uVar16;
+              puVar7[1] = 0;
+              puVar7[2] = 0;
+              *puVar7 = 0;
+              uVar17 = puVar7[4];
+              uVar16 = puVar7[3];
+              puVar9[5] = puVar7[5];
+              puVar9[4] = uVar17;
+              puVar9[3] = uVar16;
+              puVar7[4] = 0;
+              puVar7[5] = 0;
+              puVar7[3] = 0;
+              puVar9[6] = puVar7[6];
+              puVar7 = puVar7 + 7;
+              puVar9 = puVar9 + 7;
+              puVar8 = puVar11;
+            } while (puVar7 != puVar11 + uVar14 * 7);
+            do {
+              if (puVar8 == (undefined8 *)0x0) goto LAB_043ffd54;
+              if (*(char *)((long)puVar8 + 0x2f) < '\0') {
+                FUN_00005810(puVar8[3],puVar8[5] << 1);
+              }
+              if (*(char *)((long)puVar8 + 0x17) < '\0') {
+                FUN_00005810(*puVar8,puVar8[2] & 0x7fffffffffffffff);
+              }
+              lVar5 = lVar5 + -0x38;
+              puVar8 = puVar8 + 7;
+            } while (lVar5 != 0);
+          }
+          if (puVar11 != (undefined8 *)0x0) {
+            FUN_00005810(puVar11,uVar13 * 0x38);
+          }
+        }
+        else {
+          puVar4 = puVar11 + uVar14 * 7;
+          if (puVar4 == (undefined8 *)0x0) goto LAB_043ffd54;
+          puVar4[2] = local_158;
+          puVar4[1] = uStack_160;
+          *puVar4 = local_168;
+          uStack_160 = 0;
+          local_158 = 0;
+          local_168 = 0;
+          puVar4[5] = local_140;
+          puVar4[4] = uStack_148;
+          puVar4[3] = local_150;
+          uStack_148 = 0;
+          local_140 = 0;
+          local_150 = 0;
+          puVar4[6] = local_138;
+          puVar10 = puVar11;
+          puVar4 = puVar11;
+          uVar6 = uVar13;
+        }
+        lVar5 = (long)puVar4 + ((uVar14 * 0x38 + 0x38) - (long)puVar10);
+        if (lVar5 == 0) goto LAB_043ffd54;
+        if (local_140 < 0) {
+          FUN_00005810(local_150,local_140 << 1);
+        }
+        if ((long)local_158 < 0) {
+          FUN_00005810(local_168,local_158 & 0x7fffffffffffffff);
+        }
+        uVar14 = (lVar5 >> 3) * 0x6db6db6db6db6db7;
+        uVar12 = uVar12 + 1;
+        if (IVar3 <= uVar12) {
+          IVar3 = _objc_msgSend(param_3,"countByEnumeratingWithState:objects:count:",&local_130,
+                                auStack_f0,0x10);
+          if (IVar3 == 0) goto LAB_043ffbf0;
+          uVar12 = 0;
+        }
+        lVar5 = *local_120;
+        puVar11 = puVar10;
+        uVar13 = uVar6;
+      } while( true );
+    }
+    puVar10 = (undefined8 *)0x0;
+    uVar14 = 0;
+    uVar6 = 0;
+LAB_043ffbf0:
+    if ((*(byte *)(param_1 + 0x10) & 1) == 0) {
+LAB_043ffd54:
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43ffd58);
+      (*pcVar2)();
+    }
+    lVar5 = *(long *)(param_1 + 8);
+    FUN_04337114(lVar5 + 0x48);
+    *(undefined8 **)(lVar5 + 0x48) = puVar10;
+    *(ulong *)(lVar5 + 0x50) = uVar14;
+    *(ulong *)(lVar5 + 0x58) = uVar6;
+    param_2 = extraout_x1;
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_70) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0,param_2);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setIsRedirectChainStartIncomplete:", "type_encoding": "v20@0:8B16", "imp": "0x43fffc8", "method_record_va": "0xd778ab0", "selector_va": "0xd759a75", "dyld_line": 1610, "imp_file_offset": "0x43fffc8", "body_name": "ArcAnnotatedVisit::setIsRedirectChainStartIncomplete:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4768856, "body_length": 347, "failed": 0, "truncated": false}
+// ==== 0x43fffc8  ArcAnnotatedVisit::setIsRedirectChainStartIncomplete:  (20 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcAnnotatedVisit::setIsRedirectChainStartIncomplete_(ID param_1,SEL param_2,bool param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(char *)(*(long *)(param_1 + 8) + 0x60) = (char)param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setIsRedirectChainEndIncomplete:", "type_encoding": "v20@0:8B16", "imp": "0x43fffdc", "method_record_va": "0xd778abc", "selector_va": "0xd759a98", "dyld_line": 1611, "imp_file_offset": "0x43fffdc", "body_name": "ArcAnnotatedVisit::setIsRedirectChainEndIncomplete:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4769203, "body_length": 343, "failed": 0, "truncated": false}
+// ==== 0x43fffdc  ArcAnnotatedVisit::setIsRedirectChainEndIncomplete:  (20 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcAnnotatedVisit::setIsRedirectChainEndIncomplete_(ID param_1,SEL param_2,bool param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(char *)(*(long *)(param_1 + 8) + 0x61) = (char)param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setReferringVisitId:", "type_encoding": "v24@0:8q16", "imp": "0x43ffff0", "method_record_va": "0xd778ac8", "selector_va": "0xd759ab9", "dyld_line": 1612, "imp_file_offset": "0x43ffff0", "body_name": "ArcAnnotatedVisit::setReferringVisitId:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4769546, "body_length": 323, "failed": 0, "truncated": false}
+// ==== 0x43ffff0  ArcAnnotatedVisit::setReferringVisitId:  (20 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setReferringVisitId_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(long_long *)(*(long *)(param_1 + 8) + 0x68) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setOpenerVisitId:", "type_encoding": "v24@0:8q16", "imp": "0x4400004", "method_record_va": "0xd778ad4", "selector_va": "0xd759ace", "dyld_line": 1613, "imp_file_offset": "0x4400004", "body_name": "ArcAnnotatedVisit::setOpenerVisitId:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 0, "body_length": 317, "failed": 0, "truncated": false}
+// ==== 0x4400004  ArcAnnotatedVisit::setOpenerVisitId:  (20 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setOpenerVisitId_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(long_long *)(*(long *)(param_1 + 8) + 0x70) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setWindowId:", "type_encoding": "v20@0:8i16", "imp": "0x4400018", "method_record_va": "0xd778ae0", "selector_va": "0xd759ae0", "dyld_line": 1614, "imp_file_offset": "0x4400018", "body_name": "ArcAnnotatedVisit::setWindowId:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 317, "body_length": 295, "failed": 0, "truncated": false}
+// ==== 0x4400018  ArcAnnotatedVisit::setWindowId:  (20 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcAnnotatedVisit::setWindowId_(ID param_1,SEL param_2,int param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(int *)(*(long *)(param_1 + 8) + 0x78) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setTabId:", "type_encoding": "v20@0:8i16", "imp": "0x440002c", "method_record_va": "0xd778aec", "selector_va": "0xd759aed", "dyld_line": 1615, "imp_file_offset": "0x440002c", "body_name": "ArcAnnotatedVisit::setTabId:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 612, "body_length": 289, "failed": 0, "truncated": false}
+// ==== 0x440002c  ArcAnnotatedVisit::setTabId:  (20 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcAnnotatedVisit::setTabId_(ID param_1,SEL param_2,int param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(int *)(*(long *)(param_1 + 8) + 0x7c) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setTaskId:", "type_encoding": "v24@0:8q16", "imp": "0x4400040", "method_record_va": "0xd778af8", "selector_va": "0xd759af7", "dyld_line": 1616, "imp_file_offset": "0x4400040", "body_name": "ArcAnnotatedVisit::setTaskId:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 901, "body_length": 303, "failed": 0, "truncated": false}
+// ==== 0x4400040  ArcAnnotatedVisit::setTaskId:  (20 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setTaskId_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(long_long *)(*(long *)(param_1 + 8) + 0x80) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setRootTaskId:", "type_encoding": "v24@0:8q16", "imp": "0x4400054", "method_record_va": "0xd778b04", "selector_va": "0xd759b02", "dyld_line": 1617, "imp_file_offset": "0x4400054", "body_name": "ArcAnnotatedVisit::setRootTaskId:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1204, "body_length": 311, "failed": 0, "truncated": false}
+// ==== 0x4400054  ArcAnnotatedVisit::setRootTaskId:  (20 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setRootTaskId_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(long_long *)(*(long *)(param_1 + 8) + 0x88) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setParentTaskId:", "type_encoding": "v24@0:8q16", "imp": "0x4400068", "method_record_va": "0xd778b10", "selector_va": "0xd759b11", "dyld_line": 1618, "imp_file_offset": "0x4400068", "body_name": "ArcAnnotatedVisit::setParentTaskId:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1515, "body_length": 315, "failed": 0, "truncated": false}
+// ==== 0x4400068  ArcAnnotatedVisit::setParentTaskId:  (20 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setParentTaskId_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(long_long *)(*(long *)(param_1 + 8) + 0x90) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setHttpResponseCode:", "type_encoding": "v20@0:8i16", "imp": "0x440007c", "method_record_va": "0xd778b1c", "selector_va": "0xd759b22", "dyld_line": 1619, "imp_file_offset": "0x440007c", "body_name": "ArcAnnotatedVisit::setHttpResponseCode:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1830, "body_length": 311, "failed": 0, "truncated": false}
+// ==== 0x440007c  ArcAnnotatedVisit::setHttpResponseCode:  (20 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcAnnotatedVisit::setHttpResponseCode_(ID param_1,SEL param_2,int param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(int *)(*(long *)(param_1 + 8) + 0x98) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setBrowserType:", "type_encoding": "v24@0:8q16", "imp": "0x4400090", "method_record_va": "0xd778b28", "selector_va": "0xd759b37", "dyld_line": 1620, "imp_file_offset": "0x4400090", "body_name": "ArcAnnotatedVisit::setBrowserType:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 2141, "body_length": 407, "failed": 0, "truncated": false}
+// ==== 0x4400090  ArcAnnotatedVisit::setBrowserType:  (32 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setBrowserType_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  int iVar1;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    iVar1 = 0;
+    if (param_3 - 1 < 4) {
+      iVar1 = (int)(param_3 - 1) + 1;
+    }
+    *(int *)(*(long *)(param_1 + 8) + 0x9c) = iVar1;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setPageLanguage:", "type_encoding": "v24@0:8@16", "imp": "0x44000b0", "method_record_va": "0xd778b34", "selector_va": "0xd759b47", "dyld_line": 1621, "imp_file_offset": "0x44000b0", "body_name": "ArcAnnotatedVisit::setPageLanguage:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 2548, "body_length": 1465, "failed": 0, "truncated": false}
+// ==== 0x44000b0  ArcAnnotatedVisit::setPageLanguage:  (228 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setPageLanguage_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined8 ***pppuVar1;
+  ulong uVar2;
+  undefined8 ***pppuVar3;
+  long lVar4;
+  undefined8 **local_38;
+  ulong uStack_30;
+  ulong local_28;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    if (param_3 == 0) {
+      local_38 = (undefined8 ***)0x0;
+      uStack_30 = 0;
+      local_28 = 0;
+    }
+    else {
+      FUN_01b356b8(&local_38,param_3);
+    }
+    lVar4 = *(long *)(param_1 + 8);
+    pppuVar1 = (undefined8 ***)(lVar4 + 0xa0);
+    if (pppuVar1 != &local_38) {
+      if (*(char *)(lVar4 + 0xb7) < '\0') {
+        uVar2 = uStack_30;
+        pppuVar3 = (undefined8 ***)local_38;
+        if (-1 < (long)local_28) {
+          uVar2 = local_28 >> 0x38;
+          pppuVar3 = &local_38;
+        }
+        FUN_00359ad8(pppuVar1,pppuVar3,uVar2);
+      }
+      else if ((long)local_28 < 0) {
+        FUN_00359998(pppuVar1,local_38,uStack_30);
+      }
+      else {
+        *(ulong *)(lVar4 + 0xb0) = local_28;
+        *(ulong *)(lVar4 + 0xa8) = uStack_30;
+        *pppuVar1 = local_38;
+      }
+    }
+    if ((long)local_28 < 0) {
+      FUN_00005810(local_38,local_28 & 0x7fffffffffffffff);
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setPasswordState:", "type_encoding": "v24@0:8q16", "imp": "0x4400194", "method_record_va": "0xd778b40", "selector_va": "0xd759b58", "dyld_line": 1622, "imp_file_offset": "0x4400194", "body_name": "ArcAnnotatedVisit::setPasswordState:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 4013, "body_length": 448, "failed": 0, "truncated": false}
+// ==== 0x4400194  ArcAnnotatedVisit::setPasswordState:  (40 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setPasswordState_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  undefined4 uVar1;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    uVar1 = 2;
+    if (param_3 != 2) {
+      uVar1 = 0;
+    }
+    if (param_3 == 1) {
+      uVar1 = 1;
+    }
+    *(undefined4 *)(*(long *)(param_1 + 8) + 0xb8) = uVar1;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setHasUrlKeyedImage:", "type_encoding": "v20@0:8B16", "imp": "0x44001bc", "method_record_va": "0xd778b4c", "selector_va": "0xd759b6a", "dyld_line": 1623, "imp_file_offset": "0x44001bc", "body_name": "ArcAnnotatedVisit::setHasUrlKeyedImage:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 4461, "body_length": 319, "failed": 0, "truncated": false}
+// ==== 0x44001bc  ArcAnnotatedVisit::setHasUrlKeyedImage:  (20 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcAnnotatedVisit::setHasUrlKeyedImage_(ID param_1,SEL param_2,bool param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(char *)(*(long *)(param_1 + 8) + 0xbc) = (char)param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setCategories:", "type_encoding": "v24@0:8@16", "imp": "0x44001d0", "method_record_va": "0xd778b58", "selector_va": "0xd759b7f", "dyld_line": 1624, "imp_file_offset": "0x44001d0", "body_name": "ArcAnnotatedVisit::setCategories:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 4780, "body_length": 5082, "failed": 0, "truncated": false}
+// ==== 0x44001d0  ArcAnnotatedVisit::setCategories:  (812 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setCategories_(ID param_1,SEL param_2,ID param_3)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  ID IVar3;
+  undefined8 *puVar4;
+  SEL extraout_x1;
+  SEL extraout_x1_00;
+  SEL extraout_x1_01;
+  long lVar5;
+  undefined8 *puVar6;
+  ID self;
+  long lVar7;
+  ulong uVar8;
+  long local_188;
+  long local_180;
+  long lStack_178;
+  undefined8 local_170;
+  undefined8 uStack_168;
+  ulong local_160;
+  undefined4 local_158;
+  undefined8 local_150;
+  long lStack_148;
+  long *local_140;
+  undefined8 uStack_138;
+  undefined8 local_130;
+  undefined8 uStack_128;
+  undefined8 uStack_120;
+  undefined8 uStack_118;
+  long local_108;
+  long local_100;
+  long lStack_f8;
+  undefined1 auStack_f0 [128];
+  long local_70;
+  
+  local_70 = *(long *)PTR____stack_chk_guard_0d824020;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    local_108 = 0;
+    local_100 = 0;
+    lStack_f8 = 0;
+    lStack_148 = 0;
+    local_150 = 0;
+    uStack_138 = 0;
+    local_140 = (long *)0x0;
+    uStack_128 = 0;
+    local_130 = 0;
+    uStack_118 = 0;
+    uStack_120 = 0;
+    IVar2 = _objc_msgSend(param_3,"countByEnumeratingWithState:objects:count:",&local_150,auStack_f0
+                          ,0x10);
+    if (IVar2 != 0) {
+      uVar8 = 0;
+      lVar7 = *local_140;
+      lVar5 = lVar7;
+      do {
+        if (lVar5 != lVar7) {
+          _objc_enumerationMutation(param_3);
+        }
+        self = *(ID *)(lStack_148 + uVar8 * 8);
+        IVar3 = _objc_msgSend(self,"categoryId");
+        if (IVar3 == 0) {
+          local_170 = 0;
+          uStack_168 = 0;
+          local_160 = 0;
+        }
+        else {
+          FUN_01b356b8(&local_170,IVar3);
+        }
+        IVar3 = _objc_msgSend(self,"weight");
+        local_158 = (undefined4)IVar3;
+        if (local_100 == lStack_f8) {
+          puVar4 = (undefined8 *)FUN_042a935c(&local_108,&local_170);
+        }
+        else {
+          puVar4 = (undefined8 *)(local_108 + local_100 * 0x20);
+          if (puVar4 == (undefined8 *)0x0) goto LAB_044004e4;
+          puVar4[2] = local_160;
+          puVar4[1] = uStack_168;
+          *puVar4 = local_170;
+          uStack_168 = 0;
+          local_160 = 0;
+          local_170 = 0;
+          *(undefined4 *)(puVar4 + 3) = local_158;
+          puVar4 = puVar4 + 4;
+        }
+        local_100 = (long)puVar4 - local_108 >> 5;
+        if ((long)puVar4 - local_108 == 0) goto LAB_044004e4;
+        if ((long)local_160 < 0) {
+          FUN_00005810(local_170,local_160 & 0x7fffffffffffffff);
+        }
+        uVar8 = uVar8 + 1;
+        if (IVar2 <= uVar8) {
+          IVar2 = _objc_msgSend(param_3,"countByEnumeratingWithState:objects:count:",&local_150,
+                                auStack_f0,0x10);
+          if (IVar2 == 0) break;
+          uVar8 = 0;
+        }
+        lVar5 = *local_140;
+      } while( true );
+    }
+    lVar7 = lStack_f8;
+    lVar5 = local_100;
+    if ((*(byte *)(param_1 + 0x10) & 1) == 0) {
+LAB_044004e4:
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x44004e8);
+      (*pcVar1)();
+    }
+    local_188 = local_108;
+    local_108 = 0;
+    local_100 = 0;
+    lStack_f8 = 0;
+    lStack_178 = lVar7;
+    local_180 = lVar5;
+    FUN_04336510(param_1 + 8,&local_188);
+    lVar5 = local_188;
+    param_2 = extraout_x1_00;
+    if (local_188 != 0) {
+      if (local_180 * 0x20 != 0) {
+        lVar7 = local_180 * -0x20;
+        puVar4 = (undefined8 *)(local_180 * 0x20 + local_188);
+        do {
+          puVar6 = puVar4 + -4;
+          if (puVar6 == (undefined8 *)0x0) goto LAB_044004e4;
+          if (*(char *)((long)puVar4 + -9) < '\0') {
+            FUN_00005810(*puVar6,puVar4[-2] & 0x7fffffffffffffff);
+          }
+          lVar7 = lVar7 + 0x20;
+          puVar4 = puVar6;
+        } while (lVar7 != 0);
+      }
+      local_180 = lVar5 - local_188 >> 5;
+      FUN_00005810(local_188,lStack_178 << 5);
+      param_2 = extraout_x1_01;
+    }
+    lVar5 = local_108;
+    if (local_108 != 0) {
+      if (local_100 * 0x20 != 0) {
+        lVar7 = local_100 * -0x20;
+        puVar4 = (undefined8 *)(local_100 * 0x20 + local_108);
+        do {
+          puVar6 = puVar4 + -4;
+          if (puVar6 == (undefined8 *)0x0) goto LAB_044004e4;
+          if (*(char *)((long)puVar4 + -9) < '\0') {
+            FUN_00005810(*puVar6,puVar4[-2] & 0x7fffffffffffffff);
+          }
+          lVar7 = lVar7 + 0x20;
+          puVar4 = puVar6;
+        } while (lVar7 != 0);
+      }
+      local_100 = lVar5 - local_108 >> 5;
+      FUN_00005810(local_108,lStack_f8 << 5);
+      param_2 = extraout_x1;
+    }
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_70) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0,param_2);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setRelatedSearches:", "type_encoding": "v24@0:8@16", "imp": "0x4400620", "method_record_va": "0xd778b64", "selector_va": "0xd759b8e", "dyld_line": 1625, "imp_file_offset": "0x4400620", "body_name": "ArcAnnotatedVisit::setRelatedSearches:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 9862, "body_length": 5382, "failed": 0, "truncated": false}
+// ==== 0x4400620  ArcAnnotatedVisit::setRelatedSearches:  (860 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setRelatedSearches_(ID param_1,SEL param_2,ID param_3)
+
+{
+  ulong uVar1;
+  code *pcVar2;
+  ID IVar3;
+  undefined8 *puVar4;
+  SEL extraout_x1;
+  SEL extraout_x1_00;
+  long lVar5;
+  undefined8 *puVar6;
+  undefined8 *puVar7;
+  ulong uVar8;
+  long lVar9;
+  ulong uVar10;
+  ulong uVar11;
+  undefined8 *local_160;
+  ulong local_158;
+  ulong local_150;
+  undefined8 local_148;
+  undefined8 uStack_140;
+  ulong local_138;
+  undefined8 local_130;
+  long lStack_128;
+  long *local_120;
+  undefined8 uStack_118;
+  undefined8 local_110;
+  undefined8 uStack_108;
+  undefined8 uStack_100;
+  undefined8 uStack_f8;
+  undefined1 auStack_f0 [128];
+  long local_70;
+  
+  local_70 = *(long *)PTR____stack_chk_guard_0d824020;
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    uStack_108 = 0;
+    local_110 = 0;
+    uStack_f8 = 0;
+    uStack_100 = 0;
+    lStack_128 = 0;
+    local_130 = 0;
+    uStack_118 = 0;
+    local_120 = (long *)0x0;
+    IVar3 = _objc_msgSend(param_3,"countByEnumeratingWithState:objects:count:",&local_130,auStack_f0
+                          ,0x10);
+    if (IVar3 != 0) {
+      uVar11 = 0;
+      uVar10 = 0;
+      uVar8 = 0;
+      lVar5 = *local_120;
+      lVar9 = lVar5;
+      puVar7 = (undefined8 *)0x0;
+      do {
+        if (lVar9 != lVar5) {
+          _objc_enumerationMutation(param_3);
+        }
+        lVar9 = *(long *)(lStack_128 + uVar8 * 8);
+        if (lVar9 == 0) {
+          local_148 = 0;
+          uStack_140 = 0;
+          local_138 = 0;
+        }
+        else {
+          FUN_01b356b8(&local_148,lVar9);
+        }
+        if (uVar11 == uVar10) {
+          uVar1 = uVar11 + 1;
+          if (0xaaaaaaaaaaaaaaa < uVar1) {
+                    /* WARNING: Subroutine does not return */
+            FUN_04047380(0);
+          }
+          uVar10 = uVar11 * 2;
+          if (uVar10 < uVar1 || uVar10 - uVar1 == 0) {
+            uVar10 = uVar1;
+          }
+          if (0x555555555555554 < uVar11) {
+            uVar10 = 0xaaaaaaaaaaaaaaa;
+          }
+          if (uVar10 == 0) {
+            puVar4 = (undefined8 *)0x0;
+          }
+          else {
+            if (0xaaaaaaaaaaaaaaa < uVar10) {
+                    /* WARNING: Subroutine does not return */
+              FUN_04b087f0();
+            }
+            puVar4 = (undefined8 *)FUN_00008790(uVar10 * 0x18);
+          }
+          puVar6 = puVar4 + uVar11 * 3;
+          if (puVar6 == (undefined8 *)0x0) goto LAB_0440095c;
+          puVar6[2] = local_138;
+          puVar6[1] = uStack_140;
+          *puVar6 = local_148;
+          uStack_140 = 0;
+          local_138 = 0;
+          local_148 = 0;
+          puVar6 = puVar6 + uVar11 * -3;
+          if (uVar11 != 0) {
+            _memcpy(puVar6,puVar7,uVar11 * 0x18);
+          }
+          if (puVar7 != (undefined8 *)0x0) {
+            FUN_00005810(puVar7,uVar11 * 0x18);
+          }
+        }
+        else {
+          puVar4 = puVar7 + uVar11 * 3;
+          if (puVar4 == (undefined8 *)0x0) goto LAB_0440095c;
+          puVar4[2] = local_138;
+          puVar4[1] = uStack_140;
+          *puVar4 = local_148;
+          uStack_140 = 0;
+          local_138 = 0;
+          local_148 = 0;
+          puVar6 = puVar7;
+          puVar4 = puVar7;
+        }
+        lVar9 = (long)puVar4 + ((uVar11 * 0x18 + 0x18) - (long)puVar6);
+        if (lVar9 == 0) goto LAB_0440095c;
+        if ((long)local_138 < 0) {
+          FUN_00005810(local_148,local_138 & 0x7fffffffffffffff);
+        }
+        uVar11 = (lVar9 >> 3) * -0x5555555555555555;
+        uVar8 = uVar8 + 1;
+        if (IVar3 <= uVar8) {
+          IVar3 = _objc_msgSend(param_3,"countByEnumeratingWithState:objects:count:",&local_130,
+                                auStack_f0,0x10);
+          if (IVar3 == 0) goto LAB_044006e4;
+          uVar8 = 0;
+        }
+        lVar9 = *local_120;
+        puVar7 = puVar6;
+      } while( true );
+    }
+    puVar6 = (undefined8 *)0x0;
+    uVar11 = 0;
+    uVar10 = 0;
+LAB_044006e4:
+    if ((*(byte *)(param_1 + 0x10) & 1) == 0) {
+LAB_0440095c:
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x4400960);
+      (*pcVar2)();
+    }
+    local_160 = puVar6;
+    local_158 = uVar11;
+    local_150 = uVar10;
+    FUN_043365e8(param_1 + 8,&local_160);
+    puVar7 = local_160;
+    param_2 = extraout_x1;
+    if (local_160 != (undefined8 *)0x0) {
+      if (local_158 * 0x18 != 0) {
+        lVar9 = local_158 * -0x18;
+        puVar4 = local_160 + local_158 * 3;
+        do {
+          puVar6 = puVar4 + -3;
+          if (puVar6 == (undefined8 *)0x0) goto LAB_0440095c;
+          if (*(char *)((long)puVar4 + -1) < '\0') {
+            FUN_00005810(*puVar6,puVar4[-1] & 0x7fffffffffffffff);
+          }
+          lVar9 = lVar9 + 0x18;
+          puVar4 = puVar6;
+        } while (lVar9 != 0);
+      }
+      local_158 = ((long)puVar7 - (long)local_160 >> 3) * -0x5555555555555555;
+      FUN_00005810(local_160,local_150 * 0x18);
+      param_2 = extraout_x1_00;
+    }
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 != local_70) {
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail(0,param_2);
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setFaviconUrl:", "type_encoding": "v24@0:8@16", "imp": "0x4400a8c", "method_record_va": "0xd778b70", "selector_va": "0xd759ba2", "dyld_line": 1626, "imp_file_offset": "0x4400a8c", "body_name": "ArcAnnotatedVisit::setFaviconUrl:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 15244, "body_length": 1463, "failed": 0, "truncated": false}
+// ==== 0x4400a8c  ArcAnnotatedVisit::setFaviconUrl:  (212 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setFaviconUrl_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined8 ***pppuVar1;
+  ulong uVar2;
+  undefined8 ***pppuVar3;
+  long lVar4;
+  undefined8 **local_38;
+  ulong uStack_30;
+  ulong local_28;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    if (param_3 == 0) {
+      local_38 = (undefined8 ***)0x0;
+      uStack_30 = 0;
+      local_28 = 0;
+    }
+    else {
+      FUN_043abdf8(&local_38,param_3);
+    }
+    lVar4 = *(long *)(param_1 + 8);
+    pppuVar1 = (undefined8 ***)(lVar4 + 0xf0);
+    if (pppuVar1 != &local_38) {
+      if (*(char *)(lVar4 + 0x107) < '\0') {
+        uVar2 = uStack_30;
+        pppuVar3 = (undefined8 ***)local_38;
+        if (-1 < (long)local_28) {
+          uVar2 = local_28 >> 0x38;
+          pppuVar3 = &local_38;
+        }
+        FUN_00359ad8(pppuVar1,pppuVar3,uVar2);
+      }
+      else if ((long)local_28 < 0) {
+        FUN_00359998(pppuVar1,local_38,uStack_30);
+      }
+      else {
+        *(ulong *)(lVar4 + 0x100) = local_28;
+        *(ulong *)(lVar4 + 0xf8) = uStack_30;
+        *pppuVar1 = local_38;
+      }
+    }
+    if ((long)local_28 < 0) {
+      FUN_00005810(local_38,local_28 & 0x7fffffffffffffff);
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setReferrerUrl:", "type_encoding": "v24@0:8@16", "imp": "0x4400b60", "method_record_va": "0xd778b7c", "selector_va": "0xd759bb1", "dyld_line": 1627, "imp_file_offset": "0x4400b60", "body_name": "ArcAnnotatedVisit::setReferrerUrl:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 16707, "body_length": 1467, "failed": 0, "truncated": false}
+// ==== 0x4400b60  ArcAnnotatedVisit::setReferrerUrl:  (212 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setReferrerUrl_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined8 ***pppuVar1;
+  ulong uVar2;
+  undefined8 ***pppuVar3;
+  long lVar4;
+  undefined8 **local_38;
+  ulong uStack_30;
+  ulong local_28;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    if (param_3 == 0) {
+      local_38 = (undefined8 ***)0x0;
+      uStack_30 = 0;
+      local_28 = 0;
+    }
+    else {
+      FUN_043abdf8(&local_38,param_3);
+    }
+    lVar4 = *(long *)(param_1 + 8);
+    pppuVar1 = (undefined8 ***)(lVar4 + 0x108);
+    if (pppuVar1 != &local_38) {
+      if (*(char *)(lVar4 + 0x11f) < '\0') {
+        uVar2 = uStack_30;
+        pppuVar3 = (undefined8 ***)local_38;
+        if (-1 < (long)local_28) {
+          uVar2 = local_28 >> 0x38;
+          pppuVar3 = &local_38;
+        }
+        FUN_00359ad8(pppuVar1,pppuVar3,uVar2);
+      }
+      else if ((long)local_28 < 0) {
+        FUN_00359998(pppuVar1,local_38,uStack_30);
+      }
+      else {
+        *(ulong *)(lVar4 + 0x118) = local_28;
+        *(ulong *)(lVar4 + 0x110) = uStack_30;
+        *pppuVar1 = local_38;
+      }
+    }
+    if ((long)local_28 < 0) {
+      FUN_00005810(local_38,local_28 & 0x7fffffffffffffff);
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setClusterId:", "type_encoding": "v24@0:8q16", "imp": "0x4400c34", "method_record_va": "0xd778b88", "selector_va": "0xd759bc1", "dyld_line": 1628, "imp_file_offset": "0x4400c34", "body_name": "ArcAnnotatedVisit::setClusterId:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 18174, "body_length": 310, "failed": 0, "truncated": false}
+// ==== 0x4400c34  ArcAnnotatedVisit::setClusterId:  (20 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setClusterId_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(long_long *)(*(long *)(param_1 + 8) + 0x120) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setHidden:", "type_encoding": "v20@0:8B16", "imp": "0x4400c48", "method_record_va": "0xd778b94", "selector_va": "0xd74367e", "dyld_line": 1629, "imp_file_offset": "0x4400c48", "body_name": "ArcAnnotatedVisit::setHidden:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 18484, "body_length": 300, "failed": 0, "truncated": false}
+// ==== 0x4400c48  ArcAnnotatedVisit::setHidden:  (20 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcAnnotatedVisit::setHidden_(ID param_1,SEL param_2,bool param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(char *)(*(long *)(param_1 + 8) + 0x148) = (char)param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setOriginatorCacheGuid:", "type_encoding": "v24@0:8@16", "imp": "0x4400c5c", "method_record_va": "0xd778ba0", "selector_va": "0xd759bcf", "dyld_line": 1630, "imp_file_offset": "0x4400c5c", "body_name": "ArcAnnotatedVisit::setOriginatorCacheGuid:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 18784, "body_length": 1483, "failed": 0, "truncated": false}
+// ==== 0x4400c5c  ArcAnnotatedVisit::setOriginatorCacheGuid:  (228 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setOriginatorCacheGuid_(ID param_1,SEL param_2,ID param_3)
+
+{
+  undefined8 ***pppuVar1;
+  ulong uVar2;
+  undefined8 ***pppuVar3;
+  long lVar4;
+  undefined8 **local_38;
+  ulong uStack_30;
+  ulong local_28;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    if (param_3 == 0) {
+      local_38 = (undefined8 ***)0x0;
+      uStack_30 = 0;
+      local_28 = 0;
+    }
+    else {
+      FUN_01b356b8(&local_38,param_3);
+    }
+    lVar4 = *(long *)(param_1 + 8);
+    pppuVar1 = (undefined8 ***)(lVar4 + 0x128);
+    if (pppuVar1 != &local_38) {
+      if (*(char *)(lVar4 + 0x13f) < '\0') {
+        uVar2 = uStack_30;
+        pppuVar3 = (undefined8 ***)local_38;
+        if (-1 < (long)local_28) {
+          uVar2 = local_28 >> 0x38;
+          pppuVar3 = &local_38;
+        }
+        FUN_00359ad8(pppuVar1,pppuVar3,uVar2);
+      }
+      else if ((long)local_28 < 0) {
+        FUN_00359998(pppuVar1,local_38,uStack_30);
+      }
+      else {
+        *(ulong *)(lVar4 + 0x138) = local_28;
+        *(ulong *)(lVar4 + 0x130) = uStack_30;
+        *pppuVar1 = local_38;
+      }
+    }
+    if ((long)local_28 < 0) {
+      FUN_00005810(local_38,local_28 & 0x7fffffffffffffff);
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setOriginatorVisitId:", "type_encoding": "v24@0:8q16", "imp": "0x4400d40", "method_record_va": "0xd778bac", "selector_va": "0xd759be7", "dyld_line": 1631, "imp_file_offset": "0x4400d40", "body_name": "ArcAnnotatedVisit::setOriginatorVisitId:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 20267, "body_length": 326, "failed": 0, "truncated": false}
+// ==== 0x4400d40  ArcAnnotatedVisit::setOriginatorVisitId:  (20 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+void ArcAnnotatedVisit::setOriginatorVisitId_(ID param_1,SEL param_2,long_long param_3)
+
+{
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    *(long_long *)(*(long *)(param_1 + 8) + 0x140) = param_3;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "toAnnotatedVisit", "type_encoding": "{AnnotatedVisit={unique_ptr<arc::AnnotatedVisit::Impl, std::default_delete<arc::AnnotatedVisit::Impl>>=^{Impl}}}16@0:8", "imp": "0x4400d54", "method_record_va": "0xd778bb8", "selector_va": "0xd744483", "dyld_line": 1632, "imp_file_offset": "0x4400d54", "body_name": "ArcAnnotatedVisit::toAnnotatedVisit", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 20593, "body_length": 5591, "failed": 0, "truncated": false}
+// ==== 0x4400d54  ArcAnnotatedVisit::toAnnotatedVisit  (172 bytes)
+
+/* WARNING: Type propagation algorithm not settling */
+/* Function Stack Size: 0x10 bytes */
+
+AnnotatedVisit ArcAnnotatedVisit::toAnnotatedVisit(ID param_1,SEL param_2)
+
+{
+  AnnotatedVisit AVar1;
+  undefined8 uVar2;
+  unique_ptr<arc::AnnotatedVisit::Impl,_std::default_delete<arc::AnnotatedVisit::Impl>> *in_x8;
+  undefined8 uVar3;
+  
+  if (*(char *)(param_1 + 0x10) == '\0') {
+    AVar1.field0_0x0.field0_0x0 =
+         (unique_ptr<arc::AnnotatedVisit::Impl,_std::default_delete<arc::AnnotatedVisit::Impl>>)
+         FUN_00008790(0x150);
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 8) = 0;
+    *(undefined8 *)AVar1.field0_0x0.field0_0x0 = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x18) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x10) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x28) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x20) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x38) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x30) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x48) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x40) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x58) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x50) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x68) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x60) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x78) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x70) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x88) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x80) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x98) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x90) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xa8) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xa0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xb8) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xb0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xd8) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xd0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xe8) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xe0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xf8) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xf0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x108) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x100) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x118) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x110) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x128) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x120) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x138) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x130) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x148) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x140) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 200) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xc0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x90) = 0xffffffffffffffff;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x88) = 0xffffffffffffffff;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x80) = 0xffffffffffffffff;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xa0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x98) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xb0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xa8) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xb5) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 200) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xc0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xd8) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xd0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xe8) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xe0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xf8) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0xf0) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x108) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x100) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x118) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x110) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x128) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x120) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x138) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x130) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x141) = 0;
+    *(undefined8 *)((long)AVar1.field0_0x0.field0_0x0 + 0x139) = 0;
+  }
+  else {
+    uVar3 = *(undefined8 *)(param_1 + 8);
+    uVar2 = FUN_00008790(0x150);
+    AVar1.field0_0x0.field0_0x0 =
+         (unique_ptr<arc::AnnotatedVisit::Impl,_std::default_delete<arc::AnnotatedVisit::Impl>>)
+         FUN_04336aac(uVar2,uVar3);
+  }
+  in_x8->field0_0x0 = (Impl *)AVar1.field0_0x0.field0_0x0;
+  return (AnnotatedVisit)AVar1.field0_0x0.field0_0x0;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "visit", "type_encoding": "{optional<arc::AnnotatedVisit>=(?=c{AnnotatedVisit={unique_ptr<arc::AnnotatedVisit::Impl, std::default_delete<arc::AnnotatedVisit::Impl>>=^{Impl}}})B}16@0:8", "imp": "0x4400e00", "method_record_va": "0xd778bc4", "selector_va": "0xd759bfd", "dyld_line": 1633, "imp_file_offset": "0x4400e00", "body_name": "ArcAnnotatedVisit::visit", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 26184, "body_length": 976, "failed": 0, "truncated": false}
+// ==== 0x4400e00  ArcAnnotatedVisit::visit  (84 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+optional<arc::AnnotatedVisit> ArcAnnotatedVisit::visit(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  undefined8 uVar2;
+  bool bVar3;
+  AnonymousUnion67 *in_x8;
+  undefined8 uVar4;
+  undefined1 auVar5 [12];
+  optional<arc::AnnotatedVisit> oVar6;
+  
+  bVar3 = (bool)param_2;
+  in_x8->field0 = '\0';
+  in_x8[1].field0 = '\0';
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    if (in_x8 == (AnonymousUnion67 *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x4400e54);
+      (*pcVar1)();
+    }
+    uVar4 = *(undefined8 *)(param_1 + 8);
+    uVar2 = FUN_00008790(0x150);
+    auVar5 = FUN_04336aac(uVar2,uVar4);
+    bVar3 = auVar5._8_4_;
+    param_1 = auVar5._0_8_;
+    *in_x8 = (AnonymousUnion67)param_1;
+    in_x8[1].field0 = '\x01';
+  }
+  oVar6.field1_0x8 = bVar3;
+  oVar6.field0_0x0 = (AnonymousUnion67)param_1;
+  return oVar6;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": "setVisit:", "type_encoding": "v32@0:8{optional<arc::AnnotatedVisit>=(?=c{AnnotatedVisit={unique_ptr<arc::AnnotatedVisit::Impl, std::default_delete<arc::AnnotatedVisit::Impl>>=^{Impl}}})B}16", "imp": "0x4400e54", "method_record_va": "0xd778bd0", "selector_va": "0xd759c03", "dyld_line": 1634, "imp_file_offset": "0x4400e54", "body_name": "ArcAnnotatedVisit::setVisit:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 27160, "body_length": 1357, "failed": 0, "truncated": false}
+// ==== 0x4400e54  ArcAnnotatedVisit::setVisit:  (196 bytes)
+
+/* Function Stack Size: 0x20 bytes */
+
+void ArcAnnotatedVisit::setVisit_(ID param_1,SEL param_2,optional<arc::AnnotatedVisit> param_3)
+
+{
+  AnonymousUnion67 AVar1;
+  char cVar2;
+  char cVar3;
+  long lVar4;
+  undefined8 uVar5;
+  AnonymousUnion67 AVar6;
+  long lVar7;
+  
+  AVar6 = param_3.field0_0x0;
+  AVar1 = (AnonymousUnion67)(param_1 + 8);
+  cVar3 = *(char *)(param_1 + 0x10);
+  if (cVar3 == *(char *)((long)AVar6 + 8)) {
+    cVar2 = '\0';
+    if (AVar1 != AVar6) {
+      cVar2 = cVar3;
+    }
+    if (cVar2 != '\0') {
+      lVar7 = *(long *)AVar6;
+      lVar4 = FUN_00008790(0x150,param_2,AVar6,param_3.field1_0x8);
+      FUN_04336aac(lVar4,lVar7);
+      lVar7 = *(long *)AVar1;
+      *(long *)AVar1 = lVar4;
+      if (lVar7 != 0) {
+        uVar5 = FUN_04336e98();
+        FUN_00005810(uVar5,0x150);
+        return;
+      }
+    }
+  }
+  else if (cVar3 == '\0') {
+    lVar4 = *(long *)AVar6;
+    uVar5 = FUN_00008790(0x150,param_2,AVar6,param_3.field1_0x8);
+    uVar5 = FUN_04336aac(uVar5,lVar4);
+    *(undefined8 *)(param_1 + 8) = uVar5;
+    *(undefined1 *)(param_1 + 0x10) = 1;
+  }
+  else {
+    lVar4 = *(long *)AVar1;
+    *(long *)AVar1 = 0;
+    if (lVar4 != 0) {
+      uVar5 = FUN_04336e98();
+      FUN_00005810(uVar5,0x150);
+    }
+    *(undefined1 *)(param_1 + 0x10) = 0;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x4400f18", "method_record_va": "0xd778bdc", "selector_va": "0xd744a39", "dyld_line": 1635, "imp_file_offset": "0x4400f18", "body_name": "ArcAnnotatedVisit::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 28517, "body_length": 446, "failed": 0, "truncated": false}
+// ==== 0x4400f18  ArcAnnotatedVisit::.cxx_destruct  (52 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcAnnotatedVisit::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  undefined8 uVar2;
+  
+  if (*(char *)(param_1 + 0x10) != '\0') {
+    lVar1 = *(long *)(param_1 + 8);
+    *(undefined8 *)(param_1 + 8) = 0;
+    if (lVar1 != 0) {
+      uVar2 = FUN_04336e98();
+      FUN_00005810(uVar2,0x150);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAnnotatedVisit", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x4400f4c", "method_record_va": "0xd778be8", "selector_va": "0xd744a47", "dyld_line": 1636, "imp_file_offset": "0x4400f4c", "body_name": "ArcFreezingVoteToken::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 28963, "body_length": 272, "failed": 0, "truncated": false}
+// ==== 0x4400f4c  ArcFreezingVoteToken::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcFreezingVoteToken::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x10) = 0;
+  return param_1;
+}
+
+
+

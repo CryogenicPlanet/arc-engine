@@ -1,0 +1,33 @@
+// ==== 0x433ee60  FUN_0433ee60  (168 bytes)
+
+void FUN_0433ee60(long *param_1)
+
+{
+  long lVar1;
+  undefined8 uVar2;
+  long lVar3;
+  undefined8 local_60;
+  undefined8 uStack_58;
+  ulong local_50;
+  
+  lVar1 = *param_1;
+  lVar3 = *(long *)(lVar1 + 0x370);
+  if (lVar3 != 0) {
+    uVar2 = *(undefined8 *)(lVar1 + 0x368);
+    if (*(char *)(lVar1 + 0x27) < '\0') {
+      FUN_00060a60(&local_60,*(undefined8 *)(lVar1 + 0x10),*(undefined8 *)(lVar1 + 0x18));
+    }
+    else {
+      uStack_58 = *(undefined8 *)(lVar1 + 0x18);
+      local_60 = *(undefined8 *)(lVar1 + 0x10);
+      local_50 = *(ulong *)(lVar1 + 0x20);
+    }
+    FUN_0432de10(lVar3 + -8,uVar2);
+    if ((long)local_50 < 0) {
+      FUN_00005810(local_60,local_50 & 0x7fffffffffffffff);
+    }
+  }
+  return;
+}
+
+

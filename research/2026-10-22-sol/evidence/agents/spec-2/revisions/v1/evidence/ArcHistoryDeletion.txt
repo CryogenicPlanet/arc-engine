@@ -1,0 +1,435 @@
+{
+  "class_name": "ArcHistoryDeletion",
+  "metadata_va": "0xe37d388",
+  "metadata_file_offset": "0xe37d388",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2aac20",
+  "instance_start": 8,
+  "instance_size": 144,
+  "ivars": [
+    {
+      "record_va": "0xe2aab38",
+      "offset": 8,
+      "name": "_deletedItems",
+      "type": "@\"NSArray\"",
+      "alignment": 3,
+      "size": 8
+    },
+    {
+      "record_va": "0xe2aab58",
+      "offset": 16,
+      "name": "_history_deletion",
+      "type": "{optional<arc::HistoryDeletion>=\"\"(?=\"__null_state_\"c\"__val_\"{HistoryDeletion=\"is_all_history\"B\"is_from_expiration\"B\"has_time_range\"B\"time_range_start\"d\"time_range_end\"d\"deleted_items\"{vector<arc::HistoryItem, std::allocator<arc::HistoryItem>>=\"__layout_\"{__vector_layout<arc::HistoryItem, std::allocator<arc::HistoryItem>>=\"__begin_\"^{HistoryItem}\"__size_\"Q\"__capacity_\"Q}}\"favicon_urls\"{set<std::string, std::less<std::string>, std::allocator<std::string>>=\"__tree_\"{__tree<std::string, std::less<std::string>, std::allocator<std::string>>=\"__begin_node_\"^v\"__end_node_\"{__tree_end_node<std::__tree_node_base<void *> *>=\"__left_\"^v}\"__size_\"Q}}\"restrict_urls\"{set<std::string, std::less<std::string>, std::allocator<std::string>>=\"__tree_\"{__tree<std::string, std::less<std::string>, std::allocator<std::string>>=\"__begin_node_\"^v\"__end_node_\"{__tree_end_node<std::__tree_node_base<void *> *>=\"__left_\"^v}\"__size_\"Q}}\"deleted_visit_ids\"{vector<long long, std::allocator<long long>>=\"__layout_\"{__vector_layout<long long, std::allocator<long long>>=\"__begin_\"^q\"__size_\"Q\"__capacity_\"Q}}})\"__engaged_\"B}",
+      "alignment": 3,
+      "size": 128
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "initWithHistoryDeletion:", "type_encoding": "@24@0:8r^v16", "imp": "0x442e4f4", "method_record_va": "0xd77af54", "selector_va": "0xd74467b", "dyld_line": 2434, "imp_file_offset": "0x442e4f4", "body_name": "ArcHistoryDeletion::initWithHistoryDeletion:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1040175, "body_length": 634, "failed": 0, "truncated": false}
+// ==== 0x442e4f4  ArcHistoryDeletion::initWithHistoryDeletion:  (116 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcHistoryDeletion::initWithHistoryDeletion_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcHistoryDeletion;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0x88) != '\0') {
+      FUN_043374e4(IVar1 + 0x10);
+      *(undefined1 *)(IVar1 + 0x88) = 0;
+    }
+    FUN_04337338(IVar1 + 0x10,param_3);
+    *(undefined1 *)(IVar1 + 0x88) = 1;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "isAllHistory", "type_encoding": "B16@0:8", "imp": "0x442e568", "method_record_va": "0xd77af60", "selector_va": "0xd760eb0", "dyld_line": 2435, "imp_file_offset": "0x442e568", "body_name": "ArcHistoryDeletion::isAllHistory", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1040809, "body_length": 404, "failed": 0, "truncated": false}
+// ==== 0x442e568  ArcHistoryDeletion::isAllHistory  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcHistoryDeletion::isAllHistory(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x88) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x10);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442e57c);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "isFromExpiration", "type_encoding": "B16@0:8", "imp": "0x442e57c", "method_record_va": "0xd77af6c", "selector_va": "0xd760ebd", "dyld_line": 2436, "imp_file_offset": "0x442e57c", "body_name": "ArcHistoryDeletion::isFromExpiration", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1041213, "body_length": 412, "failed": 0, "truncated": false}
+// ==== 0x442e57c  ArcHistoryDeletion::isFromExpiration  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcHistoryDeletion::isFromExpiration(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x88) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x11);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442e590);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "hasTimeRange", "type_encoding": "B16@0:8", "imp": "0x442e590", "method_record_va": "0xd77af78", "selector_va": "0xd760ece", "dyld_line": 2437, "imp_file_offset": "0x442e590", "body_name": "ArcHistoryDeletion::hasTimeRange", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1041625, "body_length": 404, "failed": 0, "truncated": false}
+// ==== 0x442e590  ArcHistoryDeletion::hasTimeRange  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcHistoryDeletion::hasTimeRange(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x88) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x12);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442e5a4);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "timeRangeStart", "type_encoding": "@16@0:8", "imp": "0x442e5a4", "method_record_va": "0xd77af84", "selector_va": "0xd760edb", "dyld_line": 2438, "imp_file_offset": "0x442e5a4", "body_name": "ArcHistoryDeletion::timeRangeStart", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1042029, "body_length": 583, "failed": 0, "truncated": false}
+// ==== 0x442e5a4  ArcHistoryDeletion::timeRangeStart  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryDeletion::timeRangeStart(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  
+  if ((*(byte *)(param_1 + 0x88) & 1) != 0) {
+    IVar2 = NSDate::dateWithTimeIntervalSince1970_
+                      ((ID)&_OBJC_CLASS___NSDate,"dateWithTimeIntervalSince1970:",
+                       *(undefined8 *)(param_1 + 0x18));
+    return IVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442e5c8);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "timeRangeEnd", "type_encoding": "@16@0:8", "imp": "0x442e5c8", "method_record_va": "0xd77af90", "selector_va": "0xd760eea", "dyld_line": 2439, "imp_file_offset": "0x442e5c8", "body_name": "ArcHistoryDeletion::timeRangeEnd", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1042612, "body_length": 579, "failed": 0, "truncated": false}
+// ==== 0x442e5c8  ArcHistoryDeletion::timeRangeEnd  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryDeletion::timeRangeEnd(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  
+  if ((*(byte *)(param_1 + 0x88) & 1) != 0) {
+    IVar2 = NSDate::dateWithTimeIntervalSince1970_
+                      ((ID)&_OBJC_CLASS___NSDate,"dateWithTimeIntervalSince1970:",
+                       *(undefined8 *)(param_1 + 0x20));
+    return IVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442e5ec);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "deletedItems", "type_encoding": "@16@0:8", "imp": "0x442e5ec", "method_record_va": "0xd77af9c", "selector_va": "0xd760ef7", "dyld_line": 2440, "imp_file_offset": "0x442e5ec", "body_name": "ArcHistoryDeletion::deletedItems", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1043191, "body_length": 1515, "failed": 0, "truncated": false}
+// ==== 0x442e5ec  ArcHistoryDeletion::deletedItems  (216 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retainAutoreleaseReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryDeletion::deletedItems(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  ID IVar3;
+  const_void__ pvVar4;
+  long lVar5;
+  
+  IVar2 = *(ID *)(param_1 + 8);
+  if (IVar2 == 0) {
+    if ((*(byte *)(param_1 + 0x88) & 1) == 0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442e6c4);
+      (*pcVar1)();
+    }
+    IVar2 = NSMutableArray::arrayWithCapacity_
+                      ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",
+                       *(undefined8 *)(param_1 + 0x30));
+    lVar5 = *(long *)(param_1 + 0x30) << 4;
+    if (lVar5 != 0) {
+      pvVar4 = *(const_void__ *)(param_1 + 0x28);
+      do {
+        IVar3 = _objc_alloc(&objc::class_t::ArcHistoryItem);
+        IVar3 = ArcHistoryItem::initWithHistoryItem_(IVar3,"initWithHistoryItem:",pvVar4);
+        NSMutableArray::addObject_(IVar2,"addObject:",IVar3);
+        pvVar4 = (const_void__)((long)pvVar4 + 0x10);
+        lVar5 = lVar5 + -0x10;
+      } while (lVar5 != 0);
+    }
+    *(ID *)(param_1 + 8) = IVar2;
+    IVar2 = *(ID *)(param_1 + 8);
+  }
+  return IVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "faviconUrls", "type_encoding": "@16@0:8", "imp": "0x442e6c4", "method_record_va": "0xd77afa8", "selector_va": "0xd760f04", "dyld_line": 2441, "imp_file_offset": "0x442e6c4", "body_name": "ArcHistoryDeletion::faviconUrls", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1044706, "body_length": 1446, "failed": 0, "truncated": false}
+// ==== 0x442e6c4  ArcHistoryDeletion::faviconUrls  (228 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryDeletion::faviconUrls(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  bool bVar3;
+  ID IVar4;
+  long lVar5;
+  long *plVar6;
+  long *plVar7;
+  
+  IVar4 = _objc_alloc_init(&_OBJC_CLASS___NSMutableSet);
+  if ((*(byte *)(param_1 + 0x88) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x442e7a8);
+    (*pcVar2)();
+  }
+  plVar6 = *(long **)(param_1 + 0x40);
+  while (plVar6 != (long *)(param_1 + 0x48)) {
+    lVar5 = FUN_043abd34(plVar6 + 4);
+    if (lVar5 != 0) {
+      NSMutableSet::addObject_(IVar4,"addObject:",lVar5);
+    }
+    plVar1 = (long *)plVar6[1];
+    plVar7 = plVar6;
+    if ((long *)plVar6[1] == (long *)0x0) {
+      do {
+        plVar6 = (long *)plVar7[2];
+        bVar3 = plVar7 != (long *)*plVar6;
+        plVar7 = plVar6;
+      } while (bVar3);
+    }
+    else {
+      do {
+        plVar6 = plVar1;
+        plVar1 = (long *)*plVar6;
+      } while ((long *)*plVar6 != (long *)0x0);
+    }
+  }
+  IVar4 = NSMutableSet::copy(IVar4,"copy");
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "restrictUrls", "type_encoding": "@16@0:8", "imp": "0x442e7a8", "method_record_va": "0xd77afb4", "selector_va": "0xd760f10", "dyld_line": 2442, "imp_file_offset": "0x442e7a8", "body_name": "ArcHistoryDeletion::restrictUrls", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1046152, "body_length": 1448, "failed": 0, "truncated": false}
+// ==== 0x442e7a8  ArcHistoryDeletion::restrictUrls  (228 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryDeletion::restrictUrls(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  bool bVar3;
+  ID IVar4;
+  long lVar5;
+  long *plVar6;
+  long *plVar7;
+  
+  IVar4 = _objc_alloc_init(&_OBJC_CLASS___NSMutableSet);
+  if ((*(byte *)(param_1 + 0x88) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x442e88c);
+    (*pcVar2)();
+  }
+  plVar6 = *(long **)(param_1 + 0x58);
+  while (plVar6 != (long *)(param_1 + 0x60)) {
+    lVar5 = FUN_043abd34(plVar6 + 4);
+    if (lVar5 != 0) {
+      NSMutableSet::addObject_(IVar4,"addObject:",lVar5);
+    }
+    plVar1 = (long *)plVar6[1];
+    plVar7 = plVar6;
+    if ((long *)plVar6[1] == (long *)0x0) {
+      do {
+        plVar6 = (long *)plVar7[2];
+        bVar3 = plVar7 != (long *)*plVar6;
+        plVar7 = plVar6;
+      } while (bVar3);
+    }
+    else {
+      do {
+        plVar6 = plVar1;
+        plVar1 = (long *)*plVar6;
+      } while ((long *)*plVar6 != (long *)0x0);
+    }
+  }
+  IVar4 = NSMutableSet::copy(IVar4,"copy");
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "deletedVisitIds", "type_encoding": "@16@0:8", "imp": "0x442e88c", "method_record_va": "0xd77afc0", "selector_va": "0xd760f1d", "dyld_line": 2443, "imp_file_offset": "0x442e88c", "body_name": "ArcHistoryDeletion::deletedVisitIds", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1047600, "body_length": 1322, "failed": 0, "truncated": false}
+// ==== 0x442e88c  ArcHistoryDeletion::deletedVisitIds  (192 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryDeletion::deletedVisitIds(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID self;
+  ID IVar2;
+  long lVar3;
+  undefined8 *puVar4;
+  
+  if ((*(byte *)(param_1 + 0x88) & 1) != 0) {
+    self = NSMutableArray::arrayWithCapacity_
+                     ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",
+                      *(undefined8 *)(param_1 + 0x78));
+    lVar3 = *(long *)(param_1 + 0x78) << 3;
+    if (lVar3 != 0) {
+      puVar4 = *(undefined8 **)(param_1 + 0x70);
+      do {
+        IVar2 = NSNumber::numberWithLongLong_
+                          ((ID)&_OBJC_CLASS___NSNumber,"numberWithLongLong:",*puVar4);
+        NSMutableArray::addObject_(self,"addObject:",IVar2);
+        lVar3 = lVar3 + -8;
+        puVar4 = puVar4 + 1;
+      } while (lVar3 != 0);
+    }
+    return self;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442e94c);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": "history_deletion", "type_encoding": "{optional<arc::HistoryDeletion>=(?=c{HistoryDeletion=BBBdd{vector<arc::HistoryItem, std::allocator<arc::HistoryItem>>={__vector_layout<arc::HistoryItem, std::allocator<arc::HistoryItem>>=^{HistoryItem}QQ}}{set<std::string, std::less<std::string>, std::allocator<std::string>>={__tree<std::string, std::less<std::string>, std::allocator<std::string>>=^v{__tree_end_node<std::__tree_node_base<void *> *>=^v}Q}}{set<std::string, std::less<std::string>, std::allocator<std::string>>={__tree<std::string, std::less<std::string>, std::allocator<std::string>>=^v{__tree_end_node<std::__tree_node_base<void *> *>=^v}Q}}{vector<long long, std::allocator<long long>>={__vector_layout<long long, std::allocator<long long>>=^qQQ}}})B}16@0:8", "imp": "0x442e94c", "method_record_va": "0xd77afcc", "selector_va": "0xd760f2d", "dyld_line": 2444, "imp_file_offset": "0x442e94c", "body_name": "ArcHistoryDeletion::history_deletion", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1048922, "body_length": 794, "failed": 0, "truncated": false}
+// ==== 0x442e94c  ArcHistoryDeletion::history_deletion  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcHistoryDeletion::history_deletion
+               (optional<arc::HistoryDeletion> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)((long)&__return_storage_ptr__->field0_0x0 + 0x78) = 0;
+  if (*(char *)(param_1 + 0x88) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::HistoryDeletion> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442e994);
+      (*pcVar1)();
+    }
+    FUN_04337338(__return_storage_ptr__,param_1 + 0x10);
+    *(undefined1 *)((long)&__return_storage_ptr__->field0_0x0 + 0x78) = 1;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x442e994", "method_record_va": "0xd77afd8", "selector_va": "0xd744a39", "dyld_line": 2445, "imp_file_offset": "0x442e994", "body_name": "ArcHistoryDeletion::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1049716, "body_length": 388, "failed": 0, "truncated": false}
+// ==== 0x442e994  ArcHistoryDeletion::.cxx_destruct  (52 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcHistoryDeletion::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x88) != '\0') {
+    FUN_043374e4(param_1 + 0x10);
+  }
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcHistoryDeletion", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x442e9c8", "method_record_va": "0xd77afe4", "selector_va": "0xd744a47", "dyld_line": 2446, "imp_file_offset": "0x442e9c8", "body_name": "ArcHistoryDeletion::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1050104, "body_length": 271, "failed": 0, "truncated": false}
+// ==== 0x442e9c8  ArcHistoryDeletion::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcHistoryDeletion::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 0x10) = 0;
+  *(undefined1 *)(param_1 + 0x88) = 0;
+  return param_1;
+}
+
+
+

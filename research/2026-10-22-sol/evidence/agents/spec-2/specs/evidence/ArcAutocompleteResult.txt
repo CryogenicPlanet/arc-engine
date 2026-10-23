@@ -1,0 +1,106 @@
+{
+  "class_name": "ArcAutocompleteResult",
+  "metadata_va": "0xe37bbc8",
+  "metadata_file_offset": "0xe37bbc8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a45e8",
+  "instance_start": 8,
+  "instance_size": 24,
+  "ivars": [
+    {
+      "record_va": "0xe2a4580",
+      "offset": 8,
+      "name": "_combinedMatches",
+      "type": "@\"NSArray\"",
+      "alignment": 3,
+      "size": 8
+    },
+    {
+      "record_va": "0xe2a45a0",
+      "offset": 16,
+      "name": "_perProviderMatches",
+      "type": "@\"NSDictionary\"",
+      "alignment": 3,
+      "size": 8
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcAutocompleteResult", "category": "", "protocol": "", "kind": "-", "selector": "init:perProviderMatches:", "type_encoding": "@32@0:8@16@24", "imp": "0x43df204", "method_record_va": "0xd777ab0", "selector_va": "0xd75631a", "dyld_line": 1320, "imp_file_offset": "0x43df204", "body_name": "ArcAutocompleteResult::init:perProviderMatches:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4209684, "body_length": 764, "failed": 0, "truncated": false}
+// ==== 0x43df204  ArcAutocompleteResult::init:perProviderMatches:  (148 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+ID ArcAutocompleteResult::init_perProviderMatches_(ID param_1,SEL param_2,ID param_3,ID param_4)
+
+{
+  ID IVar1;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcAutocompleteResult;
+  local_40 = param_1;
+  IVar1 = NSObject::init((ID)&local_40,"init");
+  if (IVar1 != 0) {
+    *(ID *)(IVar1 + 8) = param_3;
+    *(ID *)(IVar1 + 0x10) = param_4;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAutocompleteResult", "category": "", "protocol": "", "kind": "-", "selector": "combinedMatches", "type_encoding": "@16@0:8", "imp": "0x43dd450", "method_record_va": "0xd777abc", "selector_va": "0xd756333", "dyld_line": 1321, "imp_file_offset": "0x43dd450", "body_name": "ICloudKeychainPresentationDelegate::presentationAnchorForAuthorizationController:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4166763, "body_length": 432, "failed": 0, "truncated": false}
+// ==== 0x43dd450  ICloudKeychainPresentationDelegate::presentationAnchorForAuthorizationController:  (8 bytes)
+
+/* WARNING: Function: _objc_retainAutoreleaseReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x18 bytes */
+
+ID ICloudKeychainPresentationDelegate::presentationAnchorForAuthorizationController_
+             (ID param_1,SEL param_2,ID param_3)
+
+{
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAutocompleteResult", "category": "", "protocol": "", "kind": "-", "selector": "perProviderMatches", "type_encoding": "@16@0:8", "imp": "0x420b5f8", "method_record_va": "0xd777ac8", "selector_va": "0xd756343", "dyld_line": 1322, "imp_file_offset": "0x420b5f8", "body_name": "ViewsNSWindowDelegate::cursor", "body_path": "/home/exedev/work/inputs/decompile/0x42.c", "body_offset": 222677, "body_length": 306, "failed": 0, "truncated": false}
+// ==== 0x420b5f8  ViewsNSWindowDelegate::cursor  (8 bytes)
+
+/* WARNING: Function: _objc_retainAutoreleaseReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ViewsNSWindowDelegate::cursor(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 0x10);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcAutocompleteResult", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x43dd5a4", "method_record_va": "0xd777ad4", "selector_va": "0xd744a39", "dyld_line": 1323, "imp_file_offset": "0x43dd5a4", "body_name": "WebNNMLFeatureProvider::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4168729, "body_length": 354, "failed": 0, "truncated": false}
+// ==== 0x43dd5a4  WebNNMLFeatureProvider::.cxx_destruct  (48 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void WebNNMLFeatureProvider::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+

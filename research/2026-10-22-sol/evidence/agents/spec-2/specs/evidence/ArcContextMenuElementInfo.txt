@@ -1,0 +1,698 @@
+{
+  "class_name": "ArcContextMenuElementInfo",
+  "metadata_va": "0xe37e508",
+  "metadata_file_offset": "0xe37e508",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2aeac8",
+  "instance_start": 8,
+  "instance_size": 32,
+  "ivars": [
+    {
+      "record_va": "0xe2ae9c0",
+      "offset": 8,
+      "name": "_context_menu_element_info",
+      "type": "{optional<arc::ContextMenuElementInfo>=\"\"(?=\"__null_state_\"c\"__val_\"{ContextMenuElementInfo=\"impl_\"{shared_ptr<arc::ContextMenuElementInfo::Impl>=\"__ptr_\"^{Impl}\"__cntrl_\"^{__shared_weak_count}}})\"__engaged_\"B}",
+      "alignment": 3,
+      "size": 24
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "initWithContextMenuElementInfo:", "type_encoding": "@24@0:8r^v16", "imp": "0x443f0a0", "method_record_va": "0xd77cc8c", "selector_va": "0xd76833d", "dyld_line": 3132, "imp_file_offset": "0x443f0a0", "body_name": "ArcContextMenuElementInfo::initWithContextMenuElementInfo:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1506294, "body_length": 1547, "failed": 0, "truncated": false}
+// ==== 0x443f0a0  ArcContextMenuElementInfo::initWithContextMenuElementInfo:  (292 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcContextMenuElementInfo::initWithContextMenuElementInfo_
+             (ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  long lVar1;
+  ID IVar2;
+  code *pcVar3;
+  long *plVar4;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcContextMenuElementInfo;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x18) == '\0') goto LAB_0443f100;
+  plVar4 = *(long **)(IVar2 + 0x10);
+  if (plVar4 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar4[1];
+    plVar4[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar4[2];
+        plVar4[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_0443f0fc;
+      }
+      pcVar3 = *(code **)(*plVar4 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*pcVar3)(plVar4);
+      }
+    }
+  }
+LAB_0443f0fc:
+  *(undefined1 *)(IVar2 + 0x18) = 0;
+LAB_0443f100:
+  *(undefined8 *)(IVar2 + 8) = *(undefined8 *)param_3;
+  lVar1 = *(long *)((long)param_3 + 8);
+  *(long *)(IVar2 + 0x10) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = *(long *)(lVar1 + 8) + 1;
+  }
+  *(undefined1 *)(IVar2 + 0x18) = 1;
+  return IVar2;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "x", "type_encoding": "i16@0:8", "imp": "0x443f1c4", "method_record_va": "0xd77cc98", "selector_va": "0xd75c6e6", "dyld_line": 3133, "imp_file_offset": "0x443f1c4", "body_name": "ArcContextMenuElementInfo::x", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1507841, "body_length": 400, "failed": 0, "truncated": false}
+// ==== 0x443f1c4  ArcContextMenuElementInfo::x  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcContextMenuElementInfo::x(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    return *(int *)(*(long *)(param_1 + 8) + 4);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443f1dc);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "y", "type_encoding": "i16@0:8", "imp": "0x443f1dc", "method_record_va": "0xd77cca4", "selector_va": "0xd75c6ee", "dyld_line": 3134, "imp_file_offset": "0x443f1dc", "body_name": "ArcContextMenuElementInfo::y", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1508241, "body_length": 400, "failed": 0, "truncated": false}
+// ==== 0x443f1dc  ArcContextMenuElementInfo::y  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcContextMenuElementInfo::y(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    return *(int *)(*(long *)(param_1 + 8) + 8);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443f1f4);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "topLevelURL", "type_encoding": "@16@0:8", "imp": "0x443f1f4", "method_record_va": "0xd77ccb0", "selector_va": "0xd76835d", "dyld_line": 3135, "imp_file_offset": "0x443f1f4", "body_name": "ArcContextMenuElementInfo::topLevelURL", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1508641, "body_length": 1104, "failed": 0, "truncated": false}
+// ==== 0x443f1f4  ArcContextMenuElementInfo::topLevelURL  (140 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcContextMenuElementInfo::topLevelURL(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  undefined8 *puVar2;
+  ID IVar3;
+  undefined8 local_40;
+  undefined8 uStack_38;
+  ulong local_30;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    puVar2 = (undefined8 *)FUN_007cf864(*(long *)(param_1 + 8) + 0x358);
+    if (*(char *)((long)puVar2 + 0x17) < '\0') {
+      FUN_00060a60(&local_40,*puVar2,puVar2[1]);
+    }
+    else {
+      uStack_38 = puVar2[1];
+      local_40 = *puVar2;
+      local_30 = puVar2[2];
+    }
+    IVar3 = FUN_043abd34(&local_40);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443f280);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "subFrameURL", "type_encoding": "@16@0:8", "imp": "0x443f2a4", "method_record_va": "0xd77ccbc", "selector_va": "0xd768369", "dyld_line": 3136, "imp_file_offset": "0x443f2a4", "body_name": "ArcContextMenuElementInfo::subFrameURL", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1509745, "body_length": 1104, "failed": 0, "truncated": false}
+// ==== 0x443f2a4  ArcContextMenuElementInfo::subFrameURL  (140 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcContextMenuElementInfo::subFrameURL(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  undefined8 *puVar2;
+  ID IVar3;
+  undefined8 local_40;
+  undefined8 uStack_38;
+  ulong local_30;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    puVar2 = (undefined8 *)FUN_007cf864(*(long *)(param_1 + 8) + 0x3d0);
+    if (*(char *)((long)puVar2 + 0x17) < '\0') {
+      FUN_00060a60(&local_40,*puVar2,puVar2[1]);
+    }
+    else {
+      uStack_38 = puVar2[1];
+      local_40 = *puVar2;
+      local_30 = puVar2[2];
+    }
+    IVar3 = FUN_043abd34(&local_40);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443f330);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "linkURL", "type_encoding": "@16@0:8", "imp": "0x442e1a0", "method_record_va": "0xd77ccc8", "selector_va": "0xd7627a5", "dyld_line": 3137, "imp_file_offset": "0x442e1a0", "body_name": "ArcContextMenuElementInfo::linkURL", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1033720, "body_length": 1095, "failed": 0, "truncated": false}
+// ==== 0x442e1a0  ArcContextMenuElementInfo::linkURL  (140 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcContextMenuElementInfo::linkURL(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  undefined8 *puVar2;
+  ID IVar3;
+  undefined8 local_40;
+  undefined8 uStack_38;
+  ulong local_30;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    puVar2 = (undefined8 *)FUN_007cf864(*(long *)(param_1 + 8) + 0x10);
+    if (*(char *)((long)puVar2 + 0x17) < '\0') {
+      FUN_00060a60(&local_40,*puVar2,puVar2[1]);
+    }
+    else {
+      uStack_38 = puVar2[1];
+      local_40 = *puVar2;
+      local_30 = puVar2[2];
+    }
+    IVar3 = FUN_043abd34(&local_40);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442e22c);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "sourceAttributeURL", "type_encoding": "@16@0:8", "imp": "0x443f354", "method_record_va": "0xd77ccd4", "selector_va": "0xd768375", "dyld_line": 3138, "imp_file_offset": "0x443f354", "body_name": "ArcContextMenuElementInfo::sourceAttributeURL", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1510849, "body_length": 1118, "failed": 0, "truncated": false}
+// ==== 0x443f354  ArcContextMenuElementInfo::sourceAttributeURL  (140 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcContextMenuElementInfo::sourceAttributeURL(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  undefined8 *puVar2;
+  ID IVar3;
+  undefined8 local_40;
+  undefined8 uStack_38;
+  ulong local_30;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    puVar2 = (undefined8 *)FUN_007cf864(*(long *)(param_1 + 8) + 0x118);
+    if (*(char *)((long)puVar2 + 0x17) < '\0') {
+      FUN_00060a60(&local_40,*puVar2,puVar2[1]);
+    }
+    else {
+      uStack_38 = puVar2[1];
+      local_40 = *puVar2;
+      local_30 = puVar2[2];
+    }
+    IVar3 = FUN_043abd34(&local_40);
+    if ((long)local_30 < 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443f3e0);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "selectionText", "type_encoding": "@16@0:8", "imp": "0x443f404", "method_record_va": "0xd77cce0", "selector_va": "0xd768388", "dyld_line": 3139, "imp_file_offset": "0x443f404", "body_name": "ArcContextMenuElementInfo::selectionText", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1511967, "body_length": 1360, "failed": 0, "truncated": false}
+// ==== 0x443f404  ArcContextMenuElementInfo::selectionText  (156 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcContextMenuElementInfo::selectionText(ID param_1,SEL param_2)
+
+{
+  undefined1 **ppuVar1;
+  code *pcVar2;
+  ID IVar3;
+  long lVar4;
+  undefined1 *local_40;
+  long lStack_38;
+  undefined8 local_30;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    lVar4 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar4 + 0x1d7) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0x1c0),*(undefined8 *)(lVar4 + 0x1c8));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0x1c8);
+      local_40 = *(undefined1 **)(lVar4 + 0x1c0);
+      local_30 = *(long *)(lVar4 + 0x1d0);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar4 = lStack_38;
+    if (-1 < local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    IVar3 = FUN_01d9fb90(ppuVar1,lVar4);
+    if (local_30 < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x443f4a0);
+  (*pcVar2)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "suggestedFilename", "type_encoding": "@16@0:8", "imp": "0x443f4c4", "method_record_va": "0xd77ccec", "selector_va": "0xd768396", "dyld_line": 3140, "imp_file_offset": "0x443f4c4", "body_name": "ArcContextMenuElementInfo::suggestedFilename", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1513327, "body_length": 1368, "failed": 0, "truncated": false}
+// ==== 0x443f4c4  ArcContextMenuElementInfo::suggestedFilename  (164 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcContextMenuElementInfo::suggestedFilename(ID param_1,SEL param_2)
+
+{
+  undefined1 **ppuVar1;
+  code *pcVar2;
+  ID IVar3;
+  long lVar4;
+  undefined1 *local_40;
+  long lStack_38;
+  undefined8 local_30;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    lVar4 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar4 + 0x21f) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0x208),*(undefined8 *)(lVar4 + 0x210));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0x210);
+      local_40 = *(undefined1 **)(lVar4 + 0x208);
+      local_30 = *(long *)(lVar4 + 0x218);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar4 = lStack_38;
+    if (-1 < local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    IVar3 = FUN_01d9fb90(ppuVar1,lVar4);
+    if (local_30 < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x443f568);
+  (*pcVar2)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "misspelledWord", "type_encoding": "@16@0:8", "imp": "0x443f58c", "method_record_va": "0xd77ccf8", "selector_va": "0xd7683a8", "dyld_line": 3141, "imp_file_offset": "0x443f58c", "body_name": "ArcContextMenuElementInfo::misspelledWord", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1514695, "body_length": 1362, "failed": 0, "truncated": false}
+// ==== 0x443f58c  ArcContextMenuElementInfo::misspelledWord  (164 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcContextMenuElementInfo::misspelledWord(ID param_1,SEL param_2)
+
+{
+  undefined1 **ppuVar1;
+  code *pcVar2;
+  ID IVar3;
+  long lVar4;
+  undefined1 *local_40;
+  long lStack_38;
+  undefined8 local_30;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    lVar4 = *(long *)(param_1 + 8);
+    if (*(char *)(lVar4 + 0x237) < '\0') {
+      FUN_00054420(&local_40,*(undefined8 *)(lVar4 + 0x220),*(undefined8 *)(lVar4 + 0x228));
+    }
+    else {
+      lStack_38 = *(long *)(lVar4 + 0x228);
+      local_40 = *(undefined1 **)(lVar4 + 0x220);
+      local_30 = *(long *)(lVar4 + 0x230);
+    }
+    ppuVar1 = (undefined1 **)local_40;
+    if (-1 < (long)local_30._7_1_) {
+      ppuVar1 = &local_40;
+    }
+    lVar4 = lStack_38;
+    if (-1 < local_30) {
+      lVar4 = (long)local_30._7_1_;
+    }
+    IVar3 = FUN_01d9fb90(ppuVar1,lVar4);
+    if (local_30 < 0) {
+      FUN_00005810(local_40,local_30 << 1);
+    }
+    return IVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x443f630);
+  (*pcVar2)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "dictionarySuggestions", "type_encoding": "@16@0:8", "imp": "0x443f654", "method_record_va": "0xd77cd04", "selector_va": "0xd7683b7", "dyld_line": 3142, "imp_file_offset": "0x443f654", "body_name": "ArcContextMenuElementInfo::dictionarySuggestions", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1516057, "body_length": 2208, "failed": 0, "truncated": false}
+// ==== 0x443f654  ArcContextMenuElementInfo::dictionarySuggestions  (340 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcContextMenuElementInfo::dictionarySuggestions(ID param_1,SEL param_2)
+
+{
+  undefined8 *puVar1;
+  long lVar2;
+  char cVar3;
+  undefined8 *puVar4;
+  code *pcVar5;
+  ID self;
+  undefined8 uVar6;
+  undefined8 *puVar7;
+  long lVar8;
+  undefined8 *local_58;
+  long local_50;
+  long local_48;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    FUN_043342a4(&local_58,param_1 + 8);
+    self = NSMutableArray::arrayWithCapacity_
+                     ((ID)&_OBJC_CLASS___NSMutableArray,"arrayWithCapacity:",local_50);
+    puVar4 = local_58;
+    puVar1 = local_58;
+    for (lVar8 = local_50 * 0x18; local_58 = puVar1, lVar8 != 0; lVar8 = lVar8 + -0x18) {
+      cVar3 = *(char *)((long)puVar4 + 0x17);
+      puVar1 = (undefined8 *)*puVar4;
+      if (-1 < (long)cVar3) {
+        puVar1 = puVar4;
+      }
+      lVar2 = puVar4[1];
+      if (-1 < cVar3) {
+        lVar2 = (long)cVar3;
+      }
+      uVar6 = FUN_01d9fb90(puVar1,lVar2);
+      NSMutableArray::addObject_(self,"addObject:",uVar6);
+      puVar4 = puVar4 + 3;
+      puVar1 = local_58;
+    }
+    if (puVar1 != (undefined8 *)0x0) {
+      if (local_50 * 0x18 != 0) {
+        lVar8 = local_50 * -0x18;
+        puVar4 = puVar1 + local_50 * 3;
+        do {
+          puVar7 = puVar4 + -3;
+          if (puVar7 == (undefined8 *)0x0) goto LAB_0443f724;
+          if (*(char *)((long)puVar4 + -1) < '\0') {
+            FUN_00005810(*puVar7,puVar4[-1] << 1);
+          }
+          lVar8 = lVar8 + 0x18;
+          puVar4 = puVar7;
+        } while (lVar8 != 0);
+      }
+      local_50 = ((long)puVar1 - (long)local_58 >> 3) * -0x5555555555555555;
+      FUN_00005810(local_58,local_48 * 0x18);
+    }
+    return self;
+  }
+LAB_0443f724:
+                    /* WARNING: Does not return */
+  pcVar5 = (code *)SoftwareBreakpoint(1,0x443f728);
+  (*pcVar5)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "inputType", "type_encoding": "q16@0:8", "imp": "0x443f844", "method_record_va": "0xd77cd10", "selector_va": "0xd7683cd", "dyld_line": 3143, "imp_file_offset": "0x443f844", "body_name": "ArcContextMenuElementInfo::inputType", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1518265, "body_length": 609, "failed": 0, "truncated": false}
+// ==== 0x443f844  ArcContextMenuElementInfo::inputType  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcContextMenuElementInfo::inputType(ID param_1,SEL param_2)
+
+{
+  uint uVar1;
+  code *pcVar2;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(1,0x443f88c);
+    (*pcVar2)();
+  }
+  if (*(char *)(*(long *)(param_1 + 8) + 0x344) == '\0') {
+    return 0;
+  }
+  uVar1 = *(int *)(*(long *)(param_1 + 8) + 0x340) - 0xf;
+  if (8 < uVar1) {
+    return 5;
+  }
+  return (ulong)(byte)(&DAT_0c9d8198)[uVar1];
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "nodeType", "type_encoding": "q16@0:8", "imp": "0x443f88c", "method_record_va": "0xd77cd1c", "selector_va": "0xd756761", "dyld_line": 3144, "imp_file_offset": "0x443f88c", "body_name": "ArcContextMenuElementInfo::nodeType", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1518874, "body_length": 607, "failed": 0, "truncated": false}
+// ==== 0x443f88c  ArcContextMenuElementInfo::nodeType  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcContextMenuElementInfo::nodeType(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x443f8b8);
+    (*pcVar1)();
+  }
+  if (**(uint **)(param_1 + 8) < 7) {
+    return (ulong)(byte)(&DAT_0c9d81a8)[**(uint **)(param_1 + 8)];
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(0x550b,0x443f8bc);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "isEditable", "type_encoding": "B16@0:8", "imp": "0x443f8bc", "method_record_va": "0xd77cd28", "selector_va": "0xd765d3b", "dyld_line": 3145, "imp_file_offset": "0x443f8bc", "body_name": "ArcContextMenuElementInfo::isEditable", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1519481, "body_length": 430, "failed": 0, "truncated": false}
+// ==== 0x443f8bc  ArcContextMenuElementInfo::isEditable  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcContextMenuElementInfo::isEditable(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    return (bool)*(byte *)(*(long *)(param_1 + 8) + 0x251);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443f8d4);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": "context_menu_element_info", "type_encoding": "{optional<arc::ContextMenuElementInfo>=(?=c{ContextMenuElementInfo={shared_ptr<arc::ContextMenuElementInfo::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8", "imp": "0x43df53c", "method_record_va": "0xd77cd34", "selector_va": "0xd7683d7", "dyld_line": 3146, "imp_file_offset": "0x43df53c", "body_name": "ArcWebContentsAIAgent::web_contents_ai_agent", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4214856, "body_length": 1155, "failed": 0, "truncated": false}
+// ==== 0x43df53c  ArcWebContentsAIAgent::web_contents_ai_agent  (64 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsAIAgent::web_contents_ai_agent
+               (optional<arc::WebContents::AIAgent> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  long lVar3;
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::AIAgent> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43df57c);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x10);
+    pIVar4 = *(Impl **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x43df69c", "method_record_va": "0xd77cd40", "selector_va": "0xd744a39", "dyld_line": 3147, "imp_file_offset": "0x43df69c", "body_name": "ArcWebContentsAIAgent::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4217592, "body_length": 1206, "failed": 0, "truncated": false}
+// ==== 0x43df69c  ArcWebContentsAIAgent::.cxx_destruct  (196 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsAIAgent::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  code *UNRECOVERED_JUMPTABLE;
+  long *plVar2;
+  
+  if ((*(char *)(param_1 + 0x18) != '\0') &&
+     (plVar2 = *(long **)(param_1 + 0x10), plVar2 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x043df75c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcContextMenuElementInfo", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x43df760", "method_record_va": "0xd77cd4c", "selector_va": "0xd744a47", "dyld_line": 3148, "imp_file_offset": "0x43df760", "body_name": "ArcWebContentsAIAgent::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4218798, "body_length": 274, "failed": 0, "truncated": false}
+// ==== 0x43df760  ArcWebContentsAIAgent::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcWebContentsAIAgent::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+

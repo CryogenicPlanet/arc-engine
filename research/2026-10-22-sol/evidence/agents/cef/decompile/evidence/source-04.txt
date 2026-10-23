@@ -1,0 +1,115 @@
+476: bool ToolbarActionsModel::IsActionPinned(const ActionId& action_id) const {
+477:   return std::ranges::contains(pinned_action_ids_, action_id);
+478: }
+479: 
+480: bool ToolbarActionsModel::IsActionForcePinned(const ActionId& action_id) const {
+481:   auto* management =
+482:       extensions::ExtensionManagementFactory::GetForBrowserContext(profile_);
+483:   return management->GetForcePinnedList().contains(action_id);
+484: }
+485: 
+486: void ToolbarActionsModel::MovePinnedAction(const ActionId& action_id,
+487:                                            size_t target_index) {
+488:   // TODO(crbug.com/40204281): This code assumes all actions are in
+489:   // stored_pinned_actions, which force-pinned actions aren't; so, always keep
+490:   // them 'to the right' of other actions. Remove this guard if we ever add
+491:   // force-pinned actions to the pref.
+492:   if (IsActionForcePinned(action_id)) {
+493:     return;
+494:   }
+495: 
+496:   // If pinned actions are empty, we're going to have a real bad time (with
+497:   // out Keep this a hard CHECK (not a DCHECK).
+498:   CHECK(!pinned_action_ids_.empty());
+499:   DCHECK(!profile_->IsOffTheRecord())
+500:       << "Changing action position is disallowed in incognito.";
+501: 
+502:   auto current_position_on_toolbar =
+503:       std::ranges::find(pinned_action_ids_, action_id);
+504:   CHECK(current_position_on_toolbar != pinned_action_ids_.end());
+505:   size_t current_index_on_toolbar =
+506:       current_position_on_toolbar - pinned_action_ids_.begin();
+507: 
+508:   if (current_index_on_toolbar == target_index) {
+509:     return;
+510:   }
+511: 
+512:   bool is_left_to_right_move = target_index > current_index_on_toolbar;
+513: 
+514:   // Moving pinned actions is a bit tricky (unless we move it to the end - in
+515:   // which case it's trivial). We need to store the updated state in prefs, but
+516:   // the prefs also contain pin state information for unloaded (but still
+517:   // installed) extensions. Thus, we can't just reorder the pinned_action_ids_
+518:   // (which only include loaded extensions), and set those directly.
+519:   //
+520:   // Instead, we look at the destination of the action in the toolbar, and
+521:   // find the ID of the action to its right (if any). Then in the stored prefs,
+522:   // find that action, and insert the moved action to its left.
+523:   //
+524:   // To further complicate things, force-pinned actions are stored in
+525:   // |pinned_action_ids_| but not in the pref (crbug.com/40204281). So we have
+526:   // to find the ID not just of the action to its right, but the first action to
+527:   // its right that is *not* force-pinned.
+528:   //
+529:   // For example:
+530:   // Consider the pinned extension order in prefs is "A [B C] D E", where
+531:   // B and C are unloaded extensions. Assume we want to A to index 1 on the
+532:   // toolbar (swapping A and D). We would look for the new action to its
+533:   // right (E), and insert it in prefs to the left of it. Thus, the new pref
+534:   // order would be "[B C] D A E".
+535: 
+536:   // Force-pinned neighbors aren't saved in the pref, so find the preceding,
+537:   // non-force-pinned neighbor. This basically keeps force-pinned actions on the
+538:   // right at all times.
+539:   //
+540:   // TODO(crbug.com/40204281): Simplify this logic when force-pinned extensions
+541:   // are saved in the pref.
+542:   std::vector<ActionId>::iterator non_force_pinned_neighbor =
+543:       pinned_action_ids_.end();
+544:   if (is_left_to_right_move) {
+545:     // LTR move. Starting with the extension to the right of the desired
+546:     // location, do an RTL search for the first non-force-pinned extension.
+547:     // Note: there's always an extension that matches these criteria (this
+548:     // one!).
+549: 
+550:     // Avoid array bounds shenanigans when target_index >= n.
+551:     auto search_start = std::max(pinned_action_ids_.rend() - target_index - 1,
+552:                                  pinned_action_ids_.rbegin());
+553:     auto reverse_iter = std::find_if(
+554:         search_start, pinned_action_ids_.rend(),
+555:         [this](const ActionId& id) { return !this->IsActionForcePinned(id); });
+556:     non_force_pinned_neighbor = reverse_iter.base();
+557:   } else {
+558:     // RTL move. Starting with the extension to the left of the desired
+559:     // location, do an LTR search for the first non-force-pinned extension.
+560:     // Note: there's always an extension that matches these criteria (this
+561:     // one!).
+562:     non_force_pinned_neighbor = std::find_if(
+563:         pinned_action_ids_.begin() + target_index, pinned_action_ids_.end(),
+564:         [this](const ActionId& id) { return !this->IsActionForcePinned(id); });
+565:   }
+566: 
+567:   auto stored_pinned_actions = extension_prefs_->GetPinnedExtensions();
+568:   const bool move_to_end =
+569:       non_force_pinned_neighbor == pinned_action_ids_.end();
+570:   auto target_position = move_to_end
+571:                              ? stored_pinned_actions.end()
+572:                              : std::ranges::find(stored_pinned_actions,
+573:                                                  *non_force_pinned_neighbor);
+574: 
+575:   auto current_position_in_prefs =
+576:       std::ranges::find(stored_pinned_actions, action_id);
+577:   CHECK(current_position_in_prefs != stored_pinned_actions.end());
+578: 
+579:   // Rotate |action_id| to be in the target position.
+580:   if (is_left_to_right_move) {
+581:     std::rotate(current_position_in_prefs, std::next(current_position_in_prefs),
+582:                 target_position);
+583:   } else {
+584:     std::rotate(target_position, current_position_in_prefs,
+585:                 std::next(current_position_in_prefs));
+586:   }
+587: 
+588:   extension_prefs_->SetPinnedExtensions(stored_pinned_actions);
+589:   // The |pinned_action_ids_| should be updated as a result of updating the
+590:   // preference.

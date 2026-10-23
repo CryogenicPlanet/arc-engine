@@ -1,0 +1,23 @@
+42: 
+43: ///
+44: /// Callback interface used for asynchronous continuation of authentication
+45: /// requests.
+46: ///
+47: /*--cef(source=library)--*/
+48: class CefAuthCallback : public virtual CefBaseRefCounted {
+49:  public:
+50:   ///
+51:   /// Continue the authentication request.
+52:   ///
+53:   /*--cef(capi_name=cont,optional_param=username,optional_param=password)--*/
+54:   virtual void Continue(const CefString& username,
+55:                         const CefString& password) = 0;
+56: 
+57:   ///
+58:   /// Cancel the authentication request.
+59:   ///
+60:   /*--cef()--*/
+61:   virtual void Cancel() = 0;
+62: };
+63: 
+64: #endif  // CEF_INCLUDE_CEF_AUTH_CALLBACK_H_

@@ -1,0 +1,12 @@
+140: void SaveUpdateBubbleController::OnSaveClicked() {
+141:   CHECK(GetState() == password_manager::ui::PENDING_PASSWORD_STATE ||
+142:         GetState() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
+143:   SetDismissalReason(metrics_util::CLICKED_ACCEPT);
+144:   if (delegate_) {
+145:     CleanStatisticsForSite(GetProfile(), GetOrigin());
+146:     delegate_->SavePassword(GetPendingPassword().username_value,
+147:                             GetPendingPassword().password_value);
+148:     delegate_->MaybeShowIOSPasswordPromo();
+149:   }
+150: }
+151: 

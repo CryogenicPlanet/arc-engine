@@ -1,0 +1,37 @@
+// ==== 0x43e3514  FUN_043e3514  (192 bytes)
+
+/* WARNING: Function: _objc_loadWeakRetained replaced with injection: _objc_load_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+undefined8 FUN_043e3514(long param_1,undefined8 param_2,undefined8 *param_3,const_void__ param_4)
+
+{
+  undefined8 *puVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  ID self;
+  undefined8 uVar5;
+  undefined8 uVar6;
+  
+  IVar4 = _objc_alloc(&objc::class_t::ArcWebContents);
+  IVar4 = ArcWebContents::initWithWebContents_(IVar4,"initWithWebContents:",param_4);
+  self = *(ID *)(param_1 + 8);
+  uVar5 = *(undefined8 *)(param_1 + 0x10);
+  cVar3 = *(char *)((long)param_3 + 0x17);
+  puVar1 = (undefined8 *)*param_3;
+  if (-1 < (long)cVar3) {
+    puVar1 = param_3;
+  }
+  lVar2 = param_3[1];
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  uVar6 = FUN_01c391bc(puVar1,lVar2);
+  _objc_msgSend(self,"browser:didOpenExtensionPopup:webContents:",uVar5,uVar6,IVar4);
+  return 0;
+}
+
+

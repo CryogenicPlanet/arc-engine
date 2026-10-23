@@ -1,0 +1,164 @@
+--- original/ArcBrowserApplicationConfiguration.md
++++ revision/ArcBrowserApplicationConfiguration.md
+@@ -20,7 +20,7 @@
+ 
+ ## Lifecycle, ownership and callbacks
+ 
+-`0x43eca0c` calls NSObject init and stores constructor arguments in metadata-listed ivars; `0x43ecb14` clears ObjC string/array slots on destruction. This is configuration storage; no profile loading or run-loop termination occurs in these methods. Shared getter `0x40b1230` is a raw ARM64 byte load despite Ghidra dropping its result; exact bytes are in accessor-instruction-checks.tsv.
++`0x43eca0c` calls NSObject init and stores configuration fields, but its recovered stack-argument expressions are malformed. At entry-SP+0/+1 raw byte loads feed self+9/+10; entry-SP+8 supplies the pointer passed to the object-store call for self+0x30. This corroborates the final field stores while the C prototype remains unreliable ([instruction analysis](../revision-evidence/analysis.md)); `0x43ecb14` clears ObjC string/array slots on destruction. This is configuration storage; no profile loading or run-loop termination occurs in these methods. Shared getter `0x40b1230` is a raw ARM64 byte load despite Ghidra dropping its result; exact bytes are in accessor-instruction-checks.tsv.
+ 
+ ## Threading and caller/callee relations
+ 
+@@ -36,7 +36,7 @@
+ 
+ | Category | Kind/selector | Type encoding | IMP VA / body | Behavior | Backend/callees | Metadata evidence | Confidence/status |
+ |---|---|---|---|---|---|---|---|
+-| (base) | `-init:argv:profilePath:applicationID:isProduction:sessionRestorationPolicy:shouldLoadAllProfilesAtStartup:quitRunLoopOnTermination:userDefaultsSuiteName:` | `@72@0:8i16@20@28Q36B44Q48B56B60@64` | [0x43eca0c](../bodies/43eca0c.c) | Initializes NSObject; stores argc, argv, profile path, application ID, production flag, restoration policy, startup loading flag, run-loop termination flag and user-defaults suite in ivars. No validation of argc/argv consistency is visible. | field/indirect dispatch; see body | M `0xd778314`; D 1511 | M; available; bridge_reviewed_partial |
++| (base) | `-init:argv:profilePath:applicationID:isProduction:sessionRestorationPolicy:shouldLoadAllProfilesAtStartup:quitRunLoopOnTermination:userDefaultsSuiteName:` | `@72@0:8i16@20@28Q36B44Q48B56B60@64` | [0x43eca0c](../bodies/43eca0c.c) | Initializes NSObject and stores configuration fields. Ghidra stack-argument recovery is malformed (second byte of a bool; pointer assembled from bool). Raw instructions load entry-SP bytes +0/+1 into self+9/+10, and entry-SP pointer +8 into the object-store call for self+0x30; this corroborates the final fields without validating the recovered C prototype. | field/indirect dispatch; see body | M `0xd778314`; D 1511 | M; available_prototype_malformed; bridge_reviewed_partial |
+ | (base) | `-argc` | `i16@0:8` | [0x189a538](../bodies/189a538.c) | Loads 4 byte(s) from self+0xc (_argc) and returns directly. Use this identity's type encoding; shared IMP names/types may belong to another class. | field/indirect dispatch; see body | M `0xd778320`; D 1512 | H; available; local_field_observed |
+ | (base) | `-argv` | `@16@0:8` | [0x2cb140](../bodies/2cb140.c) | Loads 8 byte(s) from self+0x10 (_argv) and returns directly. Use this identity's type encoding; shared IMP names/types may belong to another class. | field/indirect dispatch; see body | M `0xd77832c`; D 1513 | H; available; local_field_observed |
+ | (base) | `-profilePath` | `@16@0:8` | [0x4084dc0](../bodies/4084dc0.c) | Loads 8 byte(s) from self+0x18 (_profilePath) and returns directly. Use this identity's type encoding; shared IMP names/types may belong to another class. | field/indirect dispatch; see body | M `0xd778338`; D 1514 | H; available; local_field_observed |
+@@ -50,6 +50,6 @@
+ 
+ ## Remaining consequential questions
+ 
+-Trace every restoration-policy enum and startup field into application initialization; validate argc/argv consistency and suite-name nil behavior.
++Trace every restoration-policy enum and startup field into application initialization; validate argc/argv consistency and suite-name nil behavior. Keep the malformed recovered prototype distinct from the declared metadata encoding and raw stack stores.
+ 
+ Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.
+--- original/ArcBrowserContext.md
++++ revision/ArcBrowserContext.md
+@@ -17,7 +17,7 @@
+ 
+ ## Lifecycle, ownership and callbacks
+ 
+-Native context is an engaged optional shared handle at +0x30 (`0x443739c`); service accessors cache ObjC wrappers with associated-object policy 1: preferences `0x44374c0`, history `0x44376b0`, downloads `0x44378a0`, effects `0x4437a90`, extraction `0x4437c80`. Context delegate creation uses weak delegate/self (`0x43ed9a8`); bookmark observer vector owns shared bridge handles (`0x4437fe4`, `0x443808c`, `0x443f1968`, `0x443f21a8`). Destructor `0x4438580` releases those structures. Cached wrappers and native Profile shutdown are distinct lifetimes.
++Native context is an engaged optional shared handle at +0x30 (`0x443739c`); service accessors cache ObjC wrappers with associated-object policy 1: preferences `0x44374c0`, history `0x44376b0`, downloads `0x44378a0`, effects `0x4437a90`, extraction `0x4437c80`. Context delegate creation uses weak delegate/self (`0x43ed9a8`); bookmark observer vector owns shared bridge handles (`0x4437fe4`, `0x443808c`, `0x43f1968`, `0x43f21a8`). Destructor `0x4438580` releases those structures. Cached wrappers and native Profile shutdown are distinct lifetimes. The nil delegate path cleans up a returned temporary; stored-bridge removal and callback suppression are not established. See [revision evidence](../revision-evidence/analysis.md).
+ 
+ ## Threading and caller/callee relations
+ 
+@@ -53,7 +53,7 @@
+ | (base) | `-.cxx_construct` | `@16@0:8` | [0x443880c](../bodies/443880c.c) | Initializes native storage with explicit stores: self+0x40=0; self+0x20=0; self+0x28=0; self+0x30=0; self+0x50=0; self+0x58=0; self+0x48=0. | field/indirect dispatch; see body | M `0xd77be20`; D 2779 | M; available; local_body_observed |
+ | Extensions | `-isEqual:` | `B24@0:8@16` | [0x43ed5d8](../bodies/43ed5d8.c) | Checks receiver identity, nil and class compatibility; compares native optional engagement and underlying identity/value after extracting both handles. | field/indirect dispatch; see body | M `0xd7784a4`; D 4881 | M; available; local_body_observed |
+ | Extensions | `-hash` | `Q16@0:8` | [0x43ed8ac](../bodies/43ed8ac.c) | Extracts native identity and hashes eight bytes using 0x18f3c; absent optional takes contract-failure path. | 0x18f3c | M `0xd7784b0`; D 4882 | M; available; local_body_observed |
+-| Extensions | `-setDelegate:` | `v24@0:8@16` | [0x43ed9a8](../bodies/43ed9a8.c) | Creates a context delegate bridge with weak references to delegate and self, installs it through 0x4333868; existing bridge delegate is updated; nil clears stored bridge. | 0x4333868 | M `0xd7784bc`; D 4883 | M; available; bridge_reviewed_partial |
++| Extensions | `-setDelegate:` | `v24@0:8@16` | [0x43ed9a8](../bodies/43ed9a8.c) | Creates a bridge with weak delegate/self and installs it through 0x4333868 on nonnil creation; updates an existing bridge for nonnil delegate. Nil follows cleanup of the getter-returned shared-handle temporary; no stored bridge clear or unregister call is visible on that path. | 0x4333868 | M `0xd7784bc`; D 4883 | M; available; bridge_reviewed_partial |
+ | Extensions | `-loadUrl:withDelegate:` | `@32@0:8@16@24` | [0x43edeb0](../bodies/43edeb0.c) | Copies URL-load configuration, allocates a delegate adapter and calls 0x42c8c30; wraps the returned native cancellation handle as ArcURLLoadCancellationToken. | 0x42c8c30; 0x836de40 | M `0xd7784c8`; D 4884 | M; available; bridge_reviewed_partial |
+ | Extensions | `-cancelUrlLoad:` | `v24@0:8@16` | [0x43ee15c](../bodies/43ee15c.c) | Extracts the supplied token and forwards cancellation to 0x434f448 with native context; token temporary handles are released. | 0x434f448 | M `0xd7784d4`; D 4885 | M; available; bridge_reviewed_partial |
+ | Extensions | `-getChangedContentSettingsForOrigin:` | `@24@0:8@16` | [0x43ee38c](../bodies/43ee38c.c) | Converts origin and calls 0x42c8da8, then wraps each native site-setting record as ArcSiteSettingInfo in an immutable array. Both changed-permissions and changed-content-settings selectors share this IMP. | 0x42c8da8; 0x43abdf8 | M `0xd7784e0`; D 4886 | M; available; bridge_reviewed_partial |
+--- original/ArcBrowserContextHistory.md
++++ revision/ArcBrowserContextHistory.md
+@@ -15,7 +15,7 @@
+ 
+ ## Lifecycle, ownership and callbacks
+ 
+-Initializers `0x4435ef8`/`0x443601c` copy native shared service at +0x30; owner weak operations are `0x43fe200`/`0x43fe218`, with `_objc_destroyWeak` in `0x443616c`. Delegate/visit observer bridges are shared handles. `0x40439c4` creates weak observer and owner captures, installs through `0x4332f08`, and changes stored observer for existing bridge.
++Initializers `0x4435ef8`/`0x443601c` copy native shared service at +0x30; owner weak operations are `0x43fe200`/`0x43fe218`, with `_objc_destroyWeak` in `0x443616c`. Delegate/visit observer bridges are shared handles. `0x40439c4` creates weak observer and owner captures, installs through `0x4332f08`, and changes the observer for an existing bridge when the supplied observer is nonnil. Nil takes a temporary-handle cleanup path; stored clear/unregister and callback suppression are not established. See [revision evidence](../revision-evidence/analysis.md).
+ 
+ ## Threading and caller/callee relations
+ 
+@@ -51,7 +51,7 @@
+ | Extensions | `-deleteUrlsFromHistory:completion:` | `v32@0:8@16@?24` | [0x40432b0](../bodies/40432b0.c) | Enumerates URL array into native vector, captures completion and calls 0x4332d28. | 0x4047380; 0x4332750; 0x4332d28 | M `0xd773ecc`; D 4798 | M; available; bridge_reviewed_partial |
+ | Extensions | `-expireHistoryBetween:forBeginTime:forEndTime:completion:` | `v48@0:8@16@24@32@?40` | [0x40435ac](../bodies/40435ac.c) | Builds native URL collection, converts begin/end NSDate to seconds since 1970, captures completion and calls 0x4332dc0, which forwards to 0x42eda00. | 0x63242c; 0x4332750; 0x4332dc0 | M `0xd773ed8`; D 4799 | M; available; bridge_reviewed_partial |
+ | Extensions | `-expireHistory:completion:` | `v32@0:8@16@?24` | [0x4043800](../bodies/4043800.c) | Enumerates supplied expiration requests into native collection, captures completion and calls 0x4332e70. | 0x63242c; 0x4332750; 0x4332e70 | M `0xd773ee4`; D 4800 | M; available; bridge_reviewed_partial |
+-| Extensions | `-setVisitObserver:` | `v24@0:8@16` | [0x40439c4](../bodies/40439c4.c) | Installs shared visit-observer bridge with weak observer/context-owner references through 0x4332f08; existing bridge delegate is updated and nil clears stored bridge. | 0x2527d18; 0x4332750; 0x4332f08 | M `0xd773ef0`; D 4801 | M; available; bridge_reviewed_partial |
++| Extensions | `-setVisitObserver:` | `v24@0:8@16` | [0x40439c4](../bodies/40439c4.c) | Creates shared visit-observer bridge with weak observer/owner and installs through 0x4332f08 for nonnil creation; updates an existing bridge for nonnil observer. Nil releases the getter-returned shared-handle temporary; no stored bridge clear or unregister call is visible on that path. | 0x2527d18; 0x4332750; 0x4332f08 | M `0xd773ef0`; D 4801 | M; available; bridge_reviewed_partial |
+ | Extensions | `-addVisit:completion:` | `v32@0:8@16@?24` | [0x4043c88](../bodies/4043c88.c) | Converts supplied object through toAnnotatedVisit, captures completion and calls 0x4332fc0; nil yields zero/default temporary in recovered body. | 0x4332750; 0x4332fc0; 0x43364d8 | M `0xd773efc`; D 4802 | M; available; bridge_reviewed_partial |
+ | Extensions | `-addVisits:completion:` | `v32@0:8@16@?24` | [0x4043e04](../bodies/4043e04.c) | Enumerates objects, converts each through toAnnotatedVisit into native visit vector, captures completion and calls 0x4333058. | 0x3738fe0; 0x431a574; 0x4332750; 0x4333058; 0x43364d8 | M `0xd773f08`; D 4803 | M; available; bridge_reviewed_partial |
+ | Extensions | `-getVisitsSince:completion:` | `v32@0:8@16@?24` | [0x40442b0](../bodies/40442b0.c) | Converts NSDate to epoch seconds and calls 0x43330f0 with captured completion. | 0x4332750; 0x43330f0 | M `0xd773f14`; D 4804 | M; available; bridge_reviewed_partial |
+--- original/ArcBrowserContextPreferences.md
++++ revision/ArcBrowserContextPreferences.md
+@@ -54,7 +54,7 @@
+ | (base) | `-owner` | `@16@0:8` | [0x43fe200](../bodies/43fe200.c) | Loads weak ObjC slot with loadWeakRetained/autorelease operations documented by Ghidra injection warnings. | field/indirect dispatch; see body | M `0xd77ba84`; D 2694 | H; available; local_field_observed |
+ | (base) | `-setOwner:` | `v24@0:8@16` | [0x43fe218](../bodies/43fe218.c) | Stores ObjC argument into weak slot shown in body; Ghidra injection renders it as a plain assignment. | field/indirect dispatch; see body | M `0xd77ba90`; D 2695 | H; available; local_field_observed |
+ | (base) | `-browser_context_preferences_observer_bridges` | `{vector<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>, std::allocator<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>>>={__vector_layout<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>, std::allocator<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>>>=^vQQ}}16@0:8` | [0x4418c3c](../bodies/4418c3c.c) | Copies vector of shared observer bridge handles from self+0x28 into return storage, allocating and incrementing control counts. | field/indirect dispatch; see body | M `0xd77ba9c`; D 2696 | M; available; bridge_reviewed_partial |
+-| (base) | `-setBrowser_context_preferences_observer_bridges:` | `v40@0:8{vector<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>, std::allocator<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>>>={__vector_layout<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>, std::allocator<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>>>=^vQQ}}16` | [0x4418ce4](../bodies/4418ce4.c) | Assigns shared native bridge handle, incrementing new control count and releasing previous shared owner; identity is defined by metadata, despite shared Ghidra name. | field/indirect dispatch; see body | M `0xd77baa8`; D 2697 | M; available; local_body_observed |
++| (base) | `-setBrowser_context_preferences_observer_bridges:` | `v40@0:8{vector<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>, std::allocator<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>>>={__vector_layout<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>, std::allocator<std::shared_ptr<ArcBrowserContextPreferencesObserverBridge>>>=^vQQ}}16` | [0x4418ce4](../bodies/4418ce4.c) | Assigns the vector of 16-byte shared observer handles at self+0x28, skipping self-assignment. Reuses or reallocates capacity, increments copied element control counts and releases replaced/removed elements and obsolete allocation; metadata identifies this shared IMP despite its Ghidra class name. | field/indirect dispatch; see body | M `0xd77baa8`; D 2697 | M; available; local_body_observed |
+ | (base) | `-.cxx_destruct` | `v16@0:8` | [0x44191d8](../bodies/44191d8.c) | Performs C++/ObjC cleanup of native storage; destroys weak ivars at self+8. Shared control-block decrement/destruction paths are visible where present; this does not establish backend shutdown. | field/indirect dispatch; see body | M `0xd77bab4`; D 2698 | M; available; local_body_observed |
+ | (base) | `-.cxx_construct` | `@16@0:8` | [0x44193ac](../bodies/44193ac.c) | Initializes native storage with explicit stores: self+0x10=0; self+0x20=0; self+0x30=0; self+0x38=0; self+0x28=0. | field/indirect dispatch; see body | M `0xd77bac0`; D 2699 | M; available; local_body_observed |
+ | Extensions | `-getDefaultSearchEngine` | `@16@0:8` | [0x43f9fd4](../bodies/43f9fd4.c) | Calls 0x42f26b4, then wraps an optional default native search-engine record as ArcSearchEngine. | 0x42f26b4; 0x4b37ee8 | M `0xd778710`; D 4938 | M; available; bridge_reviewed_partial |
+--- original/ArcMenuItemModel.md
++++ revision/ArcMenuItemModel.md
+@@ -21,7 +21,7 @@
+ 
+ ## Threading and caller/callee relations
+ 
+-`0x443ff88` installs native bridge and nil path unregisters through `0x432bf9c`. Bridge callbacks `0x4445404` and `0x4445458` emit changed/removed notifications. Index-based virtual calls and cached submenu imply a consequential invalidation boundary; no synchronization or post-removal validity is established. Category overrides are independently retained in the matrix and category-overrides.json.
++`0x443ff88` installs a native bridge; its nil path clears native delegate slots through `0x432bf9c(native,0,0)`. The wrapper getter supplies a temporary that is released; no wrapper stored-bridge clear is visible. Retained lifetime/reuse and queued callback effects remain unknown ([instruction analysis](../revision-evidence/analysis.md)). Bridge callbacks `0x4445404` and `0x4445458` emit changed/removed notifications. Index-based virtual calls and cached submenu imply a consequential invalidation boundary; no synchronization or post-removal validity is established. Category overrides are independently retained in the matrix and category-overrides.json.
+ 
+ ## Chrome / CEF route implications
+ 
+@@ -45,7 +45,7 @@
+ | (base) | `-accessibleName` | `@16@0:8` | [0x443fcdc](../bodies/443fcdc.c) | Calls native accessible-name getter with stored item index and converts UTF-16 result. | 0x1d9fb90 | M `0xd77ce28`; D 3169 | M; available; bridge_reviewed_partial |
+ | (base) | `-submenuModel` | `@16@0:8` | [0x443fd88](../bodies/443fd88.c) | Returns cached submenu at self+0x20 or wraps native vtable+0xe8 submenu via 0x433cf10 and caches it strongly. | 0x433cf10 | M `0xd77ce34`; D 3170 | M; available; bridge_reviewed_partial |
+ | (base) | `-activated` | `v16@0:8` | [0x443ff68](../bodies/443ff68.c) | Requires engaged handle; calls native menu-model vtable+0xf0 with stored item index to activate it. | field/indirect dispatch; see body | M `0xd77ce40`; D 3171 | M; available; bridge_reviewed_partial |
+-| (base) | `-setDelegate:` | `v24@0:8@16` | [0x443ff88](../bodies/443ff88.c) | Creates bridge with weak model/delegate, registers via 0x433cc10; nil path clears bridge and unregisters through 0x432bf9c. | 0x432bf9c; 0x433cc10 | M `0xd77ce4c`; D 3172 | M; available; bridge_reviewed_partial |
++| (base) | `-setDelegate:` | `v24@0:8@16` | [0x443ff88](../bodies/443ff88.c) | Creates weak model/delegate bridge and registers via 0x433cc10 for nonnil delegate. Nil releases a getter-returned temporary and calls 0x432bf9c(native,0,0), clearing native delegate slots at +0x20/+0x28. No wrapper shared-bridge clear is visible on that path. | 0x432bf9c; 0x433cc10 | M `0xd77ce4c`; D 3172 | M; available; bridge_reviewed_partial |
+ | (base) | `-menu_item_model` | `{optional<arc::MenuItemModel>=(?=c{MenuItemModel={shared_ptr<arc::MenuItemModel::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8` | [0x44402c8](../bodies/44402c8.c) | Copies optional native shared handle from self+0x38 into C++ return storage; increments control count when engaged, otherwise marks returned optional disengaged. | field/indirect dispatch; see body | M `0xd77ce58`; D 3173 | H; available; local_field_observed |
+ | (base) | `-hasAccelerator` | `B16@0:8` | [0x40b1230](../bodies/40b1230.c) | Loads 1 byte(s) from self+0x8 (_hasAccelerator) and returns directly. Use this identity's type encoding; shared IMP names/types may belong to another class. | field/indirect dispatch; see body | M `0xd77ce64`; D 3174 | H; available_pseudocode_incorrect_raw_verified; local_field_observed |
+ | (base) | `-accelerator` | `@16@0:8` | [0x2cb140](../bodies/2cb140.c) | Loads 8 byte(s) from self+0x10 (_accelerator) and returns directly. Use this identity's type encoding; shared IMP names/types may belong to another class. | field/indirect dispatch; see body | M `0xd77ce70`; D 3175 | H; available; local_field_observed |
+--- original/ArcSearchEngine.md
++++ revision/ArcSearchEngine.md
+@@ -12,7 +12,7 @@
+ 
+ ## Lifecycle, ownership and callbacks
+ 
+-Optional shared native search-engine record; `0x442c50c` builds from name/keyword/URL/favicon, `0x442c8ac` copies shared handle. Name/keyword getters convert UTF-16 (`0x442c9d0`, `0x442ca98`), URL uses byte string (`0x442cb60`); `0x442cd1c` tests prepopulate ID>0. Category equality/hash use native record identity, not a proven fieldwise comparison. Initializer IMPs: `0x442c50c`, `0x442c8ac`. Cleanup IMP: `0x43df69c`.
++Optional shared native search-engine record; `0x442c50c` builds from name/keyword/URL/favicon, `0x442c8ac` copies shared handle. Name/keyword getters convert UTF-16 (`0x442c9d0`, `0x442ca98`), URL uses byte string (`0x442cb60`); `0x442cd1c` tests prepopulate ID>0. Category equality compares native pointers after optional checks (`0x43ecf8c`); hash calls `0x4340180` to combine hashes from native string fields +0x3b8/+0x3d0 (`0x43ed260`). String field names and exact upstream hash symbol remain unproved. See [revision evidence](../revision-evidence/analysis.md). Initializer IMPs: `0x442c50c`, `0x442c8ac`. Cleanup IMP: `0x43df69c`.
+ 
+ ## Threading and caller/callee relations
+ 
+@@ -40,8 +40,8 @@
+ | (base) | `-search_engine_template_url` | `{optional<arc::SearchEngine>=(?=c{SearchEngine={shared_ptr<arc::SearchEngine::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8` | [0x43df53c](../bodies/43df53c.c) | Copies optional native shared handle from self+0x8 into C++ return storage; increments control count when engaged, otherwise marks returned optional disengaged. | field/indirect dispatch; see body | M `0xd77ac18`; D 2353 | H; available; local_field_observed |
+ | (base) | `-.cxx_destruct` | `v16@0:8` | [0x43df69c](../bodies/43df69c.c) | Performs C++/ObjC cleanup of native storage. Shared control-block decrement/destruction paths are visible where present; this does not establish backend shutdown. | field/indirect dispatch; see body | M `0xd77ac24`; D 2354 | M; available; local_body_observed |
+ | (base) | `-.cxx_construct` | `@16@0:8` | [0x43df760](../bodies/43df760.c) | Initializes native storage with explicit stores: self+8=0; self+0x18=0. | field/indirect dispatch; see body | M `0xd77ac30`; D 2355 | M; available; local_body_observed |
+-| Extensions | `-isEqual:` | `B24@0:8@16` | [0x43ecf8c](../bodies/43ecf8c.c) | Checks receiver identity, nil and class compatibility; compares native optional engagement and underlying identity/value after extracting both handles. | field/indirect dispatch; see body | M `0xd7783e4`; D 4877 | M; available; local_body_observed |
+-| Extensions | `-hash` | `Q16@0:8` | [0x43ed260](../bodies/43ed260.c) | Reads native preference value at key search_engine_template_url. Profile/native handle checks are visible in body. | 0x4340180 | M `0xd7783f0`; D 4878 | M; available; local_body_observed |
++| Extensions | `-isEqual:` | `B24@0:8@16` | [0x43ecf8c](../bodies/43ecf8c.c) | Checks receiver identity, nil and class compatibility; compares optional engagement and, when both are engaged, underlying native pointers. This does not perform a fieldwise content comparison. | field/indirect dispatch; see body | M `0xd7783e4`; D 4877 | M; available; local_body_observed |
++| Extensions | `-hash` | `Q16@0:8` | [0x43ed260](../bodies/43ed260.c) | Calls search_engine_template_url accessor to copy the optional native handle; requires engagement, calls 0x4340180 to combine hashes of two native string fields at Impl+0x3b8/+0x3d0, then releases the temporary shared owner. | 0x4340180 | M `0xd7783f0`; D 4878 | M; available; local_body_observed |
+ 
+ ## Remaining consequential questions
+ 
+--- original/ArcSessionID.md
++++ revision/ArcSessionID.md
+@@ -20,7 +20,7 @@
+ 
+ ## Chrome / CEF route implications
+ 
+-Native session ID adapter. Preserve 32-bit narrowing, optional ABI and hash/equality consistency. Source family Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/sessions/core/session_types.h:203` references SessionIDs in session data; no numeric correspondence with CEF browser IDs is assumed.
++Native session ID adapter. Preserve 32-bit narrowing, optional ABI and hash/equality consistency. Source family Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/sessions/core/session_types.h:185` declares `SessionID window_id` in session data; no numeric correspondence with CEF browser IDs is assumed.
+ 
+ ## Method matrix
+ 
+--- original/ArcWebContentsBoostIDE.md
++++ revision/ArcWebContentsBoostIDE.md
+@@ -17,7 +17,7 @@
+ 
+ ## Threading and caller/callee relations
+ 
+-Native callbacks `0x4413fd8`, `0x441402c`, `0x4414080` send boostIDEDidOpen:, boostIDEWillClose: and boostIDE:didRequestExecuteCommand:jsonString:. sendResponse `0x4414488` → `0x43d35c8` → `0x68122a8` calls cr.webUIResponse with true; error `0x44145b0` → `0x43d38cc` → `0x6812404` sends false; event `0x44146d8` → `0x8371aa8` sends cr.webUIListenerCallback. Callback queue, JavaScript lifecycle and parse errors remain unresolved.
++Native callbacks `0x4413fd8`, `0x441402c`, `0x4414080` send boostIDEDidOpen:, boostIDEWillClose: and boostIDE:didRequestExecuteCommand:jsonString:. sendResponse `0x4414488` → `0x43d35c8` → `0x68122a8` calls cr.webUIResponse with true; error `0x44145b0` → `0x43d38cc` → `0x6812404` sends false; event `0x44146d8` → `0x8371aa8` sends cr.webUIListenerCallback. The native outgoing paths construct string-valued payloads through `0xc87c40`; they do not show JSON parsing. Parsing or other interpretation by receiving JavaScript remains untraced. Callback queue and JavaScript lifecycle remain unresolved. See [revision evidence](../revision-evidence/analysis.md).
+ 
+ ## Chrome / CEF route implications
+ 
+@@ -31,9 +31,9 @@
+ |---|---|---|---|---|---|---|---|
+ | (base) | `-initWithBoostIDE:` | `@24@0:8r^v16` | [0x4414144](../bodies/4414144.c) | Calls NSObject init, replaces engaged optional native handle, copies implementation/control pointers and increments shared control count. | field/indirect dispatch; see body | M `0xd77a268`; D 2127 | M; available; local_body_observed |
+ | (base) | `-setDelegate:` | `v24@0:8@16` | [0x4414268](../bodies/4414268.c) | Creates shared BoostIDE bridge with weak self and a delegate slot, updates existing bridge or drops it for nil; installs through 0x4345824. | 0x4345824 | M `0xd77a274`; D 2128 | M; available; bridge_reviewed_partial |
+-| (base) | `-sendResponse:jsonString:` | `v32@0:8@16@24` | [0x4414488](../bodies/4414488.c) | Converts command/request ID and JSON string (nil to empty), checks native WebUI handler and calls 0x43d35c8 to resolve response. | 0x1b356b8; 0x43d35c8 | M `0xd77a280`; D 2129 | M; available; bridge_reviewed_partial |
+-| (base) | `-sendErrorResponse:jsonString:` | `v32@0:8@16@24` | [0x44145b0](../bodies/44145b0.c) | Converts ID/JSON and forwards to 0x43d38cc for rejected response when native WebUI handler is live. | 0x1b356b8; 0x43d38cc | M `0xd77a28c`; D 2130 | M; available; bridge_reviewed_partial |
+-| (base) | `-sendEvent:jsonString:` | `v32@0:8@16@24` | [0x44146d8](../bodies/44146d8.c) | Converts event name/JSON and forwards to 0x8371aa8; backend calls cr.webUIListenerCallback with parsed values. | 0x1b356b8; 0x8371aa8 | M `0xd77a298`; D 2131 | M; available; bridge_reviewed_partial |
++| (base) | `-sendResponse:jsonString:` | `v32@0:8@16@24` | [0x4414488](../bodies/4414488.c) | Converts command/request ID and payload bytes (nil to empty), checks native handler and forwards to 0x43d35c8. For a matching pending ID, string-valued payload construction through 0xc87c40 precedes 0x68122a8 and cr.webUIResponse true. | 0x1b356b8; 0x43d35c8 | M `0xd77a280`; D 2129 | M; available; bridge_reviewed_partial |
++| (base) | `-sendErrorResponse:jsonString:` | `v32@0:8@16@24` | [0x44145b0](../bodies/44145b0.c) | Converts ID/payload bytes and forwards to 0x43d38cc when native handler is live. For a matching pending ID, string-valued payload construction through 0xc87c40 precedes 0x6812404 and cr.webUIResponse false. | 0x1b356b8; 0x43d38cc | M `0xd77a28c`; D 2130 | M; available; bridge_reviewed_partial |
++| (base) | `-sendEvent:jsonString:` | `v32@0:8@16@24` | [0x44146d8](../bodies/44146d8.c) | Converts event name/payload bytes and forwards to 0x8371aa8; 0xc87c40 constructs string-valued arguments for cr.webUIListenerCallback. No JSON parsing appears in this native path. | 0x1b356b8; 0x8371aa8 | M `0xd77a298`; D 2131 | M; available; bridge_reviewed_partial |
+ | (base) | `-nativeBoostIDE` | `{optional<arc::WebContents::BoostIDE>=(?=c{BoostIDE={shared_ptr<arc::WebContents::BoostIDE::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8` | [0x4414800](../bodies/4414800.c) | Copies optional native shared handle from self+0x18 into C++ return storage; increments control count when engaged, otherwise marks returned optional disengaged. | field/indirect dispatch; see body | M `0xd77a2a4`; D 2132 | H; available; local_field_observed |
+ | (base) | `-boostIDEDelegateBridge` | `{shared_ptr<BoostIDEDelegateBridge>=^{BoostIDEDelegateBridge}^{__shared_weak_count}}16@0:8` | [0x4414840](../bodies/4414840.c) | Returns copy of shared bridge/native handle and increments its control count; exact field offset is in the body and layout. | field/indirect dispatch; see body | M `0xd77a2b0`; D 2133 | H; available; local_field_observed |
+ | (base) | `-setBoostIDEDelegateBridge:` | `v32@0:8{shared_ptr<BoostIDEDelegateBridge>=^{BoostIDEDelegateBridge}^{__shared_weak_count}}16` | [0x4414860](../bodies/4414860.c) | Assigns shared native bridge handle, incrementing new control count and releasing previous shared owner; identity is defined by metadata, despite shared Ghidra name. | field/indirect dispatch; see body | M `0xd77a2bc`; D 2134 | M; available; local_body_observed |
+@@ -42,6 +42,6 @@
+ 
+ ## Remaining consequential questions
+ 
+-Recover delegate-slot ownership from ARC/disassembly, native handler availability/JS-allowed conditions, JSON parse failure and command ID format. Verify closing while app command is in flight.
++Recover delegate-slot ownership from ARC/disassembly, native handler availability/JS-allowed conditions, receiving JavaScript interpretation of string payloads and command ID format. Verify closing while app command is in flight.
+ 
+ Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.

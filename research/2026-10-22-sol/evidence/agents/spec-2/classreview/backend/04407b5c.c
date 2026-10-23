@@ -1,0 +1,57 @@
+// ==== 0x4407b5c  FUN_04407b5c  (256 bytes)
+
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+void FUN_04407b5c(undefined8 *param_1,undefined8 *param_2)
+
+{
+  undefined8 uVar1;
+  undefined8 uVar2;
+  undefined8 *puVar3;
+  long *plVar4;
+  undefined *local_78;
+  undefined8 uStack_70;
+  undefined1 *local_68;
+  undefined *puStack_60;
+  undefined8 local_58;
+  undefined8 uStack_50;
+  undefined8 local_48;
+  long lStack_40;
+  long local_38;
+  
+  local_38 = *(long *)PTR____stack_chk_guard_0d824020;
+  plVar4 = (long *)*param_1;
+  uVar1 = *param_2;
+  uStack_50 = param_2[1];
+  puVar3 = (undefined8 *)param_2[3];
+  lStack_40 = param_2[3];
+  local_48 = param_2[2];
+  if (puVar3[1] != 0) {
+    param_2[2] = 0;
+    param_2[3] = &DAT_0c4b3500;
+  }
+  local_78 = PTR___NSConcreteStackBlock_0d824120;
+  uStack_70 = 0xc6000000;
+  local_68 = &LAB_04407c94;
+  puStack_60 = &DAT_0df6bbb0;
+  local_58 = uVar1;
+  if ((code *)*puVar3 != (code *)0x0) {
+    local_58 = (*(code *)*puVar3)(uVar1);
+  }
+  (**(code **)(*plVar4 + 0x10))(*plVar4,&local_78);
+  uVar2 = 0;
+  if (*(code **)(lStack_40 + 8) != (code *)0x0) {
+    uVar2 = (**(code **)(lStack_40 + 8))(local_58);
+  }
+  if ((code *)puVar3[1] != (code *)0x0) {
+    uVar2 = (*(code *)puVar3[1])(uVar1);
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_38) {
+    return;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(uVar2);
+}
+
+

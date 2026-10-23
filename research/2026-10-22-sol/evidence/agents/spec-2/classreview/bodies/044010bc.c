@@ -1,0 +1,18 @@
+// ==== 0x44010bc  ArcBrowserCreateParams::canMaximize  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcBrowserCreateParams::canMaximize(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    return (bool)*(byte *)(*(long *)(param_1 + 8) + 0xa9);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x44010d4);
+  (*pcVar1)();
+}
+
+

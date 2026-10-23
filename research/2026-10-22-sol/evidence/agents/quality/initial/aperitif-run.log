@@ -1,0 +1,168 @@
+{
+  "file": "/home/exedev/work/inputs/binaries/libaperitif.dylib",
+  "bytes": 169584,
+  "sha256": "780aa93afe922c9756df21c32bbf98b844126a088d1953680b06f19d430dc955",
+  "scope": "Static load-command, symbol, export-trie and ASCII-string triage only; no execution or decompilation.",
+  "architectures": [
+    {
+      "architecture": "x86_64",
+      "cpu_subtype": 3,
+      "fat_offset": 16384,
+      "slice_bytes": 59152,
+      "slice_sha256": "b1fdaf05df7fbdb05875e45e97ca6baa39364ab1fd953fdb6a92b30c7250a409",
+      "filetype": 6,
+      "flags": "0x900085",
+      "segments": [
+        {
+          "name": "__TEXT",
+          "va": "0x0",
+          "vmsize": 28672,
+          "fileoff_in_slice": 0,
+          "filesize": 28672,
+          "initprot": 5
+        },
+        {
+          "name": "__DATA_CONST",
+          "va": "0x7000",
+          "vmsize": 4096,
+          "fileoff_in_slice": 28672,
+          "filesize": 4096,
+          "initprot": 3
+        },
+        {
+          "name": "__DATA",
+          "va": "0x8000",
+          "vmsize": 4096,
+          "fileoff_in_slice": 32768,
+          "filesize": 4096,
+          "initprot": 3
+        },
+        {
+          "name": "__LINKEDIT",
+          "va": "0x9000",
+          "vmsize": 32768,
+          "fileoff_in_slice": 36864,
+          "filesize": 22288,
+          "initprot": 1
+        }
+      ],
+      "dependencies": [
+        {
+          "name": "/usr/lib/libsandbox.1.dylib",
+          "current": 65536,
+          "compatibility": 65536,
+          "command": "0xc"
+        },
+        {
+          "name": "/usr/lib/libSystem.B.dylib",
+          "current": 88866816,
+          "compatibility": 65536,
+          "command": "0xc"
+        }
+      ],
+      "install_name": {
+        "name": "@executable_path/../Frameworks/ArcCore.framework/Versions/A/Libraries/libaperitif.dylib",
+        "current": 529399856,
+        "compatibility": 529399856,
+        "command": "0xd"
+      },
+      "uuid": "4c4c44d755553144a101c9f52174e733",
+      "build_version": {
+        "platform": 1,
+        "minos": "0xd0000",
+        "sdk": "0x1a0500"
+      },
+      "local_private_symbol_count": 0,
+      "export_trie": [
+        {
+          "name": "_AperitifCheckInitialized",
+          "flags": "0x0",
+          "address_or_offset": "0x7b0"
+        }
+      ],
+      "static_initializer_offsets": [
+        "0x7d0"
+      ]
+    },
+    {
+      "architecture": "arm64",
+      "cpu_subtype": 0,
+      "fat_offset": 81920,
+      "slice_bytes": 87664,
+      "slice_sha256": "d57c004cf03b49def8bf00443d278ad060fdbf18afecc7fdab37d2dff8bef832",
+      "filetype": 6,
+      "flags": "0x900085",
+      "segments": [
+        {
+          "name": "__TEXT",
+          "va": "0x0",
+          "vmsize": 32768,
+          "fileoff_in_slice": 0,
+          "filesize": 32768,
+          "initprot": 5
+        },
+        {
+          "name": "__DATA_CONST",
+          "va": "0x8000",
+          "vmsize": 16384,
+          "fileoff_in_slice": 32768,
+          "filesize": 16384,
+          "initprot": 3
+        },
+        {
+          "name": "__DATA",
+          "va": "0xc000",
+          "vmsize": 16384,
+          "fileoff_in_slice": 49152,
+          "filesize": 16384,
+          "initprot": 3
+        },
+        {
+          "name": "__LINKEDIT",
+          "va": "0x10000",
+          "vmsize": 32768,
+          "fileoff_in_slice": 65536,
+          "filesize": 22128,
+          "initprot": 1
+        }
+      ],
+      "dependencies": [
+        {
+          "name": "/usr/lib/libsandbox.1.dylib",
+          "current": 65536,
+          "compatibility": 65536,
+          "command": "0xc"
+        },
+        {
+          "name": "/usr/lib/libSystem.B.dylib",
+          "current": 88866816,
+          "compatibility": 65536,
+          "command": "0xc"
+        }
+      ],
+      "install_name": {
+        "name": "@executable_path/../Frameworks/ArcCore.framework/Versions/A/Libraries/libaperitif.dylib",
+        "current": 529399856,
+        "compatibility": 529399856,
+        "command": "0xd"
+      },
+      "uuid": "4c4c44cb55553144a12ddf16203bafdb",
+      "build_version": {
+        "platform": 1,
+        "minos": "0xd0000",
+        "sdk": "0x1a0500"
+      },
+      "local_private_symbol_count": 0,
+      "export_trie": [
+        {
+          "name": "_AperitifCheckInitialized",
+          "flags": "0x0",
+          "address_or_offset": "0x810"
+        }
+      ],
+      "static_initializer_offsets": [
+        "0x834"
+      ]
+    }
+  ]
+}

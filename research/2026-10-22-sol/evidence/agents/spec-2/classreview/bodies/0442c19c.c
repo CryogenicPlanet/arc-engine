@@ -1,0 +1,25 @@
+// ==== 0x442c19c  ArcSelectOption::select_option  (76 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcSelectOption::select_option
+               (optional<arc::SelectOption> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)((long)&__return_storage_ptr__[1].field0_0x0 + 4) = 0;
+  if (*(char *)(param_1 + 0x50) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::SelectOption> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442c1e8);
+      (*pcVar1)();
+    }
+    FUN_083694e8(__return_storage_ptr__,param_1 + 8);
+    *(undefined1 *)((long)&__return_storage_ptr__[1].field0_0x0 + 4) = 1;
+  }
+  return;
+}
+
+

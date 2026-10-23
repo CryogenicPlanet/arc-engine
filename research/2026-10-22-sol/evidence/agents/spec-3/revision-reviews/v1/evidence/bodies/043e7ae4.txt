@@ -1,0 +1,39 @@
+INDEX 0x43e7ae4 ArcBrowserApplication::version path=/home/exedev/work/inputs/decompile/0x43.c offset=4369995 C_bytes=1050 failed=0
+// ==== 0x43e7ae4  ArcBrowserApplication::version  (140 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcBrowserApplication::version(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  undefined5 local_38;
+  undefined3 uStack_33;
+  undefined5 uStack_30;
+  char local_2b [3];
+  undefined7 local_28;
+  char cStack_21;
+  
+  cStack_21 = '\r';
+  if (local_2b <= "156.0.8078.48" || "156.0.8078.48" < &local_38) {
+    local_38 = 0x302e363531;
+    uStack_33 = 0x30382e;
+    uStack_30 = 0x38342e3837;
+    local_2b[0] = '\0';
+    IVar2 = FUN_01c391bc(&local_38,0xd);
+    if (cStack_21 < '\0') {
+      FUN_00005810(CONCAT35(uStack_33,local_38),CONCAT17(cStack_21,local_28) & 0x7fffffffffffffff);
+    }
+    return IVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x43e7b94);
+  (*pcVar1)();
+}
+
+
+

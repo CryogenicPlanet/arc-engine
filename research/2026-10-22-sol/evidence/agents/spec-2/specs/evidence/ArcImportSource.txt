@@ -1,0 +1,89 @@
+{
+  "class_name": "ArcImportSource",
+  "metadata_va": "0xe37c398",
+  "metadata_file_offset": "0xe37c398",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a6f00",
+  "instance_start": 8,
+  "instance_size": 24,
+  "ivars": [
+    {
+      "record_va": "0xe2a6e98",
+      "offset": 8,
+      "name": "_sourceID",
+      "type": "q",
+      "alignment": 3,
+      "size": 8
+    },
+    {
+      "record_va": "0xe2a6eb8",
+      "offset": 16,
+      "name": "_type",
+      "type": "q",
+      "alignment": 3,
+      "size": 8
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcImportSource", "category": "", "protocol": "", "kind": "-", "selector": "initWithImportSource:", "type_encoding": "@24@0:8r^{ImportSource=ii}16", "imp": "0x4403e9c", "method_record_va": "0xd779218", "selector_va": "0xd757f16", "dyld_line": 1775, "imp_file_offset": "0x4403e9c", "body_name": "ArcImportSource::initWithImportSource:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 109000, "body_length": 829, "failed": 0, "truncated": false}
+// ==== 0x4403e9c  ArcImportSource::initWithImportSource:  (124 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcImportSource::initWithImportSource_(ID param_1,SEL param_2,const_ImportSource__ param_3)
+
+{
+  uint uVar1;
+  code *pcVar2;
+  ID IVar3;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcImportSource;
+  local_30 = param_1;
+  IVar3 = NSObject::init((ID)&local_30,"init");
+  if (IVar3 != 0) {
+    *(long *)(IVar3 + 8) = (long)(int)param_3->field0_0x0;
+    uVar1 = param_3->field1_0x4 + 1;
+    if ((0xe < uVar1) || ((0x7f1dU >> (ulong)(uVar1 & 0x1f) & 1) == 0)) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(0x550b,0x4403f18);
+      (*pcVar2)();
+    }
+    *(ulong *)(IVar3 + 0x10) = (ulong)(byte)(&DAT_0c9d8158)[uVar1];
+  }
+  return IVar3;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcImportSource", "category": "", "protocol": "", "kind": "-", "selector": "sourceID", "type_encoding": "q16@0:8", "imp": "0x2d0fb40", "method_record_va": "0xd779224", "selector_va": "0xd75b97d", "dyld_line": 1776, "imp_file_offset": "0x2d0fb40", "body_name": "WebNNMLFeatureProvider::featureNames", "body_path": "/home/exedev/work/inputs/decompile/0x2d.c", "body_offset": 336323, "body_length": 209, "failed": 0, "truncated": false}
+// ==== 0x2d0fb40  WebNNMLFeatureProvider::featureNames  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID WebNNMLFeatureProvider::featureNames(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcImportSource", "category": "", "protocol": "", "kind": "-", "selector": "type", "type_encoding": "q16@0:8", "imp": "0x2cb140", "method_record_va": "0xd779230", "selector_va": "0xd74396e", "dyld_line": 1777, "imp_file_offset": "0x2cb140", "body_name": "WebNNMLFeatureProvider::featureValues", "body_path": "/home/exedev/work/inputs/decompile-extra/batch-60e9f287fbfb43c6985744de1f22c196/0x2.c", "body_offset": 5443186, "body_length": 213, "failed": 0, "truncated": false}
+// ==== 0x2cb140  WebNNMLFeatureProvider::featureValues  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID WebNNMLFeatureProvider::featureValues(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 0x10);
+}
+
+
+

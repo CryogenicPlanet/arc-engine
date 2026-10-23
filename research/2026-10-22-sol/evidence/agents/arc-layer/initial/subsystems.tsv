@@ -1,0 +1,17 @@
+subsystem	triage_priority	launch_relevance	named_function_entries	named_reported_bytes	objc_class_scopes	objc_category_scopes	arc_source_paths	string_xrefs	xref_function_candidates	example_named_anchor	example_path	example_xref_va
+ad_blocking_media	P1	blocking/media integration; initialization and feature dependency unknown	43	6452	4	0	5	63	28	ArcWebContentsMediaSession::nativeMediaSession	arc/browser/web_contents/media_session_impl.cc	0x31e1414
+ai_content_conversion	P2	service feature candidate; not proven safe to omit during initialization	186	38880	21	4	5	41	22	ArcHtmlToMarkdownResult::selectorsApplied	arc/content/browser/chat_manager_impl.cc	0x416b714
+artifacts_ui	P2	artifact UI/content feature; startup dependency and script-source policy unknown	0	0	0	0	2	11	3		arc/browser/ui/webui/artifacts/artifacts_untrusted_ui.cc	0x42abe10
+browser	P0	browser creation/ownership candidate	89	16608	9	0	1	19	9	ArcTabGroupResult::setGroupId:	arc/browser/browser_impl.cc	0x42f8d3c
+browser_application	P0	launch-lifecycle candidate; verify required initialization and shutdown	73	19684	4	0	6	66	43	ArcBrowserApplicationDebugProperty::.cxx_construct	arc/browser/arc_browser_runner.cc	0x42aad10
+browser_context	P0	profile/context candidate; verify creation and persistent state ownership	350	89336	23	7	5	55	33	objc::Categories::ArcBrowserContextDownloads_Extensions_::isEqual:	arc/browser/browser_context/browser_context_impl.cc	0x42c8b84
+diagnostics_accessibility_performance	P1	observers may be installed at startup; inspect registration before deferring	124	12040	17	0	8	29	11	ArcHistogramSamples::averageAIServiceCpuPercent	arc/browser/metrics/histograms_observer.cc	0x4328b7c
+downloads_network	P1	network/download integration; check profile and callback contracts	72	8452	7	0	5	12	8	ArcNetworkLoggingConfiguration::loggingDurationInSeconds	arc/browser/network_process_connection_waiter.cc	0x42ab9d0
+extensions	P1	extension integration; needed for feature parity, launch reachability unproven	96	14144	8	0	7	31	10	ArcExtensionCommand::isGlobal	arc/browser/extensions/api/feature_flags_private/feature_flags_private_api.cc	0x41d8c74
+importer	P2	import workflow candidate; launch/profile migration dependency unknown	12	2592	3	0	10	108	28	ArcImportSourceProfile::name	arc/browser/importer/importer_list.cc	0x41e6200
+ipc_mojom	P1	IPC identity/registration candidate; required endpoints depend on launch call graph	0	0	0	0	0	36	19			0x42ac1f8
+notifications	P1	notification API; launch registration and delivery dependencies unknown	29	5716	2	0	0	0	0	ArcNotificationButton::.cxx_destruct		
+other_named_arc	P2	unclassified Arc evidence; inspect before assigning criticality	6	488	3	0	5	394	168	ArcReference::initWithReferenceText:minimumCharacterCount:	arc/services/data_decoder/heif_decoder_service_mac.cc	0x1683514
+security_credentials	P1	security and credential contracts; launch reachability unproven	21	3752	6	0	0	16	14	ArcSecureContext::initWithSecureContext:		0x28424ac
+ui_controllers	P1	Chrome-to-Arc UI hook candidate; reachability and fallback contract unknown	178	20040	22	4	41	502	153	ArcHSLAMatrix::m2	arc/browser/ui/app_info_dialog.cc	0x8810ac
+web_contents	P0	content lifecycle/navigation candidate	252	50104	15	1	11	145	79	ArcWebContentsConfiguration::.cxx_destruct	arc/content/public/browser/content_layer_glue_helper.cc	0x16b9e40

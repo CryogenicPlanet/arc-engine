@@ -1,0 +1,68 @@
+# ArcBrowserContextHistory
+
+ArcCore 1.170.0 arm64; Chromium 156.0.8078.48. 29 declared method identities (base and category definitions counted separately). All VAs below are unslid engine VAs, not app 0x100… addresses.
+
+## State and layout
+
+Superclass `NSObject`; instanceStart 8, instanceSize 72 bytes; class metadata `0xe37d928`, class_ro `0xe2ac2d0`. Declared protocols: none. Raw binary read and independent dyld reconciliation: [inventory evidence](../evidence/inventory-validation.json). Full ivar encodings/record addresses: [layout.json](../evidence/layout.json). These are metadata facts, not an ownership inference.
+
+| Ivar | Byte offset | Size | Type |
+|---|---:|---:|---|
+| `_owner` | 8 | 8 | `@"ArcBrowserContext"` |
+| `_historyDelegate` | 16 | 16 | `{shared_ptr<BrowserContextHistoryDelegateBridge>="__ptr_"^{BrowserContextHistoryDelegateBridge}"__cntrl_"^{__shared_weak_count}}` |
+| `_visitObserverBridge` | 32 | 16 | `{shared_ptr<VisitObserverBridge>="__ptr_"^{VisitObserverBridge}"__cntrl_"^{__shared_weak_count}}` |
+| `_browser_context_history` | 48 | 24 | `{optional<arc::BrowserContext::History>=""(?="__null_state_"c"__val_"{History="impl_"{shared_ptr<arc::BrowserContext::Hi… (full encoding in layout.json)` |
+
+## Lifecycle, ownership and callbacks
+
+Initializers `0x4435ef8`/`0x443601c` copy native shared service at +0x30; owner weak operations are `0x43fe200`/`0x43fe218`, with `_objc_destroyWeak` in `0x443616c`. Delegate/visit observer bridges are shared handles. `0x40439c4` creates weak observer and owner captures, installs through `0x4332f08`, and changes stored observer for existing bridge.
+
+## Threading and caller/callee relations
+
+Wrapper operations convert URLs, NSDate epoch seconds and native annotated visits before forwarding (e.g. `0x40435ac`, `0x4043c88`, `0x4043e04`). `0x4044764` → `0x43332d0` → `0x42ee818` and originator deletion `0x4044a1c` → `0x4333408` → `0x42eeb5c` show a bounded two-bridge closure, not the whole DB stack. Visit callback `0x4045110` wraps ArcAnnotatedVisit and sends browserContext:didVisitURL:. These facts establish callback payload adaptation; the delivery queue, synchronization and cancellation guarantees remain unresolved.
+
+## Chrome / CEF route implications
+
+Needs history query/deletion/expiration, annotated-visit insertion/retrieval and sync originator/cache GUID behavior with app-compatible callback payloads. Source analogue Chromium `d0c02bfad08ec92a6ffcf989e53cd995e6381a4c`, `components/history/core/browser/history_service.h:94` is an inference from service shape, not a proven symbol match. CEF history navigation is not yet demonstrated to cover this DB/service contract.
+
+## Method matrix
+
+Each M anchor is the binary ObjC method-record VA; D is the raw `inputs/context/analysis/data/dobjc170.txt` line. Every B link is the exact indexed IMP body copied under `bodies/`; original shard path/byte offset/length are in [body-index.json](../evidence/body-index.json). Ghidra function names may describe another class sharing the IMP. H means high confidence only for local field/ABI facts, M is local or partial bridge review, U is unresolved. No row claims dynamic equivalence or exhaustive backend verification. Full unresolved questions and decompiler flags are in [methods.tsv](../methods.tsv).
+
+| Category | Kind/selector | Type encoding | IMP VA / body | Behavior | Backend/callees | Metadata evidence | Confidence/status |
+|---|---|---|---|---|---|---|---|
+| (base) | `-initWithBrowserContextHistory:` | `@24@0:8r^v16` | [0x4435ef8](../bodies/4435ef8.c) | Calls NSObject init, replaces engaged optional native handle, copies implementation/control pointers and increments shared control count. | field/indirect dispatch; see body | M `0xd77bb30`; D 2711 | M; available; local_body_observed |
+| (base) | `-initWithBrowserContextHistory:forBrowserContext:` | `@32@0:8r^v16@24` | [0x443601c](../bodies/443601c.c) | Stores ObjC argument into weak slot shown in body; Ghidra injection renders it as a plain assignment. | field/indirect dispatch; see body | M `0xd77bb3c`; D 2712 | H; available; local_field_observed |
+| (base) | `-browser_context_history` | `{optional<arc::BrowserContext::History>=(?=c{History={shared_ptr<arc::BrowserContext::History::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8` | [0x43dfab0](../bodies/43dfab0.c) | Copies optional native shared handle from self+0x30 into C++ return storage; increments control count when engaged, otherwise marks returned optional disengaged. | field/indirect dispatch; see body | M `0xd77bb48`; D 2713 | H; available; local_field_observed |
+| (base) | `-owner` | `@16@0:8` | [0x43fe200](../bodies/43fe200.c) | Loads weak ObjC slot with loadWeakRetained/autorelease operations documented by Ghidra injection warnings. | field/indirect dispatch; see body | M `0xd77bb54`; D 2714 | H; available; local_field_observed |
+| (base) | `-setOwner:` | `v24@0:8@16` | [0x43fe218](../bodies/43fe218.c) | Stores ObjC argument into weak slot shown in body; Ghidra injection renders it as a plain assignment. | field/indirect dispatch; see body | M `0xd77bb60`; D 2715 | H; available; local_field_observed |
+| (base) | `-historyDelegate` | `{shared_ptr<BrowserContextHistoryDelegateBridge>=^{BrowserContextHistoryDelegateBridge}^{__shared_weak_count}}16@0:8` | [0x43fe224](../bodies/43fe224.c) | Returns copy of shared bridge/native handle and increments its control count; exact field offset is in the body and layout. | field/indirect dispatch; see body | M `0xd77bb6c`; D 2716 | H; available; local_field_observed |
+| (base) | `-setHistoryDelegate:` | `v32@0:8{shared_ptr<BrowserContextHistoryDelegateBridge>=^{BrowserContextHistoryDelegateBridge}^{__shared_weak_count}}16` | [0x43fe244](../bodies/43fe244.c) | Assigns shared native bridge handle, incrementing new control count and releasing previous shared owner; identity is defined by metadata, despite shared Ghidra name. | field/indirect dispatch; see body | M `0xd77bb78`; D 2717 | M; available; local_body_observed |
+| (base) | `-visitObserverBridge` | `{shared_ptr<VisitObserverBridge>=^{VisitObserverBridge}^{__shared_weak_count}}16@0:8` | [0x43eaaf4](../bodies/43eaaf4.c) | Returns copy of shared bridge/native handle and increments its control count; exact field offset is in the body and layout. | field/indirect dispatch; see body | M `0xd77bb84`; D 2718 | H; available; local_field_observed |
+| (base) | `-setVisitObserverBridge:` | `v32@0:8{shared_ptr<VisitObserverBridge>=^{VisitObserverBridge}^{__shared_weak_count}}16` | [0x43eab14](../bodies/43eab14.c) | Assigns shared native bridge handle, incrementing new control count and releasing previous shared owner; identity is defined by metadata, despite shared Ghidra name. | field/indirect dispatch; see body | M `0xd77bb90`; D 2719 | M; available; local_body_observed |
+| (base) | `-.cxx_destruct` | `v16@0:8` | [0x443616c](../bodies/443616c.c) | Performs C++/ObjC cleanup of native storage; destroys weak ivars at self+8. Shared control-block decrement/destruction paths are visible where present; this does not establish backend shutdown. | field/indirect dispatch; see body | M `0xd77bb9c`; D 2720 | M; available; local_body_observed |
+| (base) | `-.cxx_construct` | `@16@0:8` | [0x4436370](../bodies/4436370.c) | Initializes native storage with explicit stores: self+0x40=0; self+0x18=0; self+0x10=0; self+0x28=0; self+0x20=0; self+0x30=0. | field/indirect dispatch; see body | M `0xd77bba8`; D 2721 | M; available; local_body_observed |
+| Extensions | `-isEqual:` | `B24@0:8@16` | [0x4042a54](../bodies/4042a54.c) | Checks receiver identity, nil and class compatibility; compares native optional engagement and underlying identity/value after extracting both handles. | 0x411db00; 0x4332750 | M `0xd773e84`; D 4792 | M; available; local_body_observed |
+| Extensions | `-hash` | `Q16@0:8` | [0x4042b94](../bodies/4042b94.c) | Extracts engaged native history handle and calls hash bridge 0x4332988; releases temporary shared handle after computing hash. | 0x4332750; 0x4332988 | M `0xd773e90`; D 4793 | M; available; bridge_reviewed_partial |
+| Extensions | `-setDelegate:` | `v24@0:8@16` | [0x4042c14](../bodies/4042c14.c) | Creates or updates shared history delegate bridge; registers with native history service, keeping weak ObjC delegate/owner references in bridge construction. | 0x2527d18; 0x4332750; 0x4332aec | M `0xd773e9c`; D 4794 | M; available; bridge_reviewed_partial |
+| Extensions | `-searchHistory:completion:` | `v32@0:8@16@?24` | [0x4042ed8](../bodies/4042ed8.c) | Extracts native history query options (nil yields zeroed temporary), captures completion with adapter 0x40454a0 and calls 0x4332ba4. | 0x4332750; 0x4332ba4 | M `0xd773ea8`; D 4795 | M; available; bridge_reviewed_partial |
+| Extensions | `-getTopSitesFromHistory:` | `v24@0:8@?16` | [0x4043054](../bodies/4043054.c) | Captures completion with top-sites adapter 0x40453c0 and forwards native history handle to 0x4332c3c. | 0x4332750; 0x4332c3c | M `0xd773eb4`; D 4796 | M; available; bridge_reviewed_partial |
+| Extensions | `-addUrlToHistory:title:` | `v32@0:8@16@24` | [0x4043178](../bodies/4043178.c) | Converts URL and title to native values and calls 0x4332ccc; no completion object is accepted here. | 0x3b60ee8; 0x4332750; 0x4332ccc; 0x43abdf8 | M `0xd773ec0`; D 4797 | M; available; bridge_reviewed_partial |
+| Extensions | `-deleteUrlsFromHistory:completion:` | `v32@0:8@16@?24` | [0x40432b0](../bodies/40432b0.c) | Enumerates URL array into native vector, captures completion and calls 0x4332d28. | 0x4047380; 0x4332750; 0x4332d28 | M `0xd773ecc`; D 4798 | M; available; bridge_reviewed_partial |
+| Extensions | `-expireHistoryBetween:forBeginTime:forEndTime:completion:` | `v48@0:8@16@24@32@?40` | [0x40435ac](../bodies/40435ac.c) | Builds native URL collection, converts begin/end NSDate to seconds since 1970, captures completion and calls 0x4332dc0, which forwards to 0x42eda00. | 0x63242c; 0x4332750; 0x4332dc0 | M `0xd773ed8`; D 4799 | M; available; bridge_reviewed_partial |
+| Extensions | `-expireHistory:completion:` | `v32@0:8@16@?24` | [0x4043800](../bodies/4043800.c) | Enumerates supplied expiration requests into native collection, captures completion and calls 0x4332e70. | 0x63242c; 0x4332750; 0x4332e70 | M `0xd773ee4`; D 4800 | M; available; bridge_reviewed_partial |
+| Extensions | `-setVisitObserver:` | `v24@0:8@16` | [0x40439c4](../bodies/40439c4.c) | Installs shared visit-observer bridge with weak observer/context-owner references through 0x4332f08; existing bridge delegate is updated and nil clears stored bridge. | 0x2527d18; 0x4332750; 0x4332f08 | M `0xd773ef0`; D 4801 | M; available; bridge_reviewed_partial |
+| Extensions | `-addVisit:completion:` | `v32@0:8@16@?24` | [0x4043c88](../bodies/4043c88.c) | Converts supplied object through toAnnotatedVisit, captures completion and calls 0x4332fc0; nil yields zero/default temporary in recovered body. | 0x4332750; 0x4332fc0; 0x43364d8 | M `0xd773efc`; D 4802 | M; available; bridge_reviewed_partial |
+| Extensions | `-addVisits:completion:` | `v32@0:8@16@?24` | [0x4043e04](../bodies/4043e04.c) | Enumerates objects, converts each through toAnnotatedVisit into native visit vector, captures completion and calls 0x4333058. | 0x3738fe0; 0x431a574; 0x4332750; 0x4333058; 0x43364d8 | M `0xd773f08`; D 4803 | M; available; bridge_reviewed_partial |
+| Extensions | `-getVisitsSince:completion:` | `v32@0:8@16@?24` | [0x40442b0](../bodies/40442b0.c) | Converts NSDate to epoch seconds and calls 0x43330f0 with captured completion. | 0x4332750; 0x43330f0 | M `0xd773f14`; D 4804 | M; available; bridge_reviewed_partial |
+| Extensions | `-getVisitsForURL:completion:` | `v32@0:8@16@?24` | [0x4044418](../bodies/4044418.c) | Converts URL and calls 0x4333190 with captured completion. | 0x4332750; 0x4333190; 0x43abdf8 | M `0xd773f20`; D 4805 | M; available; bridge_reviewed_partial |
+| Extensions | `-deleteByURL:endTime:completion:` | `v40@0:8@16@24@?32` | [0x40445a0](../bodies/40445a0.c) | Converts URL/end NSDate and calls 0x4333228 with captured completion. | 0x4332750; 0x4333228; 0x43abdf8 | M `0xd773f2c`; D 4806 | M; available; bridge_reviewed_partial |
+| Extensions | `-deleteByTimeRangeStart:end:completion:` | `v40@0:8@16@24@?32` | [0x4044764](../bodies/4044764.c) | Converts start/end NSDate to epoch seconds and calls 0x43332d0, then 0x42ee818 via bridge. | 0x4332750; 0x43332d0 | M `0xd773f38`; D 4807 | M; available; bridge_reviewed_partial |
+| Extensions | `-getLocalCacheGUID:` | `v24@0:8@?16` | [0x40448f8](../bodies/40448f8.c) | Captures completion with string adapter 0x4044ef4 and calls 0x4333378 for local cache GUID. | 0x4332750; 0x4333378 | M `0xd773f44`; D 4808 | M; available; bridge_reviewed_partial |
+| Extensions | `-deleteByOriginatorVisitIDs:originatorCacheGuid:startTime:endTime:completion:` | `v56@0:8@16@24@32@40@?48` | [0x4044a1c](../bodies/4044a1c.c) | Converts NSNumber visit IDs to signed 64-bit vector, cache GUID to native string, start/end dates to epoch seconds and calls 0x4333408 then 0x42eeb5c. | 0x1ab9b20; 0x3b60ee8; 0x4047380; 0x4332750; 0x4333408 | M `0xd773f50`; D 4809 | M; available; bridge_reviewed_partial |
+
+## Remaining consequential questions
+
+Recover DB task sequencing, deletion interval inclusivity, sync-originator IDs, top-site ranking, observer ordering and nil/delegate removal behavior. No claim that these are all app-used methods.
+
+Further per-method questions are in `methods.tsv`. Header availability is distinct from body correctness. No timing, ownership or thread guarantee is inferred solely from a selector name or type encoding.

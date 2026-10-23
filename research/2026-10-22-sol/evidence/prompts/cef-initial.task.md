@@ -1,0 +1,7 @@
+Role: CEF compatibility and engine-route comparison. Read common constraints above.
+
+Build a per-selector mapping for the engine classes imported by app 1.168.0 using metadata. Refer to ../abi/initial/contract.tsv if available, otherwise derive your own inventory without waiting. Keep your own complete inventory. Check official CEF public headers and docs at a recorded revision; identify whether that revision matches Chromium 156.0.8078.48 or explain any version gap. Public primary sources only. No giant clone/build.
+
+Classify every inventoried method as direct CEF-public mapping, partial mapping plus bridge/app implementation, Chrome-internal dependency, Arc-specific behavior, or unresolved. Positive mappings require exact CEF API, source URL, revision and rationale, not selector similarity. CEF API absence is hard to prove: say unresolved if your evidence is insufficient. Distinguish CEF Chrome runtime vs Alloy, macOS lifecycle/embedding and thread/ownership constraints. Identify browser contexts/profiles, history/autocomplete/passwords, extensions, popup/window/web contents, custom UI, IPC, media/DRM, passkeys, devtools/downloads as relevant blockers.
+
+Deliver initial/report.md, initial/cef-mapping.tsv (one row per inventoried method, evidence URL/revision/confidence), category counts generated from TSV, and initial/decompile-requests.tsv for specific semantics that gate the route choice. Compare CEF versus a custom Chromium arc/ layer with explicit unknowns; no final rewrite estimate unsupported by decompiled behavior.

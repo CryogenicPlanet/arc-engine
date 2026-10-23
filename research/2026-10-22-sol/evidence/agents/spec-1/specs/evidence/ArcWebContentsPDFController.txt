@@ -1,0 +1,377 @@
+{
+  "class_name": "ArcWebContentsPDFController",
+  "metadata_va": "0xe37e328",
+  "metadata_file_offset": "0xe37e328",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2ae4f0",
+  "instance_start": 8,
+  "instance_size": 32,
+  "ivars": [
+    {
+      "record_va": "0xe2ae4b8",
+      "offset": 8,
+      "name": "_web_contents_pdf_controller",
+      "type": "{optional<arc::WebContents::PDFController>=\"\"(?=\"__null_state_\"c\"__val_\"{PDFController=\"impl_\"{shared_ptr<arc::WebContents::PDFController::Impl>=\"__ptr_\"^{Impl}\"__cntrl_\"^{__shared_weak_count}}})\"__engaged_\"B}",
+      "size": 24,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2ae4e0",
+      "name": "web_contents_pdf_controller",
+      "attributes": "T{optional<arc::WebContents::PDFController>=(?=c{PDFController={shared_ptr<arc::WebContents::PDFController::Impl>=^{Impl}^{__shared_weak_count}}})B},R,N,V_web_contents_pdf_controller"
+    }
+  ]
+}
+
+###  -initWithWebContentsPDFController: 0x443df90 @24@0:8r^v16 available
+
+  ID IVar2;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcWebContentsPDFController;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 == 0) {
+    return 0;
+  }
+  if (*(char *)(IVar2 + 0x18) == '\0') goto LAB_0443dff0;
+  plVar4 = *(long **)(IVar2 + 0x10);
+  if (plVar4 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar4[1];
+    plVar4[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar4 + 0x10))(plVar4);
+      if (plVar4[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar4[2];
+        plVar4[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_0443dfec;
+      }
+      pcVar3 = *(code **)(*plVar4 + 0x20);
+      if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+        FUN_00005810(plVar4,0x20);
+      }
+      else {
+        (*pcVar3)(plVar4);
+      }
+    }
+  }
+LAB_0443dfec:
+  *(undefined1 *)(IVar2 + 0x18) = 0;
+LAB_0443dff0:
+  *(undefined8 *)(IVar2 + 8) = *(undefined8 *)param_3;
+  lVar1 = *(long *)((long)param_3 + 8);
+  *(long *)(IVar2 + 0x10) = lVar1;
+  if (lVar1 != 0) {
+    *(long *)(lVar1 + 8) = *(long *)(lVar1 + 8) + 1;
+  }
+  *(undefined1 *)(IVar2 + 0x18) = 1;
+  return IVar2;
+}
+
+
+
+
+###  -hasBookmarks:error: 0x443e0b4 B32@0:8@?16^@24 available
+
+  ID *local_68 [2];
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x443e1e4);
+    (*pcVar1)();
+  }
+  local_70 = (uint *)0x0;
+  uVar5 = *(undefined8 *)(param_1 + 8);
+  local_58 = &LAB_04045100;
+  local_50 = &PTR_FUN_0df6c338;
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_3;
+  FUN_0436c99c(&local_70,uVar5,local_68);
+  if ((code *)local_50[1] != (code *)0x0) {
+    (*(code *)local_50[1])(local_68[0]);
+  }
+  local_78 = local_70;
+  puVar4 = local_70;
+  if (((ulong)local_70 & 1) == 0) {
+    uVar2 = *local_70;
+    *local_70 = uVar2 + 1;
+    puVar4 = (uint *)(ulong)uVar2;
+  }
+  bVar3 = FUN_04402548(puVar4,&local_78,param_4);
+  if (((ulong)local_78 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (((ulong)local_70 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_48) {
+    return bVar3;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(0);
+}
+
+
+
+
+###  -getBookmarks:error: 0x443e20c B32@0:8@?16^@24 available
+
+  ID *local_68 [2];
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x443e33c);
+    (*pcVar1)();
+  }
+  local_70 = (uint *)0x0;
+  uVar5 = *(undefined8 *)(param_1 + 8);
+  local_58 = FUN_043f88dc;
+  local_50 = &PTR_FUN_0df6c358;
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_3;
+  FUN_0436cb2c(&local_70,uVar5,local_68);
+  if ((code *)local_50[1] != (code *)0x0) {
+    (*(code *)local_50[1])(local_68[0]);
+  }
+  local_78 = local_70;
+  puVar4 = local_70;
+  if (((ulong)local_70 & 1) == 0) {
+    uVar2 = *local_70;
+    *local_70 = uVar2 + 1;
+    puVar4 = (uint *)(ulong)uVar2;
+  }
+  bVar3 = FUN_04402548(puVar4,&local_78,param_4);
+  if (((ulong)local_78 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (((ulong)local_70 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_48) {
+    return bVar3;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(0);
+}
+
+
+
+
+###  -availablePages:error: 0x443e364 B32@0:8@?16^@24 available
+
+  ID *local_68 [2];
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x443e494);
+    (*pcVar1)();
+  }
+  local_70 = (uint *)0x0;
+  uVar5 = *(undefined8 *)(param_1 + 8);
+  local_58 = &LAB_0443e774;
+  local_50 = &PTR_FUN_0df6c378;
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_3;
+  FUN_0436ccbc(&local_70,uVar5,local_68);
+  if ((code *)local_50[1] != (code *)0x0) {
+    (*(code *)local_50[1])(local_68[0]);
+  }
+  local_78 = local_70;
+  puVar4 = local_70;
+  if (((ulong)local_70 & 1) == 0) {
+    uVar2 = *local_70;
+    *local_70 = uVar2 + 1;
+    puVar4 = (uint *)(ulong)uVar2;
+  }
+  bVar3 = FUN_04402548(puVar4,&local_78,param_4);
+  if (((ulong)local_78 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (((ulong)local_70 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_48) {
+    return bVar3;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(0);
+}
+
+
+
+
+###  -visiblePages:error: 0x443e4bc B32@0:8@?16^@24 available
+
+  ID *local_68 [2];
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x443e5ec);
+    (*pcVar1)();
+  }
+  local_70 = (uint *)0x0;
+  uVar5 = *(undefined8 *)(param_1 + 8);
+  local_58 = FUN_0443e790;
+  local_50 = &PTR_FUN_0df6c398;
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_3;
+  FUN_0436cec4(&local_70,uVar5,local_68);
+  if ((code *)local_50[1] != (code *)0x0) {
+    (*(code *)local_50[1])(local_68[0]);
+  }
+  local_78 = local_70;
+  puVar4 = local_70;
+  if (((ulong)local_70 & 1) == 0) {
+    uVar2 = *local_70;
+    *local_70 = uVar2 + 1;
+    puVar4 = (uint *)(ulong)uVar2;
+  }
+  bVar3 = FUN_04402548(puVar4,&local_78,param_4);
+  if (((ulong)local_78 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (((ulong)local_70 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_48) {
+    return bVar3;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(0);
+}
+
+
+
+
+###  -getAvailableTextOn:callback:error: 0x443e614 B36@0:8i16@?20^@28 available
+
+  ID *local_68 [2];
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  if ((*(byte *)(param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x443e74c);
+    (*pcVar1)();
+  }
+  local_70 = (uint *)0x0;
+  uVar5 = *(undefined8 *)(param_1 + 8);
+  local_58 = FUN_043f88dc;
+  local_50 = &PTR_FUN_0df6c3b8;
+  local_68[0] = (ID *)FUN_00008790(8);
+  *local_68[0] = param_4;
+  FUN_0436d054(&local_70,uVar5,param_3,local_68);
+  if ((code *)local_50[1] != (code *)0x0) {
+    (*(code *)local_50[1])(local_68[0]);
+  }
+  local_78 = local_70;
+  puVar4 = local_70;
+  if (((ulong)local_70 & 1) == 0) {
+    uVar2 = *local_70;
+    *local_70 = uVar2 + 1;
+    puVar4 = (uint *)(ulong)uVar2;
+  }
+  bVar3 = FUN_04402548(puVar4,&local_78,param_5);
+  if (((ulong)local_78 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (((ulong)local_70 & 1) == 0) {
+    FUN_04b35898();
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_48) {
+    return bVar3;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(0);
+}
+
+
+
+
+###  -web_contents_pdf_controller 0x43df53c {optional<arc::WebContents::PDFController>=(?=c{PDFController={shared_ptr<arc::WebContents::PDFController::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8 available
+
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::AIAgent> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43df57c);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x10);
+    pIVar4 = *(Impl **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x43df69c v16@0:8 available
+
+  
+  if ((*(char *)(param_1 + 0x18) != '\0') &&
+     (plVar2 = *(long **)(param_1 + 0x10), plVar2 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x043df75c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x43df760 @16@0:8 available
+
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+

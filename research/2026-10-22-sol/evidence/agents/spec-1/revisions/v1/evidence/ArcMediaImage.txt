@@ -1,0 +1,262 @@
+{
+  "class_name": "ArcMediaImage",
+  "metadata_va": "0xe37c578",
+  "metadata_file_offset": "0xe37c578",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a7540",
+  "instance_start": 8,
+  "instance_size": 32,
+  "ivars": [
+    {
+      "record_va": "0xe2a74b8",
+      "offset": 8,
+      "name": "_sizes",
+      "type": "^{CGSize=dd}",
+      "size": 8,
+      "alignment": 3
+    },
+    {
+      "record_va": "0xe2a74d8",
+      "offset": 16,
+      "name": "_nativeMediaImage",
+      "type": "{MediaImage=\"impl_\"{shared_ptr<media_session::MediaImage>=\"__ptr_\"^{MediaImage}\"__cntrl_\"^{__shared_weak_count}}}",
+      "size": 16,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a7500",
+      "name": "nativeMediaImage",
+      "attributes": "T{MediaImage={shared_ptr<media_session::MediaImage>=^{MediaImage}^{__shared_weak_count}}},N,V_nativeMediaImage"
+    },
+    {
+      "record_va": "0xe2a7510",
+      "name": "src",
+      "attributes": "T@\"NSString\",R,N"
+    },
+    {
+      "record_va": "0xe2a7520",
+      "name": "type",
+      "attributes": "T@\"NSString\",R,N"
+    },
+    {
+      "record_va": "0xe2a7530",
+      "name": "sizes",
+      "attributes": "T^{CGSize=dd},R,N,V_sizes"
+    }
+  ]
+}
+
+###  -initWithMediaImage: 0x4407384 @32@0:8{MediaImage={shared_ptr<media_session::MediaImage>=^{MediaImage}^{__shared_weak_count}}}16 available
+
+  ID IVar3;
+  MediaImage_conflict *pMVar5;
+  size_t sVar6;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pMVar5 = param_3.field0_0x0.field0_0x0;
+  pcStack_38 = &objc::class_t::ArcMediaImage;
+  local_40 = param_1;
+  IVar3 = NSObject::init((ID)&local_40,"init",pMVar5,param_3.field0_0x0.field1_0x8);
+  if (IVar3 != 0) {
+    FUN_04331e20(IVar3 + 0x10,pMVar5);
+    FUN_0433cab0(&local_58,*(long *)pMVar5 + 0x90);
+    sVar6 = local_50 << 4;
+    if (local_50 >> 0x3c != 0) {
+      sVar6 = 0xffffffffffffffff;
+    }
+    puVar4 = (undefined8 *)FUN_00008790(sVar6);
+    _bzero(puVar4,sVar6);
+    puVar7 = puVar4;
+    puVar1 = local_58;
+    for (lVar8 = local_50 * 8; lVar8 != 0; lVar8 = lVar8 + -8) {
+      auVar9._0_8_ = (long)(int)*puVar1;
+      auVar9._8_8_ = (long)(int)((ulong)*puVar1 >> 0x20);
+      auVar9 = NEON_scvtf(auVar9,8);
+      puVar7[1] = auVar9._8_8_;
+      *puVar7 = auVar9._0_8_;
+      puVar7 = puVar7 + 2;
+      puVar1 = puVar1 + 1;
+    }
+    *(undefined8 **)(IVar3 + 8) = puVar4;
+    if (local_58 != (undefined8 *)0x0) {
+      if (local_50 * 8 != 0) {
+        lVar8 = local_50 * -8;
+        puVar7 = local_58 + local_50;
+        do {
+          puVar7 = puVar7 + -1;
+          if (puVar7 == (undefined8 *)0x0) {
+                    /* WARNING: Does not return */
+            pcVar2 = (code *)SoftwareBreakpoint(1,0x4407494);
+            (*pcVar2)();
+          }
+          lVar8 = lVar8 + 8;
+        } while (lVar8 != 0);
+      }
+      local_50 = 0;
+      FUN_00005810(local_58,local_48 << 3);
+    }
+  }
+  return IVar3;
+}
+
+
+
+
+###  -dealloc 0x44074d0 v16@0:8 available
+
+  ID local_30;
+  class_t *pcStack_28;
+  
+  if (*(long *)(param_1 + 8) != 0) {
+    FUN_00010ba4();
+  }
+  pcStack_28 = &objc::class_t::ArcMediaImage;
+  local_30 = param_1;
+  NSObject::dealloc((ID)&local_30,"dealloc");
+  return;
+}
+
+
+
+
+###  -src 0x440751c @16@0:8 available
+
+  ID IVar4;
+  
+  puVar3 = (undefined8 *)FUN_007cf864(*(undefined8 *)(param_1 + 0x10));
+  if (*(char *)((long)puVar3 + 0x17) < '\0') {
+    FUN_00060a60(&local_40,*puVar3,puVar3[1]);
+  }
+  else {
+    lStack_38 = puVar3[1];
+    local_40 = (undefined1 *)*puVar3;
+    local_30 = puVar3[2];
+  }
+  ppuVar1 = (undefined1 **)local_40;
+  if (-1 < (long)local_30._7_1_) {
+    ppuVar1 = &local_40;
+  }
+  lVar2 = lStack_38;
+  if (-1 < (long)local_30) {
+    lVar2 = (long)local_30._7_1_;
+  }
+  IVar4 = FUN_01c391bc(ppuVar1,lVar2);
+  if ((long)local_30 < 0) {
+    FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+  }
+  return IVar4;
+}
+
+
+
+
+###  -type 0x44075d4 @16@0:8 available
+
+  ID IVar3;
+  
+  lVar4 = *(long *)(param_1 + 0x10);
+  cVar2 = *(char *)(lVar4 + 0x8f);
+  plVar1 = (long *)*(long *)(lVar4 + 0x78);
+  if (-1 < (long)cVar2) {
+    plVar1 = (long *)(lVar4 + 0x78);
+  }
+  lVar4 = *(long *)(lVar4 + 0x80);
+  if (-1 < cVar2) {
+    lVar4 = (long)cVar2;
+  }
+  IVar3 = FUN_01d9fb90(plVar1,lVar4);
+  return IVar3;
+}
+
+
+
+
+###  -sizes 0x2d0fb40 ^{CGSize=dd}16@0:8 available
+
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+
+###  -nativeMediaImage 0x44075f8 {MediaImage={shared_ptr<media_session::MediaImage>=^{MediaImage}^{__shared_weak_count}}}16@0:8 available
+
+  MediaImage MVar4;
+  
+  lVar2 = *(long *)(param_1 + 0x18);
+  uVar3 = *(undefined8 *)(param_1 + 0x10);
+  in_x8[1] = *(undefined8 *)(param_1 + 0x18);
+  *in_x8 = uVar3;
+  if (lVar2 != 0) {
+    plVar1 = (long *)(lVar2 + 8);
+    *plVar1 = *plVar1 + 1;
+  }
+  MVar4.field0_0x0.field1_0x8 = (__shared_weak_count *)param_2;
+  MVar4.field0_0x0.field0_0x0 = (MediaImage_conflict *)param_1;
+  return (MediaImage)MVar4.field0_0x0;
+}
+
+
+
+
+###  -setNativeMediaImage: 0x4407618 v32@0:8{MediaImage={shared_ptr<media_session::MediaImage>=^{MediaImage}^{__shared_weak_count}}}16 available
+
+  FUN_04331e20(param_1 + 0x10,param_3.field0_0x0.field0_0x0,param_3.field0_0x0.field0_0x0,
+               param_3.field0_0x0.field1_0x8);
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x4407624 v16@0:8 available
+
+  
+  plVar2 = *(long **)(param_1 + 0x18);
+  if (plVar2 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x044076dc. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x44076e0 @16@0:8 available
+
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+

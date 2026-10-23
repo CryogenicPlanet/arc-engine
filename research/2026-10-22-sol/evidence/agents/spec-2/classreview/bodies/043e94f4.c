@@ -1,0 +1,55 @@
+// ==== 0x43e94f4  ArcBrowserApplication::getBase64EncodedEncryptionKey  (180 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcBrowserApplication::getBase64EncodedEncryptionKey(ID param_1,SEL param_2)
+
+{
+  ulong uVar1;
+  undefined1 **ppuVar2;
+  ID IVar3;
+  uint uVar4;
+  undefined1 *local_40;
+  ulong uStack_38;
+  undefined8 local_30;
+  ulong local_28;
+  
+  uStack_38 = 0;
+  local_40 = (undefined1 *)0x0;
+  local_28 = 0;
+  local_30 = 0;
+  FUN_04523400(&local_40,*(undefined8 *)(**(long **)(param_1 + 0x20) + 0x338));
+  if ((char)local_28 == '\0') {
+    IVar3 = 0;
+  }
+  else {
+    uVar4 = (uint)(char)local_30._7_1_;
+    uVar1 = uStack_38;
+    if (-1 < (int)uVar4) {
+      uVar1 = (ulong)local_30._7_1_;
+    }
+    if (uVar1 == 0) {
+      IVar3 = 0;
+    }
+    else {
+      ppuVar2 = (undefined1 **)local_40;
+      if (-1 < (int)uVar4) {
+        ppuVar2 = &local_40;
+      }
+      IVar3 = FUN_01c391bc(ppuVar2);
+      uVar4 = (uint)local_30._7_1_;
+      if ((local_28 & 1) == 0) {
+        return IVar3;
+      }
+    }
+    if ((uVar4 >> 7 & 1) != 0) {
+      FUN_00005810(local_40,local_30 & 0x7fffffffffffffff);
+    }
+  }
+  return IVar3;
+}
+
+

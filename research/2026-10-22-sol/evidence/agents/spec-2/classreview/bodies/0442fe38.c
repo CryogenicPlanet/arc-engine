@@ -1,0 +1,27 @@
+// ==== 0x442fe38  ArcDownloadItem::resume  (88 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcDownloadItem::resume(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  long lVar2;
+  long lVar3;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x442fe90);
+    (*pcVar1)();
+  }
+  lVar3 = *(long *)(param_1 + 0x10);
+  if ((lVar3 != 0) && (lVar2 = (**(code **)(**(long **)(lVar3 + 0x18) + 0xf8))(), lVar2 != 0)) {
+                    /* WARNING: Could not recover jumptable at 0x0442fe7c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+    (**(code **)(**(long **)(lVar3 + 0x18) + 0x178))();
+    return;
+  }
+  return;
+}
+
+

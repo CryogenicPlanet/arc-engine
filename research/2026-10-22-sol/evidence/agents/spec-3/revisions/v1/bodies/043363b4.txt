@@ -1,0 +1,67 @@
+INDEX 0x43363b4 FUN_043363b4 path=/home/exedev/work/inputs/decompile/0x43.c offset=1079762 C_bytes=1360 failed=0
+// ==== 0x43363b4  FUN_043363b4  (288 bytes)
+
+undefined8 * FUN_043363b4(undefined8 *param_1)
+
+{
+  int iVar1;
+  int *piVar2;
+  
+  *param_1 = &PTR_LAB_0da7ed48;
+  FUN_04335e08();
+  param_1[10] = 0;
+  if (param_1[9] != 0) {
+    *(undefined1 *)(param_1[9] + 4) = 1;
+    piVar2 = (int *)param_1[9];
+    if (piVar2 != (int *)0x0) {
+      LOAcquire();
+      iVar1 = *piVar2;
+      *piVar2 = iVar1 + -1;
+      LORelease();
+      if (iVar1 == 1) {
+        FUN_00005810(piVar2,8);
+      }
+    }
+  }
+  if ((param_1[8] & 0xfffffffc00000000) == DAT_0e2f2208) {
+    FUN_0001fee4();
+  }
+  param_1[8] = 0;
+  piVar2 = (int *)param_1[6];
+  if (piVar2 != (int *)0x0) {
+    LOAcquire();
+    iVar1 = *piVar2;
+    *piVar2 = iVar1 + -1;
+    LORelease();
+    if (iVar1 == 1) {
+      FUN_00005810(piVar2,8);
+    }
+  }
+  if ((param_1[5] & 0xfffffffc00000000) == DAT_0e2f2208) {
+    FUN_0001fee4();
+  }
+  param_1[5] = 0;
+  if ((param_1[4] & 0xfffffffc00000000) == DAT_0e2f2208) {
+    FUN_0001fee4();
+  }
+  param_1[4] = 0;
+  *param_1 = &PTR_FUN_0da8a590;
+  param_1[2] = 0;
+  if (param_1[1] != 0) {
+    *(undefined1 *)(param_1[1] + 4) = 1;
+    piVar2 = (int *)param_1[1];
+    if (piVar2 != (int *)0x0) {
+      LOAcquire();
+      iVar1 = *piVar2;
+      *piVar2 = iVar1 + -1;
+      LORelease();
+      if (iVar1 == 1) {
+        FUN_00005810(piVar2,8);
+      }
+    }
+  }
+  return param_1;
+}
+
+
+

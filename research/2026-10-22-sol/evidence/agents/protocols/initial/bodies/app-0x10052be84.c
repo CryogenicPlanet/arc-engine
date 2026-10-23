@@ -1,0 +1,33 @@
+// ==== 0x10052be84  _TtC3ADK15ChromiumBrowser::-[ChromiumBrowser_browser:extensionGroupIdForTabWithSessionId:]  (200 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+long_long _TtC3ADK15ChromiumBrowser::__ChromiumBrowser_browser_extensionGroupIdForTabWithSessionId__
+                    (ID param_1,SEL param_2,ID param_3,long_long param_4)
+
+{
+  long lVar1;
+  long lVar2;
+  long lVar3;
+  undefined1 auStack_68 [24];
+  
+  lVar2 = param_1 + browserDelegate;
+  _swift_beginAccess(lVar2,auStack_68,0,0);
+  lVar1 = lVar2;
+  _swift_unknownObjectWeakLoadStrong();
+  if (lVar1 == 0) {
+    param_1 = 0xffffffffffffffff;
+  }
+  else {
+    lVar3 = *(long *)(lVar2 + 8);
+    lVar2 = lVar1;
+    _swift_getObjectType();
+    (**(code **)(lVar3 + 0x78))(param_1,&PTR_PTR_10418c868,param_4,lVar2,lVar3);
+    _swift_unknownObjectRelease(lVar1);
+  }
+  return param_1;
+}
+
+

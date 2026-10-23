@@ -1,0 +1,88 @@
+// ==== 0x43ea810  ArcBrowserApplication::restoreBrowser:withSessionID:browserCreatedCallback:finishedCallback:  (532 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x30 bytes */
+
+void ArcBrowserApplication::restoreBrowser_withSessionID_browserCreatedCallback_finishedCallback_
+               (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5,uint param_6,ID param_7,
+               undefined4 param_8)
+
+{
+  long lVar1;
+  ID IVar2;
+  code *pcVar3;
+  undefined8 *puVar4;
+  undefined4 local_98;
+  undefined1 local_94;
+  undefined8 local_90;
+  long *local_88;
+  ulong local_80;
+  ID *local_78 [2];
+  undefined1 *local_68;
+  undefined **local_60;
+  long local_58;
+  
+  local_58 = *(long *)PTR____stack_chk_guard_0d824020;
+  if (param_3 == 0) {
+    local_90 = 0;
+    local_88 = (long *)0x0;
+    local_80 = 0;
+    IVar2 = (ulong)param_6;
+  }
+  else {
+    puVar4 = *(undefined8 **)(param_1 + 0x20);
+    IVar2 = _objc_msgSend(param_3,"browser_context",&local_90);
+    if ((local_80 & 1) != 0) {
+      IVar2 = _objc_msgSend(param_4,"sessionId");
+      local_98 = (undefined4)IVar2;
+      local_94 = (undefined1)(IVar2 >> 0x20);
+      if ((IVar2 >> 0x20 & 1) != 0) {
+        local_78[0] = (ID *)FUN_00008790(0x10);
+        *local_78[0] = param_5;
+        local_78[0][1] = (ulong)param_6;
+        local_68 = &LAB_043ec004;
+        local_60 = &PTR_FUN_0df6b848;
+        FUN_042bdee4(*puVar4,&local_90,&local_98,local_78);
+        if ((code *)local_60[1] != (code *)0x0) {
+          (*(code *)local_60[1])(local_78[0]);
+        }
+        if (((char)local_80 != '\0') && (local_88 != (long *)0x0)) {
+          LOAcquire();
+          lVar1 = local_88[1];
+          local_88[1] = lVar1 + -1;
+          LORelease();
+          if (lVar1 == 0) {
+            (**(code **)(*local_88 + 0x10))(local_88);
+            if (local_88[2] != 0) {
+              LOAcquire();
+              lVar1 = local_88[2];
+              local_88[2] = lVar1 + -1;
+              LORelease();
+              if (lVar1 != 0) goto LAB_043ea93c;
+            }
+            pcVar3 = *(code **)(*local_88 + 0x20);
+            if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40))
+            {
+              FUN_00005810(local_88,0x20);
+            }
+            else {
+              (*pcVar3)(local_88);
+            }
+          }
+        }
+LAB_043ea93c:
+        if (*(long *)PTR____stack_chk_guard_0d824020 != local_58) {
+                    /* WARNING: Subroutine does not return */
+          ___stack_chk_fail(0);
+        }
+        return;
+      }
+    }
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_04b08a00(IVar2);
+}
+
+

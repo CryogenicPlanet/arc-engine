@@ -1,0 +1,45 @@
+54: void WebstoreStandaloneInstaller::BeginInstall() {
+55:   // Add a ref to keep this alive for WebstoreDataFetcher.
+56:   // All code paths from here eventually lead to either CompleteInstall or
+57:   // AbortInstall, which both call CleanUp to release this ref.
+58:   AddRef();
+59: 
+60:   if (!crx_file::id_util::IdIsValid(id_)) {
+61:     CompleteInstall(webstore_install::INVALID_ID,
+62:                     webstore_install::kInvalidWebstoreItemId);
+63:     return;
+64:   }
+65: 
+66:   webstore_install::Result result = webstore_install::OTHER_ERROR;
+67:   std::string error;
+68:   if (!EnsureUniqueInstall(&result, &error)) {
+69:     CompleteInstall(result, error);
+70:     return;
+71:   }
+72: 
+73:   // Use the requesting page as the referrer both since that is more correct
+74:   // (it is the page that caused this request to happen) and so that we can
+75:   // track top sites that trigger inline install requests.
+76:   webstore_data_fetcher_ =
+77:       std::make_unique<WebstoreDataFetcher>(this, GURL(), id_);
+78: 
+79:   webstore_data_fetcher_->Start(profile_->GetDefaultStoragePartition()
+80:                                     ->GetURLLoaderFactoryForBrowserProcess()
+81:                                     .get());
+82: }
+83: 
+84: //
+85: // Private interface implementation.
+86: //
+87: 
+88: WebstoreStandaloneInstaller::~WebstoreStandaloneInstaller() = default;
+89: 
+90: void WebstoreStandaloneInstaller::RunCallback(bool success,
+91:                                               const std::string& error,
+92:                                               webstore_install::Result result) {
+93:   DCHECK(callback_);
+94:   std::move(callback_).Run(success, error, result);
+95: }
+96: 
+97: void WebstoreStandaloneInstaller::AbortInstall() {
+98:   callback_.Reset();

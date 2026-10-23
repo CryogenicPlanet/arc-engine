@@ -1,0 +1,17 @@
+import csv,json,re,sqlite3
+from pathlib import Path
+O=Path('specs');E=O/'evidence'
+callbacks=[('ArcWebContentsDevTools','0x4415fe0','webContentsDevTools:displayAs:'),('ArcWebContentsDevTools','0x441604c','webContentsDevTools:inspectModeDidChange:'),('ArcWebContentsDevTools','0x44160b8','webContentsDevToolsDidClose:'),('ArcWebContentsDevTools','0x441610c','webContentsDevToolsNeedsFocus:'),('ArcWebContentsMediaSession','0x441b590','webContentsDidClickPipBackToTabButton:'),('ArcWebContentsMediaSession','0x441b5e4','webContentsDidClickPipCloseButton:'),('ArcWebContentsMediaSession','0x441b638','webContentsDidClickPipSettingsButton:'),('ArcWebContentsMediaSession','0x441b68c','webContents:pipControllerCreated:'),('ArcWebContentsThumbnailsGenerator','0x441cccc','webContents:thumbnailReady:')]
+bridges={r['va']:r for r in json.load(open(E/'bridges.json'))}
+with open(O/'callbacks.tsv','w') as f:
+ w=csv.writer(f,delimiter='\t');w.writerow(['class_name','bridge_va','outgoing_selector','evidence','thread_contract','confidence'])
+ for c,va,sel in callbacks:
+  b=bridges[va];assert sel in b['body'];w.writerow([c,va,sel,f'{b["path"]}@{b["offset"]}+{b["length"]}','unresolved; no explicit dispatch in inspected bridge','medium; static selector/call evidence'])
+requests=[(1,'ArcWebContentsDevTools','0xc1057c0','Resolve native creation called by 0x4357078; hosting, view ownership and display modes remain unknown.'),(1,'ArcWebContentsDevTools','0x44162ac','Recover execute completion payload/error adapter and queue.'),(1,'ArcWebContentsDevTools','0x435b784','Recover subscribe autoEnable/refcount, event payload and callback lifetime.'),(1,'ArcWebContentsDevTools','0x4356754','Recover closeProtocolConnection behavior, ID cleanup and pending notifications.'),(1,'ArcContentConversionService','0x43de074','Trace vtable 0xdf6b528 completion target and result/error/queue contract.'),(1,'ArcAIService','0x43d7a5c','Resolve partial/completion callback vtables 0xdf6b378 / 0xdf6b398 and streaming token lifetime.'),(2,'ArcNetworkActivityMonitor','0x432ccbc','Inspect duration timer callback, stop request and log finalization.'),(2,'ArcLoginCredentials','0x6bd82ac','Resolve native password extraction helper and temporary memory ownership.'),(2,'ArcWebContentsMediaSession','0x4148644','Inspect volume argument in disassembly; Ghidra omitted double propagation.'),(2,'ArcWebContentsThumbnailsGenerator','0x436dff4','Recover thumbnail callback delivery, scale/crop, format and scheduling.'),(2,'ArcWebLoginDialog','0x441d2c4','Trace producer of accept/cancel/close callables; establish one-shot/reentrancy policy.'),(3,'ArcHistoryQueryOptions','0x4331e20','Resolve shared options assignment; trace actual history query consumer and time bounds.'),(3,'ArcAnnotatedVisit','0x4336aac','Resolve nested record copy and bridge to upstream history structs.')]
+db=sqlite3.connect('file:/home/exedev/work/inputs/corpus-index.sqlite?mode=ro',uri=True)
+with open(O/'next-requests.tsv','w') as f:
+ w=csv.writer(f,delimiter='\t');w.writerow(['priority','class_name','function_va','question','index_status','indexed_path','offset','length'])
+ for pri,c,va,q in requests:
+  row=db.execute('select path,offset,length,failed from functions where va=?',(int(va,16),)).fetchone()
+  w.writerow([pri,c,va,q,('failed' if row[3] else 'body_available') if row else 'no_exact_index_entry',*(row[:3] if row else ['','',''])])
+print('9 outbound selector bridges and 13 prioritized follow-up requests written')

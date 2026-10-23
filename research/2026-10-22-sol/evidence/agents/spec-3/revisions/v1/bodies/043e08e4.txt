@@ -1,0 +1,24 @@
+INDEX 0x43e08e4 ArcTabGroupResult::init path=/home/exedev/work/inputs/decompile/0x43.c offset=4246465 C_bytes=458 failed=0
+// ==== 0x43e08e4  ArcTabGroupResult::init  (68 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcTabGroupResult::init(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  ID local_20;
+  class_t *pcStack_18;
+  
+  pcStack_18 = &objc::class_t::ArcTabGroupResult;
+  local_20 = param_1;
+  IVar1 = NSObject::init((ID)&local_20,"init");
+  if (IVar1 != 0) {
+    *(undefined1 *)(IVar1 + 8) = 0;
+    *(undefined8 *)(IVar1 + 0x20) = 0xffffffffffffffff;
+  }
+  return IVar1;
+}
+
+
+

@@ -1,0 +1,215 @@
+{
+  "class_name": "ArcGPULogMessage",
+  "metadata_va": "0xe37e0a8",
+  "metadata_file_offset": "0xe37e0a8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2add70",
+  "instance_start": 8,
+  "instance_size": 64,
+  "ivars": [
+    {
+      "record_va": "0xe2add08",
+      "offset": 8,
+      "name": "_gpu_log_message",
+      "type": "{GPULogMessage=\"severity\"i\"header\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"message\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}}",
+      "alignment": 3,
+      "size": 56
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcGPULogMessage", "category": "", "protocol": "", "kind": "-", "selector": "initWithGPULogMessage:", "type_encoding": "@24@0:8r^v16", "imp": "0x443c0a8", "method_record_va": "0xd77c6f4", "selector_va": "0xd75751c", "dyld_line": 2994, "imp_file_offset": "0x443c0a8", "body_name": "ArcGPULogMessage::initWithGPULogMessage:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1433466, "body_length": 457, "failed": 0, "truncated": false}
+// ==== 0x443c0a8  ArcGPULogMessage::initWithGPULogMessage:  (88 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcGPULogMessage::initWithGPULogMessage_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcGPULogMessage;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    FUN_0441e818(IVar1 + 8,param_3);
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcGPULogMessage", "category": "", "protocol": "", "kind": "-", "selector": "severity", "type_encoding": "q16@0:8", "imp": "0x443ba88", "method_record_va": "0xd77c700", "selector_va": "0xd761d74", "dyld_line": 2995, "imp_file_offset": "0x443ba88", "body_name": "ArcGPULogMessage::severity", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1415747, "body_length": 203, "failed": 0, "truncated": false}
+// ==== 0x443ba88  ArcGPULogMessage::severity  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcGPULogMessage::severity(ID param_1,SEL param_2)
+
+{
+  return (long)*(int *)(param_1 + 8);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcGPULogMessage", "category": "", "protocol": "", "kind": "-", "selector": "header", "type_encoding": "@16@0:8", "imp": "0x443ab84", "method_record_va": "0xd77c70c", "selector_va": "0xd7674a7", "dyld_line": 2996, "imp_file_offset": "0x443ab84", "body_name": "ArcGPULogMessage::header", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1383980, "body_length": 506, "failed": 0, "truncated": false}
+// ==== 0x443ab84  ArcGPULogMessage::header  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcGPULogMessage::header(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  
+  cVar3 = *(char *)(param_1 + 0x27);
+  plVar1 = (long *)*(long *)(param_1 + 0x10);
+  if (-1 < (long)cVar3) {
+    plVar1 = (long *)(param_1 + 0x10);
+  }
+  lVar2 = *(long *)(param_1 + 0x18);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  IVar4 = FUN_01c391bc(plVar1,lVar2);
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcGPULogMessage", "category": "", "protocol": "", "kind": "-", "selector": "message", "type_encoding": "@16@0:8", "imp": "0x443aba8", "method_record_va": "0xd77c718", "selector_va": "0xd75c3ec", "dyld_line": 2997, "imp_file_offset": "0x443aba8", "body_name": "ArcGPULogMessage::message", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1384486, "body_length": 508, "failed": 0, "truncated": false}
+// ==== 0x443aba8  ArcGPULogMessage::message  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcGPULogMessage::message(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  
+  cVar3 = *(char *)(param_1 + 0x3f);
+  plVar1 = (long *)*(long *)(param_1 + 0x28);
+  if (-1 < (long)cVar3) {
+    plVar1 = (long *)(param_1 + 0x28);
+  }
+  lVar2 = *(long *)(param_1 + 0x30);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  IVar4 = FUN_01c391bc(plVar1,lVar2);
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcGPULogMessage", "category": "", "protocol": "", "kind": "-", "selector": "gpu_log_message", "type_encoding": "{GPULogMessage=i{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}}16@0:8", "imp": "0x443c100", "method_record_va": "0xd77c724", "selector_va": "0xd7674ae", "dyld_line": 2998, "imp_file_offset": "0x443c100", "body_name": "ArcGPULogMessage::gpu_log_message", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1433923, "body_length": 1626, "failed": 0, "truncated": false}
+// ==== 0x443c100  ArcGPULogMessage::gpu_log_message  (124 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcGPULogMessage::gpu_log_message(GPULogMessage *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  undefined8 *puVar1;
+  undefined8 uVar2;
+  
+  puVar1 = (undefined8 *)
+           ((long)&(__return_storage_ptr__->field1_0x4).field0_0x0.field1.field0_0x0 + 4);
+  __return_storage_ptr__->field0_0x0 = *(int *)(param_1 + 8);
+  if (*(char *)(param_1 + 0x27) < '\0') {
+    FUN_00060a60(puVar1,*(undefined8 *)(param_1 + 0x10),*(undefined8 *)(param_1 + 0x18));
+  }
+  else {
+    uVar2 = *(undefined8 *)(param_1 + 0x10);
+    *(undefined8 *)((long)&(__return_storage_ptr__->field1_0x4).field0_0x0.field1.field1_0x8 + 4) =
+         *(undefined8 *)(param_1 + 0x18);
+    *puVar1 = uVar2;
+    *(undefined8 *)((long)&(__return_storage_ptr__->field1_0x4).field0_0x0.field1.field2_0x10 + 4) =
+         *(undefined8 *)(param_1 + 0x20);
+  }
+  if (-1 < *(char *)(param_1 + 0x3f)) {
+    uVar2 = *(undefined8 *)(param_1 + 0x28);
+    *(undefined8 *)((long)&(__return_storage_ptr__->field2_0x1c).field0_0x0.field1.field1_0x8 + 4) =
+         *(undefined8 *)(param_1 + 0x30);
+    *(undefined8 *)((long)&(__return_storage_ptr__->field2_0x1c).field0_0x0.field1.field0_0x0 + 4) =
+         uVar2;
+    *(undefined8 *)((long)&(__return_storage_ptr__->field2_0x1c).field0_0x0.field1.field2_0x10 + 4)
+         = *(undefined8 *)(param_1 + 0x38);
+    return;
+  }
+  FUN_00060a60((undefined1 *)((long)&(__return_storage_ptr__->field2_0x1c).field0_0x0 + 4),
+               *(undefined8 *)(param_1 + 0x28),*(undefined8 *)(param_1 + 0x30));
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcGPULogMessage", "category": "", "protocol": "", "kind": "-", "selector": "setGpu_log_message:", "type_encoding": "v72@0:8{GPULogMessage=i{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}}16", "imp": "0x443c17c", "method_record_va": "0xd77c730", "selector_va": "0xd7674be", "dyld_line": 2999, "imp_file_offset": "0x443c17c", "body_name": "ArcGPULogMessage::setGpu_log_message:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1435549, "body_length": 253, "failed": 0, "truncated": false}
+// ==== 0x443c17c  ArcGPULogMessage::setGpu_log_message:  (12 bytes)
+
+/* Function Stack Size: 0x48 bytes */
+
+void ArcGPULogMessage::setGpu_log_message_(ID param_1,SEL param_2,GPULogMessage *param_3)
+
+{
+  FUN_0441e818(param_1 + 8,param_3);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcGPULogMessage", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x443c188", "method_record_va": "0xd77c73c", "selector_va": "0xd744a39", "dyld_line": 3000, "imp_file_offset": "0x443c188", "body_name": "ArcGPULogMessage::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1435802, "body_length": 479, "failed": 0, "truncated": false}
+// ==== 0x443c188  ArcGPULogMessage::.cxx_destruct  (84 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcGPULogMessage::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x3f) < '\0') {
+    FUN_00005810(*(undefined8 *)(param_1 + 0x28),*(ulong *)(param_1 + 0x38) & 0x7fffffffffffffff);
+  }
+  if (-1 < *(char *)(param_1 + 0x27)) {
+    return;
+  }
+  FUN_00005810(*(undefined8 *)(param_1 + 0x10),*(ulong *)(param_1 + 0x20) & 0x7fffffffffffffff);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcGPULogMessage", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x443b154", "method_record_va": "0xd77c748", "selector_va": "0xd744a47", "dyld_line": 3001, "imp_file_offset": "0x443b154", "body_name": "ArcGPULogMessage::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1398176, "body_length": 423, "failed": 0, "truncated": false}
+// ==== 0x443b154  ArcGPULogMessage::.cxx_construct  (16 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcGPULogMessage::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 0x28) = 0;
+  *(undefined8 *)(param_1 + 0x20) = 0;
+  *(undefined8 *)(param_1 + 0x38) = 0;
+  *(undefined8 *)(param_1 + 0x30) = 0;
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  return param_1;
+}
+
+
+

@@ -1,0 +1,262 @@
+{
+  "class_name": "ArcExtensionToolbarAction",
+  "metadata_va": "0xe37dfb8",
+  "metadata_file_offset": "0xe37dfb8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2ada90",
+  "instance_start": 8,
+  "instance_size": 120,
+  "ivars": [
+    {
+      "record_va": "0xe2ad9f8",
+      "offset": 8,
+      "name": "_extension_toolbar_action",
+      "type": "{ExtensionToolbarAction=\"id\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"accessible_name\"{basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[11S]\"__padding_\"{__padding<1UL>=\"__padding_\"[1c]}\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"^S\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"tooltip_text\"{basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[11S]\"__padding_\"{__padding<1UL>=\"__padding_\"[1c]}\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"^S\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"icon\"{Image=\"_vptr$Image\"^^?\"impl_\"{shared_ptr<arc::ImageImpl>=\"__ptr_\"^{ImageImpl}\"__cntrl_\"^{__shared_weak_count}}}\"enabled\"B\"pinned_position\"{optional<int>=\"\"(?=\"__null_state_\"c\"__val_\"i)\"__engaged_\"B}}",
+      "alignment": 3,
+      "size": 112
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": "initWithExtensionToolbarAction:", "type_encoding": "@24@0:8r^v16", "imp": "0x443bc48", "method_record_va": "0xd77c598", "selector_va": "0xd7570a4", "dyld_line": 2961, "imp_file_offset": "0x443bc48", "body_name": "ArcExtensionToolbarAction::initWithExtensionToolbarAction:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1420295, "body_length": 516, "failed": 0, "truncated": false}
+// ==== 0x443bc48  ArcExtensionToolbarAction::initWithExtensionToolbarAction:  (88 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcExtensionToolbarAction::initWithExtensionToolbarAction_
+             (ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcExtensionToolbarAction;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    FUN_0441e6d8(IVar1 + 8,param_3);
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": "id", "type_encoding": "@16@0:8", "imp": "0x43e632c", "method_record_va": "0xd77c5a4", "selector_va": "0xd75829f", "dyld_line": 2962, "imp_file_offset": "0x43e632c", "body_name": "ArcNetworkLoggingConfiguration::filePath", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4341056, "body_length": 532, "failed": 0, "truncated": false}
+// ==== 0x43e632c  ArcNetworkLoggingConfiguration::filePath  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcNetworkLoggingConfiguration::filePath(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  
+  cVar3 = *(char *)(param_1 + 0x1f);
+  plVar1 = (long *)*(long *)(param_1 + 8);
+  if (-1 < (long)cVar3) {
+    plVar1 = (long *)(param_1 + 8);
+  }
+  lVar2 = *(long *)(param_1 + 0x10);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  IVar4 = FUN_01c391bc(plVar1,lVar2);
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": "accessibleName", "type_encoding": "@16@0:8", "imp": "0x443bca0", "method_record_va": "0xd77c5b0", "selector_va": "0xd766dc4", "dyld_line": 2963, "imp_file_offset": "0x443bca0", "body_name": "ArcExtensionToolbarAction::accessibleName", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1420811, "body_length": 540, "failed": 0, "truncated": false}
+// ==== 0x443bca0  ArcExtensionToolbarAction::accessibleName  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionToolbarAction::accessibleName(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  
+  cVar3 = *(char *)(param_1 + 0x37);
+  plVar1 = (long *)*(long *)(param_1 + 0x20);
+  if (-1 < (long)cVar3) {
+    plVar1 = (long *)(param_1 + 0x20);
+  }
+  lVar2 = *(long *)(param_1 + 0x28);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  IVar4 = FUN_01d9fb90(plVar1,lVar2);
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": "tooltipText", "type_encoding": "@16@0:8", "imp": "0x443bcc4", "method_record_va": "0xd77c5bc", "selector_va": "0xd766dd3", "dyld_line": 2964, "imp_file_offset": "0x443bcc4", "body_name": "ArcExtensionToolbarAction::tooltipText", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1421351, "body_length": 534, "failed": 0, "truncated": false}
+// ==== 0x443bcc4  ArcExtensionToolbarAction::tooltipText  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionToolbarAction::tooltipText(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  
+  cVar3 = *(char *)(param_1 + 0x4f);
+  plVar1 = (long *)*(long *)(param_1 + 0x38);
+  if (-1 < (long)cVar3) {
+    plVar1 = (long *)(param_1 + 0x38);
+  }
+  lVar2 = *(long *)(param_1 + 0x40);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  IVar4 = FUN_01d9fb90(plVar1,lVar2);
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": "icon", "type_encoding": "@16@0:8", "imp": "0x443bce8", "method_record_va": "0xd77c5c8", "selector_va": "0xd750396", "dyld_line": 2965, "imp_file_offset": "0x443bce8", "body_name": "ArcExtensionToolbarAction::icon", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1421885, "body_length": 346, "failed": 0, "truncated": false}
+// ==== 0x443bce8  ArcExtensionToolbarAction::icon  (32 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionToolbarAction::icon(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  
+  if ((**(long **)(param_1 + 0x58) != 0) && (*(long *)(**(long **)(param_1 + 0x58) + 0x18) != 0)) {
+    IVar1 = FUN_02a02ccc();
+    return IVar1;
+  }
+  return 0;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": "enabled", "type_encoding": "B16@0:8", "imp": "0x4243428", "method_record_va": "0xd77c5d4", "selector_va": "0xd762106", "dyld_line": 2966, "imp_file_offset": "0x4243428", "body_name": "ArcExtensionToolbarAction::enabled", "body_path": "/home/exedev/work/inputs/decompile/0x42.c", "body_offset": 1340733, "body_length": 218, "failed": 0, "truncated": false}
+// ==== 0x4243428  ArcExtensionToolbarAction::enabled  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcExtensionToolbarAction::enabled(ID param_1,SEL param_2)
+
+{
+  return (bool)*(byte *)(param_1 + 0x68);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": "pinnedPosition", "type_encoding": "@16@0:8", "imp": "0x443bd08", "method_record_va": "0xd77c5e0", "selector_va": "0xd766ddf", "dyld_line": 2967, "imp_file_offset": "0x443bd08", "body_name": "ArcExtensionToolbarAction::pinnedPosition", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1422231, "body_length": 581, "failed": 0, "truncated": false}
+// ==== 0x443bd08  ArcExtensionToolbarAction::pinnedPosition  (56 bytes)
+
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionToolbarAction::pinnedPosition(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  
+  if ((*(ulong *)(param_1 + 0x6c) >> 0x20 & 1) == 0) {
+    return 0;
+  }
+  IVar1 = NSNumber::numberWithInt_((ID)&_OBJC_CLASS___NSNumber,"numberWithInt:");
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": "extension_toolbar_action", "type_encoding": "{ExtensionToolbarAction={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=(__rep={__short=[11S]{__padding<1UL>=[1c]}b7b1}{__long=^SQb63b1})}{basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=(__rep={__short=[11S]{__padding<1UL>=[1c]}b7b1}{__long=^SQb63b1})}{Image=^^?{shared_ptr<arc::ImageImpl>=^{ImageImpl}^{__shared_weak_count}}}B{optional<int>=(?=ci)B}}16@0:8", "imp": "0x443bd40", "method_record_va": "0xd77c5ec", "selector_va": "0xd766dee", "dyld_line": 2968, "imp_file_offset": "0x443bd40", "body_name": "ArcExtensionToolbarAction::extension_toolbar_action", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1422812, "body_length": 336, "failed": 0, "truncated": false}
+// ==== 0x443bd40  ArcExtensionToolbarAction::extension_toolbar_action  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcExtensionToolbarAction::extension_toolbar_action
+               (ExtensionToolbarAction *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  FUN_0441e600(__return_storage_ptr__,param_1 + 8);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": "setExtension_toolbar_action:", "type_encoding": "v128@0:8{ExtensionToolbarAction={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=(__rep={__short=[11S]{__padding<1UL>=[1c]}b7b1}{__long=^SQb63b1})}{basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=(__rep={__short=[11S]{__padding<1UL>=[1c]}b7b1}{__long=^SQb63b1})}{Image=^^?{shared_ptr<arc::ImageImpl>=^{ImageImpl}^{__shared_weak_count}}}B{optional<int>=(?=ci)B}}16", "imp": "0x443bd4c", "method_record_va": "0xd77c5f8", "selector_va": "0xd766e07", "dyld_line": 2969, "imp_file_offset": "0x443bd4c", "body_name": "ArcExtensionToolbarAction::setExtension_toolbar_action:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1423148, "body_length": 314, "failed": 0, "truncated": false}
+// ==== 0x443bd4c  ArcExtensionToolbarAction::setExtension_toolbar_action:  (12 bytes)
+
+/* Function Stack Size: 0x80 bytes */
+
+void ArcExtensionToolbarAction::setExtension_toolbar_action_
+               (ID param_1,SEL param_2,ExtensionToolbarAction *param_3)
+
+{
+  FUN_0441e6d8(param_1 + 8,param_3);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x443bd58", "method_record_va": "0xd77c604", "selector_va": "0xd744a39", "dyld_line": 2970, "imp_file_offset": "0x443bd58", "body_name": "ArcExtensionToolbarAction::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1423462, "body_length": 227, "failed": 0, "truncated": false}
+// ==== 0x443bd58  ArcExtensionToolbarAction::.cxx_destruct  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcExtensionToolbarAction::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  FUN_0441e4e8(param_1 + 8);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcExtensionToolbarAction", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x443bd60", "method_record_va": "0xd77c610", "selector_va": "0xd744a47", "dyld_line": 2971, "imp_file_offset": "0x443bd60", "body_name": "ArcExtensionToolbarAction::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1423689, "body_length": 665, "failed": 0, "truncated": false}
+// ==== 0x443bd60  ArcExtensionToolbarAction::.cxx_construct  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcExtensionToolbarAction::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 0x48) = 0;
+  *(undefined8 *)(param_1 + 0x40) = 0;
+  *(undefined8 *)(param_1 + 0x38) = 0;
+  *(undefined8 *)(param_1 + 0x30) = 0;
+  *(undefined8 *)(param_1 + 0x28) = 0;
+  *(undefined8 *)(param_1 + 0x20) = 0;
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 8) = 0;
+  FUN_043386a0(param_1 + 0x50);
+  *(undefined1 *)(param_1 + 0x6c) = 0;
+  *(undefined1 *)(param_1 + 0x70) = 0;
+  return param_1;
+}
+
+
+

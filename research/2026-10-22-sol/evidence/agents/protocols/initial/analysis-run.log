@@ -1,0 +1,102 @@
+{'app_callback_implementations': 270, 'unique_callback_imps': 270, 'extracted': 277, 'missing': 2, 'truncated': 0}
+{'focus_bodies': 96, 'missing': ['0x4042728', '0x40428ac', '0x43eb7a0', '0x44462cc', '0x4446470', '0x4446608', '0x4446944', '0x4446bc8', '0x4447188', '0x4447d88', '0x44482d0', '0x44484c8', '0x4448634'], 'instructions': 1315}
+{'binary_sends': 194, 'binary_selectors': 191, 'source_candidate_functions': 150}
+{
+  "guide_protocols": 26,
+  "guide_raw_methods": 235,
+  "guide_identities": 200,
+  "guide_selectors": 198,
+  "images": {
+    "app168": {
+      "arc_protocols": 26,
+      "arc_method_rows": 235,
+      "adopter_rows": 18,
+      "classes_scanned": 1937
+    },
+    "engine168": {
+      "arc_protocols": 0,
+      "arc_method_rows": 0,
+      "adopter_rows": 0,
+      "classes_scanned": 324
+    },
+    "engine170": {
+      "arc_protocols": 0,
+      "arc_method_rows": 0,
+      "adopter_rows": 0,
+      "classes_scanned": 325
+    }
+  },
+  "additional_metadata_rows": 7426,
+  "older_unknowns_resolved": 6,
+  "protocol_specs": 26,
+  "callback_rows": 200,
+  "guide_identity_unique": 200,
+  "non_callback_value_protocols": 2,
+  "non_callback_value_identities": 5,
+  "candidate_callback_or_app_service_protocols": 24,
+  "candidate_callback_or_app_service_identities": 195,
+  "identities_with_app_implementation": 200,
+  "app_implementation_rows": 270,
+  "unique_app_callback_imps": 270,
+  "identities_with_binary_selector_send": 193,
+  "candidate_callback_identities_with_binary_selector_send": 188,
+  "candidate_callback_identities_with_source_send": 150,
+  "candidate_identities_without_binary_send": [
+    {
+      "protocol_name": "ArcBrowserContextDelegate",
+      "selector": "browserContext:diaResourceRequestedForType:resourceID:completion:"
+    },
+    {
+      "protocol_name": "ArcBrowserContextExtensionsDelegate",
+      "selector": "browserContext:didChangePinnedExtensionOrder:"
+    },
+    {
+      "protocol_name": "ArcBrowserContextExtensionsDelegate",
+      "selector": "browserContextDidExtensionSystemReady:"
+    },
+    {
+      "protocol_name": "ArcNotificationCenter",
+      "selector": "display:"
+    },
+    {
+      "protocol_name": "ArcNotificationCenter",
+      "selector": "close:"
+    },
+    {
+      "protocol_name": "ArcWebContentsNavigationObserver",
+      "selector": "webContents:didReceiveServerRedirectForProvisionalNavigation:"
+    },
+    {
+      "protocol_name": "ArcWebContentsUIDelegate",
+      "selector": "webContents:updateDevToolsToolbox:"
+    }
+  ],
+  "raw_app_implementation_encoding_differences": 13,
+  "semantically_complete_callbacks": 0,
+  "runtime_callbacks_executed": 0,
+  "full_abi_or_behavior_equivalence_established": false,
+  "scope": "Guide-bounded static audit; no older code, dynamic execution, full reachability or maintenance cost estimate"
+}
+	Command being timed: "bash -c python3 initial/tools/app_bodies.py && python3 initial/tools/focus.py && python3 -c "import sys;sys.path.insert(0,\"initial/tools\");from sends import corroborate,extracts;corroborate();extracts()" && python3 initial/tools/compose.py"
+	User time (seconds): 3.64
+	System time (seconds): 0.15
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:03.82
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 72352
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 16407
+	Voluntary context switches: 7
+	Involuntary context switches: 1432
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 7632
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

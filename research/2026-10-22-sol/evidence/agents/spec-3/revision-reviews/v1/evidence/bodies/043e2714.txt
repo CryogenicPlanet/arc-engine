@@ -1,0 +1,53 @@
+INDEX 0x43e2714 ArcBrowser::moveExtension:targetIndex: path=/home/exedev/work/inputs/decompile/0x43.c offset=4288699 C_bytes=1592 failed=0
+// ==== 0x43e2714  ArcBrowser::moveExtension:targetIndex:  (240 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+void ArcBrowser::moveExtension_targetIndex_
+               (ID param_1,SEL param_2,ID param_3,unsigned_long_long param_4)
+
+{
+  code *pcVar1;
+  undefined8 uVar2;
+  SEL extraout_x1;
+  long lVar3;
+  undefined8 local_48;
+  undefined8 uStack_40;
+  ulong local_38;
+  
+  if ((*(byte *)(param_1 + 0x38) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x43e2800);
+    (*pcVar1)();
+  }
+  if (param_3 == 0) {
+    local_48 = 0;
+    uStack_40 = 0;
+    local_38 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_48,param_3);
+    param_2 = extraout_x1;
+  }
+  lVar3 = *(long *)(param_1 + 0x28);
+  if (((*(long *)(lVar3 + 0xf0) != 0) && (*(char *)(*(long *)(lVar3 + 0xf0) + 4) == '\0')) &&
+     (*(long *)(lVar3 + 0xf8) != 0)) {
+    if ((*(long *)(lVar3 + 0xf0) == 0) || (*(char *)(*(long *)(lVar3 + 0xf0) + 4) != '\0')) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(0,0x43e2804);
+      (*pcVar1)();
+    }
+    uVar2 = (**(code **)(**(long **)(lVar3 + 0xf8) + 0x18))(*(long **)(lVar3 + 0xf8),param_2);
+    uVar2 = FUN_004969fc(uVar2,&PTR_s_ExtensionsContainer_kDataKeyImp_0df542a0);
+    FUN_043b606c(uVar2,&local_48,param_4);
+  }
+  if ((long)local_38 < 0) {
+    FUN_00005810(local_48,local_38 & 0x7fffffffffffffff);
+  }
+  return;
+}
+
+
+

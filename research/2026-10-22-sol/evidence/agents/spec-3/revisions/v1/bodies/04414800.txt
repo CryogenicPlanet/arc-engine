@@ -1,0 +1,38 @@
+INDEX 0x4414800 ArcAutocompleteMatch::autocomplete_match path=/home/exedev/work/inputs/decompile/0x44.c offset=453181 C_bytes=1144 failed=0
+// ==== 0x4414800  ArcAutocompleteMatch::autocomplete_match  (64 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcAutocompleteMatch::autocomplete_match
+               (optional<arc::AutocompleteMatch> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  long lVar3;
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x28) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::AutocompleteMatch> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x4414840);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x20);
+    pIVar4 = *(Impl **)(param_1 + 0x18);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x20);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+

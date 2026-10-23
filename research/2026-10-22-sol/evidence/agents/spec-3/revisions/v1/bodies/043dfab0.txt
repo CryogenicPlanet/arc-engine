@@ -1,0 +1,39 @@
+INDEX 0x43dfab0 ArcWebContentsMediaSession::nativeMediaSession path=/home/exedev/work/inputs/decompile/0x43.c offset=4223776 C_bytes=1188 failed=0
+// ==== 0x43dfab0  ArcWebContentsMediaSession::nativeMediaSession  (64 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsMediaSession::nativeMediaSession
+               (optional<arc::WebContents::MediaSession> *__return_storage_ptr__,ID param_1,
+               SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  long lVar3;
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x40) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::MediaSession> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43dfaf0);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x38);
+    pIVar4 = *(Impl **)(param_1 + 0x30);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x38);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+

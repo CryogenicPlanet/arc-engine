@@ -1,0 +1,103 @@
+{
+  "class_name": "ArcBookmarkImportTargets",
+  "metadata_va": "0xe37bf88",
+  "metadata_file_offset": "0xe37bf88",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a56e0",
+  "instance_start": 8,
+  "instance_size": 24,
+  "ivars": [
+    {
+      "record_va": "0xe2a5678",
+      "offset": 8,
+      "name": "_targetNodeForBookmarkBarBookmarks",
+      "type": "@\"ArcBookmarkTreeNode\"",
+      "size": 8,
+      "alignment": 3
+    },
+    {
+      "record_va": "0xe2a5698",
+      "offset": 16,
+      "name": "_targetNodeForOtherBookmarks",
+      "type": "@\"ArcBookmarkTreeNode\"",
+      "size": 8,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a56c0",
+      "name": "targetNodeForBookmarkBarBookmarks",
+      "attributes": "T@\"ArcBookmarkTreeNode\",&,N,V_targetNodeForBookmarkBarBookmarks"
+    },
+    {
+      "record_va": "0xe2a56d0",
+      "name": "targetNodeForOtherBookmarks",
+      "attributes": "T@\"ArcBookmarkTreeNode\",&,N,V_targetNodeForOtherBookmarks"
+    }
+  ]
+}
+
+###  -initWithBookmarkBarBookmarksTargetNode:withOtherBookmarksTargetNode: 0x43ed544 @32@0:8@16@24 available
+
+  ID IVar1;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcBookmarkImportTargets;
+  local_40 = param_1;
+  IVar1 = NSObject::init((ID)&local_40,"init");
+  if (IVar1 != 0) {
+    *(ID *)(IVar1 + 8) = param_3;
+    *(ID *)(IVar1 + 0x10) = param_4;
+  }
+  return IVar1;
+}
+
+
+
+
+###  -targetNodeForBookmarkBarBookmarks 0x2d0fb40 @16@0:8 available
+
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+
+###  -setTargetNodeForBookmarkBarBookmarks: 0x43eae2c v24@0:8@16 available
+
+  *(ID *)(param_1 + 8) = param_3;
+  return;
+}
+
+
+
+
+###  -targetNodeForOtherBookmarks 0x2cb140 @16@0:8 available
+
+  return *(ID *)(param_1 + 0x10);
+}
+
+
+
+
+###  -setTargetNodeForOtherBookmarks: 0x420b588 v24@0:8@16 available
+
+  *(ID *)(param_1 + 0x10) = param_3;
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x43dd5a4 v16@0:8 available
+
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+

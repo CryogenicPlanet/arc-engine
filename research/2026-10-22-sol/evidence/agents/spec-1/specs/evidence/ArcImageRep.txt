@@ -1,0 +1,480 @@
+{
+  "class_name": "ArcImageRep",
+  "metadata_va": "0xe37c488",
+  "metadata_file_offset": "0xe37c488",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a7250",
+  "instance_start": 8,
+  "instance_size": 32,
+  "ivars": [
+    {
+      "record_va": "0xe2a71e8",
+      "offset": 8,
+      "name": "_imageRep",
+      "type": "{ImageRep=\"_vptr$ImageRep\"^^?\"impl_\"{shared_ptr<arc::ImageRepImpl>=\"__ptr_\"^{ImageRepImpl}\"__cntrl_\"^{__shared_weak_count}}}",
+      "size": 24,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a7210",
+      "name": "imageRep",
+      "attributes": "T{ImageRep=^^?{shared_ptr<arc::ImageRepImpl>=^{ImageRepImpl}^{__shared_weak_count}}},N,V_imageRep"
+    },
+    {
+      "record_va": "0xe2a7220",
+      "name": "isNull",
+      "attributes": "TB,R,N"
+    },
+    {
+      "record_va": "0xe2a7230",
+      "name": "pixelWidth",
+      "attributes": "Tq,R,N"
+    },
+    {
+      "record_va": "0xe2a7240",
+      "name": "pixelHeight",
+      "attributes": "Tq,R,N"
+    }
+  ]
+}
+
+###  -init 0x440539c @16@0:8 available
+
+  ID IVar2;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcImageRep;
+  local_40 = param_1;
+  IVar2 = NSObject::init((ID)&local_40,"init");
+  if (IVar2 != 0) {
+    FUN_04337780(auStack_58);
+    FUN_043381c0(IVar2 + 8,auStack_58);
+    if (local_48 != (long *)0x0) {
+      LOAcquire();
+      lVar1 = local_48[1];
+      local_48[1] = lVar1 + -1;
+      LORelease();
+      if (lVar1 == 0) {
+        (**(code **)(*local_48 + 0x10))(local_48);
+        if (local_48[2] != 0) {
+          LOAcquire();
+          lVar1 = local_48[2];
+          local_48[2] = lVar1 + -1;
+          LORelease();
+          if (lVar1 != 0) {
+            return IVar2;
+          }
+        }
+        pcVar3 = *(code **)(*local_48 + 0x20);
+        if (((pcVar3 == FUN_00f01bc0) || (pcVar3 == FUN_00f01bc0)) || (pcVar3 == FUN_013efb40)) {
+          FUN_00005810(local_48,0x20);
+        }
+        else {
+          (*pcVar3)(local_48);
+        }
+      }
+    }
+  }
+  return IVar2;
+}
+
+
+
+
+###  -initWithArcImageRep: 0x440549c @24@0:8r^v16 available
+
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcImageRep;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    FUN_043380d4(IVar1 + 8,param_3);
+  }
+  return IVar1;
+}
+
+
+
+
+###  -isNull 0x4405a94 B16@0:8 available
+
+  
+  lVar2 = *(long *)(param_1 + 0x10);
+  if (*(int *)(lVar2 + 0x1c0) == 0) {
+    uVar1 = (uint)(*(long *)(lVar2 + 0x1d0) == 0);
+  }
+  else {
+    uVar1 = *(byte *)(lVar2 + 0x1b8) ^ 1;
+  }
+  return uVar1 & 1;
+}
+
+
+
+
+###  -pixelWidth 0x4405ac0 q16@0:8 available
+
+  return (long)*(int *)(*(long *)(param_1 + 0x10) + 0x1c4);
+}
+
+
+
+
+###  -pixelHeight 0x4405acc q16@0:8 available
+
+  return (long)*(int *)(*(long *)(param_1 + 0x10) + 0x1c8);
+}
+
+
+
+
+###  -copyPixelDataBGRA8888 0x4405ad8 @16@0:8 available
+
+  ID IVar2;
+  ID IVar3;
+  
+  IVar2 = NSMutableData::dataWithLength_
+                    ((ID)&_OBJC_CLASS___NSMutableData,"dataWithLength:",
+                     (long)(*(int *)(*(long *)(param_1 + 0x10) + 0x1c4) *
+                            *(int *)(*(long *)(param_1 + 0x10) + 0x1c8) * 4));
+  if (IVar2 == 0) {
+    IVar2 = 0;
+  }
+  else {
+    IVar3 = _objc_retainAutorelease();
+    IVar3 = _objc_msgSend(IVar3,"mutableBytes");
+    iVar1 = FUN_04338370(param_1 + 8,IVar3);
+    if (iVar1 == 0) {
+      IVar2 = 0;
+    }
+  }
+  return IVar2;
+}
+
+
+
+
+###  -toNSImage 0x4405b64 @16@0:8 available
+
+  ID IVar2;
+  
+  lVar1 = *(long *)(param_1 + 0x10);
+  if (*(int *)(lVar1 + 0x1c0) == 0) {
+    if (*(long *)(lVar1 + 0x1d0) != 0) goto LAB_04405b88;
+  }
+  else if (*(char *)(lVar1 + 0x1b8) != '\0') {
+LAB_04405b88:
+    FUN_022f4af4();
+    IVar2 = FUN_085eac30();
+    return IVar2;
+  }
+  return 0;
+}
+
+
+
+
+###  -encodeToPNGWithMethod: 0x4405ba8 @24@0:8Q16 available
+
+  ID IVar2;
+  
+  if (param_3 == 0) {
+    uVar3 = 0;
+  }
+  else {
+    if (param_3 != 1) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(0x550b,0x4405c5c);
+      (*pcVar1)();
+    }
+    uVar3 = 1;
+  }
+  uStack_38 = 0;
+  local_40 = 0;
+  local_28 = 0;
+  local_30 = 0;
+  FUN_043385c0(&local_40,param_1 + 8,uVar3);
+  if ((char)local_28 == '\0') {
+    IVar2 = 0;
+  }
+  else {
+    IVar2 = NSData::dataWithBytes_length_
+                      ((ID)&_OBJC_CLASS___NSData,"dataWithBytes:length:",local_40,uStack_38);
+    if (((char)local_28 != '\0') && (local_40 != 0)) {
+      if ((ulong)-local_40 < uStack_38) {
+                    /* WARNING: Does not return */
+        pcVar1 = (code *)SoftwareBreakpoint(1,0x4405c30);
+        (*pcVar1)();
+      }
+      uStack_38 = 0;
+      FUN_00005810(local_40,local_30);
+    }
+  }
+  return IVar2;
+}
+
+
+
+
+###  -encodeToJPEGWithQuality: 0x8371eb8 @20@0:8f16 available
+
+  ID IVar6;
+  
+  uStack_48 = 0;
+  local_50 = 0;
+  local_38 = 0;
+  local_40 = 0;
+  uVar1 = (int)(param_3 * 100.0) & ((int)(param_3 * 100.0) >> 0x1f ^ 0xffffffffU);
+  if (99 < (int)uVar1) {
+    uVar1 = 100;
+  }
+  uVar5 = FUN_022f4af4(*(undefined8 *)(param_1 + 0x10));
+  FUN_08b0218c(&local_50,uVar5,uVar1);
+  uVar3 = uStack_48;
+  lVar2 = local_50;
+  if ((char)local_38 == '\0') {
+    IVar6 = 0;
+  }
+  else {
+    IVar6 = NSData::dataWithBytes_length_
+                      ((ID)&_OBJC_CLASS___NSData,"dataWithBytes:length:",local_50,uStack_48);
+    if (lVar2 != 0) {
+      if ((ulong)-lVar2 < uVar3) {
+                    /* WARNING: Does not return */
+        pcVar4 = (code *)SoftwareBreakpoint(1,0x8371f68);
+        (*pcVar4)();
+      }
+      thunk_FUN_00005810(lVar2,local_40);
+    }
+  }
+  return IVar6;
+}
+
+
+
+
+###  -imageRep 0x4405c98 {ImageRep=^^?{shared_ptr<arc::ImageRepImpl>=^{ImageRepImpl}^{__shared_weak_count}}}16@0:8 available
+
+  ImageRepImpl *pIVar3;
+  
+  __return_storage_ptr__->field0_0x0 = (undefined4 **)&PTR_FUN_0da7eeb0;
+  lVar2 = *(long *)(param_1 + 0x18);
+  pIVar3 = *(ImageRepImpl **)(param_1 + 0x10);
+  (__return_storage_ptr__->field1_0x8).field1_0x8 = *(__shared_weak_count **)(param_1 + 0x18);
+  (__return_storage_ptr__->field1_0x8).field0_0x0 = pIVar3;
+  if (lVar2 != 0) {
+    plVar1 = (long *)(lVar2 + 8);
+    *plVar1 = *plVar1 + 1;
+  }
+  return;
+}
+
+
+
+
+###  -setImageRep: 0x440505c v40@0:8{ImageRep=^^?{shared_ptr<arc::ImageRepImpl>=^{ImageRepImpl}^{__shared_weak_count}}}16 available
+
+  FUN_043380d4(param_1 + 8,param_3);
+  return;
+}
+
+
+
+
+###  -.cxx_destruct 0x4405cc4 v16@0:8 available
+
+  
+  *(undefined ***)(param_1 + 8) = &PTR_FUN_0da7eeb0;
+  plVar2 = *(long **)(param_1 + 0x18);
+  if (plVar2 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x04405d88. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+
+###  -.cxx_construct 0x4405d8c @16@0:8 available
+
+  FUN_04337780(param_1 + 8);
+  return param_1;
+}
+
+
+
+
+###  +createFromPixelDataBGRA8888:height:scale:rowBytes:pixelData: 0x44054f4 @56@0:8q16q24d32Q40@48 available
+
+  ID IVar3;
+  
+  local_58 = (undefined **)0x0;
+  uStack_50 = 0;
+  local_48 = (long *)0x0;
+  IVar3 = _objc_retainAutorelease(param_7);
+  IVar3 = _objc_msgSend(IVar3,"bytes");
+  FUN_043378d8(&local_58,(float)param_5,param_3,param_4,param_6,IVar3);
+  IVar3 = _objc_alloc(&objc::class_t::ArcImageRep);
+  IVar3 = initWithArcImageRep_(IVar3,"initWithArcImageRep:",&local_58);
+  plVar1 = local_48;
+  local_58 = &PTR_FUN_0da7eeb0;
+  if (local_48 != (long *)0x0) {
+    LOAcquire();
+    lVar2 = local_48[1];
+    local_48[1] = lVar2 + -1;
+    LORelease();
+    if (lVar2 == 0) {
+      plVar5 = local_48 + 2;
+      (**(code **)(*local_48 + 0x10))(local_48);
+      if (*plVar5 != 0) {
+        LOAcquire();
+        lVar2 = plVar1[2];
+        plVar1[2] = lVar2 + -1;
+        LORelease();
+        if (lVar2 != 0) {
+          return IVar3;
+        }
+      }
+      pcVar4 = *(code **)(*plVar1 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+        FUN_00005810(plVar1,0x20);
+      }
+      else {
+        (*pcVar4)(plVar1);
+      }
+    }
+  }
+  return IVar3;
+}
+
+
+
+
+###  +dangerouslyDecodeFromData:scale: 0x4405700 @28@0:8@16f24 available
+
+  ID IVar3;
+  ID IVar4;
+  
+  uStack_58 = 0;
+  local_60 = (undefined **)0x0;
+  local_48 = 0;
+  local_50 = (long *)0x0;
+  IVar3 = _objc_retainAutorelease(param_3);
+  IVar3 = _objc_msgSend(IVar3,"bytes");
+  IVar4 = _objc_msgSend(param_3,"length");
+  FUN_04337b04(&local_60,CONCAT44(in_register_00005004,param_4),IVar3,IVar4);
+  if ((char)local_48 == '\0') {
+    IVar3 = 0;
+  }
+  else {
+    IVar3 = _objc_alloc(&objc::class_t::ArcImageRep);
+    if ((local_48 & 1) == 0) {
+                    /* WARNING: Subroutine does not return */
+      FUN_04b08a00();
+    }
+    IVar3 = initWithArcImageRep_(IVar3,"initWithArcImageRep:",&local_60);
+    plVar1 = local_50;
+    if (((char)local_48 != '\0') && (local_60 = &PTR_FUN_0da7eeb0, local_50 != (long *)0x0)) {
+      LOAcquire();
+      lVar2 = local_50[1];
+      local_50[1] = lVar2 + -1;
+      LORelease();
+      if (lVar2 == 0) {
+        plVar6 = local_50 + 2;
+        (**(code **)(*local_50 + 0x10))(local_50);
+        if (*plVar6 != 0) {
+          LOAcquire();
+          lVar2 = plVar1[2];
+          plVar1[2] = lVar2 + -1;
+          LORelease();
+          if (lVar2 != 0) {
+            return IVar3;
+          }
+        }
+        pcVar5 = *(code **)(*plVar1 + 0x20);
+        if (((pcVar5 == FUN_00f01bc0) || (pcVar5 == FUN_00f01bc0)) || (pcVar5 == FUN_013efb40)) {
+          FUN_00005810(plVar1,0x20);
+        }
+        else {
+          (*pcVar5)(plVar1);
+        }
+      }
+    }
+  }
+  return IVar3;
+}
+
+
+
+
+###  +decodeFromData:scale:desiredWidth:desiredHeight:maxDecodedBytes:completion: 0x4405930 v60@0:8@16f24q28q36Q44@?52 available
+
+  ID IVar1;
+  ID IVar2;
+  ID *local_88 [2];
+  
+  local_68 = *(long *)PTR____stack_chk_guard_0d824020;
+  IVar1 = _objc_retainAutorelease(param_3);
+  IVar1 = _objc_msgSend(IVar1,"bytes");
+  IVar2 = _objc_msgSend(param_3,"length");
+  local_78 = FUN_04405db4;
+  local_70 = &PTR_FUN_0df6bb70;
+  local_88[0] = (ID *)FUN_00008790(8);
+  *local_88[0] = param_8;
+  FUN_04337e00(CONCAT44(in_register_00005004,param_4),IVar1,IVar2,local_88,param_5,param_6,param_7);
+  if ((code *)local_70[1] != (code *)0x0) {
+    (*(code *)local_70[1])(local_88[0]);
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_68) {
+    return;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(0);
+}
+
+
+
+
+###  +decodeFromData:scale:completion: 0x4404fd0 v36@0:8@16f24@?28 available
+
+  
+  decodeFromData_scale_desiredWidth_desiredHeight_maxDecodedBytes_completion_
+            (param_1,"decodeFromData:scale:desiredWidth:desiredHeight:maxDecodedBytes:completion:",
+             param_3,param_4,0,0,0,param_5,in_w7);
+  return;
+}
+
+
+

@@ -1,0 +1,42 @@
+INDEX 0x4404e6c ArcImage::decodeFromData:scale:desiredWidth:desiredHeight:maxDecodedBytes:completion: path=/home/exedev/work/inputs/decompile/0x44.c offset=129621 C_bytes=1484 failed=0
+// ==== 0x4404e6c  ArcImage::decodeFromData:scale:desiredWidth:desiredHeight:maxDecodedBytes:completion:  (308 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainBlock replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x3c bytes */
+
+void ArcImage::decodeFromData_scale_desiredWidth_desiredHeight_maxDecodedBytes_completion_
+               (ID param_1,SEL param_2,ID param_3,float param_4,long_long param_5,long_long param_6,
+               unsigned_long_long param_7,ID param_8,undefined4 param_9)
+
+{
+  ID IVar1;
+  ID IVar2;
+  undefined4 in_register_00005004;
+  ID *local_88 [2];
+  code *local_78;
+  undefined **local_70;
+  long local_68;
+  
+  local_68 = *(long *)PTR____stack_chk_guard_0d824020;
+  IVar1 = _objc_retainAutorelease(param_3);
+  IVar1 = _objc_msgSend(IVar1,"bytes");
+  IVar2 = _objc_msgSend(param_3,"length");
+  local_78 = FUN_04405188;
+  local_70 = &PTR_FUN_0df6bb50;
+  local_88[0] = (ID *)FUN_00008790(8);
+  *local_88[0] = param_8;
+  FUN_04338920(CONCAT44(in_register_00005004,param_4),IVar1,IVar2,local_88,param_5,param_6,param_7);
+  if ((code *)local_70[1] != (code *)0x0) {
+    (*(code *)local_70[1])(local_88[0]);
+  }
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_68) {
+    return;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail(0);
+}
+
+
+

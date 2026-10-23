@@ -1,0 +1,223 @@
+{
+  "class_name": "ArcDisplayNameOrOrigin",
+  "metadata_va": "0xe37dec8",
+  "metadata_file_offset": "0xe37dec8",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2ad750",
+  "instance_start": 8,
+  "instance_size": 40,
+  "ivars": [
+    {
+      "record_va": "0xe2ad6f8",
+      "offset": 8,
+      "name": "_display_name_or_origin",
+      "type": "{DisplayNameOrOrigin=\"name_or_origin\"{basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[11S]\"__padding_\"{__padding<1UL>=\"__padding_\"[1c]}\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"^S\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"is_origin\"B}",
+      "alignment": 3,
+      "size": 32
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcDisplayNameOrOrigin", "category": "", "protocol": "", "kind": "-", "selector": "initWithDisplayNameOrOrigin:", "type_encoding": "@24@0:8r^v16", "imp": "0x443b898", "method_record_va": "0xd77c460", "selector_va": "0xd766987", "dyld_line": 2931, "imp_file_offset": "0x443b898", "body_name": "ArcDisplayNameOrOrigin::initWithDisplayNameOrOrigin:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1411088, "body_length": 1428, "failed": 0, "truncated": false}
+// ==== 0x443b898  ArcDisplayNameOrOrigin::initWithDisplayNameOrOrigin:  (176 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcDisplayNameOrOrigin::initWithDisplayNameOrOrigin_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ulong uVar1;
+  byte bVar2;
+  const_void__ pvVar3;
+  ID IVar4;
+  undefined8 uVar5;
+  undefined8 uVar6;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcDisplayNameOrOrigin;
+  local_30 = param_1;
+  IVar4 = NSObject::init((ID)&local_30,"init");
+  if (IVar4 != 0) {
+    if ((undefined8 *)(IVar4 + 8) != param_3) {
+      bVar2 = *(byte *)((long)param_3 + 0x17);
+      if (*(char *)(IVar4 + 0x1f) < '\0') {
+        uVar1 = *(ulong *)((long)param_3 + 8);
+        pvVar3 = *(const_void__ *)param_3;
+        if (-1 < (char)bVar2) {
+          uVar1 = (ulong)bVar2;
+          pvVar3 = param_3;
+        }
+        FUN_007ab764(IVar4 + 8,pvVar3,uVar1);
+      }
+      else if ((char)bVar2 < '\0') {
+        FUN_007ab624(IVar4 + 8,*(undefined8 *)param_3,*(undefined8 *)((long)param_3 + 8));
+      }
+      else {
+        uVar6 = *(undefined8 *)((long)param_3 + 8);
+        uVar5 = *(undefined8 *)param_3;
+        *(undefined8 *)(IVar4 + 0x18) = *(undefined8 *)((long)param_3 + 0x10);
+        *(undefined8 *)(IVar4 + 0x10) = uVar6;
+        *(undefined8 *)(IVar4 + 8) = uVar5;
+      }
+    }
+    *(undefined1 *)(IVar4 + 0x20) = *(undefined1 *)((long)param_3 + 0x18);
+  }
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcDisplayNameOrOrigin", "category": "", "protocol": "", "kind": "-", "selector": "nameOrOrigin", "type_encoding": "@16@0:8", "imp": "0x441cefc", "method_record_va": "0xd77c46c", "selector_va": "0xd7669a4", "dyld_line": 2932, "imp_file_offset": "0x441cefc", "body_name": "ArcDisplayNameOrOrigin::nameOrOrigin", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 613818, "body_length": 524, "failed": 0, "truncated": false}
+// ==== 0x441cefc  ArcDisplayNameOrOrigin::nameOrOrigin  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcDisplayNameOrOrigin::nameOrOrigin(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  
+  cVar3 = *(char *)(param_1 + 0x1f);
+  plVar1 = (long *)*(long *)(param_1 + 8);
+  if (-1 < (long)cVar3) {
+    plVar1 = (long *)(param_1 + 8);
+  }
+  lVar2 = *(long *)(param_1 + 0x10);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  IVar4 = FUN_01d9fb90(plVar1,lVar2);
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcDisplayNameOrOrigin", "category": "", "protocol": "", "kind": "-", "selector": "isOrigin", "type_encoding": "B16@0:8", "imp": "0x4081f00", "method_record_va": "0xd77c478", "selector_va": "0xd7669b1", "dyld_line": 2933, "imp_file_offset": "0x4081f00", "body_name": "MenuControllerCocoa::isMenuOpen", "body_path": "/home/exedev/work/inputs/decompile/0x40.c", "body_offset": 4282781, "body_length": 212, "failed": 0, "truncated": false}
+// ==== 0x4081f00  MenuControllerCocoa::isMenuOpen  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool MenuControllerCocoa::isMenuOpen(ID param_1,SEL param_2)
+
+{
+  return (bool)*(byte *)(param_1 + 0x20);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcDisplayNameOrOrigin", "category": "", "protocol": "", "kind": "-", "selector": "display_name_or_origin", "type_encoding": "{DisplayNameOrOrigin={basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=(__rep={__short=[11S]{__padding<1UL>=[1c]}b7b1}{__long=^SQb63b1})}B}16@0:8", "imp": "0x443b948", "method_record_va": "0xd77c484", "selector_va": "0xd7669ba", "dyld_line": 2934, "imp_file_offset": "0x443b948", "body_name": "ArcDisplayNameOrOrigin::display_name_or_origin", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1412516, "body_length": 941, "failed": 0, "truncated": false}
+// ==== 0x443b948  ArcDisplayNameOrOrigin::display_name_or_origin  (80 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcDisplayNameOrOrigin::display_name_or_origin
+               (DisplayNameOrOrigin *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  unsigned_short *puVar1;
+  
+  if (*(char *)(param_1 + 0x1f) < '\0') {
+    FUN_00054420(__return_storage_ptr__,*(undefined8 *)(param_1 + 8),*(undefined8 *)(param_1 + 0x10)
+                );
+  }
+  else {
+    puVar1 = *(unsigned_short **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field1_0x8 =
+         *(unsigned_long_long *)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field0_0x0 = puVar1;
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field2_0x10 =
+         *(AnonymousBitField1 *)(param_1 + 0x18);
+  }
+  *(undefined1 *)&__return_storage_ptr__->field1_0x18 = *(undefined1 *)(param_1 + 0x20);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcDisplayNameOrOrigin", "category": "", "protocol": "", "kind": "-", "selector": "setDisplay_name_or_origin:", "type_encoding": "v48@0:8{DisplayNameOrOrigin={basic_string<char16_t, std::char_traits<char16_t>, std::allocator<char16_t>>=(__rep={__short=[11S]{__padding<1UL>=[1c]}b7b1}{__long=^SQb63b1})}B}16", "imp": "0x443b998", "method_record_va": "0xd77c490", "selector_va": "0xd7669d1", "dyld_line": 2935, "imp_file_offset": "0x443b998", "body_name": "ArcDisplayNameOrOrigin::setDisplay_name_or_origin:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1413457, "body_length": 1503, "failed": 0, "truncated": false}
+// ==== 0x443b998  ArcDisplayNameOrOrigin::setDisplay_name_or_origin:  (132 bytes)
+
+/* Function Stack Size: 0x30 bytes */
+
+void ArcDisplayNameOrOrigin::setDisplay_name_or_origin_
+               (ID param_1,SEL param_2,DisplayNameOrOrigin *param_3)
+
+{
+  byte bVar1;
+  DisplayNameOrOrigin *pDVar2;
+  unsigned_short *puVar3;
+  unsigned_long_long uVar4;
+  
+  if ((DisplayNameOrOrigin *)(param_1 + 8) != param_3) {
+    bVar1 = *(byte *)((long)&(param_3->field0_0x0).field0_0x0 + 0x17);
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      uVar4 = (param_3->field0_0x0).field0_0x0.field1.field1_0x8;
+      pDVar2 = (DisplayNameOrOrigin *)(param_3->field0_0x0).field0_0x0.field1.field0_0x0;
+      if (-1 < (char)bVar1) {
+        uVar4 = (ulong)bVar1;
+        pDVar2 = param_3;
+      }
+      FUN_007ab764(param_1 + 8,pDVar2,uVar4);
+    }
+    else if ((char)bVar1 < '\0') {
+      FUN_007ab624(param_1 + 8,(param_3->field0_0x0).field0_0x0.field1.field0_0x0,
+                   (param_3->field0_0x0).field0_0x0.field1.field1_0x8);
+    }
+    else {
+      uVar4 = (param_3->field0_0x0).field0_0x0.field1.field1_0x8;
+      puVar3 = (param_3->field0_0x0).field0_0x0.field1.field0_0x0;
+      *(AnonymousBitField1 *)(param_1 + 0x18) = (param_3->field0_0x0).field0_0x0.field1.field2_0x10;
+      *(unsigned_long_long *)(param_1 + 0x10) = uVar4;
+      (((DisplayNameOrOrigin *)(param_1 + 8))->field0_0x0).field0_0x0.field1.field0_0x0 = puVar3;
+    }
+  }
+  *(char *)(param_1 + 0x20) = (char)param_3->field1_0x18;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcDisplayNameOrOrigin", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x443ba1c", "method_record_va": "0xd77c49c", "selector_va": "0xd744a39", "dyld_line": 2936, "imp_file_offset": "0x443ba1c", "body_name": "ArcDisplayNameOrOrigin::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1414960, "body_length": 326, "failed": 0, "truncated": false}
+// ==== 0x443ba1c  ArcDisplayNameOrOrigin::.cxx_destruct  (32 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcDisplayNameOrOrigin::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (-1 < *(char *)(param_1 + 0x1f)) {
+    return;
+  }
+  FUN_00005810(*(undefined8 *)(param_1 + 8),*(long *)(param_1 + 0x18) << 1);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcDisplayNameOrOrigin", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x416a680", "method_record_va": "0xd77c4a8", "selector_va": "0xd744a47", "dyld_line": 2937, "imp_file_offset": "0x416a680", "body_name": "SDPQueryListener::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x41.c", "body_offset": 2236472, "body_length": 303, "failed": 0, "truncated": false}
+// ==== 0x416a680  SDPQueryListener::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID SDPQueryListener::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 8) = 0;
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  return param_1;
+}
+
+
+

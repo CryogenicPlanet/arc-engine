@@ -1,0 +1,1774 @@
+Image: copied ArcCore-1.170.0.arm64 (Chromium 156.0.8078.48). All code/data addresses below are unslid image VAs.
+Reader: python3 /home/exedev/work/read-function.py <INDEX addresses below> --max-bytes 10000; original inputs read only.
+
+INDEX 0x4166068 ICloudKeychainPresentationDelegate::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x41.c offset=2167439 C_bytes=339 failed=0
+// ==== 0x4166068  ICloudKeychainPresentationDelegate::.cxx_destruct  (12 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ICloudKeychainPresentationDelegate::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+INDEX 0x425b6d8 ArcHistogramSample::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x42.c offset=1896325 C_bytes=310 failed=0
+// ==== 0x425b6d8  ArcHistogramSample::.cxx_destruct  (12 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcHistogramSample::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  return;
+}
+
+
+
+INDEX 0x43dd450 ICloudKeychainPresentationDelegate::presentationAnchorForAuthorizationController: path=/home/exedev/work/inputs/decompile/0x43.c offset=4166763 C_bytes=432 failed=0
+// ==== 0x43dd450  ICloudKeychainPresentationDelegate::presentationAnchorForAuthorizationController:  (8 bytes)
+
+/* WARNING: Function: _objc_retainAutoreleaseReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x18 bytes */
+
+ID ICloudKeychainPresentationDelegate::presentationAnchorForAuthorizationController_
+             (ID param_1,SEL param_2,ID param_3)
+
+{
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+INDEX 0x43dd5a4 WebNNMLFeatureProvider::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x43.c offset=4168729 C_bytes=354 failed=0
+// ==== 0x43dd5a4  WebNNMLFeatureProvider::.cxx_destruct  (48 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void WebNNMLFeatureProvider::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+INDEX 0x43df524 ArcBackForwardListItem::isValid path=/home/exedev/work/inputs/decompile/0x43.c offset=4214439 C_bytes=417 failed=0
+// ==== 0x43df524  ArcBackForwardListItem::isValid  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcBackForwardListItem::isValid(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    return (bool)*(byte *)(*(long *)(param_1 + 8) + 0x30);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x43df53c);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x43df53c ArcWebContentsAIAgent::web_contents_ai_agent path=/home/exedev/work/inputs/decompile/0x43.c offset=4214856 C_bytes=1155 failed=0
+// ==== 0x43df53c  ArcWebContentsAIAgent::web_contents_ai_agent  (64 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsAIAgent::web_contents_ai_agent
+               (optional<arc::WebContents::AIAgent> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  long lVar3;
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x18) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::AIAgent> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43df57c);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x10);
+    pIVar4 = *(Impl **)(param_1 + 8);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x43df69c ArcWebContentsAIAgent::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x43.c offset=4217592 C_bytes=1206 failed=0
+// ==== 0x43df69c  ArcWebContentsAIAgent::.cxx_destruct  (196 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsAIAgent::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  code *UNRECOVERED_JUMPTABLE;
+  long *plVar2;
+  
+  if ((*(char *)(param_1 + 0x18) != '\0') &&
+     (plVar2 = *(long **)(param_1 + 0x10), plVar2 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x043df75c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+INDEX 0x43ed510 ArcCommandBarRankingModel::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x43.c offset=4466227 C_bytes=394 failed=0
+// ==== 0x43ed510  ArcCommandBarRankingModel::.cxx_destruct  (40 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcCommandBarRankingModel::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if ((*(char *)(param_1 + 0x28) != '\0') && (*(char *)(param_1 + 0x1f) < '\0')) {
+    FUN_00005810(*(undefined8 *)(param_1 + 8),*(ulong *)(param_1 + 0x18) & 0x7fffffffffffffff);
+    return;
+  }
+  return;
+}
+
+
+
+INDEX 0x43fe184 ArcWebContentsDevTools::nativeDevTools path=/home/exedev/work/inputs/decompile/0x43.c offset=4716539 C_bytes=1148 failed=0
+// ==== 0x43fe184  ArcWebContentsDevTools::nativeDevTools  (64 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContentsDevTools::nativeDevTools
+               (optional<arc::WebContents::DevTools> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  long lVar3;
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x30) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents::DevTools> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x43fe1c4);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x28);
+    pIVar4 = *(Impl **)(param_1 + 0x20);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x28);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x43fe200 ImmersiveModeMapper::originalHostingWindow path=/home/exedev/work/inputs/decompile/0x43.c offset=4717687 C_bytes=410 failed=0
+// ==== 0x43fe200  ImmersiveModeMapper::originalHostingWindow  (24 bytes)
+
+/* WARNING: Function: _objc_loadWeakRetained replaced with injection: _objc_load_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ImmersiveModeMapper::originalHostingWindow(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+INDEX 0x43fe3c0 ArcBrowserContextExtensions::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x43.c offset=4721616 C_bytes=1813 failed=0
+// ==== 0x43fe3c0  ArcBrowserContextExtensions::.cxx_destruct  (360 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcBrowserContextExtensions::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  SEL extraout_x1;
+  SEL extraout_x1_00;
+  SEL extraout_x1_01;
+  code *pcVar2;
+  long *plVar3;
+  
+  if ((*(char *)(param_1 + 0x30) != '\0') &&
+     (plVar3 = *(long **)(param_1 + 0x28), plVar3 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        param_2 = extraout_x1;
+        if (lVar1 != 0) goto LAB_043fe3f4;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+        param_2 = extraout_x1_00;
+      }
+      else {
+        (*pcVar2)(plVar3);
+        param_2 = extraout_x1_01;
+      }
+    }
+  }
+LAB_043fe3f4:
+  plVar3 = *(long **)(param_1 + 0x18);
+  if (plVar3 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3,param_2);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_043fe40c;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_043fe40c:
+  _objc_destroyWeak(param_1 + 8);
+  return;
+}
+
+
+
+INDEX 0x4405cc4 ArcImageRep::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=148342 C_bytes=1195 failed=0
+// ==== 0x4405cc4  ArcImageRep::.cxx_destruct  (200 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcImageRep::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  code *UNRECOVERED_JUMPTABLE;
+  long *plVar2;
+  
+  *(undefined ***)(param_1 + 8) = &PTR_FUN_0da7eeb0;
+  plVar2 = *(long **)(param_1 + 0x18);
+  if (plVar2 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x04405d88. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+INDEX 0x4407624 ArcMediaImage::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=184418 C_bytes=1146 failed=0
+// ==== 0x4407624  ArcMediaImage::.cxx_destruct  (188 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcMediaImage::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  code *UNRECOVERED_JUMPTABLE;
+  long *plVar2;
+  
+  plVar2 = *(long **)(param_1 + 0x18);
+  if (plVar2 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar2[1];
+    plVar2[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar2 + 0x10))(plVar2);
+      if (plVar2[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar2[2];
+        plVar2[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) {
+          return;
+        }
+      }
+      UNRECOVERED_JUMPTABLE = *(code **)(*plVar2 + 0x20);
+      if (((UNRECOVERED_JUMPTABLE != FUN_00f01bc0) && (UNRECOVERED_JUMPTABLE != FUN_00f01bc0)) &&
+         (UNRECOVERED_JUMPTABLE != FUN_013efb40)) {
+                    /* WARNING: Could not recover jumptable at 0x044076dc. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+        (*UNRECOVERED_JUMPTABLE)(plVar2);
+        return;
+      }
+      FUN_00005810(plVar2,0x20);
+      return;
+    }
+  }
+  return;
+}
+
+
+
+INDEX 0x440a2ac ArcMenuModel::menu_model path=/home/exedev/work/inputs/decompile/0x44.c offset=243910 C_bytes=1096 failed=0
+// ==== 0x440a2ac  ArcMenuModel::menu_model  (64 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcMenuModel::menu_model
+               (optional<arc::MenuModel> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  code *pcVar2;
+  long lVar3;
+  Impl *pIVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x20) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::MenuModel> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x440a2ec);
+      (*pcVar2)();
+    }
+    lVar3 = *(long *)(param_1 + 0x18);
+    pIVar4 = *(Impl **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 =
+         *(__shared_weak_count **)(param_1 + 0x18);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = pIVar4;
+    if (lVar3 != 0) {
+      plVar1 = (long *)(lVar3 + 8);
+      *plVar1 = *plVar1 + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x440a40c ArcMenuModel::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=246600 C_bytes=1045 failed=0
+// ==== 0x440a40c  ArcMenuModel::.cxx_destruct  (208 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcMenuModel::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  code *pcVar2;
+  long *plVar3;
+  
+  if ((*(char *)(param_1 + 0x20) != '\0') &&
+     (plVar3 = *(long **)(param_1 + 0x18), plVar3 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_0440a440;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_0440a440:
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+INDEX 0x440c8ac ArcTracingConfiguration::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=304436 C_bytes=462 failed=0
+// ==== 0x440c8ac  ArcTracingConfiguration::.cxx_destruct  (60 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcTracingConfiguration::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x2f) < '\0') {
+    FUN_00005810(*(undefined8 *)(param_1 + 0x18),*(ulong *)(param_1 + 0x28) & 0x7fffffffffffffff);
+  }
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+INDEX 0x440d470 ArcNetworkLoggingConfiguration::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=322885 C_bytes=359 failed=0
+// ==== 0x440d470  ArcNetworkLoggingConfiguration::.cxx_destruct  (32 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcNetworkLoggingConfiguration::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (-1 < *(char *)(param_1 + 0x1f)) {
+    return;
+  }
+  FUN_00005810(*(undefined8 *)(param_1 + 8),*(ulong *)(param_1 + 0x18) & 0x7fffffffffffffff);
+  return;
+}
+
+
+
+INDEX 0x4416bbc ArcNavigation::didRedirectToOtherTab path=/home/exedev/work/inputs/decompile/0x44.c offset=502746 C_bytes=430 failed=0
+// ==== 0x4416bbc  ArcNavigation::didRedirectToOtherTab  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcNavigation::didRedirectToOtherTab(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    return (bool)*(byte *)(*(long *)(param_1 + 0x10) + 0x18);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4416bd4);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4416bd4 ArcNavigation::responseStatusCode path=/home/exedev/work/inputs/decompile/0x44.c offset=503176 C_bytes=428 failed=0
+// ==== 0x4416bd4  ArcNavigation::responseStatusCode  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcNavigation::responseStatusCode(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    return (long)*(int *)(*(long *)(param_1 + 0x10) + 0x48);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4416bec);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x441d2a0 ArcWebDialog::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=621447 C_bytes=201 failed=0
+// ==== 0x441d2a0  ArcWebDialog::.cxx_destruct  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebDialog::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  FUN_0434660c(param_1 + 8);
+  return;
+}
+
+
+
+INDEX 0x442ba60 ArcFormControlInfo::controlType path=/home/exedev/work/inputs/decompile/0x44.c offset=960958 C_bytes=406 failed=0
+// ==== 0x442ba60  ArcFormControlInfo::controlType  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcFormControlInfo::controlType(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    return (long)*(int *)(param_1 + 0x10);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442ba74);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x442bd44 ArcFormControlInfo::isChecked path=/home/exedev/work/inputs/decompile/0x44.c offset=966341 C_bytes=398 failed=0
+// ==== 0x442bd44  ArcFormControlInfo::isChecked  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcFormControlInfo::isChecked(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x90);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442bd58);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x442bd58 ArcFormControlInfo::isRequired path=/home/exedev/work/inputs/decompile/0x44.c offset=966739 C_bytes=400 failed=0
+// ==== 0x442bd58  ArcFormControlInfo::isRequired  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcFormControlInfo::isRequired(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x91);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442bd6c);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x442bd6c ArcFormControlInfo::isRedacted path=/home/exedev/work/inputs/decompile/0x44.c offset=967139 C_bytes=400 failed=0
+// ==== 0x442bd6c  ArcFormControlInfo::isRedacted  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcFormControlInfo::isRedacted(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x98) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x92);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442bd80);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x442be5c ArcFormControlInfo::form_control_info path=/home/exedev/work/inputs/decompile/0x44.c offset=969062 C_bytes=794 failed=0
+// ==== 0x442be5c  ArcFormControlInfo::form_control_info  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcFormControlInfo::form_control_info
+               (optional<arc::FormControlInfo> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)((long)&__return_storage_ptr__[1].field0_0x0 + 8) = 0;
+  if (*(char *)(param_1 + 0x98) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::FormControlInfo> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442bea4);
+      (*pcVar1)();
+    }
+    FUN_04294be4(__return_storage_ptr__,param_1 + 0x10);
+    *(undefined1 *)((long)&__return_storage_ptr__[1].field0_0x0 + 8) = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x442bea4 ArcFormControlInfo::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=969856 C_bytes=388 failed=0
+// ==== 0x442bea4  ArcFormControlInfo::.cxx_destruct  (52 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcFormControlInfo::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x98) != '\0') {
+    FUN_04294a84(param_1 + 0x10);
+  }
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+INDEX 0x442c440 ArcCommandBarRankingEvaluation::numExamplesEvaluated path=/home/exedev/work/inputs/decompile/0x44.c offset=980740 C_bytes=436 failed=0
+// ==== 0x442c440  ArcCommandBarRankingEvaluation::numExamplesEvaluated  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcCommandBarRankingEvaluation::numExamplesEvaluated(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return *(int *)(param_1 + 0x20);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442c454);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x442c454 ArcCommandBarRankingModel::command_bar_ranking_model path=/home/exedev/work/inputs/decompile/0x44.c offset=981176 C_bytes=1407 failed=0
+// ==== 0x442c454  ArcCommandBarRankingModel::command_bar_ranking_model  (112 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcCommandBarRankingModel::command_bar_ranking_model
+               (optional<arc::CommandBarRankingModel> *__return_storage_ptr__,ID param_1,SEL param_2
+               )
+
+{
+  code *pcVar1;
+  undefined8 uVar2;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  __return_storage_ptr__[1].field0_0x0.field0 = '\0';
+  if (*(char *)(param_1 + 0x28) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::CommandBarRankingModel> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442c4f0);
+      (*pcVar1)();
+    }
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      FUN_00060a60(__return_storage_ptr__,*(undefined8 *)(param_1 + 8),
+                   *(undefined8 *)(param_1 + 0x10));
+    }
+    else {
+      uVar2 = *(undefined8 *)(param_1 + 8);
+      *(undefined8 *)((long)&__return_storage_ptr__->field0_0x0 + 8) =
+           *(undefined8 *)(param_1 + 0x10);
+      *(undefined8 *)&__return_storage_ptr__->field0_0x0 = uVar2;
+      *(undefined8 *)((long)&__return_storage_ptr__->field0_0x0 + 0x10) =
+           *(undefined8 *)(param_1 + 0x18);
+    }
+    (__return_storage_ptr__->field0_0x0).field1.field1_0x18 = *(int *)(param_1 + 0x20);
+    __return_storage_ptr__[1].field0_0x0.field0 = '\x01';
+  }
+  return;
+}
+
+
+
+INDEX 0x442eb38 ArcExtractedPageContent::extractionTime path=/home/exedev/work/inputs/decompile/0x44.c offset=1053707 C_bytes=417 failed=0
+// ==== 0x442eb38  ArcExtractedPageContent::extractionTime  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+double ArcExtractedPageContent::extractionTime(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x1e8) & 1) != 0) {
+    return *(double *)(param_1 + 0x40);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442eb4c);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x442eb4c ArcExtractedPageContent::extracted_page_content path=/home/exedev/work/inputs/decompile/0x44.c offset=1054124 C_bytes=831 failed=0
+// ==== 0x442eb4c  ArcExtractedPageContent::extracted_page_content  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcExtractedPageContent::extracted_page_content
+               (optional<arc::ExtractedPageContent> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)((long)&__return_storage_ptr__[1].field0_0x0 + 0x30) = 0;
+  if (*(char *)(param_1 + 0x1e8) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::ExtractedPageContent> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442eb94);
+      (*pcVar1)();
+    }
+    FUN_04296004(__return_storage_ptr__,param_1 + 0x10);
+    *(undefined1 *)((long)&__return_storage_ptr__[1].field0_0x0 + 0x30) = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x442ebe0 ArcExtractedPageContent::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=1054955 C_bytes=702 failed=0
+// ==== 0x442ebe0  ArcExtractedPageContent::.cxx_destruct  (100 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcExtractedPageContent::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x1e8) != '\0') {
+    FUN_04295208(param_1 + 0x48);
+    if (*(char *)(param_1 + 0x3f) < '\0') {
+      FUN_00005810(*(undefined8 *)(param_1 + 0x28),*(ulong *)(param_1 + 0x38) & 0x7fffffffffffffff);
+    }
+    if (*(char *)(param_1 + 0x27) < '\0') {
+      FUN_00005810(*(undefined8 *)(param_1 + 0x10),*(ulong *)(param_1 + 0x20) & 0x7fffffffffffffff);
+    }
+  }
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+INDEX 0x442efcc ArcExtensionRuntimeError::fromIncognito path=/home/exedev/work/inputs/decompile/0x44.c offset=1066187 C_bytes=418 failed=0
+// ==== 0x442efcc  ArcExtensionRuntimeError::fromIncognito  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcExtensionRuntimeError::fromIncognito(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x90) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x70);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442efe0);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x442efe0 ArcExtensionRuntimeError::severity path=/home/exedev/work/inputs/decompile/0x44.c offset=1066605 C_bytes=414 failed=0
+// ==== 0x442efe0  ArcExtensionRuntimeError::severity  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcExtensionRuntimeError::severity(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x90) & 1) != 0) {
+    return (ulong)*(uint *)(param_1 + 0x74);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442eff4);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x442f0d0 ArcExtensionRuntimeError::extension_runtime_error path=/home/exedev/work/inputs/decompile/0x44.c offset=1068651 C_bytes=804 failed=0
+// ==== 0x442f0d0  ArcExtensionRuntimeError::extension_runtime_error  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcExtensionRuntimeError::extension_runtime_error
+               (optional<arc::ExtensionRuntimeError> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x80 = 0;
+  if (*(char *)(param_1 + 0x90) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::ExtensionRuntimeError> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x442f118);
+      (*pcVar1)();
+    }
+    FUN_04335698(__return_storage_ptr__,param_1 + 0x10);
+    *(undefined1 *)&__return_storage_ptr__->field1_0x80 = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x442f118 ArcExtensionRuntimeError::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=1069455 C_bytes=400 failed=0
+// ==== 0x442f118  ArcExtensionRuntimeError::.cxx_destruct  (52 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcExtensionRuntimeError::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x90) != '\0') {
+    FUN_0433587c(param_1 + 0x10);
+  }
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+INDEX 0x44309d4 ArcContentNode::type path=/home/exedev/work/inputs/decompile/0x44.c offset=1120013 C_bytes=385 failed=0
+// ==== 0x44309d4  ArcContentNode::type  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcContentNode::type(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x1b8) & 1) != 0) {
+    return (long)*(int *)(param_1 + 0x18);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x44309e8);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4430bb4 ArcContentNode::hasEmphasis path=/home/exedev/work/inputs/decompile/0x44.c offset=1123541 C_bytes=395 failed=0
+// ==== 0x4430bb4  ArcContentNode::hasEmphasis  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcContentNode::hasEmphasis(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x1b8) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x58);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4430bc8);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4430bc8 ArcContentNode::textSize path=/home/exedev/work/inputs/decompile/0x44.c offset=1123936 C_bytes=393 failed=0
+// ==== 0x4430bc8  ArcContentNode::textSize  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcContentNode::textSize(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x1b8) & 1) != 0) {
+    return (long)*(int *)(param_1 + 0x5c);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4430bdc);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4430bdc ArcContentNode::textColor path=/home/exedev/work/inputs/decompile/0x44.c offset=1124329 C_bytes=740 failed=0
+// ==== 0x4430bdc  ArcContentNode::textColor  (88 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcContentNode::textColor(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  ID IVar2;
+  
+  if ((*(byte *)(param_1 + 0x1b8) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x4430c34);
+    (*pcVar1)();
+  }
+  if (*(int *)(param_1 + 0x60) != 0) {
+    IVar2 = NSString::stringWithFormat_((ID)&_OBJC_CLASS___NSString,"stringWithFormat:",&cf___08X);
+    return IVar2;
+  }
+  return 0;
+}
+
+
+
+INDEX 0x4431260 ArcContentNode::content_node path=/home/exedev/work/inputs/decompile/0x44.c offset=1136171 C_bytes=775 failed=0
+// ==== 0x4431260  ArcContentNode::content_node  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcContentNode::content_node
+               (optional<arc::ContentNode> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)((long)&__return_storage_ptr__[1].field0_0x0 + 0x30) = 0;
+  if (*(char *)(param_1 + 0x1b8) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::ContentNode> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x44312a8);
+      (*pcVar1)();
+    }
+    FUN_0429539c(__return_storage_ptr__,param_1 + 0x18);
+    *(undefined1 *)((long)&__return_storage_ptr__[1].field0_0x0 + 0x30) = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x44312a8 ArcContentNode::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=1136946 C_bytes=420 failed=0
+// ==== 0x44312a8  ArcContentNode::.cxx_destruct  (64 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcContentNode::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x1b8) != '\0') {
+    FUN_04295208(param_1 + 0x18);
+  }
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+INDEX 0x4432890 ArcCommandBarRankingResult::score path=/home/exedev/work/inputs/decompile/0x44.c offset=1173839 C_bytes=402 failed=0
+// ==== 0x4432890  ArcCommandBarRankingResult::score  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+float ArcCommandBarRankingResult::score(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return *(float *)(param_1 + 0x20);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x44328a4);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x44328a4 ArcCommandBarRankingResult::command_bar_ranking_result path=/home/exedev/work/inputs/decompile/0x44.c offset=1174241 C_bytes=1415 failed=0
+// ==== 0x44328a4  ArcCommandBarRankingResult::command_bar_ranking_result  (112 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcCommandBarRankingResult::command_bar_ranking_result
+               (optional<arc::CommandBarRankingResult> *__return_storage_ptr__,ID param_1,
+               SEL param_2)
+
+{
+  code *pcVar1;
+  undefined8 uVar2;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  __return_storage_ptr__[1].field0_0x0.field0 = '\0';
+  if (*(char *)(param_1 + 0x28) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::CommandBarRankingResult> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x4432940);
+      (*pcVar1)();
+    }
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      FUN_00060a60(__return_storage_ptr__,*(undefined8 *)(param_1 + 8),
+                   *(undefined8 *)(param_1 + 0x10));
+    }
+    else {
+      uVar2 = *(undefined8 *)(param_1 + 8);
+      *(undefined8 *)((long)&__return_storage_ptr__->field0_0x0 + 8) =
+           *(undefined8 *)(param_1 + 0x10);
+      *(undefined8 *)&__return_storage_ptr__->field0_0x0 = uVar2;
+      *(undefined8 *)((long)&__return_storage_ptr__->field0_0x0 + 0x10) =
+           *(undefined8 *)(param_1 + 0x18);
+    }
+    (__return_storage_ptr__->field0_0x0).field1.field1_0x18 = *(float *)(param_1 + 0x20);
+    __return_storage_ptr__[1].field0_0x0.field0 = '\x01';
+  }
+  return;
+}
+
+
+
+INDEX 0x4432ee0 ArcCommandBarRankingInput::command_bar_ranking_input path=/home/exedev/work/inputs/decompile/0x44.c offset=1185801 C_bytes=1722 failed=0
+// ==== 0x4432ee0  ArcCommandBarRankingInput::command_bar_ranking_input  (140 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcCommandBarRankingInput::command_bar_ranking_input
+               (optional<arc::CommandBarRankingInput> *__return_storage_ptr__,ID param_1,SEL param_2
+               )
+
+{
+  code *pcVar1;
+  float *pfVar2;
+  void *pvVar3;
+  ulong uVar4;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x18 = 0;
+  if (*(char *)(param_1 + 0x20) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::CommandBarRankingInput> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x4432f68);
+      (*pcVar1)();
+    }
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0.field0_0x0 = (float *)0x0;
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0.field1_0x8 = 0;
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0.field2_0x10 = 0;
+    uVar4 = *(ulong *)(param_1 + 0x10);
+    if (uVar4 != 0) {
+      if (uVar4 >> 0x3e != 0) {
+                    /* WARNING: Subroutine does not return */
+        FUN_04047380();
+      }
+      pvVar3 = *(void **)(param_1 + 8);
+      pfVar2 = (float *)FUN_00008790(uVar4 << 2);
+      (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0.field0_0x0 = pfVar2;
+      (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0.field2_0x10 = uVar4;
+      _memcpy(pfVar2,pvVar3,uVar4 << 2);
+      (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0.field1_0x8 =
+           (long)(uVar4 << 2) >> 2;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x18 = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x4432f6c ArcCommandBarRankingInput::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=1187523 C_bytes=876 failed=0
+// ==== 0x4432f6c  ArcCommandBarRankingInput::.cxx_destruct  (84 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcCommandBarRankingInput::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  long lVar2;
+  long lVar3;
+  long lVar4;
+  
+  if ((*(char *)(param_1 + 0x20) != '\0') && (lVar2 = *(long *)(param_1 + 8), lVar2 != 0)) {
+    lVar4 = *(long *)(param_1 + 0x10) * 4;
+    if (lVar4 != 0) {
+      lVar3 = *(long *)(param_1 + 0x10) * -4;
+      lVar4 = lVar4 + lVar2;
+      do {
+        lVar4 = lVar4 + -4;
+        if (lVar4 == 0) {
+                    /* WARNING: Does not return */
+          pcVar1 = (code *)SoftwareBreakpoint(1,0x4432fc0);
+          (*pcVar1)();
+        }
+        lVar3 = lVar3 + 4;
+      } while (lVar3 != 0);
+    }
+    *(undefined8 *)(param_1 + 0x10) = 0;
+    FUN_00005810(lVar2,*(long *)(param_1 + 0x18) << 2);
+    return;
+  }
+  return;
+}
+
+
+
+INDEX 0x4434a64 ArcCommandBarRankingCandidate::lastNavSeconds path=/home/exedev/work/inputs/decompile/0x44.c offset=1229467 C_bytes=422 failed=0
+// ==== 0x4434a64  ArcCommandBarRankingCandidate::lastNavSeconds  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcCommandBarRankingCandidate::lastNavSeconds(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xb0) & 1) != 0) {
+    return *(int *)(param_1 + 0x80);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4434a78);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4434a78 ArcCommandBarRankingCandidate::freqEver path=/home/exedev/work/inputs/decompile/0x44.c offset=1229889 C_bytes=410 failed=0
+// ==== 0x4434a78  ArcCommandBarRankingCandidate::freqEver  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcCommandBarRankingCandidate::freqEver(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xb0) & 1) != 0) {
+    return *(int *)(param_1 + 0x84);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4434a8c);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4434a8c ArcCommandBarRankingCandidate::typedCount path=/home/exedev/work/inputs/decompile/0x44.c offset=1230299 C_bytes=414 failed=0
+// ==== 0x4434a8c  ArcCommandBarRankingCandidate::typedCount  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcCommandBarRankingCandidate::typedCount(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xb0) & 1) != 0) {
+    return *(int *)(param_1 + 0x88);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4434aa0);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4434aa0 ArcCommandBarRankingCandidate::siteEngagement path=/home/exedev/work/inputs/decompile/0x44.c offset=1230713 C_bytes=426 failed=0
+// ==== 0x4434aa0  ArcCommandBarRankingCandidate::siteEngagement  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+float ArcCommandBarRankingCandidate::siteEngagement(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xb0) & 1) != 0) {
+    return *(float *)(param_1 + 0x8c);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4434ab4);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4434ab4 ArcCommandBarRankingCandidate::isExactURLMatch path=/home/exedev/work/inputs/decompile/0x44.c offset=1231139 C_bytes=432 failed=0
+// ==== 0x4434ab4  ArcCommandBarRankingCandidate::isExactURLMatch  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcCommandBarRankingCandidate::isExactURLMatch(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xb0) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x90);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4434ac8);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4434ac8 ArcCommandBarRankingCandidate::isBaseDomainMatch path=/home/exedev/work/inputs/decompile/0x44.c offset=1231571 C_bytes=436 failed=0
+// ==== 0x4434ac8  ArcCommandBarRankingCandidate::isBaseDomainMatch  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcCommandBarRankingCandidate::isBaseDomainMatch(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xb0) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x91);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4434adc);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4434adc ArcCommandBarRankingCandidate::isTitlePrefix path=/home/exedev/work/inputs/decompile/0x44.c offset=1232007 C_bytes=428 failed=0
+// ==== 0x4434adc  ArcCommandBarRankingCandidate::isTitlePrefix  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcCommandBarRankingCandidate::isTitlePrefix(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0xb0) & 1) != 0) {
+    return (bool)*(byte *)(param_1 + 0x92);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x4434af0);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4434bb0 ArcCommandBarRankingCandidate::command_bar_ranking_candidate path=/home/exedev/work/inputs/decompile/0x44.c offset=1233744 C_bytes=877 failed=0
+// ==== 0x4434bb0  ArcCommandBarRankingCandidate::command_bar_ranking_candidate  (72 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcCommandBarRankingCandidate::command_bar_ranking_candidate
+               (optional<arc::CommandBarRankingCandidate> *__return_storage_ptr__,ID param_1,
+               SEL param_2)
+
+{
+  code *pcVar1;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)((long)&__return_storage_ptr__->field0_0x0 + 0xa8) = 0;
+  if (*(char *)(param_1 + 0xb0) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::CommandBarRankingCandidate> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x4434bf8);
+      (*pcVar1)();
+    }
+    FUN_042a3ea8(__return_storage_ptr__,param_1 + 8);
+    *(undefined1 *)((long)&__return_storage_ptr__->field0_0x0 + 0xa8) = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x4434c14 ArcCommandBarRankingCandidate::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=1234621 C_bytes=295 failed=0
+// ==== 0x4434c14  ArcCommandBarRankingCandidate::.cxx_destruct  (20 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcCommandBarRankingCandidate::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0xb0) == '\0') {
+    return;
+  }
+  FUN_042a3ff4(param_1 + 8);
+  return;
+}
+
+
+
+INDEX 0x4435e2c ArcBrowserContextPageContentExtraction::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=1264700 C_bytes=1179 failed=0
+// ==== 0x4435e2c  ArcBrowserContextPageContentExtraction::.cxx_destruct  (204 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcBrowserContextPageContentExtraction::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  SEL extraout_x1;
+  SEL extraout_x1_00;
+  SEL extraout_x1_01;
+  code *pcVar2;
+  long *plVar3;
+  
+  if ((*(char *)(param_1 + 0x20) != '\0') &&
+     (plVar3 = *(long **)(param_1 + 0x18), plVar3 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        param_2 = extraout_x1;
+        if (lVar1 != 0) goto LAB_04435e60;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+        param_2 = extraout_x1_00;
+      }
+      else {
+        (*pcVar2)(plVar3);
+        param_2 = extraout_x1_01;
+      }
+    }
+  }
+LAB_04435e60:
+  _objc_destroyWeak(param_1 + 8,param_2);
+  return;
+}
+
+
+
+INDEX 0x443cac0 ArcSessionNavigation::hasPostData path=/home/exedev/work/inputs/decompile/0x44.c offset=1451720 C_bytes=424 failed=0
+// ==== 0x443cac0  ArcSessionNavigation::hasPostData  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcSessionNavigation::hasPostData(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    return (bool)*(byte *)(**(long **)(param_1 + 8) + 0x134);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443cadc);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x443cb80 ArcSessionNavigation::isOverridingUserAgent path=/home/exedev/work/inputs/decompile/0x44.c offset=1453202 C_bytes=444 failed=0
+// ==== 0x443cb80  ArcSessionNavigation::isOverridingUserAgent  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcSessionNavigation::isOverridingUserAgent(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
+    return (bool)*(byte *)(**(long **)(param_1 + 8) + 0x1b8);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443cb9c);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x443f9f8 ArcPermissionRequest::type path=/home/exedev/work/inputs/decompile/0x44.c offset=1521422 C_bytes=414 failed=0
+// ==== 0x443f9f8  ArcPermissionRequest::type  (24 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcPermissionRequest::type(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    return (long)*(int *)(*(long *)(param_1 + 0x10) + 0x18);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443fa10);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x4443ee0 ArcWebContents::web_contents path=/home/exedev/work/inputs/decompile/0x44.c offset=1629872 C_bytes=1066 failed=0
+// ==== 0x4443ee0  ArcWebContents::web_contents  (60 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContents::web_contents
+               (optional<arc::WebContents> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  __shared_weak_count *p_Var1;
+  code *pcVar2;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 0;
+  if (*(char *)(param_1 + 0x128) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::WebContents> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x4443f1c);
+      (*pcVar2)();
+    }
+    p_Var1 = *(__shared_weak_count **)(param_1 + 0x120);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field0_0x0 = *(Impl **)(param_1 + 0x118);
+    (__return_storage_ptr__->field0_0x0).field1.field0_0x0.field1_0x8 = p_Var1;
+    if (p_Var1 != (__shared_weak_count *)0x0) {
+      *(long *)(p_Var1 + 8) = *(long *)(p_Var1 + 8) + 1;
+    }
+    *(undefined1 *)&__return_storage_ptr__->field1_0x10 = 1;
+  }
+  return;
+}
+
+
+
+INDEX 0x44447a8 ArcWebContents::pendingRenderFrameViewportSize path=/home/exedev/work/inputs/decompile/0x44.c offset=1650168 C_bytes=240 failed=0
+// ==== 0x44447a8  ArcWebContents::pendingRenderFrameViewportSize  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+CGSize ArcWebContents::pendingRenderFrameViewportSize(ID param_1,SEL param_2)
+
+{
+  return *(CGSize *)(param_1 + 0xe8);
+}
+
+
+
+INDEX 0x4444b54 ArcWebContents::.cxx_destruct path=/home/exedev/work/inputs/decompile/0x44.c offset=1659644 C_bytes=6243 failed=0
+// ==== 0x4444b54  ArcWebContents::.cxx_destruct  (1416 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcWebContents::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  SEL extraout_x1;
+  SEL extraout_x1_00;
+  SEL extraout_x1_01;
+  code *pcVar2;
+  long *plVar3;
+  
+  if ((*(char *)(param_1 + 0x128) != '\0') &&
+     (plVar3 = *(long **)(param_1 + 0x120), plVar3 != (long *)0x0)) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        param_2 = extraout_x1;
+        if (lVar1 != 0) goto LAB_04444b88;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+        param_2 = extraout_x1_00;
+      }
+      else {
+        (*pcVar2)(plVar3);
+        param_2 = extraout_x1_01;
+      }
+    }
+  }
+LAB_04444b88:
+  plVar3 = *(long **)(param_1 + 0x110);
+  if (plVar3 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3,param_2);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04444be0;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_04444be0:
+  plVar3 = *(long **)(param_1 + 0x100);
+  if (plVar3 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04444c38;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_04444c38:
+  plVar3 = *(long **)(param_1 + 0xe0);
+  if (plVar3 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04444c90;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_04444c90:
+  plVar3 = *(long **)(param_1 + 0xd0);
+  if (plVar3 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04444ca8;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_04444ca8:
+  plVar3 = *(long **)(param_1 + 0xc0);
+  if (plVar3 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04444cc0;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_04444cc0:
+  plVar3 = *(long **)(param_1 + 0xb0);
+  if (plVar3 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04444cd8;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_04444cd8:
+  plVar3 = *(long **)(param_1 + 0xa0);
+  if (plVar3 != (long *)0x0) {
+    LOAcquire();
+    lVar1 = plVar3[1];
+    plVar3[1] = lVar1 + -1;
+    LORelease();
+    if (lVar1 == 0) {
+      (**(code **)(*plVar3 + 0x10))(plVar3);
+      if (plVar3[2] != 0) {
+        LOAcquire();
+        lVar1 = plVar3[2];
+        plVar3[2] = lVar1 + -1;
+        LORelease();
+        if (lVar1 != 0) goto LAB_04444cf0;
+      }
+      pcVar2 = *(code **)(*plVar3 + 0x20);
+      if (((pcVar2 == FUN_00f01bc0) || (pcVar2 == FUN_00f01bc0)) || (pcVar2 == FUN_013efb40)) {
+        FUN_00005810(plVar3,0x20);
+      }
+      else {
+        (*pcVar2)(plVar3);
+      }
+    }
+  }
+LAB_04444cf0:
+  *(undefined8 *)(param_1 + 0x90) = 0;
+  *(undefined8 *)(param_1 + 0x88) = 0;
+  *(undefined8 *)(param_1 + 0x70) = 0;
+  *(undefined8 *)(param_1 + 0x68) = 0;
+  *(undefined8 *)(param_1 + 0x60) = 0;
+  *(undefined8 *)(param_1 + 0x58) = 0;
+  *(undefined8 *)(param_1 + 0x50) = 0;
+  *(undefined8 *)(param_1 + 0x48) = 0;
+  *(undefined8 *)(param_1 + 0x38) = 0;
+  *(undefined8 *)(param_1 + 0x30) = 0;
+  *(undefined8 *)(param_1 + 0x28) = 0;
+  _objc_destroyWeak(param_1 + 8);
+  return;
+}
+
+
+

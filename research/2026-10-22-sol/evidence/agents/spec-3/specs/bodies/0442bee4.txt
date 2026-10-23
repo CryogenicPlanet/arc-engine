@@ -1,0 +1,33 @@
+INDEX 0x442bee4 ArcSelectOption::initWithSelectOption: path=/home/exedev/work/inputs/decompile/0x44.c offset=970515 C_bytes=959 failed=0
+// ==== 0x442bee4  ArcSelectOption::initWithSelectOption:  (176 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcSelectOption::initWithSelectOption_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcSelectOption;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    if (*(char *)(IVar1 + 0x50) != '\0') {
+      if ((*(char *)(IVar1 + 0x40) != '\0') && (*(char *)(IVar1 + 0x3f) < '\0')) {
+        FUN_00005810(*(undefined8 *)(IVar1 + 0x28),*(ulong *)(IVar1 + 0x38) & 0x7fffffffffffffff);
+      }
+      if ((*(char *)(IVar1 + 0x20) != '\0') && (*(char *)(IVar1 + 0x1f) < '\0')) {
+        FUN_00005810(*(undefined8 *)(IVar1 + 8),*(ulong *)(IVar1 + 0x18) & 0x7fffffffffffffff);
+      }
+      *(undefined1 *)(IVar1 + 0x50) = 0;
+    }
+    FUN_083694e8(IVar1 + 8,param_3);
+    *(undefined1 *)(IVar1 + 0x50) = 1;
+  }
+  return IVar1;
+}
+
+
+

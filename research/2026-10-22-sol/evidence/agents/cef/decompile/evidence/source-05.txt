@@ -1,0 +1,25 @@
+688: void ToolbarActionsModel::SetActionVisibility(const ActionId& action_id,
+689:                                               bool is_now_visible) {
+690:   DCHECK_NE(is_now_visible, IsActionPinned(action_id));
+691:   DCHECK(!IsActionForcePinned(action_id));
+692:   DCHECK(!profile_->IsOffTheRecord())
+693:       << "Changing action pin state is disallowed in incognito.";
+694: 
+695:   auto stored_pinned_action_ids = extension_prefs_->GetPinnedExtensions();
+696:   DCHECK_NE(is_now_visible,
+697:             std::ranges::contains(stored_pinned_action_ids, action_id));
+698:   if (is_now_visible) {
+699:     stored_pinned_action_ids.push_back(action_id);
+700:   } else {
+701:     std::erase(stored_pinned_action_ids, action_id);
+702:   }
+703:   extension_prefs_->SetPinnedExtensions(stored_pinned_action_ids);
+704:   // The |pinned_action_ids_| should be updated as a result of updating the
+705:   // preference.
+706:   DCHECK(pinned_action_ids_ == GetFilteredPinnedActionIds());
+707: 
+708:   extension_action_dispatcher_->OnActionPinnedStateChanged(action_id,
+709:                                                            is_now_visible);
+710: }
+711: 
+712: const extensions::Extension* ToolbarActionsModel::GetExtensionById(

@@ -1,0 +1,382 @@
+[
+  {
+    "va": "0x167ca68",
+    "name": "FUN_0167ca68",
+    "path": "/home/exedev/work/inputs/decompile/0x16.c",
+    "offset": 3285639,
+    "length": 1468,
+    "sha256": "c54ff046710cdcaa315c5d8e27a6c73d29fe6c110d937f24071b1a444f14fe11",
+    "local_body": "bodies/0x167ca68.c",
+    "in_syntactic_closure": true,
+    "candidate_name": "PrefService::SetUserPrefValue",
+    "confidence": "high_source_correspondence",
+    "status": "observed_flow_agrees",
+    "source": {
+      "file": "components/prefs/pref_service.cc",
+      "start_line": 556,
+      "end_line": 583,
+      "pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c"
+    },
+    "observed_anchors": [
+      "Trying to write an unregistered pref: "
+    ],
+    "behavior": "Find preference; diagnose missing pref; compare Value type; clone/move value into user store. No modification established.",
+    "callers_in_two_level_graph": [
+      {
+        "caller_va": "0x4435570",
+        "caller_name": "ArcBrowserContextPreferences::setPromptForDownloadPath:",
+        "callee_va": "0x167ca68",
+        "callee_token": "FUN_0167ca68",
+        "expansion_level": "1"
+      },
+      {
+        "caller_va": "0x4435624",
+        "caller_name": "ArcBrowserContextPreferences::setSearchSuggestEnabled:",
+        "callee_va": "0x167ca68",
+        "callee_token": "FUN_0167ca68",
+        "expansion_level": "1"
+      },
+      {
+        "caller_va": "0x443571c",
+        "caller_name": "ArcBrowserContextPreferences::setPasswordSavingEnabled:",
+        "callee_va": "0x167ca68",
+        "callee_token": "FUN_0167ca68",
+        "expansion_level": "1"
+      },
+      {
+        "caller_va": "0x44358a4",
+        "caller_name": "ArcBrowserContextPreferences::setCreditCardsSavingEnabled:",
+        "callee_va": "0x167ca68",
+        "callee_token": "FUN_0167ca68",
+        "expansion_level": "1"
+      },
+      {
+        "caller_va": "0x4435b48",
+        "caller_name": "ArcBrowserContextPreferences::setKeywordSearchSpaceTriggeringEnabled:",
+        "callee_va": "0x167ca68",
+        "callee_token": "FUN_0167ca68",
+        "expansion_level": "1"
+      },
+      {
+        "caller_va": "0x2f35720",
+        "caller_name": "FUN_02f35720",
+        "callee_va": "0x167ca68",
+        "callee_token": "FUN_0167ca68",
+        "expansion_level": "2"
+      },
+      {
+        "caller_va": "0x42c5400",
+        "caller_name": "FUN_042c5400",
+        "callee_va": "0x167ca68",
+        "callee_token": "FUN_0167ca68",
+        "expansion_level": "2"
+      }
+    ]
+  },
+  {
+    "va": "0x2736440",
+    "name": "FUN_02736440",
+    "path": "/home/exedev/work/inputs/decompile/0x27.c",
+    "offset": 1273114,
+    "length": 2717,
+    "sha256": "e886f6ccec9bf219e1f7de8da1c864eb1db24c49c7772b697e9da3c5c7e3aa54",
+    "local_body": "bodies/0x2736440.c",
+    "in_syntactic_closure": true,
+    "candidate_name": "KeepAliveRegistry::Register",
+    "confidence": "high_source_correspondence",
+    "status": "observed_flow_agrees",
+    "source": {
+      "file": "components/keep_alive_registry/keep_alive_registry.cc",
+      "start_line": 133,
+      "end_line": 159,
+      "pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c"
+    },
+    "observed_anchors": [
+      "New state of the KeepAliveRegistry: "
+    ],
+    "behavior": "Increment origin and total counts, optionally restart counts; notify on state transitions; update crash key.",
+    "callers_in_two_level_graph": [
+      {
+        "caller_va": "0x42aac34",
+        "caller_name": "FUN_042aac34",
+        "callee_va": "0x2736440",
+        "callee_token": "FUN_02736440",
+        "expansion_level": "1"
+      }
+    ]
+  },
+  {
+    "va": "0x2dd6dc0",
+    "name": "FUN_02dd6dc0",
+    "path": "/home/exedev/work/inputs/decompile/0x2d.c",
+    "offset": 4852893,
+    "length": 1920,
+    "sha256": "a3fb9bc0572098678bfd951cd06ce0cfd3dea359832e91e4bf5f3930ffa9cb56",
+    "local_body": "bodies/0x2dd6dc0.c",
+    "in_syntactic_closure": true,
+    "candidate_name": "KeepAliveRegistry::Unregister",
+    "confidence": "high_source_correspondence",
+    "status": "observed_flow_agrees",
+    "source": {
+      "file": "components/keep_alive_registry/keep_alive_registry.cc",
+      "start_line": 161,
+      "end_line": 189,
+      "pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c"
+    },
+    "observed_anchors": [
+      "New state of the KeepAliveRegistry: "
+    ],
+    "behavior": "Decrement counts, notify keepalive before restart transition, then log/update crash key. Diagnostic spacing differs; no behavioral edit established.",
+    "callers_in_two_level_graph": [
+      {
+        "caller_va": "0x42aac34",
+        "caller_name": "FUN_042aac34",
+        "callee_va": "0x2dd6dc0",
+        "callee_token": "FUN_02dd6dc0",
+        "expansion_level": "1"
+      },
+      {
+        "caller_va": "0x42aa684",
+        "caller_name": "FUN_042aa684",
+        "callee_va": "0x2dd6dc0",
+        "callee_token": "FUN_02dd6dc0",
+        "expansion_level": "2"
+      },
+      {
+        "caller_va": "0x471acb0",
+        "caller_name": "FUN_0471acb0",
+        "callee_va": "0x2dd6dc0",
+        "callee_token": "FUN_02dd6dc0",
+        "expansion_level": "2"
+      }
+    ]
+  },
+  {
+    "va": "0x3222b84",
+    "name": "FUN_03222b84",
+    "path": "/home/exedev/work/inputs/decompile-extra/batch-f025e06f4ec94a9fb1a918545284f407/0x32.c",
+    "offset": 743986,
+    "length": 3045,
+    "sha256": "d8f4b4f98d2b7e79491baa657f35dfb185aa3956f146b776e258be0715167269",
+    "local_body": "bodies/0x3222b84.c",
+    "in_syntactic_closure": true,
+    "candidate_name": "bookmarks::ScheduleCallbackOnBookmarkModelLoad",
+    "confidence": "high_source_correspondence",
+    "status": "observed_flow_agrees",
+    "source": {
+      "file": "components/bookmarks/browser/bookmark_model_load_waiter.cc",
+      "start_line": 73,
+      "end_line": 91,
+      "pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c"
+    },
+    "observed_anchors": [
+      "ScheduleCallbackOnBookmarkModelLoad"
+    ],
+    "behavior": "CHECK callback; loaded branch posts task with weak model; unloaded branch constructs observing waiter. Does not establish app callback ABI.",
+    "callers_in_two_level_graph": [
+      {
+        "caller_va": "0x384784c",
+        "caller_name": "FUN_0384784c",
+        "callee_va": "0x3222b84",
+        "callee_token": "FUN_03222b84",
+        "expansion_level": "1"
+      }
+    ]
+  },
+  {
+    "va": "0x3a70080",
+    "name": "FUN_03a70080",
+    "path": "/home/exedev/work/inputs/decompile-extra/batch-f025e06f4ec94a9fb1a918545284f407/0x3a.c",
+    "offset": 1756911,
+    "length": 1491,
+    "sha256": "ab0c17552c9af5d2a95c1a8a8ea2dc11d64aa0b68a68860bf45c9ac5ae4c5e3c",
+    "local_body": "bodies/0x3a70080.c",
+    "in_syntactic_closure": true,
+    "candidate_name": "content::GpuProcessHost::CallOnUI",
+    "confidence": "high_source_correspondence",
+    "status": "observed_flow_agrees",
+    "source": {
+      "file": "content/browser/gpu/gpu_process_host.cc",
+      "start_line": 693,
+      "end_line": 705,
+      "pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c"
+    },
+    "observed_anchors": [
+      "kind != GPU_PROCESS_KIND_INFO_COLLECTION"
+    ],
+    "behavior": "Non-Windows info-collection check, capture kind/force_create/callback, post to UI runner. No modification established.",
+    "callers_in_two_level_graph": [
+      {
+        "caller_va": "0x435da28",
+        "caller_name": "FUN_0435da28",
+        "callee_va": "0x3a70080",
+        "callee_token": "FUN_03a70080",
+        "expansion_level": "1"
+      }
+    ]
+  },
+  {
+    "va": "0x27de0",
+    "name": "FUN_00027de0",
+    "path": "/home/exedev/work/inputs/decompile/0x0.c",
+    "offset": 934064,
+    "length": 896,
+    "sha256": "cd1e40e52a2b044eda8fb5f3970c9dc6dcc16e6d68201651b7be18ebce1d7488",
+    "local_body": "bodies/0x27de0.c",
+    "in_syntactic_closure": true,
+    "candidate_name": "TabStripModel::GetIndexOfWebContents",
+    "confidence": "high_source_correspondence",
+    "status": "observed_flow_agrees",
+    "source": {
+      "file": "chrome/browser/ui/tabs/tab_strip_model.cc",
+      "start_line": 1222,
+      "end_line": 1232,
+      "pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c"
+    },
+    "observed_anchors": [
+      "iVar1 = -1"
+    ],
+    "behavior": "Traverse tabs, compare stored WebContents pointer, return index or -1. Used to check ScheduleUIUpdate guard.",
+    "callers_in_two_level_graph": [
+      {
+        "caller_va": "0x16b9d84",
+        "caller_name": "FUN_016b9d84",
+        "callee_va": "0x27de0",
+        "callee_token": "FUN_00027de0",
+        "expansion_level": "1"
+      },
+      {
+        "caller_va": "0x437b014",
+        "caller_name": "FUN_0437b014",
+        "callee_va": "0x27de0",
+        "callee_token": "FUN_00027de0",
+        "expansion_level": "1"
+      },
+      {
+        "caller_va": "0x43796ec",
+        "caller_name": "FUN_043796ec",
+        "callee_va": "0x27de0",
+        "callee_token": "FUN_00027de0",
+        "expansion_level": "2"
+      }
+    ]
+  },
+  {
+    "va": "0x16b9d84",
+    "name": "FUN_016b9d84",
+    "path": "/home/exedev/work/inputs/decompile/0x16.c",
+    "offset": 4680313,
+    "length": 7478,
+    "sha256": "3e52e996ee8587706f57f9c9996fb9ebe18e51c6a13e614e44e0741109b0fbf4",
+    "local_body": "bodies/0x16b9d84.c",
+    "in_syntactic_closure": true,
+    "candidate_name": "BrowserUiController::ScheduleUIUpdate",
+    "confidence": "high_source_correspondence",
+    "status": "upstream_function_with_arc_inline_and_guard_candidate",
+    "source": {
+      "file": "chrome/browser/ui/browser_ui_controller/browser_ui_controller.cc",
+      "start_line": 112,
+      "end_line": 181,
+      "pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c"
+    },
+    "observed_anchors": [
+      "BrowserUiController::UpdateToolbar",
+      "ScheduleUIUpdate",
+      "arc::browser::ui::Window::ResetToolbarTabState"
+    ],
+    "behavior": "URL/load flags, dirty-bit coalescing and delayed task match source role. Arc Window diagnostics inline. Arc guard calls 0x27de0; pinned guard compares TabInterface browser ownership. Behavioral distinction unresolved.",
+    "callers_in_two_level_graph": [
+      {
+        "caller_va": "0x7d63d84",
+        "caller_name": "FUN_07d63d84",
+        "callee_va": "0x16b9d84",
+        "callee_token": "FUN_016b9d84",
+        "expansion_level": "2"
+      }
+    ]
+  },
+  {
+    "va": "0x384784c",
+    "name": "FUN_0384784c",
+    "path": "/home/exedev/work/inputs/decompile/0x38.c",
+    "offset": 2155015,
+    "length": 35813,
+    "sha256": "4d4c793096293afae6ecf522d48666831a91bc05c31b6500cbd7ab9b72f13345",
+    "local_body": "bodies/0x384784c.c",
+    "in_syntactic_closure": true,
+    "candidate_name": "chrome::BrowserCommandController::BrowserCommandController",
+    "confidence": "high_source_correspondence",
+    "status": "upstream_function_with_arc_inline",
+    "source": {
+      "file": "chrome/browser/ui/browser_command_controller.cc",
+      "start_line": 341,
+      "end_line": 458,
+      "pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c"
+    },
+    "observed_anchors": [
+      "select_file_dialogs.allowed",
+      "bookmarks.editing_enabled",
+      "ExtensionStateObserver",
+      "arc/browser/ui/browser_commands.cc"
+    ],
+    "behavior": "Constructor, command-updater choice, pref registrars, inlined InitCommandState and Arc UI helper diagnostics. Source also uses BrowserActions; its presence alone is not an Arc modification.",
+    "callers_in_two_level_graph": []
+  },
+  {
+    "va": "0x435da28",
+    "name": "FUN_0435da28",
+    "path": "/home/exedev/work/inputs/decompile/0x43.c",
+    "offset": 1907432,
+    "length": 2039,
+    "sha256": "627f2dd8e839267ca6b30d24035ec7de1a82bb21ddab6f1cb24fb40c45dcfdeb",
+    "local_body": "bodies/0x435da28.c",
+    "in_syntactic_closure": true,
+    "candidate_name": "Arc DevTools full-page screenshot preflight (descriptive)",
+    "confidence": "observed_behavior_no_exact_cpp_name",
+    "status": "extension_candidate",
+    "source": {
+      "file": "content/public/browser/gpu_utils.cc",
+      "start_line": 1,
+      "end_line": 154,
+      "pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c"
+    },
+    "observed_anchors": [
+      "managed webcontents is null.",
+      "GetMaxTextureSize"
+    ],
+    "behavior": "Full-page wrapper checks managed contents then supplies callback to GPU CallOnUI with GetMaxTextureSize source location. Referenced pinned gpu_utils.cc/.h lack this helper. Candidate added helper, not proven exact patch or full contract.",
+    "callers_in_two_level_graph": [
+      {
+        "caller_va": "0x4376fb0",
+        "caller_name": "FUN_04376fb0",
+        "callee_va": "0x435da28",
+        "callee_token": "FUN_0435da28",
+        "expansion_level": "1"
+      }
+    ]
+  },
+  {
+    "va": "0x40bf0c8",
+    "name": "FUN_040bf0c8",
+    "path": "/home/exedev/work/inputs/decompile/0x40.c",
+    "offset": 5429986,
+    "length": 823,
+    "sha256": "9ece8c4d35db8b3a73b91089c8c599de0d940d4aa32b012be1c72b45ea6130ca",
+    "local_body": "bodies/0x40bf0c8.c",
+    "in_syntactic_closure": false,
+    "candidate_name": "GPU callback forwarding maximum-texture-size request (descriptive)",
+    "confidence": "observed_behavior_no_exact_cpp_name",
+    "status": "extension_candidate",
+    "source": {
+      "file": "content/browser/gpu/gpu_process_host.cc",
+      "start_line": 1,
+      "end_line": 1532,
+      "pin": "d0c02bfad08ec92a6ffcf989e53cd995e6381a4c"
+    },
+    "observed_anchors": [
+      "gpu_host_"
+    ],
+    "behavior": "Move captured callback, check host pointer, access service and dispatch virtual slot +0xd8. No exact upstream helper name or slot semantics established.",
+    "callers_in_two_level_graph": []
+  }
+]

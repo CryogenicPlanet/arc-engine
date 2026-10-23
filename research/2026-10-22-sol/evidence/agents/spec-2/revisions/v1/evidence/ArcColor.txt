@@ -1,0 +1,188 @@
+{
+  "class_name": "ArcColor",
+  "metadata_va": "0xe37dd88",
+  "metadata_file_offset": "0xe37dd88",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2ad3f0",
+  "instance_start": 8,
+  "instance_size": 12,
+  "ivars": [
+    {
+      "record_va": "0xe2ad378",
+      "offset": 8,
+      "name": "_color",
+      "type": "{Color=\"r\"C\"g\"C\"b\"C\"a\"C}",
+      "alignment": 0,
+      "size": 4
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcColor", "category": "", "protocol": "", "kind": "-", "selector": "initWithColor:", "type_encoding": "@24@0:8r^{Color=CCCC}16", "imp": "0x443b164", "method_record_va": "0xd77c314", "selector_va": "0xd75a188", "dyld_line": 2898, "imp_file_offset": "0x443b164", "body_name": "ArcColor::initWithColor:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1398599, "body_length": 419, "failed": 0, "truncated": false}
+// ==== 0x443b164  ArcColor::initWithColor:  (76 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcColor::initWithColor_(ID param_1,SEL param_2,const_Color__ param_3)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcColor;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    *(Color *)(IVar1 + 8) = *param_3;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcColor", "category": "", "protocol": "", "kind": "-", "selector": "r", "type_encoding": "C16@0:8", "imp": "0x40b1230", "method_record_va": "0xd77c320", "selector_va": "0xd766819", "dyld_line": 2899, "imp_file_offset": "0x40b1230", "body_name": "MacScreenMonitor::isScreensaverRunning", "body_path": "/home/exedev/work/inputs/decompile/0x40.c", "body_offset": 5191083, "body_length": 265, "failed": 0, "truncated": false}
+// ==== 0x40b1230  MacScreenMonitor::isScreensaverRunning  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void MacScreenMonitor::isScreensaverRunning
+               (void *param_1,void *param_2,int param_3,char *param_4,int param_5,int param_6)
+
+{
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcColor", "category": "", "protocol": "", "kind": "-", "selector": "g", "type_encoding": "C16@0:8", "imp": "0x43ecb04", "method_record_va": "0xd77c32c", "selector_va": "0xd76681b", "dyld_line": 2900, "imp_file_offset": "0x43ecb04", "body_name": "MacScreenMonitor::isScreenLocked", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4451214, "body_length": 211, "failed": 0, "truncated": false}
+// ==== 0x43ecb04  MacScreenMonitor::isScreenLocked  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool MacScreenMonitor::isScreenLocked(ID param_1,SEL param_2)
+
+{
+  return (bool)*(byte *)(param_1 + 9);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcColor", "category": "", "protocol": "", "kind": "-", "selector": "b", "type_encoding": "C16@0:8", "imp": "0x43ecb0c", "method_record_va": "0xd77c338", "selector_va": "0xd76681d", "dyld_line": 2901, "imp_file_offset": "0x43ecb0c", "body_name": "ArcCpuInfo::hasBMI2", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4451425, "body_length": 198, "failed": 0, "truncated": false}
+// ==== 0x43ecb0c  ArcCpuInfo::hasBMI2  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+unsigned_char ArcCpuInfo::hasBMI2(ID param_1,SEL param_2)
+
+{
+  return *(unsigned_char *)(param_1 + 10);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcColor", "category": "", "protocol": "", "kind": "-", "selector": "a", "type_encoding": "C16@0:8", "imp": "0x440c5a4", "method_record_va": "0xd77c344", "selector_va": "0xd76681f", "dyld_line": 2902, "imp_file_offset": "0x440c5a4", "body_name": "ArcCpuInfo::hasMMX", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 295593, "body_length": 197, "failed": 0, "truncated": false}
+// ==== 0x440c5a4  ArcCpuInfo::hasMMX  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+unsigned_char ArcCpuInfo::hasMMX(ID param_1,SEL param_2)
+
+{
+  return *(unsigned_char *)(param_1 + 0xb);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcColor", "category": "", "protocol": "", "kind": "-", "selector": "color", "type_encoding": "{Color=CCCC}16@0:8", "imp": "0x443b1b0", "method_record_va": "0xd77c350", "selector_va": "0xd756965", "dyld_line": 2903, "imp_file_offset": "0x443b1b0", "body_name": "ArcColor::color", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1399018, "body_length": 232, "failed": 0, "truncated": false}
+// ==== 0x443b1b0  ArcColor::color  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+Color ArcColor::color(ID param_1,SEL param_2)
+
+{
+  undefined4 *in_x8;
+  
+  *in_x8 = *(undefined4 *)(param_1 + 8);
+  return SUB84(param_1,0);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcColor", "category": "", "protocol": "", "kind": "-", "selector": "setColor:", "type_encoding": "v20@0:8{Color=CCCC}16", "imp": "0x443b1bc", "method_record_va": "0xd77c35c", "selector_va": "0xd75696b", "dyld_line": 2904, "imp_file_offset": "0x443b1bc", "body_name": "ArcColor::setColor:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1399250, "body_length": 241, "failed": 0, "truncated": false}
+// ==== 0x443b1bc  ArcColor::setColor:  (12 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcColor::setColor_(ID param_1,SEL param_2,Color param_3)
+
+{
+  *(undefined4 *)(param_1 + 8) = *(undefined4 *)(ulong)(uint)param_3;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcColor", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x15ac0", "method_record_va": "0xd77c368", "selector_va": "0xd744a39", "dyld_line": 2905, "imp_file_offset": "0x15ac0", "body_name": "PiPNSView::viewWillStartLiveResize", "body_path": "/home/exedev/work/inputs/decompile/0x0.c", "body_offset": 454555, "body_length": 184, "failed": 0, "truncated": false}
+// ==== 0x15ac0  PiPNSView::viewWillStartLiveResize  (4 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void PiPNSView::viewWillStartLiveResize(ID param_1,SEL param_2)
+
+{
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcColor", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x15ac0", "method_record_va": "0xd77c374", "selector_va": "0xd744a47", "dyld_line": 2906, "imp_file_offset": "0x15ac0", "body_name": "PiPNSView::viewWillStartLiveResize", "body_path": "/home/exedev/work/inputs/decompile/0x0.c", "body_offset": 454555, "body_length": 184, "failed": 0, "truncated": false}
+// ==== 0x15ac0  PiPNSView::viewWillStartLiveResize  (4 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void PiPNSView::viewWillStartLiveResize(ID param_1,SEL param_2)
+
+{
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcColor", "category": "Init", "protocol": "", "kind": "-", "selector": "initWithR:g:b:a:", "type_encoding": "@32@0:8C16C20C24C28", "imp": "0x4401b58", "method_record_va": "0xd778d94", "selector_va": "0xd75a197", "dyld_line": 4955, "imp_file_offset": "0x4401b58", "body_name": "objc::Categories::ArcColor_Init_::initWithR:g:b:a:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 50093, "body_length": 607, "failed": 0, "truncated": false}
+// ==== 0x4401b58  objc::Categories::ArcColor_Init_::initWithR:g:b:a:  (56 bytes)
+
+/* Function Stack Size: 0x20 bytes */
+
+ID objc::Categories::ArcColor_Init_::initWithR_g_b_a_
+             (ID param_1,SEL param_2,unsigned_char param_3,unsigned_char param_4,
+             unsigned_char param_5,unsigned_char param_6)
+
+{
+  ID IVar1;
+  unsigned_char local_14;
+  unsigned_char local_13;
+  unsigned_char local_12;
+  unsigned_char local_11;
+  
+  local_14 = param_3;
+  local_13 = param_4;
+  local_12 = param_5;
+  local_11 = param_6;
+  IVar1 = _objc_msgSend(param_1,"initWithColor:",&local_14);
+  return IVar1;
+}
+
+
+

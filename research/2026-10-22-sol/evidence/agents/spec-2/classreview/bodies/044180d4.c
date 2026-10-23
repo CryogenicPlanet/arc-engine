@@ -1,0 +1,159 @@
+// ==== 0x44180d4  ArcWebContentsNavigationController::goToBackForwardListItem:  (756 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+ID __thiscall
+ArcWebContentsNavigationController::goToBackForwardListItem_
+          (ArcWebContentsNavigationController *this,ID param_1,SEL param_2,ID param_3)
+
+{
+  long *plVar1;
+  uint uVar2;
+  long lVar3;
+  code *pcVar4;
+  uint *puVar5;
+  ID IVar6;
+  long *plVar7;
+  Navigation NVar8;
+  undefined8 local_70;
+  long *plStack_68;
+  uint *local_60;
+  long *local_58;
+  byte local_50;
+  uint *local_48;
+  undefined8 local_40;
+  long *plStack_38;
+  
+  if (param_2 == (SEL)0x0) {
+    return 0;
+  }
+  local_48 = (uint *)0x0;
+  local_40 = 0;
+  plStack_38 = (long *)0x0;
+  if (((byte)this[0x20] & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x44183ac);
+    (*pcVar4)();
+  }
+  _objc_msgSend((ID)param_2,"nativeBackForwardListItem",&local_60);
+  if ((local_50 & 1) == 0) {
+                    /* WARNING: Subroutine does not return */
+    FUN_04b08a00();
+  }
+  FUN_04367d74(&local_48,*(undefined8 *)(this + 0x10),&local_60);
+  if ((local_50 != 0) && (local_58 != (long *)0x0)) {
+    LOAcquire();
+    lVar3 = local_58[1];
+    local_58[1] = lVar3 + -1;
+    LORelease();
+    if (lVar3 == 0) {
+      (**(code **)(*local_58 + 0x10))(local_58);
+      if (local_58[2] != 0) {
+        LOAcquire();
+        lVar3 = local_58[2];
+        local_58[2] = lVar3 + -1;
+        LORelease();
+        if (lVar3 != 0) goto LAB_04418158;
+      }
+      pcVar4 = *(code **)(*local_58 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+        FUN_00005810(local_58,0x20);
+      }
+      else {
+        (*pcVar4)(local_58);
+      }
+    }
+  }
+LAB_04418158:
+  if (local_48 != (uint *)((long)&MACH_HEADER.magic + 1)) {
+    IVar6 = 0;
+    goto LAB_04418168;
+  }
+  IVar6 = _objc_alloc(&objc::class_t::ArcNavigation);
+  if (local_48 != (uint *)((long)&MACH_HEADER.magic + 1)) {
+    local_60 = local_48;
+    puVar5 = local_48;
+    if (((ulong)local_48 & 1) == 0) {
+      uVar2 = *local_48;
+      *local_48 = uVar2 + 1;
+      puVar5 = (uint *)(ulong)uVar2;
+    }
+                    /* WARNING: Subroutine does not return */
+    FUN_04b37ee8(puVar5,&local_60);
+  }
+  plStack_68 = plStack_38;
+  local_70 = local_40;
+  if (plStack_38 != (long *)0x0) {
+    plStack_38[1] = plStack_38[1] + 1;
+  }
+  NVar8.field0_0x0.field1_0x8 = (__shared_weak_count *)param_3;
+  NVar8.field0_0x0.field0_0x0 = (Impl *)&local_70;
+  IVar6 = ArcNavigation::init_(IVar6,"init:",NVar8);
+  plVar1 = plStack_68;
+  if (plStack_68 != (long *)0x0) {
+    LOAcquire();
+    lVar3 = plStack_68[1];
+    plStack_68[1] = lVar3 + -1;
+    LORelease();
+    if (lVar3 == 0) {
+      plVar7 = plStack_68 + 2;
+      (**(code **)(*plStack_68 + 0x10))(plStack_68);
+      if (*plVar7 != 0) {
+        LOAcquire();
+        lVar3 = plVar1[2];
+        plVar1[2] = lVar3 + -1;
+        LORelease();
+        if (lVar3 != 0) goto LAB_044181f8;
+      }
+      pcVar4 = *(code **)(*plVar1 + 0x20);
+      if (((pcVar4 == FUN_00f01bc0) || (pcVar4 == FUN_00f01bc0)) || (pcVar4 == FUN_013efb40)) {
+        FUN_00005810(plVar1,0x20);
+      }
+      else {
+        (*pcVar4)(plVar1);
+      }
+    }
+  }
+LAB_044181f8:
+  plVar1 = plStack_38;
+  if (local_48 == (uint *)((long)&MACH_HEADER.magic + 1)) {
+    if (plStack_38 == (long *)0x0) {
+      return IVar6;
+    }
+    LOAcquire();
+    lVar3 = plStack_38[1];
+    plStack_38[1] = lVar3 + -1;
+    LORelease();
+    if (lVar3 != 0) {
+      return IVar6;
+    }
+    plVar7 = plStack_38 + 2;
+    (**(code **)(*plStack_38 + 0x10))(plStack_38);
+    if (*plVar7 != 0) {
+      LOAcquire();
+      lVar3 = plVar1[2];
+      plVar1[2] = lVar3 + -1;
+      LORelease();
+      if (lVar3 != 0) {
+        return IVar6;
+      }
+    }
+    pcVar4 = *(code **)(*plVar1 + 0x20);
+    if (((pcVar4 != FUN_00f01bc0) && (pcVar4 != FUN_00f01bc0)) && (pcVar4 != FUN_013efb40)) {
+      (*pcVar4)(plVar1);
+      return IVar6;
+    }
+    FUN_00005810(plVar1,0x20);
+    return IVar6;
+  }
+LAB_04418168:
+  if (((ulong)local_48 & 1) == 0) {
+    FUN_04b35898();
+  }
+  return IVar6;
+}
+
+

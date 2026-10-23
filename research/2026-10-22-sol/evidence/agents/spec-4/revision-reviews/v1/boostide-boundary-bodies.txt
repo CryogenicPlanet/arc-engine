@@ -1,0 +1,138 @@
+INDEX 0x34f8d40 FUN_034f8d40 path=/home/exedev/work/inputs/decompile/0x34.c offset=5505042 C_bytes=163 failed=0
+// ==== 0x34f8d40  FUN_034f8d40  (16 bytes)
+
+void FUN_034f8d40(undefined1 *param_1,undefined1 param_2)
+
+{
+  *param_1 = param_2;
+  param_1[0x18] = 1;
+  return;
+}
+
+
+
+INDEX 0x67080b4 FUN_067080b4 path=/home/exedev/work/inputs/decompile-extra/batch-f025e06f4ec94a9fb1a918545284f407/0x67.c offset=163569 C_bytes=1143 failed=0
+// ==== 0x67080b4  FUN_067080b4  (200 bytes)
+
+void FUN_067080b4(long param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,
+                 undefined8 param_5)
+
+{
+  code *pcVar1;
+  ulong uVar2;
+  undefined8 uVar3;
+  undefined8 local_98;
+  undefined8 uStack_90;
+  undefined8 local_88;
+  undefined8 local_80;
+  undefined8 uStack_78;
+  undefined8 local_70;
+  undefined8 uStack_68;
+  undefined8 local_60;
+  undefined8 uStack_58;
+  long local_48;
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  uVar2 = FUN_0681228c();
+  if ((uVar2 & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(0,0x670817c);
+    (*pcVar1)();
+  }
+  uVar3 = *(undefined8 *)(param_1 + 0x10);
+  FUN_021beb38(&local_98,param_4);
+  local_60 = 0;
+  uStack_58 = 0;
+  uStack_78 = uStack_90;
+  local_80 = local_98;
+  local_70 = local_88;
+  uStack_68 = 0;
+  FUN_021beb38(&uStack_68,param_5);
+  FUN_06811ac4(uVar3,param_2,param_3,&local_80,2);
+  if (*(long *)PTR____stack_chk_guard_0d824020 == local_48) {
+    return;
+  }
+                    /* WARNING: Subroutine does not return */
+  ___stack_chk_fail();
+}
+
+
+
+INDEX 0x6812310 FUN_06812310 path=/home/exedev/work/inputs/decompile-extra/batch-f025e06f4ec94a9fb1a918545284f407/0x68.c offset=362058 C_bytes=1368 failed=0
+// ==== 0x6812310  FUN_06812310  (236 bytes)
+
+void FUN_06812310(long param_1,undefined8 param_2,undefined8 param_3,undefined8 *param_4,
+                 undefined8 param_5,undefined8 *param_6)
+
+{
+  code *pcVar1;
+  ulong uVar2;
+  undefined8 uVar3;
+  undefined8 local_90;
+  undefined8 uStack_88;
+  undefined8 local_80;
+  undefined8 local_78;
+  undefined8 uStack_70;
+  undefined8 local_68;
+  undefined8 uStack_60;
+  undefined8 local_58;
+  undefined8 uStack_50;
+  long local_48;
+  
+  local_48 = *(long *)PTR____stack_chk_guard_0d824020;
+  if (((*(char *)(param_1 + 8) != '\0') && (*(long *)(param_1 + 0x10) != 0)) &&
+     (uVar2 = FUN_068119c0(), (uVar2 & 1) != 0)) {
+    uVar3 = *(undefined8 *)(param_1 + 0x10);
+    uStack_88 = param_4[1];
+    local_90 = *param_4;
+    local_80 = param_4[2];
+    uStack_70 = 0;
+    local_78 = 0;
+    uStack_60 = 0;
+    local_68 = 0;
+    uStack_50 = 0;
+    local_58 = 0;
+    FUN_021beb38(&local_78,param_5);
+    local_58 = param_6[1];
+    uStack_60 = *param_6;
+    uStack_50 = param_6[2];
+    FUN_06811ac4(uVar3,param_2,param_3,&local_90,3);
+    if (*(long *)PTR____stack_chk_guard_0d824020 == local_48) {
+      return;
+    }
+                    /* WARNING: Subroutine does not return */
+    ___stack_chk_fail();
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(0,0x68123fc);
+  (*pcVar1)();
+}
+
+
+
+INDEX 0x681222c FUN_0681222c path=/home/exedev/work/inputs/decompile-extra/batch-f025e06f4ec94a9fb1a918545284f407/0x68.c offset=360871 C_bytes=628 failed=0
+// ==== 0x681222c  FUN_0681222c  (88 bytes)
+
+void FUN_0681222c(long *param_1)
+
+{
+  code *pcVar1;
+  ulong uVar2;
+  
+  if ((*(byte *)(param_1 + 1) & 1) != 0) {
+    return;
+  }
+  *(undefined1 *)(param_1 + 1) = 1;
+  if ((param_1[2] != 0) && (uVar2 = FUN_068119c0(), (uVar2 & 1) != 0)) {
+                    /* WARNING: Could not recover jumptable at 0x0681227c. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+    (**(code **)(*param_1 + 0x18))(param_1);
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(0,0x6812284);
+  (*pcVar1)();
+}
+
+
+

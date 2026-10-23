@@ -1,0 +1,152 @@
+{
+  "class_name": "ArcKeyEventData",
+  "metadata_va": "0xe37bb78",
+  "metadata_file_offset": "0xe37bb78",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a44e8",
+  "instance_start": 8,
+  "instance_size": 40,
+  "ivars": [
+    {
+      "record_va": "0xe2a4420",
+      "offset": 8,
+      "name": "_windowsVirtualKeyCode",
+      "type": "i",
+      "alignment": 2,
+      "size": 4
+    },
+    {
+      "record_va": "0xe2a4440",
+      "offset": 16,
+      "name": "_eventType",
+      "type": "Q",
+      "alignment": 3,
+      "size": 8
+    },
+    {
+      "record_va": "0xe2a4460",
+      "offset": 24,
+      "name": "_domCode",
+      "type": "@\"NSString\"",
+      "alignment": 3,
+      "size": 8
+    },
+    {
+      "record_va": "0xe2a4480",
+      "offset": 32,
+      "name": "_key",
+      "type": "@\"NSString\"",
+      "alignment": 3,
+      "size": 8
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcKeyEventData", "category": "", "protocol": "", "kind": "-", "selector": "initWithEventType:domCode:key:windowsVirtualKeyCode:", "type_encoding": "@44@0:8Q16@24@32i40", "imp": "0x43def08", "method_record_va": "0xd777a60", "selector_va": "0xd75622a", "dyld_line": 1312, "imp_file_offset": "0x43def08", "body_name": "ArcKeyEventData::initWithEventType:domCode:key:windowsVirtualKeyCode:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4206432, "body_length": 1023, "failed": 0, "truncated": false}
+// ==== 0x43def08  ArcKeyEventData::initWithEventType:domCode:key:windowsVirtualKeyCode:  (212 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x2c bytes */
+
+ID ArcKeyEventData::initWithEventType_domCode_key_windowsVirtualKeyCode_
+             (ID param_1,SEL param_2,unsigned_long_long param_3,ID param_4,ID param_5,int param_6)
+
+{
+  ID IVar1;
+  ID IVar2;
+  undefined8 uVar3;
+  ID local_50;
+  class_t *pcStack_48;
+  
+  pcStack_48 = &objc::class_t::ArcKeyEventData;
+  local_50 = param_1;
+  IVar1 = NSObject::init((ID)&local_50,"init");
+  if (IVar1 != 0) {
+    *(unsigned_long_long *)(IVar1 + 0x10) = param_3;
+    IVar2 = _objc_msgSend(param_4,"copy");
+    uVar3 = *(undefined8 *)(IVar1 + 0x18);
+    *(ID *)(IVar1 + 0x18) = IVar2;
+    IVar2 = _objc_msgSend(param_5,"copy",uVar3);
+    *(ID *)(IVar1 + 0x20) = IVar2;
+    *(int *)(IVar1 + 8) = param_6;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcKeyEventData", "category": "", "protocol": "", "kind": "-", "selector": "eventType", "type_encoding": "Q16@0:8", "imp": "0x2cb140", "method_record_va": "0xd777a6c", "selector_va": "0xd75625f", "dyld_line": 1313, "imp_file_offset": "0x2cb140", "body_name": "WebNNMLFeatureProvider::featureValues", "body_path": "/home/exedev/work/inputs/decompile-extra/batch-60e9f287fbfb43c6985744de1f22c196/0x2.c", "body_offset": 5443186, "body_length": 213, "failed": 0, "truncated": false}
+// ==== 0x2cb140  WebNNMLFeatureProvider::featureValues  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID WebNNMLFeatureProvider::featureValues(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 0x10);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcKeyEventData", "category": "", "protocol": "", "kind": "-", "selector": "domCode", "type_encoding": "@16@0:8", "imp": "0x4084dc0", "method_record_va": "0xd777a78", "selector_va": "0xd756269", "dyld_line": 1314, "imp_file_offset": "0x4084dc0", "body_name": "AXAnnouncementSpec::window", "body_path": "/home/exedev/work/inputs/decompile/0x40.c", "body_offset": 4331865, "body_length": 192, "failed": 0, "truncated": false}
+// ==== 0x4084dc0  AXAnnouncementSpec::window  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID AXAnnouncementSpec::window(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 0x18);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcKeyEventData", "category": "", "protocol": "", "kind": "-", "selector": "key", "type_encoding": "@16@0:8", "imp": "0x4060580", "method_record_va": "0xd777a84", "selector_va": "0xd755e71", "dyld_line": 1315, "imp_file_offset": "0x4060580", "body_name": "RTCVideoFrame::buffer", "body_path": "/home/exedev/work/inputs/decompile/0x40.c", "body_offset": 3502209, "body_length": 182, "failed": 0, "truncated": false}
+// ==== 0x4060580  RTCVideoFrame::buffer  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID RTCVideoFrame::buffer(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 0x20);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcKeyEventData", "category": "", "protocol": "", "kind": "-", "selector": "windowsVirtualKeyCode", "type_encoding": "i16@0:8", "imp": "0x4081a30", "method_record_va": "0xd777a90", "selector_va": "0xd756271", "dyld_line": 1316, "imp_file_offset": "0x4081a30", "body_name": "ArcAccessibilityTreeNode::nodeId", "body_path": "/home/exedev/work/inputs/decompile/0x40.c", "body_offset": 4276710, "body_length": 203, "failed": 0, "truncated": false}
+// ==== 0x4081a30  ArcAccessibilityTreeNode::nodeId  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcAccessibilityTreeNode::nodeId(ID param_1,SEL param_2)
+
+{
+  return *(int *)(param_1 + 8);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcKeyEventData", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x43defdc", "method_record_va": "0xd777a9c", "selector_va": "0xd744a39", "dyld_line": 1317, "imp_file_offset": "0x43defdc", "body_name": "ArcKeyEventData::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4207455, "body_length": 343, "failed": 0, "truncated": false}
+// ==== 0x43defdc  ArcKeyEventData::.cxx_destruct  (48 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcKeyEventData::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 0x20) = 0;
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  return;
+}
+
+
+

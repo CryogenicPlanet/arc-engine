@@ -1,0 +1,68 @@
+// ==== 0x43e6408  ArcBrowserApplicationDebugProperty::setProperty:  (220 bytes)
+
+/* Function Stack Size: 0x40 bytes */
+
+void ArcBrowserApplicationDebugProperty::setProperty_(ID param_1,SEL param_2,DebugProperty *param_3)
+
+{
+  undefined8 *puVar1;
+  basic_string<char,_std::char_traits<char>,_std::allocator<char>> *pbVar2;
+  byte bVar3;
+  DebugProperty *pDVar4;
+  basic_string<char,_std::char_traits<char>,_std::allocator<char>> *pbVar5;
+  char *pcVar6;
+  unsigned_long_long uVar7;
+  
+  if ((DebugProperty *)(param_1 + 8) != param_3) {
+    bVar3 = *(byte *)((long)&(param_3->field0_0x0).field0_0x0 + 0x17);
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      uVar7 = (param_3->field0_0x0).field0_0x0.field1.field1_0x8;
+      pDVar4 = (DebugProperty *)(param_3->field0_0x0).field0_0x0.field1.field0_0x0;
+      if (-1 < (char)bVar3) {
+        uVar7 = (ulong)bVar3;
+        pDVar4 = param_3;
+      }
+      FUN_00359ad8(param_1 + 8,pDVar4,uVar7);
+    }
+    else if ((char)bVar3 < '\0') {
+      FUN_00359998(param_1 + 8,(param_3->field0_0x0).field0_0x0.field1.field0_0x0,
+                   (param_3->field0_0x0).field0_0x0.field1.field1_0x8);
+    }
+    else {
+      uVar7 = (param_3->field0_0x0).field0_0x0.field1.field1_0x8;
+      pcVar6 = (param_3->field0_0x0).field0_0x0.field1.field0_0x0;
+      *(AnonymousBitField1 *)(param_1 + 0x18) = (param_3->field0_0x0).field0_0x0.field1.field2_0x10;
+      *(unsigned_long_long *)(param_1 + 0x10) = uVar7;
+      (((DebugProperty *)(param_1 + 8))->field0_0x0).field0_0x0.field1.field0_0x0 = pcVar6;
+    }
+  }
+  puVar1 = (undefined8 *)(param_1 + 0x20);
+  pbVar2 = &param_3->field1_0x18;
+  if ((basic_string<char,_std::char_traits<char>,_std::allocator<char>> *)puVar1 != pbVar2) {
+    bVar3 = *(byte *)((long)&(param_3->field1_0x18).field0_0x0 + 0x17);
+    if (*(char *)(param_1 + 0x37) < '\0') {
+      uVar7 = (param_3->field1_0x18).field0_0x0.field1.field1_0x8;
+      pbVar5 = (basic_string<char,_std::char_traits<char>,_std::allocator<char>> *)
+               (param_3->field1_0x18).field0_0x0.field1.field0_0x0;
+      if (-1 < (char)bVar3) {
+        uVar7 = (ulong)bVar3;
+        pbVar5 = pbVar2;
+      }
+      FUN_00359ad8(puVar1,pbVar5,uVar7);
+      return;
+    }
+    if ((char)bVar3 < '\0') {
+      FUN_00359998(puVar1,(param_3->field1_0x18).field0_0x0.field1.field0_0x0,
+                   (param_3->field1_0x18).field0_0x0.field1.field1_0x8);
+      return;
+    }
+    uVar7 = (param_3->field1_0x18).field0_0x0.field1.field1_0x8;
+    pcVar6 = (pbVar2->field0_0x0).field1.field0_0x0;
+    *(AnonymousBitField1 *)(param_1 + 0x30) = (param_3->field1_0x18).field0_0x0.field1.field2_0x10;
+    *(unsigned_long_long *)(param_1 + 0x28) = uVar7;
+    *puVar1 = pcVar6;
+  }
+  return;
+}
+
+

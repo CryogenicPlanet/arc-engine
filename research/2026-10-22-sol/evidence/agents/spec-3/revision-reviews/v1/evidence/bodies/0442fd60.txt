@@ -1,0 +1,24 @@
+INDEX 0x442fd60 ArcDownloadItem::isPaused path=/home/exedev/work/inputs/decompile/0x44.c offset=1094892 C_bytes=624 failed=0
+// ==== 0x442fd60  ArcDownloadItem::isPaused  (32 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcDownloadItem::isPaused(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  bool bVar2;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+                    /* WARNING: Could not recover jumptable at 0x0442fd78. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+    bVar2 = (**(code **)(**(long **)(*(long *)(param_1 + 0x10) + 0x18) + 0x120))();
+    return bVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x442fd80);
+  (*pcVar1)();
+}
+
+
+

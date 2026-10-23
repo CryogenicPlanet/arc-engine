@@ -1,0 +1,395 @@
+{
+  "class_name": "ArcHSLAMatrix",
+  "metadata_va": "0xe37bb28",
+  "metadata_file_offset": "0xe37bb28",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a4388",
+  "instance_start": 8,
+  "instance_size": 88,
+  "ivars": [
+    {
+      "record_va": "0xe2a4210",
+      "offset": 8,
+      "name": "_hslaMatrix",
+      "type": "{HSLAMatrix=\"m0\"f\"m1\"f\"m2\"f\"m3\"f\"m4\"f\"m5\"f\"m6\"f\"m7\"f\"m8\"f\"m9\"f\"m10\"f\"m11\"f\"m12\"f\"m13\"f\"m14\"f\"m15\"f\"m16\"f\"m17\"f\"m18\"f\"m19\"f}",
+      "size": 80,
+      "alignment": 2
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a4238",
+      "name": "hslaMatrix",
+      "attributes": "T{HSLAMatrix=ffffffffffffffffffff},N,V_hslaMatrix"
+    },
+    {
+      "record_va": "0xe2a4248",
+      "name": "m0",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4258",
+      "name": "m1",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4268",
+      "name": "m2",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4278",
+      "name": "m3",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4288",
+      "name": "m4",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4298",
+      "name": "m5",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a42a8",
+      "name": "m6",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a42b8",
+      "name": "m7",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a42c8",
+      "name": "m8",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a42d8",
+      "name": "m9",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a42e8",
+      "name": "m10",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a42f8",
+      "name": "m11",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4308",
+      "name": "m12",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4318",
+      "name": "m13",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4328",
+      "name": "m14",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4338",
+      "name": "m15",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4348",
+      "name": "m16",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4358",
+      "name": "m17",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4368",
+      "name": "m18",
+      "attributes": "Tf,R,N"
+    },
+    {
+      "record_va": "0xe2a4378",
+      "name": "m19",
+      "attributes": "Tf,R,N"
+    }
+  ]
+}
+
+###  -initWithMatrix: 0x43ded78 @24@0:8[20f]16 available
+
+  ID IVar3;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcHSLAMatrix;
+  local_30 = param_1;
+  IVar3 = NSObject::init((ID)&local_30,"init");
+  if (IVar3 != 0) {
+    iVar2 = FUN_00122014(param_3,0x50,4);
+    if (iVar2 != 0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(0,0x43dedfc);
+      (*pcVar1)();
+    }
+    uVar4 = *(undefined8 *)param_3;
+    uVar6 = *(undefined8 *)(param_3 + 6);
+    uVar5 = *(undefined8 *)(param_3 + 4);
+    uVar8 = *(undefined8 *)(param_3 + 10);
+    uVar7 = *(undefined8 *)(param_3 + 8);
+    uVar10 = *(undefined8 *)(param_3 + 0xe);
+    uVar9 = *(undefined8 *)(param_3 + 0xc);
+    uVar12 = *(undefined8 *)(param_3 + 0x12);
+    uVar11 = *(undefined8 *)(param_3 + 0x10);
+    *(undefined8 *)(IVar3 + 0x10) = *(undefined8 *)(param_3 + 2);
+    *(undefined8 *)(IVar3 + 8) = uVar4;
+    *(undefined8 *)(IVar3 + 0x20) = uVar6;
+    *(undefined8 *)(IVar3 + 0x18) = uVar5;
+    *(undefined8 *)(IVar3 + 0x30) = uVar8;
+    *(undefined8 *)(IVar3 + 0x28) = uVar7;
+    *(undefined8 *)(IVar3 + 0x40) = uVar10;
+    *(undefined8 *)(IVar3 + 0x38) = uVar9;
+    *(undefined8 *)(IVar3 + 0x50) = uVar12;
+    *(undefined8 *)(IVar3 + 0x48) = uVar11;
+  }
+  return IVar3;
+}
+
+
+
+
+###  -m0 0x43dee04 f16@0:8 available
+
+  return;
+}
+
+
+
+
+###  -m1 0x43dee0c f16@0:8 available
+
+  return *(float *)(param_1 + 0xc);
+}
+
+
+
+
+###  -m2 0xc7fdb4 f16@0:8 available
+
+  return *(float *)(param_1 + 0x10);
+}
+
+
+
+
+###  -m3 0x43dee14 f16@0:8 available
+
+  return *(float *)(param_1 + 0x14);
+}
+
+
+
+
+###  -m4 0x43dee1c f16@0:8 available
+
+  return *(float *)(param_1 + 0x18);
+}
+
+
+
+
+###  -m5 0x43dee24 f16@0:8 available
+
+  return *(float *)(param_1 + 0x1c);
+}
+
+
+
+
+###  -m6 0x43dee2c f16@0:8 available
+
+  return *(float *)(param_1 + 0x20);
+}
+
+
+
+
+###  -m7 0x43dee34 f16@0:8 available
+
+  return *(float *)(param_1 + 0x24);
+}
+
+
+
+
+###  -m8 0x43dee3c f16@0:8 available
+
+  return *(float *)(param_1 + 0x28);
+}
+
+
+
+
+###  -m9 0x43dee44 f16@0:8 available
+
+  return *(float *)(param_1 + 0x2c);
+}
+
+
+
+
+###  -m10 0x43dee4c f16@0:8 available
+
+  return *(float *)(param_1 + 0x30);
+}
+
+
+
+
+###  -m11 0x43dee54 f16@0:8 available
+
+  return *(float *)(param_1 + 0x34);
+}
+
+
+
+
+###  -m12 0x43dee5c f16@0:8 available
+
+  return *(float *)(param_1 + 0x38);
+}
+
+
+
+
+###  -m13 0x43dee64 f16@0:8 available
+
+  return *(float *)(param_1 + 0x3c);
+}
+
+
+
+
+###  -m14 0x43dee6c f16@0:8 available
+
+  return *(float *)(param_1 + 0x40);
+}
+
+
+
+
+###  -m15 0x43dee74 f16@0:8 available
+
+  return *(float *)(param_1 + 0x44);
+}
+
+
+
+
+###  -m16 0x43dee7c f16@0:8 available
+
+  return *(float *)(param_1 + 0x48);
+}
+
+
+
+
+###  -m17 0x43dee84 f16@0:8 available
+
+  return *(float *)(param_1 + 0x4c);
+}
+
+
+
+
+###  -m18 0x43dee8c f16@0:8 available
+
+  return *(float *)(param_1 + 0x50);
+}
+
+
+
+
+###  -m19 0x43dee94 f16@0:8 available
+
+  return *(float *)(param_1 + 0x54);
+}
+
+
+
+
+###  -hslaMatrix 0x43dee9c {HSLAMatrix=ffffffffffffffffffff}16@0:8 available
+
+  
+  uVar6 = *(undefined8 *)(param_1 + 0x50);
+  uVar5 = *(undefined8 *)(param_1 + 0x48);
+  uVar2 = *(undefined8 *)(param_1 + 0x10);
+  uVar1 = *(undefined8 *)(param_1 + 8);
+  uVar4 = *(undefined8 *)(param_1 + 0x20);
+  uVar3 = *(undefined8 *)(param_1 + 0x18);
+  __return_storage_ptr__->field2_0x8 = (float)(int)uVar2;
+  __return_storage_ptr__->field3_0xc = (float)(int)((ulong)uVar2 >> 0x20);
+  __return_storage_ptr__->field0_0x0 = (float)(int)uVar1;
+  __return_storage_ptr__->field1_0x4 = (float)(int)((ulong)uVar1 >> 0x20);
+  __return_storage_ptr__->field6_0x18 = (float)(int)uVar4;
+  __return_storage_ptr__->field7_0x1c = (float)(int)((ulong)uVar4 >> 0x20);
+  __return_storage_ptr__->field4_0x10 = (float)(int)uVar3;
+  __return_storage_ptr__->field5_0x14 = (float)(int)((ulong)uVar3 >> 0x20);
+  uVar2 = *(undefined8 *)(param_1 + 0x30);
+  uVar1 = *(undefined8 *)(param_1 + 0x28);
+  uVar4 = *(undefined8 *)(param_1 + 0x40);
+  uVar3 = *(undefined8 *)(param_1 + 0x38);
+  __return_storage_ptr__->field10_0x28 = (float)(int)uVar2;
+  __return_storage_ptr__->field11_0x2c = (float)(int)((ulong)uVar2 >> 0x20);
+  __return_storage_ptr__->field8_0x20 = (float)(int)uVar1;
+  __return_storage_ptr__->field9_0x24 = (float)(int)((ulong)uVar1 >> 0x20);
+  __return_storage_ptr__->field14_0x38 = (float)(int)uVar4;
+  __return_storage_ptr__->field15_0x3c = (float)(int)((ulong)uVar4 >> 0x20);
+  __return_storage_ptr__->field12_0x30 = (float)(int)uVar3;
+  __return_storage_ptr__->field13_0x34 = (float)(int)((ulong)uVar3 >> 0x20);
+  __return_storage_ptr__->field18_0x48 = (float)(int)uVar6;
+  __return_storage_ptr__->field19_0x4c = (float)(int)((ulong)uVar6 >> 0x20);
+  __return_storage_ptr__->field16_0x40 = (float)(int)uVar5;
+  __return_storage_ptr__->field17_0x44 = (float)(int)((ulong)uVar5 >> 0x20);
+  return;
+}
+
+
+
+
+###  -setHslaMatrix: 0x43deec0 v96@0:8{HSLAMatrix=ffffffffffffffffffff}16 available
+
+  
+  uVar2 = *(undefined8 *)&param_3->field2_0x8;
+  uVar1 = *(undefined8 *)param_3;
+  uVar4 = *(undefined8 *)&param_3->field6_0x18;
+  uVar3 = *(undefined8 *)&param_3->field4_0x10;
+  uVar6 = *(undefined8 *)&param_3->field10_0x28;
+  uVar5 = *(undefined8 *)&param_3->field8_0x20;
+  uVar7 = *(undefined8 *)&param_3->field12_0x30;
+  *(undefined8 *)(param_1 + 0x40) = *(undefined8 *)&param_3->field14_0x38;
+  *(undefined8 *)(param_1 + 0x38) = uVar7;
+  *(undefined8 *)(param_1 + 0x30) = uVar6;
+  *(undefined8 *)(param_1 + 0x28) = uVar5;
+  *(undefined8 *)(param_1 + 0x20) = uVar4;
+  *(undefined8 *)(param_1 + 0x18) = uVar3;
+  *(undefined8 *)(param_1 + 0x10) = uVar2;
+  *(undefined8 *)(param_1 + 8) = uVar1;
+  uVar1 = *(undefined8 *)&param_3->field16_0x40;
+  *(undefined8 *)(param_1 + 0x50) = *(undefined8 *)&param_3->field18_0x48;
+  *(undefined8 *)(param_1 + 0x48) = uVar1;
+  return;
+}
+
+
+

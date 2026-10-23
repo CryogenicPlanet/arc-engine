@@ -1,0 +1,217 @@
+INDEX 0x4431cec ArcCommandBarRankingTensor::init:shape:data: path=/home/exedev/work/inputs/decompile/0x44.c offset=1156132 C_bytes=6567 failed=0
+// ==== 0x4431cec  ArcCommandBarRankingTensor::init:shape:data:  (1052 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x28 bytes */
+
+ID ArcCommandBarRankingTensor::init_shape_data_
+             (ID param_1,SEL param_2,ID param_3,ID param_4,ID param_5)
+
+{
+  ulong uVar1;
+  code *pcVar2;
+  ID IVar3;
+  ulong uVar4;
+  undefined4 *puVar5;
+  ID IVar6;
+  undefined4 *puVar7;
+  ID IVar8;
+  long lVar9;
+  long lVar10;
+  undefined4 *puVar11;
+  ulong uVar12;
+  ulong uVar13;
+  long lVar14;
+  ID local_140;
+  class_t *pcStack_138;
+  undefined8 local_130;
+  long lStack_128;
+  long *local_120;
+  undefined8 uStack_118;
+  undefined8 local_110;
+  undefined8 uStack_108;
+  undefined8 uStack_100;
+  undefined8 uStack_f8;
+  undefined8 local_f0;
+  undefined8 uStack_e8;
+  undefined8 local_e0;
+  long local_70;
+  
+  local_70 = *(long *)PTR____stack_chk_guard_0d824020;
+  pcStack_138 = &objc::class_t::ArcCommandBarRankingTensor;
+  local_140 = param_1;
+  IVar3 = NSObject::init((ID)&local_140,"init");
+  if (IVar3 == 0) {
+LAB_04432008:
+    if (*(long *)PTR____stack_chk_guard_0d824020 != local_70) {
+                    /* WARNING: Subroutine does not return */
+      ___stack_chk_fail(0);
+    }
+    return IVar3;
+  }
+  if (*(char *)(IVar3 + 0x50) != '\0') {
+    FUN_042a44a8(IVar3 + 8);
+  }
+  *(undefined8 *)(IVar3 + 0x48) = 0;
+  *(undefined8 *)(IVar3 + 0x40) = 0;
+  *(undefined8 *)(IVar3 + 0x38) = 0;
+  *(undefined8 *)(IVar3 + 0x30) = 0;
+  *(undefined8 *)(IVar3 + 0x28) = 0;
+  *(undefined8 *)(IVar3 + 0x20) = 0;
+  *(undefined8 *)(IVar3 + 0x18) = 0;
+  *(undefined8 *)(IVar3 + 0x10) = 0;
+  *(undefined8 *)(IVar3 + 8) = 0;
+  *(undefined1 *)(IVar3 + 0x50) = 1;
+  if (param_3 == 0) {
+    local_f0 = 0;
+    uStack_e8 = 0;
+    local_e0 = 0;
+  }
+  else {
+    FUN_01b356b8(&local_f0,param_3);
+  }
+  if ((*(byte *)(IVar3 + 0x50) & 1) != 0) {
+    if (*(char *)(IVar3 + 0x1f) < '\0') {
+      FUN_00005810(*(undefined8 *)(IVar3 + 8),*(ulong *)(IVar3 + 0x18) & 0x7fffffffffffffff);
+    }
+    *(undefined8 *)(IVar3 + 0x10) = uStack_e8;
+    *(undefined8 *)(IVar3 + 8) = local_f0;
+    *(undefined8 *)(IVar3 + 0x18) = local_e0;
+    uVar4 = _objc_msgSend(param_4,"count");
+    if (uVar4 == 0) {
+      puVar5 = (undefined4 *)0x0;
+    }
+    else {
+      if (uVar4 >> 0x3e != 0) {
+                    /* WARNING: Subroutine does not return */
+        FUN_04047380();
+      }
+      puVar5 = (undefined4 *)FUN_00008790(uVar4 << 2);
+    }
+    uStack_108 = 0;
+    local_110 = 0;
+    uStack_f8 = 0;
+    uStack_100 = 0;
+    lStack_128 = 0;
+    local_130 = 0;
+    uStack_118 = 0;
+    local_120 = (long *)0x0;
+    IVar6 = _objc_msgSend(param_4,"countByEnumeratingWithState:objects:count:",&local_130,&local_f0,
+                          0x10);
+    if (IVar6 != 0) {
+      uVar13 = 0;
+      uVar12 = 0;
+      lVar14 = *local_120;
+      lVar9 = lVar14;
+      puVar11 = puVar5;
+      do {
+        if (lVar9 != lVar14) {
+          _objc_enumerationMutation(param_4);
+        }
+        IVar8 = _objc_msgSend(*(ID *)(lStack_128 + uVar12 * 8),"intValue");
+        if (uVar13 == uVar4) {
+          uVar1 = uVar13 + 1;
+          if (uVar1 >> 0x3e != 0) {
+                    /* WARNING: Subroutine does not return */
+            FUN_04047380();
+          }
+          uVar4 = uVar13 * 2;
+          if (uVar4 < uVar1 || uVar4 - uVar1 == 0) {
+            uVar4 = uVar1;
+          }
+          if (0x1ffffffffffffffe < uVar13) {
+            uVar4 = 0x3fffffffffffffff;
+          }
+          if (uVar4 == 0) {
+            puVar7 = (undefined4 *)0x0;
+          }
+          else {
+            if (uVar4 >> 0x3e != 0) {
+                    /* WARNING: Subroutine does not return */
+              FUN_04b087f0();
+            }
+            puVar7 = (undefined4 *)FUN_00008790(uVar4 << 2);
+          }
+          puVar5 = puVar7 + uVar13;
+          if (puVar5 == (undefined4 *)0x0) goto LAB_04432090;
+          *puVar5 = (int)IVar8;
+          puVar5 = puVar5 + -uVar13;
+          _memcpy(puVar5,puVar11,uVar13 << 2);
+          if (puVar11 != (undefined4 *)0x0) {
+            FUN_00005810(puVar11,uVar13 << 2);
+          }
+        }
+        else {
+          if (puVar11 + uVar13 == (undefined4 *)0x0) goto LAB_04432090;
+          puVar11[uVar13] = (int)IVar8;
+          puVar5 = puVar11;
+          puVar7 = puVar11;
+        }
+        lVar9 = (long)puVar7 + ((uVar13 * 4 + 4) - (long)puVar5);
+        if (lVar9 == 0) goto LAB_04432090;
+        uVar13 = lVar9 >> 2;
+        uVar12 = uVar12 + 1;
+        if (IVar6 <= uVar12) {
+          IVar6 = _objc_msgSend(param_4,"countByEnumeratingWithState:objects:count:",&local_130,
+                                &local_f0,0x10);
+          if (IVar6 == 0) goto LAB_04431fb0;
+          uVar12 = 0;
+        }
+        lVar9 = *local_120;
+        puVar11 = puVar5;
+      } while( true );
+    }
+    uVar13 = 0;
+LAB_04431fb0:
+    if ((*(byte *)(IVar3 + 0x50) & 1) != 0) {
+      lVar9 = *(long *)(IVar3 + 0x20);
+      if (lVar9 != 0) {
+        lVar14 = *(long *)(IVar3 + 0x28) * 4;
+        if (lVar14 != 0) {
+          lVar10 = *(long *)(IVar3 + 0x28) * -4;
+          lVar14 = lVar14 + lVar9;
+          do {
+            lVar14 = lVar14 + -4;
+            if (lVar14 == 0) goto LAB_04432090;
+            lVar10 = lVar10 + 4;
+          } while (lVar10 != 0);
+        }
+        *(undefined8 *)(IVar3 + 0x28) = 0;
+        FUN_00005810(lVar9,*(long *)(IVar3 + 0x30) << 2);
+      }
+      *(undefined4 **)(IVar3 + 0x20) = puVar5;
+      *(ulong *)(IVar3 + 0x28) = uVar13;
+      *(ulong *)(IVar3 + 0x30) = uVar4;
+      FUN_0443181c(&local_f0,param_5);
+      if ((*(byte *)(IVar3 + 0x50) & 1) != 0) {
+        lVar9 = *(long *)(IVar3 + 0x38);
+        if (lVar9 != 0) {
+          lVar14 = *(long *)(IVar3 + 0x40) * 4;
+          if (lVar14 != 0) {
+            lVar10 = *(long *)(IVar3 + 0x40) * -4;
+            lVar14 = lVar14 + lVar9;
+            do {
+              lVar14 = lVar14 + -4;
+              if (lVar14 == 0) goto LAB_04432090;
+              lVar10 = lVar10 + 4;
+            } while (lVar10 != 0);
+          }
+          *(undefined8 *)(IVar3 + 0x40) = 0;
+          FUN_00005810(lVar9,*(long *)(IVar3 + 0x48) << 2);
+        }
+        *(undefined8 *)(IVar3 + 0x38) = local_f0;
+        *(undefined8 *)(IVar3 + 0x40) = uStack_e8;
+        *(undefined8 *)(IVar3 + 0x48) = local_e0;
+        goto LAB_04432008;
+      }
+    }
+  }
+LAB_04432090:
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(1,0x4432094);
+  (*pcVar2)();
+}
+
+
+

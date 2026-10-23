@@ -1,0 +1,35 @@
+INDEX 0x443ccf8 ArcSessionTab::setCurrentNavigationIndex: path=/home/exedev/work/inputs/decompile/0x44.c offset=1455953 C_bytes=909 failed=0
+// ==== 0x443ccf8  ArcSessionTab::setCurrentNavigationIndex:  (60 bytes)
+
+/* Function Stack Size: 0x14 bytes */
+
+void ArcSessionTab::setCurrentNavigationIndex_(ID param_1,SEL param_2,int param_3)
+
+{
+  code *pcVar1;
+  ulong uVar2;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    if ((int)param_3 < 0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(0,0x443cd30);
+      (*pcVar1)();
+    }
+    uVar2 = *(ulong *)(**(long **)(param_1 + 0x10) + 0xb0);
+    if (uVar2 >> 0x1f == 0) {
+      if (param_3 < (uint)uVar2) {
+        *(int *)(**(long **)(param_1 + 0x10) + 0xc) = param_3;
+        return;
+      }
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(0,0x443cd3c);
+      (*pcVar1)();
+    }
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x443cd2c);
+  (*pcVar1)();
+}
+
+
+

@@ -1,0 +1,1826 @@
+{
+  "classes": {
+    "ArcAddressEntrySaveRequest": {
+      "overview": "Save/cancel handle for an address-entry offer, backed by an optional shared native request.",
+      "lifecycle": "Initializer 0x443ebe4 copies the shared peer; 0x43df69c decrements it on destruction. save 0x443ed08 and cancel 0x443ed1c trap on an empty wrapper, then call 0x4330cdc / 0x4330d38. Those helpers send decision integers 2 / 3 to 0x7c6a394 and then call 0x7c6a4f4; the wrapper itself does not reset its optional. Do not infer one-shot behavior from the selector.",
+      "route": "The 0x4330cdc / 0x4330d38 call chain is an autofill-decision integration gate. Exact Chromium callback enum and prompt-dismissal ownership remain unidentified; a CEF generic form-fill API is not demonstrated to reproduce it.",
+      "questions": "Does native completion consume the offer, can save/cancel repeat safely, and who dismisses/releases the app prompt?",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcAdhocHistogramSample": {
+      "overview": "Mutable sample record carrying unsigned type and signed 32-bit value.",
+      "lifecycle": "0x44034ac calls super init and stores type at +0x10 and value at +8. The independent accessors return/store those fields (0x2cb140, 0x416803c, 0x4081a30, 0x44034fc). No callback is introduced by these bodies.",
+      "route": "This record can be represented by an adapter; the producer defines the histogram type vocabulary. Collection validation at ArcAdhocHistogramSamples 0x4403504 permits only 0..4.",
+      "questions": "Recover type names and metric units from the producer, without treating the local record as a metrics backend.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcAdhocHistogramSamples": {
+      "overview": "Collection adapter from native adhoc histogram samples into ObjC records.",
+      "lifecycle": "0x4403504 allocates NSMutableArray and wraps each native 8-byte type/value pair in ArcAdhocHistogramSample; type >4 traps. samples 0x2d0fb40 returns the stored array, not a defensive copy; destructor 0x4166068 clears its object field (ARC operations are injected).",
+      "route": "No Chrome/CEF service call is present in 0x4403504; compatibility concerns here are sample ordering, numeric widths and returned collection mutability. The metrics producer remains outside this class.",
+      "questions": "Validate aggregate ABI, nil/error cases and producer/caller lifetime before treating this local wrapper contract as complete.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcBackForwardListItem": {
+      "overview": "Shared native history-entry wrapper exposing title, URL and validity.",
+      "lifecycle": "0x43df298 copies a shared native peer into optional storage. 0x43df3bc converts UTF-16 title; 0x43df47c converts the URL through 0x43abd34. isValid 0x43df524 reads native +0x30 after checking engagement; it is not a wrapper liveness test. 0x43df57c assigns/clears the optional and 0x43df69c releases its control block.",
+      "route": "Navigation entry data can be adapted from Chromium content APIs, but these shared Arc wrappers and native equality/invalidity semantics are an additional contract. No direct CEF equivalence has been established.",
+      "questions": "Validate aggregate ABI, nil/error cases and producer/caller lifetime before treating this local wrapper contract as complete.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcBookmarkImportTargets": {
+      "overview": "Two bookmark-node destinations, one for bookmark-bar entries and one for other bookmarks.",
+      "lifecycle": "0x43ed544 stores the two supplied objects. Metadata property records 0xe2a56c0 / 0xe2a56d0 declare strong nonatomic ownership; 0x43dd5a4 clears both fields. Retain/store operations have been injected away in pseudocode. No import is started here.",
+      "route": "An import adapter must preserve destination identity; node creation and Chrome bookmark-model ownership lie outside these six methods. The class does not establish a persistence transaction or a CEF bookmark capability.",
+      "questions": "Validate aggregate ABI, nil/error cases and producer/caller lifetime before treating this local wrapper contract as complete.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcFindResult": {
+      "overview": "Snapshot result with signed 64-bit match count and active ordinal.",
+      "lifecycle": "0x440e120 sign-extends two native int fields into self+8/+0x10; 0x2d0fb40 and 0x2cb140 return them. ArcWebContents find callback trampoline 0x444510c allocates this object and passes it to the captured block.",
+      "route": "The class is a result adapter; find-request sequencing and cancellation belong to ArcWebContents 0x4442354 / native 0x43770c0. No independent backend lives in this record.",
+      "questions": "Does the producer use a special ordinal for zero matches, and can multiple callbacks be delivered per request?",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcHistogramSample": {
+      "overview": "Snapshot of integer metric value plus three browser-state bits.",
+      "lifecycle": "0x4402a3c boxes an int in NSNumber and unpacks bit 0 visible, bit 1 in-session, bit 2 playing-audio into +8/+9/+10. browserIsVisible 0x40b1230 has incoherent empty-return pseudocode; actual words 0x39402000, 0xd65f03c0 prove LDRB w0,[x0,#8]; RET. 0x425b6d8 clears the NSNumber field.",
+      "route": "This class preserves capture-time browser-state flags; producer metric sampling and submission are not implemented by the getters. No CEF or Chromium metrics service identity is asserted.",
+      "questions": "Validate aggregate ABI, nil/error cases and producer/caller lifetime before treating this local wrapper contract as complete.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcHSLAMatrix": {
+      "overview": "Inline 20-float matrix value; exact ivar and class_ro metadata anchors appear below.",
+      "lifecycle": "0x43ded78 copies 80 bytes from the input matrix after a pointer/alignment check. m1..m19 load successive floats; m0 0x43dee04 has lost its return in pseudocode and is repaired using exact LDR S0,[X0,#8]; RET bytes in binary-checks.tsv. hslaMatrix 0x43dee9c copies 80 bytes unchanged into aggregate return storage X8, independently checked by SIMD load/store simulation (evidence/hsla-return-instructions.tsv); its pseudo-C numeric casts are artifacts. setHslaMatrix 0x43deec0 copies the aggregate fields.",
+      "route": "ArcWebContents applyColorFilter 0x44437c8 obtains the aggregate and forwards to native 0x4379218. Reproducing the object is straightforward; renderer-side matrix semantics and color space remain outside this local value review.",
+      "questions": "Validate aggregate calling convention from app/native callers and renderer matrix interpretation. The 80-byte getter is a verified bitwise copy; no numeric cast should be introduced.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcHungRendererDialog": {
+      "overview": "Handle for renderer-unresponsive prompt actions.",
+      "lifecycle": "0x4403b80 stores an optional shared native dialog. crashProcess 0x4403ca4 calls 0x435f150, which obtains a process and forwards to 0x669e6e4 with integer 2. wait 0x4403cb8 calls 0x435f1ac, which invokes a stored refcounted callback if present. Its int-pointer self type makes +6 mean byte offset +0x18; the pseudo-C pid_t return conflicts with ObjC void metadata and is not adopted.",
+      "route": "Chrome process termination and prompt lifecycle must be mapped explicitly; CEF unresponsive-renderer callbacks are only a possible adapter route, not demonstrated equivalence.",
+      "questions": "What process termination result and metric side effects occur, and does waiting dismiss or rearm the prompt?",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcMediaPosition": {
+      "overview": "Optional shared media_session::MediaPosition object with time projections.",
+      "lifecycle": "0x443c1dc copies a shared native position. playbackRate 0x443c300 loads native double; duration 0x443c318 divides native microseconds by 1e6, preserving signed infinity sentinels. currentTime 0x443c36c calls 0x32b5dd0 then applies the same conversion. That helper computes elapsed-time*rate, adds base position and clamps to [0,duration]; its pseudo-C return type is wrong, so source identity remains an inference. endOfMedia 0x443c3cc reads a separate flag, not currentTime==duration.",
+      "route": "Source-backed inference: 0x32b5dd0 corresponds to MediaPosition::GetPosition/GetPositionAtTime logic at Chromium d0c02bfad08ec92a6ffcf989e53cd995e6381a4c services/media_session/public/cpp/media_position.cc:43-77; private field order in media_position.h:98-110 agrees with the metadata type and observed offsets. The header :63-67 explicitly says end_of_media may be true before duration is reached. No CEF exact timing contract is established.",
+      "questions": "Confirm time source and saturated arithmetic against bounded ARM64; test paused, negative-rate, infinite-duration and end-of-media cases.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcMediaImage": {
+      "overview": "Native media image wrapper plus separately allocated CGSize buffer.",
+      "lifecycle": "0x4407384 copies shared media image and allocates 16 bytes per native size, converting integer width/height to double. sizes 0x2d0fb40 returns the raw buffer pointer; this class declares no size-count method. dealloc 0x44074d0 frees that allocation before super dealloc. 0x4407624 releases shared peer storage. src 0x440751c returns UTF-8 text and type 0x44075d4 converts UTF-16 text.",
+      "route": "Raw-pointer size enumeration and its lifetime are Arc ABI requirements. Native metadata identifies media_session::MediaImage; a CEF metadata/image adapter would still need an explicit count/buffer-ownership contract.",
+      "questions": "How does the app determine sizes count, and can setNativeMediaImage desynchronize the cached size buffer?",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcSecureContext": {
+      "overview": "Optional shared security-state handle exposing a three-way Arc enum.",
+      "lifecycle": "0x440aa28 copies shared native context. state 0x440ab4c calls 0x3c2b700 and maps native 0\u21920, 3\u21921, every other result\u21922; empty optional traps. This is a lossy mapping, not the Chromium enum verbatim.",
+      "route": "Source-backed inference: native results are consistent with Chromium d0c02bfad08ec92a6ffcf989e53cd995e6381a4c components/security_state/core/security_state.h:39-70 (NONE=0, SECURE=3, DANGEROUS=5). 0x3c2b700 contains multiple security-state branches; exact GetSecurityLevel identity is not fully verified. A CEF security-state adapter must preserve Arc numeric mapping and inputs.",
+      "questions": "Recover Arc enum names and native security input construction; do not equate all non-secure values with a single browser warning policy.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcNavigation": {
+      "overview": "Native navigation-event identity wrapper and captured response-header dictionary.",
+      "lifecycle": "init: 0x4416808 copies native shared navigation and builds a dictionary from native string key/value pairs when nonempty. responseHeaders 0x43dd450 returns that captured field; url 0x4416b90, redirect flag 0x4416bbc and status 0x4416bd4 read live native fields. isEqual: 0x44169e8 compares peer pointers after class/optional checks; hash 0x4416b58 hashes 8 bytes of that pointer.",
+      "route": "This is event identity, not URL value equality. A replacement navigation observer needs distinct objects/lifetimes and header capture rules. The native producer and Chromium NavigationHandle relationship remain outside this wrapper review.",
+      "questions": "Does header snapshot omit duplicates and preserve case, and can native event state change after callback?",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcSessionNavigation": {
+      "overview": "Read-only session-entry wrapper exposing stored navigation data.",
+      "lifecycle": "0x443c968 copies shared native peer. URL getters 0x8374c34/0x8374ce8/0x8374d9c/0x8374e50 convert optional native URL strings, returning nil when absent. title 0x443ca8c reads UTF-16 data; timestamp 0x443cadc converts stored native time to NSDate since 1970 with zero/infinity handling. No disk write occurs in these getters.",
+      "route": "Source-backed route inference only: Chromium d0c02bfad08ec92a6ffcf989e53cd995e6381a4c components/sessions/core/serialized_navigation_entry.h exposes virtual_url, title, referrer, timestamp and has_post_data; this does not identify the exact native Arc Impl or establish serialized format compatibility. A CEF in-memory navigation list alone is not proof of full Chrome session restoration.",
+      "questions": "Recover persisted session format, entry IDs, POST-data restoration policy and nil URL sentinel meanings.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcSiteSettingInfo": {
+      "overview": "Mutable native site-setting descriptor, not itself a persistence operation.",
+      "lifecycle": "init 0x440b880 creates a shared native info object and initializes native settings. 0x440bc68/0x440bc8c constrain Arc contentSettingsType to 0..36. siteSetting 0x440bcb0 maps a native 0..5 value through table 0xc9d8188, returning 0 when absent/unsupported; setSiteSetting 0x440bcf8 accepts 0..4 and calls 0x4341964. setOriginUrl 0x440bb94 calls 0x4341874; originUrl 0x440bae8 traps if required origin optional is empty.",
+      "route": "The native values and Arc enum are not interchangeable with Chromium ContentSettingsType ordinal values. Persistence requires the consumer that commits this descriptor into a profile settings service; none is proven here. CEF settings support needs a separate exact enum/permission review.",
+      "questions": "Recover table 0xc9d8188, native setter mapping, origin canonicalization and the commit-to-profile caller.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcTracingConfiguration": {
+      "overview": "Value object containing file path, duration and privacy-filtering option.",
+      "lifecycle": "init 0x440c640 initializes empty native path, zero duration and privacy filtering enabled. setFilePath 0x440c764 updates both ObjC cache and native string; filePath 0x440c710 reconstructs the cache from native storage on read. duration getter/setter 0x440c800/0x440c80c similarly synchronize cache/native double; setTracingConfiguration 0x440c820 replaces native aggregate without updating those caches immediately. Destructor 0x440c8ac frees native string and clears cached path.",
+      "route": "Configuration construction performs no tracing start/stop or file write in the examined bodies. The consumer (ArcTracingController, outside assignment) must map to Chromium/Perfetto policy and file lifecycle; no CEF tracing equivalence is implied.",
+      "questions": "Are zero duration and empty path sentinel defaults in controller, and when are paths opened or privacy filtering enforced?",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcURLLoadCancellationToken": {
+      "overview": "Owned std::string token container; it has no declared cancel method.",
+      "lifecycle": "0x440d37c copies input string using short/long string handling; token 0xef938c returns a value copy and setToken 0x440d41c replaces string storage. 0x440d470 frees heap storage for long strings and 0x416a680 initializes empty storage. None of these five bodies sends a cancellation operation.",
+      "route": "Cancellation routing requires the external consumer that indexes network requests by this token. CEF request cancellation is not equivalent until that identity/lifetime protocol is recovered.",
+      "questions": "Who generates the string, which service consumes it, and does destroying the token affect a request?",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcVisitCategory": {
+      "overview": "Inline category-id string and signed integer weight, stored in an optional native value.",
+      "lifecycle": "0x442c27c constructs an engaged value from string/id and int weight; nil id becomes empty native string. 0x442c398 copies a native value. mutableVisitCategory 0x442c260 returns the address of inline storage when engaged; categoryId 0x43ed470 converts UTF-8 and weight 0x442c440 reads +0x20. 0x43ed510 frees long string storage.",
+      "route": "This is a value adapter for history/category producers; no ranking or persistence service is invoked by these accessors. Its mutable raw pointer and C++ aggregate return must remain private to matching native callers or be adapted explicitly.",
+      "questions": "Validate aggregate ABI, nil/error cases and producer/caller lifetime before treating this local wrapper contract as complete.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcCommandBarRankingResult": {
+      "overview": "Inline candidate-id string and float score record.",
+      "lifecycle": "0x44326cc constructs string/score and engages optional. candidateID 0x43ed470 converts UTF-8 string; score 0x4432890 loads float +0x20. mutableCommandBarRankingResult aliases 0x442c260 used by ArcVisitCategory; identical code does not make the score an integer. Native getters/copy constructors retain their own metadata encodings.",
+      "route": "This wrapper carries ranking output; no inference or ranking model runs in 0x44326cc. The Arc ranking producer is outside this assignment and cannot be replaced by a CEF navigation suggestion API based only on these fields.",
+      "questions": "Validate aggregate ABI, nil/error cases and producer/caller lifetime before treating this local wrapper contract as complete.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcCommandBarRankingInput": {
+      "overview": "Inline optional vector of float query-embedding components.",
+      "lifecycle": "0x4432bfc converts an ObjC collection through 0x443181c into native float-vector storage; queryEmbedding 0x4432e20 creates NSMutableArray and boxes each float. mutableCommandBarRankingInput 0x4432be0 returns inline vector address when engaged. 0x4432f6c destroys vector allocation.",
+      "route": "The adapter preserves float order; model dimensions and input validation belong to conversion helper/model, not this getter. No stock Chromium/CEF inference API equivalence is asserted.",
+      "questions": "Recover vector length/dimension validation and NSNumber conversion policy in 0x443181c.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcCommandBarRankingCandidate": {
+      "overview": "Inline ranking-input feature record, including strings, counts, engagement, match flags and title embedding.",
+      "lifecycle": "0x4434540 converts five ObjC strings (nil becomes empty), stores integer/float/boolean features and converts title embedding through 0x443181c. 0x4434900 copies native candidate using 0x42a3ea8. mutableCommandBarRankingCandidate 0x4434524 returns inline address when engaged; 0x4434af0 boxes the float-vector embedding into a new array. 0x4434c14 destroys owned candidate state through 0x42a3ff4.",
+      "route": "This is feature transport, not a ranking algorithm. CandidateID/archetype/destination/title/url are distinct strings (0x4434974..0x4434a34); lastNavSeconds/freqEver/typedCount are int, siteEngagement float and three match flags bytes (0x4434a64..0x4434adc). Preserve type distinctions when replacing the model adapter.",
+      "questions": "Recover archetype/destination vocabulary, count/time units, feature normalization and embedding dimension requirements.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcFormControlInfo": {
+      "overview": "Owned extracted form-control snapshot with lazily cached select-option objects.",
+      "lifecycle": "0x442b9ec initializes optional native value via 0x4294be4, not an identified DOM service. fieldName/fieldValue/placeholder 0x442ba74/0x442bb64/0x442bc54 return nil for absent optional native strings. isChecked/isRequired/isRedacted 0x442bd44/0x442bd58/0x442bd6c read stored flags; redaction policy is not implemented by those loads. selectOptions 0x442bd80 lazily creates and caches ArcSelectOption objects from 0x48-byte native elements.",
+      "route": "This extraction schema needs a renderer/IPC producer, not merely HTML form automation. No CEF exact form-content extraction schema is established. The wrapper itself exposes no callbacks or persistence writes.",
+      "questions": "Which fields are redacted, when is the snapshot taken, and does extraction include cross-origin subframes?",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcContentNode": {
+      "overview": "Recursive extracted-content snapshot with node attributes and optional form-control detail.",
+      "lifecycle": "0x4430960 destroys/replaces engaged inline native node using 0x4295208 / 0x429539c. children 0x44309e8 lazily wraps each 0x1a0-byte native child in ArcContentNode and caches a mutable array. formControlInfo 0x44311e0 lazily wraps native optional control at self+0xc8 and caches it. Text/link/image/iframe/form/table getters (0x4430ac4..0x44310ec) convert optional native strings; absence yields nil.",
+      "route": "This Arc tree schema is an additional extraction contract. Browser/renderer extraction and redaction semantics are not established by wrapper fields. Chromium/CEF DOM or accessibility trees must not be assumed structurally equivalent.",
+      "questions": "Recover node-type enum, optional-field validity by node type, cross-origin rules, redaction and producer limits.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcExtractedPageContent": {
+      "overview": "Extracted page snapshot containing URL/title, extractionTime and recursive root node.",
+      "lifecycle": "0x442e9d4 copies native page aggregate through 0x4296004 into optional at +0x10. url/title 0x442ea78/0x442eaa8 convert native UTF-8 strings. rootNode 0x442ead8 lazily creates ArcContentNode from inline self+0x48 and caches it. extractionTime 0x442eb38 reads a double without conversion; its units are not inferable from the name.",
+      "route": "ArcBrowserContextPageContentExtraction callback result is the likely producer relationship, but exact successful-result trampoline and full native extraction schema need further audit. No CEF extraction equivalence is claimed.",
+      "questions": "Identify extractionTime units/time basis, failure-to-nil rules, snapshot completeness and root-node limits.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcExtensionRuntimeError": {
+      "overview": "Owned extension runtime-error snapshot with lazily cached stack-frame wrappers.",
+      "lifecycle": "0x442eeb4 copies native error via 0x4335698 and marks engagement. extensionID is UTF-8 (0x442ef28), message/source UTF-16 (0x442ef6c/0x442ef9c); contextURL uses 0x43abd34 (0x442ef58). stackTrace 0x442eff4 wraps native 0x38-byte stack entries in ArcExtensionRuntimeErrorStackFrame and caches array. severity 0x442efe0 is a numeric field; enum names are unresolved.",
+      "route": "This record depends on extension error production and observer delivery outside the class. No native exception is raised by reading its message/stack; Chrome extension-service integration is the route gate.",
+      "questions": "Recover severity enum, source/context URL semantics and delivery/retention of error notifications.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcMetrics": {
+      "overview": "Profile-scoped site-engagement snapshot adapter.",
+      "lifecycle": "0x442dcf0 copies native metrics peer. getAllSiteEngagementDetails 0x442de14 calls 0x42efb64, wraps native URL/score pairs into ArcSiteEngagementDetails and returns array. 0x42efb64 returns empty vector if profile/service unavailable; otherwise a service lookup and 0x6f26c80 populate details.",
+      "route": "Source-backed inference: this resembles Chromium site_engagement::SiteEngagementService::GetAllDetails at d0c02bfad08ec92a6ffcf989e53cd995e6381a4c components/site_engagement/content/site_engagement_service.h:121,169. This is a Chrome keyed-service route requirement, not a verified symbol match. Source :69-73 requires that service on UI thread; that requirement is conditional on this identification, not proof of Arc caller-thread enforcement.",
+      "questions": "Confirm exact service getter/score selection and whether hidden/incognito profile entries are included.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcBrowserContextDownloads": {
+      "overview": "Profile-owned native download service wrapper with app delegate bridge.",
+      "lifecycle": "0x4436f8c / 0x44370b0 copy optional native Downloads at +0x20; second initializer stores owner at +8. Metadata declares owner weak (property 0xe2ac4e0), and destructor 0x43fe3c0 explicitly calls objc_destroyWeak(+8). setDelegate category 0x4041fec creates a shared bridge with weak app delegate and weak owner using objc_initWeak; existing bridge path updates delegate. Nil path only releases a temporary bridge reference in visible code, so do not promise unregister-on-nil. startDownload:error: 0x40422b0 converts NSURL.absoluteString and calls 0x43328cc.",
+      "route": "Native 0x43328cc returns \u201cThis object is detached\u201d; deeper 0x836ba70 returns \u201cDownload manager is not available\u201d or constructs/submits native download parameters. Both cite arc/browser/browser_context/downloads_impl.cc. CEF 426920c33ef22551e0b8f48cf343d623ac25642d include/cef_browser.h:512 offers browser-host StartDownload; that is a source-backed candidate operation, not profile-service/delegate/error-contract equivalence.",
+      "questions": "Does nil actually unregister a delegate? Recover download-created/updated callbacks, error-domain codes and ownership of downloads outside a WebContents.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcBrowserContextPageContentExtraction": {
+      "overview": "Profile-scoped native extraction service wrapper and asynchronous request adapter.",
+      "lifecycle": "0x4435bb8 / 0x4435cdc copy native optional at +0x10; second stores owner +8, declared weak in metadata. 0x4435e2c destroys native peer and weak owner. getExtractedContentForWebContents:completion: category 0x43f9a98 reads both optional handles, captures block, and calls 0x42f0254. That helper invokes an empty result callback for unavailable profile/contents and otherwise sets up native extraction continuation. Its CoreServices-string-plus-object pointer expressions are suspicious decompiler artifacts and are not an accepted layout contract.",
+      "route": "The result schema is ArcExtractedPageContent / ArcContentNode / ArcFormControlInfo. Renderer/IPC and profile extraction service behavior remain unresolved; CEF DOM/accessibility access is not proven equivalent. Exact native producer and redaction rules are the route gates.",
+      "questions": "Recover successful callback trampoline, extraction agent/IPC endpoint and time/redaction/cross-origin policy.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcPermissionRequest": {
+      "overview": "Permission descriptor with native type/origin and two independently declared additionalData implementations.",
+      "lifecycle": "0x443f8d4 copies shared peer into optional +0x10. type 0x443f9f8 loads native int +0x18; originUrl shares UTF-8 converter IMP 0x4416b90. Base additionalData 0x2d0fb40 returns self+8. Category Extensions additionalData 0x440a85c ignores that field, traverses native optional map at peer+0x30 when flag +0x48 is set and returns a copied dictionary with NSNumber keys and NSString values. Both identities must be retained; category runtime selection requires Objective-C load behavior validation.",
+      "route": "The permission type vocabulary and extra-data schema are Arc-specific. Generic Chromium/CEF permission callbacks cannot be assumed to supply the same dictionary keys, request identity or prompt ownership. This class declares no grant/deny method; resolution is elsewhere.",
+      "questions": "Recover permission-type and map-key enums, request cancellation, prompt decision consumer and category load/override behavior.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcWebContentsPDFController": {
+      "overview": "Optional shared PDF-control bridge with callbacks and immediate bool/NSError outcomes.",
+      "lifecycle": "0x443df90 copies native controller peer. Methods 0x443e0b4..0x443e614 capture supplied blocks and call native helpers 0x436c99c / 0x436cb2c / 0x436ccbc / 0x436cec4 / 0x436d054, then convert immediate native status through 0x4402548. Immediate bool is not the callback answer (e.g. hasBookmarks). Helpers separately reject detached native content, missing glue and missing PDF controller.",
+      "route": "0x436c99c and 0x436d054 cite arc/browser/web_contents/pdf_controller_impl.cc and bridge to internal PDF controller functions (0x41a7920 / 0x41a8a58). CEF 426920c33ef22551e0b8f48cf343d623ac25642d include/cef_browser.h:546 PrintToPDF is an output API; it does not establish equivalent bookmark/text/page extraction semantics.",
+      "questions": "Recover callback argument schemas, page-index basis, partial/available-page meaning, errors and behavior during PDF document teardown.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcWebDialog": {
+      "overview": "Value dialog descriptor containing strings, dimensions and weak native WebContents reference.",
+      "lifecycle": "0x441cd64 copies strings and size fields, increments weak native control count. webContents 0x441cf64 locks weak control block and allocates a fresh ArcWebContents wrapper from live native peer; expired or null peer traps rather than returning nil in visible body. dialog 0x441d120 copies whole descriptor through 0x43466c8; 0x441d2a0 destroys it through 0x434660c.",
+      "route": "accessibleTitle 0x441cefc and title 0x441cf40 convert UTF-16 strings; preferred/minimum sizes 0x441cf20 / 0x441cf30 unpack integer dimensions to CGSize. The app is responsible for presenting these descriptors; window/modal lifecycle and Chrome UI delegate producer are outside this review. No CEF dialog equivalent is proved.",
+      "questions": "Does app assume wrapper identity across webContents reads, who owns the native dialog content, and can callbacks outlive dismissal?",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcBrowserContextExtensions": {
+      "overview": "Profile-scoped browser-extension facade, not the ObjC category named Extensions.",
+      "lifecycle": "0x43fc8e0 copies native optional and stores weak owner (+8); 0x43fe3c0 destroys native/bridge control blocks and weak owner. setDelegate 0x43fcbd8 holds a shared bridge with weak app delegate and owner, updates existing delegate, and explicitly clears bridge pair on nil. That differs from the Downloads category setter. isExtensionSystemReady 0x43fce00 queries a keyed service and returns false if unavailable. Install calls 0x43fd304/0x43fd46c capture completion blocks; delivery/error shaping remain open.",
+      "route": "Operations reach profile extension services: enable/reload/uninstall call 0x6afd2fc / 0x6afdb60 / 0x6afe0e0; list/info/commands/background JS call Arc bridge helpers listed below. Pinned-order getter 0x43fdb20\u21920x42eb484 copies native ordered IDs; setter 0x43fdd3c\u21920x42eb57c deduplicates input and merges native order before deeper update. Source-backed candidate: Chromium d0c02bfad08ec92a6ffcf989e53cd995e6381a4c chrome/browser/ui/toolbar/toolbar_actions_model.h:124 and .cc:688,764 describe action visibility/pinned ordering; exact Arc service identity/ordinal layout is not established. No Chrome Web Store or command-system equivalence is proven for CEF.",
+      "questions": "Recover install completion result/error schemas, ready/loaded event ordering, extension command dispatch, policy/incognito constraints and persistence of pin ordering.",
+      "threading": "No Arc thread-affinity assertion is established in these examined wrappers. Callback delivery and calling sequence require a separate task-runner/caller audit."
+    },
+    "ArcImageRep": {
+      "overview": "Native image value with raw pixel, codec and asynchronous decode adapters.",
+      "lifecycle": "init 0x440539c constructs native empty image; 0x440549c copies supplied ImageRep through 0x43380d4. Pixel constructor 0x44054f4 forwards width/height/scale/rowBytes and NSData.bytes to 0x43378d8. dangerouslyDecodeFromData 0x4405700 returns nil on empty native optional. Async decode 0x4405930 captures block and calls 0x4337e00: null/empty data or scale<=0 invokes an empty result inline; valid input is copied and posted to an unresolved task runner, default decode budget 0x8000000 bytes when argument is zero. Callback 0x4405db4 passes nil or a new ArcImageRep.",
+      "route": "copyPixelDataBGRA8888 0x4405ad8 allocates width*height*4 mutable data, returning nil if copy helper fails. Codec calls 0x4405ba8\u21920x43385c0 and 0x8371eb8\u21920x8b0218c return NSData; toNSImage 0x4405b64 uses native image conversion. These are source/codec candidates, not exact Chromium symbol matches. CEF image APIs would require parity tests for dimensions, alpha, color, scale and failures.",
+      "questions": "Does valid async decode reply on caller sequence, how are dimensions clamped, and what are codec enums/quality limits and input-byte bounds?",
+      "threading": "0x4337e00 proves mixed inline-failure and task-posting behavior. It does not establish the reply sequence or a main-thread guarantee. See evidence/bridges-services.txt and callback trampoline 0x4405db4 in evidence/bridges-callbacks.txt."
+    },
+    "ArcWebContents": {
+      "overview": "Central app-facing content wrapper, native view host, state cache and multiple delegate/service adapters.",
+      "lifecycle": "initWithWebContents 0x4440c4c copies a shared peer into optional at +0x118 (engagement +0x128) and calls 0x440e174. That initializer snapshots title/URL/loading/progress/favicon/history/zoom/state and installs a native observer with weak self. SetNavigation/UI/Actions/TopBand delegates (0x4440dec/0x444112c/0x444146c/0x44417ac) allocate shared bridges containing weak self and weak app delegate; nil paths unregister through native operations. Destructor 0x4444b54 releases native/bridge/observer control blocks and destroys weak delegate storage; this alone does not prove native close. close category 0x4410ba4 forwards timing 0; 0x4410ab4\u21920x437854c checks native state and may repost close while UI/navigation/observer/media wrappers remain. createPaneHostView 0x4410bb4 is a raw B veneer to 0x47390dc, allocating WebContentsPaneHostView at NSZeroRect. nativeView 0x4410bb8 ensures native host via 0x4376580 and returns native +0x288. attach 0x4410cd0 / detach 0x4410ec0 helpers 0x4739114/0x47391c8 accept only exact WebContentsPaneHostView membership. This is an Arc native host contract, not an arbitrary NSView parameter.",
+      "route": "Native bridge 0x4376580 obtains host view, creates/updates host wrapper and stores it at native +0x288. WebContentsPaneHostView attach 0x4737eb4 detaches old content, adds hosted subview and constraints, and synchronizes bounds/screen/visibility; sync 0x4738bb0 supplies screen ID, scale and refresh rate (fallback 60 Hz) to native bridge. Source-backed route comparison: Chromium d0c02bfad08ec92a6ffcf989e53cd995e6381a4c content/public/browser/web_contents.h:1241 and content/browser/web_contents/web_contents_view_mac.mm:138 expose native view, but do not supply the recovered Arc pane/compositor contract. CEF 426920c33ef22551e0b8f48cf343d623ac25642d include/internal/cef_types_mac.h:110-115,151-152 forces Alloy style when parent_view is provided; thus native hosting plus Chrome services is an unresolved combined route gate. find 0x4442354 captures block and uses 0x43770c0; callback 0x444510c creates ArcFindResult. Javascript overloads 0x4442eb8/0x444302c capture block, convert script/reason and call 0x4377d70; unavailable content/renderer states call an empty-string/zero result inline, while valid path forwards to frame execution with world integer 4. Callback 0x4445338 converts native string and passes second native argument through; its semantic type is not proven here. Accessors at shared IMPs are field operations, not the unrelated RTC/CPU classes named by Ghidra. Direct old-app instruction sample: app 1.168.0 BL 0x1005426b4 sends createPaneHostView; tail branches 0x1005426d4 and 0x1005426e8 send attachToPaneHostView: and detachFromPaneHostView:. App functions 0x1005426a0 / 0x1005426c4 / 0x1005426d8 and app168/ghidra/decomp/0x1005.c:53029,53041,53054 associate receiver with ADK.WebContentChromium.webView. This proves concrete sends and receiver-property flow, not runtime receiver class. See evidence/app168-embedding-calls.tsv and app168-embedding-pseudocode.txt.",
+      "questions": "Recover exact delegate protocol selectors/decision callback ownership, observer/KVO sequencing, close repost scheduling and pane lifetime. Validate cached setters versus engine operations (e.g. setVisibility only stores a field). Recover JS result/error serialization and isolated-world meaning; validate source-backed CEF/native-host route with actual macOS hosting tests.",
+      "threading": "Weak callback captures are explicit in bridge construction (0x4440dec and peers). Completion block capture is evidenced by retainBlock injection comments and heap captures in 0x4442354/0x4442eb8/0x444302c. Some native helpers invoke failure callbacks inline; no universal asynchronous or main-thread delivery guarantee is established. close 0x437854c may post a retry via a thread-local task-runner vtable; the exact sequence is unresolved. AppKit view sends in 0x4737eb4/0x4738bb0 are UI integration evidence, not independent proof that Arc checks caller thread."
+    }
+  },
+  "methods": {
+    "ArcAddressEntrySaveRequest||-|save": {
+      "behavior": "Requires engaged optional; calls 0x4330cdc, which supplies decision 2 to 0x7c6a394 and then 0x7c6a4f4; wrapper does not clear its optional.",
+      "question": "Resolve decision enum, repeat-call safety and offer dismissal.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-embedding.txt; evidence/bridges-callbacks.txt",
+      "confidence": "medium"
+    },
+    "ArcAddressEntrySaveRequest||-|cancel": {
+      "behavior": "Requires engaged optional; calls 0x4330d38, which supplies decision 3 to 0x7c6a394 and then 0x7c6a4f4; wrapper does not clear its optional.",
+      "question": "Resolve decision enum, repeat-call safety and offer dismissal.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-embedding.txt; evidence/bridges-callbacks.txt",
+      "confidence": "medium"
+    },
+    "ArcAdhocHistogramSample||-|initWithType:value:": {
+      "behavior": "Calls super init; stores supplied unsigned type at self+0x10 and int value at self+8.",
+      "question": "Type vocabulary and validation belong to the producer.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcAdhocHistogramSamples||-|initWithAdhocHistogramSample:": {
+      "behavior": "Copies native type/value pairs into a stored NSMutableArray of ArcAdhocHistogramSample; rejects type >4.",
+      "question": "Native container length/layout and type names require producer audit.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBackForwardListItem||-|url": {
+      "behavior": "Copies native URL string at peer+0x18, converts through 0x43abd34 and releases temporary storage.",
+      "question": "0x43abd34 URL conversion tail and invalid URL behavior remain unverified.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-conversions.txt",
+      "confidence": "medium"
+    },
+    "ArcBackForwardListItem||-|setNativeBackForwardListItem:": {
+      "behavior": "Assigns optional shared peer: copy/replace when engaged, increments new control count, releases old control block; clears engagement for empty input.",
+      "question": "Validate aggregate input ABI and detached peer handling.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSecureContext||-|setContext:": {
+      "behavior": "Assigns optional shared peer: copy/replace when engaged, increments new control count, releases old control block; clears engagement for empty input.",
+      "question": "Validate aggregate input ABI and detached peer handling.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSiteSettingInfo||-|setInfo:": {
+      "behavior": "Assigns optional shared peer: copy/replace when engaged, increments new control count, releases old control block; clears engagement for empty input.",
+      "question": "Validate aggregate input ABI and detached peer handling.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBookmarkImportTargets||-|initWithBookmarkBarBookmarksTargetNode:withOtherBookmarksTargetNode:": {
+      "behavior": "Calls super init and stores the two destination objects at self+8 and self+0x10.",
+      "question": "Validate nil handling in import consumer.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcFindResult||-|initWithFindResult:": {
+      "behavior": "Calls super init; sign-extends native int numMatches/activeMatchOrdinal into two 64-bit fields.",
+      "question": "Producer ordinal conventions remain unverified.",
+      "status": "local_verified",
+      "evidence": "evidence/bridges-callbacks.txt:0x444510c",
+      "confidence": "medium"
+    },
+    "ArcHistogramSample||-|initWithHistogramSample:": {
+      "behavior": "Boxes signed sample int in NSNumber; stores browser-state bits 0/1/2 as visible/in-session/playing-audio.",
+      "question": "Native sampling time and metric identity require producer context.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcHSLAMatrix||-|initWithMatrix:": {
+      "behavior": "Calls super init, checks input span/alignment through 0x122014, copies 80 bytes into inline matrix storage.",
+      "question": "Null/alignment contract and float matrix interpretation need caller validation.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcHSLAMatrix||-|hslaMatrix": {
+      "behavior": "Copies 80 bytes unchanged from self+8 into aggregate return storage X8; bounded SIMD instruction simulation rejects Ghidra numeric casts.",
+      "question": "Validate caller aggregate ABI across replacement toolchain.",
+      "status": "local_verified",
+      "evidence": "evidence/hsla-return-instructions.tsv",
+      "confidence": "high"
+    },
+    "ArcHSLAMatrix||-|setHslaMatrix:": {
+      "behavior": "Copies aggregate words into self+8 through self+0x57.",
+      "question": "Validate indirect aggregate input ABI.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcHungRendererDialog||-|crashProcess": {
+      "behavior": "Checks engaged dialog; 0x435f150 locates process and calls 0x669e6e4 with reason integer 2.",
+      "question": "Identify termination reason and prompt teardown.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-deep.txt",
+      "confidence": "medium"
+    },
+    "ArcHungRendererDialog||-|wait": {
+      "behavior": "Checks optional engagement at byte +0x18 (self is mis-typed int* in pseudocode); 0x435f1ac invokes stored callback with refcount lifetime protection.",
+      "question": "Callback purpose, repetition and thread remain unresolved; ObjC metadata return is void.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-deep.txt",
+      "confidence": "medium"
+    },
+    "ArcHungRendererDialog||-|setDialog:": {
+      "behavior": "Assigns optional shared dialog; copies peer/control count or releases and clears existing peer.",
+      "question": "Aggregate input ABI and dialog invalidation need runtime validation.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcMediaPosition||-|playbackRate": {
+      "behavior": "Requires engaged optional; returns native double at peer+0.",
+      "question": "Time source/edge-case runtime behavior remains unverified.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-deep.txt; sources/chromium/services/media_session/public/cpp/media_position.cc:43-77",
+      "confidence": "medium"
+    },
+    "ArcMediaPosition||-|duration": {
+      "behavior": "Requires engaged optional; converts signed microsecond duration to double seconds, mapping sentinel extremes to signed infinity.",
+      "question": "Time source/edge-case runtime behavior remains unverified.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-deep.txt; sources/chromium/services/media_session/public/cpp/media_position.cc:43-77",
+      "confidence": "medium"
+    },
+    "ArcMediaPosition||-|currentTime": {
+      "behavior": "Requires engaged optional; calls 0x32b5dd0 for advancing/clamped position then converts microseconds to seconds with infinity handling.",
+      "question": "Time source/edge-case runtime behavior remains unverified.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-deep.txt; sources/chromium/services/media_session/public/cpp/media_position.cc:43-77",
+      "confidence": "medium"
+    },
+    "ArcMediaPosition||-|endOfMedia": {
+      "behavior": "Requires engaged optional; reads independent native flag at peer+0x20.",
+      "question": "Time source/edge-case runtime behavior remains unverified.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-deep.txt; sources/chromium/services/media_session/public/cpp/media_position.cc:43-77",
+      "confidence": "medium"
+    },
+    "ArcMediaImage||-|initWithMediaImage:": {
+      "behavior": "Copies native shared MediaImage; allocates CGSize buffer and converts each native integer width/height to doubles.",
+      "question": "Recover size count from caller; validate allocation overflow/empty behavior.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcMediaImage||-|dealloc": {
+      "behavior": "Frees nonnull sizes allocation via 0x10ba4, then calls super dealloc.",
+      "question": "Do callers retain sizes pointer after object destruction?",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcMediaImage||-|nativeMediaImage": {
+      "behavior": "Copies shared pointer/control pair from self+0x10; increments strong count. Ghidra return-register typing is inconsistent.",
+      "question": "Validate aggregate return ABI.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcMediaImage||-|setNativeMediaImage:": {
+      "behavior": "Assigns native shared image pair; size-buffer update is not shown in this accessor.",
+      "question": "Can mutation leave src/type and sizes inconsistent?",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSecureContext||-|state": {
+      "behavior": "Requires engaged context; calls 0x3c2b700 and maps result 0 to 0, 3 to 1, all other values to 2.",
+      "question": "Identify native inputs and Arc enum names; mapping is lossy.",
+      "status": "local_verified",
+      "evidence": "evidence/bridges-conversions.txt; sources/chromium/components/security_state/core/security_state.h:39-70",
+      "confidence": "medium"
+    },
+    "ArcNavigation||-|init:": {
+      "behavior": "Calls super init, copies shared native navigation into optional at self+0x10 and builds stored response-header dictionary when native headers are nonempty.",
+      "question": "Header duplicate/case and snapshot timing require producer audit.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcNavigation||-|isEqual:": {
+      "behavior": "Identity fast path; same-class objects compare optional engagement and native peer pointer.",
+      "question": "Validate empty-optional class edge cases.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcNavigation||-|hash": {
+      "behavior": "Requires engaged optional; hashes 8-byte native peer pointer via 0x18f3c.",
+      "question": "Hash stability across native detachment remains unverified.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSessionNavigation||-|faviconURL": {
+      "behavior": "Requires engaged wrapper; reads optional native URL string at Impl+8 using 0x5533b24 and converts through 0x43abd34; absent yields nil.",
+      "question": "URL producer/storage and invalid URL conversion remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSessionNavigation||-|virtualURL": {
+      "behavior": "Requires engaged wrapper; reads optional native URL string at Impl+0x28 using 0x5533b24 and converts through 0x43abd34; absent yields nil.",
+      "question": "URL producer/storage and invalid URL conversion remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSessionNavigation||-|originalRequestURL": {
+      "behavior": "Requires engaged wrapper; reads optional native URL string at Impl+0x48 using 0x5533b24 and converts through 0x43abd34; absent yields nil.",
+      "question": "URL producer/storage and invalid URL conversion remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSessionNavigation||-|referrerURL": {
+      "behavior": "Requires engaged wrapper; reads optional native URL string at Impl+0x68 using 0x5533b24 and converts through 0x43abd34; absent yields nil.",
+      "question": "URL producer/storage and invalid URL conversion remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSessionNavigation||-|timestamp": {
+      "behavior": "Requires engaged peer; converts native timestamp to NSDate dateWithTimeIntervalSince1970, with zero and infinity branches.",
+      "question": "Validate epoch offset and extreme-time saturation from raw instructions.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSiteSettingInfo||-|init": {
+      "behavior": "Calls super init; constructs shared native info state, initializes type and native settings aggregate, then installs engaged optional.",
+      "question": "Recover enum/table meanings and persistence consumer; no profile write is proven.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSiteSettingInfo||-|setOriginUrl:": {
+      "behavior": "Converts supplied string (nil becomes empty native string) and calls 0x4341874 on engaged peer.",
+      "question": "Recover enum/table meanings and persistence consumer; no profile write is proven.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSiteSettingInfo||-|permissionType": {
+      "behavior": "Maps native type through 0x4332684, 0x2122528 and 0x433f850; returns fallback integer 28 when no mapping is present.",
+      "question": "Recover enum/table meanings and persistence consumer; no profile write is proven.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSiteSettingInfo||-|contentSettingsType": {
+      "behavior": "Requires engaged optional; returns native integer only when <37, otherwise traps.",
+      "question": "Recover enum/table meanings and persistence consumer; no profile write is proven.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSiteSettingInfo||-|setContentSettingsType:": {
+      "behavior": "Requires engaged optional; accepts integer <37 and stores native integer, otherwise traps.",
+      "question": "Recover enum/table meanings and persistence consumer; no profile write is proven.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSiteSettingInfo||-|siteSetting": {
+      "behavior": "Returns 0 when native setting is absent/unsupported; otherwise maps native 0..5 through byte table 0xc9d8188.",
+      "question": "Recover enum/table meanings and persistence consumer; no profile write is proven.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcSiteSettingInfo||-|setSiteSetting:": {
+      "behavior": "Requires engaged optional; accepts 0..4 and calls 0x4341964; out-of-range input traps.",
+      "question": "Recover enum/table meanings and persistence consumer; no profile write is proven.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcTracingConfiguration||-|init": {
+      "behavior": "Calls super init; initializes native path empty, duration 0 and privacyFilteringEnabled true.",
+      "question": "Validate aggregate ABI and consumer default semantics.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcTracingConfiguration||-|tracingConfiguration": {
+      "behavior": "Copies native path string by value plus duration/privacy flag into aggregate return storage.",
+      "question": "Validate aggregate ABI and consumer default semantics.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcTracingConfiguration||-|filePath": {
+      "behavior": "Converts native UTF-8 path into NSString and refreshes cached _filePath before returning.",
+      "question": "Validate aggregate ABI and consumer default semantics.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcTracingConfiguration||-|setFilePath:": {
+      "behavior": "Stores ObjC path and converts it into native UTF-8 string; nil produces empty native string.",
+      "question": "Validate aggregate ABI and consumer default semantics.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcTracingConfiguration||-|tracingDuration": {
+      "behavior": "Copies native double into ObjC duration cache and returns it.",
+      "question": "Validate aggregate ABI and consumer default semantics.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcTracingConfiguration||-|setTracingDuration:": {
+      "behavior": "Stores duration into both cached and native double fields.",
+      "question": "Validate aggregate ABI and consumer default semantics.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcTracingConfiguration||-|setTracingConfiguration:": {
+      "behavior": "Copies native path aggregate and duration/privacy fields; cached ObjC path/duration refresh on getters.",
+      "question": "Validate aggregate ABI and consumer default semantics.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcURLLoadCancellationToken||-|initWithToken:": {
+      "behavior": "Calls super init; copies native string into self+8 with short/long-string assignment handling.",
+      "question": "Cancellation consumer and token identity are outside this class.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcURLLoadCancellationToken||-|token": {
+      "behavior": "Returns native string by value; heap-backed long strings are copied via 0x60a60.",
+      "question": "Cancellation consumer and token identity are outside this class.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcURLLoadCancellationToken||-|setToken:": {
+      "behavior": "Assigns native string at self+8 with self-assignment/short-string/long-string handling.",
+      "question": "Cancellation consumer and token identity are outside this class.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcVisitCategory||-|initCategoryId:weight:": {
+      "behavior": "Calls super init, engages native value with converted id string (nil becomes empty) and signed int weight at self+0x20.",
+      "question": "Recover category vocabulary and weight units from producer.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcCommandBarRankingResult||-|init:score:": {
+      "behavior": "Calls super init; builds engaged native value with candidate-id string (nil becomes empty) and float score at self+0x20.",
+      "question": "Ranking score range, normalization and ordering are producer contracts.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcCommandBarRankingInput||-|init:": {
+      "behavior": "Calls super init; engages empty native vector then replaces it with float-vector conversion from 0x443181c.",
+      "question": "Conversion element types, dimension limits and NaN handling remain unverified.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcCommandBarRankingInput||-|queryEmbedding": {
+      "behavior": "Requires engaged optional; creates NSMutableArray of NSNumber floats in native vector order.",
+      "question": "Mutation of returned array does not establish writeback; validate caller expectations.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcCommandBarRankingCandidate||-|init:archetype:destination:title:url:lastNavSeconds:freqEver:typedCount:siteEngagement:isExactURLMatch:isBaseDomainMatch:isTitlePrefix:titleEmbedding:": {
+      "behavior": "Builds engaged native candidate: five converted strings, three int features, float site engagement, three boolean flags and converted float title embedding.",
+      "question": "Ghidra parameter/stack recovery is imperfect; validate mixed integer/float/stack ABI and embedding conversion.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcCommandBarRankingCandidate||-|titleEmbedding": {
+      "behavior": "Requires engaged optional; returns a new NSMutableArray of boxed native float embedding elements.",
+      "question": "Dimension and NaN contracts require model/producer review.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcFormControlInfo||-|selectOptions": {
+      "behavior": "Lazily creates cached NSMutableArray of ArcSelectOption wrappers from native vector elements (stride 0x48); engaged outer optional required.",
+      "question": "Snapshot mutability, redaction and native producer validation remain unknown.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcContentNode||-|children": {
+      "behavior": "Requires native node engagement; lazily creates and caches NSMutableArray of recursively copied ArcContentNode children (native stride 0x1a0).",
+      "question": "Tree-size limits and thread safety of lazy cache remain unresolved.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcContentNode||-|formControlInfo": {
+      "behavior": "Returns cached form wrapper; on first present native optional creates ArcFormControlInfo from inline self+0xc8, caches it; absent returns nil.",
+      "question": "Optional-field validity by node type and cache mutation contract remain unresolved.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcExtractedPageContent||-|rootNode": {
+      "behavior": "Lazily creates/caches ArcContentNode from inline native root at self+0x48; empty page optional traps.",
+      "question": "Tree lifetime, size and mutation semantics remain unresolved.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcExtensionRuntimeError||-|contextURL": {
+      "behavior": "Requires engaged error; converts native context URL string at self+0x28 through 0x43abd34.",
+      "question": "Invalid URL and native error producer semantics remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcExtensionRuntimeError||-|stackTrace": {
+      "behavior": "Requires engaged error; lazily creates/caches NSMutableArray of ArcExtensionRuntimeErrorStackFrame wrappers (native stride 0x38).",
+      "question": "Frame ordering and producer lifetime remain unresolved.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcMetrics||-|getAllSiteEngagementDetails": {
+      "behavior": "Requires engaged peer; gets URL/score vector from 0x42efb64 and wraps each element in ArcSiteEngagementDetails. Native helper returns empty vector when profile/service missing.",
+      "question": "Identify exact service and score choice; distinguish empty result from unavailable service.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-deep.txt; chromium d0c02bfad08ec92a6ffcf989e53cd995e6381a4c components/site_engagement/content/site_engagement_service.h:69,121,169",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextDownloads|Extensions|-|setDelegate:": {
+      "behavior": "Creates native shared bridge with weak delegate/owner on first nonnil registration; attaches it via 0x4332814. Existing bridge updates weak delegate. Nil branch shows temporary release only.",
+      "question": "Prove unregister-on-nil semantics, callback selectors and owner teardown.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-embedding.txt",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextDownloads|Extensions|-|startDownload:error:": {
+      "behavior": "Converts NSURL.absoluteString to native string, calls 0x43328cc and converts non-success result into optional NSError out parameter. Native helper distinguishes detached object and missing download manager.",
+      "question": "Identify ArcErrorDomain codes, URL validation and callback relationship.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-embedding.txt; evidence/bridges-deep.txt",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextDownloads|Extensions|-|isEqual:": {
+      "behavior": "Identity fast path; class/optional checks then 0x411db00 compares native Downloads handles.",
+      "question": "Inspect comparison helper; do not assume URL/content equality.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextDownloads|Extensions|-|hash": {
+      "behavior": "Requires native engagement; hashes native Downloads via 0x4332988.",
+      "question": "Confirm hash matches equality helper and detachment behavior.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextPageContentExtraction|Extensions|-|getExtractedContentForWebContents:completion:": {
+      "behavior": "Extracts engaged service and content handles, captures completion block and calls 0x42f0254; unavailable native profile/contents invokes empty result. Deeper pointer expressions are suspect.",
+      "question": "Recover success result transformation, callback lifetime/thread and actual extraction implementation.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-services.txt:0x42f0254",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextPageContentExtraction|Extensions|-|isEqual:": {
+      "behavior": "Compares native service handle identity after class/optional checks.",
+      "question": "Validate empty optional/detached service equality and hash consistency.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextPageContentExtraction|Extensions|-|hash": {
+      "behavior": "Requires engaged native service and hashes its pointer via 0x18f3c.",
+      "question": "Validate empty optional/detached service equality and hash consistency.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcPermissionRequest||-|additionalData": {
+      "behavior": "Base implementation returns cached NSDictionary field at self+8; no native map conversion.",
+      "question": "Runtime effective category implementation must be validated.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcPermissionRequest|Extensions|-|additionalData": {
+      "behavior": "Creates mutable dictionary; for engaged native request converts optional map entries to NSNumber unsigned-integer keys and UTF-8 NSString values; returns dictionary copy. Empty request traps.",
+      "question": "Recover numeric map-key schema and runtime override precedence.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContentsPDFController||-|hasBookmarks:error:": {
+      "behavior": "Requires engaged native wrapper, captures callback, calls 0x436c99c and converts immediate status to BOOL/NSError via 0x4402548; callback carries actual query result.",
+      "question": "Callback schema/page index, ownership, delivery thread and cancellation remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-services.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContentsPDFController||-|getBookmarks:error:": {
+      "behavior": "Requires engaged native wrapper, captures callback, calls 0x436cb2c and converts immediate status to BOOL/NSError via 0x4402548; callback carries actual query result.",
+      "question": "Callback schema/page index, ownership, delivery thread and cancellation remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-services.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContentsPDFController||-|availablePages:error:": {
+      "behavior": "Requires engaged native wrapper, captures callback, calls 0x436ccbc and converts immediate status to BOOL/NSError via 0x4402548; callback carries actual query result.",
+      "question": "Callback schema/page index, ownership, delivery thread and cancellation remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-services.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContentsPDFController||-|visiblePages:error:": {
+      "behavior": "Requires engaged native wrapper, captures callback, calls 0x436cec4 and converts immediate status to BOOL/NSError via 0x4402548; callback carries actual query result.",
+      "question": "Callback schema/page index, ownership, delivery thread and cancellation remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-services.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContentsPDFController||-|getAvailableTextOn:callback:error:": {
+      "behavior": "Requires engaged native wrapper, captures callback, calls 0x436d054 and converts immediate status to BOOL/NSError via 0x4402548; callback carries actual query result.",
+      "question": "Callback schema/page index, ownership, delivery thread and cancellation remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-services.txt",
+      "confidence": "medium"
+    },
+    "ArcWebDialog||-|initWithWebDialog:": {
+      "behavior": "Calls super init; copies native strings/dimensions and weak WebContents pair, updating weak control count.",
+      "question": "Validate descriptor aggregate ABI and lifetime of native content.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebDialog||-|webContents": {
+      "behavior": "Locks native weak WebContents reference and creates a new ArcWebContents wrapper; expired/null reference traps.",
+      "question": "Validate descriptor aggregate ABI and lifetime of native content.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebDialog||-|preferredSize": {
+      "behavior": "Reads native stored integer width/height pair and converts to CGSize doubles.",
+      "question": "Validate descriptor aggregate ABI and lifetime of native content.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebDialog||-|minimumSize": {
+      "behavior": "Reads native minimum integer width/height pair and converts to CGSize doubles.",
+      "question": "Validate descriptor aggregate ABI and lifetime of native content.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebDialog||-|dialog": {
+      "behavior": "Copies native dialog aggregate using 0x43466c8.",
+      "question": "Validate descriptor aggregate ABI and lifetime of native content.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebDialog||-|setDialog:": {
+      "behavior": "Assigns native dialog aggregate, including string storage, sizes and weak WebContents control reference.",
+      "question": "Validate descriptor aggregate ABI and lifetime of native content.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|isEqual:": {
+      "behavior": "Identity fast path; same-class objects compare optional engagement and native service pointer.",
+      "question": "Empty/detached identity contract needs runtime validation.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|hash": {
+      "behavior": "Requires native optional engaged; hashes native service pointer via 0x18f3c.",
+      "question": "Confirm consistency with equality through service detachment.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|setDelegate:": {
+      "behavior": "Nil clears shared bridge pair; nonnil updates existing weak delegate or allocates bridge with weak delegate/owner and attaches through 0x4332a34.",
+      "question": "Recover callback selector delivery, unregister behavior at native service and ordering.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-callbacks.txt",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|isExtensionSystemReady": {
+      "behavior": "Requires engaged wrapper; keyed service lookup returns ready flag, false when profile/service unavailable.",
+      "question": "Confirm exact service identity and event ordering.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|listExtensions": {
+      "behavior": "Calls 0x42e65f4 for native vector, constructs ArcExtensionInfo objects in order, returns copied NSArray.",
+      "question": "Filtering, disabled/incognito inclusion and service-unavailable behavior require native audit.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|enableExtension:": {
+      "behavior": "Converts extension id to native string; forwards through profile/native service to 0x6afd2fc; wrapper exposes no completion/error result.",
+      "question": "Recover no-profile/unknown-id/policy behavior and native side effects.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|disableExtension:": {
+      "behavior": "Converts extension id to native string; forwards through profile/native service to 0x42e6534; wrapper exposes no completion/error result.",
+      "question": "Recover no-profile/unknown-id/policy behavior and native side effects.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|reloadExtension:": {
+      "behavior": "Converts extension id to native string; forwards through profile/native service to 0x6afdb60; wrapper exposes no completion/error result.",
+      "question": "Recover no-profile/unknown-id/policy behavior and native side effects.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|uninstallExtension:": {
+      "behavior": "Converts extension id to native string; forwards through profile/native service to 0x6afe0e0; wrapper exposes no completion/error result.",
+      "question": "Recover no-profile/unknown-id/policy behavior and native side effects.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|installExtensionFromWebstore:unattended:completion:": {
+      "behavior": "Converts supplied id/path string, captures completion block and forwards to 0x42e6790 (plus unattended boolean for webstore overload).",
+      "question": "Recover trust/policy requirements, prompt lifecycle, callback argument/error schema and thread.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-services.txt",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|installExtensionFromUnpackedPath:completion:": {
+      "behavior": "Converts supplied id/path string, captures completion block and forwards to 0x42e72fc (plus unattended boolean for webstore overload).",
+      "question": "Recover trust/policy requirements, prompt lifecycle, callback argument/error schema and thread.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|getExtensionInfo:": {
+      "behavior": "Converts extension id, calls 0x42e7df4 and wraps native result in ArcExtensionInfo when present.",
+      "question": "Unknown-id and unavailable service return shape need runtime validation.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|runJSInExtensionBackgroundPage:js_code:": {
+      "behavior": "Converts extension id and script to native strings, calls 0x42e8148; wrapper returns void with no callback.",
+      "question": "Manifest V3/service-worker support, execution world and failure behavior remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|getAllExtensionCommands": {
+      "behavior": "Calls 0x42eaf60 and wraps ordered native command entries in ArcExtensionCommand, returns copied array.",
+      "question": "Command filtering, shortcut schema and conflict resolution remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|executeExtensionCommand:commandName:": {
+      "behavior": "Converts extension id/command name and calls 0x42eb354; no result callback in wrapper.",
+      "question": "Resolve command dispatch targeting and browser/tab context.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|getPinnedExtensionOrder": {
+      "behavior": "Calls 0x42eb484, converts ordered native string IDs to NSString and returns copied NSArray; unavailable profile/model returns empty vector.",
+      "question": "Confirm Chrome toolbar-model identity and persistence/hidden-extension handling.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-services.txt",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|setPinnedExtensionOrder:": {
+      "behavior": "Converts ObjC enumerable into native string vector and calls 0x42eb57c; deeper helper deduplicates/merges native ordering before update.",
+      "question": "Recover full ordering/persistence algorithm and invalid-id behavior.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-callbacks.txt",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|init": {
+      "behavior": "Calls super init and constructs an empty native ImageRep through 0x4337780/0x43381c0.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|initWithArcImageRep:": {
+      "behavior": "Calls super init then copies native ImageRep using 0x43380d4.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|setImageRep:": {
+      "behavior": "Assigns native ImageRep through 0x43380d4.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|isNull": {
+      "behavior": "Checks native image storage/null state; exact empty-state representation requires backend validation.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|pixelWidth": {
+      "behavior": "Returns native image width integer from shared storage.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|pixelHeight": {
+      "behavior": "Returns native image height integer from shared storage.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|copyPixelDataBGRA8888": {
+      "behavior": "Allocates width*height*4 mutable data; calls 0x4338370 to copy pixels; returns nil if data allocation/copy fails.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|toNSImage": {
+      "behavior": "Converts native image through 0x22f4af4 and 0x85eac30.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|encodeToPNGWithMethod:": {
+      "behavior": "Forwards method enum to 0x43385c0; packages resulting byte buffer as NSData and frees temporary bytes.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|encodeToJPEGWithQuality:": {
+      "behavior": "Forwards native image/quality through 0x22f4af4 and 0x8b0218c; packages bytes as NSData.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||-|imageRep": {
+      "behavior": "Returns native ImageRep aggregate with shared-count handling; return ABI needs validation.",
+      "question": "Verify null storage safety, codec error/enum handling and aggregate ABI.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||+|createFromPixelDataBGRA8888:height:scale:rowBytes:pixelData:": {
+      "behavior": "Passes dimensions/scale/rowBytes/NSData.bytes to 0x43378d8; wraps returned native value in ArcImageRep.",
+      "question": "Does native helper validate NSData.length against rowBytes*height?",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||+|dangerouslyDecodeFromData:scale:": {
+      "behavior": "Passes NSData bytes/length and scale to 0x4337b04; returns nil if native optional absent, otherwise wraps native ImageRep.",
+      "question": "Recover codecs, byte/size limits and synchronous decoder isolation.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcImageRep||+|decodeFromData:scale:desiredWidth:desiredHeight:maxDecodedBytes:completion:": {
+      "behavior": "Captures completion; 0x4337e00 fails inline on null/empty bytes or nonpositive scale, otherwise copies bytes and posts decode task; zero maxDecodedBytes defaults to 128 MiB. Callback 0x4405db4 delivers nil or new wrapper.",
+      "question": "Resolve reply sequence, cancellation, dimension bounds and decode error details.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-services.txt; evidence/bridges-callbacks.txt",
+      "confidence": "medium"
+    },
+    "ArcImageRep||+|decodeFromData:scale:completion:": {
+      "behavior": "Forwards to full decode overload with desiredWidth=0, desiredHeight=0, maxDecodedBytes=0.",
+      "question": "Full overload defines async/failure delivery semantics.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|initWithWebContents:": {
+      "behavior": "Calls super init, copies shared native peer into optional +0x118, increments control count and initializes cached state/observer via 0x440e174.",
+      "question": "Observer callbacks/KVO update order and native peer creation remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-embedding.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|isInitialized": {
+      "behavior": "Requires engaged wrapper; returns whether native Impl+0x130 content pointer is nonnull.",
+      "question": "Does not establish native-view or renderer readiness.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|bootstrapRendering": {
+      "behavior": "Requires engaged native wrapper; calls 0x4396620.",
+      "question": "Recover renderer bootstrap state machine and completion ordering.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|bootstrapRenderingComplete": {
+      "behavior": "Requires engaged native optional; 0x1b92718 clears member at peer+0x5f8, invokes its existing virtual callback and releases refcount; 0x1941cb4 destroys the empty temporary.",
+      "question": "Identify callback/member type, success/failure meaning and reentrancy.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-bootstrap.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setNavigationDelegate:": {
+      "behavior": "Nonnil allocates shared bridge with weak self/delegate; registers through 0x4345ad8 / 0x4375b40; nil takes native unregister path.",
+      "question": "Recover protocol callbacks, decision completion ownership and in-flight unregister semantics.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setUIDelegate:": {
+      "behavior": "Nonnil allocates shared bridge with weak self/delegate; registers through 0x4345ba0 / 0x4375cdc; nil takes native unregister path.",
+      "question": "Recover protocol callbacks, decision completion ownership and in-flight unregister semantics.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setActionsDelegate:": {
+      "behavior": "Nonnil allocates shared bridge with weak self/delegate; registers through 0x4345d10 / 0x4376050; nil takes native unregister path.",
+      "question": "Recover protocol callbacks, decision completion ownership and in-flight unregister semantics.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setTopBandColorDelegate:": {
+      "behavior": "Nonnil allocates shared bridge with weak self/delegate; registers through 0x4345e80; nil takes native unregister path.",
+      "question": "Recover protocol callbacks, decision completion ownership and in-flight unregister semantics.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|aiAgent": {
+      "behavior": "Lazily constructs/caches ArcWebContentsAIAgent from native shared subservice.",
+      "question": "Service lifetime/readiness and native availability must be validated.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|stop": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x2fea8a0 with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|stopFind": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x43771fc with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|discard": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x4374c00 with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setZoomFactor:": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x43776b8 with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setSafeAreaInsets:left:bottom:right:": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x4377750 with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|removeColorFilter": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x43793ac with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|removeColorScheme": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x43795fc with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|skipUserActivationForPiP:": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x4379998 with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|ignoreDisablePiPAttribute:": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x4379a8c with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setAccessibilityOverrideActive:": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x439d178 with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|willRunUnloadEvents": {
+      "behavior": "Requires native wrapper engagement; forwards to 0x4378aa0 with method arguments/native peer.",
+      "question": "Native side effects, detached-state behavior and callback/thread contract remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|insertStylesheet:stylesheet:": {
+      "behavior": "Converts supplied string arguments to native UTF-8 and forwards to 0x4379020.",
+      "question": "Recover style identifier semantics, frames/worlds and removal timing.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|removeStylesheet:": {
+      "behavior": "Converts supplied string arguments to native UTF-8 and forwards to 0x4379124.",
+      "question": "Recover style identifier semantics, frames/worlds and removal timing.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|resetZoomAndScaleFactors": {
+      "behavior": "Forwards native content through 0x882ba0, 0x9fc1b54 and 0x67982c0 to reset zoom/scale-related state.",
+      "question": "Distinguish persistent host zoom from pinch/page scale and confirm defaults.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|clone": {
+      "behavior": "Calls 0x43796ec and wraps returned native peer in a new ArcWebContents.",
+      "question": "Which session/history/media state is copied; how are clone ownership and view creation handled?",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|find:forward:matchCase:findMatch:completion:": {
+      "behavior": "Converts search string, captures completion block and forwards booleans to 0x43770c0; trampoline 0x444510c delivers an ArcFindResult.",
+      "question": "Find request replacement/cancellation and callback multiplicity/thread remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-callbacks.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|findTextWithDirectives:completion:": {
+      "behavior": "Enumerates supplied directive strings into native vector, captures completion and calls 0x4377260.",
+      "question": "Recover directive grammar, match ordering/result type and reply sequence.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|executeJavascript:completion:": {
+      "behavior": "Converts script and optional reason (empty for short overload), captures completion and calls 0x4377d70. Native unavailable/rejected paths callback inline with empty string and zero; valid path forwards execution with world integer 4. 0x4445338 converts string result and passes native second argument to block.",
+      "question": "Resolve result/error schema, world 4 identity, successful callback timing and navigation cancellation.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-callbacks.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|executeJavascript:reason:completion:": {
+      "behavior": "Converts script and optional reason (empty for short overload), captures completion and calls 0x4377d70. Native unavailable/rejected paths callback inline with empty string and zero; valid path forwards execution with world integer 4. 0x4445338 converts string result and passes native second argument to block.",
+      "question": "Resolve result/error schema, world 4 identity, successful callback timing and navigation cancellation.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-callbacks.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|captureViewport:": {
+      "behavior": "Captures supplied completion block and forwards native peer/region to 0x4376d10; immediate native result cleanup is present.",
+      "question": "Recover image/scale/coordinate result schema, errors, lifetime and callback sequence.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|captureFullPage:": {
+      "behavior": "Captures supplied completion block and forwards native peer/region to 0x4376fb0; immediate native result cleanup is present.",
+      "question": "Recover image/scale/coordinate result schema, errors, lifetime and callback sequence.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|captureRegion:completion:": {
+      "behavior": "Captures supplied completion block and forwards native peer/region to 0x4345f38; immediate native result cleanup is present.",
+      "question": "Recover image/scale/coordinate result schema, errors, lifetime and callback sequence.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|clearSiteDataAndReload:": {
+      "behavior": "Forwards native operation through 0x4377a80; converts or releases immediate native result (0x4402548 where exposed).",
+      "question": "Recover browser/profile context, exact failure result and user-prompt lifecycle.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|activateTab:": {
+      "behavior": "Forwards native operation through 0x437a510; converts or releases immediate native result (0x4402548 where exposed).",
+      "question": "Recover browser/profile context, exact failure result and user-prompt lifecycle.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|print": {
+      "behavior": "Forwards native operation through 0x43778a0; converts or releases immediate native result (0x4402548 where exposed).",
+      "question": "Recover browser/profile context, exact failure result and user-prompt lifecycle.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|showCertificateDialog": {
+      "behavior": "Forwards native operation through 0x437a678; converts or releases immediate native result (0x4402548 where exposed).",
+      "question": "Recover browser/profile context, exact failure result and user-prompt lifecycle.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|emitFreezingVote:": {
+      "behavior": "Creates native freeze-vote through 0x4335f4c, wraps in ArcFreezingVoteToken and releases temporary native state.",
+      "question": "Token release/revocation and vote enum mapping need review of token class/consumer.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|performAccessibilityAction:treeId:nodeId:": {
+      "behavior": "Converts tree ID and native action aggregate then calls 0x836dee0 with node identifier.",
+      "question": "Recover action enum/parameters, AX tree liveness and error behavior.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|rootFrameAccessibilityTreeId": {
+      "behavior": "Calls 0x439d26c and converts native UTF-8 tree ID string.",
+      "question": "Recover absence/invalid-tree sentinel and frame lifecycle.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|accessibilityTreeForTreeId:": {
+      "behavior": "Converts tree ID, queries 0x439d2c0 and wraps vector in ArcAccessibilityTreeNode array.",
+      "question": "Snapshot scope, cross-frame linking and AX activation requirement remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|typeText:inFrameWIthAccessibilityTreeId:": {
+      "behavior": "Converts text/tree ID strings and calls 0x439d9e4.",
+      "question": "Resolve target focus/selection, composition and accessibility action permissions.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|sendKeyEvent:treeId:": {
+      "behavior": "Converts ArcKeyEventData/native event and tree ID then forwards to 0x439dc40.",
+      "question": "Recover event flags/keycode semantics, focus and synthetic-event restrictions.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|applyColorFilter:": {
+      "behavior": "Converts ArcHSLAMatrix aggregate through 0x43deee4 and forwards to 0x4379218.",
+      "question": "Recover renderer propagation, matrix channel/color-space and timing.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|translateToTargetLanguage:": {
+      "behavior": "Converts target language and calls 0x434e058 after accessing native translation helper.",
+      "question": "Recover feature/service readiness, translation completion/error callbacks and frame scope.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|supportedTranslateLanguages": {
+      "behavior": "Obtains native language vector through 0x434e3c0 and converts strings into NSMutableArray.",
+      "question": "Recover locale ordering, source-language filtering and availability.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|contentsMimeType": {
+      "behavior": "Gets native string through 0x43764cc and converts to NSString.",
+      "question": "Empty/unavailable MIME behavior requires validation.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|diagnosticId": {
+      "behavior": "Obtains native diagnostic identifier and boxes unsigned 64-bit value as NSNumber.",
+      "question": "Lifetime/uniqueness and persistence scope remain unresolved.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|revertTranslation": {
+      "behavior": "Gets native translation helper via content and calls 0x9f2536c.",
+      "question": "Recover no-translation/no-helper behavior.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|shareThisTab": {
+      "behavior": "Reads native capture/share state and forwards through 0xdffa40.",
+      "question": "Recover picker/UI prerequisites, capture ownership and extension integration.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|stopSharingThisTab": {
+      "behavior": "Calls native 0x4229eac after optional engagement check.",
+      "question": "Which capture session(s) are stopped and how is completion observed?",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|showBlockedPopups": {
+      "behavior": "Accesses native popup helper via 0x805e0, forwards to 0x7277188 or constructs an error result.",
+      "question": "Recover popup selection, app UI prompt and profile permission side effects.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|save": {
+      "behavior": "Calls native save through 0x6796e50 with error-result creation/cleanup.",
+      "question": "Recover save dialog, formats and missing native content behavior.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|deviceScaleFactor": {
+      "behavior": "Derives result through native content/view calls 0x10f9b60 / 0x1f5fc10 / 0x2fd2190 / 0x1e930f8.",
+      "question": "Recover fallback values and exact units/epsilon from native helper.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|zoomFactor": {
+      "behavior": "Derives result through native content/view calls 0x882ba0 / 0x4597a58.",
+      "question": "Recover fallback values and exact units/epsilon from native helper.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|isScaleFactorOne": {
+      "behavior": "Derives result through native content/view calls 0x882ba0 / 0x882fd0.",
+      "question": "Recover fallback values and exact units/epsilon from native helper.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|isScrollOffsetAtTop": {
+      "behavior": "Derives result through native content/view calls 0x10f9b60.",
+      "question": "Recover fallback values and exact units/epsilon from native helper.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|isFullscreen": {
+      "behavior": "Reads native fullscreen-related state after engagement check.",
+      "question": "Exact enum/state and window/fullscreen synchronization require native audit.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|consumeExternalProtocolLaunchPermission": {
+      "behavior": "Requires engaged wrapper; reads GLOBAL byte 0xe4a0c58, sets it to 1 if previously clear, returns previous value XOR 1.",
+      "question": "Which producer resets this global latch, and is consumption intentionally shared across all contents?",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|exitFullscreen": {
+      "behavior": "Calls native fullscreen-exit operation 0x6798c84.",
+      "question": "Recover delegate/window behavior and no-fullscreen path.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|isBlockingJavascriptPopups": {
+      "behavior": "Reads native content/helper state, with optional/native availability checks.",
+      "question": "Recover defaults after detach and producer semantics.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|javascriptPopupsDisplayedCount": {
+      "behavior": "Reads native content/helper state, with optional/native availability checks.",
+      "question": "Recover defaults after detach and producer semantics.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|disallowDownloads": {
+      "behavior": "Reads native content/helper state, with optional/native availability checks.",
+      "question": "Recover defaults after detach and producer semantics.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setIsBlockingJavascriptPopups:": {
+      "behavior": "Updates native content/helper policy state after engagement/availability checks.",
+      "question": "Recover scope, download/popup decision timing and callback interactions.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setDisallowDownloads:": {
+      "behavior": "Updates native content/helper policy state after engagement/availability checks.",
+      "question": "Recover scope, download/popup decision timing and callback interactions.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|errorStatus": {
+      "behavior": "Wraps native error status in ArcErrorStatus.",
+      "question": "Recover absent/native-detached status and underlying error code mapping.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|setGestureHandler:forGestures:": {
+      "behavior": "Builds/clears weak app gesture-handler bridge and forwards native gesture registration through 0x4345c58 / 0x4375e78.",
+      "question": "Recover gesture mask, event consumption/result callbacks and lifetime.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|setUserActivityDelegate:": {
+      "behavior": "Category implementation manages user-activity observer and native registration through 0x4345dc8; independent from base weak-field setter at 0x43fe218.",
+      "question": "Recover observed events and whether nil removes all in-flight native callbacks.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|closeWithForegroundCommitTiming:": {
+      "behavior": "Gets native optional; 0x437854c closes immediately or reposts retry when native delegate/observer/controller/media wrappers block close.",
+      "question": "Recover timing enum, retry termination, task sequence and completion signal.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-embedding.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|close": {
+      "behavior": "Forwards to closeWithForegroundCommitTiming: with integer 0.",
+      "question": "Recover timing enum and completion/lifetime behavior.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|createPaneHostView": {
+      "behavior": "Raw B veneer 0x4410bb4\u21920x47390dc allocates WebContentsPaneHostView and initializes with NSZeroRect.",
+      "question": "Recover pane/compositor teardown and AppKit caller-thread requirements.",
+      "status": "veneer_verified",
+      "evidence": "evidence/binary-checks.tsv; evidence/bridges-embedding.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|nativeView": {
+      "behavior": "Requires engaged native peer; calls 0x4376580 to ensure native host then returns object at peer+0x288.",
+      "question": "Recover cases where native host remains nil and ownership of returned view.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-embedding.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|attachToPaneHostView:": {
+      "behavior": "Nil host is ignored. Ensures native host and passes it to 0x4739114; only exact WebContentsPaneHostView is accepted, then attachWebContentsHostView: is sent.",
+      "question": "Recover content swap, compositor, focus and pane lifetime requirements.",
+      "status": "reviewed_partial",
+      "evidence": "evidence/bridges-embedding.txt; evidence/bridges-deep.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|detachFromPaneHostView:": {
+      "behavior": "Nil host ignored; 0x47391c8 checks exact WebContentsPaneHostView then sends detachWebContentsHostView.",
+      "question": "Does supplied pane contain this WebContents? Wrapper does not inspect self/native peer.",
+      "status": "local_verified",
+      "evidence": "evidence/bridges-embedding.txt; evidence/bridges-deep.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|boostIDE": {
+      "behavior": "Gets native content subservice and allocates ArcWebContentsBoostIDE; some getters use associated-object cache in visible implementation.",
+      "question": "Validate exact object identity/cache, owner weak references and service readiness.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|devTools": {
+      "behavior": "Gets native content subservice and allocates ArcWebContentsDevTools; some getters use associated-object cache in visible implementation.",
+      "question": "Validate exact object identity/cache, owner weak references and service readiness.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|mediaSession": {
+      "behavior": "Gets native content subservice and allocates ArcWebContentsMediaSession; some getters use associated-object cache in visible implementation.",
+      "question": "Validate exact object identity/cache, owner weak references and service readiness.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|navigationController": {
+      "behavior": "Gets native content subservice and allocates ArcWebContentsNavigationController; some getters use associated-object cache in visible implementation.",
+      "question": "Validate exact object identity/cache, owner weak references and service readiness.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|thumbnailsGenerator": {
+      "behavior": "Gets native content subservice and allocates ArcWebContentsThumbnailsGenerator; some getters use associated-object cache in visible implementation.",
+      "question": "Validate exact object identity/cache, owner weak references and service readiness.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|sessionId": {
+      "behavior": "Gets native session ID via 0x4376480 and wraps in ArcSessionID.",
+      "question": "Recover stability across discard/clone/navigation.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|isEqual:": {
+      "behavior": "Identity fast path; compares class, optional engagement and native peer identity.",
+      "question": "Validate empty/detached wrapper equality.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|hash": {
+      "behavior": "Requires engaged peer; hashes 8-byte native pointer through 0x18f3c.",
+      "question": "Confirm identity consistency through content discard/close.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|cast": {
+      "behavior": "Extracts native content and forwards operation through 0x73554d4; some paths create/clean native error results.",
+      "question": "Recover Chrome service/UI prerequisites, errors and app-visible completion.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|basicPrint": {
+      "behavior": "Extracts native content and forwards operation through 0x7f73fa0; some paths create/clean native error results.",
+      "question": "Recover Chrome service/UI prerequisites, errors and app-visible completion.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|viewSource": {
+      "behavior": "Extracts native content and forwards operation through 0x4377a08; some paths create/clean native error results.",
+      "question": "Recover Chrome service/UI prerequisites, errors and app-visible completion.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|showCookiesDialog": {
+      "behavior": "Extracts native content and forwards operation through 0x7ddc61c; some paths create/clean native error results.",
+      "question": "Recover Chrome service/UI prerequisites, errors and app-visible completion.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|setMuted:": {
+      "behavior": "Extracts native content and forwards operation through 0x7876aa4; some paths create/clean native error results.",
+      "question": "Recover Chrome service/UI prerequisites, errors and app-visible completion.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|applyColorScheme:": {
+      "behavior": "Extracts native content and forwards operation through 0x43794f0; some paths create/clean native error results.",
+      "question": "Recover Chrome service/UI prerequisites, errors and app-visible completion.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|hasUnloadHandler:": {
+      "behavior": "Captures completion block and forwards through native 0x4378b6c.",
+      "question": "Recover beforeunload/unload distinction, bool delivery and renderer teardown cancellation.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|muted": {
+      "behavior": "Extracts native optional and returns native/helper state.",
+      "question": "Resolve state derivation and detached/missing-service fallback.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|audible": {
+      "behavior": "Extracts native optional and returns native/helper state.",
+      "question": "Resolve state derivation and detached/missing-service fallback.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents|Extensions|-|shareable": {
+      "behavior": "Extracts native optional and returns native/helper state.",
+      "question": "Resolve state derivation and detached/missing-service fallback.",
+      "status": "reviewed_partial",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcMediaImage||-|src": {
+      "behavior": "Reads native MediaImage URL through 0x7cf864, copies native bytes and converts UTF-8 string via 0x1c391bc.",
+      "question": "Invalid URL behavior and size-vector relationship need producer validation.",
+      "status": "local_verified",
+      "evidence": "evidence/bridges-conversions.txt",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setPendingRenderFrameViewportSize:": {
+      "behavior": "Stores supplied CGSize double components at self+0xe8 and self+0xf0; no renderer resize call in this setter.",
+      "question": "Observer/native consumer of cached size remains unresolved.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|extensionsDelegate": {
+      "behavior": "Returns shared bridge pair by value; increments nonnull control strong count.",
+      "question": "Bridge event selectors and app delegate lifetime require separate audit.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextExtensions||-|setExtensionsDelegate:": {
+      "behavior": "Replaces shared bridge pair, incrementing new control count and releasing prior shared owner. Ghidra parameter typing is imperfect.",
+      "question": "Validate shared_ptr aggregate calling convention.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextDownloads||-|downloadsDelegate": {
+      "behavior": "Returns shared bridge pair by value; increments nonnull control strong count.",
+      "question": "Bridge event selectors and app delegate lifetime require separate audit.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcBrowserContextDownloads||-|setDownloadsDelegate:": {
+      "behavior": "Replaces shared bridge pair, incrementing new control count and releasing prior shared owner. Ghidra parameter typing is imperfect.",
+      "question": "Validate shared_ptr aggregate calling convention.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|web_contents_navigation_delegate_bridge": {
+      "behavior": "Returns stored shared bridge/observer pair by value, incrementing strong count when nonnull.",
+      "question": "Aggregate return ABI and in-flight callback lifetime require validation.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setWeb_contents_navigation_delegate_bridge:": {
+      "behavior": "Assigns stored shared bridge/observer pair, increments incoming strong count and releases prior owner.",
+      "question": "Does not itself establish native registration; use public delegate setter path.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|web_contents_ui_delegate_bridge": {
+      "behavior": "Returns stored shared bridge/observer pair by value, incrementing strong count when nonnull.",
+      "question": "Aggregate return ABI and in-flight callback lifetime require validation.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setWeb_contents_ui_delegate_bridge:": {
+      "behavior": "Assigns stored shared bridge/observer pair, increments incoming strong count and releases prior owner.",
+      "question": "Does not itself establish native registration; use public delegate setter path.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|web_contents_gesture_handler_bridge": {
+      "behavior": "Returns stored shared bridge/observer pair by value, incrementing strong count when nonnull.",
+      "question": "Aggregate return ABI and in-flight callback lifetime require validation.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setWeb_contents_gesture_handler_bridge:": {
+      "behavior": "Assigns stored shared bridge/observer pair, increments incoming strong count and releases prior owner.",
+      "question": "Does not itself establish native registration; use public delegate setter path.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|web_contents_actions_delegate_bridge": {
+      "behavior": "Returns stored shared bridge/observer pair by value, incrementing strong count when nonnull.",
+      "question": "Aggregate return ABI and in-flight callback lifetime require validation.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setWeb_contents_actions_delegate_bridge:": {
+      "behavior": "Assigns stored shared bridge/observer pair, increments incoming strong count and releases prior owner.",
+      "question": "Does not itself establish native registration; use public delegate setter path.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|web_contents_top_band_color_delegate_bridge": {
+      "behavior": "Returns stored shared bridge/observer pair by value, incrementing strong count when nonnull.",
+      "question": "Aggregate return ABI and in-flight callback lifetime require validation.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setWeb_contents_top_band_color_delegate_bridge:": {
+      "behavior": "Assigns stored shared bridge/observer pair, increments incoming strong count and releases prior owner.",
+      "question": "Does not itself establish native registration; use public delegate setter path.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|userActivityObserver": {
+      "behavior": "Returns stored shared bridge/observer pair by value, incrementing strong count when nonnull.",
+      "question": "Aggregate return ABI and in-flight callback lifetime require validation.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setUserActivityObserver:": {
+      "behavior": "Assigns stored shared bridge/observer pair, increments incoming strong count and releases prior owner.",
+      "question": "Does not itself establish native registration; use public delegate setter path.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|webContentsObserver": {
+      "behavior": "Returns stored shared bridge/observer pair by value, incrementing strong count when nonnull.",
+      "question": "Aggregate return ABI and in-flight callback lifetime require validation.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    },
+    "ArcWebContents||-|setWebContentsObserver:": {
+      "behavior": "Assigns stored shared bridge/observer pair, increments incoming strong count and releases prior owner.",
+      "question": "Does not itself establish native registration; use public delegate setter path.",
+      "status": "local_verified",
+      "evidence": "",
+      "confidence": "medium"
+    }
+  }
+}

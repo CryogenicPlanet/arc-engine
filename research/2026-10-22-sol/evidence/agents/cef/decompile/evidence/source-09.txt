@@ -1,0 +1,57 @@
+100:   cef_string_t window_name;
+101: 
+102:   ///
+103:   /// Initial window bounds.
+104:   ///
+105:   cef_rect_t bounds;
+106: 
+107:   ///
+108:   /// Set to true (1) to create the view initially hidden.
+109:   ///
+110:   int hidden;
+111: 
+112:   ///
+113:   /// NSView pointer for the parent view.
+114:   ///
+115:   cef_window_handle_t parent_view;
+116: 
+117:   ///
+118:   /// Set to true (1) to create the browser using windowless (off-screen)
+119:   /// rendering. No view will be created for the browser and all rendering will
+120:   /// occur via the CefRenderHandler interface. The |parent_view| value will be
+121:   /// used to identify monitor info and to act as the parent view for dialogs,
+122:   /// context menus, etc. If |parent_view| is not provided then the main screen
+123:   /// monitor will be used and some functionality that requires a parent view
+124:   /// may not function correctly. In order to create windowless browsers the
+125:   /// CefSettings.windowless_rendering_enabled value must be set to true.
+126:   /// Transparent painting is enabled by default but can be disabled by setting
+127:   /// CefBrowserSettings.background_color to an opaque value.
+128:   ///
+129:   int windowless_rendering_enabled;
+130: 
+131:   ///
+132:   /// Set to true (1) to enable shared textures for windowless rendering. Only
+133:   /// valid if windowless_rendering_enabled above is also set to true. Currently
+134:   /// only supported on Windows (D3D11).
+135:   ///
+136:   int shared_texture_enabled;
+137: 
+138:   ///
+139:   /// Set to true (1) to enable the ability to issue BeginFrame from the client
+140:   /// application.
+141:   ///
+142:   int external_begin_frame_enabled;
+143: 
+144:   ///
+145:   /// NSView pointer for the new browser view. Only used with windowed
+146:   /// rendering.
+147:   ///
+148:   cef_window_handle_t view;
+149: 
+150:   ///
+151:   /// Optionally change the runtime style. Alloy style will always be used if
+152:   /// |windowless_rendering_enabled| is true or if |parent_view| is provided.
+153:   /// See cef_runtime_style_t documentation for details.
+154:   ///
+155:   cef_runtime_style_t runtime_style;
+156: } cef_window_info_t;

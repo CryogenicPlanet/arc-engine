@@ -1,0 +1,30 @@
+INDEX 0x442f66c ArcDownloadItem::completedBytes path=/home/exedev/work/inputs/decompile/0x44.c offset=1083285 C_bytes=807 failed=0
+// ==== 0x442f66c  ArcDownloadItem::completedBytes  (92 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+long_long ArcDownloadItem::completedBytes(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  long lVar2;
+  long_long lVar3;
+  long lVar4;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x442f6c8);
+    (*pcVar1)();
+  }
+  lVar4 = *(long *)(param_1 + 0x10);
+  if ((lVar4 != 0) && (lVar2 = (**(code **)(**(long **)(lVar4 + 0x18) + 0xf8))(), lVar2 != 0)) {
+                    /* WARNING: Could not recover jumptable at 0x0442f6b0. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+    lVar3 = (**(code **)(**(long **)(lVar4 + 0x18) + 0x28))();
+    return lVar3;
+  }
+  return 0;
+}
+
+
+

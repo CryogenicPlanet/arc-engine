@@ -1,0 +1,105 @@
+{
+  "status": "PASS",
+  "selection_manifest_sha256": "58b7e65868a774783345bc65391f16d6d983e61f648a2e604a5ec9d2d69afc8e",
+  "selected_hash_checks": 2476,
+  "classes": 146,
+  "method_rows": 1964,
+  "unique_imps": 1566,
+  "indexed_method_imps": 1565,
+  "missing_exact_method_header": "0x4410bb4;B to 0x47390dc",
+  "groups": [
+    {
+      "writer": "spec-1",
+      "classes": 34,
+      "methods": 491,
+      "distinct_imps": 436,
+      "base": 457,
+      "category": 34,
+      "instance": 487,
+      "class_methods": 4,
+      "open_questions": 397,
+      "explicit_unresolved": 16,
+      "semantic_status": "{\"local_verified\": 318, \"reviewed_partial\": 156, \"unresolved\": 16, \"veneer_verified\": 1}",
+      "body_status": "{\"available\": 486, \"available_incoherent_casts_repaired_by_binary\": 1, \"available_incoherent_return_repaired_by_binary\": 2, \"available_incoherent_vararg_repaired_by_binary\": 1, \"missing_body_verified_branch_veneer\": 1}"
+    },
+    {
+      "writer": "spec-2",
+      "classes": 37,
+      "methods": 491,
+      "distinct_imps": 453,
+      "base": 468,
+      "category": 23,
+      "instance": 491,
+      "class_methods": 0,
+      "open_questions": 403,
+      "explicit_unresolved": 1,
+      "semantic_status": "{\"bounded_review\": 139, \"local_observation\": 200, \"local_verified\": 151, \"unresolved\": 1}",
+      "body_status": "{\"available\": 477, \"available_incoherent_pseudocode\": 1, \"available_signature_artifact\": 13}"
+    },
+    {
+      "writer": "spec-3",
+      "classes": 37,
+      "methods": 491,
+      "distinct_imps": 433,
+      "base": 488,
+      "category": 3,
+      "instance": 488,
+      "class_methods": 3,
+      "open_questions": 379,
+      "explicit_unresolved": 79,
+      "semantic_status": "{\"conversion_partial\": 46, \"instruction_verified\": 9, \"literal_partial\": 79, \"literal_verified\": 83, \"local_review\": 80, \"partial_review\": 115, \"unresolved\": 79}",
+      "body_status": "{\"available\": 430, \"available_malformed_signature_recovered_leaf\": 4, \"available_with_decompiler_limits\": 57}"
+    },
+    {
+      "writer": "spec-4",
+      "classes": 38,
+      "methods": 491,
+      "distinct_imps": 418,
+      "base": 408,
+      "category": 83,
+      "instance": 482,
+      "class_methods": 9,
+      "open_questions": 491,
+      "explicit_unresolved": 1,
+      "semantic_status": "{\"bridge_reviewed_partial\": 206, \"local_body_observed\": 169, \"local_field_observed\": 115, \"unresolved\": 1}",
+      "body_status": "{\"available\": 482, \"available_prototype_malformed\": 4, \"available_pseudocode_incorrect_raw_verified\": 4, \"available_semantics_suspect\": 1}"
+    }
+  ],
+  "original_findings": 32,
+  "fresh_dispositions": {
+    "resolved_with_limits": 24,
+    "resolved": 8
+  },
+  "rows_with_open_questions": 1670,
+  "explicit_unresolved_rows": 97,
+  "shards": 199,
+  "shard_bytes": 1114106346,
+  "headers": 567959,
+  "failed": 79,
+  "successful_candidates": 567880,
+  "app_used_call_rows": 4353,
+  "app_call_evidence": {
+    "app_dispatch_binary+app_pseudocode": 4336,
+    "app_C_import_call_binary+app_pseudocode": 6,
+    "app_pseudocode_dispatch_only": 11
+  },
+  "app_branch_records": 5353,
+  "app_unique_branch_vas": 5353,
+  "protocols": 26,
+  "protocol_identities": 200,
+  "static_sends": 195,
+  "cef_classifications": {
+    "arc_specific_behavior": 319,
+    "unresolved": 365,
+    "partial_cef_plus_bridge": 136,
+    "direct_cef_public": 11,
+    "confirmed_chrome_internal_dependency": 3
+  },
+  "matcher_classifications": {
+    "('unnamed_anchored_sample', 'ambiguous')": 512,
+    "('named_identity_control', 'unmatched')": 1,
+    "('named_identity_control', 'ambiguous')": 1
+  },
+  "seconds": 10.133,
+  "limits": "Declaration/provenance/branch checks. No complete semantic, receiver, runtime, C++ ABI or readiness certification."
+}

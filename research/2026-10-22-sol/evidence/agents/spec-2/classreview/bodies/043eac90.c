@@ -1,0 +1,20 @@
+// ==== 0x43eac90  ArcBrowserApplication::browserApplicationDelegate  (32 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+shared_ptr<(anonymous_namespace)::BrowserApplicationDelegateBridge>
+ArcBrowserApplication::browserApplicationDelegate(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  shared_ptr<(anonymous_namespace)::BrowserApplicationDelegateBridge> sVar2;
+  
+  sVar2 = *(shared_ptr<(anonymous_namespace)::BrowserApplicationDelegateBridge> *)(param_1 + 0x30);
+  if (*(long *)(param_1 + 0x38) != 0) {
+    plVar1 = (long *)(*(long *)(param_1 + 0x38) + 8);
+    *plVar1 = *plVar1 + 1;
+  }
+  return sVar2;
+}
+
+

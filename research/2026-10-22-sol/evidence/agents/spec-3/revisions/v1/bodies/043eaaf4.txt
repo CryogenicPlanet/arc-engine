@@ -1,0 +1,23 @@
+INDEX 0x43eaaf4 ArcWebContentsMediaSession::bridge path=/home/exedev/work/inputs/decompile/0x43.c offset=4422524 C_bytes=604 failed=0
+// ==== 0x43eaaf4  ArcWebContentsMediaSession::bridge  (32 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+shared_ptr<(anonymous_namespace)::WebContentsMediaSessionDelegateBridge>
+ArcWebContentsMediaSession::bridge(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  shared_ptr<(anonymous_namespace)::WebContentsMediaSessionDelegateBridge> sVar2;
+  
+  sVar2 = *(shared_ptr<(anonymous_namespace)::WebContentsMediaSessionDelegateBridge> *)
+           (param_1 + 0x20);
+  if (*(long *)(param_1 + 0x28) != 0) {
+    plVar1 = (long *)(*(long *)(param_1 + 0x28) + 8);
+    *plVar1 = *plVar1 + 1;
+  }
+  return sVar2;
+}
+
+
+

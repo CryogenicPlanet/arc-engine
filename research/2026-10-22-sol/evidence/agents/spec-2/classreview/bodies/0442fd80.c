@@ -1,0 +1,30 @@
+// ==== 0x442fd80  ArcDownloadItem::pause  (88 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int __thiscall ArcDownloadItem::pause(ArcDownloadItem *this)
+
+{
+  code *pcVar1;
+  int iVar2;
+  long lVar3;
+  long lVar4;
+  
+  if (((byte)this[0x20] & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x442fdd8);
+    (*pcVar1)();
+  }
+  lVar4 = *(long *)(this + 0x10);
+  if ((lVar4 != 0) &&
+     (lVar3 = (**(code **)(**(long **)(lVar4 + 0x18) + 0xf8))(), this = (ArcDownloadItem *)0x0,
+     lVar3 != 0)) {
+                    /* WARNING: Could not recover jumptable at 0x0442fdc4. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+    iVar2 = (**(code **)(**(long **)(lVar4 + 0x18) + 0x170))();
+    return iVar2;
+  }
+  return (int)this;
+}
+
+

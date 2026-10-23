@@ -1,0 +1,35 @@
+// ==== 0x4354de4  FUN_04354de4  (188 bytes)
+
+/* WARNING: Function: _objc_loadWeakRetained replaced with injection: _objc_load_fixup */
+/* WARNING: Function: _objc_retainAutoreleasedReturnValue replaced with injection:
+   _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+
+long FUN_04354de4(long param_1,undefined8 param_2)
+
+{
+  undefined8 *puVar1;
+  long *plVar2;
+  undefined8 local_40;
+  undefined8 *local_38;
+  
+  if (*(long *)(param_1 + 0x18) != 0) {
+    if ((*(long *)(*(long *)(param_1 + 0x18) + 0x8d8) != 0) &&
+       (plVar2 = (long *)FUN_010f9b60(), plVar2 != (long *)0x0)) {
+      (**(code **)(*plVar2 + 0x50))(&local_38);
+      puVar1 = local_38;
+      local_40 = *local_38;
+      local_38 = (undefined8 *)0x0;
+      if (puVar1 != (undefined8 *)0x0) {
+        _objc_destroyWeak(puVar1);
+        FUN_00005810(puVar1,8);
+      }
+      FUN_0473dff4(&local_40,param_2);
+    }
+    param_1 = 0;
+  }
+  return param_1;
+}
+
+

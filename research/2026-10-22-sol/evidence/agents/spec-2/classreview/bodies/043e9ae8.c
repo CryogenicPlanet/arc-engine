@@ -1,0 +1,31 @@
+// ==== 0x43e9ae8  ArcBrowserApplication::cancelUrlLoad:  (136 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcBrowserApplication::cancelUrlLoad_(ID param_1,SEL param_2,ID param_3)
+
+{
+  long *plVar1;
+  undefined8 local_38;
+  undefined8 uStack_30;
+  ulong local_28;
+  
+  plVar1 = *(long **)(param_1 + 0x20);
+  if (param_3 == 0) {
+    local_38 = 0;
+    uStack_30 = 0;
+    local_28 = 0;
+  }
+  else {
+    _objc_msgSend(param_3,"token",&local_38);
+  }
+  FUN_0434f448(*(undefined8 *)(*plVar1 + 0x448),&local_38);
+  if ((long)local_28 < 0) {
+    FUN_00005810(local_38,local_28 & 0x7fffffffffffffff);
+  }
+  return;
+}
+
+

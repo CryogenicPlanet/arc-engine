@@ -1,0 +1,222 @@
+[
+  {
+    "data_row": 9,
+    "class_name": "ArcBrowserApplicationConfiguration",
+    "selector": "init:argv:profilePath:applicationID:isProduction:sessionRestorationPolicy:shouldLoadAllProfilesAtStartup:quitRunLoopOnTermination:userDefaultsSuiteName:",
+    "changes": {
+      "body_status": {
+        "before": "available",
+        "after": "available_prototype_malformed"
+      },
+      "behavior": {
+        "before": "Initializes NSObject; stores argc, argv, profile path, application ID, production flag, restoration policy, startup loading flag, run-loop termination flag and user-defaults suite in ivars. No validation of argc/argv consistency is visible.",
+        "after": "Initializes NSObject and stores configuration fields. Ghidra stack-argument recovery is malformed (second byte of a bool; pointer assembled from bool). Raw instructions load entry-SP bytes +0/+1 into self+9/+10, and entry-SP pointer +8 into the object-store call for self+0x30; this corroborates the final fields without validating the recovered C prototype."
+      },
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x43eca0c; bodies/43eca0c.c; ObjC method record 0xd778314; dobjc170.txt:1511; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x43eca0c; bodies/43eca0c.c; ObjC method record 0xd778314; dobjc170.txt:1511; evidence/body-index.json exact byte range; revision-evidence/instructions.tsv 0x43eca48, 0x43eca88-0x43ecac4; revision-evidence/analysis.md finding 6"
+      },
+      "unresolved_question": {
+        "before": "Which consuming startup paths interpret each restoration-policy value?",
+        "after": "Declared encoding is retained; raw stack loads/stores corroborate final fields, but startup consumers, restoration-policy meanings, argc/argv consistency and suite-name nil behavior remain unverified."
+      },
+      "decompiler_flags": {
+        "before": "",
+        "after": "malformed_stack_argument_recovery; entry_stack_mapping_raw_corroborated"
+      }
+    }
+  },
+  {
+    "data_row": 148,
+    "class_name": "ArcWebContentsBoostIDE",
+    "selector": "sendResponse:jsonString:",
+    "changes": {
+      "behavior": {
+        "before": "Converts command/request ID and JSON string (nil to empty), checks native WebUI handler and calls 0x43d35c8 to resolve response.",
+        "after": "Converts command/request ID and payload bytes (nil to empty), checks native handler and forwards to 0x43d35c8. For a matching pending ID, string-valued payload construction through 0xc87c40 precedes 0x68122a8 and cr.webUIResponse true."
+      },
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x4414488; bodies/4414488.c; ObjC method record 0xd77a280; dobjc170.txt:2129; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x4414488; bodies/4414488.c; ObjC method record 0xd77a280; dobjc170.txt:2129; evidence/body-index.json exact byte range; revision-evidence/rechecked-original-bodies.txt entries 0x43d35c8/0xc87c40; revision-evidence/primary-sources.tsv"
+      },
+      "unresolved_question": {
+        "before": "Backend parser error behavior, JS-allowed gate and response ID type remain open.",
+        "after": "Pending-ID matching/removal, JS-allowed gate, response ID format and receiving JavaScript payload interpretation need end-to-end validation."
+      }
+    }
+  },
+  {
+    "data_row": 149,
+    "class_name": "ArcWebContentsBoostIDE",
+    "selector": "sendErrorResponse:jsonString:",
+    "changes": {
+      "behavior": {
+        "before": "Converts ID/JSON and forwards to 0x43d38cc for rejected response when native WebUI handler is live.",
+        "after": "Converts ID/payload bytes and forwards to 0x43d38cc when native handler is live. For a matching pending ID, string-valued payload construction through 0xc87c40 precedes 0x6812404 and cr.webUIResponse false."
+      },
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x44145b0; bodies/44145b0.c; ObjC method record 0xd77a28c; dobjc170.txt:2130; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x44145b0; bodies/44145b0.c; ObjC method record 0xd77a28c; dobjc170.txt:2130; evidence/body-index.json exact byte range; revision-evidence/rechecked-original-bodies.txt entries 0x43d38cc/0xc87c40; revision-evidence/primary-sources.tsv"
+      },
+      "unresolved_question": {
+        "before": "Parser failures and response ID type remain open.",
+        "after": "Pending-ID matching/removal, JS-allowed gate, response ID format and receiving JavaScript payload interpretation need end-to-end validation."
+      }
+    }
+  },
+  {
+    "data_row": 150,
+    "class_name": "ArcWebContentsBoostIDE",
+    "selector": "sendEvent:jsonString:",
+    "changes": {
+      "behavior": {
+        "before": "Converts event name/JSON and forwards to 0x8371aa8; backend calls cr.webUIListenerCallback with parsed values.",
+        "after": "Converts event name/payload bytes and forwards to 0x8371aa8; 0xc87c40 constructs string-valued arguments for cr.webUIListenerCallback. No JSON parsing appears in this native path."
+      },
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x44146d8; bodies/44146d8.c; ObjC method record 0xd77a298; dobjc170.txt:2131; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x44146d8; bodies/44146d8.c; ObjC method record 0xd77a298; dobjc170.txt:2131; evidence/body-index.json exact byte range; revision-evidence/rechecked-original-bodies.txt entries 0x8371aa8/0xc87c40; revision-evidence/primary-sources.tsv"
+      },
+      "unresolved_question": {
+        "before": "Event JSON parse failure and JS lifecycle gating remain open.",
+        "after": "Receiving JavaScript interpretation, event naming and JS lifecycle gating remain untraced; no native JSON parser/error contract is established."
+      }
+    }
+  },
+  {
+    "data_row": 272,
+    "class_name": "ArcBrowserContextPreferences",
+    "selector": "setBrowser_context_preferences_observer_bridges:",
+    "changes": {
+      "behavior": {
+        "before": "Assigns shared native bridge handle, incrementing new control count and releasing previous shared owner; identity is defined by metadata, despite shared Ghidra name.",
+        "after": "Assigns the vector of 16-byte shared observer handles at self+0x28, skipping self-assignment. Reuses or reallocates capacity, increments copied element control counts and releases replaced/removed elements and obsolete allocation; metadata identifies this shared IMP despite its Ghidra class name."
+      },
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x4418ce4; bodies/4418ce4.c; ObjC method record 0xd77baa8; dobjc170.txt:2697; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x4418ce4; bodies/4418ce4.c; ObjC method record 0xd77baa8; dobjc170.txt:2697; evidence/body-index.json exact byte range; revision-evidence/rechecked-original-bodies.txt entry 0x4418ce4; declared vector encoding retained"
+      },
+      "unresolved_question": {
+        "before": "Delegate slot ownership and registration/detachment must be checked separately.",
+        "after": "Vector mutation synchronization, element lifetime under reentrancy and observer registration/detachment remain unproved by storage assignment."
+      }
+    }
+  },
+  {
+    "data_row": 400,
+    "class_name": "ArcMenuItemModel",
+    "selector": "setDelegate:",
+    "changes": {
+      "behavior": {
+        "before": "Creates bridge with weak model/delegate, registers via 0x433cc10; nil path clears bridge and unregisters through 0x432bf9c.",
+        "after": "Creates weak model/delegate bridge and registers via 0x433cc10 for nonnil delegate. Nil releases a getter-returned temporary and calls 0x432bf9c(native,0,0), clearing native delegate slots at +0x20/+0x28. No wrapper shared-bridge clear is visible on that path."
+      },
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x443ff88; bodies/443ff88.c; ObjC method record 0xd77ce4c; dobjc170.txt:3172; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x443ff88; bodies/443ff88.c; ObjC method record 0xd77ce4c; dobjc170.txt:3172; evidence/body-index.json exact byte range; revision-evidence/rechecked-original-bodies.txt entries 0x443ff88/0x432bf9c; revision-evidence/instructions.tsv 0x4440110-0x444014c and 0x432c06c-0x432c074"
+      },
+      "unresolved_question": {
+        "before": "In-flight changed/removed callbacks and retained submenu teardown need validation.",
+        "after": "Wrapper bridge retained lifetime/reuse, native weak-handle cleanup and in-flight changed/removed callbacks remain unproved; native slot clearing does not establish callback suppression."
+      }
+    }
+  },
+  {
+    "data_row": 418,
+    "class_name": "ArcBrowserContextHistory",
+    "selector": "setVisitObserver:",
+    "changes": {
+      "behavior": {
+        "before": "Installs shared visit-observer bridge with weak observer/context-owner references through 0x4332f08; existing bridge delegate is updated and nil clears stored bridge.",
+        "after": "Creates shared visit-observer bridge with weak observer/owner and installs through 0x4332f08 for nonnil creation; updates an existing bridge for nonnil observer. Nil releases the getter-returned shared-handle temporary; no stored bridge clear or unregister call is visible on that path."
+      },
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x40439c4; bodies/40439c4.c; ObjC method record 0xd773ef0; dobjc170.txt:4801; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x40439c4; bodies/40439c4.c; ObjC method record 0xd773ef0; dobjc170.txt:4801; evidence/body-index.json exact byte range; revision-evidence/analysis.md findings 1-2; revision-evidence/instructions.tsv (nil branch 0x4043a08 -> 0x4043a94)"
+      },
+      "unresolved_question": {
+        "before": "In-flight callbacks after clearing and native observer ownership remain open.",
+        "after": "Nil detachment and native observer ownership remain unestablished; queued/in-flight delivery and shutdown cancellation need separate evidence."
+      }
+    }
+  },
+  {
+    "data_row": 427,
+    "class_name": "ArcSearchEngine",
+    "selector": "isEqual:",
+    "changes": {
+      "behavior": {
+        "before": "Checks receiver identity, nil and class compatibility; compares native optional engagement and underlying identity/value after extracting both handles.",
+        "after": "Checks receiver identity, nil and class compatibility; compares optional engagement and, when both are engaged, underlying native pointers. This does not perform a fieldwise content comparison."
+      },
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x43ecf8c; bodies/43ecf8c.c; ObjC method record 0xd7783e4; dobjc170.txt:4877; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x43ecf8c; bodies/43ecf8c.c; ObjC method record 0xd7783e4; dobjc170.txt:4877; evidence/body-index.json exact byte range; revision-evidence/rechecked-original-bodies.txt entry 0x43ecf8c"
+      },
+      "unresolved_question": {
+        "before": "Native equality/value interpretation and hash agreement need runtime edge-case checks.",
+        "after": "Native pointer lifetime, content mutation and hash/equality behavior across service reload remain unverified."
+      }
+    }
+  },
+  {
+    "data_row": 428,
+    "class_name": "ArcSearchEngine",
+    "selector": "hash",
+    "changes": {
+      "behavior": {
+        "before": "Reads native preference value at key search_engine_template_url. Profile/native handle checks are visible in body.",
+        "after": "Calls search_engine_template_url accessor to copy the optional native handle; requires engagement, calls 0x4340180 to combine hashes of two native string fields at Impl+0x3b8/+0x3d0, then releases the temporary shared owner."
+      },
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x43ed260; bodies/43ed260.c; ObjC method record 0xd7783f0; dobjc170.txt:4878; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x43ed260; bodies/43ed260.c; ObjC method record 0xd7783f0; dobjc170.txt:4878; evidence/body-index.json exact byte range; revision-evidence/rechecked-original-bodies.txt entries 0x43ed260 and 0x4340180; revision-evidence/analysis.md finding 3"
+      },
+      "unresolved_question": {
+        "before": "Policy precedence, notification ordering and persistence are not fully verified.",
+        "after": "Native string field names, exact hash-helper symbol and hash stability across content mutation/service reload are unproved; equality separately compares native pointers."
+      }
+    }
+  },
+  {
+    "data_row": 431,
+    "class_name": "ArcBrowserContext",
+    "selector": "setDelegate:",
+    "changes": {
+      "behavior": {
+        "before": "Creates a context delegate bridge with weak references to delegate and self, installs it through 0x4333868; existing bridge delegate is updated; nil clears stored bridge.",
+        "after": "Creates a bridge with weak delegate/self and installs it through 0x4333868 on nonnil creation; updates an existing bridge for nonnil delegate. Nil follows cleanup of the getter-returned shared-handle temporary; no stored bridge clear or unregister call is visible on that path."
+      },
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x43ed9a8; bodies/43ed9a8.c; ObjC method record 0xd7784bc; dobjc170.txt:4883; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x43ed9a8; bodies/43ed9a8.c; ObjC method record 0xd7784bc; dobjc170.txt:4883; evidence/body-index.json exact byte range; revision-evidence/analysis.md findings 1-2; revision-evidence/instructions.tsv (nil branch 0x43ed9e8 -> 0x43eda98)"
+      },
+      "unresolved_question": {
+        "before": "Native bridge callbacks and detach behavior are only partly followed.",
+        "after": "Nil detachment, native registration lifetime and effects on in-flight callbacks remain unestablished; observed temporary cleanup does not prove callback suppression."
+      }
+    }
+  },
+  {
+    "data_row": 449,
+    "class_name": "ArcBrowserContext",
+    "selector": "addBookmarkModelObserver:",
+    "changes": {
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x43f1968; bodies/43f1968.c; ObjC method record 0xd778594; dobjc170.txt:4901; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x43f1968; bodies/43f1968.c; ObjC method record 0xd778594; dobjc170.txt:4901; evidence/body-index.json exact byte range; revision-evidence/nearby-original-bodies.txt; revision-evidence/analysis.md finding 7 (correct unslid ArcCore 1.170.0 IMP; lifecycle typo corrected)"
+      }
+    }
+  },
+  {
+    "data_row": 450,
+    "class_name": "ArcBrowserContext",
+    "selector": "removeBookmarkModelObserver:",
+    "changes": {
+      "evidence": {
+        "before": "ArcCore 1.170.0 IMP 0x43f21a8; bodies/43f21a8.c; ObjC method record 0xd7785a0; dobjc170.txt:4902; evidence/body-index.json exact byte range",
+        "after": "ArcCore 1.170.0 IMP 0x43f21a8; bodies/43f21a8.c; ObjC method record 0xd7785a0; dobjc170.txt:4902; evidence/body-index.json exact byte range; revision-evidence/nearby-original-bodies.txt; revision-evidence/analysis.md finding 7 (correct unslid ArcCore 1.170.0 IMP; lifecycle typo corrected)"
+      }
+    }
+  }
+]

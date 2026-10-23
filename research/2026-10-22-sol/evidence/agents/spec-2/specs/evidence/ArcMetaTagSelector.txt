@@ -1,0 +1,103 @@
+{
+  "class_name": "ArcMetaTagSelector",
+  "metadata_va": "0xe37b998",
+  "metadata_file_offset": "0xe37b998",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a3d10",
+  "instance_start": 8,
+  "instance_size": 24,
+  "ivars": [
+    {
+      "record_va": "0xe2a3ca8",
+      "offset": 8,
+      "name": "_kind",
+      "type": "q",
+      "alignment": 3,
+      "size": 8
+    },
+    {
+      "record_va": "0xe2a3cc8",
+      "offset": 16,
+      "name": "_value",
+      "type": "@\"NSString\"",
+      "alignment": 3,
+      "size": 8
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcMetaTagSelector", "category": "", "protocol": "", "kind": "-", "selector": "initWithKind:value:", "type_encoding": "@32@0:8q16@24", "imp": "0x43dd458", "method_record_va": "0xd77779c", "selector_va": "0xd755e32", "dyld_line": 1245, "imp_file_offset": "0x43dd458", "body_name": "ArcMetaTagSelector::initWithKind:value:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4167195, "body_length": 726, "failed": 0, "truncated": false}
+// ==== 0x43dd458  ArcMetaTagSelector::initWithKind:value:  (144 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+ID ArcMetaTagSelector::initWithKind_value_(ID param_1,SEL param_2,long_long param_3,ID param_4)
+
+{
+  ID IVar1;
+  ID IVar2;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcMetaTagSelector;
+  local_40 = param_1;
+  IVar1 = NSObject::init((ID)&local_40,"init");
+  if (IVar1 != 0) {
+    *(long_long *)(IVar1 + 8) = param_3;
+    IVar2 = _objc_msgSend(param_4,"copy");
+    *(ID *)(IVar1 + 0x10) = IVar2;
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcMetaTagSelector", "category": "", "protocol": "", "kind": "-", "selector": "kind", "type_encoding": "q16@0:8", "imp": "0x2d0fb40", "method_record_va": "0xd7777a8", "selector_va": "0xd755e46", "dyld_line": 1246, "imp_file_offset": "0x2d0fb40", "body_name": "WebNNMLFeatureProvider::featureNames", "body_path": "/home/exedev/work/inputs/decompile/0x2d.c", "body_offset": 336323, "body_length": 209, "failed": 0, "truncated": false}
+// ==== 0x2d0fb40  WebNNMLFeatureProvider::featureNames  (8 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID WebNNMLFeatureProvider::featureNames(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 8);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcMetaTagSelector", "category": "", "protocol": "", "kind": "-", "selector": "value", "type_encoding": "@16@0:8", "imp": "0x420b5f8", "method_record_va": "0xd7777b4", "selector_va": "0xd755e4b", "dyld_line": 1247, "imp_file_offset": "0x420b5f8", "body_name": "ViewsNSWindowDelegate::cursor", "body_path": "/home/exedev/work/inputs/decompile/0x42.c", "body_offset": 222677, "body_length": 306, "failed": 0, "truncated": false}
+// ==== 0x420b5f8  ViewsNSWindowDelegate::cursor  (8 bytes)
+
+/* WARNING: Function: _objc_retainAutoreleaseReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ViewsNSWindowDelegate::cursor(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 0x10);
+}
+
+
+
+
+IDENTITY {"class_name": "ArcMetaTagSelector", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x425b6d8", "method_record_va": "0xd7777c0", "selector_va": "0xd744a39", "dyld_line": 1248, "imp_file_offset": "0x425b6d8", "body_name": "ArcHistogramSample::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x42.c", "body_offset": 1896325, "body_length": 310, "failed": 0, "truncated": false}
+// ==== 0x425b6d8  ArcHistogramSample::.cxx_destruct  (12 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcHistogramSample::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  return;
+}
+
+
+

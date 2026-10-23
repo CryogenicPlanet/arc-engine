@@ -1,0 +1,328 @@
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcAIService.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcAIService.md
+@@ -14,7 +14,7 @@
+ 
+ ## Lifecycle, callbacks and relations
+ 
+-Extensions marshal strings, vectors and ObjC callback objects into native operations. Streaming has separate partial-result and completion adapters, and returns the native token (0x43d7a5c → 0x43310bc → 0x429fa38). The latter installs ai.mojom.AIStreamedInferenceListener and uses ai.mojom.AIService; its early unavailable branch invokes completion and returns zero (0x429fa38). Other callback error shapes, cancellation and delivery queues remain unresolved.
++Extensions marshal strings, vectors and ObjC callback objects into native operations. Streaming has separate partial-result and completion adapters, and returns the native token (0x43d7a5c → 0x43310bc → 0x429fa38). The latter installs ai.mojom.AIStreamedInferenceListener and uses ai.mojom.AIService; its early unavailable branch invokes completion and returns zero (0x429fa38). Other callback error shapes, cancellation and delivery queues remain unresolved. Both evaluateCommandBarRanking:completion: and trainCommandBarRanking:completion: explicitly warn that type propagation is not settling (0x43d9ab8, 0x43d9fd4). Their bodies are available, but displayed extra arguments/aggregate mapping are not reliable ABI evidence; no corrupt function boundary is established.
+ 
+ Threading: no explicit queue dispatch or caller-thread assertion was established in these inspected IMPs/selected bridges. Atomic reference-count instructions do not establish a safe concurrent API. Callback queue/reentrancy remains unverified; source API requirements below are requirements of candidate backends, not measured Arc scheduling.
+ 
+@@ -52,9 +52,13 @@
+ | Extensions | - nomicEmbed:completion: | `v32@0:8@16@?24` | 0x43d8b24 | Copies native service handle, marshals inputs and captures supplied callback(s) into native callable state, then forwards to 0x040416c0, 0x043da48c, 0x0429b3d0, 0x043da8c8. | 0x040416c0, 0x043da48c, 0x0429b3d0, 0x043da8c8 | IMP 0x43d8b24; record 0xd77767c; dyld L4870; otool L61422 | medium / available / bounded_review |
+ | Extensions | - loadCommandBarRanking:completion: | `v32@0:8@16@?24` | 0x43d9144 | Copies native service handle, marshals inputs and captures supplied callback(s) into native callable state, then forwards to 0x04432b04, 0x04331820. | 0x04432b04, 0x04331820 | IMP 0x43d9144; record 0xd777688; dyld L4871; otool L61425 | medium / available / bounded_review |
+ | Extensions | - rankCommandBar:candidates:completion: | `v40@0:8@16@24@?32` | 0x43d93f0 | Copies native service handle, marshals inputs and captures supplied callback(s) into native callable state, then forwards to 0x04432fcc, 0x043d9858, 0x0429c81c, 0x042a3ff4. | 0x04432fcc, 0x043d9858, 0x0429c81c, 0x042a3ff4 | IMP 0x43d93f0; record 0xd777694; dyld L4872; otool L61428 | medium / available / bounded_review |
+-| Extensions | - evaluateCommandBarRanking:completion: | `v32@0:8@16@?24` | 0x43d9ab8 | Copies native service handle, marshals inputs and captures supplied callback(s) into native callable state, then forwards to 0x040416c0, 0x043dab74, 0x043daef4, 0x0429d6b8, 0x043db22c. | 0x040416c0, 0x043dab74, 0x043daef4, 0x0429d6b8, 0x043db22c | IMP 0x43d9ab8; record 0xd7776a0; dyld L4873; otool L61431 | medium / available / bounded_review |
+-| Extensions | - trainCommandBarRanking:completion: | `v32@0:8@16@?24` | 0x43d9fd4 | Copies native service handle, marshals inputs and captures supplied callback(s) into native callable state, then forwards to 0x040416c0, 0x043dab74, 0x043daef4, 0x0429e884, 0x043db22c. | 0x040416c0, 0x043dab74, 0x043daef4, 0x0429e884, 0x043db22c | IMP 0x43d9fd4; record 0xd7776ac; dyld L4874; otool L61434 | medium / available / bounded_review |
++| Extensions | - evaluateCommandBarRanking:completion: | `v32@0:8@16@?24` | 0x43d9ab8 | Enumerates input examples, copies the native service handle and captures completion before forwarding to 0x429d6b8; collection helpers include 0x43dab74, 0x43daef4 and 0x43db22c. Ghidra explicitly warns Type propagation algorithm not settling; displayed extra arguments and aggregate semantics are untrusted. Export remains available; function-boundary corruption is not established. | 0x040416c0, 0x043dab74, 0x043daef4, 0x0429d6b8, 0x043db22c | IMP 0x43d9ab8; record 0xd7776a0; dyld L4873; otool L61431 | low / available_signature_artifact / bounded_review |
++| Extensions | - trainCommandBarRanking:completion: | `v32@0:8@16@?24` | 0x43d9fd4 | Enumerates input examples, copies the native service handle and captures completion before forwarding to 0x429e884; collection helpers include 0x43dab74, 0x43daef4 and 0x43db22c. Ghidra explicitly warns Type propagation algorithm not settling; displayed extra arguments and aggregate semantics are untrusted. Export remains available; function-boundary corruption is not established. | 0x040416c0, 0x043dab74, 0x043daef4, 0x0429e884, 0x043db22c | IMP 0x43d9fd4; record 0xd7776ac; dyld L4874; otool L61434 | low / available_signature_artifact / bounded_review |
+ 
+ ## Remaining consequential questions
+ 
+ Recover callback adapter vtables and exact result/error/token contracts for every operation; determine which service implementation and library version the app actually supplies. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Original review data rows 12, 13; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcAnnotatedVisit.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcAnnotatedVisit.md
+@@ -13,6 +13,8 @@
+ The ObjC object owns optional unique storage: init allocates a 0x150-byte flat record and sets task/root/parent IDs to -1 (0x43fed80); native-copy init uses 0x4336aac (0x43fee60); destruction calls 0x4336e98 then frees it (0x4400f18). Setters mutate this local record, with no demonstrated database write. Empty getters have individual defaults, including current NSDate for visitTime (0x43ff064).
+ 
+ ## Lifecycle, callbacks and relations
++
++relatedSearches returns an array of converted strings, with an empty-array fallback for absent native state; the engaged path copies its constructed array (0x43ff558).
+ 
+ visitTime stores Unix seconds through NSDate rather than a direct base::Time field (0x43ffac0). Redirect chains wrap ArcRedirectEntry (0x43ff0fc); categories wrap ArcVisitCategory (0x43ff438). Setters rebuild corresponding vectors (0x43ffb30, 0x44001d0, 0x4400620). Stock history::AnnotatedVisit at Chromium components/history/core/browser/history_types.h:1029 is a source-backed domain comparison, not an established layout identity.
+ 
+@@ -53,7 +55,7 @@
+ | base | - passwordState | `q16@0:8` | 0x43ff3f0 | Local field operation: return 0;; iVar2 = *(int *)(*(long *)(param_1 + 8) + 0xb8);; return lVar1; | local state / indirect operation; see body | IMP 0x43ff3f0; record 0xd7789f0; dyld L1594; otool L24277 | medium / available / local_verified |
+ | base | - hasUrlKeyedImage | `B16@0:8` | 0x43ff420 | Local field operation: bVar1 = *(byte *)(*(long *)(param_1 + 8) + 0xbc);; return bVar1 & 1; | local state / indirect operation; see body | IMP 0x43ff420; record 0xd7789fc; dyld L1595; otool L24280 | medium / available / local_verified |
+ | base | - categories | `@16@0:8` | 0x43ff438 | Builds array of ArcVisitCategory wrappers from native IDs/weights; absent record yields empty array. | 0x01c391bc | IMP 0x43ff438; record 0xd778a08; dyld L1596; otool L24283 | medium / available / bounded_review |
+-| base | - relatedSearches | `@16@0:8` | 0x43ff558 | Converts native byte-string value to ObjC string using 0x1c391bc (CFStringCreateWithBytes encoding 0x08000100). Self offsets: 0x10, 0x8. Engagement guard/trap is visible. | 0x01c391bc | IMP 0x43ff558; record 0xd778a14; dyld L1597; otool L24286 | medium / available / local_observation |
++| base | - relatedSearches | `@16@0:8` | 0x43ff558 | Returns an array of strings: absent native optional returns the empty NSArray singleton; engaged state enumerates 24-byte native string entries, converts each via 0x1c391bc, adds it to NSMutableArray and returns a copy. Invalid nonzero engagement can trap. | 0x01c391bc | IMP 0x43ff558; record 0xd778a14; dyld L1597; otool L24286 | medium / available / local_observation |
+ | base | - faviconUrl | `@16@0:8` | 0x43ff63c | Converts native URL/string storage through 0x43abd34; self offsets 0x10, 0x8. | 0x00060a60, 0x043abd34 | IMP 0x43ff63c; record 0xd778a20; dyld L1598; otool L24289 | medium / available / local_observation |
+ | base | - referrerUrl | `@16@0:8` | 0x43ff714 | Converts native URL/string storage through 0x43abd34; self offsets 0x10, 0x8. | 0x00060a60, 0x043abd34 | IMP 0x43ff714; record 0xd778a2c; dyld L1599; otool L24292 | medium / available / local_observation |
+ | base | - clusterId | `q16@0:8` | 0x43ff7f0 | Local field operation: return 0;; return *(long_long *)(*(long *)(param_1 + 8) + 0x120); | local state / indirect operation; see body | IMP 0x43ff7f0; record 0xd778a38; dyld L1600; otool L24295 | medium / available / local_verified |
+@@ -97,3 +99,7 @@
+ ## Remaining consequential questions
+ 
+ Follow the history producer/consumer and 0x4336aac before mapping flat fields to upstream history structs; validate empty-state and enum behavior against app use. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Original review data rows 3; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcBrowserContextAutocomplete.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcBrowserContextAutocomplete.md
+@@ -10,11 +10,11 @@
+ |---:|---:|---|---|---|
+ | 0x8 | 8 | `_controller` | `{unique_ptr<arc::ArcAutocompleteController, std::default_delete<arc::ArcAutocompleteController>>="__ptr_"^{ArcAutocompleteControll…` | 0xe2a5490 |
+ 
+-initWithAutocompleteController: moves a pointer from the supplied controller owner and nulls that source (0x43ecb50); destruction disposes the controller using 0x42c33cc (0x43ece68). A request converts nil text to an empty string, stores a callback adapter and forwards cursor/prevent-inline arguments (0x43ecc2c → 0x42c35e4).
++initWithAutocompleteController: adopts the supplied by-value native controller owner into self+8; source-zeroing is not shown on success (0x43ecb50). The zero stores belong to old-owner or failed-init cleanup, so caller-side move/ownership ABI remains unverified; destruction disposes the controller using 0x42c33cc (0x43ece68). A request converts nil text to an empty string, stores a callback adapter and forwards cursor/prevent-inline arguments (0x43ecc2c → 0x42c35e4).
+ 
+ ## Lifecycle, callbacks and relations
+ 
+-0x42c35e4 replaces the saved callback, constructs an input with a literal 4 and starts a controller via 0x20cd850. Completion builds an NSArray of ArcAutocompleteMatch and invokes the captured block with an additional argument (0x43eceb0). stop checks controller state, invokes a virtual stop-like operation, and clears callback storage (0x43ece08). Chromium components/omnibox/browser/autocomplete_controller.cc:631 and :797 provide a source-backed Start/Stop hypothesis; exact function identity remains unproven.
++0x42c35e4 replaces the saved callback, constructs an input with a literal 4 and starts a controller via 0x20cd850. Completion builds an NSArray of ArcAutocompleteMatch and invokes the captured block with an additional argument (0x43eceb0). stop checks native controller/state, directly calls 0x24e39c0 with reason value zero, then resets callback storage and indirectly cleans the saved callable (0x43ece08). Chromium components/omnibox/browser/autocomplete_controller.cc:631 and :797 provide a source-backed Start/Stop hypothesis; exact function identity remains unproven.
+ 
+ Threading: no explicit queue dispatch or caller-thread assertion was established in these inspected IMPs/selected bridges. Atomic reference-count instructions do not establish a safe concurrent API. Callback queue/reentrancy remains unverified; source API requirements below are requirements of candidate backends, not measured Arc scheduling.
+ 
+@@ -30,12 +30,16 @@
+ 
+ | Category | Kind / selector | Type encoding | IMP VA | Behavior | Backend / direct callees | Evidence | Confidence / status |
+ |---|---|---|---|---|---|---|---|
+-| base | - initWithAutocompleteController: | `@24@0:8{unique_ptr<arc::ArcAutocompleteController, std::default_delete<arc::ArcAutocompleteController>>=^{ArcAutocompleteController}}16` | 0x43ecb50 | Moves the incoming native controller pointer into self+8, nulls source owner, and disposes previous pointer via 0x42c33cc. | 0x042c33cc | IMP 0x43ecb50; record 0xd7783a0; dyld L1524; otool L23880 | medium / available / bounded_review |
++| base | - initWithAutocompleteController: | `@24@0:8{unique_ptr<arc::ArcAutocompleteController, std::default_delete<arc::ArcAutocompleteController>>=^{ArcAutocompleteController}}16` | 0x43ecb50 | Adopts the supplied by-value native controller owner into self+8 and disposes the previous owner via 0x42c33cc and 0x5810. The successful path does not zero the incoming source; zero stores are old-owner or failed-init cleanup. Caller-side move and full ownership ABI remain unverified. | 0x042c33cc | IMP 0x43ecb50; record 0xd7783a0; dyld L1524; otool L23880 | medium / available / bounded_review |
+ | base | - autocomplete:cursorPosition:preventInlineAutocomplete:completion: | `v44@0:8@16q24B32@?36` | 0x43ecc2c | Converts nil text to empty native string, captures completion, and forwards cursor/prevent-inline to 0x42c35e4 when controller is nonnull; completion adapter 0x43eceb0 builds ArcAutocompleteMatch array. | 0x01b356b8, 0x042c35e4 | IMP 0x43ecc2c; record 0xd7783ac; dyld L1525; otool L23883 | medium / available / bounded_review |
+-| base | - stop | `v16@0:8` | 0x43ece08 | If controller is present, invokes native stop-like virtual method and clears saved completion callable storage; cleanup uses 0x24e39c0. | 0x024e39c0 | IMP 0x43ece08; record 0xd7783b8; dyld L1526; otool L23886 | medium / available / bounded_review |
++| base | - stop | `v16@0:8` | 0x43ece08 | Loads the controller through its stored owner; if native controller and state at +0x70 are nonnull, directly calls 0x24e39c0(controller+0x30 value, 0), then resets saved completion storage. The later indirect operation cleans the saved callable; exact upstream Stop identity remains provisional. | 0x024e39c0 | IMP 0x43ece08; record 0xd7783b8; dyld L1526; otool L23886 | medium / available / bounded_review |
+ | base | - .cxx_destruct | `v16@0:8` | 0x43ece68 | Cleans local native/object state using shown stores and cleanup helpers; self offsets 0x8. | 0x042c33cc | IMP 0x43ece68; record 0xd7783c4; dyld L1527; otool L23889 | medium / available / local_observation |
+ | base | - .cxx_construct | `@16@0:8` | 0x407ab00 | Initializes native storage/engagement fields at self offsets 0x8; returns self. | local state / indirect operation; see body | IMP 0x407ab00; record 0xd7783d0; dyld L1528; otool L31 | medium / available / local_observation |
+ 
+ ## Remaining consequential questions
+ 
+ Identify the completion additional argument, cancellation/supersession rules, controller lifetime, and callback thread; verify cursor narrowing to int in 0x42c35e4. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Original review data rows 5, 6; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcCommandBarRankingExample.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcCommandBarRankingExample.md
+@@ -14,7 +14,7 @@
+ 
+ ## Lifecycle, callbacks and relations
+ 
+-Extensions category input and candidates copy the native example and construct ArcCommandBarRankingInput/ArcCommandBarRankingCandidate wrappers (0x4401ca0, 0x4401f34). Aggregate copies use 0x43dad44 (0x4433528, 0x443366c); destruction frees nested state (0x4433768). These are not training operations.
++Extensions input copies native example state and constructs an ArcCommandBarRankingInput wrapper (0x4401ca0). The candidates getter shows array/candidate allocation intent, but its pseudocode has incoherent temporary cleanup/reuse and argument propagation (0x4401f34); returned contents and ownership are unresolved. Raw instructions also place cleanup-helper calls before the apparent conversion loop, so this requires coherent callee/control-flow recovery, not a guessed lifetime repair or an engine-bug diagnosis. Aggregate copies use 0x43dad44 (0x4433528, 0x443366c); destruction frees nested state (0x4433768). These are not training operations.
+ 
+ Threading: no explicit queue dispatch or caller-thread assertion was established in these inspected IMPs/selected bridges. Atomic reference-count instructions do not establish a safe concurrent API. Callback queue/reentrancy remains unverified; source API requirements below are requirements of candidate backends, not measured Arc scheduling.
+ 
+@@ -38,8 +38,12 @@
+ | base | - .cxx_destruct | `v16@0:8` | 0x4433768 | Cleans local native/object state using shown stores and cleanup helpers; self offsets 0x40, 0x20, 0x28, 0x30, 0x8, 0x10, 0x18. | 0x042a3ff4 | IMP 0x4433768; record 0xd77b808; dyld L2637; otool L31723 | medium / available / local_observation |
+ | base | - .cxx_construct | `@16@0:8` | 0x442cf84 | Initializes native storage/engagement fields at self offsets 0x8, 0x40; returns self. | local state / indirect operation; see body | IMP 0x442cf84; record 0xd77b814; dyld L2638; otool L29805 | medium / available / local_observation |
+ | Extensions | - input | `@16@0:8` | 0x4401ca0 | Extensions category copies native example, constructs ArcCommandBarRankingInput from input subobject, then cleans temporary example. | 0x042a3ff4 | IMP 0x4401ca0; record 0xd778dbc; dyld L4961; otool L62607 | medium / available / bounded_review |
+-| Extensions | - candidates | `@16@0:8` | 0x4401f34 | Extensions category copies native example and constructs array of ArcCommandBarRankingCandidate wrappers. | 0x042a3ff4, 0x01c391bc | IMP 0x4401f34; record 0xd778dc8; dyld L4962; otool L62610 | medium / available / bounded_review |
++| Extensions | - candidates | `@16@0:8` | 0x4401f34 | Incoherent pseudocode: apparent temporary-vector cleanup/count reset precedes array construction/reuse; candidate initializer arguments contain object-to-bool casts and in_stack values. Array and ArcCommandBarRankingCandidate allocations show conversion intent only. Array contents, argument mapping and lifetime are unresolved; no actual engine use-after-free, empty-result or corrupt-boundary conclusion follows. | 0x042a3ff4, 0x01c391bc | IMP 0x4401f34; record 0xd778dc8; dyld L4962; otool L62610 | low / available_incoherent_pseudocode / unresolved |
+ 
+ ## Remaining consequential questions
+ 
+-Resolve candidate ordering and selectedIndex validation; verify independent ownership of returned input/candidate wrappers. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++Recover coherent candidates control flow, argument mapping and temporary ownership across 0x4401f34, native getter 0x443366c, initializer 0x4433528 and copy helper 0x43dad44; candidate contents, ordering and lifetime remain unresolved. Resolve selectedIndex validation and ownership of returned input wrappers. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Original review data rows 7; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcContentConversionService.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcContentConversionService.md
+@@ -14,7 +14,7 @@
+ 
+ ## Lifecycle, callbacks and relations
+ 
+-HTML conversion marshals text, optional URL, enum/options, Boolean flags and a vector built from ArcMetaTagSelector kind/value before calling 0x42a75b4 (0x43de074). That backend retains completion by request ID, has an unavailable early completion branch, and binds content_conversion.mojom.ContentConversionService (0x42a75b4). Conversion algorithm/library contents and completion queue are not recovered.
++HTML conversion marshals text, optional URL, enum/options, Boolean flags and a vector built by sending kind/value to untyped enumerated input elements before calling 0x42a75b4 (0x43de074). ArcMetaTagSelector is a compatible candidate shape; this path does not prove the concrete receiver class. That backend retains completion by request ID, has an unavailable early completion branch, and binds content_conversion.mojom.ContentConversionService (0x42a75b4). Conversion algorithm/library contents and completion queue are not recovered.
+ 
+ Threading: no explicit queue dispatch or caller-thread assertion was established in these inspected IMPs/selected bridges. Atomic reference-count instructions do not establish a safe concurrent API. Callback queue/reentrancy remains unverified; source API requirements below are requirements of candidate backends, not measured Arc scheduling.
+ 
+@@ -35,10 +35,14 @@
+ | base | - isAvailable | `B16@0:8` | 0x43ddb0c | Consults implementation availability path with 0x1c5f40 and returns its low bit; does not itself initialize library. | 0x001c5f40 | IMP 0x43ddb0c; record 0xd77788c; dyld L1269; otool L22221 | medium / available / bounded_review |
+ | base | - initializeWithLibraryPath:displayName:libraryVersion:appEnvironment:fullAppVersion:callback: | `v64@0:8@16@24@32@40@48@?56` | 0x43ddb74 | Converts library URL path and identity/version strings; constructs callback adapter and forwards to 0x42a64c0. | 0x01b356b8, 0x042a59c0, 0x042a64c0, 0x041bffc8 | IMP 0x43ddb74; record 0xd777898; dyld L1270; otool L22224 | medium / available / bounded_review |
+ | base | - setUser:email:callback: | `v40@0:8@16@24@?32` | 0x43dde8c | Converts user/email byte strings, captures callback and forwards to 0x42a72a4. | 0x01b356b8, 0x042a72a4 | IMP 0x43dde8c; record 0xd7778a4; dyld L1271; otool L22227 | medium / available / bounded_review |
+-| base | - convertHtmlToMarkdown:url:linkStyle:strategy:urlTransform:skipNoscript:passThroughInputElements:metaTagsToCapture:deduplicateMetaTagContent:completion: | `v84@0:8@16@24q32q40q48B56B60@64B72@?76` | 0x43de074 | Marshals HTML, optional URL, conversion options/flags and kind/value meta-tag vector; captures completion and invokes 0x42a75b4, which reaches content_conversion.mojom.ContentConversionService. | 0x01b356b8, 0x04047380, 0x042a5b90, 0x042a75b4, 0x042a5aac, 0x04b087f0 | IMP 0x43de074; record 0xd7778b0; dyld L1272; otool L22230 | medium / available / bounded_review |
++| base | - convertHtmlToMarkdown:url:linkStyle:strategy:urlTransform:skipNoscript:passThroughInputElements:metaTagsToCapture:deduplicateMetaTagContent:completion: | `v84@0:8@16@24q32q40q48B56B60@64B72@?76` | 0x43de074 | Marshals HTML, optional URL, options/flags and a native vector from kind/value messages to untyped enumerated input elements; captures completion and calls 0x42a75b4, reaching content_conversion.mojom.ContentConversionService. ArcMetaTagSelector has a compatible candidate shape; this path allocates/checks no such class and does not establish concrete receiver identity. | 0x01b356b8, 0x04047380, 0x042a5b90, 0x042a75b4, 0x042a5aac, 0x04b087f0 | IMP 0x43de074; record 0xd7778b0; dyld L1272; otool L22230 | medium / available / bounded_review |
+ | base | - .cxx_destruct | `v16@0:8` | 0x43de5e8 | Releases shared control-block state and invokes terminal virtual destruction when counts reach zero; self offsets 0x10. | local state / indirect operation; see body | IMP 0x43de5e8; record 0xd7778bc; dyld L1273; otool L22233 | medium / available / local_observation |
+ | base | - .cxx_construct | `@16@0:8` | 0x416a6f0 | Initializes native storage/engagement fields at self offsets 0x8, 0x10; returns self. | local state / indirect operation; see body | IMP 0x416a6f0; record 0xd7778c8; dyld L1274; otool L8938 | medium / available / local_observation |
+ 
+ ## Remaining consequential questions
+ 
+ Recover callback result/error shape, URL transform and enum validation; determine library initialization failure behavior and helper/service ownership. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Original review data rows 8; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcContextMenuElementInfo.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcContextMenuElementInfo.md
+@@ -14,7 +14,7 @@
+ 
+ ## Lifecycle, callbacks and relations
+ 
+-dictionarySuggestions constructs a new array of native UTF-16 strings (0x443f654). inputType maps native enum 15..23 through table 0xc9d8198, returns zero when optional input type is absent and five outside that range (0x443f844). nodeType maps native 0..6 using 0xc9d81a8, trapping outside it (0x443f88c). These are metadata adapters; no menu is displayed here.
++dictionarySuggestions requires engagement and constructs/returns NSMutableArray of ObjC strings converted from native UTF-16 elements, including an empty array; it sends no copy (0x443f654). inputType maps native enum 15..23 through table 0xc9d8198, returns zero when optional input type is absent and five outside that range (0x443f844). nodeType maps native 0..6 using 0xc9d81a8, trapping outside it (0x443f88c). These are metadata adapters; no menu is displayed here.
+ 
+ Threading: no explicit queue dispatch or caller-thread assertion was established in these inspected IMPs/selected bridges. Atomic reference-count instructions do not establish a safe concurrent API. Callback queue/reentrancy remains unverified; source API requirements below are requirements of candidate backends, not measured Arc scheduling.
+ 
+@@ -40,7 +40,7 @@
+ | base | - selectionText | `@16@0:8` | 0x443f404 | Converts native UTF-16 storage to ObjC string using 0x1d9fb90 (length × 2; CF encoding 0x14000100). Self offsets: 0x18, 0x8. Engagement guard/trap is visible. | 0x00054420, 0x01d9fb90 | IMP 0x443f404; record 0xd77cce0; dyld L3139; otool L35370 | medium / available / local_observation |
+ | base | - suggestedFilename | `@16@0:8` | 0x443f4c4 | Converts native UTF-16 storage to ObjC string using 0x1d9fb90 (length × 2; CF encoding 0x14000100). Self offsets: 0x18, 0x8. Engagement guard/trap is visible. | 0x00054420, 0x01d9fb90 | IMP 0x443f4c4; record 0xd77ccec; dyld L3140; otool L35373 | medium / available / local_observation |
+ | base | - misspelledWord | `@16@0:8` | 0x443f58c | Converts native UTF-16 storage to ObjC string using 0x1d9fb90 (length × 2; CF encoding 0x14000100). Self offsets: 0x18, 0x8. Engagement guard/trap is visible. | 0x00054420, 0x01d9fb90 | IMP 0x443f58c; record 0xd77ccf8; dyld L3141; otool L35376 | medium / available / local_observation |
+-| base | - dictionarySuggestions | `@16@0:8` | 0x443f654 | Converts native UTF-16 storage to ObjC string using 0x1d9fb90 (length × 2; CF encoding 0x14000100). Self offsets: 0x18, 0x8. Engagement guard/trap is visible. | 0x043342a4, 0x01d9fb90 | IMP 0x443f654; record 0xd77cd04; dyld L3142; otool L35379 | medium / available / local_observation |
++| base | - dictionarySuggestions | `@16@0:8` | 0x443f654 | Requires engaged native state or traps. Gets a temporary suggestion vector via 0x43342a4, converts each UTF-16 element with 0x1d9fb90 and returns the constructed NSMutableArray, including an empty array; no copy is sent. | 0x043342a4, 0x01d9fb90 | IMP 0x443f654; record 0xd77cd04; dyld L3142; otool L35379 | medium / available / local_observation |
+ | base | - inputType | `q16@0:8` | 0x443f844 | Requires engaged handle; absent native optional → 0; native values 15..23 map [3,2,5,5,5,5,5,4,1], all other present values → 5. | local state / indirect operation; see body | IMP 0x443f844; record 0xd77cd10; dyld L3143; otool L35382 | medium / available / bounded_review |
+ | base | - nodeType | `q16@0:8` | 0x443f88c | Requires engaged handle; native 0..6 map [0,1,3,2,4,5,6]; out-of-range traps. | local state / indirect operation; see body | IMP 0x443f88c; record 0xd77cd1c; dyld L3144; otool L35385 | medium / available / bounded_review |
+ | base | - isEditable | `B16@0:8` | 0x443f8bc | Local field operation: return (bool)*(byte *)(*(long *)(param_1 + 8) + 0x251); Engagement guard/trap is visible. | local state / indirect operation; see body | IMP 0x443f8bc; record 0xd77cd28; dyld L3145; otool L35388 | medium / available / local_verified |
+@@ -51,3 +51,7 @@
+ ## Remaining consequential questions
+ 
+ Establish coordinate units and enum names; verify suggestion lifetime and all supported native node/input kinds. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Original review data rows 4; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcMetaTagSelector.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcMetaTagSelector.md
+@@ -15,13 +15,13 @@
+ 
+ ## Lifecycle, callbacks and relations
+ 
+-ArcContentConversionService conversion enumerates these objects, sends kind/value and builds a native selector vector (0x43de074). This class does not query DOM metadata itself.
++ArcContentConversionService enumerates untyped input objects, sends kind/value and builds a native selector vector (0x43de074). This DTO has a compatible candidate shape; no allocation/class check or producer/caller dataflow in that path proves these concrete receivers. This class does not query DOM metadata itself.
+ 
+ Threading: no explicit queue dispatch or caller-thread assertion was established in these inspected IMPs/selected bridges. Atomic reference-count instructions do not establish a safe concurrent API. Callback queue/reentrancy remains unverified; source API requirements below are requirements of candidate backends, not measured Arc scheduling.
+ 
+ ## Backend implications
+ 
+-Portable selector DTO for the Arc conversion service; exact selector kinds and matching rules remain a service contract.
++Selector DTO with a shape compatible with the Arc conversion service; concrete element-class identity requires producer/caller evidence, and exact selector kinds and matching rules remain a service contract.
+ 
+ All Chromium file/line citations use commit **d0c02bfad08ec92a6ffcf989e53cd995e6381a4c**. All CEF citations use **426920c33ef22551e0b8f48cf343d623ac25642d**. Domain comparisons and source-backed inferences are labeled; unnamed Arc functions are not assigned an upstream identity solely from names.
+ 
+@@ -31,7 +31,7 @@
+ 
+ | Category | Kind / selector | Type encoding | IMP VA | Behavior | Backend / direct callees | Evidence | Confidence / status |
+ |---|---|---|---|---|---|---|---|
+-| base | - initWithKind:value: | `@32@0:8q16@24` | 0x43dd458 | After NSObject init, stores kind and an explicit copy of value. | local state / indirect operation; see body | IMP 0x43dd458; record 0xd77779c; dyld L1245; otool L21975 | medium / available / bounded_review |
++| base | - initWithKind:value: | `@32@0:8q16@24` | 0x43dd458 | After NSObject init, stores scalar kind and an explicit copy of value. Its kind/value shape is compatible with conversion input, but the untyped enumeration at 0x43de074 does not establish that its receivers are ArcMetaTagSelector instances. | local state / indirect operation; see body | IMP 0x43dd458; record 0xd77779c; dyld L1245; otool L21975 | medium / available / bounded_review |
+ | base | - kind | `q16@0:8` | 0x2d0fb40 | Reads 64-bit register value from self+0x8 (_kind); exact load+RET. Interpret result using this metadata encoding. | scalar field; machine words in imp-prefixes.json | IMP 0x2d0fb40; record 0xd7777a8; dyld L1246; otool L21978 | high / available / local_verified |
+ | base | - value | `@16@0:8` | 0x420b5f8 | Local field operation: return *(ID *)(param_1 + 0x10); | local state / indirect operation; see body | IMP 0x420b5f8; record 0xd7777b4; dyld L1247; otool L15625 | medium / available / local_verified |
+ | base | - .cxx_destruct | `v16@0:8` | 0x425b6d8 | Cleans local native/object state using shown stores and cleanup helpers; self offsets 0x10. | local state / indirect operation; see body | IMP 0x425b6d8; record 0xd7777c0; dyld L1248; otool L19979 | medium / available / local_observation |
+@@ -39,3 +39,7 @@
+ ## Remaining consequential questions
+ 
+ Resolve kind enum and matching case/namespace rules in the conversion backend. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Original review data rows 9; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcURLLoadConfiguration.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcURLLoadConfiguration.md
+@@ -10,7 +10,7 @@
+ |---:|---:|---|---|---|
+ | 0x8 | 160 | `_config` | `{URLLoadConfig="url"{basic_string<char, std::char_traits<char>, std::allocator<char>>="__rep_"(__rep="__s"{__short="__data_"[23c]"…` | 0xe2a8f88 |
+ 
+-A 160-byte native request config lives inline. payload string and payloadData share storage at +0x20; their setters replace that same buffer (0x440d76c, 0x440d834), so they are alternate views of one payload. URL/fileURL/string fields and headers are marshaled separately (0x440d678, 0x440d8b0, 0x440d9f8).
++A 160-byte native request config lives inline. payload string and payloadData share storage at +0x20; their setters replace that same buffer (0x440d76c, 0x440d834), so they are alternate views of one payload. URL/fileURL/string fields are marshaled separately (0x440d678, 0x440d8b0). headers converts native key/value entries and returns a copied dictionary, empty when no entries exist (0x440d9f8).
+ 
+ ## Lifecycle, callbacks and relations
+ 
+@@ -43,7 +43,7 @@
+ | base | - setPayloadFileURL: | `v24@0:8@16` | 0x440d8b8 | Assigns/replaces local native or ObjC state; self offsets 0x4f, 0x38, 0x48, 0x40. Calls 0x043abdf8. | 0x043abdf8 | IMP 0x440d8b8; record 0xd77a010; dyld L2101; otool L28118 | medium / available / local_observation |
+ | base | - payloadContentType | `@16@0:8` | 0x440d954 | Converts native byte-string value to ObjC string using 0x1c391bc (CFStringCreateWithBytes encoding 0x08000100). Self offsets: 0x67, 0x50, 0x58. | 0x01c391bc | IMP 0x440d954; record 0xd77a01c; dyld L2102; otool L28121 | medium / available / local_observation |
+ | base | - setPayloadContentType: | `v24@0:8@16` | 0x440d978 | Assigns/replaces local native or ObjC state; self offsets 0x67, 0x50, 0x60, 0x58. Calls 0x01b356b8. | 0x01b356b8 | IMP 0x440d978; record 0xd77a028; dyld L2103; otool L28124 | medium / available / local_observation |
+-| base | - headers | `@16@0:8` | 0x440d9f8 | Converts native byte-string value to ObjC string using 0x1c391bc (CFStringCreateWithBytes encoding 0x08000100). Self offsets: 0x78. | 0x01c391bc | IMP 0x440d9f8; record 0xd77a034; dyld L2104; otool L28127 | medium / available / local_observation |
++| base | - headers | `@16@0:8` | 0x440d9f8 | Returns a copied dictionary snapshot. Iterates native linked header entries, converts each key/value byte string with 0x1c391bc and sends setValue:forKey: to NSMutableDictionary; no entries produces an empty copied dictionary. | 0x01c391bc | IMP 0x440d9f8; record 0xd77a034; dyld L2104; otool L28127 | medium / available / local_observation |
+ | base | - setHeaders: | `v24@0:8@16` | 0x83723c0 | Clears native header collection, enumerates dictionary keys/values, converts strings and inserts through 0x63823b8. | 0x04b8b29c, 0x01b356b8, 0x063823b8 | IMP 0x83723c0; record 0xd77a040; dyld L2105; otool L28130 | medium / available / bounded_review |
+ | base | - followRedirects | `B16@0:8` | 0x4086678 | Reads 8-bit register value from self+0xa0 (inline/native field); exact load+RET. Interpret result using this metadata encoding. | scalar field; machine words in imp-prefixes.json | IMP 0x4086678; record 0xd77a04c; dyld L2106; otool L28133 | high / available / local_verified |
+ | base | - setFollowRedirects: | `v20@0:8B16` | 0x440daf4 | Local field operation: *(char *)(param_1 + 0xa0) = (char)param_3; | local state / indirect operation; see body | IMP 0x440daf4; record 0xd77a058; dyld L2107; otool L28136 | medium / available / local_verified |
+@@ -63,3 +63,7 @@
+ ## Remaining consequential questions
+ 
+ Identify loader consumer and enum names, local-request blocking rules, payload/file precedence, streaming callback behavior and zero timeout semantics. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Original review data rows 2; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcWebContentsDevTools.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcWebContentsDevTools.md
+@@ -18,7 +18,7 @@
+ 
+ The bridge calls webContentsDevTools:displayAs:, inspectModeDidChange:, DidClose: and NeedsFocus: (0x4415fe0, 0x441604c, 0x44160b8, 0x441610c). webContents wraps the native target; toolboxWebContents caches a wrapper only while the native toolbox is available (0x44151a0, 0x4415204). execute combines domain/name/params and converts status; backend validates JSON dictionary params, joins domain.name, sends via 0x435dd94, and retains completion by request ID (0x4415520 → 0x435b114). Existing frontend opening uses DevToolsAPI.showPanel; the no-window path calls native creation at 0xc1057c0, installs a close observer and wraps toolbox state through 0x4346100 (0x4357078). Protocol connection creation has disabled/unavailable/attach-failure branches (0x4415b60 → 0x4355df8).
+ 
+-Threading: no explicit queue dispatch or caller-thread assertion was established in these inspected IMPs/selected bridges. Atomic reference-count instructions do not establish a safe concurrent API. Callback queue/reentrancy remains unverified; source API requirements below are requirements of candidate backends, not measured Arc scheduling.
++Threading: notification helper 0x435c8fc copies callable state into a posted task, and 0x435ca2c invokes that callable. This supports ownership beyond return; executor identity, main-thread delivery, reentrancy and suppression/draining of already queued work remain unverified. Atomic reference counts do not establish a safe concurrent API. Candidate-backend scheduling requirements do not establish Arc scheduling.
+ 
+ ## Backend implications
+ 
+@@ -48,7 +48,7 @@
+ | base | - execute:completion:error: | `B40@0:8@16@?24^@32` | 0x4415520 | Extracts command domain/name/params, leaves native params string empty when absent, captures completion; 0x435b114 validates dictionary params, sends domain.name through 0x435dd94 and stores callback by request ID. | 0x01b356b8, 0x0435b114, 0x04402548, 0x04b35898, 0x04052260 | IMP 0x4415520; record 0xd77a4c4; dyld L2180; otool L28580 | medium / available / bounded_review |
+ | base | - subscribe:autoEnable:notification: | `@36@0:8@16B24@?28` | 0x4415838 | Extracts event domain/name, captures notification and autoEnable Boolean, delegates registration to 0x435b784; boxes subscription ID. | 0x01b356b8, 0x0435b784, 0x04b35898 | IMP 0x4415838; record 0xd77a4d0; dyld L2181; otool L28583 | medium / available / bounded_review |
+ | base | - unsubscribe: | `B24@0:8@16` | 0x4415ad8 | Unboxes intValue subscription ID and calls 0x435be6c; returns success status Boolean. | 0x0435be6c, 0x04b35898 | IMP 0x4415ad8; record 0xd77a4dc; dyld L2182; otool L28586 | medium / available / bounded_review |
+-| base | - openProtocolConnection:error: | `@32@0:8@?16^@24` | 0x4415b60 | Captures notification sink; 0x4355df8 can reject disabled/unavailable/attach-failed state; boxes connection ID and converts error. | 0x04355df8, 0x04402548, 0x04b35898, 0x04b37e18 | IMP 0x4415b60; record 0xd77a4e8; dyld L2183; otool L28589 | medium / available / bounded_review |
++| base | - openProtocolConnection:error: | `@32@0:8@?16^@24` | 0x4415b60 | Captures notification sink; 0x4355df8 can reject disabled/unavailable/attach-failed state; returns boxed connection ID on success or nil after error conversion. Ghidra adds a spurious parameter: raw 0x4415b74 saves the NSError-out argument from x3 and 0x4415c18 forwards it to 0x4402548. | 0x04355df8, 0x04402548, 0x04b35898, 0x04b37e18 | IMP 0x4415b60; record 0xd77a4e8; dyld L2183; otool L28589 | medium / available_signature_artifact / bounded_review |
+ | base | - sendProtocolMessage:connectionID:error: | `B40@0:8@16@24^@32` | 0x4415cf8 | Converts message to native string, unboxes connectionID intValue, invokes 0x43564d8 and converts status to BOOL/NSError. | 0x01b356b8, 0x043564d8, 0x04402548, 0x04b35898 | IMP 0x4415cf8; record 0xd77a4f4; dyld L2184; otool L28592 | medium / available / bounded_review |
+ | base | - closeProtocolConnection: | `v24@0:8@16` | 0x4415e20 | Requires engaged handle; unboxes intValue ID and forwards close to 0x4356754. | 0x04356754 | IMP 0x4415e20; record 0xd77a500; dyld L2185; otool L28595 | medium / available / bounded_review |
+ | base | - nativeDevTools | `{optional<arc::WebContents::DevTools>=(?=c{DevTools={shared_ptr<arc::WebContents::DevTools::Impl>=^{Impl}^{__shared_weak_count}}})B}16@0:8` | 0x43fe184 | Copies native aggregate into return storage, with engagement/copy branches in body. Self offsets 0x30, 0x28, 0x20. Engagement guard/trap is visible. | local state / indirect operation; see body | IMP 0x43fe184; record 0xd77a50c; dyld L2186; otool L28598 | medium / available / local_observation |
+@@ -60,3 +60,7 @@
+ ## Remaining consequential questions
+ 
+ Verify native toolbox view ownership/display modes and callback queue; recover subscriptions, autoEnable reference counts, connection IDs and close/error ordering. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Additional analogous signature correction; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcWebContentsMediaSession.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcWebContentsMediaSession.md
+@@ -18,7 +18,9 @@
+ 
+ ## Lifecycle, callbacks and relations
+ 
+-PiP bridge callbacks report back-to-tab/close/settings clicks and pipControllerCreated (0x441b590, 0x441b5e4, 0x441b638, 0x441b68c). Action methods forward native operations and convert status/NSError via 0x4402548. play backend rejects unavailable contents/no active session (0x441aa20 → 0x4360b58); requestPiP also rejects unsupported PiP or already-active video (0x441a6e4 → 0x436051c). Floating volume forwarding is incomplete in Ghidra output (0x441abf0).
++Constructor recovery: Ghidra renders the owner as part of the handle aggregate and leaves param_4 unused. The encoding declares a 16-byte native handle and a separate ObjC owner. Bounded raw instructions save incoming x2 as a handle address and x3 as owner; saved x2 is dereferenced for handle words and saved x3 feeds the weak-store call. Keep this local register mapping distinct from a full caller-side C++ ABI/ownership guarantee.
++
++PiP bridge callbacks report back-to-tab/close/settings clicks and pipControllerCreated (0x441b590, 0x441b5e4, 0x441b638, 0x441b68c). Action methods forward native operations and convert status/NSError via 0x4402548. getMediaContentTypes: instead returns a copied index-set object on success and nil after NSError conversion on failure; values below four are added, their enum names remain unknown, and missing engagement traps (0x441a848). play backend rejects unavailable contents/no active session (0x441aa20 → 0x4360b58); requestPiP also rejects unsupported PiP or already-active video (0x441a6e4 → 0x436051c). Floating volume forwarding is incomplete in Ghidra output (0x441abf0).
+ 
+ Threading: no explicit queue dispatch or caller-thread assertion was established in these inspected IMPs/selected bridges. Atomic reference-count instructions do not establish a safe concurrent API. Callback queue/reentrancy remains unverified; source API requirements below are requirements of candidate backends, not measured Arc scheduling.
+ 
+@@ -34,14 +36,14 @@
+ 
+ | Category | Kind / selector | Type encoding | IMP VA | Behavior | Backend / direct callees | Evidence | Confidence / status |
+ |---|---|---|---|---|---|---|---|
+-| base | - init:forWebContents: | `@40@0:8{MediaSession={shared_ptr<arc::WebContents::MediaSession::Impl>=^{Impl}^{__shared_weak_count}}}16@32` | 0x441a1c4 | Initializes object/native state after NSObject init; conversion/helper calls and assignment branches are preserved in exact body. | local state / indirect operation; see body | IMP 0x441a1c4; record 0xd77a6bc; dyld L2226; otool L28885 | medium / available / local_observation |
++| base | - init:forWebContents: | `@40@0:8{MediaSession={shared_ptr<arc::WebContents::MediaSession::Impl>=^{Impl}^{__shared_weak_count}}}16@32` | 0x441a1c4 | Copies native shared-handle state and stores a weak owner after NSObject init. Ghidra signature/argument-propagation artifact: unused param_4 and owner rendered from the aggregate. Raw entry saves x2 as the handle address and x3 as owner; handle words are loaded through saved x2 and saved x3 feeds the weak-store call. This is local register evidence, not a complete C++ ABI guarantee. | local state / indirect operation; see body | IMP 0x441a1c4; record 0xd77a6bc; dyld L2226; otool L28885 | medium / available_signature_artifact / local_observation |
+ | base | - isEqual: | `B24@0:8@16` | 0x441a314 | Checks same-object identity, compatible ObjC class, then compares unwrapped native handle pointers; no content equality established. | local state / indirect operation; see body | IMP 0x441a314; record 0xd77a6c8; dyld L2227; otool L28888 | medium / available / bounded_review |
+ | base | - hash | `Q16@0:8` | 0x441a484 | Requires engaged native handle and hashes its pointer through 0x18f3c. | 0x00018f3c, 0x04b08a00 | IMP 0x441a484; record 0xd77a6d4; dyld L2228; otool L28891 | medium / available / bounded_review |
+ | base | - setDelegate: | `v24@0:8@16` | 0x441a4bc | Nil releases bridge; first nonnil delegate installs bridge with weak delegate/owner references through 0x43458dc; later assignment updates delegate. | 0x043458dc | IMP 0x441a4bc; record 0xd77a6e0; dyld L2229; otool L28894 | medium / available / bounded_review |
+ | base | - requestPictureInPicture: | `B24@0:8^@16` | 0x441a6e4 | Calls 0x436051c then BOOL/NSError bridge; rejects missing contents, no session, unsupported PiP or already-active video. | 0x0436051c, 0x04402548, 0x04b35898 | IMP 0x441a6e4; record 0xd77a6ec; dyld L2230; otool L28897 | medium / available / bounded_review |
+ | base | - exitPictureInPicture:error: | `B28@0:8B16^@20` | 0x441a758 | Requires engaged native session; forwards native action/input then converts returned status to BOOL and optional NSError via 0x4402548. | 0x04360680, 0x04402548, 0x04b35898 | IMP 0x441a758; record 0xd77a6f8; dyld L2231; otool L28900 | medium / available / bounded_review |
+ | base | - notifyAutoPipTabActivationChanged:error: | `B28@0:8B16^@20` | 0x441a7d0 | Requires engaged native session; forwards native action/input then converts returned status to BOOL and optional NSError via 0x4402548. | 0x04360814, 0x04402548, 0x04b35898 | IMP 0x441a7d0; record 0xd77a704; dyld L2232; otool L28903 | medium / available / bounded_review |
+-| base | - getMediaContentTypes: | `@24@0:8^@16` | 0x441a848 | Requires engaged native session; forwards native action/input then converts returned status to BOOL and optional NSError via 0x4402548. | 0x043608d8, 0x04402548, 0x04b35898 | IMP 0x441a848; record 0xd77a710; dyld L2233; otool L28906 | medium / available / bounded_review |
++| base | - getMediaContentTypes: | `@24@0:8^@16` | 0x441a848 | Requires engaged native session or traps. Builds NSMutableIndexSet from native result values below 4 and returns its copy on success, including an empty set; on failure calls 0x4402548 for NSError conversion and returns nil. Result is an object, not BOOL. | 0x043608d8, 0x04402548, 0x04b35898 | IMP 0x441a848; record 0xd77a710; dyld L2233; otool L28906 | medium / available / bounded_review |
+ | base | - play: | `B24@0:8^@16` | 0x441aa20 | Requires engaged handle; 0x4360b58 rejects missing contents/no active session then invokes media-session action; status converted to BOOL/NSError. | 0x04360b58, 0x04402548, 0x04b35898 | IMP 0x441aa20; record 0xd77a71c; dyld L2234; otool L28909 | medium / available / bounded_review |
+ | base | - pause: | `B24@0:8^@16` | 0x441aa94 | Requires engaged native session; forwards native action/input then converts returned status to BOOL and optional NSError via 0x4402548. | 0x04360c1c, 0x04402548, 0x04b35898 | IMP 0x441aa94; record 0xd77a728; dyld L2235; otool L28912 | medium / available / bounded_review |
+ | base | - playNextTrack: | `B24@0:8^@16` | 0x441ab08 | Requires engaged native session; forwards native action/input then converts returned status to BOOL and optional NSError via 0x4402548. | 0x04360ce0, 0x04402548, 0x04b35898 | IMP 0x441ab08; record 0xd77a734; dyld L2236; otool L28915 | medium / available / bounded_review |
+@@ -70,3 +72,7 @@
+ ## Remaining consequential questions
+ 
+ Verify seek/scrub units and errors, native volume argument, action availability, PiP ownership/auto-PiP behavior and callback sequence/thread. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Original review data rows 1, 10; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.
+--- /home/exedev/work/agents/spec-2/specs/classes/ArcWebContentsThumbnailsGenerator.md
++++ /home/exedev/work/agents/spec-2/revisions/v1/classes/ArcWebContentsThumbnailsGenerator.md
+@@ -16,6 +16,8 @@
+ 
+ ## Lifecycle, callbacks and relations
+ 
++Constructor recovery: Ghidra renders the owner as part of the handle aggregate and leaves param_4 unused. The encoding declares a 16-byte native handle and a separate ObjC owner. Bounded raw instructions save incoming x2 as a handle address and x3 as owner; saved x2 is dereferenced for handle words and saved x3 feeds the weak-store call. Keep this local register mapping distinct from a full caller-side C++ ABI/ownership guarantee.
++
+ removeObserver: unregisters/removes its matching bridge (0x441c9e4 → 0x436de50). Callback 0x441cccc emits webContents:thumbnailReady: with a converted image or nil. requestThumbnail: converts backend status; 0x436df2c checks managed contents, observer/capture state and ThumbnailTabHelper availability. 0x436d69c installs a callback into thumbnail state.
+ 
+ Threading: no explicit queue dispatch or caller-thread assertion was established in these inspected IMPs/selected bridges. Atomic reference-count instructions do not establish a safe concurrent API. Callback queue/reentrancy remains unverified; source API requirements below are requirements of candidate backends, not measured Arc scheduling.
+@@ -32,7 +34,7 @@
+ 
+ | Category | Kind / selector | Type encoding | IMP VA | Behavior | Backend / direct callees | Evidence | Confidence / status |
+ |---|---|---|---|---|---|---|---|
+-| base | - init:forWebContents: | `@40@0:8{ThumbnailsGenerator={shared_ptr<arc::WebContents::ThumbnailsGenerator::Impl>=^{Impl}^{__shared_weak_count}}}16@32` | 0x441c3c0 | Initializes object/native state after NSObject init; conversion/helper calls and assignment branches are preserved in exact body. | local state / indirect operation; see body | IMP 0x441c3c0; record 0xd77a894; dyld L2268; otool L29122 | medium / available / local_observation |
++| base | - init:forWebContents: | `@40@0:8{ThumbnailsGenerator={shared_ptr<arc::WebContents::ThumbnailsGenerator::Impl>=^{Impl}^{__shared_weak_count}}}16@32` | 0x441c3c0 | Copies native shared-handle state and stores a weak owner after NSObject init. Ghidra signature/argument-propagation artifact: unused param_4 and owner rendered from the aggregate. Raw entry saves x2 as the handle address and x3 as owner; handle words are loaded through saved x2 and saved x3 feeds the weak-store call. This is local register evidence, not a complete C++ ABI guarantee. | local state / indirect operation; see body | IMP 0x441c3c0; record 0xd77a894; dyld L2268; otool L29122 | medium / available_signature_artifact / local_observation |
+ | base | - isEqual: | `B24@0:8@16` | 0x441c510 | Checks same-object identity, compatible ObjC class, then compares unwrapped native handle pointers; no content equality established. | local state / indirect operation; see body | IMP 0x441c510; record 0xd77a8a0; dyld L2269; otool L29125 | medium / available / bounded_review |
+ | base | - hash | `Q16@0:8` | 0x4416b58 | Requires engaged native handle and hashes its pointer through 0x18f3c. | 0x00018f3c, 0x04b08a00 | IMP 0x4416b58; record 0xd77a8ac; dyld L2270; otool L28681 | medium / available / bounded_review |
+ | base | - addObserver: | `v24@0:8@16` | 0x441c680 | Deduplicates observer identity, constructs shared bridge with weak observer/owner, registers via 0x436d904 and appends bridge to vector. | 0x0436d904, 0x040416c0, 0x04b087f0 | IMP 0x441c680; record 0xd77a8b8; dyld L2271; otool L29131 | medium / available / bounded_review |
+@@ -49,3 +51,7 @@
+ ## Remaining consequential questions
+ 
+ Recover image scale/crop/format and callback timing, no-observer request behavior, stale-image handling and visibility/capture policy. Additional row-level gaps are in `unresolved_question` in methods.tsv. No direct Arc 1.168 app-call count is asserted for this class; declarations and returned-object reachability are separate evidence.
++
++## Revision evidence
++
++Original review data rows 11; see [correction ledger](../corrections.tsv) and [independent recheck notes](../revision-evidence/notes.md). The copied raw evidence remains the original snapshot; revised quality labels and contract limits are in this matrix and methods.tsv.

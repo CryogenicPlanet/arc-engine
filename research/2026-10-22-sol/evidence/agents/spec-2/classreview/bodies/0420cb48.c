@@ -1,0 +1,13 @@
+// ==== 0x420cb48  MenuControllerCocoa::menu  (8 bytes)
+
+/* WARNING: Function: _objc_retainAutoreleaseReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID MenuControllerCocoa::menu(ID param_1,SEL param_2)
+
+{
+  return *(ID *)(param_1 + 0x18);
+}
+
+

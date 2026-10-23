@@ -1,0 +1,220 @@
+{
+  "class_name": "ArcBrowserContextID",
+  "metadata_va": "0xe37bf38",
+  "metadata_file_offset": "0xe37bf38",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a55e0",
+  "instance_start": 8,
+  "instance_size": 48,
+  "ivars": [
+    {
+      "record_va": "0xe2a5588",
+      "offset": 8,
+      "name": "_id",
+      "type": "{optional<arc::BrowserContextID>=\"\"(?=\"__null_state_\"c\"__val_\"{BrowserContextID=\"directory_basename\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"type\"i})\"__engaged_\"B}",
+      "alignment": 3,
+      "size": 40
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcBrowserContextID", "category": "", "protocol": "", "kind": "-", "selector": "initWithBrowserContextID:", "type_encoding": "@24@0:8r^v16", "imp": "0x43ed360", "method_record_va": "0xd778404", "selector_va": "0xd757cf7", "dyld_line": 1531, "imp_file_offset": "0x43ed360", "body_name": "ArcBrowserContextID::initWithBrowserContextID:", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4461684, "body_length": 2082, "failed": 0, "truncated": false}
+// ==== 0x43ed360  ArcBrowserContextID::initWithBrowserContextID:  (244 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcBrowserContextID::initWithBrowserContextID_(ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  undefined8 *puVar1;
+  ulong uVar2;
+  byte bVar3;
+  const_void__ pvVar4;
+  ID IVar5;
+  undefined8 uVar6;
+  undefined8 uVar7;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcBrowserContextID;
+  local_30 = param_1;
+  IVar5 = NSObject::init((ID)&local_30,"init");
+  if (IVar5 != 0) {
+    puVar1 = (undefined8 *)(IVar5 + 8);
+    if (*(char *)(IVar5 + 0x28) == '\0') {
+      if (*(char *)((long)param_3 + 0x17) < '\0') {
+        FUN_00060a60(IVar5 + 8,*(undefined8 *)param_3,*(undefined8 *)((long)param_3 + 8));
+      }
+      else {
+        uVar7 = *(undefined8 *)((long)param_3 + 8);
+        uVar6 = *(undefined8 *)param_3;
+        *(undefined8 *)(IVar5 + 0x18) = *(undefined8 *)((long)param_3 + 0x10);
+        *(undefined8 *)(IVar5 + 0x10) = uVar7;
+        *puVar1 = uVar6;
+      }
+      *(undefined4 *)(IVar5 + 0x20) = *(undefined4 *)((long)param_3 + 0x18);
+      *(undefined1 *)(IVar5 + 0x28) = 1;
+    }
+    else {
+      if (puVar1 != param_3) {
+        bVar3 = *(byte *)((long)param_3 + 0x17);
+        if (*(char *)(IVar5 + 0x1f) < '\0') {
+          uVar2 = *(ulong *)((long)param_3 + 8);
+          pvVar4 = *(const_void__ *)param_3;
+          if (-1 < (char)bVar3) {
+            uVar2 = (ulong)bVar3;
+            pvVar4 = param_3;
+          }
+          FUN_00359ad8(IVar5 + 8,pvVar4,uVar2);
+        }
+        else if ((char)bVar3 < '\0') {
+          FUN_00359998(IVar5 + 8,*(undefined8 *)param_3,*(undefined8 *)((long)param_3 + 8));
+        }
+        else {
+          uVar7 = *(undefined8 *)((long)param_3 + 8);
+          uVar6 = *(undefined8 *)param_3;
+          *(undefined8 *)(IVar5 + 0x18) = *(undefined8 *)((long)param_3 + 0x10);
+          *(undefined8 *)(IVar5 + 0x10) = uVar7;
+          *puVar1 = uVar6;
+        }
+      }
+      *(undefined4 *)(IVar5 + 0x20) = *(undefined4 *)((long)param_3 + 0x18);
+    }
+  }
+  return IVar5;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextID", "category": "", "protocol": "", "kind": "-", "selector": "isIncognito", "type_encoding": "B16@0:8", "imp": "0x43ed454", "method_record_va": "0xd778410", "selector_va": "0xd758281", "dyld_line": 1532, "imp_file_offset": "0x43ed454", "body_name": "ArcBrowserContextID::isIncognito", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4463766, "body_length": 410, "failed": 0, "truncated": false}
+// ==== 0x43ed454  ArcBrowserContextID::isIncognito  (28 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+bool ArcBrowserContextID::isIncognito(ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    return (bool)(*(int *)(param_1 + 0x20) == 1);
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x43ed470);
+  (*pcVar1)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextID", "category": "", "protocol": "", "kind": "-", "selector": "directoryBasename", "type_encoding": "@16@0:8", "imp": "0x43ed470", "method_record_va": "0xd77841c", "selector_va": "0xd75828d", "dyld_line": 1533, "imp_file_offset": "0x43ed470", "body_name": "ArcCommandBarRankingModel::directory", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4464176, "body_length": 730, "failed": 0, "truncated": false}
+// ==== 0x43ed470  ArcCommandBarRankingModel::directory  (48 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcCommandBarRankingModel::directory(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  code *pcVar4;
+  ID IVar5;
+  
+  if ((*(byte *)(param_1 + 0x28) & 1) != 0) {
+    cVar3 = *(char *)(param_1 + 0x1f);
+    plVar1 = (long *)*(long *)(param_1 + 8);
+    if (-1 < (long)cVar3) {
+      plVar1 = (long *)(param_1 + 8);
+    }
+    lVar2 = *(long *)(param_1 + 0x10);
+    if (-1 < cVar3) {
+      lVar2 = (long)cVar3;
+    }
+    IVar5 = FUN_01c391bc(plVar1,lVar2);
+    return IVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(1,0x43ed4a0);
+  (*pcVar4)();
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextID", "category": "", "protocol": "", "kind": "-", "selector": "id", "type_encoding": "{optional<arc::BrowserContextID>=(?=c{BrowserContextID={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}i})B}16@0:8", "imp": "0x43ed4a0", "method_record_va": "0xd778428", "selector_va": "0xd75829f", "dyld_line": 1534, "imp_file_offset": "0x43ed4a0", "body_name": "ArcBrowserContextID::id", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4464906, "body_length": 1321, "failed": 0, "truncated": false}
+// ==== 0x43ed4a0  ArcBrowserContextID::id  (112 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcBrowserContextID::id
+               (optional<arc::BrowserContextID> *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  code *pcVar1;
+  undefined8 uVar2;
+  
+  (__return_storage_ptr__->field0_0x0).field0 = '\0';
+  __return_storage_ptr__[1].field0_0x0.field0 = '\0';
+  if (*(char *)(param_1 + 0x28) != '\0') {
+    if (__return_storage_ptr__ == (optional<arc::BrowserContextID> *)0x0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x43ed510);
+      (*pcVar1)();
+    }
+    if (*(char *)(param_1 + 0x1f) < '\0') {
+      FUN_00060a60(__return_storage_ptr__,*(undefined8 *)(param_1 + 8),
+                   *(undefined8 *)(param_1 + 0x10));
+    }
+    else {
+      uVar2 = *(undefined8 *)(param_1 + 8);
+      *(undefined8 *)((long)&__return_storage_ptr__->field0_0x0 + 8) =
+           *(undefined8 *)(param_1 + 0x10);
+      *(undefined8 *)&__return_storage_ptr__->field0_0x0 = uVar2;
+      *(undefined8 *)((long)&__return_storage_ptr__->field0_0x0 + 0x10) =
+           *(undefined8 *)(param_1 + 0x18);
+    }
+    (__return_storage_ptr__->field0_0x0).field1.field1_0x18 = *(int *)(param_1 + 0x20);
+    __return_storage_ptr__[1].field0_0x0.field0 = '\x01';
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextID", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x43ed510", "method_record_va": "0xd778434", "selector_va": "0xd744a39", "dyld_line": 1535, "imp_file_offset": "0x43ed510", "body_name": "ArcCommandBarRankingModel::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4466227, "body_length": 394, "failed": 0, "truncated": false}
+// ==== 0x43ed510  ArcCommandBarRankingModel::.cxx_destruct  (40 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcCommandBarRankingModel::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if ((*(char *)(param_1 + 0x28) != '\0') && (*(char *)(param_1 + 0x1f) < '\0')) {
+    FUN_00005810(*(undefined8 *)(param_1 + 8),*(ulong *)(param_1 + 0x18) & 0x7fffffffffffffff);
+    return;
+  }
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextID", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x43ed538", "method_record_va": "0xd778440", "selector_va": "0xd744a47", "dyld_line": 1536, "imp_file_offset": "0x43ed538", "body_name": "ArcAIInferenceModel::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x43.c", "body_offset": 4466621, "body_length": 270, "failed": 0, "truncated": false}
+// ==== 0x43ed538  ArcAIInferenceModel::.cxx_construct  (12 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcAIInferenceModel::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined1 *)(param_1 + 8) = 0;
+  *(undefined1 *)(param_1 + 0x28) = 0;
+  return param_1;
+}
+
+
+

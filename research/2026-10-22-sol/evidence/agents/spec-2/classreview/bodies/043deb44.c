@@ -1,0 +1,57 @@
+// ==== 0x43deb44  ArcAccessibilityActionData::initWithAction:value:  (244 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x20 bytes */
+
+ID ArcAccessibilityActionData::initWithAction_value_
+             (ID param_1,SEL param_2,unsigned_long_long param_3,ID param_4)
+
+{
+  undefined8 *puVar1;
+  code *pcVar2;
+  ID IVar3;
+  undefined8 local_58;
+  undefined8 uStack_50;
+  undefined8 local_48;
+  ID local_40;
+  class_t *pcStack_38;
+  
+  pcStack_38 = &objc::class_t::ArcAccessibilityActionData;
+  local_40 = param_1;
+  IVar3 = NSObject::init((ID)&local_40,"init");
+  if (IVar3 != 0) {
+    if (3 < param_3) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(0,0x43dec34);
+      (*pcVar2)();
+    }
+    *(int *)(IVar3 + 8) = (int)param_3;
+    if (param_4 != 0) {
+      FUN_01b356b8(&local_58,param_4);
+      puVar1 = (undefined8 *)(IVar3 + 0x10);
+      if (*(char *)(IVar3 + 0x28) == '\0') {
+        if (puVar1 == (undefined8 *)0x0) {
+                    /* WARNING: Does not return */
+          pcVar2 = (code *)SoftwareBreakpoint(1,0x43dec3c);
+          (*pcVar2)();
+        }
+        *(undefined8 *)(IVar3 + 0x18) = uStack_50;
+        *puVar1 = local_58;
+        *(undefined8 *)(IVar3 + 0x20) = local_48;
+        *(undefined1 *)(IVar3 + 0x28) = 1;
+      }
+      else {
+        if (*(char *)(IVar3 + 0x27) < '\0') {
+          FUN_00005810(*(undefined8 *)(IVar3 + 0x10),*(ulong *)(IVar3 + 0x20) & 0x7fffffffffffffff);
+        }
+        *(undefined8 *)(IVar3 + 0x18) = uStack_50;
+        *puVar1 = local_58;
+        *(undefined8 *)(IVar3 + 0x20) = local_48;
+      }
+    }
+  }
+  return IVar3;
+}
+
+

@@ -1,0 +1,77 @@
+// ==== 0x44094bc  ArcNotification::items  (432 bytes)
+
+/* WARNING: Function: _objc_claimAutoreleasedReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_autoreleaseReturnValue replaced with injection: _objc_retain_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcNotification::items(ID param_1,SEL param_2)
+
+{
+  undefined8 *puVar1;
+  undefined8 *puVar2;
+  long lVar3;
+  char cVar4;
+  code *pcVar5;
+  ID IVar6;
+  ID IVar7;
+  ID IVar8;
+  long lVar9;
+  undefined8 *local_80;
+  long local_78;
+  undefined1 *local_68;
+  
+  if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+    FUN_0433e630(&local_80,*(undefined8 *)(param_1 + 0x10));
+    lVar9 = local_78;
+    local_68 = (undefined1 *)&local_80;
+    FUN_0440a4e8(&local_68);
+    if (lVar9 == 0) {
+      IVar6 = 0;
+    }
+    else {
+      IVar6 = _objc_alloc_init(&_OBJC_CLASS___NSMutableArray);
+      if ((*(byte *)(param_1 + 0x20) & 1) == 0) goto LAB_04409668;
+      FUN_0433e630(&local_80,*(undefined8 *)(param_1 + 0x10));
+      puVar1 = local_80;
+      for (lVar9 = local_78 * 0x30; lVar9 != 0; lVar9 = lVar9 + -0x30) {
+        IVar7 = _objc_alloc(&objc::class_t::ArcNotificationItem);
+        cVar4 = *(char *)((long)puVar1 + 0x2f);
+        puVar2 = (undefined8 *)puVar1[3];
+        if (-1 < (long)cVar4) {
+          puVar2 = puVar1 + 3;
+        }
+        lVar3 = puVar1[4];
+        if (-1 < cVar4) {
+          lVar3 = (long)cVar4;
+        }
+        IVar8 = FUN_01d9fb90(puVar2,lVar3);
+        AXAnnouncementSpec::setAnnouncement_(IVar7,"setMessage:",IVar8);
+        cVar4 = *(char *)((long)puVar1 + 0x17);
+        puVar2 = (undefined8 *)*puVar1;
+        if (-1 < (long)cVar4) {
+          puVar2 = puVar1;
+        }
+        lVar3 = puVar1[1];
+        if (-1 < cVar4) {
+          lVar3 = (long)cVar4;
+        }
+        IVar8 = FUN_01d9fb90(puVar2,lVar3);
+        ICloudKeychainPresentationDelegate::setWindow_(IVar7,"setTitle:",IVar8);
+        NSMutableArray::addObject_(IVar6,"addObject:",IVar7);
+        puVar1 = puVar1 + 6;
+      }
+      local_68 = (undefined1 *)&local_80;
+      FUN_0440a4e8(&local_68);
+      IVar6 = NSMutableArray::copy(IVar6,"copy");
+    }
+    return IVar6;
+  }
+LAB_04409668:
+                    /* WARNING: Does not return */
+  pcVar5 = (code *)SoftwareBreakpoint(1,0x440966c);
+  (*pcVar5)();
+}
+
+

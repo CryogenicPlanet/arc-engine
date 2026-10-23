@@ -1,0 +1,25 @@
+// ==== 0x4437324  ArcBrowserContextDevTools::close  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+int ArcBrowserContextDevTools::close(int param_1)
+
+{
+  code *pcVar1;
+  int iVar2;
+  long lVar3;
+  
+  if ((*(byte *)((ulong)(uint)param_1 + 0x18) & 1) == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x4437348);
+    (*pcVar1)();
+  }
+  lVar3 = *(long *)(*(long *)((ulong)(uint)param_1 + 8) + 0x90);
+  if (lVar3 != 0) {
+    iVar2 = FUN_0c107cd4(lVar3,3);
+    return iVar2;
+  }
+  return 0;
+}
+
+

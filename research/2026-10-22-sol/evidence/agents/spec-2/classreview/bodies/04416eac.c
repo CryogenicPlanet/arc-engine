@@ -1,0 +1,152 @@
+// ==== 0x4416eac  ArcWebContentsNavigationController::addObserver:  (712 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_loadWeakRetained replaced with injection: _objc_load_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x18 bytes */
+
+void ArcWebContentsNavigationController::addObserver_(ID param_1,SEL param_2,ID param_3)
+
+{
+  ulong uVar1;
+  long *plVar2;
+  undefined8 uVar3;
+  long lVar4;
+  ulong uVar5;
+  long *plVar6;
+  code *pcVar7;
+  ulong uVar8;
+  long *plVar9;
+  long lVar10;
+  size_t sVar11;
+  long *plVar12;
+  
+  plVar9 = *(long **)(param_1 + 0x28);
+  lVar10 = *(long *)(param_1 + 0x30) << 4;
+  plVar2 = plVar9;
+  if (lVar10 != 0) {
+    plVar12 = plVar9 + *(long *)(param_1 + 0x30) * 2;
+    do {
+      plVar2 = plVar9;
+      if (*(ID *)(*plVar9 + 8) == param_3) break;
+      plVar9 = plVar9 + 2;
+      lVar10 = lVar10 + -0x10;
+      plVar2 = plVar12;
+    } while (lVar10 != 0);
+  }
+  if (plVar2 != (long *)(*(long *)(param_1 + 0x28) + *(long *)(param_1 + 0x30) * 0x10)) {
+    return;
+  }
+  plVar2 = (long *)FUN_00008790(0x30);
+  plVar12 = plVar2 + 1;
+  *plVar12 = 0;
+  plVar2[2] = 0;
+  *plVar2 = (long)&PTR_viewWillStartLiveResize_0da88298;
+  plVar9 = plVar2 + 3;
+  if (plVar9 != (long *)0x0) {
+    uVar3 = *(undefined8 *)(param_1 + 8);
+    plVar2[3] = (long)&PTR_FUN_0da882d0;
+    _objc_initWeak(plVar2 + 4,param_3);
+    _objc_initWeak(plVar2 + 5,uVar3);
+    uVar5 = (ulong)*(byte *)(param_1 + 0x20);
+    if ((*(byte *)(param_1 + 0x20) & 1) != 0) {
+      if (plVar2 != (long *)0x0) {
+        uVar5 = plVar2[2];
+        plVar2[2] = uVar5 + 1;
+      }
+      FUN_04333598(uVar5,param_1 + 0x10,plVar9,plVar2);
+      uVar5 = *(ulong *)(param_1 + 0x30);
+      if (uVar5 == *(ulong *)(param_1 + 0x38)) {
+        uVar1 = uVar5 + 1;
+        if (uVar1 >> 0x3c != 0) {
+                    /* WARNING: Subroutine does not return */
+          FUN_040416c0();
+        }
+        uVar8 = uVar5 * 2;
+        if (uVar8 < uVar1 || uVar8 - uVar1 == 0) {
+          uVar8 = uVar1;
+        }
+        if (0x7fffffffffffffe < uVar5) {
+          uVar8 = 0xfffffffffffffff;
+        }
+        if (uVar8 == 0) {
+          lVar10 = 0;
+        }
+        else {
+          if (uVar8 >> 0x3c != 0) {
+                    /* WARNING: Subroutine does not return */
+            FUN_04b087f0();
+          }
+          lVar10 = FUN_00008790(uVar8 << 4);
+        }
+        plVar6 = (long *)(lVar10 + uVar5 * 0x10);
+        if (plVar6 == (long *)0x0) goto LAB_04417168;
+        *plVar6 = (long)plVar9;
+        plVar6[1] = (long)plVar2;
+        if (plVar2 != (long *)0x0) {
+          *plVar12 = *plVar12 + 1;
+        }
+        lVar10 = *(long *)(param_1 + 0x30);
+        sVar11 = lVar10 * 0x10;
+        _memcpy(plVar6 + lVar10 * -2,*(void **)(param_1 + 0x28),sVar11);
+        lVar4 = *(long *)(param_1 + 0x28);
+        *(long **)(param_1 + 0x28) = plVar6 + lVar10 * -2;
+        *(long *)(param_1 + 0x30) = (long)(sVar11 + 0x10) >> 4;
+        lVar10 = *(long *)(param_1 + 0x38);
+        *(ulong *)(param_1 + 0x38) = uVar8;
+        if (lVar4 != 0) {
+          FUN_00005810(lVar4,lVar10 << 4);
+        }
+        plVar6 = plVar6 + 2;
+      }
+      else {
+        plVar6 = (long *)(*(long *)(param_1 + 0x28) + uVar5 * 0x10);
+        if (plVar6 == (long *)0x0) goto LAB_04417168;
+        *plVar6 = (long)plVar9;
+        plVar6[1] = (long)plVar2;
+        if (plVar2 != (long *)0x0) {
+          *plVar12 = *plVar12 + 1;
+        }
+        plVar6 = plVar6 + 2;
+        *(long *)(param_1 + 0x30) = (long)plVar6 - *(long *)(param_1 + 0x28) >> 4;
+      }
+      lVar10 = (long)plVar6 - *(long *)(param_1 + 0x28);
+      *(long *)(param_1 + 0x30) = lVar10 >> 4;
+      if (lVar10 != 0) {
+        if (plVar2 != (long *)0x0) {
+          LOAcquire();
+          lVar10 = *plVar12;
+          *plVar12 = lVar10 + -1;
+          LORelease();
+          if (lVar10 == 0) {
+            (**(code **)(*plVar2 + 0x10))(plVar2);
+            if (plVar2[2] != 0) {
+              LOAcquire();
+              lVar10 = plVar2[2];
+              plVar2[2] = lVar10 + -1;
+              LORelease();
+              if (lVar10 != 0) {
+                return;
+              }
+            }
+            pcVar7 = *(code **)(*plVar2 + 0x20);
+            if (((pcVar7 == FUN_00f01bc0) || (pcVar7 == FUN_00f01bc0)) || (pcVar7 == FUN_013efb40))
+            {
+              FUN_00005810(plVar2,0x20);
+            }
+            else {
+              (*pcVar7)(plVar2);
+            }
+          }
+        }
+        return;
+      }
+    }
+  }
+LAB_04417168:
+                    /* WARNING: Does not return */
+  pcVar7 = (code *)SoftwareBreakpoint(1,0x441716c);
+  (*pcVar7)();
+}
+
+

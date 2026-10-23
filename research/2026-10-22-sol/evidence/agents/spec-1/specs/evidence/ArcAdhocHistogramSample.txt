@@ -1,0 +1,93 @@
+{
+  "class_name": "ArcAdhocHistogramSample",
+  "metadata_va": "0xe37c258",
+  "metadata_file_offset": "0xe37c258",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2a6b30",
+  "instance_start": 8,
+  "instance_size": 24,
+  "ivars": [
+    {
+      "record_va": "0xe2a6ac8",
+      "offset": 8,
+      "name": "_value",
+      "type": "i",
+      "size": 4,
+      "alignment": 2
+    },
+    {
+      "record_va": "0xe2a6ae8",
+      "offset": 16,
+      "name": "_type",
+      "type": "Q",
+      "size": 8,
+      "alignment": 3
+    }
+  ],
+  "properties": [
+    {
+      "record_va": "0xe2a6b10",
+      "name": "type",
+      "attributes": "TQ,N,V_type"
+    },
+    {
+      "record_va": "0xe2a6b20",
+      "name": "value",
+      "attributes": "Ti,N,V_value"
+    }
+  ]
+}
+
+###  -initWithType:value: 0x44034ac @28@0:8Q16i24 available
+
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcAdhocHistogramSample;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    *(unsigned_long_long *)(IVar1 + 0x10) = param_3;
+    *(int *)(IVar1 + 8) = param_4;
+  }
+  return IVar1;
+}
+
+
+
+
+###  -type 0x2cb140 Q16@0:8 available
+
+  return *(ID *)(param_1 + 0x10);
+}
+
+
+
+
+###  -setType: 0x416803c v24@0:8Q16 available
+
+  *(void **)(param_1 + 0x10) = param_3;
+  return;
+}
+
+
+
+
+###  -value 0x4081a30 i16@0:8 available
+
+  return *(int *)(param_1 + 8);
+}
+
+
+
+
+###  -setValue: 0x44034fc v20@0:8i16 available
+
+  *(int *)(param_1 + 8) = param_3;
+  return;
+}
+
+
+

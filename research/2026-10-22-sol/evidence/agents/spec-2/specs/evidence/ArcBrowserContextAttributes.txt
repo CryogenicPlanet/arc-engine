@@ -1,0 +1,237 @@
+{
+  "class_name": "ArcBrowserContextAttributes",
+  "metadata_va": "0xe37dd38",
+  "metadata_file_offset": "0xe37dd38",
+  "superclass": "NSObject",
+  "protocols": "",
+  "ro_va": "0xe2ad2e0",
+  "instance_start": 8,
+  "instance_size": 72,
+  "ivars": [
+    {
+      "record_va": "0xe2ad258",
+      "offset": 8,
+      "name": "_userColor",
+      "type": "@\"ArcColor\"",
+      "alignment": 3,
+      "size": 8
+    },
+    {
+      "record_va": "0xe2ad278",
+      "offset": 16,
+      "name": "_browser_context_attributes",
+      "type": "{BrowserContextAttributes=\"directory_basename\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"user_visible_name\"{basic_string<char, std::char_traits<char>, std::allocator<char>>=\"__rep_\"(__rep=\"__s\"{__short=\"__data_\"[23c]\"__size_\"b7\"__is_long_\"b1}\"__l\"{__long=\"__data_\"*\"__size_\"Q\"__cap_\"b63\"__is_long_\"b1})}\"user_color\"{Color=\"r\"C\"g\"C\"b\"C\"a\"C}}",
+      "alignment": 3,
+      "size": 56
+    }
+  ]
+}
+
+IDENTITY {"class_name": "ArcBrowserContextAttributes", "category": "", "protocol": "", "kind": "-", "selector": "initWithBrowserContextAttributes:", "type_encoding": "@24@0:8r^v16", "imp": "0x443afd0", "method_record_va": "0xd77c2ac", "selector_va": "0xd7574fa", "dyld_line": 2888, "imp_file_offset": "0x443afd0", "body_name": "ArcBrowserContextAttributes::initWithBrowserContextAttributes:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1394533, "body_length": 529, "failed": 0, "truncated": false}
+// ==== 0x443afd0  ArcBrowserContextAttributes::initWithBrowserContextAttributes:  (88 bytes)
+
+/* Function Stack Size: 0x18 bytes */
+
+ID ArcBrowserContextAttributes::initWithBrowserContextAttributes_
+             (ID param_1,SEL param_2,const_void__ param_3)
+
+{
+  ID IVar1;
+  ID local_30;
+  class_t *pcStack_28;
+  
+  pcStack_28 = &objc::class_t::ArcBrowserContextAttributes;
+  local_30 = param_1;
+  IVar1 = NSObject::init((ID)&local_30,"init");
+  if (IVar1 != 0) {
+    FUN_0441e0a0(IVar1 + 0x10,param_3);
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAttributes", "category": "", "protocol": "", "kind": "-", "selector": "directoryBasename", "type_encoding": "@16@0:8", "imp": "0x443ab84", "method_record_va": "0xd77c2b8", "selector_va": "0xd75828d", "dyld_line": 2889, "imp_file_offset": "0x443ab84", "body_name": "ArcGPULogMessage::header", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1383980, "body_length": 506, "failed": 0, "truncated": false}
+// ==== 0x443ab84  ArcGPULogMessage::header  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcGPULogMessage::header(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  
+  cVar3 = *(char *)(param_1 + 0x27);
+  plVar1 = (long *)*(long *)(param_1 + 0x10);
+  if (-1 < (long)cVar3) {
+    plVar1 = (long *)(param_1 + 0x10);
+  }
+  lVar2 = *(long *)(param_1 + 0x18);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  IVar4 = FUN_01c391bc(plVar1,lVar2);
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAttributes", "category": "", "protocol": "", "kind": "-", "selector": "userVisibleName", "type_encoding": "@16@0:8", "imp": "0x443aba8", "method_record_va": "0xd77c2c4", "selector_va": "0xd764eed", "dyld_line": 2890, "imp_file_offset": "0x443aba8", "body_name": "ArcGPULogMessage::message", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1384486, "body_length": 508, "failed": 0, "truncated": false}
+// ==== 0x443aba8  ArcGPULogMessage::message  (36 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcGPULogMessage::message(ID param_1,SEL param_2)
+
+{
+  long *plVar1;
+  long lVar2;
+  char cVar3;
+  ID IVar4;
+  
+  cVar3 = *(char *)(param_1 + 0x3f);
+  plVar1 = (long *)*(long *)(param_1 + 0x28);
+  if (-1 < (long)cVar3) {
+    plVar1 = (long *)(param_1 + 0x28);
+  }
+  lVar2 = *(long *)(param_1 + 0x30);
+  if (-1 < cVar3) {
+    lVar2 = (long)cVar3;
+  }
+  IVar4 = FUN_01c391bc(plVar1,lVar2);
+  return IVar4;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAttributes", "category": "", "protocol": "", "kind": "-", "selector": "userColor", "type_encoding": "@16@0:8", "imp": "0x443b028", "method_record_va": "0xd77c2d0", "selector_va": "0xd76666d", "dyld_line": 2891, "imp_file_offset": "0x443b028", "body_name": "ArcBrowserContextAttributes::userColor", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1395062, "body_length": 675, "failed": 0, "truncated": false}
+// ==== 0x443b028  ArcBrowserContextAttributes::userColor  (84 bytes)
+
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retainAutoreleaseReturnValue replaced with injection: _objc_retain_fixup
+    */
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcBrowserContextAttributes::userColor(ID param_1,SEL param_2)
+
+{
+  ID IVar1;
+  
+  IVar1 = *(ID *)(param_1 + 8);
+  if (IVar1 == 0) {
+    IVar1 = _objc_alloc(&objc::class_t::ArcColor);
+    IVar1 = ArcColor::initWithColor_(IVar1,"initWithColor:",(const_Color__)(param_1 + 0x40));
+    *(ID *)(param_1 + 8) = IVar1;
+    IVar1 = *(ID *)(param_1 + 8);
+  }
+  return IVar1;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAttributes", "category": "", "protocol": "", "kind": "-", "selector": "browser_context_attributes", "type_encoding": "{BrowserContextAttributes={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{Color=CCCC}}16@0:8", "imp": "0x443b07c", "method_record_va": "0xd77c2dc", "selector_va": "0xd766677", "dyld_line": 2892, "imp_file_offset": "0x443b07c", "body_name": "ArcBrowserContextAttributes::browser_context_attributes", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1395737, "body_length": 1497, "failed": 0, "truncated": false}
+// ==== 0x443b07c  ArcBrowserContextAttributes::browser_context_attributes  (120 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+void ArcBrowserContextAttributes::browser_context_attributes
+               (BrowserContextAttributes *__return_storage_ptr__,ID param_1,SEL param_2)
+
+{
+  char *pcVar1;
+  
+  if (*(char *)(param_1 + 0x27) < '\0') {
+    FUN_00060a60(__return_storage_ptr__,*(undefined8 *)(param_1 + 0x10),
+                 *(undefined8 *)(param_1 + 0x18));
+  }
+  else {
+    pcVar1 = *(char **)(param_1 + 0x10);
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field1_0x8 =
+         *(unsigned_long_long *)(param_1 + 0x18);
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field0_0x0 = pcVar1;
+    (__return_storage_ptr__->field0_0x0).field0_0x0.field1.field2_0x10 =
+         *(AnonymousBitField1 *)(param_1 + 0x20);
+  }
+  if (*(char *)(param_1 + 0x3f) < '\0') {
+    FUN_00060a60(&__return_storage_ptr__->field1_0x18,*(undefined8 *)(param_1 + 0x28),
+                 *(undefined8 *)(param_1 + 0x30));
+  }
+  else {
+    pcVar1 = *(char **)(param_1 + 0x28);
+    (__return_storage_ptr__->field1_0x18).field0_0x0.field1.field1_0x8 =
+         *(unsigned_long_long *)(param_1 + 0x30);
+    (__return_storage_ptr__->field1_0x18).field0_0x0.field1.field0_0x0 = pcVar1;
+    (__return_storage_ptr__->field1_0x18).field0_0x0.field1.field2_0x10 =
+         *(AnonymousBitField1 *)(param_1 + 0x38);
+  }
+  __return_storage_ptr__->field2_0x30 = *(Color *)(param_1 + 0x40);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAttributes", "category": "", "protocol": "", "kind": "-", "selector": "setBrowser_context_attributes:", "type_encoding": "v72@0:8{BrowserContextAttributes={basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{basic_string<char, std::char_traits<char>, std::allocator<char>>=(__rep={__short=[23c]b7b1}{__long=*Qb63b1})}{Color=CCCC}}16", "imp": "0x443b0f4", "method_record_va": "0xd77c2e8", "selector_va": "0xd766692", "dyld_line": 2893, "imp_file_offset": "0x443b0f4", "body_name": "ArcBrowserContextAttributes::setBrowser_context_attributes:", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1397234, "body_length": 327, "failed": 0, "truncated": false}
+// ==== 0x443b0f4  ArcBrowserContextAttributes::setBrowser_context_attributes:  (12 bytes)
+
+/* Function Stack Size: 0x48 bytes */
+
+void ArcBrowserContextAttributes::setBrowser_context_attributes_
+               (ID param_1,SEL param_2,BrowserContextAttributes *param_3)
+
+{
+  FUN_0441e0a0(param_1 + 0x10,param_3);
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAttributes", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_destruct", "type_encoding": "v16@0:8", "imp": "0x443b100", "method_record_va": "0xd77c2f4", "selector_va": "0xd744a39", "dyld_line": 2894, "imp_file_offset": "0x443b100", "body_name": "ArcBrowserContextAttributes::.cxx_destruct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1397561, "body_length": 615, "failed": 0, "truncated": false}
+// ==== 0x443b100  ArcBrowserContextAttributes::.cxx_destruct  (84 bytes)
+
+/* WARNING: Function: _objc_storeStrong replaced with injection: _objc_store_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void ArcBrowserContextAttributes::_cxx_destruct(ID param_1,SEL param_2)
+
+{
+  if (*(char *)(param_1 + 0x3f) < '\0') {
+    FUN_00005810(*(undefined8 *)(param_1 + 0x28),*(ulong *)(param_1 + 0x38) & 0x7fffffffffffffff);
+  }
+  if (*(char *)(param_1 + 0x27) < '\0') {
+    FUN_00005810(*(undefined8 *)(param_1 + 0x10),*(ulong *)(param_1 + 0x20) & 0x7fffffffffffffff);
+  }
+  *(undefined8 *)(param_1 + 8) = 0;
+  return;
+}
+
+
+
+
+IDENTITY {"class_name": "ArcBrowserContextAttributes", "category": "", "protocol": "", "kind": "-", "selector": ".cxx_construct", "type_encoding": "@16@0:8", "imp": "0x443b154", "method_record_va": "0xd77c300", "selector_va": "0xd744a47", "dyld_line": 2895, "imp_file_offset": "0x443b154", "body_name": "ArcGPULogMessage::.cxx_construct", "body_path": "/home/exedev/work/inputs/decompile/0x44.c", "body_offset": 1398176, "body_length": 423, "failed": 0, "truncated": false}
+// ==== 0x443b154  ArcGPULogMessage::.cxx_construct  (16 bytes)
+
+/* Function Stack Size: 0x10 bytes */
+
+ID ArcGPULogMessage::_cxx_construct(ID param_1,SEL param_2)
+
+{
+  *(undefined8 *)(param_1 + 0x28) = 0;
+  *(undefined8 *)(param_1 + 0x20) = 0;
+  *(undefined8 *)(param_1 + 0x38) = 0;
+  *(undefined8 *)(param_1 + 0x30) = 0;
+  *(undefined8 *)(param_1 + 0x18) = 0;
+  *(undefined8 *)(param_1 + 0x10) = 0;
+  return param_1;
+}
+
+
+

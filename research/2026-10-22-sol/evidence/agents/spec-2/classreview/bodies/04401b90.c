@@ -1,0 +1,23 @@
+// ==== 0x4401b90  objc::Categories::ArcColor4f_Init_::initWithR:g:b:a:  (48 bytes)
+
+/* Function Stack Size: 0x20 bytes */
+
+ID objc::Categories::ArcColor4f_Init_::initWithR_g_b_a_
+             (ID param_1,SEL param_2,float param_3,float param_4,float param_5,float param_6)
+
+{
+  ID IVar1;
+  float local_20;
+  float fStack_1c;
+  float local_18;
+  float fStack_14;
+  
+  local_20 = param_3;
+  fStack_1c = param_4;
+  local_18 = param_5;
+  fStack_14 = param_6;
+  IVar1 = _objc_msgSend(param_1,"initWithColor4f:",&local_20);
+  return IVar1;
+}
+
+

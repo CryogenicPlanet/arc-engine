@@ -1,0 +1,436 @@
+Chromium pin d0c02bfad08ec92a6ffcf989e53cd995e6381a4c
+
+/home/exedev/work/inputs/chromium-156/components/omnibox/browser/autocomplete_controller.cc
+631: void AutocompleteController::Start(const AutocompleteInput& input) {
+632:   TRACE_EVENT1("omnibox", "AutocompleteController::Start", "text",
+633:                base::UTF16ToUTF8(input.text()));
+634:   // Autocomplete is a critical user journey for Omnibox interaction, we exclude
+635:   // it from additional memory safety checks.
+636:   // TODO(crbug.com/478634529): Optimize and remove if possible.
+637:   base::ScopedSafetyChecksExclusion excluded;
+638: 
+639:   // Providers assume synchronous inputs (`omit_asynchronous_matches() ==
+640:   // true`) are not zero-suggest ones. See crbug.com/1339425.
+641:   DCHECK(!input.omit_asynchronous_matches() || !input.IsZeroSuggest());
+642: 
+643:   // Use a zero-suggest input as the signal that zero-prefix suggestions could
+797: void AutocompleteController::Stop(AutocompleteStopReason stop_reason) {
+798:   // Autocomplete is a critical user journey for Omnibox interaction, we exclude
+799:   // it from additional memory safety checks.
+800:   // TODO(crbug.com/478634529): Optimize and remove if possible.
+801:   base::ScopedSafetyChecksExclusion excluded;
+802:   // Must be called before `expire_timer_.Stop()`, modifying `done_`, or
+803:   // modifying `AutocompleteProvider::done_` below. If the current request has
+804:   // not completed, and therefore has not been logged yet, will log it now.
+805:   // Likewise, if the providers have not completed, and therefore have not been
+806:   // logged yet, will log them now.
+807:   metrics_.OnStop();
+808: 
+809:   for (const auto& provider : providers_) {
+810:     provider->Stop(stop_reason);
+811:   }
+812: 
+813:   // Cancel any pending requests that may update the results. Otherwise, e.g.,
+814:   // the user's suggestion selection may be reset.
+815:   UpdateResult(UpdateType::kStop);
+816:   CancelNotifyChangedRequest();
+817: 
+818:   const bool non_empty_result =
+819:       !published_result_.empty() || published_result_.has_contextual_chips();
+820:   if (stop_reason == AutocompleteStopReason::kClobbered) {
+821:     internal_result_.Reset();
+822:     if (non_empty_result) {
+823:       // Pass `notify_default_match` as false to clear only the popup and not
+824:       // the edit. Passing true would, e.g., discard the selected suggestion
+825:       // when closing the omnibox.
+826:       RequestNotifyChanged(/*notify_default_match=*/false, /*delayed=*/false);
+827:     }
+828:   } else if (stop_reason == AutocompleteStopReason::kInactivity &&
+829:              omnibox::IsComposebox(input_.current_page_classification()) &&
+830:              internal_result_.empty()) {
+831:     // If Composebox suppressed the initial empty synchronous notification and
+832:     // timed out without receiving any async results, notify observers now.
+833:     RequestNotifyChanged(/*notify_default_match=*/false, /*delayed=*/false);
+834:   }
+
+/home/exedev/work/inputs/chromium-156/components/net_log/net_export_file_writer.cc
+312: bool NetExportFileWriter::IsLogging() const {
+313:   DCHECK(thread_checker_.CalledOnValidThread());
+314:   return state_ == STATE_LOGGING || state_ == STATE_STARTING_LOG ||
+315:          state_ == STATE_STOPPING_LOG;
+316: }
+317: 
+318: void NetExportFileWriter::GetFilePathToCompletedLog(
+
+/home/exedev/work/inputs/chromium-156/chrome/browser/ui/thumbnails/thumbnail_tab_helper.h
+23: namespace tabs {
+24: class TabInterface;
+25: }
+26: 
+27: // Maintains the thumbnail image shown in e.g. tab hover cards. Owned by the
+28: // tab's TabFeatures; only created when a feature that needs thumbnails is
+29: // enabled.
+30: class ThumbnailTabHelper : public content::WebContentsObserver {
+31:  public:
+32:   DECLARE_USER_DATA(ThumbnailTabHelper);
+33: 
+34:   // `contents` is passed explicitly because during a discard the helper is
+35:   // recreated for the incoming WebContents before `tab` swaps its contents.
+36:   ThumbnailTabHelper(tabs::TabInterface& tab, content::WebContents* contents);
+37: 
+38:   ThumbnailTabHelper(const ThumbnailTabHelper&) = delete;
+39:   ThumbnailTabHelper& operator=(const ThumbnailTabHelper&) = delete;
+40: 
+41:   ~ThumbnailTabHelper() override;
+42: 
+43:   static ThumbnailTabHelper* From(tabs::TabInterface* tab);
+44: 
+45:   scoped_refptr<ThumbnailImage> thumbnail() const { return thumbnail_; }
+46: 
+47:   bool is_tab_discarded() const { return is_tab_discarded_; }
+48: 
+49:   // Notify the helper that the tab is being hidden by being put into the
+50:   // background. Allows for an updated preview image after swapping away from an
+51:   // active tab.
+52:   void CaptureThumbnailOnTabBackgrounded();
+53: 
+54:  private:
+55:   class TabStateTracker;
+56: 
+57:   // Metrics enums and helper functions:
+58:   enum class CaptureType;
+
+/home/exedev/work/inputs/chromium-156/chrome/browser/ui/thumbnails/thumbnail_tab_helper.cc
+242: void ThumbnailTabHelper::CaptureThumbnailOnTabBackgrounded() {
+243:   if (!state_->is_ready()) {
+244:     return;
+245:   }
+246: 
+247:   const base::TimeTicks time_of_call = base::TimeTicks::Now();
+248: 
+249:   // Ignore previous requests to capture a thumbnail on tab switch.
+250:   weak_factory_for_thumbnail_on_tab_hidden_.InvalidateWeakPtrs();
+251: 
+252:   // Get the WebContents' main view. Note that during shutdown there may not be
+253:   // a view to capture, and views are sometimes not available for capture even
+254:   // when they are present.
+255:   content::RenderWidgetHostView* const source_view = state_->GetView();
+256:   if (!source_view || !source_view->IsSurfaceAvailableForCopy()) {
+257:     return;
+258:   }
+259: 
+260:   // Note: this is the size in pixels on-screen, not the size in DIPs.
+261:   gfx::Size source_size = source_view->GetViewBounds().size();
+262:   if (source_size.IsEmpty()) {
+263:     return;
+264:   }
+265: 
+266:   const float scale_factor = source_view->GetDeviceScaleFactor();
+267:   ThumbnailCaptureInfo copy_info = GetInitialCaptureInfo(
+268:       source_size, scale_factor, /* include_scrollbars_in_capture */ false);
+269: 
+270:   source_view->CopyFromSurface(
+356: void ThumbnailTabHelper::StartVideoCapture() {
+357:   content::RenderWidgetHostView* const source_view = state_->GetView();
+358:   if (!source_view) {
+359:     return;
+360:   }
+361: 
+362:   const float scale_factor = source_view->GetDeviceScaleFactor();
+363:   const gfx::Size source_size = source_view->GetViewBounds().size();
+364:   if (source_size.IsEmpty()) {
+365:     return;
+366:   }
+
+/home/exedev/work/inputs/chromium-156/content/browser/media/session/media_session_impl.cc
+704: void MediaSessionImpl::Resume(SuspendType suspend_type) {
+705:   // If the site has registered an action handler for play, we should pass it to
+706:   // the site and let them handle it.
+707:   if (suspend_type == SuspendType::kUI &&
+708:       ShouldRouteAction(media_session::mojom::MediaSessionAction::kPlay)) {
+709:     DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay);
+710:     return;
+711:   }
+712: 
+713:   // When the resume requests comes from another source than system, audio focus
+714:   // must be requested.
+715:   if (suspend_type != SuspendType::kSystem) {
+716:     // Request audio focus again in case we lost it because another app started
+717:     // playing while the playback was paused. If the audio focus request is
+718:     // delayed we will resume the player when the request completes.
+739: void MediaSessionImpl::Suspend(SuspendType suspend_type) {
+740:   if (!IsActive())
+741:     return;
+742: 
+743:   if (suspend_type == SuspendType::kUI) {
+744:     // If the site has registered an action handler for pause then we should
+745:     // pass it to the site and let them handle it.
+746:     if (ShouldRouteAction(media_session::mojom::MediaSessionAction::kPause)) {
+747:       DidReceiveAction(media_session::mojom::MediaSessionAction::kPause);
+748:       return;
+749:     }
+1296: void MediaSessionImpl::SeekTo(base::TimeDelta seek_time) {
+1297:   // If the site has registered an action handler for seek to then we
+1298:   // should pass it to the site and let them handle it.
+1299:   if (ShouldRouteAction(media_session::mojom::MediaSessionAction::kSeekTo)) {
+1300:     DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekTo,
+1301:                      blink::mojom::MediaSessionActionDetails::NewSeekTo(
+1302:                          blink::mojom::MediaSessionSeekToDetails::New(
+1303:                              seek_time, /*fast_seek=*/false)));
+1304:     return;
+1305:   }
+1306: 
+1307:   for (const auto& it : normal_players_)
+1308:     it.first.observer->OnSeekTo(it.first.player_id, seek_time);
+1412: void MediaSessionImpl::SetMute(bool mute) {
+1413:   // The SetMute action should only be available when there is one normal
+1414:   // player, though due to the asynchronous nature of mojo, we may no longer
+1415:   // have 1 normal player. In that case, just return.
+1416:   if (normal_players_.size() != 1u) {
+1417:     return;
+1418:   }
+1419:   normal_players_.begin()->first.observer->OnSetMute(
+1420:       normal_players_.begin()->first.player_id, mute);
+1421: }
+1422: 
+
+/home/exedev/work/inputs/chromium-156/components/history/core/browser/history_types.h
+362: struct QueryOptions {
+363:   QueryOptions();
+364:   QueryOptions(const QueryOptions&);
+365:   QueryOptions(QueryOptions&&) noexcept;
+366:   QueryOptions& operator=(const QueryOptions&);
+367:   QueryOptions& operator=(QueryOptions&&) noexcept;
+368:   ~QueryOptions();
+369: 
+370:   // The time range to search for matches in. When `visit_order` is
+371:   // `RECENT_FIRST`, the beginning is inclusive and the ending is exclusive.
+372:   // When `VisitOrder` is `OLDEST_FIRST`, vice versa. Either one (or both) may
+373:   // be null.
+374:   //
+375:   // This will match only the one recent visit of a URL. For text search
+376:   // queries, if the URL was visited in the given time period, but has also
+377:   // been visited more recently than that, it will not be returned. When the
+378:   // text query is empty, this will return the most recent visit within the
+379:   // time range.
+380:   base::Time begin_time;
+381:   base::Time end_time;
+382: 
+383:   // Sets the query time to the last `days_ago` days to the present time.
+384:   void SetRecentDayRange(int days_ago);
+385: 
+386:   // The maximum number of results to return. The results will be sorted with
+387:   // the most recent first, so older results may not be returned if there is not
+388:   // enough room. When 0, this will return everything.
+389:   int max_count = 0;
+390: 
+391:   // Defaulted to `kInclude404s`.
+392:   // Callers are strongly encouraged to explicitly set a value, unless they are
+393:   // certain that the handling of 404 visits is irrelevant for their use case.
+394:   VisitQuery404sPolicy policy_for_404_visits =
+395:       VisitQuery404sPolicy::kInclude404s;
+396: 
+397:   enum DuplicateHandling {
+398:     // Omit visits for which there is a more recent visit to the same URL.
+399:     // Each URL in the results will appear only once.
+400:     REMOVE_ALL_DUPLICATES,
+401: 
+402:     // Omit visits for which there is a more recent visit to the same URL on
+403:     // the same day. Each URL will appear no more than once per day, where the
+404:     // day is defined by the local timezone.
+405:     REMOVE_DUPLICATES_PER_DAY,
+406: 
+407:     // Return all visits without deduping.
+408:     KEEP_ALL_DUPLICATES
+409:   };
+792: class DeletionInfo {
+793:  public:
+794:   // Captures the reason for the history deletion.
+795:   enum class Reason {
+796:     // All foreign visits are being deleted (i.e. visits that occurred on
+797:     // another device but were synced to this device).
+798:     kDeleteAllForeignVisits,
+799:     kOther,
+800:   };
+801: 
+802:   // Returns a DeletionInfo that covers all history.
+803:   static DeletionInfo ForAllHistory();
+804:   // Returns a DeletionInfo with invalid time range for the given urls.
+805:   static DeletionInfo ForUrls(URLRows deleted_rows,
+806:                               std::set<GURL> favicon_urls);
+807: 
+808:   DeletionInfo(const DeletionTimeRange& time_range,
+809:                bool is_from_expiration,
+810:                URLRows deleted_rows,
+811:                std::set<GURL> favicon_urls,
+1029: struct AnnotatedVisit {
+1030:   AnnotatedVisit();
+1031:   AnnotatedVisit(URLRow url_row,
+1032:                  VisitRow visit_row,
+1033:                  VisitContextAnnotations context_annotations,
+1034:                  VisitContentAnnotations content_annotations,
+1035:                  VisitID referring_visit_of_redirect_chain_start,
+1036:                  VisitID opener_visit_of_redirect_chain_start,
+1037:                  VisitSource visit);
+1038:   AnnotatedVisit(const AnnotatedVisit&);
+1039:   AnnotatedVisit(AnnotatedVisit&&);
+1040:   AnnotatedVisit& operator=(const AnnotatedVisit&);
+1041:   AnnotatedVisit& operator=(AnnotatedVisit&&);
+1042:   ~AnnotatedVisit();
+1043: 
+1044:   URLRow url_row;
+1045:   VisitRow visit_row;
+
+/home/exedev/work/inputs/chromium-156/components/tab_groups/tab_group_visual_data.h
+18: class COMPONENT_EXPORT(TAB_GROUPS) TabGroupVisualData {
+19:  public:
+20:   // Construct a TabGroupVisualData with placeholder name and random color.
+21:   TabGroupVisualData();
+22:   TabGroupVisualData(std::u16string title,
+23:                      tab_groups::TabGroupColorId color,
+24:                      bool is_collapsed = false);
+25:   TabGroupVisualData(std::u16string title,
+26:                      uint32_t color_int,
+27:                      bool is_collapsed = false);
+28: 
+29:   TabGroupVisualData(const TabGroupVisualData& other) = default;
+30:   TabGroupVisualData(TabGroupVisualData&& other) = default;
+31: 
+32:   TabGroupVisualData& operator=(const TabGroupVisualData& other) = default;
+33:   TabGroupVisualData& operator=(TabGroupVisualData&& other) = default;
+34: 
+35:   const std::u16string& title() const { return title_; }
+36:   const tab_groups::TabGroupColorId& color() const { return color_; }
+37:   bool is_collapsed() const { return is_collapsed_; }
+38: 
+39:   // Checks whether two instances are visually equivalent.
+40:   auto operator<=>(const TabGroupVisualData&) const = default;
+41: 
+42:   void SetTitle(const std::u16string& title) { title_ = title; }
+43: 
+
+/home/exedev/work/inputs/chromium-156/components/site_engagement/content/site_engagement_score.h
+29: class SiteEngagementScore {
+30:  public:
+31:   // The parameters which can be varied via field trial.
+32:   enum Variation {
+33:     // The maximum number of points that can be accrued in one day.
+34:     MAX_POINTS_PER_DAY = 0,
+35: 
+36:     // The period over which site engagement decays.
+37:     DECAY_PERIOD_IN_HOURS,
+38: 
+39:     // The number of points to decay per period.
+148:   double GetTotalScore() const;
+149: 
+150:   // Returns a structure containing the origin URL and score, and details
+151:   // of the base and bonus scores. Note that the |score| is limited to
+152:   // kMaxPoints, while the detailed scores are returned raw.
+153:   mojom::SiteEngagementDetails GetDetails() const;
+154: 
+155:   // Writes the values in this score into |settings_map_|.
+156:   void Commit();
+157: 
+
+CEF pin 426920c33ef22551e0b8f48cf343d623ac25642d
+
+/home/exedev/work/agents/spec-2/revisions/v1/sources/cef/cef_browser.h
+577:   /// location will be inspected. The |windowInfo| parameter will be ignored if
+578:   /// this browser is wrapped in a CefBrowserView.
+579:   ///
+580:   /*--cef(optional_param=windowInfo,optional_param=client,
+581:           optional_param=settings,optional_param=inspect_element_at)--*/
+582:   virtual void ShowDevTools(const CefWindowInfo& windowInfo,
+583:                             CefRefPtr<CefClient> client,
+584:                             const CefBrowserSettings& settings,
+585:                             const CefPoint& inspect_element_at) = 0;
+586: 
+587:   ///
+588:   /// Explicitly close the associated DevTools browser, if any.
+589:   ///
+590:   /*--cef()--*/
+591:   virtual void CloseDevTools() = 0;
+592: 
+593:   ///
+594:   /// Returns true if this browser currently has an associated DevTools browser.
+629:   /// for development purposes by passing the
+630:   /// `--devtools-protocol-log-file=<path>` command-line flag.
+631:   ///
+632:   /*--cef()--*/
+633:   virtual bool SendDevToolsMessage(const void* message,
+634:                                    size_t message_size) = 0;
+635: 
+636:   ///
+637:   /// Execute a method call over the DevTools protocol. This is a more
+638:   /// structured version of SendDevToolsMessage. |message_id| is an incremental
+639:   /// number that uniquely identifies the message (pass 0 to have the next
+640:   /// number assigned automatically based on previous values). |method| is the
+641:   /// method name. |params| are the method parameters, which may be empty. See
+642:   /// the DevTools protocol documentation (linked above) for details of
+643:   /// supported methods and the expected |params| dictionary contents. This
+644:   /// method will return the assigned message ID if called on the UI thread and
+645:   /// the message was successfully submitted for validation, otherwise 0. See
+646:   /// the SendDevToolsMessage documentation for additional usage information.
+647:   ///
+648:   /*--cef(optional_param=params)--*/
+649:   virtual int ExecuteDevToolsMethod(int message_id,
+650:                                     const CefString& method,
+651:                                     CefRefPtr<CefDictionaryValue> params) = 0;
+652: 
+653:   ///
+654:   /// Add an observer for DevTools protocol messages (method results and
+655:   /// events). The observer will remain registered until the returned
+656:   /// Registration object is destroyed. See the SendDevToolsMessage
+657:   /// documentation for additional usage information.
+658:   ///
+659:   /*--cef()--*/
+660:   virtual CefRefPtr<CefRegistration> AddDevToolsMessageObserver(
+661:       CefRefPtr<CefDevToolsMessageObserver> observer) = 0;
+662: 
+663:   ///
+664:   /// Retrieve a snapshot of current navigation entries as values sent to the
+665:   /// specified visitor. If |current_only| is true only the current navigation
+666:   /// entry will be sent, otherwise all navigation entries will be sent.
+667:   ///
+668:   /*--cef()--*/
+669:   virtual void GetNavigationEntries(
+670:       CefRefPtr<CefNavigationEntryVisitor> visitor,
+671:       bool current_only) = 0;
+672: 
+673:   ///
+674:   /// If a misspelled word is currently selected in an editable node calling
+675:   /// this method will replace it with the specified |word|.
+676:   ///
+677:   /*--cef()--*/
+999:   ///
+1000:   /// Set whether the browser's audio is muted.
+1001:   ///
+1002:   /*--cef()--*/
+1003:   virtual void SetAudioMuted(bool mute) = 0;
+1004: 
+1005:   ///
+1006:   /// Returns true if the browser's audio is muted.  This method can only be
+1007:   /// called on the UI thread.
+1008:   ///
+1009:   /*--cef()--*/
+1010:   virtual bool IsAudioMuted() = 0;
+
+/home/exedev/work/agents/spec-2/revisions/v1/sources/cef/cef_types_mac.h
+143: 
+144:   ///
+145:   /// NSView pointer for the new browser view. Only used with windowed
+146:   /// rendering.
+147:   ///
+148:   cef_window_handle_t view;
+149: 
+150:   ///
+151:   /// Optionally change the runtime style. Alloy style will always be used if
+152:   /// |windowless_rendering_enabled| is true or if |parent_view| is provided.
+153:   /// See cef_runtime_style_t documentation for details.
+154:   ///
+155:   cef_runtime_style_t runtime_style;
+156: } cef_window_info_t;
+157: 
+158: ///
+159: /// Structure containing shared texture information for the OnAcceleratedPaint
+160: /// callback. Resources will be released to the underlying pool for reuse when

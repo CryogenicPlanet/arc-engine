@@ -1,0 +1,50 @@
+108: class CefRequestContext : public CefPreferenceManager {
+109:  public:
+110:   ///
+111:   /// Returns the global context object.
+112:   ///
+113:   /*--cef()--*/
+114:   static CefRefPtr<CefRequestContext> GetGlobalContext();
+115: 
+116:   ///
+117:   /// Creates a new context object with the specified |settings| and optional
+118:   /// |handler|.
+119:   ///
+120:   /*--cef(optional_param=handler)--*/
+121:   static CefRefPtr<CefRequestContext> CreateContext(
+122:       const CefRequestContextSettings& settings,
+123:       CefRefPtr<CefRequestContextHandler> handler);
+124: 
+125:   ///
+126:   /// Creates a new context object that shares storage with |other| and uses an
+127:   /// optional |handler|.
+128:   ///
+129:   /*--cef(capi_name=cef_create_context_shared,optional_param=handler)--*/
+130:   static CefRefPtr<CefRequestContext> CreateContext(
+131:       CefRefPtr<CefRequestContext> other,
+132:       CefRefPtr<CefRequestContextHandler> handler);
+133: 
+134:   ///
+135:   /// Returns true if this object is pointing to the same context as |that|
+136:   /// object.
+137:   ///
+138:   /*--cef()--*/
+139:   virtual bool IsSame(CefRefPtr<CefRequestContext> other) = 0;
+140: 
+141:   ///
+142:   /// Returns true if this object is sharing the same storage as |that| object.
+143:   ///
+144:   /*--cef()--*/
+145:   virtual bool IsSharingWith(CefRefPtr<CefRequestContext> other) = 0;
+146: 
+147:   ///
+148:   /// Returns true if this object is the global context. The global context is
+149:   /// used by default when creating a browser or URL request with a NULL context
+150:   /// argument.
+151:   ///
+152:   /*--cef()--*/
+153:   virtual bool IsGlobal() = 0;
+154: 
+155:   ///
+156:   /// Returns the handler for this context if any.
+157:   ///
