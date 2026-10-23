@@ -18,4 +18,11 @@ GCLIENT
 step "gclient sync src@156.0.8078.48 (no history, with hooks)"
 gclient sync --revision src@refs/tags/156.0.8078.48 --no-history -D -j 16 >"$E/logs/gclient-sync.log" 2>&1 \
   && step "SYNC DONE: $(du -sh "$E/chromium/src" | cut -f1), $(cat "$E/chromium/src/chrome/VERSION" | tr '\n' ' ')" \
-  || step "SYNC FAILED (logs/gclient-sync.log)"
+  || { step "SYNC FAILED (logs/gclient-sync.log)"; exit 1; }
+# Reapply our patches (a sync resets the tree). Already-applied patches are skipped.
+for p in "$E"/patches/*.patch; do
+  [ -e "$p" ] || continue
+  if git -C "$E/chromium/src" apply --reverse --check "$p" 2>/dev/null; then step "patch already applied: $(basename "$p")"
+  elif git -C "$E/chromium/src" apply "$p"; then step "patch applied: $(basename "$p")"
+  else step "PATCH FAILED: $(basename "$p")"; exit 1; fi
+done
