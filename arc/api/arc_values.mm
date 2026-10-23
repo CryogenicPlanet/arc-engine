@@ -74,56 +74,42 @@ ARC_EXPORT @interface ArcSearchEngine : NSObject
 
 @end
 
-// An RGBA color with float components (Arc's Color4f; same layout as SkColor4f), e.g. a page's root
-// background color. Encodings match Arc's: {Color4f=ffff}.
-struct Color4f {
-  float r;
-  float g;
-  float b;
-  float a;
-};
-
+// An RGBA color with float components (Arc's Color4f), e.g. a page's root background color. Only the
+// ObjC-typed surface is implemented: Arc's C++-typed initWithColor4f:/color4f/setColor4f: are engine-internal
+// (ARCHITECTURE.md), and reproducing them would need Arc's exact non-trivial Color4f return ABI.
 ARC_EXPORT @interface ArcColor4f : NSObject
 - (instancetype)initWithR:(float)r g:(float)g b:(float)b a:(float)a;
+@property(nonatomic, readonly) float r;
+@property(nonatomic, readonly) float g;
+@property(nonatomic, readonly) float b;
+@property(nonatomic, readonly) float a;
 @end
 
 @implementation ArcColor4f {
-  Color4f _color4f;
+  float _r, _g, _b, _a;
 }
 
 - (instancetype)initWithR:(float)r g:(float)g b:(float)b a:(float)a {
   if ((self = [super init])) {
-    _color4f = {r, g, b, a};
-  }
-  return self;
-}
-
-- (instancetype)initWithColor4f:(const Color4f*)color {
-  if ((self = [super init])) {
-    if (color) {
-      _color4f = *color;
-    }
+    _r = r;
+    _g = g;
+    _b = b;
+    _a = a;
   }
   return self;
 }
 
 - (float)r {
-  return _color4f.r;
+  return _r;
 }
 - (float)g {
-  return _color4f.g;
+  return _g;
 }
 - (float)b {
-  return _color4f.b;
+  return _b;
 }
 - (float)a {
-  return _color4f.a;
-}
-- (Color4f)color4f {
-  return _color4f;
-}
-- (void)setColor4f:(Color4f)color4f {
-  _color4f = color4f;
+  return _a;
 }
 
 @end
