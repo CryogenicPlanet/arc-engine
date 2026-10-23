@@ -72,7 +72,7 @@ index 37c881f5d2..87974ba179 100644
 +_arcCategoryEnabledFlag
 +_emitTraceEvent
 diff --git a/chrome/common/chrome_constants.cc b/chrome/common/chrome_constants.cc
-index 1a6b899b4b..2a18a15133 100644
+index 1a6b899b4b..43f25f5cb1 100644
 --- a/chrome/common/chrome_constants.cc
 +++ b/chrome/common/chrome_constants.cc
 @@ -36,10 +36,10 @@ const base::FilePath::CharType kBrowserProcessExecutableName[] =
@@ -89,6 +89,27 @@ index 1a6b899b4b..2a18a15133 100644
  #elif BUILDFLAG(IS_ANDROID)
  // NOTE: Keep it synced with the process names defined in AndroidManifest.xml.
  const base::FilePath::CharType kBrowserProcessExecutableName[] = FPL("chrome");
+@@ -58,8 +58,9 @@ const base::FilePath::CharType kBrowserProcessExecutablePath[] =
+ const base::FilePath::CharType kHelperProcessExecutablePath[] =
+     FPL("chrome.exe");
+ #elif BUILDFLAG(IS_MAC)
++// ArcMod: Arc's app and helper names.
+ const base::FilePath::CharType kBrowserProcessExecutablePath[] =
+-    FPL(PRODUCT_FULLNAME_STRING ".app/Contents/MacOS/" PRODUCT_FULLNAME_STRING);
++    FPL("Arc.app/Contents/MacOS/Arc");
+ const base::FilePath::CharType
+     kGoogleChromeForTestingBrowserProcessExecutablePath[] =
+         FPL("Google Chrome for Testing.app/Contents/MacOS/Google Chrome for "
+@@ -69,8 +70,7 @@ const base::FilePath::CharType kGoogleChromeBrowserProcessExecutablePath[] =
+ const base::FilePath::CharType kChromiumBrowserProcessExecutablePath[] =
+     FPL("Chromium.app/Contents/MacOS/Chromium");
+ const base::FilePath::CharType kHelperProcessExecutablePath[] =
+-    FPL(PRODUCT_FULLNAME_STRING
+-        " Helper.app/Contents/MacOS/" PRODUCT_FULLNAME_STRING " Helper");
++    FPL("Browser Helper.app/Contents/MacOS/Browser Helper");
+ #elif BUILDFLAG(IS_ANDROID)
+ const base::FilePath::CharType kBrowserProcessExecutablePath[] = FPL("chrome");
+ const base::FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
 @@ -80,10 +80,9 @@ const base::FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
  #endif  // OS_*
  

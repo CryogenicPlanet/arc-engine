@@ -6,7 +6,22 @@ Facts, locations, procedures and the step-by-step runbook are in `ENGINE.md`.
 Static research is complete and reviewed: report `../arc/notes/engine-feasibility.md`, class and protocol
 index `specs/README.md` (146 classes, 1,964 declared methods, 26 protocols; declared coverage, not behavior).
 
-## Proposed next milestone (awaiting Rahul)
+## Building our engine (in progress, 2026-10-23)
+
+Rahul: "just go build it" — an ArcCore built from Chromium so the engine can follow Chromium releases.
+- [x] Launch-slice harness + traced baseline on Arc's 1.170 engine (`tests/launch-slice/`, `results/launch-slice/`).
+- [x] ArcCore.framework from our Chromium 156 build in Arc's layout (`patches/0002`), Arc's 146 classes declared,
+      unimplemented methods are logging stubs from real metadata (`arc/api/arc_api_stubs.mm`, `arc/tools/gen_api_table.py`).
+- [x] Hosted bootstrap: `initialize:` starts Chrome's browser process inside Arc's NSApplication, `run` runs the loop
+      (`patches/0003`: split RunContentProcess, hosted ChromeMain, skip Chrome's AppController/menu/NSApp checks).
+- [ ] Profiles: `availableBrowserContextAttributes` must include `.default` (app asserts), `getBrowserContext:type:`,
+      ArcBrowserContext and its service wrappers. Next.
+- [ ] Browser/WebContents creation, native views (pane host), navigation, delegates — then the launch-slice harness.
+- Loop: `./build-babysit.sh` → `./package-engine.sh ours156` → `../arc/tools/run-mod.sh --agent ours156 --background
+  --cdp-port 9334` → read `../arc/build/ArcModAgent-ours156-run.log` ("ArcCore unimplemented:" lines show what's next).
+- Dev builds have DCHECKs on (fatal); Arc shipped a release build. Release builds need `dcheck_always_on=false`.
+
+## Proposed next milestone (superseded by the build work above)
 
 - [ ] **M1: launch-slice runtime baseline** (`../arc/notes/engine-milestone-1.md`). Observe-only: run the
       app on ArcCore 1.170.0 through a fixed launch/navigate/store/quit/relaunch scenario with asserted

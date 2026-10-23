@@ -1,10 +1,11 @@
 # Copyright 2026 ArcMod.
 # ArcCore: Arc's engine interface implemented on Chromium. Linked into the Mac framework
-# (//chrome:chrome_dll) by patches/0002-arccore-framework.patch; the framework is renamed ArcCore.
+# (//chrome:chrome_dll) by patches/0002-arccore-framework-layout.patch; the framework is named ArcCore.
 
 source_set("arc_core") {
   sources = [
     "api/arc_api_stubs.mm",
+    "api/arc_browser_application.mm",
     "api/arc_exports.mm",
   ]
   inputs = [
@@ -15,5 +16,12 @@ source_set("arc_core") {
     "AppKit.framework",
     "Foundation.framework",
   ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//components/version_info",
+  ]
+
+  # Calls the hosted entry points in //chrome:chrome_dll (chrome/app/chrome_main.h), which links this
+  # target into the same framework; a gn dep back to it would be a cycle.
+  check_includes = false
 }

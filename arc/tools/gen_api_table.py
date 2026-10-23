@@ -37,7 +37,7 @@ hand_written = set()
 for d, _, files in os.walk(os.path.dirname(HERE)):
     for name in files:
         if name.endswith(".mm") and name != "arc_api_stubs.mm":
-            hand_written |= set(re.findall(r"^@implementation\s+(Arc\w+)\s*$", open(os.path.join(d, name)).read(), re.M))
+            hand_written |= set(re.findall(r"^@implementation\s+(Arc\w+)\s*(?:\{|$)", open(os.path.join(d, name)).read(), re.M))
 classes = sorted(r[1] for r in rows if r[0] == "C" and r[1] not in hand_written)
 methods = []
 for r in rows:

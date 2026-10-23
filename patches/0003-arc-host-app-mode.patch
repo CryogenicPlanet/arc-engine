@@ -1,0 +1,299 @@
+diff --git a/chrome/app/chrome_main.cc b/chrome/app/chrome_main.cc
+index 199142d671..60878d92a0 100644
+--- a/chrome/app/chrome_main.cc
++++ b/chrome/app/chrome_main.cc
+@@ -28,6 +28,11 @@
+ #include "chrome/common/chrome_result_codes.h"
+ #include "chrome/common/chrome_switches.h"
+ #include "content/public/app/content_main.h"
++#include "content/public/app/content_main_runner.h"
++#include "content/public/browser/browser_main_runner.h"
++#include "content/public/common/main_function_params.h"
++#include "content/public/common/result_codes.h"
++#include "base/process/current_process.h"
+ #include "content/public/common/content_switches.h"
+ #include "partition_alloc/buildflags.h"
+ 
+@@ -77,6 +82,94 @@ const base::CommandLine& GetInitialBrowserCommandLine() {
+   return GetInitialCommandLineStorage().value();
+ }
+ 
++#if BUILDFLAG(IS_MAC)
++namespace {
++
++// ArcMod: the browser-process delegate for a host app. Initializes the browser
++// (content::BrowserMainRunner) and returns, leaving the main loop to
++// ChromeMainRunHostedBrowser(). Child processes run exactly as in ChromeMain.
++class HostedBrowserMainDelegate : public ChromeMainDelegate {
++ public:
++  using ChromeMainDelegate::ChromeMainDelegate;
++
++  std::variant<int, content::MainFunctionParams> RunProcess(
++      const std::string& process_type,
++      content::MainFunctionParams main_function_params) override {
++    auto result = ChromeMainDelegate::RunProcess(
++        process_type, std::move(main_function_params));
++    if (!process_type.empty() || std::holds_alternative<int>(result)) {
++      return result;
++    }
++    // What content::BrowserMain does, without Run() and Shutdown().
++    base::CurrentProcess::GetInstance().SetProcessType(
++        base::CurrentProcessType::PROCESS_BROWSER);
++    browser_runner_ = content::BrowserMainRunner::Create();
++    int exit_code = browser_runner_->Initialize(
++        std::get<content::MainFunctionParams>(std::move(result)));
++    if (exit_code >= 0) {
++      browser_runner_.reset();
++      return exit_code;
++    }
++    return content::RESULT_CODE_NORMAL_EXIT;
++  }
++
++  std::unique_ptr<content::BrowserMainRunner> browser_runner_;
++};
++
++struct HostedBrowser {
++  std::unique_ptr<HostedBrowserMainDelegate> delegate;
++  std::unique_ptr<content::ContentMainRunner> runner;
++};
++
++HostedBrowser& GetHostedBrowser() {
++  static base::NoDestructor<HostedBrowser> hosted;
++  return *hosted;
++}
++
++}  // namespace
++
++int ChromeMainInitializeHostedBrowser(int argc, const char** argv) {
++  HostedBrowser& hosted = GetHostedBrowser();
++  CHECK(!hosted.runner);
++  hosted.delegate = std::make_unique<HostedBrowserMainDelegate>(
++      StartupTimestamps{.exe_entry_point_ticks = base::TimeTicks::Now()});
++  content::ContentMainParams params(hosted.delegate.get());
++  params.argc = argc;
++  params.argv = argv;
++  base::CommandLine::Init(params.argc, params.argv);
++  GetInitialCommandLineStorage() = *base::CommandLine::ForCurrentProcess();
++  chrome::InitializeExitSixtyNineDetector();
++  SetUpBundleOverrides();
++  base::PoissonAllocationSampler::Init();
++
++  hosted.runner = content::ContentMainRunner::Create();
++  int exit_code =
++      content::InitializeContentProcess(std::move(params), hosted.runner.get());
++  if (exit_code >= 0) {
++    return exit_code ? exit_code : 1;
++  }
++  exit_code = hosted.runner->Run();
++  if (!hosted.delegate->browser_runner_) {
++    return exit_code ? exit_code : 1;  // startup stopped before the main loop
++  }
++  return 0;
++}
++
++int ChromeMainRunHostedBrowser() {
++  HostedBrowser& hosted = GetHostedBrowser();
++  CHECK(hosted.delegate && hosted.delegate->browser_runner_);
++  std::unique_ptr<content::BrowserMainRunner> browser_runner =
++      std::move(hosted.delegate->browser_runner_);
++  int exit_code = browser_runner->Run();
++  browser_runner->Shutdown();
++  hosted.runner->Shutdown();
++  if (IsNormalResultCode(static_cast<ResultCode>(exit_code))) {
++    return content::RESULT_CODE_NORMAL_EXIT;
++  }
++  return exit_code;
++}
++#endif  // BUILDFLAG(IS_MAC)
++
+ #if BUILDFLAG(IS_WIN)
+ // We use extern C for the prototype DLLEXPORT to avoid C++ name mangling.
+ extern "C" {
+diff --git a/chrome/app/chrome_main.h b/chrome/app/chrome_main.h
+index dc97352790..a32bda9a53 100644
+--- a/chrome/app/chrome_main.h
++++ b/chrome/app/chrome_main.h
+@@ -15,4 +15,14 @@ class CommandLine;
+ // This function is only available in the browser process.
+ const base::CommandLine& GetInitialBrowserCommandLine();
+ 
++#if defined(__APPLE__)
++// ArcMod: entry points for an app that hosts this framework and owns the
++// process (Arc's app). ChromeMainInitializeHostedBrowser does ChromeMain's setup
++// and initializes the browser process, then returns 0 without running the main
++// loop (or a non-zero exit code if startup stopped). ChromeMainRunHostedBrowser
++// then runs the main loop until quit, shuts down, and returns the exit code.
++int ChromeMainInitializeHostedBrowser(int argc, const char** argv);
++int ChromeMainRunHostedBrowser();
++#endif
++
+ #endif  // CHROME_APP_CHROME_MAIN_H_
+diff --git a/chrome/browser/chrome_browser_application_mac.mm b/chrome/browser/chrome_browser_application_mac.mm
+index 823b03b27c..82de8160f3 100644
+--- a/chrome/browser/chrome_browser_application_mac.mm
++++ b/chrome/browser/chrome_browser_application_mac.mm
+@@ -37,6 +37,12 @@
+ namespace chrome_browser_application_mac {
+ 
+ void RegisterBrowserCrApp() {
++  // ArcMod: when Arc's app hosts this engine, NSApp is Arc's own application
++  // class. It implements the same Cr protocols, which is what Chromium relies on.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    CHECK([NSApp conformsToProtocol:@protocol(CrAppControlProtocol)]);
++    return;
++  }
+   [BrowserCrApplication sharedApplication];
+ 
+   // If there was an invocation to NSApp prior to this method, then the NSApp
+diff --git a/chrome/browser/chrome_browser_main_mac.mm b/chrome/browser/chrome_browser_main_mac.mm
+index b269f1610a..712a1eb4d3 100644
+--- a/chrome/browser/chrome_browser_main_mac.mm
++++ b/chrome/browser/chrome_browser_main_mac.mm
+@@ -116,7 +116,8 @@
+   // before anything creating preferences like Local State in order for the
+   // relaunched installed application to still consider itself as first-run.
+   if (!first_run::IsFirstRunSuppressed(
+-          *base::CommandLine::ForCurrentProcess())) {
++          *base::CommandLine::ForCurrentProcess()) &&
++      !base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {  // ArcMod: Arc's app owns installation.
+     if (MaybeInstallFromDiskImage()) {
+       // The application was installed and the installed copy has been
+       // launched.  This process is now obsolete.  Exit.
+@@ -154,6 +155,11 @@
+     return ret;
+   }
+ 
++  // ArcMod: Arc's app owns NSApp's delegate and main menu.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    return content::RESULT_CODE_NORMAL_EXIT;
++  }
++
+   // Create the app delegate by requesting the shared AppController.
+   CHECK_EQ(nil, NSApp.delegate);
+   AppController* app_controller = AppController.sharedController;
+@@ -182,5 +188,8 @@
+ }
+ 
+ void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {  // ArcMod: no AppController.
++    return;
++  }
+   [AppController.sharedController didEndMainMessageLoop];
+ }
+diff --git a/content/app/content_main.cc b/content/app/content_main.cc
+index 0fd60fa820..3dd27e1c71 100644
+--- a/content/app/content_main.cc
++++ b/content/app/content_main.cc
+@@ -186,14 +186,14 @@ ContentMainParams& ContentMainParams::operator=(ContentMainParams&&) = default;
+ 
+ // This function must be marked with NO_STACK_PROTECTOR or it may crash on
+ // return, see the --change-stack-guard-on-fork command line flag.
+-NO_STACK_PROTECTOR int RunContentProcess(
++namespace {
++
++// ArcMod: shared by RunContentProcess and InitializeContentProcess.
++NO_STACK_PROTECTOR int InitializeContentProcessImpl(
+     ContentMainParams params,
+-    ContentMainRunner* content_main_runner) {
+-  base::FeatureList::FailOnFeatureAccessWithoutFeatureList();
++    ContentMainRunner* content_main_runner,
++    base::apple::ScopedNSAutoreleasePool* autorelease_pool_for_params) {
+   int exit_code = -1;
+-#if BUILDFLAG(IS_MAC)
+-  base::apple::ScopedNSAutoreleasePool autorelease_pool;
+-#endif
+ 
+   // A flag to indicate whether Main() has been called before. On Android, we
+   // may re-run Main() without restarting the browser process. This flag
+@@ -284,7 +284,7 @@ NO_STACK_PROTECTOR int RunContentProcess(
+     // is not safe. Each main loop should create and destroy its own pool; it
+     // should not be flushing the pool at the base of the autorelease pool
+     // stack.
+-    params.autorelease_pool = &autorelease_pool;
++    params.autorelease_pool = autorelease_pool_for_params;
+     InitializeMac();
+ #endif
+ 
+@@ -331,6 +331,34 @@ NO_STACK_PROTECTOR int RunContentProcess(
+ 
+     static base::NoDestructor<TracingEnabledStateObserver> tracing_observer;
+   }
++  return exit_code;
++}
++
++}  // namespace
++
++NO_STACK_PROTECTOR int InitializeContentProcess(
++    ContentMainParams params,
++    ContentMainRunner* content_main_runner) {
++  base::FeatureList::FailOnFeatureAccessWithoutFeatureList();
++  return InitializeContentProcessImpl(std::move(params), content_main_runner,
++                                      /*autorelease_pool_for_params=*/nullptr);
++}
++
++NO_STACK_PROTECTOR int RunContentProcess(
++    ContentMainParams params,
++    ContentMainRunner* content_main_runner) {
++  base::FeatureList::FailOnFeatureAccessWithoutFeatureList();
++#if BUILDFLAG(IS_MAC)
++  base::apple::ScopedNSAutoreleasePool autorelease_pool;
++  int exit_code = InitializeContentProcessImpl(
++      std::move(params), content_main_runner, &autorelease_pool);
++#else
++  int exit_code = InitializeContentProcessImpl(
++      std::move(params), content_main_runner, nullptr);
++#endif
++  if (exit_code >= 0) {
++    return exit_code;
++  }
+ 
+   if (IsSubprocess())
+     CommonSubprocessInit();
+diff --git a/content/browser/scheduler/responsiveness/native_event_observer_mac.mm b/content/browser/scheduler/responsiveness/native_event_observer_mac.mm
+index 511c2ca8d3..86412d253d 100644
+--- a/content/browser/scheduler/responsiveness/native_event_observer_mac.mm
++++ b/content/browser/scheduler/responsiveness/native_event_observer_mac.mm
+@@ -11,15 +11,19 @@
+ namespace content::responsiveness {
+ 
+ void BrowserUINativeEventObserver::RegisterObserver() {
+-  CHECK([NSApp conformsToProtocol:@protocol(NativeEventProcessor)],
+-        base::NotFatalUntil::M160);
++  // ArcMod: a host app's NSApplication (Arc's) may not report native events;
++  // responsiveness metrics then skip them.
++  if (![NSApp conformsToProtocol:@protocol(NativeEventProcessor)]) {
++    return;
++  }
+   id<NativeEventProcessor> processor =
+       static_cast<id<NativeEventProcessor>>(NSApp);
+   [processor addNativeEventProcessorObserver:this];
+ }
+ void BrowserUINativeEventObserver::UnregisterObserver() {
+-  CHECK([NSApp conformsToProtocol:@protocol(NativeEventProcessor)],
+-        base::NotFatalUntil::M160);
++  if (![NSApp conformsToProtocol:@protocol(NativeEventProcessor)]) {
++    return;  // ArcMod: see RegisterObserver().
++  }
+   id<NativeEventProcessor> processor =
+       static_cast<id<NativeEventProcessor>>(NSApp);
+   [processor removeNativeEventProcessorObserver:this];
+diff --git a/content/public/app/content_main.h b/content/public/app/content_main.h
+index abbb4f4ccc..28a70ddc06 100644
+--- a/content/public/app/content_main.h
++++ b/content/public/app/content_main.h
+@@ -94,6 +94,15 @@ struct CONTENT_EXPORT ContentMainParams {
+   }
+ };
+ 
++// ArcMod: the setup half of RunContentProcess (process-wide init and
++// |content_main_runner|->Initialize). Returns a non-negative exit code to stop,
++// or -1 to continue with |content_main_runner|->Run(). The caller owns Run() and
++// Shutdown(), so an embedder can initialize the browser and run the loop later.
++// |params.autorelease_pool| is ignored (the embedder owns the run loop's pools).
++CONTENT_EXPORT int InitializeContentProcess(
++    ContentMainParams params,
++    ContentMainRunner* content_main_runner);
++
+ CONTENT_EXPORT int RunContentProcess(ContentMainParams params,
+                                      ContentMainRunner* content_main_runner);
+ 
