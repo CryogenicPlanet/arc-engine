@@ -14,6 +14,8 @@ flock -n 9 || exit 0
 if [ "$stage" = decompile ]; then
   test -e "$root/$name-initial.done" || exit 75
 elif [ "$stage" = synthesis ]; then
+  # Cross-review corrections and their fresh reviews must be frozen first.
+  test -s "$root/CLASS-REVISIONS-READY" || exit 75
   for role in abi cef arc-layer matcher; do
     test -e "$root/$role-decompile.done" || exit 75
   done
@@ -62,6 +64,7 @@ nice -n 10 timeout --signal=TERM --kill-after=30s 90m codex exec --ignore-user-c
 rc=$?
 if [ "$rc" -eq 0 ] && [ -s "$root/out/$job.md" ] && [ -s "$dir/$stage/report.md" ] \
   && [ "$dir/$stage/report.md" -nt "$attempt" ] \
+  && python3 "$root/validate-stage.py" "$name" "$stage" check-identity \
   && python3 "$root/validate-stage.py" "$name" "$stage" artifacts; then
   touch "$root/$job.done"
   stamp DONE

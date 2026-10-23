@@ -30,6 +30,19 @@ def identity():
     if role=='protocols':
         paths+=[root/'inputs/app168/dump/objc-classes.h']
         paths+=[root/'inputs/binaries'/name for name in ('Arc-1.168.0.arm64','ArcCore-1.168.0.arm64','ArcCore-1.170.0.arm64')]
+    if stage=='synthesis':
+        paths+=[root/'CLASS-REVISIONS-READY']
+        final=json.loads((root/'CLASS-REVISIONS-READY').read_text())
+        assert final['classes']==146 and final['declared_methods']==1964
+        assert len(final['selected'])==4
+        classes=[c for item in final['selected'] for c in item['classes']]
+        assert len(classes)==146 and len(set(classes))==146
+        for item in final['selected']:
+            for field in ('spec_sha256','review_sha256'):
+                for name,expected in item[field].items():
+                    path=(root/name).resolve()
+                    assert path.is_relative_to(root) and sha(path)==expected,'Published revision changed: '+name
+                    paths.append(path)
     return {str(path.relative_to(root)):sha(path) for path in paths}
 
 if action=='record-identity':

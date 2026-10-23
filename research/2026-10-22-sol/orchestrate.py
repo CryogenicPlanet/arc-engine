@@ -41,7 +41,7 @@ def launch(name, stage):
 def setup():
     remote(RESEARCH, "mkdir -p ~/work/prompts ~/work/logs ~/work/out ~/work/agents")
     assets=("run-agent.sh","validate-stage.py","read-function.py","index-corpus.py",
-            "reconcile-completion.py","notify-completion.py","auto-synthesis.sh")
+            "reconcile-completion.py","notify-completion.py","auto-synthesis.sh","class-followups.py")
     stage="/home/exedev/work/.harness-"+uuid.uuid4().hex
     remote(RESEARCH, "mkdir "+shlex.quote(stage))
     subprocess.run(["scp", "-q", *[str(ROOT/name) for name in assets],
