@@ -6,6 +6,22 @@ Facts, locations, procedures and the step-by-step runbook are in `ENGINE.md`.
 Static research is complete and reviewed: report `../arc/notes/engine-feasibility.md`, class and protocol
 index `specs/README.md` (146 classes, 1,964 declared methods, 26 protocols; declared coverage, not behavior).
 
+## Morning status (2026-10-23 ~07:00 PDT)
+
+Our ArcCore (Chromium 156 from source + arc/ layer + patches 0001-0006) runs Arc 1.168's unmodified app.
+Scoreboard (`tests/scenarios/SCOREBOARD.md`, steps passing on OUR engine vs goldens recorded on Arc's engine):
+launch-slice 9/9, launch-slice-regression 9/9, tabs-navigation 11/11, media 4/4, media-pip 5/5,
+fullscreen 4/4, extensions-page-actions 6/6, bookmarks-public-api 40/40, renderer-public-api 37/37,
+sessions-tab-restart 13/15, sessions-public-api 9/12, pdf 4/5, downloads 2/3; dialogs, context menus,
+permissions, cookies/site-settings, devtools, command-bar partial (several need native UI; the screen was
+locked overnight, so native-UI scenarios couldn't run on either engine).
+Boundary diffs: most remaining differences are engine-internal reads; re-record goldens with the caller-aware
+recorder (e7ef669) for app-facing-only diffs.
+Release build: `chromium/src/out/Release` (dcheck off), packaged with `build-mod.ts --engine`.
+Morning to-do: unlock the desktop and record native-UI goldens (ArcMod parity scenarios are written: profiles,
+local mode, Little Arc, command bar, shortcuts, Settings, restore, Spaces, agent tools, import), finish the
+partial scenarios, real-profile copy test, then decide when ArcMod's default build switches engines.
+
 ## Building our engine (in progress, 2026-10-23)
 
 Rahul: "just go build it" — an ArcCore built from Chromium so the engine can follow Chromium releases.
