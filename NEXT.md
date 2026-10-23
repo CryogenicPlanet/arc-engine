@@ -3,17 +3,26 @@
 Goal: keep ArcMod on current Chromium after Arc shuts down on 2026-12-22, by building our own
 engine that matches Arc's `ArcCore` interface. Updated 2026-10-23.
 Facts, locations, procedures and the step-by-step runbook are in `ENGINE.md`.
+Static research is complete and reviewed: report `../arc/notes/engine-feasibility.md`, class and protocol
+index `specs/README.md` (146 classes, 1,964 declared methods, 26 protocols; declared coverage, not behavior).
+
+## Proposed next milestone (awaiting Rahul)
+
+- [ ] **M1: launch-slice runtime baseline** (`../arc/notes/engine-milestone-1.md`). Observe-only: run the
+      app on ArcCore 1.170.0 through a fixed launch/navigate/store/quit/relaunch scenario with asserted
+      outcomes, and trace engine entries and app callbacks in the browser process with lldb. Gates G0–G10.
+      No engine code, no VMs. Debugger authorization on this Mac may need Rahul (see its prerequisites).
 
 ## Now (running)
 
-- [x] **VM decompile** (done 2026-10-23 04:46 UTC; 567,959 functions) (`arcmod-engine.exe.xyz`, `~/work/STATUS`): Ghidra analysis of ArcCore 1.170.0,
+- [x] **VM decompile** (done 2026-10-23 04:46 UTC; 567,959 functions; VM PAUSED since 05:31 UTC, no SSH or resume without Rahul's approval) (`arcmod-engine.exe.xyz`, `~/work/STATUS`): Ghidra analysis of ArcCore 1.170.0,
       then a project save, then export and a parallel decompile. Watched from the Mac. On failure: read
       `logs/ghidra-*.log` and `dmesg`. The analysis is saved, so rerun `scripts/phase-b2-ghidra.sh` to
       redo only the decompile.
 
 ## 1. Map Arc's own code (needs the decompile)
 
-Sol (Rahul's sub-agents) owns the agent review and spec work from 2026-10-23.
+Sol (Rahul's sub-agents) owns the agent review and spec work from 2026-10-23. Done 2026-10-23: `specs/`, `research/2026-10-22-sol/`.
 
 - [ ] Pull back only what's needed: the function list plus the Arc-layer extraction. Leave the full
       decompile on the VM (outbound traffic is metered).
@@ -30,7 +39,7 @@ Sol (Rahul's sub-agents) owns the agent review and spec work from 2026-10-23.
 
 - [x] (done 2026-10-23: compile wins; results/cef-mapping.md) CEF mapping: sort the app's 834 engine methods (63 classes) into three groups: maps to CEF's
       public API, needs Chrome internals, or Arc-only feature.
-- [ ] Write `notes/engine-feasibility.md` in the ArcMod repo: measured size, CEF vs compile-with-our-layer,
+- [x] (done by Codex/Sol, arc 23047ea) Write `notes/engine-feasibility.md` in the ArcMod repo: measured size, CEF vs compile-with-our-layer,
       effort, risks and a recommendation. Commit it, then ask before pushing.
 
 ## 3. If we compile Chromium with our own `arc/` layer
@@ -55,7 +64,7 @@ Sol (Rahul's sub-agents) owns the agent review and spec work from 2026-10-23.
 
 ## Housekeeping
 
-- [ ] Ask Rahul before pausing or deleting the `arcmod-engine` VM once matching is done (0.84 USD/h).
+- [x] `arcmod-engine` paused 2026-10-23 05:31 UTC with Rahul's conditional approval; disk retained, 0 USD/h. Deleting it still needs his approval.
 - [ ] Move the engine scripts (`~/general/arc-engine/*.sh`, `patches/`, and the VM scripts kept in the
       session scratchpad) into a versioned place, e.g. `tools/engine/` in the ArcMod repo.
 - [ ] Test the passkey routes (phone QR, security key, 1Password/Bitwarden extension) and update the README.
