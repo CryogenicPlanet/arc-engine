@@ -1,0 +1,231 @@
+{
+  "status": "SUPPORTED selected sessions/GNI source-stable successful build/package; overall pipeline FAILED prelaunch",
+  "createdUTC": "2026-10-23T16:44:50.095752+00:00",
+  "runPrefix": "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z",
+  "sessions": {
+    "beforeSHA256": "e973b371ff612fcb85132ee992af900937f92fbc325d06a97ec9e4b17a9c668d",
+    "current": {
+      "sha256": "e973b371ff612fcb85132ee992af900937f92fbc325d06a97ec9e4b17a9c668d",
+      "bytes": 45673,
+      "mtimeNs": 1792771294618258660
+    },
+    "candidate": {
+      "sha256": "e973b371ff612fcb85132ee992af900937f92fbc325d06a97ec9e4b17a9c668d",
+      "bytes": 45673,
+      "mtimeNs": 1792770841775740972
+    },
+    "finalAfterEqualityEvidence": "pinned final verifier + inputs.changed excludes sessions; no explicit after hash map"
+  },
+  "sessionsGNI": {
+    "beforeSHA256": "6f983408cd5c903507a5ae093cc6bee7700a0aa69e83d0c017581bcb3a8a9830",
+    "current": {
+      "sha256": "6f983408cd5c903507a5ae093cc6bee7700a0aa69e83d0c017581bcb3a8a9830",
+      "bytes": 316,
+      "mtimeNs": 1792749247776608417
+    },
+    "finalAfterEqualityEvidence": "same negative-drift verification"
+  },
+  "selectedSeal": {
+    "inputCount": 1369,
+    "inventoryCounts": {
+      "production": 126,
+      "api": 57,
+      "stock": 1109
+    },
+    "inventoriesEqual": true,
+    "changed": [
+      "arc/browser/webextras_native_probe.m"
+    ],
+    "completeNativeToolchainClosure": false,
+    "rootArcBuildGNSealed": false
+  },
+  "stages": {
+    "apiGeneration": 0,
+    "build": 0,
+    "package": 0,
+    "strictDeepCodesign": 0,
+    "helperBuild": 0,
+    "exitEvidence": "set-e ordered continuation to prelaunch stage; individual exit receipts not archived",
+    "pipelineExit": 1,
+    "failure": "prelaunch source seal: sole webextras_native_probe.m drift",
+    "runnerInvocationReached": false,
+    "appLaunchByThisPipeline": false,
+    "absentArtifacts": [
+      "binary-pins.before.json",
+      "probe.log",
+      "probe.exit",
+      "probe"
+    ]
+  },
+  "archivedPackagedFramework": {
+    "sha256": "28beee762b3858ea197a87736aca21b5cbbfa01ef897ca6f0e747d91568eee5c",
+    "mtimeNs": 1792773659586692910,
+    "size": 641357968
+  },
+  "archivedRunInputs": {
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/api.log": {
+      "sha256": "47bec9f2bb408f3c60f29afff500b6a2f92b89e28b4c1fa0c30b0527a729f4be",
+      "bytes": 61,
+      "mtimeNs": 1792773604539172847
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/helper-build.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mtimeNs": 1792773661175536868
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/inventories.after.json": {
+      "sha256": "8782987ccd81a4cd5eb5d33c6ac6260d2410c5040a9533d965d7da19b49a1a50",
+      "bytes": 137810,
+      "mtimeNs": 1792773662605602739
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/profile-backups.jsonl": {
+      "sha256": "a7b2661a426dffb4eda235eac176dd930cb4e5d3620e0dc277c79c3faa3b19d2",
+      "bytes": 249,
+      "mtimeNs": 1792773604509878092
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/built-helper.json": {
+      "sha256": "a122361f01609f6fd7da6981b3959c1714291f1a0d5c55e6b60711bde1b6cfce",
+      "bytes": 233,
+      "mtimeNs": 1792773661757061884
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/inputs.before.json": {
+      "sha256": "6367d5ed921daf9ad732476395065e9e6963d36186d012c3b689d1a735656bbc",
+      "bytes": 232137,
+      "mtimeNs": 1792773604322869429
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/selected-provenance.json": {
+      "sha256": "4e0fc1b1c978905bec5f7ee83f2e6bf153a5267eb75642042d638c256d27aaba",
+      "bytes": 12921,
+      "mtimeNs": 1792773604322576134
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/package-codesign.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mtimeNs": 1792773660514233553
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/compiled.inputs.json": {
+      "sha256": "16220c1297d0338794c97c9e47780795459fbc15b5be3a18002258651655c110",
+      "bytes": 2699,
+      "mtimeNs": 1792773661172342331
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/inventories.before.json": {
+      "sha256": "8782987ccd81a4cd5eb5d33c6ac6260d2410c5040a9533d965d7da19b49a1a50",
+      "bytes": 137810,
+      "mtimeNs": 1792773604323093431
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/inputs.changed.json": {
+      "sha256": "d3093e523410d11b38c34c644f45b7c83930ae9f53f4b61a36a4fb362dc6a8c2",
+      "bytes": 45,
+      "mtimeNs": 1792773662606066994
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/pipeline.exit": {
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2,
+      "mtimeNs": 1792773662625397176
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/package.log": {
+      "sha256": "1a304afdc8d1b0487ba4758ce360f5e5b8ce8cf9eefbbd7c81b3b83b65c93bf3",
+      "bytes": 3547,
+      "mtimeNs": 1792773660511521230
+    },
+    "logs/wp/app-boundary-validation/run2r-auth-v4.prelaunch-drift.20261023T164226Z/build.log": {
+      "sha256": "42472e2182e2875d9d96be5c7f47c532d7753fda3cb2a1f5761f3337a4c71ab7",
+      "bytes": 244,
+      "mtimeNs": 1792773653508206823
+    }
+  },
+  "relatedScriptAndBuildLogPins": {
+    "logs/wp/app.run2r-auth-v4.log": {
+      "sha256": "c4fc18eac577b1995f949dacfb30f62f046185bcd92d85125f7044354b11ea91",
+      "bytes": 490,
+      "mtimeNs": 1792773662615824191
+    },
+    "logs/wp/app.run2r-auth-v4.sh": {
+      "sha256": "2c2cf923ec1244aa4f5e98b0611769555a29381ddb770228266feff53d3a26c8",
+      "bytes": 31423,
+      "mtimeNs": 1792773383446362121
+    },
+    "logs/wp/app.run6.fingerprint.py": {
+      "sha256": "2369a3d986c7afde85bc4f27f34d0aaeabe4d543c353316e76d6d454c8947588",
+      "bytes": 1029,
+      "mtimeNs": 1792759900895480894
+    },
+    "build-babysit.sh": {
+      "sha256": "f5977f59d0c983c5c66c0c9b8e632e30ed864759fefc94204cdd82fb8d097734",
+      "bytes": 4146,
+      "mtimeNs": 1792749143811482962
+    },
+    "package-engine.sh": {
+      "sha256": "40ff4b42d56db468d51f8dc2c9deb3542d2d21960c1bdb3f9763c89cfe20eb14",
+      "bytes": 785,
+      "mtimeNs": 1792745065899103445
+    },
+    "logs/build-base.attempt-1.log": {
+      "sha256": "7e2a4fac387afa2e2e5b24c68e04e43ee81534cb070e213f8d0cf4ff763e31f5",
+      "bytes": 293,
+      "mtimeNs": 1792773653472584119
+    }
+  },
+  "presentTimeObservationsNotArchivedRunPins": {
+    "arc/BUILD.gn": {
+      "sha256": "48ecdfb4da3fe9a6858f38ff7876cba539c3be8880de920f9d410880e4695d75",
+      "bytes": 1836,
+      "mtimeNs": 1792745292522233786
+    },
+    "chromium/src/out/Base/obj/arc/arc_core.ninja": {
+      "sha256": "f5f7c74b3433334bd0d0236dd19ef07e5019a869687efc6935b062febd24f313",
+      "bytes": 48066,
+      "mtimeNs": 1792762110756135669
+    },
+    "chromium/src/out/Base/obj/arc/arc_core/arc_sessions_restore.o": {
+      "sha256": "50862fe23bf35909ddfab066d4ca0f88dd0e7e75fbb55a7481c681b595f10b83",
+      "bytes": 281696,
+      "mtimeNs": 1792773616198274000
+    },
+    "chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore": {
+      "sha256": "fe72dde1ab46c9708f6db56542b242f1cc4074c29e21f7574dcefb2fb16ed953",
+      "bytes": 645090352,
+      "mtimeNs": 1792773653024841000
+    },
+    "../arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore": {
+      "sha256": "28beee762b3858ea197a87736aca21b5cbbfa01ef897ca6f0e747d91568eee5c",
+      "bytes": 641357968,
+      "mtimeNs": 1792773659586692910
+    },
+    "arc/api/arc_sessions_restore.mm": {
+      "sha256": "e973b371ff612fcb85132ee992af900937f92fbc325d06a97ec9e4b17a9c668d",
+      "bytes": 45673,
+      "mtimeNs": 1792771294618258660
+    },
+    "arc/wp/sessions.gni": {
+      "sha256": "6f983408cd5c903507a5ae093cc6bee7700a0aa69e83d0c017581bcb3a8a9830",
+      "bytes": 316,
+      "mtimeNs": 1792749247776608417
+    },
+    "/tmp/arccore-sessions-selected-adapter-candidate.mm": {
+      "sha256": "e973b371ff612fcb85132ee992af900937f92fbc325d06a97ec9e4b17a9c668d",
+      "bytes": 45673,
+      "mtimeNs": 1792770841775740972
+    }
+  },
+  "report": {
+    "results/sessions/selected-adapter-lifetime-fix/sealed-build-provenance.md": {
+      "sha256": "5fcd53bf52395ddb53fde71a2648e6c92af23429a1d52eff8087eb6346a6f6dc",
+      "bytes": 4948,
+      "mtimeNs": 1792773890095737204
+    }
+  },
+  "limitations": [
+    "overall pipeline failed",
+    "no app or callback execution",
+    "no independent per-object compiler/link command",
+    "no full native/toolchain closure",
+    "object and built-framework pins observed now only",
+    "no original parity or acceptance claim"
+  ],
+  "freshIndependentReview": {
+    "agent": "/root/sessions_recon/full_probe_review",
+    "result": "PASS actual MD/JSON claims: successful build/package versus failed prelaunch; negative after drift not explicit map; current observations not archived; no compiler/link command, full-toolchain, runtime or parity proof",
+    "filesChangedByReviewer": false
+  }
+}

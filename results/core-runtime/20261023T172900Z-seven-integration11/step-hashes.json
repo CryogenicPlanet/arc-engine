@@ -1,0 +1,90 @@
+[
+  {
+    "patch": "core_navigation_chromium.patch",
+    "sha256": "2f423c8f1a48cf8d93f44f26ade9f57c3f2903d01a12ee8b7bca0cf63af3c83b",
+    "base": {
+      "content/public/browser/host_app_hooks.h": null,
+      "content/browser/web_contents/web_contents_impl.cc": "e551b400ae68665f06ce6f00807728763192866024be92e1507370d0db0a4199",
+      "content/browser/renderer_host/render_widget_host_view_mac.mm": "17b9ac1271936dc3dcc2840544c556edf680cd5c54642115c5c8c24fd6b650df",
+      "content/browser/renderer_host/browser_compositor_view_mac.mm": "1579b8073ab9c8682f11edd12227324048bbf7c5ae6b3d6b924cb285d0eca665"
+    },
+    "target": {
+      "content/public/browser/host_app_hooks.h": "bb7f8146dff718a78521759fd821873e000e5622f12b82338cac6cc1f6e9d9ad",
+      "content/browser/web_contents/web_contents_impl.cc": "60af3bfff279053d4c6b233470b8ebdfb71666008fca257d7ce687d0dbcb003b",
+      "content/browser/renderer_host/render_widget_host_view_mac.mm": "006a2baccb1d405d60d137451e1cc1a1a55041b19b6a67709ce7a0b00035816a",
+      "content/browser/renderer_host/browser_compositor_view_mac.mm": "314869241c898eae50e6236a6a402a10a6b2f12de4194dcbb6cbaf3ee1a7b006"
+    }
+  },
+  {
+    "patch": "core_close_transport.shared_header.patch",
+    "sha256": "6f4c331f84764ff5b5f23c6cf8a374bf4c9e3386ea0108c96909338fcd466ec7",
+    "base": {
+      "content/public/browser/host_app_hooks.h": "bb7f8146dff718a78521759fd821873e000e5622f12b82338cac6cc1f6e9d9ad",
+      "content/browser/web_contents/web_contents_impl.cc": "60af3bfff279053d4c6b233470b8ebdfb71666008fca257d7ce687d0dbcb003b",
+      "chrome/browser/arcmod/arcmod_hooks.h": "4fdbb329b14d412a9b075e111afad9660109cd0c60276d4e7aa358e9ad97e482",
+      "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.h": "cd31d84c3689d597115f1bb46a1c6140e36df824be461cc1abe8ca62b78a4152",
+      "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc": "6de63c75cc2ce20d85ae7e3bc66bdc549c032032b42db0aacf0fbbf53e409c13"
+    },
+    "target": {
+      "content/public/browser/host_app_hooks.h": "48f3aae4107e6880c8797cc7db11ac810cc8b7c7fba6d63a3d34db05b52a4ad3",
+      "content/browser/web_contents/web_contents_impl.cc": "55aa61265de821eb81cdfbf26d2cdfad9234da54970cd3ab4bac4fd12f00703a",
+      "chrome/browser/arcmod/arcmod_hooks.h": "9797f75a220fd1c7266d98671df74ad4103d301db36adc8e9c571792e13a32a5",
+      "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.h": "11d6f4d7c9a574dac607224e7271990c31e62556b540491beefcccc543381e87",
+      "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc": "6ba12ab2adb3961ed1fcbcc0653ef69649af5f40270f979ed7b0ad5d98072b10"
+    }
+  },
+  {
+    "patch": "core_hosted_empty_browser.patch",
+    "sha256": "95c46cc5e1118fda12c1b2aa1ff7f723201ff173086df51aa4a59fd54930e142",
+    "base": {
+      "chrome/browser/ui/browser.cc": "55bba70d97a65def5feb28dc23d8dc21a9bc43056a954cfa9b1adeb8f23bc18f",
+      "chrome/browser/ui/unload_controller.cc": "3bb34ef06e99738258db3699f49af9e6ce69f2c602543b757206bcfecdf95b2a"
+    },
+    "target": {
+      "chrome/browser/ui/browser.cc": "b1cb9dda88b6c54b97eb04f7f14d1f18f487edd068159bca2dfe2c19ccdcb37f",
+      "chrome/browser/ui/unload_controller.cc": "0508871a32deca88a711143995436f1fd02613b0c021701b3688310fe6995621"
+    }
+  },
+  {
+    "patch": "core_navigation_registration.after_progress.patch",
+    "sha256": "ac1b3d7e775ad68231c135ee033ac0f366c2a845ca9835d4ba7b18483ca068ea",
+    "base": {
+      "arc/api/arc_web_contents.mm": "47534304f93ff381dbc00e1a080d7425caac808c6dd679825677f93c97201927"
+    },
+    "target": {
+      "arc/api/arc_web_contents.mm": "748565b932880db62c784f5997a8fd58b8bdda96832de99d8580d9cca379f5fb"
+    }
+  },
+  {
+    "patch": "core_display_registration.patch",
+    "sha256": "e87f4d5e91315168cbf97690397a95b9af09753b61c4c97e75c768e279e278ee",
+    "base": {
+      "arc/browser/core_render_state.mm": "524e35f9b4f69fe3e11b537184ee70fc53c5754274571f42c3a3389118de6c48"
+    },
+    "target": {
+      "arc/browser/core_render_state.mm": "8dca48ec41c0822ce2ed6e87341f9627d56001c5bd872e0081c5114fb4da2a13"
+    }
+  },
+  {
+    "patch": "core_observer_registration.after_progress.patch",
+    "sha256": "b222ff87de87a4ab5ab88fa56c2f355800d8f85852beeef83ebc4fd3aa1b4c90",
+    "base": {
+      "arc/api/arc_web_contents.mm": "748565b932880db62c784f5997a8fd58b8bdda96832de99d8580d9cca379f5fb"
+    },
+    "target": {
+      "arc/api/arc_web_contents.mm": "9610fb9d8955340ff49322feb3ad299f6bcb683894378724a69dc93e3549f0df"
+    }
+  },
+  {
+    "patch": "core_beforeunload_transport_chromium.patch",
+    "sha256": "e57ccbd991e538d860ed62f496d4f40046afccc27fea3e54ca3fcff0dd170625",
+    "base": {
+      "chrome/browser/arcmod/arcmod_hooks.h": "9797f75a220fd1c7266d98671df74ad4103d301db36adc8e9c571792e13a32a5",
+      "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc": "6ba12ab2adb3961ed1fcbcc0653ef69649af5f40270f979ed7b0ad5d98072b10"
+    },
+    "target": {
+      "chrome/browser/arcmod/arcmod_hooks.h": "e0fde96081267d16179b35f804c46a35cbf1491ade90fc7b6240457682cb4602",
+      "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc": "9d6a898b8f013f81f0ae5a56bc38da2a6ff0c5a76def1c0bbc28fcd7bf05d6f9"
+    }
+  }
+]

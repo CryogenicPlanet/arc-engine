@@ -5,6 +5,8 @@
 
 #import <AppKit/AppKit.h>
 
+#import "arc/api/arc_internal.h"
+
 #include <string>
 #include <vector>
 
@@ -97,6 +99,12 @@ ARC_EXPORT @interface ArcBrowserApplicationConfiguration : NSObject
 
 @end
 
+// The extensions package can be omitted from a focused build. Its strong
+// definition replaces this no-op whenever that package is linked.
+namespace arc {
+__attribute__((weak)) void InstallExtensionProfileInitializationHook() {}
+}
+
 namespace {
 
 // The app's ArcBrowserApplicationDelegate (ADKApplication), held weakly like Arc's engine does.
@@ -186,6 +194,7 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
   for (const std::string& arg : args) {
     argv->push_back(arg.c_str());
   }
+  arc::InstallExtensionProfileInitializationHook();
   int exit_code = ChromeMainInitializeHostedBrowser(static_cast<int>(argv->size()), argv->data());
   if (exit_code != 0) {
     LOG(ERROR) << "ArcCore: browser initialization stopped with exit code " << exit_code;

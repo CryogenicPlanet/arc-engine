@@ -1,12 +1,12 @@
 # Sessions proposal choices
 
-Updated 2026-10-23. All proposals are **UNAPPLIED**. Current owned source is `e973b371`; current core WebContents is `47534304`, internal header `70495f85`, native hook header `a6bb3a03`. Full pins are in the linked proofs. The sessions source passes actual and official syntax checks and post-promotion review.
+Updated 2026-10-23 17:04 UTC. **Source-only6 plus host574 is APPROVED and QUEUED**, Chirp142534/142908; no live application or runtime outcome yet. Policy/accounting/root alternatives remain UNAPPLIED/HOLD. [Reviewed transaction](source-only-adoption-transaction/README.md) pins executorfb482e50, runtime0df88d88, frozen inputs1324a413; seven private safety mocks PASS. Parent owns ONE queued/reaped job, session4709. Actual entry bases are captured only after acquiring locked.sh. Prequeue baseline: owned source `e973b371`, core WebContents `47534304`, internal header `70495f85`, native hook header `a6bb3a03`. Core integration10 may change the latter while we wait; queued sessions captures actual entry bases and preserves foreign header additions. Full pins are in the linked proofs. The sessions source passes actual and official syntax checks and post-promotion review.
 
 ## Direct current-base option
 
 [Current live-base proof](current-six-live-base-e973/README.md): both original six-patch alternatives apply without core11, accounting or private core headers. Twelve strict checks and twelve temporary applications pass; both owned syntax checks exit0 with empty diagnostics. Fresh independent review passes. This establishes applicability and owned syntax independence, not native compilation, linkage or behavior.
 
-Choose one column and apply its rows in order:
+The queued transaction selects the Source only column, in order, then [host gating574](source-only-adoption-host-gates/README.md). The policy column is historical alternative evidence:
 
 | Step | Source only | Source plus startup policy |
 |---|---|---|
@@ -17,7 +17,7 @@ Choose one column and apply its rows in order:
 | 5 native TAB | [TAB factory](tab-factory-20261023T1232Z/arccore-sessions-tab-factory-native.patch) | same patch |
 | 6 owned TAB | [TAB factory](tab-factory-20261023T1232Z/arccore-sessions-tab-factory-owned.patch) | same patch |
 
-The proposed factory scope is normal ROOT WINDOW plus ungrouped ROOT TAB. Grouped TAB, ROOT GROUP, partial/app-window routes remain unendorsed. Lead decisions remain: shared/native adoption, weak/cancellation safety adaptations, canonical-browser identity versus original distinct shells, and startup policy. The policy alternative additionally needs the original-order policy snapshot after isProduction/before loadProfiles and configure call before ChromeMain/profile initialization; these six patches do not supply that shared app call.
+The proposed factory scope is normal ROOT WINDOW plus ungrouped ROOT TAB. Grouped TAB, ROOT GROUP, partial/app-window routes remain unendorsed. Lead142534 authorizes source-only adoption with host gating and mandatory regression/rollback. Canonical-browser identity versus original distinct shells, original cancellation parity and startup policy remain open. The policy alternative additionally needs the original-order policy snapshot after isProduction/before loadProfiles and configure call before ChromeMain/profile initialization; these six patches do not supply that shared app call.
 
 [Extensions' combined check](../../../logs/wp/extensions-profile-observer-sessions-six-live-composition/README.md) verifies both original alternatives commute with E4223 across13 slots, with full reversals to the live bases. No combined compiler or runtime ran. After selection, its affected header consumers need focused checks and a fresh runner manifest; the old E-only runner rejects combined headers.
 

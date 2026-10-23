@@ -1,0 +1,494 @@
+{
+  "golden": {
+    "step": "browser-delegate-repeat-A",
+    "operation": "browser-delegate-repeat",
+    "ok": true,
+    "matches": 1,
+    "mainThread": true,
+    "browserMatches": 1,
+    "completions": [],
+    "outstandingInstalls": [],
+    "fixtureMode": "command-line",
+    "startupPending": [],
+    "infosAfter": {
+      "A": {
+        "description": "Local fixture A π 東京",
+        "enabled": true,
+        "fromWebstore": false,
+        "hasAction": true,
+        "icon": {
+          "present": true,
+          "representations": [
+            {
+              "height": 32,
+              "width": 32
+            },
+            {
+              "height": 64,
+              "width": 64
+            }
+          ],
+          "size": [
+            32,
+            32
+          ]
+        },
+        "id": "odjkeclacjccmjnelcmpfnkogdllloom",
+        "name": "ArcCore service probe arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751 A",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobea",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/",
+        "version": "1.2.3"
+      },
+      "B": {
+        "description": "Local fixture B π 東京",
+        "enabled": true,
+        "fromWebstore": false,
+        "hasAction": true,
+        "icon": {
+          "present": true,
+          "representations": [
+            {
+              "height": 32,
+              "width": 32
+            },
+            {
+              "height": 64,
+              "width": 64
+            }
+          ],
+          "size": [
+            32,
+            32
+          ]
+        },
+        "id": "dcpnjjbgnglogedjgpcbjgpbjoaboclp",
+        "name": "ArcCore service probe arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751 B",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobeb",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://dcpnjjbgnglogedjgpcbjgpbjoaboclp/",
+        "version": "1.2.3"
+      }
+    },
+    "owned": {
+      "A": "odjkeclacjccmjnelcmpfnkogdllloom",
+      "B": "dcpnjjbgnglogedjgpcbjgpbjoaboclp"
+    },
+    "browserDelegateRepeatIdentityVerified": true,
+    "browserDelegateRepeatPriorCapture": {
+      "priorNonProbeSetterObserved": true,
+      "nonnull": true,
+      "delegateClass": "ADK.ChromiumBrowser"
+    },
+    "browserDelegateRepeatDelegateClass": "ADK.ChromiumBrowser",
+    "browserDelegateRepeatSetterABI": "v24@0:8@16",
+    "browserDelegateRepeatActionABI": "v24@0:8@16",
+    "browserDelegateRepeatFixtureURL": "http://127.0.0.1:64930/arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751/page",
+    "browserDelegateRepeatActionID": "odjkeclacjccmjnelcmpfnkogdllloom",
+    "browserDelegateRepeatHookTopology": "recorder-forwarder-to-capture",
+    "browserDelegateRepeatSetterCalls": 1,
+    "browserDelegateRepeatSameObjectAtSetter": true,
+    "browserDelegateRepeatFunctionalVerified": true,
+    "browserDelegateRepeatRawVerified": true,
+    "browserDelegateRepeatCDPBefore": {
+      "url": "http://127.0.0.1:64930/arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751/page",
+      "nonce": "arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751",
+      "sameTarget": true
+    },
+    "browserDelegateRepeatCDPAfter": {
+      "url": "http://127.0.0.1:64930/arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751/page",
+      "nonce": "arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751",
+      "sameTarget": true
+    },
+    "callbacks": [
+      {
+        "selector": "browser:didOpenExtensionPopup:webContents:",
+        "payload": [
+          "odjkeclacjccmjnelcmpfnkogdllloom",
+          {
+            "class": "ArcWebContents",
+            "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/popup.html"
+          }
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browser:didResizeExtensionPopup:size:",
+        "payload": [
+          "odjkeclacjccmjnelcmpfnkogdllloom",
+          [
+            320,
+            160
+          ]
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browser:didResizeExtensionPopup:size:",
+        "payload": [
+          "odjkeclacjccmjnelcmpfnkogdllloom",
+          [
+            400,
+            220
+          ]
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browser:didCloseExtensionPopup:",
+        "payload": [
+          "odjkeclacjccmjnelcmpfnkogdllloom"
+        ],
+        "mainThread": true,
+        "synchronous": false
+      }
+    ],
+    "eventOrder": [
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didOpenExtensionPopup:webContents:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom",
+            {
+              "class": "ArcWebContents",
+              "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/popup.html"
+            }
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didResizeExtensionPopup:size:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom",
+            [
+              320,
+              160
+            ]
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didResizeExtensionPopup:size:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom",
+            [
+              400,
+              220
+            ]
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didCloseExtensionPopup:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom"
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      }
+    ],
+    "fixturePinsBefore": [
+      "odjkeclacjccmjnelcmpfnkogdllloom"
+    ],
+    "fixturePinsAfter": [
+      "odjkeclacjccmjnelcmpfnkogdllloom"
+    ],
+    "effects": [
+      {
+        "label": "A",
+        "value": {
+          "kind": "popup-loaded",
+          "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/popup.html",
+          "id": "odjkeclacjccmjnelcmpfnkogdllloom"
+        }
+      },
+      {
+        "label": "A",
+        "value": {
+          "kind": "popup-resized",
+          "id": "odjkeclacjccmjnelcmpfnkogdllloom"
+        }
+      },
+      {
+        "label": "A",
+        "value": {
+          "kind": "popup-close-requested",
+          "id": "odjkeclacjccmjnelcmpfnkogdllloom"
+        }
+      }
+    ]
+  },
+  "ours": {
+    "step": "browser-delegate-repeat-A",
+    "operation": "browser-delegate-repeat",
+    "ok": true,
+    "matches": 1,
+    "mainThread": true,
+    "browserMatches": 1,
+    "completions": [],
+    "outstandingInstalls": [],
+    "fixtureMode": "command-line",
+    "startupPending": [],
+    "infosAfter": {
+      "A": {
+        "description": "Local fixture A π 東京",
+        "enabled": true,
+        "fromWebstore": false,
+        "hasAction": true,
+        "icon": {
+          "present": true,
+          "representations": [
+            {
+              "height": 32,
+              "width": 32
+            },
+            {
+              "height": 64,
+              "width": 64
+            }
+          ],
+          "size": [
+            32,
+            32
+          ]
+        },
+        "id": "odjkeclacjccmjnelcmpfnkogdllloom",
+        "name": "ArcCore service probe arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751 A",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobea",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/",
+        "version": "1.2.3"
+      },
+      "B": {
+        "description": "Local fixture B π 東京",
+        "enabled": true,
+        "fromWebstore": false,
+        "hasAction": true,
+        "icon": {
+          "present": true,
+          "representations": [
+            {
+              "height": 32,
+              "width": 32
+            },
+            {
+              "height": 64,
+              "width": 64
+            }
+          ],
+          "size": [
+            32,
+            32
+          ]
+        },
+        "id": "dcpnjjbgnglogedjgpcbjgpbjoaboclp",
+        "name": "ArcCore service probe arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751 B",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobeb",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://dcpnjjbgnglogedjgpcbjgpbjoaboclp/",
+        "version": "1.2.3"
+      }
+    },
+    "owned": {
+      "A": "odjkeclacjccmjnelcmpfnkogdllloom",
+      "B": "dcpnjjbgnglogedjgpcbjgpbjoaboclp"
+    },
+    "browserDelegateRepeatIdentityVerified": true,
+    "browserDelegateRepeatPriorCapture": {
+      "priorNonProbeSetterObserved": true,
+      "nonnull": true,
+      "delegateClass": "ADK.ChromiumBrowser"
+    },
+    "browserDelegateRepeatDelegateClass": "ADK.ChromiumBrowser",
+    "browserDelegateRepeatSetterABI": "v24@0:8@16",
+    "browserDelegateRepeatActionABI": "v24@0:8@16",
+    "browserDelegateRepeatFixtureURL": "http://127.0.0.1:64930/arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751/page",
+    "browserDelegateRepeatActionID": "odjkeclacjccmjnelcmpfnkogdllloom",
+    "browserDelegateRepeatHookTopology": "recorder-forwarder-to-capture",
+    "browserDelegateRepeatSetterCalls": 1,
+    "browserDelegateRepeatSameObjectAtSetter": true,
+    "browserDelegateRepeatFunctionalVerified": true,
+    "browserDelegateRepeatRawVerified": true,
+    "browserDelegateRepeatCDPBefore": {
+      "url": "http://127.0.0.1:64930/arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751/page",
+      "nonce": "arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751",
+      "sameTarget": true
+    },
+    "browserDelegateRepeatCDPAfter": {
+      "url": "http://127.0.0.1:64930/arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751/page",
+      "nonce": "arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751",
+      "sameTarget": true
+    },
+    "callbacks": [
+      {
+        "selector": "browser:didOpenExtensionPopup:webContents:",
+        "payload": [
+          "odjkeclacjccmjnelcmpfnkogdllloom",
+          {
+            "class": "ArcWebContents",
+            "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/popup.html"
+          }
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browser:didResizeExtensionPopup:size:",
+        "payload": [
+          "odjkeclacjccmjnelcmpfnkogdllloom",
+          [
+            320,
+            160
+          ]
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browser:didResizeExtensionPopup:size:",
+        "payload": [
+          "odjkeclacjccmjnelcmpfnkogdllloom",
+          [
+            400,
+            220
+          ]
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browser:didCloseExtensionPopup:",
+        "payload": [
+          "odjkeclacjccmjnelcmpfnkogdllloom"
+        ],
+        "mainThread": true,
+        "synchronous": false
+      }
+    ],
+    "eventOrder": [
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didOpenExtensionPopup:webContents:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom",
+            {
+              "class": "ArcWebContents",
+              "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/popup.html"
+            }
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didResizeExtensionPopup:size:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom",
+            [
+              320,
+              160
+            ]
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didResizeExtensionPopup:size:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom",
+            [
+              400,
+              220
+            ]
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didCloseExtensionPopup:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom"
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      }
+    ],
+    "fixturePinsBefore": [
+      "odjkeclacjccmjnelcmpfnkogdllloom"
+    ],
+    "fixturePinsAfter": [
+      "odjkeclacjccmjnelcmpfnkogdllloom"
+    ],
+    "effects": [
+      {
+        "label": "A",
+        "value": {
+          "kind": "popup-loaded",
+          "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/popup.html",
+          "id": "odjkeclacjccmjnelcmpfnkogdllloom"
+        }
+      },
+      {
+        "label": "A",
+        "value": {
+          "kind": "popup-resized",
+          "id": "odjkeclacjccmjnelcmpfnkogdllloom"
+        }
+      },
+      {
+        "label": "A",
+        "value": {
+          "kind": "popup-close-requested",
+          "id": "odjkeclacjccmjnelcmpfnkogdllloom"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,48 @@
+--- a/arc/api/arc_webextras_devtools.mm
++++ b/arc/api/arc_webextras_devtools.mm
+@@ -92,15 +92,23 @@
+ 
+ static void PostDevToolsFocus(WebextrasDevToolsDelegateBridge* bridge,
+                              base::WeakPtr<arc::WebextrasDevToolsPeer> native_lifetime) {
+-  if (!bridge) { return; }
+-  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(^{
+-    if (!native_lifetime) { return; }
+-    id<WebExtrasDevToolsDelegate> delegate = bridge.delegate;
+-    ArcWebContentsDevTools* owner = bridge.owner;
+-    if ([delegate respondsToSelector:@selector(webContentsDevToolsNeedsFocus:)]) {
+-      [delegate webContentsDevToolsNeedsFocus:owner];
+-    }
+-  }));
++  // Native focus carries the SAME actual peer as its argument payload. It does
++  // not acquire Root or a facade, and the no-registration task owns it too.
++  auto payload = native_lifetime ? native_lifetime->weak_from_this().lock() : nullptr;
++  if (!payload) { return; }
++  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(
++      [](WebextrasDevToolsDelegateBridge* bridge,
++         base::WeakPtr<arc::WebextrasDevToolsPeer> native_lifetime,
++         arc::WebextrasDevToolsPeerHandle) {
++        // The unnamed native argument owns functional peer state through the
++        // bridge call, then releases on return. Inert work is uncounted.
++        if (!bridge || !native_lifetime) { return; }
++        id<WebExtrasDevToolsDelegate> delegate = bridge.delegate;
++        ArcWebContentsDevTools* owner = bridge.owner;
++        if ([delegate respondsToSelector:@selector(webContentsDevToolsNeedsFocus:)]) {
++          [delegate webContentsDevToolsNeedsFocus:owner];
++        }
++      }, bridge, native_lifetime, std::move(payload)));
+ }
+ 
+ static void PostDevToolsInspectMode(WebextrasDevToolsDelegateBridge* bridge,
+--- a/arc/browser/webextras_devtools_logical_peer.h
++++ b/arc/browser/webextras_devtools_logical_peer.h
+@@ -5,7 +5,9 @@
+ namespace arc {
+ // Owns the ACTUAL native dispatch, client, frontend, cache and registration
+ // implementation. Factories are nonobserving; Attach is a separate transaction.
+-class WebextrasDevToolsPeer final : public CoreDevToolsPeer {
++class WebextrasDevToolsPeer final
++    : public CoreDevToolsPeer,
++      public std::enable_shared_from_this<WebextrasDevToolsPeer> {
+  public:
+   explicit WebextrasDevToolsPeer(CoreLogicalWebContentsWeakHandle logical);
+   ~WebextrasDevToolsPeer() override;

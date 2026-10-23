@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/arcmod/arcmod_hooks.h b/chrome/browser/arcmod/arcmod_hooks.h
 new file mode 100644
-index 0000000000..3ea52d1e77
+index 0000000000..c4a9cf77c3
 --- /dev/null
 +++ b/chrome/browser/arcmod/arcmod_hooks.h
-@@ -0,0 +1,169 @@
+@@ -0,0 +1,209 @@
 +// Copyright 2026 ArcMod. Hooks that ArcCore (Arc's engine interface, //arc, linked into the same framework)
 +// fills in when Arc's app hosts this engine (--arcmod-host-app). Chrome code calls them only when set, so
 +// Chrome itself does not depend on //arc. Header-only: function-local statics in inline functions are shared
@@ -71,6 +71,16 @@ index 0000000000..3ea52d1e77
 +    base::OnceCallback<void(const base::FilePath&)> done)>;
 +inline DownloadFilenameHook& GetDownloadFilenameHook() {
 +  static base::NoDestructor<DownloadFilenameHook> hook;
++  return *hook;
++}
++
++// Synchronous observer-attachment window: after LoadErrorReporter::Init and
++// before ExtensionService construction/Init. Never initialize/reenter Chrome,
++// load extensions, create a facade or call an app delegate from this hook.
++using ExtensionProfileWillInitializeHook =
++    base::RepeatingCallback<void(Profile*)>;
++inline ExtensionProfileWillInitializeHook& GetExtensionProfileWillInitializeHook() {
++  static base::NoDestructor<ExtensionProfileWillInitializeHook> hook;
 +  return *hook;
 +}
 +
@@ -169,6 +179,36 @@ index 0000000000..3ea52d1e77
 +    TabHelpers::AttachTabHelpers(web_contents);
 +  }
 +};
++
++// Host-only interception BEFORE CanCloseContents mutates unload state. The
++// callback either consumes/cancels the exact source or runs |continue_close|.
++// Continuation owns only WeakPtrs to THIS delegate and THIS source; it resumes
++// the original operation without entering this hook again. It may run inline.
++// Empty hook and nonhost Chrome preserve the original path. This hook does not
++// implement public Busy policy, a source token, or any bulk-close interception.
++using NativeCloseContentsHook = base::RepeatingCallback<void(
++    content::WebContents* source, base::OnceClosure continue_close)>;
++inline NativeCloseContentsHook& GetNativeCloseContentsHook() {
++  static base::NoDestructor<NativeCloseContentsHook> hook;
++  return *hook;
++}
++
++// Synchronous pre-forward notification. A consumer may invoke app code, then
++// choose whether the ORIGINAL BeforeUnload forwarding operation still applies.
++// Skip leaves the caller's borrowed output bool UNCHANGED. The output pointer
++// is never exposed to the hook; no delayed response/continuation is supported.
++// Consumers must validate logical association after their own app callouts.
++enum class NativeBeforeUnloadDisposition {
++  kContinueOriginal,
++  kSkipOriginal,
++};
++using NativeBeforeUnloadFiredHook =
++    base::RepeatingCallback<NativeBeforeUnloadDisposition(
++        content::WebContents* source, bool proceed)>;
++inline NativeBeforeUnloadFiredHook& GetNativeBeforeUnloadFiredHook() {
++  static base::NoDestructor<NativeBeforeUnloadFiredHook> hook;
++  return *hook;
++}
 +
 +}  // namespace arcmod
 +
@@ -410,19 +450,82 @@ index 18110dccfe..c19244a5e6 100644
  }
  
 diff --git a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc b/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
-index 3bc40bcc91..d2eb38178c 100644
+index 3bc40bcc91..f0b847319a 100644
 --- a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
 +++ b/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
-@@ -4,6 +4,8 @@
+@@ -4,7 +4,11 @@
  
  #include "chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.h"
  
 +#include "chrome/browser/arcmod/arcmod_hooks.h"
 +
  #include "base/check_deref.h"
++#include "base/command_line.h"
++#include "base/functional/bind.h"
  #include "base/metrics/histogram_macros.h"
  #include "base/notimplemented.h"
-@@ -1113,6 +1115,13 @@ void BrowserWebContentsDelegate::RendererResponsive(
+ #include "base/trace_event/trace_event.h"
+@@ -768,6 +772,30 @@ void BrowserWebContentsDelegate::LoadingStateChanged(
+ }
+ 
+ void BrowserWebContentsDelegate::CloseContents(content::WebContents* source) {
++  if (source &&
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    const auto hook = arcmod::GetNativeCloseContentsHook();
++    if (hook) {
++      auto continuation = base::BindOnce(
++          &BrowserWebContentsDelegate::ContinueHostCloseContents,
++          weak_factory_.GetWeakPtr(), source->GetWeakPtr());
++      hook.Run(source, std::move(continuation));
++      // The hook or continuation can synchronously delete this delegate.
++      return;
++    }
++  }
++  CloseContentsWithoutHostHook(source);
++}
++
++void BrowserWebContentsDelegate::ContinueHostCloseContents(
++    base::WeakPtr<content::WebContents> source) {
++  if (source) {
++    CloseContentsWithoutHostHook(source.get());
++  }
++}
++
++void BrowserWebContentsDelegate::CloseContentsWithoutHostHook(
++    content::WebContents* source) {
+   if (unload_controller_->CanCloseContents(source)) {
+     chrome::CloseWebContents(&browser_.get(), source, true);
+   }
+@@ -870,6 +898,28 @@ void BrowserWebContentsDelegate::BeforeUnloadFired(
+     content::WebContents* web_contents,
+     bool proceed,
+     bool* proceed_to_fire_unload) {
++  if (web_contents && base::CommandLine::ForCurrentProcess()->HasSwitch(
++                          "arcmod-host-app")) {
++    auto hook = arcmod::GetNativeBeforeUnloadFiredHook();
++    if (hook) {
++      // The output belongs to the synchronous caller's stack. Never capture it
++      // into an owning continuation or permit a delayed write to that storage.
++      auto delegate = weak_factory_.GetWeakPtr();
++      auto source = web_contents->GetWeakPtr();
++      const auto disposition = hook.Run(web_contents, proceed);
++      if (disposition !=
++              arcmod::NativeBeforeUnloadDisposition::kContinueOriginal ||
++          !delegate || !source) {
++        return;
++      }
++      // Weak liveness alone does not establish continued membership after a
++      // transfer. A consumer must choose SkipOriginal when its captured logical
++      // association no longer authorizes this original forwarding operation.
++      delegate->unload_controller_->BeforeUnloadFired(
++          source.get(), proceed, proceed_to_fire_unload);
++      return;  // Native forwarding can destroy this delegate or source.
++    }
++  }
+   unload_controller_->BeforeUnloadFired(web_contents, proceed,
+                                         proceed_to_fire_unload);
+ }
+@@ -1113,6 +1163,13 @@ void BrowserWebContentsDelegate::RendererResponsive(
  content::JavaScriptDialogManager*
  BrowserWebContentsDelegate::GetJavaScriptDialogManager(
      content::WebContents* source) {

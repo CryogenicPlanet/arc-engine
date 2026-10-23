@@ -1,0 +1,401 @@
+{
+ "internal": [],
+ "internal_ours": [
+  {
+   "method": "->engine -ArcBrowserContext serviceNamed:",
+   "our_calls": 18,
+   "example": {
+    "args": "[\"ArcBrowserContextPreferences\"]",
+    "ret": "\"<ArcBrowserContextPreferences#1>\""
+   }
+  }
+ ],
+ "missing": [
+  {
+   "method": "->engine -ArcColor4f a",
+   "golden_calls": 7,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f b",
+   "golden_calls": 7,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f g",
+   "golden_calls": 7,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f r",
+   "golden_calls": 7,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents ignoreDisablePiPAttribute:",
+   "golden_calls": 4,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  }
+ ],
+ "extra": [
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:thumbnailReady:",
+   "our_calls": 3,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"image(501x341)\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "return_mismatch": [
+  {
+   "method": "->engine -ArcBrowser context",
+   "call": 0,
+   "args": "[]",
+   "golden": "\"<ArcBrowserContext#2>\"",
+   "ours": "\"<ArcBrowserContext#1>\""
+  },
+  {
+   "method": "->engine -ArcBrowserContext id",
+   "call": 1,
+   "args": "[]",
+   "golden": "\"<ArcBrowserContextID#2>\"",
+   "ours": "\"<ArcBrowserContextID#1>\""
+  },
+  {
+   "method": "->engine -ArcBrowserContext loadUrl:withDelegate:",
+   "call": 0,
+   "args": "[\"<ArcURLLoadConfiguration#4>\", \"<_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate#4>\"]",
+   "golden": "\"<ArcURLLoadCancellationToken#4>\"",
+   "ours": "\"<ArcURLLoadCancellationToken#5>\""
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userVisibleName",
+   "call": 0,
+   "args": "[]",
+   "golden": "\"Default\"",
+   "ours": "\"Your Chromium\""
+  },
+  {
+   "method": "->engine -ArcColor b",
+   "call": 0,
+   "args": "[]",
+   "golden": "250",
+   "ours": "34"
+  },
+  {
+   "method": "->engine -ArcColor g",
+   "call": 0,
+   "args": "[]",
+   "golden": "199",
+   "ours": "30"
+  },
+  {
+   "method": "->engine -ArcColor r",
+   "call": 0,
+   "args": "[]",
+   "golden": "168",
+   "ours": "28"
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "call": 513,
+   "args": "[]",
+   "golden": "\"https://www.google.com/search?q=%7BsearchTerms%7D&sourceid=chrome&ie=UTF-8\"",
+   "ours": "\"https://drive.google.com/drive/search?q=%s\""
+  },
+  {
+   "method": "->engine -ArcSessionID identifier",
+   "call": 0,
+   "args": "[]",
+   "golden": "805422707",
+   "ours": "169027835"
+  },
+  {
+   "method": "->engine -ArcWebContents backForwardList",
+   "call": 1,
+   "args": "[]",
+   "golden": "\"<ArcBackForwardList#2>\"",
+   "ours": "\"<ArcBackForwardList#3>\""
+  },
+  {
+   "method": "->engine -ArcWebContents isLoading",
+   "call": 2,
+   "args": "[]",
+   "golden": "false",
+   "ours": "true"
+  },
+  {
+   "method": "->engine -ArcWebContents isReadyToDisplay",
+   "call": 3,
+   "args": "[]",
+   "golden": "true",
+   "ours": "false"
+  },
+  {
+   "method": "->engine -ArcWebContents loadProgress",
+   "call": 2,
+   "args": "[]",
+   "golden": "1",
+   "ours": "0"
+  },
+  {
+   "method": "->engine -ArcWebContents nativeView",
+   "call": 0,
+   "args": "[]",
+   "golden": "\"<WebContentsHostView#1>\"",
+   "ours": "\"<WebContentsViewCocoa#1>\""
+  },
+  {
+   "method": "->engine -ArcWebContents navigationController",
+   "call": 5,
+   "args": "[]",
+   "golden": "\"<ArcWebContentsNavigationController#4>\"",
+   "ours": "\"<ArcWebContentsNavigationController#2>\""
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "call": 3,
+   "args": "[]",
+   "golden": "\"<NSMutableIndexSet#3>\"",
+   "ours": "\"<NSMutableIndexSet#4>\""
+  }
+ ],
+ "arg_mismatch": [
+  {
+   "method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+   "call": 0,
+   "golden": "[\"<ArcBrowser#1>\", 805422707]",
+   "ours": "[\"<ArcBrowser#1>\", 169027835]"
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "call": 0,
+   "golden": "[\"keep_alive_registry\", \"{registered_count_=1, restart_allowed_count_=0, KeepAlives=[APP_CONTROLLER (1)]}\"]",
+   "ours": "[\"keep_alive_registry\", \"{registered_count_=4, restart_allowed_count_=0, KeepAlives=[APP_CONTROLLER (1), REMOTE_DEBUGGING (1), BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS (1), BACKGROUND_MODE_MANAGER_STARTUP (1)]}\"]"
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didChangeAvailableMediaActions:",
+   "call": 1,
+   "golden": "[\"<ArcWebContents#2>\", \"<NSMutableIndexSet#5>\"]",
+   "ours": "[\"<ArcWebContents#2>\", \"<NSMutableIndexSet#6>\"]"
+  },
+  {
+   "method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:",
+   "call": 0,
+   "golden": "[\"*\", \"https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany&size=24\", 200, {\"accept-ranges\": \"bytes\", \"age\": \"524634\", \"alt-svc\": \"h3=\\\":443\\\"; ma=2592000,h3-29=\\\":443\\\"; ma=2592000\", \"cache-control\": \"public, max-age=604800\", \"content-length\": \"346\", \"content-location\": \"https://www.youtube.com/s/desktop/d57c41d2/img/favicon_144x144.png\", \"content-security-policy-report-only\": \"require-trusted-types-for 'script'; report-uri https://csp.withgoogle.com/csp/media-favicon\", \"content-type\": \"image/png\"}]",
+   "ours": "[\"*\", \"https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany&size=24\", 200, {\"accept-ranges\": \"bytes\", \"age\": \"241105\", \"alt-svc\": \"h3=\\\":443\\\"; ma=2592000,h3-29=\\\":443\\\"; ma=2592000\", \"cache-control\": \"public, max-age=604800\", \"content-length\": \"346\", \"content-location\": \"https://www.youtube.com/s/desktop/f13793d9/img/favicon_144x144.png\", \"content-security-policy-report-only\": \"require-trusted-types-for 'script'; report-uri https://csp.withgoogle.com/csp/media-favicon\", \"content-type\": \"image/png\"}]"
+  }
+ ],
+ "count_mismatch": [
+  {
+   "method": "->engine -ArcBrowserApplication availableBrowserContextAttributes",
+   "golden": 11,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcBrowserApplication loadUrl:withDelegate:",
+   "golden": 3,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes directoryBasename",
+   "golden": 11,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userColor",
+   "golden": 11,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userVisibleName",
+   "golden": 18,
+   "ours": 20
+  },
+  {
+   "method": "->engine -ArcColor a",
+   "golden": 11,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcColor b",
+   "golden": 11,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcColor g",
+   "golden": 11,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcColor r",
+   "golden": 11,
+   "ours": 12
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "golden": 3289,
+   "ours": 3438
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setBlockLocalRequest:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setCachePolicy:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setFollowRedirects:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setHeaders:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setMethod:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setStreamResponseData:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setTimeout:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setUrl:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcWebContents backForwardList",
+   "golden": 16,
+   "ours": 14
+  },
+  {
+   "method": "->engine -ArcWebContents favicon",
+   "golden": 17,
+   "ours": 14
+  },
+  {
+   "method": "->engine -ArcWebContents insertStylesheet:stylesheet:",
+   "golden": 3,
+   "ours": 11
+  },
+  {
+   "method": "->engine -ArcWebContents isReadyToDisplay",
+   "golden": 18,
+   "ours": 19
+  },
+  {
+   "method": "->engine -ArcWebContents loadProgress",
+   "golden": 31,
+   "ours": 36
+  },
+  {
+   "method": "->engine -ArcWebContents setBackForwardList:",
+   "golden": 16,
+   "ours": 14
+  },
+  {
+   "method": "->engine -ArcWebContents setFavicon:",
+   "golden": 17,
+   "ours": 14
+  },
+  {
+   "method": "->engine -ArcWebContents setIsReadyToDisplay:",
+   "golden": 18,
+   "ours": 19
+  },
+  {
+   "method": "->engine -ArcWebContents setLoadProgress:",
+   "golden": 31,
+   "ours": 36
+  },
+  {
+   "method": "->engine -ArcWebContents setState:",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcWebContents setTabTraits:",
+   "golden": 17,
+   "ours": 14
+  },
+  {
+   "method": "->engine -ArcWebContents state",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "golden": 19,
+   "ours": 16
+  },
+  {
+   "method": "engine->app -ADK.ADKApplication didConnectToNetworkProcess",
+   "golden": 1,
+   "ours": 2
+  },
+  {
+   "method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+   "golden": 26,
+   "ours": 30
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "golden": 37,
+   "ours": 62
+  },
+  {
+   "method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:",
+   "golden": 3,
+   "ours": 4
+  }
+ ],
+ "callback_sequence": {
+  "golden": 162,
+  "ours": 196,
+  "first_divergence": 1,
+  "golden_from": [
+   "ADK.ADKApplication didInitializeBrowserProcess",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ],
+  "ours_from": [
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ]
+ }
+}

@@ -1,0 +1,287 @@
+diff --git a/chrome/browser/devtools/devtools_embedder_message_dispatcher.cc b/chrome/browser/devtools/devtools_embedder_message_dispatcher.cc
+--- a/chrome/browser/devtools/devtools_embedder_message_dispatcher.cc
++++ b/chrome/browser/devtools/devtools_embedder_message_dispatcher.cc
+@@ -6,6 +6,7 @@
+ 
+ #include <memory>
+ 
++#include "base/command_line.h"
+ #include "base/functional/bind.h"
+ #include "base/logging.h"
+ #include "base/types/optional_util.h"
+@@ -353,10 +354,12 @@
+                      &Delegate::InspectElementCompleted, delegate);
+   d->RegisterHandler("inspectedURLChanged",
+                      &Delegate::InspectedURLChanged, delegate);
+-  d->RegisterHandler("inspectModeChanged", &Delegate::InspectModeChanged,
+-                     delegate);
+-  d->RegisterHandler("requestDockPosition", &Delegate::RequestDockPosition,
+-                     delegate);
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    d->RegisterHandler("inspectModeChanged", &Delegate::InspectModeChanged,
++                       delegate);
++    d->RegisterHandler("requestDockPosition", &Delegate::RequestDockPosition,
++                       delegate);
++  }
+   d->RegisterHandlerWithCallback("setIsDocked",
+                                  &Delegate::SetIsDocked, delegate);
+   d->RegisterHandler("openInNewTab", &Delegate::OpenInNewTab, delegate);
+diff --git a/chrome/browser/devtools/devtools_ui_bindings.cc b/chrome/browser/devtools/devtools_ui_bindings.cc
+--- a/chrome/browser/devtools/devtools_ui_bindings.cc
++++ b/chrome/browser/devtools/devtools_ui_bindings.cc
+@@ -432,6 +432,14 @@
+ 
+ std::string SanitizeFrontendQueryParam(const std::string& key,
+                                        const std::string& value) {
++  // Only hosted Arc frontends may advertise the additional notifications.
++  if (key == "arcmodHost") {
++    return base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++                   value == "true"
++               ? "true"
++               : std::string();
++  }
++
+   // Convert boolean flags to true.
+   if (key == "can_dock" || key == "debugFrontend" || key == "isSharedWorker" ||
+       key == "v8only" || key == "remoteFrontend" || key == "nodeFrontend" ||
+@@ -1021,10 +1029,14 @@
+ }
+ 
+ void DevToolsUIBindings::LoadCompleted() {
+-  auto weak_this = weak_factory_.GetWeakPtr();
+-  FrontendLoaded();
+-  if (!weak_this) {
+-    return;
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto weak_this = weak_factory_.GetWeakPtr();
++    FrontendLoaded();
++    if (!weak_this) {
++      return;
++    }
++  } else {
++    FrontendLoaded();
+   }
+ 
+ #if BUILDFLAG(IS_ANDROID)
+@@ -1039,14 +1051,18 @@
+ }
+ 
+ void DevToolsUIBindings::InspectModeChanged(const std::string& mode) {
+-  if (auto hook = arcmod::GetDevToolsInspectModeHook(); !hook.is_null()) {
++  if (auto hook = arcmod::GetDevToolsInspectModeHook();
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++          !hook.is_null()) {
+     hook.Run(delegate_->GetInspectedWebContents(), web_contents_, mode);
+   }
+   // The hook may destroy these bindings. Do not access members after it runs.
+ }
+ 
+ void DevToolsUIBindings::RequestDockPosition(const std::string& side) {
+-  if (auto hook = arcmod::GetDevToolsDockPositionHook(); !hook.is_null()) {
++  if (auto hook = arcmod::GetDevToolsDockPositionHook();
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++          !hook.is_null()) {
+     hook.Run(delegate_->GetInspectedWebContents(), web_contents_, side);
+   }
+   // Association is already established by the construction hook; no Show needed.
+@@ -3329,10 +3345,14 @@
+   frontend_loaded_ = true;
+ 
+   // Call delegate first - it seeds importants bit of information.
+-  auto weak_this = weak_factory_.GetWeakPtr();
+-  delegate_->OnLoadCompleted();
+-  if (!weak_this) {
+-    return;
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto weak_this = weak_factory_.GetWeakPtr();
++    delegate_->OnLoadCompleted();
++    if (!weak_this) {
++      return;
++    }
++  } else {
++    delegate_->OnLoadCompleted();
+   }
+ 
+   if (!initial_target_id_.empty()) {
+diff --git a/chrome/browser/devtools/devtools_window.cc b/chrome/browser/devtools/devtools_window.cc
+--- a/chrome/browser/devtools/devtools_window.cc
++++ b/chrome/browser/devtools/devtools_window.cc
+@@ -840,6 +840,10 @@
+     DevToolsOpenedByAction opened_by) {
+   for (DevToolsWindow* window : GetDevToolsWindowInstances()) {
+     if (window->frontend_type_ == kFrontendNode) {
++      if (!base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++        window->ActivateWindow();
++        return window;
++      }
+       auto weak_window = window->weak_factory_.GetWeakPtr();
+       window->ActivateWindow();
+       return weak_window && weak_window->life_stage_ != kClosing
+@@ -855,6 +859,10 @@
+     return nullptr;
+   }
+   window->bindings_->AttachTo(DevToolsAgentHost::CreateForDiscovery());
++  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    window->ScheduleShow(DevToolsToggleAction::Show());
++    return window;
++  }
+   auto weak_window = window->weak_factory_.GetWeakPtr();
+   window->ScheduleShow(DevToolsToggleAction::Show());
+   return weak_window && weak_window->life_stage_ != kClosing ? weak_window.get()
+@@ -912,13 +920,19 @@
+       case DevToolsToggleAction::kNoOp:
+         break;
+     }
+-    auto weak_inspected = inspected_web_contents->GetWeakPtr();
++    const bool arc_host =
++        base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app");
++    auto weak_inspected = arc_host
++                              ? inspected_web_contents->GetWeakPtr()
++                              : base::WeakPtr<content::WebContents>();
+     window = Create(profile, inspected_web_contents, kFrontendDefault,
+                     std::string(), true, settings, panel, agent->IsAttached(),
+                     /* browser_connection */ false, toggled_by);
+     if (!window) {
+ #if !BUILDFLAG(IS_ANDROID)
+-      if (weak_inspected) {
++      if (!arc_host) {
++        DevToolsPolicyDialog::Show(inspected_web_contents);
++      } else if (weak_inspected) {
+         DevToolsPolicyDialog::Show(weak_inspected.get());
+       }
+ #endif
+@@ -1451,6 +1465,12 @@
+   if (!settings.empty()) {
+     SetPreferencesFromJson(profile, settings);
+   }
++  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    return new DevToolsWindow(frontend_type, profile,
++                              std::move(main_web_contents), bindings,
++                              inspected_web_contents, can_dock, opened_by,
++                              inspected_browser_session_id);
++  }
+   auto weak_inspected = inspected_web_contents
+                             ? inspected_web_contents->GetWeakPtr()
+                             : base::WeakPtr<content::WebContents>();
+@@ -1467,7 +1487,9 @@
+     weak_window->InspectedContentsClosing();
+     return nullptr;
+   }
+-  if (auto hook = arcmod::GetDevToolsFrontendCreatedHook(); !hook.is_null()) {
++  if (auto hook = arcmod::GetDevToolsFrontendCreatedHook();
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++          !hook.is_null()) {
+     hook.Run(weak_inspected.get(), weak_window->main_web_contents_);
+   }
+   if (!weak_window || weak_window->life_stage_ == kClosing) {
+@@ -1550,6 +1572,9 @@
+   url += "&isChromeForTesting=true";
+ #endif
+ 
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    url += "&arcmodHost=true";
++  }
+   return DevToolsUIBindings::SanitizeFrontendURL(GURL(url));
+ }
+ 
+@@ -1759,7 +1784,9 @@
+   if (life_stage_ != kLoadCompleted) {
+     return;
+   }
+-  if (auto hook = arcmod::GetDevToolsFocusHook(); !hook.is_null()) {
++  if (auto hook = arcmod::GetDevToolsFocusHook();
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++          !hook.is_null()) {
+     auto weak_this = weak_factory_.GetWeakPtr();
+     hook.Run(GetInspectedWebContents());
+     if (!weak_this || weak_this->life_stage_ != kLoadCompleted) {
+@@ -2191,10 +2218,14 @@
+ }
+ 
+ void DevToolsWindow::LoadCompleted() {
+-  auto weak_this = weak_factory_.GetWeakPtr();
+-  Show(action_on_load_);
+-  if (!weak_this || weak_this->life_stage_ == kClosing) {
+-    return;
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto weak_this = weak_factory_.GetWeakPtr();
++    Show(action_on_load_);
++    if (!weak_this || weak_this->life_stage_ == kClosing) {
++      return;
++    }
++  } else {
++    Show(action_on_load_);
+   }
+   action_on_load_ = DevToolsToggleAction::NoOp();
+   if (!load_completed_callback_.is_null()) {
+diff --git a/third_party/devtools-frontend/src/front_end/devtools_compatibility.js b/third_party/devtools-frontend/src/front_end/devtools_compatibility.js
+--- a/third_party/devtools-frontend/src/front_end/devtools_compatibility.js
++++ b/third_party/devtools-frontend/src/front_end/devtools_compatibility.js
+@@ -1399,14 +1399,18 @@
+      * @param mode
+      */
+     inspectModeChanged(mode) {
+-      DevToolsAPI.sendMessageToEmbedder('inspectModeChanged', [mode], null);
++      if (new URLSearchParams(window.location.search).get('arcmodHost') === 'true') {
++        DevToolsAPI.sendMessageToEmbedder('inspectModeChanged', [mode], null);
++      }
+     }
+ 
+     /**
+      * @param side
+      */
+     requestDockPosition(side) {
+-      DevToolsAPI.sendMessageToEmbedder('requestDockPosition', [side]);
++      if (new URLSearchParams(window.location.search).get('arcmodHost') === 'true') {
++        DevToolsAPI.sendMessageToEmbedder('requestDockPosition', [side]);
++      }
+     }
+ 
+     /**
+diff --git a/third_party/devtools-frontend/src/front_end/panels/elements/InspectElementModeController.ts b/third_party/devtools-frontend/src/front_end/panels/elements/InspectElementModeController.ts
+--- a/third_party/devtools-frontend/src/front_end/panels/elements/InspectElementModeController.ts
++++ b/third_party/devtools-frontend/src/front_end/panels/elements/InspectElementModeController.ts
+@@ -99,7 +99,9 @@
+       void overlayModel.setInspectMode(mode, this.showDetailedInspectTooltipSetting.get());
+     }
+     this.toggleSearchAction.setToggled(this.isInInspectElementMode());
+-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.inspectModeChanged(mode);
++    if (Root.Runtime.Runtime.queryParam('arcmodHost') === 'true') {
++      Host.InspectorFrontendHost.InspectorFrontendHostInstance.inspectModeChanged(mode);
++    }
+   }
+ 
+   private suspendStateChanged(): void {
+diff --git a/third_party/devtools-frontend/src/front_end/ui/legacy/DockController.ts b/third_party/devtools-frontend/src/front_end/ui/legacy/DockController.ts
+--- a/third_party/devtools-frontend/src/front_end/ui/legacy/DockController.ts
++++ b/third_party/devtools-frontend/src/front_end/ui/legacy/DockController.ts
+@@ -5,6 +5,7 @@
+ import * as Common from '../../core/common/common.js';
+ import * as Host from '../../core/host/host.js';
+ import * as i18n from '../../core/i18n/i18n.js';
++import * as Root from '../../core/root/root.js';
+ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+ import * as SettingsUI from '../settings/settings.js';
+ 
+@@ -85,7 +86,9 @@
+ 
+   initialize(): void {
+     if (!this.#canDock) {
+-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.requestDockPosition(DockState.UNDOCKED);
++      if (Root.Runtime.Runtime.queryParam('arcmodHost') === 'true') {
++        Host.InspectorFrontendHost.InspectorFrontendHostInstance.requestDockPosition(DockState.UNDOCKED);
++      }
+       return;
+     }
+ 
+@@ -124,7 +127,9 @@
+       return;
+     }
+ 
+-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.requestDockPosition(dockSide);
++    if (Root.Runtime.Runtime.queryParam('arcmodHost') === 'true') {
++      Host.InspectorFrontendHost.InspectorFrontendHostInstance.requestDockPosition(dockSide);
++    }
+ 
+     if (this.#dockSide !== undefined) {
+       document.body.classList.remove(this.#dockSide);

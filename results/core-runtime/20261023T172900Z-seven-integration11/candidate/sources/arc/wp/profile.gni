@@ -1,0 +1,28 @@
+# Work package "profile": sources and deps (absolute //arc/... paths). Owned by that package.
+wp_profile_sources = [
+  "//arc/api/arc_profile_bookmarks.mm",
+  "//arc/api/arc_profile_cookies.mm",
+  "//arc/api/arc_profile_credentials.mm",
+  "//arc/api/arc_profile_downloads.mm",
+  "//arc/api/arc_profile_history.mm",
+  "//arc/api/arc_profile_preferences.mm",
+  "//arc/api/arc_profile_services.mm",
+]
+wp_profile_deps = [
+  "//chrome/browser/bookmarks",
+  "//components/bookmarks/browser",
+  "//components/bookmarks/common",
+  "//net",
+  "//services/network/public/mojom",
+  "//chrome/browser/history",
+  "//components/history/core/browser",
+  "//components/favicon/core",
+  "//components/services/storage/public/mojom",
+  "//mojo/public/cpp/bindings",
+  "//third_party/blink/public/common",
+  "//third_party/blink/public/mojom:mojom_platform",
+  "//ui/gfx",
+  "//components/content_settings/core/browser",
+  "//components/download/public/common:public",
+  "//components/prefs",
+]

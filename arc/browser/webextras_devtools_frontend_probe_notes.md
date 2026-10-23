@@ -263,3 +263,49 @@ import directories before comparator execution, including bytecode caches,
 packages, extensions, stdlib shadows and symlink manifests. Closure security is
 covered by its independent23-case suite and fresh review, not by a clean parity
 claim from this diagnostic.
+
+
+Native11 helper correction preserves the exact27 archived input union at
+logs/wp/webextras-native11-boolean-inputs/manifest.json. C logical/comparison
+expressions boxed with @() produce NSNumber integers, unlike C++ bool expressions.
+The frontend helper now uses explicit @YES/@NO ternaries for selector and owner
+validity, alias verification, main-thread, forwarding, overflow and expiry fields.
+Strict TypeScript ===true/false checks remain. Counts, modes and tags stay numeric.
+A forced `clang -x objective-c -std=gnu17` regression extracts the actual complete
+helper source into a .m unit and uses real Foundation JSON encoding/decoding plus
+CFBoolean type checks. Its __cplusplus error and C _Generic logical-expression
+assertion prevent a C++ compilation from masking this distinction. Current source
+passes public/alias/real-KVO/invalid-owner/false-forward/expired/overflow cases;
+exact archived0ee5 source fails the boolean type assertion. Original IMP forwarding
+and zero-public-work checks remain, rather than accepting numeric truth values.
+
+Native11 also revealed a legitimate ambient CrashKeysObserverBridge callback
+beside the one owned inspect callback. Callback metadata now comes from the SAME
+frozen app_callbacks.inc. Native identities are admitted exactly; Swift dotted
+identities are derived only by completely consuming length-prefixed components,
+including nested classes. There is no prefix stripping or unrecognized fallback.
+All raw engine→app callbacks must have exact known identity, engine origin, valid
+thread, matched nesting/return and selector argument count. Ambient callbacks may
+be off-main or nonvoid; their arguments, returns, counts and order remain intact.
+Only the four known ADK.WebContentChromium selectors count as owned journal
+coverage and retain baseline service/owner, main-thread, void, ABI/mode, forwarding
+and ignored-service-zero checks. Foreign-service owned callbacks cannot satisfy
+coverage. Every measured span needs at least one actual owned callback.
+
+The typed result exposes total/owned/ambient counts and ambient identities, while
+the raw span and comparator still contain ALL callbacks and nested public methods.
+The comparator's callback_sequence counts TOTAL callbacks. Ambient-only windows
+fail owned coverage and retain their counts. Separate evidence matching supports
+an explicitly labelled OFFLINE DERIVED BOOL SIDECAR DIAGNOSTIC: unchanged Native11
+raw records plus only the two known numeric validity flags converted in an in-memory
+sidecar establish original total2/owned1/ambient1 and ours total7/owned0/ambient7.
+The actual Native11 sidecar and raw records are never rewritten. Full producer/
+quiet acceptance remains false for the incomplete original window; the evidence
+helper is not used as an acceptance substitute.
+
+New synthetic tests include nested and worker-thread ambient callbacks with
+nonvoid returns, malformed/unknown/wrong-origin callbacks, missing metadata and
+ambient-only failure. The actual frozen DEFAULT comparator additionally proves
+ambient argument/return/count changes and nested app getter return changes remain
+visible, with exact raw callback sequence counts. Four capability controls remain
+required; current shared support remains pending and no normalization was added.

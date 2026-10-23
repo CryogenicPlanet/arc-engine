@@ -630,15 +630,13 @@ function validateFrontendCallbackIdentity(event:any):void{
   assert(exact||kvo,"frontend callback owner runtime class is not exact owner or verified direct KVO subclass");
   assert(event.abi===(frontendCallbackSelectors.slice(0,2).includes(event.selector)?"v32@0:8@16Q24":"v24@0:8@16"),"frontend callback ABI mismatch");
 }
-function validateFrontendCallbackSpan(span:any,record:Buffer,serviceReceiver:string,ownerTag:number,fixtureImage:string,projection?:PublicTraceProjection,knownCallbacks?:Set<string>):any[]{
-  validateFrontendStimulusReceipt(span);
+function validateFrontendCallbackEvidence(span:any,record:Buffer,serviceReceiver:string,ownerTag:number,fixtureImage:string,projection?:PublicTraceProjection,knownCallbacks?:Set<string>):any[]{
   assert(knownCallbacks instanceof Set,"frozen callback metadata required for callback-only span");
   assert(span?.ok===true,"frontend callback observation request failed");
   assert(span.ownerTag===ownerTag,"frontend callback observation owner identity changed");
   assert(span.publicCalls?.length===0&&span.timeline?.length===0,"frontend callback observation performed public work");
-  assert(span.quietComplete===true,"frontend callback observation did not establish the fixed quiet interval");
   const observation=span.observation;
-  assert(observation?.spanID===span.spanID&&observation.ownerTag===ownerTag&&observation.forwarding===0&&observation.overflow===false,"incomplete/overflowed callback observation");
+  assert(observation?.spanID===span.spanID&&observation.ownerTag===ownerTag&&observation.forwarding===0&&observation.overflow===false&&observation.ignoredServiceCallbacks===0,"incomplete/overflowed/foreign-service callback observation");
   const rows=parseRecords(validSpan(record,observation.recordBegin,observation.recordEnd),observation.recordBegin);
   const ambient=observation.recordBegin?scanRecords(parseRecords(record.subarray(0,observation.recordBegin))).stacks:new Map<string,RecordRow[]>();
   const matched=validateNesting(rows,ambient);
@@ -656,7 +654,8 @@ function validateFrontendCallbackSpan(span:any,record:Buffer,serviceReceiver:str
   span.rawCallbackCounts={total:allDelegates.length,owned:delegates.length,ambient:ambientDelegates.length};
   span.ambientCallbackIdentities=ambientDelegates.map(row=>({cls:row.event.cls,selector:row.event.sel,thread:row.event.thread}));
   const callbacks=observation.callbacks;
-  assert(Array.isArray(callbacks)&&callbacks.length>0&&delegates.length===callbacks.length,"missing/unobserved app callbacks");
+  assert(delegates.length>0,`no owned DevTools callback evidence: total=${allDelegates.length}, ambient=${ambientDelegates.length}`);
+  assert(Array.isArray(callbacks)&&callbacks.length>0&&delegates.length===callbacks.length,"owned callback journal/raw count mismatch");
   for(let index=0;index<callbacks.length;++index){
     const event=callbacks[index],entry=delegates[index],returned=matched.get(entry.event.seq),modeful=frontendCallbackSelectors.slice(0,2).includes(entry.event.sel);
     validateFrontendCallbackIdentity(event);
@@ -676,6 +675,11 @@ function validateFrontendCallbackSpan(span:any,record:Buffer,serviceReceiver:str
   if(projection)return projection.project(rows);
   return allDelegates.map(row=>({cls:row.event.cls,selector:row.event.sel,args:ownedFrontendCallback(row.event)?["<canonical-service>",...row.event.args.slice(1)]:row.event.args,
     ret:matched.get(row.event.seq)!.event.ret,thread:row.event.thread,from:row.event.from,scope:ownedFrontendCallback(row.event)?"owned":"ambient"}));
+}
+function validateFrontendCallbackSpan(span:any,record:Buffer,serviceReceiver:string,ownerTag:number,fixtureImage:string,projection?:PublicTraceProjection,knownCallbacks?:Set<string>):any[]{
+  validateFrontendStimulusReceipt(span);
+  assert(span.quietComplete===true,"frontend callback observation did not establish the fixed quiet interval");
+  return validateFrontendCallbackEvidence(span,record,serviceReceiver,ownerTag,fixtureImage,projection,knownCallbacks);
 }
 function frontendJournalSignature(observation:any):string{
   return JSON.stringify(canonical({callbacks:observation?.callbacks,forwarding:observation?.forwarding,ignored:observation?.ignoredServiceCallbacks,overflow:observation?.overflow}));

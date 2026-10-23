@@ -1,0 +1,333 @@
+diff --git a/arc/api/arc_webextras_devtools.mm b/arc/api/arc_webextras_devtools.mm
+--- a/arc/api/arc_webextras_devtools.mm
++++ b/arc/api/arc_webextras_devtools.mm
+@@ -6,6 +6,7 @@
+ #include <map>
+ #include <memory>
+ #include <limits>
++#include <utility>
+ #include "base/containers/span.h"
+ #include "base/functional/bind.h"
+ #include "base/json/json_reader.h"
+@@ -162,12 +163,15 @@
+       }, callback, identifier, payload, error));
+ }
+ 
+-class ProtocolClient final : public content::DevToolsAgentHostClient,
+-                             public std::enable_shared_from_this<ProtocolClient> {
++class ProtocolClient final : public content::DevToolsAgentHostClient {
+  public:
+   explicit ProtocolClient(ProtocolNotification callback, bool post_notifications = true)
+       : callback_([callback copy]), post_notifications_(post_notifications) {}
+-  ~ProtocolClient() override { Close(); }
++  ~ProtocolClient() override {
++    // Native raw destruction closes/posts before poisoning this client guard.
++    Close();
++    weak_factory_.InvalidateWeakPtrs();
++  }
+   bool Attach(content::WebContents* contents) {
+     host_ = content::DevToolsAgentHost::GetOrCreateFor(contents);
+     attached_ = host_->AttachClient(this);
+@@ -191,36 +195,43 @@
+   void Close() {
+     if (!attached_) { return; }
+     attached_ = false;
+-    host_->DetachClient(this);
+-    host_.reset();
+-    Notify(callback_, nil, DevToolsError(10, @"DevTools connection closed"));
+-    callback_ = nil;
++    auto host = std::move(host_);
++    ProtocolNotification callback = std::exchange(callback_, nil);
++    // C156 DetachClient may reenter through native observers. All needed state
++    // is now local; do not access this after that boundary. Taking the callable
++    // before detach is a bounded safety adaptation, not recovered native order.
++    host->DetachClient(this);
++    Notify(callback, nil, DevToolsError(10, @"DevTools connection closed"));
+   }
+   void DispatchProtocolMessage(content::DevToolsAgentHost*,
+                                base::span<const uint8_t> bytes) override {
+     if (closing_) { return; }
+     if (post_notifications_ && bytes.size() > kMaximumProtocolBytes) {
+       closing_ = true;
++      auto weak_client = weak_factory_.GetWeakPtr();
+       content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+-          base::BindOnce([](std::shared_ptr<ProtocolClient> client) { client->Close(); }, shared_from_this()));
++          base::BindOnce([](base::WeakPtr<ProtocolClient> client) {
++            if (client) { client->Close(); }
++          }, weak_client));
+       return;
+     }
+     NSString* message = [[NSString alloc] initWithBytes:bytes.data() length:bytes.size()
+                                              encoding:NSUTF8StringEncoding];
+     if (post_notifications_) { Notify(callback_, message, nil); }
+     else if (callback_) {
+-      // A synchronous command completion may release the owner/client.
+-      auto keep_alive = shared_from_this();
+-      callback_(message, nil);
++      // Command completion may finally release this real client/peer. Copy the
++      // callable and tail-call it without a client lease or later member access.
++      ProtocolNotification callback = callback_;
++      callback(message, nil);
+     }
+   }
+   void AgentHostClosed(content::DevToolsAgentHost*) override {
+     if (!attached_) { return; }
+-    auto keep_alive = shared_from_this();
+     attached_ = false;
+-    host_.reset();
+-    Notify(callback_, nil, DevToolsError(10, @"DevTools connection closed"));
+-    callback_ = nil;
++    auto host = std::move(host_);
++    ProtocolNotification callback = std::exchange(callback_, nil);
++    Notify(callback, nil, DevToolsError(10, @"DevTools connection closed"));
++    // No member access after callback/host payload release can reenter.
+   }
+  private:
+   scoped_refptr<content::DevToolsAgentHost> host_;
+@@ -228,7 +239,35 @@
+   const bool post_notifications_;
+   bool attached_ = false;
+   bool closing_ = false;
++  base::WeakPtrFactory<ProtocolClient> weak_factory_{this};
+ };
++
++using RawProtocolConnections = std::map<int, std::shared_ptr<ProtocolClient>>;
++void CloseRawProtocolConnections(RawProtocolConnections retired) {
++  for (auto& entry : retired) { entry.second->Close(); }
++}
++
++// Both outer maps are already removed from the peer before this function.
++// Native command/event bucket total order is not globally sorted. Foundation
++// bucket order is a bounded representation, with exact native hashing HOLD.
++using PendingProtocolCommands = NSMutableDictionary<NSNumber*, ProtocolNotification>*;
++using ProtocolSubscriptions = NSMutableDictionary<NSString*, NSMutableArray<NSDictionary*>*>*;
++void DeliverObservedHostClosed(PendingProtocolCommands pending,
++                               ProtocolSubscriptions subscriptions) {
++  for (NSNumber* identifier in pending) {
++    ProtocolNotification callback = pending[identifier];
++    if (callback) { callback(nil, DevToolsError(10, @"DevTools agent host closed")); }
++  }
++  for (NSString* event in subscriptions) {
++    for (NSDictionary* subscription in subscriptions[event]) {
++      SubscriptionNotification callback = subscription[@"callback"];
++      if (callback) {
++        callback(subscription[@"identifier"], nil,
++                 DevToolsError(10, @"DevTools agent host closed"));
++      }
++    }
++  }
++}
+ 
+ // Keep retired panel blocks alive until state reset and close notification
+ // finish. Releasing them during reset could reenter the peer halfway through.
+@@ -260,8 +299,10 @@
+ namespace arc {
+ class WebextrasDevToolsPeer::Impl final : public content::WebContentsObserver {
+  public:
+-  Impl(CoreLogicalWebContentsWeakHandle logical, base::WeakPtr<WebextrasDevToolsPeer> peer)
+-      : _logical(std::move(logical)), _peer(peer) {
++  Impl(CoreLogicalWebContentsWeakHandle logical,
++       base::WeakPtr<WebextrasDevToolsPeer> peer,
++       base::WeakPtr<WebextrasDevToolsPeer> command_peer)
++      : _logical(std::move(logical)), _peer(peer), _commandPeer(command_peer) {
+     _pending = [NSMutableDictionary dictionary];
+     _subscriptions = [NSMutableDictionary dictionary];
+     _panelQueries = [NSMutableArray array];
+@@ -281,26 +322,68 @@
+     contents->SetUserData(&kDevToolsBindingKey, std::make_unique<DevToolsBinding>(_peer));
+     InstallHooks();
+   }
++  void RemoveOwnNativeAssociation() {
++    if (_contents && PeerForContents(_contents.get()).get() == _peer.get()) {
++      _contents->RemoveUserData(&kDevToolsBindingKey);
++    }
++  }
++  void ClearExplicitBinding() {
++    RemoveOwnNativeAssociation();
++    Observe(nullptr);
++    _contents.reset();
++  }
+   void Retire() {
+     CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+-    if (_contents && PeerForContents(_contents.get()).get() == _peer.get()) {
+-      _contents->RemoveUserData(&kDevToolsBindingKey);
+-    }
++    auto peer = _peer;
++    auto retired = std::exchange(_connections, RawProtocolConnections());
++    CloseRawProtocolConnections(std::move(retired));
++    // C156 native detach can call external observers. This survival check is a
++    // safety adaptation at that unresolved boundary, not a native post-call
++    // guard. Reentrant raw-map/binding mutations remain an integration HOLD.
++    if (!peer) { return; }
++    peer->state().ClearExplicitBinding();
++    // Explicit detach does not drain pending commands/subscriptions, reset IDs,
++    // reconnect the command transport, close a frontend, or poison peer guards.
++  }
++  void StopObservingForFinalDestruction() {
+     Observe(nullptr);
+-    _contents.reset();
+-    // Native final-peer guard and selected bridge survive physical detach.
+-    // No protocol host reconnect/retarget or synthetic frontend close occurs.
+-  }
+-  void WebContentsDestroyed() override { Retire(); }
++    RemoveOwnNativeAssociation();
++  }
++  void DestroyFinalProtocolState() {
++    // Router is already invalid; delegate notifications remain eligible until
++    // after raw clients and both outer callback containers are destroyed.
++    auto retired = std::exchange(_connections, RawProtocolConnections());
++    CloseRawProtocolConnections(std::move(retired));
++    _subscriptions = nil;
++    _pending = nil;
++    // Final raw close notices stay accepted/copied. Final OUTER maps are silent.
++  }
++  void WebContentsDestroyed() override {
++    auto peer = _peer;
++    auto retired = std::exchange(_connections, RawProtocolConnections());
++    CloseRawProtocolConnections(std::move(retired));
++    // Same C156-only safety boundary as explicit detach. There is no strong
++    // peer/root lease. Once snapshots exist, delivery uses only owned locals.
++    if (!peer) { return; }
++    Impl& state = peer->state();
++    state._contents.reset();
++    PendingProtocolCommands pending = std::exchange(
++        state._pending, [NSMutableDictionary dictionary]);
++    ProtocolSubscriptions subscriptions = std::exchange(
++        state._subscriptions, [NSMutableDictionary dictionary]);
++    DeliverObservedHostClosed(pending, subscriptions);
++    // Do not dereference peer/state/this here: the first app callback can free it.
++    // Base WebContents reset follows this observed phase; no Observe(nullptr).
++  }
+   void RegisterBridge(WebextrasDevToolsDelegateBridge* bridge) {
+     _registeredDelegateBridge = bridge;
+   }
+   static void InstallHooks();
+   __weak WebextrasDevToolsDelegateBridge* _registeredDelegateBridge;
+-  std::map<int, std::shared_ptr<ProtocolClient>> _connections;
++  RawProtocolConnections _connections;
+   std::shared_ptr<ProtocolClient> _commands;
+-  NSMutableDictionary<NSNumber*, ProtocolNotification>* _pending;
+-  NSMutableDictionary<NSNumber*, NSDictionary*>* _subscriptions;
++  PendingProtocolCommands _pending;
++  ProtocolSubscriptions _subscriptions;
+   int _nextConnection = 0;
+   base::WeakPtr<content::WebContents> _frontend;
+   std::unique_ptr<FrontendObserver> _frontendObserver;
+@@ -311,6 +394,7 @@
+   base::WeakPtr<content::WebContents> _contents;
+   CoreLogicalWebContentsWeakHandle _logical;
+   base::WeakPtr<WebextrasDevToolsPeer> _peer;
++  base::WeakPtr<WebextrasDevToolsPeer> _commandPeer;
+ ArcWebContents* webContents() {
+   return _frontend ? [ArcWebContents wrapperForWebContents:_frontend.get()] : nil;
+ }
+@@ -470,7 +554,7 @@
+   if (_commands) { return YES; }
+   auto* contents = _contents.get();
+   if (!contents) { return DevToolsFail(error, 10, @"Associated WebContents is not available."); }
+-  auto peer = _peer;
++  auto peer = _commandPeer;
+   auto client = std::make_shared<ProtocolClient>(^(NSString* message, NSError* failure) {
+     if (peer) { peer->state().receiveMessage(message, failure); }
+   }, false);
+@@ -513,21 +597,36 @@
+   NSMutableDictionary* subscription = [@{@"method":[NSString stringWithFormat:@"%@.%@",domain,name],
+                                          @"domain":domain, @"identifier":identifier} mutableCopy];
+   if (notification) { subscription[@"callback"] = [notification copy]; }
+-  _subscriptions[identifier] = subscription;
++  NSString* method = subscription[@"method"];
++  NSMutableArray<NSDictionary*>* records = _subscriptions[method];
++  if (!records) {
++    records = [NSMutableArray array];
++    _subscriptions[method] = records;
++  }
++  [records addObject:subscription];
+   if (enable) {
+     sendCommand([domain stringByAppendingString:@".enable"], base::DictValue(), nil, nil);
+   }
+   return identifier;
+ }
+ BOOL unsubscribe(NSNumber* identifier) {
+-  NSDictionary* removed = _subscriptions[identifier];
++  NSDictionary* removed = nil;
++  NSString* event = nil;
++  for (NSString* candidate in _subscriptions) {
++    for (NSDictionary* subscription in _subscriptions[candidate]) {
++      if ([subscription[@"identifier"] isEqual:identifier]) {
++        removed = subscription;
++        event = candidate;
++        break;
++      }
++    }
++    if (removed) { break; }
++  }
+   if (!removed) { return NO; }
+-  [_subscriptions removeObjectForKey:identifier];
+-  BOOL stillSubscribed = NO;
+-  for (NSDictionary* other in _subscriptions.allValues) {
+-    if ([other[@"method"] isEqual:removed[@"method"]]) { stillSubscribed = YES; }
+-  }
+-  if (!stillSubscribed) {
++  NSMutableArray<NSDictionary*>* records = _subscriptions[event];
++  [records removeObjectIdenticalTo:removed];
++  if (!records.count) {
++    [_subscriptions removeObjectForKey:event];
+     sendCommand([removed[@"domain"] stringByAppendingString:@".disable"], base::DictValue(), nil, nil);
+   }
+   return YES;
+@@ -560,14 +659,12 @@
+     } else {
+       failure = DevToolsError(3, @"Missing the `params`");
+     }
+-    NSArray<NSNumber*>* identifiers = [_subscriptions.allKeys sortedArrayUsingSelector:@selector(compare:)];
+-    for (NSNumber* identifier in identifiers) {
+-      NSDictionary* subscription = _subscriptions[identifier];
+-      auto* method = envelope->FindString("method");
+-      if (method && [subscription[@"method"] isEqual:ArcNSString(*method)]) {
+-        SubscriptionNotification callback = subscription[@"callback"];
+-        NotifySubscription(callback, subscription[@"identifier"], payload, failure);
+-      }
++    auto* method = envelope->FindString("method");
++    if (!method) { return; }
++    NSArray<NSDictionary*>* records = [_subscriptions[ArcNSString(*method)] copy];
++    for (NSDictionary* subscription in records) {
++      SubscriptionNotification callback = subscription[@"callback"];
++      NotifySubscription(callback, subscription[@"identifier"], payload, failure);
+     }
+   }
+ }
+@@ -575,13 +672,14 @@
+ WebextrasDevToolsPeer::WebextrasDevToolsPeer(CoreLogicalWebContentsWeakHandle logical)
+ {
+   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+-  impl_ = std::make_unique<Impl>(std::move(logical), weak_factory_.GetWeakPtr());
++  impl_ = std::make_unique<Impl>(std::move(logical), weak_factory_.GetWeakPtr(),
++                                 command_weak_factory_.GetWeakPtr());
+ }
+ WebextrasDevToolsPeer::~WebextrasDevToolsPeer() {
+   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+-  // Retire only borrowed observation (no callouts), then invalidate before
+-  // functional client/ObjC payload teardown.
+-  impl_->Retire();
++  impl_->StopObservingForFinalDestruction();
++  command_weak_factory_.InvalidateWeakPtrs();
++  impl_->DestroyFinalProtocolState();
+   weak_factory_.InvalidateWeakPtrs();
+ }
+ void WebextrasDevToolsPeer::AttachToWebContents(base::WeakPtr<content::WebContents> contents) {
+diff --git a/arc/browser/webextras_devtools_logical_peer.h b/arc/browser/webextras_devtools_logical_peer.h
+--- a/arc/browser/webextras_devtools_logical_peer.h
++++ b/arc/browser/webextras_devtools_logical_peer.h
+@@ -17,8 +17,11 @@
+   Impl& state();
+  private:
+   std::unique_ptr<Impl> impl_;
+-  // Last member: invalidate BEFORE releasing functional state on final teardown.
++  // Distinct guards on the SAME real functional peer. Final teardown poisons
++  // command routing before raw/outer callbacks are destroyed, then delegate
++  // delivery afterwards. Neither is invalidated by mere physical detach.
+   base::WeakPtrFactory<WebextrasDevToolsPeer> weak_factory_{this};
++  base::WeakPtrFactory<WebextrasDevToolsPeer> command_weak_factory_{this};
+ };
+ using WebextrasDevToolsPeerHandle = std::shared_ptr<WebextrasDevToolsPeer>;
+ CoreDevToolsPeerFactory MakeWebextrasDevToolsPeerFactory();

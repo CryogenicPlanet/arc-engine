@@ -1,0 +1,55 @@
+{
+  "launch-slice": {
+    "all_steps_pass": true,
+    "exact_labels": true,
+    "exact_quit": true,
+    "harness_exit": 0,
+    "steps": [
+      {
+        "detail": "native ready, CDP target list available",
+        "outcome": "pass",
+        "step": "S1 launch"
+      },
+      {
+        "detail": "title=launch-slice A",
+        "outcome": "pass",
+        "step": "S2 open A"
+      },
+      {
+        "detail": "B=true (282 ms) frag=true back=true title=launch-slice B href=http://127.0.0.1:63371/b",
+        "outcome": "pass",
+        "step": "S3 navigate"
+      },
+      {
+        "detail": "ok",
+        "outcome": "pass",
+        "step": "S4 store"
+      },
+      {
+        "detail": "",
+        "outcome": "pass",
+        "step": "S5 close + new tab"
+      },
+      {
+        "detail": "Browser.close; browser + 9 helpers exited",
+        "outcome": "pass",
+        "step": "S6 quit"
+      },
+      {
+        "detail": "native ready, CDP target list available",
+        "outcome": "pass",
+        "step": "S7 relaunch"
+      },
+      {
+        "detail": "{\"cookie\":\"ls_cookie=c0ffee\",\"local\":\"v-41\",\"idb\":\"idb-93\"}",
+        "outcome": "pass",
+        "step": "S7 readback"
+      },
+      {
+        "detail": "Browser.close; browser + 6 helpers exited",
+        "outcome": "pass",
+        "step": "S8 quit"
+      }
+    ]
+  }
+}

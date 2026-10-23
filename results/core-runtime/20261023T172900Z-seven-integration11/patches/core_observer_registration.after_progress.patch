@@ -1,0 +1,191 @@
+--- a/arc/api/arc_web_contents.mm
++++ b/arc/api/arc_web_contents.mm
+@@ -30,6 +30,7 @@
+ #include "third_party/blink/public/common/page/page_zoom.h"
+ #include "content/public/browser/navigation_controller.h"
+ #include "content/public/browser/navigation_entry.h"
++#include "content/public/browser/navigation_details.h"
+ #include "content/public/browser/navigation_handle.h"
+ #include "content/public/browser/favicon_status.h"
+ #include "content/public/browser/host_app_hooks.h"
+@@ -190,20 +191,22 @@
+ @property(nonatomic, readonly) NSUInteger state;
+ @end
+ 
++namespace {
++struct CoreSecuritySnapshot {
++  NSUInteger state = 0;
++};
++}  // namespace
++
+ @implementation ArcSecureContext {
+-  base::WeakPtr<content::WebContents> _contents;
+-}
+-- (instancetype)initWithSecureContext:(const void*)contents {
+-  if ((self = [super init]) && contents) {
+-    _contents = static_cast<content::WebContents*>(const_cast<void*>(contents))->GetWeakPtr();
++  NSUInteger _state;
++}
++- (instancetype)initWithSecureContext:(const void*)snapshot {
++  if ((self = [super init]) && snapshot) {
++    _state = static_cast<const CoreSecuritySnapshot*>(snapshot)->state;
+   }
+   return self;
+ }
+-- (NSUInteger)state {
+-  if (!_contents) { return 0; }
+-  auto level = chrome_security_state::GetSecurityLevel(_contents.get());
+-  return level == security_state::NONE ? 0 : level == security_state::SECURE ? 1 : 2;
+-}
++- (NSUInteger)state { return _state; }
+ @end
+ 
+ @protocol CoreContentsDelegate <NSObject>
+@@ -276,7 +279,7 @@
+  public:
+   ArcContentsObserver(content::WebContents* contents, ArcWebContents* wrapper)
+       : content::WebContentsObserver(contents), wrapper_(wrapper),
+-        last_committed_entry_count_(contents->GetController().GetEntryCount()) {}
++        history_model_(arc::CreateCoreHistoryModel(contents)) {}
+   void DidStartNavigation(content::NavigationHandle* handle) override {
+     if (!handle->IsInPrimaryMainFrame()) { return; }
+     ArcWebContents* wrapper = wrapper_;
+@@ -393,17 +396,16 @@
+     }
+   }
+   void NavigationEntryCommitted(const content::LoadCommittedDetails&) override {
+-    if (web_contents()) {
+-      last_committed_entry_count_ = web_contents()->GetController().GetEntryCount();
+-      early_history_entry_count_ = -1;
+-    }
+     UpdateHistory();
+   }
+   void NavigationListPruned(const content::PrunedDetails&) override { UpdateHistory(); }
+   void NavigationEntriesDeleted() override { UpdateHistory(); }
+-  // Audit gap: scheduling of progress/history/security and other WebContents
+-  // observer callbacks is unchanged here; only native flags and nav lifecycle
+-  // have been traced through the original task dispatcher.
++  void NavigationEntryChanged(const content::EntryChangedDetails& details) override {
++    if (arc::UpdateCoreHistoryEntry(history_model_, details.changed_entry,
++                                    details.index)) {
++      PostHistory();
++    }
++  }
+   void LoadProgressChanged(double progress) override {
+     __weak ArcWebContents* weak_owner = wrapper_;
+     PostCoreUI(^{
+@@ -412,35 +414,52 @@
+     });
+   }
+   void OnVisibilityChanged(content::Visibility visibility) override {
+-    ArcWebContents* wrapper = wrapper_;
+-    wrapper.visibility = static_cast<NSInteger>(visibility);
+-    wrapper.state = web_contents() && web_contents()->IsCrashed() ? 1 : 0;
++    const NSInteger value = static_cast<NSInteger>(visibility);
++    __weak ArcWebContents* weak_owner = wrapper_;
++    PostCoreUI(^{
++      ArcWebContents* owner __attribute__((objc_precise_lifetime)) = weak_owner;
++      if (owner) { owner.visibility = value; }
++    });
+   }
+   void DidChangeVisibleSecurityState() override {
+-    ArcWebContents* wrapper = wrapper_;
++    if (!web_contents()) { return; }
++    const auto level = chrome_security_state::GetSecurityLevel(web_contents());
++    const CoreSecuritySnapshot snapshot{
++        level == security_state::NONE ? 0u : level == security_state::SECURE ? 1u : 2u};
++    __weak ArcWebContents* weak_owner = wrapper_;
++    __weak CoreUIDelegateBridge* weak_bridge = [wrapper_ coreUIDelegateBridge];
++    PostCoreUI(^{
++      ArcWebContents* owner __attribute__((objc_precise_lifetime)) = weak_owner;
++      CoreUIDelegateBridge* bridge __attribute__((objc_precise_lifetime)) = weak_bridge;
++      id<CoreContentsDelegate> delegate = bridge.delegate;
++      if (owner && [delegate respondsToSelector:@selector(webContents:didChangeVisibleSecurityState:)]) {
++        ArcSecureContext* context = [[ArcSecureContext alloc] initWithSecureContext:&snapshot];
++        [delegate webContents:owner didChangeVisibleSecurityState:context];
++      }
++    });
++  }
++  void DidChangeThemeColor() override {
++    if (!web_contents()) { return; }
++    const auto color = web_contents()->GetThemeColor();
++    __weak ArcWebContents* weak_owner = wrapper_;
++    PostCoreUI(^{
++      ArcWebContents* owner __attribute__((objc_precise_lifetime)) = weak_owner;
++      if (owner) { owner.themeColor = color ? [ArcColor colorWithSkColor:*color] : nil; }
++    });
++  }
++  void OnWebContentsFocused(content::RenderWidgetHost*) override {
+     if (!web_contents()) { return; }
+     auto native = web_contents()->GetWeakPtr();
+-    const uint64_t generation = navigation_generation_;
+-    const int entry_count = native->GetController().GetEntryCount();
+-    if (entry_count > last_committed_entry_count_ && entry_count != early_history_entry_count_) {
+-      early_history_entry_count_ = entry_count;
+-      UpdateHistory();
+-      if (!native || generation != navigation_generation_) { return; }
+-    }
+-    id<CoreContentsDelegate> delegate = [wrapper coreUIDelegate];
+-    if (web_contents() && [delegate respondsToSelector:@selector(webContents:didChangeVisibleSecurityState:)]) {
+-      ArcSecureContext* state = [[ArcSecureContext alloc] initWithSecureContext:web_contents()];
+-      [delegate webContents:wrapper didChangeVisibleSecurityState:state];
+-    }
+-  }
+-  void DidChangeThemeColor() override {
+-    if (web_contents()) {
+-      auto color = web_contents()->GetThemeColor();
+-      wrapper_.themeColor = color ? [ArcColor colorWithSkColor:*color] : nil;
+-    }
+-  }
+-  void OnWebContentsFocused(content::RenderWidgetHost*) override { wrapper_.hasFocus = YES; }
+-  void OnWebContentsLostFocus(content::RenderWidgetHost*) override { wrapper_.hasFocus = NO; }
++    __weak ArcWebContents* weak_owner = wrapper_;
++    // Gained focus first hops through a weak native task. Only a surviving
++    // native peer produces the second, weak-owner property publication.
++    PostCoreUI(^{
++      if (native) { PostFocus(weak_owner, true); }
++    });
++  }
++  void OnWebContentsLostFocus(content::RenderWidgetHost*) override {
++    PostFocus(wrapper_, false);
++  }
+   void WebContentsDestroyed() override {
+     ArcWebContents* wrapper = wrapper_;
+     Observe(nullptr);
+@@ -487,17 +506,30 @@
+     }
+     return state;
+   }
++  static void PostFocus(ArcWebContents* wrapper, bool focused) {
++    __weak ArcWebContents* weak_owner = wrapper;
++    PostCoreUI(^{
++      ArcWebContents* owner __attribute__((objc_precise_lifetime)) = weak_owner;
++      if (owner) { owner.hasFocus = focused; }
++    });
++  }
+   void UpdateHistory() {
+-    ArcWebContents* wrapper = wrapper_;
+-    if (web_contents()) {
+-      wrapper.backForwardList = [ArcBackForwardList snapshotForWebContents:web_contents()];
+-    }
++    if (!web_contents()) { return; }
++    arc::RefreshCoreHistoryModel(history_model_, web_contents());
++    PostHistory();
++  }
++  void PostHistory() {
++    const auto model = history_model_;
++    __weak ArcWebContents* weak_owner = wrapper_;
++    PostCoreUI(^{
++      ArcWebContents* owner __attribute__((objc_precise_lifetime)) = weak_owner;
++      if (owner) { owner.backForwardList = arc::CreateCoreBackForwardList(model); }
++    });
+   }
+   __weak ArcWebContents* wrapper_;
+   uint64_t navigation_generation_ = 0;
+   uint32_t next_navigation_id_ = 0;
+-  int last_committed_entry_count_ = 0;
+-  int early_history_entry_count_ = -1;
++  std::shared_ptr<arc::CoreHistoryModel> history_model_;
+ };
+ 
+ class ArcContentsData : public content::WebContentsUserData<ArcContentsData> {

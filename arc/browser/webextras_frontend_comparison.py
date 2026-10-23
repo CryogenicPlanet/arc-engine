@@ -101,7 +101,7 @@ def gate(path,image,filename_canary=False,known_callbacks=None):
         require(len(rows)==4 and rows[0].get('dir')=='->engine' and rows[0].get('from')=='engine' and rows[0].get('cls')=='ArcDownloadItem' and
                 rows[0].get('sel')=='id' and rows[0].get('self')=='<ArcDownloadItem#1>' and rows[0].get('args')==[] and rows[1].get('ret')==DOWNLOAD_GUID,
                 'filename callback lacks exact raw download GUID proof')
-    require(filename_canary or owned>0,'no owned DevTools callback evidence (ambient callbacks retained)')
+    require(filename_canary or owned>0,f'no owned DevTools callback evidence: total={callbacks}, ambient={len(ambient)} (all raw callbacks retained)')
     return {'callbacks':callbacks,'ownedCallbacks':owned,'ambientCallbacks':len(ambient),'ambientIdentities':ambient,'rows':len(rows),'fixturePublicCalls':0,'service':service}
 
 

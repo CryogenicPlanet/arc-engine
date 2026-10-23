@@ -1,0 +1,285 @@
+diff --git a/arc/tools/regen-patches.sh b/arc/tools/regen-patches.sh
+--- a/arc/tools/regen-patches.sh
++++ b/arc/tools/regen-patches.sh
+@@ -1,19 +1,6 @@
+ #!/bin/bash
+-# Regenerate patches/*.patch from the Chromium tree using patches/MANIFEST (file -> owning patch).
+-# Fails if a changed Chromium file isn't assigned in the manifest. Run under arc/tools/locked.sh.
++# Regenerate manifest-owned outer Chromium and the supported DevTools gitlink.
++# Run under arc/tools/locked.sh. The helper does not mutate either Git index.
+ set -euo pipefail
+ E="$(cd "$(dirname "$0")/../.." && pwd)"
+-SRC="$E/chromium/src"
+-cd "$SRC"
+-changed=$(git status --porcelain | grep -v '^?? arc$' | awk '{print $2}' | grep -v '^arc$' || true)
+-assigned=$(grep -v '^#' "$E/patches/MANIFEST" | awk '{print $2}')
+-missing=$(comm -23 <(echo "$changed" | sort -u) <(echo "$assigned" | sort -u) | grep -v '^$' || true)
+-if [ -n "$missing" ]; then
+-  echo "unassigned changed files (add them to patches/MANIFEST):"; echo "$missing"; exit 1
+-fi
+-for patch in $(grep -v '^#' "$E/patches/MANIFEST" | awk '{print $1}' | sort -u); do
+-  files=$(grep -v '^#' "$E/patches/MANIFEST" | awk -v p="$patch" '$1==p {print $2}')
+-  for f in $files; do git ls-files --error-unmatch "$f" >/dev/null 2>&1 || git add -N "$f"; done
+-  git diff --no-ext-diff -- $files > "$E/patches/$patch"
+-  echo "$patch: $(grep -c '^+++ ' "$E/patches/$patch") files"
+-done
++exec python3 -B "$E/arc/tools/chromium-patches.py" regenerate "$E"
+diff --git a/sync-chromium.sh b/sync-chromium.sh
+--- a/sync-chromium.sh
++++ b/sync-chromium.sh
+@@ -22,8 +22,8 @@
+ # Reapply our patches (a sync resets the tree). Already-applied patches are skipped.
+ for p in "$E"/patches/*.patch; do
+   [ -e "$p" ] || continue
+-  if git -C "$E/chromium/src" apply --reverse --check "$p" 2>/dev/null; then step "patch already applied: $(basename "$p")"
+-  elif git -C "$E/chromium/src" apply "$p"; then step "patch applied: $(basename "$p")"
++  if result=$(python3 -B "$E/arc/tools/chromium-patches.py" apply "$E" "$p"); then
++    step "$result"
+   else step "PATCH FAILED: $(basename "$p")"; exit 1; fi
+ done
+ # Our ArcCore layer lives in this repo (arc/) and is linked into the tree as //arc.
+diff --git a/arc/tools/chromium-patches.py b/arc/tools/chromium-patches.py
+new file mode 100644
+--- /dev/null
++++ b/arc/tools/chromium-patches.py
+@@ -0,0 +1,240 @@
++#!/usr/bin/env python3
++"""Manifest patches, with one explicitly supported DevTools frontend gitlink.
++
++Run mutations under locked.sh. Git reads never refresh the real index. This
++bounded contract rejects deletions/renames/conflicts/untracked source inputs.
++"""
++import argparse
++import hashlib
++import os
++from pathlib import Path, PurePosixPath
++import re
++import subprocess
++import tempfile
++
++FRONTEND = 'third_party/devtools-frontend/src'
++ENV = dict(os.environ, GIT_OPTIONAL_LOCKS='0', LC_ALL='C')
++
++def require(value, message):
++    if not value:
++        raise ValueError(message)
++
++def git(repo, *args, check=True, input_bytes=None):
++    result = subprocess.run(['git', '-c', 'diff.ignoreSubmodules=none', '-C', str(repo), *args],
++                            env=ENV, capture_output=True, input=input_bytes)
++    if check:
++        require(result.returncode == 0, result.stderr.decode(errors='replace').strip())
++    return result
++
++def path_name(value):
++    require(isinstance(value, str) and re.fullmatch(r'[A-Za-z0-9_.+/-]+', value), 'invalid manifest path')
++    path = PurePosixPath(value)
++    require(not path.is_absolute() and str(path) == value and
++            all(part not in ('.', '..', '.git') for part in path.parts), 'unsafe manifest path: '+value)
++    return value
++
++def regular(root, relative, missing=False):
++    path_name(relative)
++    current = root
++    for part in PurePosixPath(relative).parts:
++        current = current/part
++        require(not current.is_symlink(), 'symlink input: '+relative)
++        if not current.exists():
++            require(missing, 'missing input: '+relative)
++            return root/relative
++        require(current.is_file() if current == root/relative else current.is_dir(), 'nonregular input: '+relative)
++    return current
++
++def manifest(root):
++    path = regular(root, 'patches/MANIFEST')
++    raw = path.read_bytes()
++    owners = {}
++    for line in raw.decode().splitlines():
++        if not line.strip() or line.lstrip().startswith('#'):
++            continue
++        fields = line.split()
++        require(len(fields) == 2, 'invalid manifest row')
++        patch, relative = fields
++        require(re.fullmatch(r'[0-9]{4}-[A-Za-z0-9_.-]+\.patch', patch), 'invalid patch name')
++        path_name(relative)
++        require(relative not in owners, 'duplicate manifest ownership: '+relative)
++        owners[relative] = patch
++    require(owners, 'empty manifest')
++    return raw, owners
++
++def entries(repo):
++    result = {}
++    for item in git(repo, 'ls-files', '--stage', '-z').stdout.split(b'\0'):
++        if not item:
++            continue
++        head, name = item.decode().split('\t', 1)
++        mode, oid, stage = head.split()
++        require(stage == '0', 'conflicted index: '+name)
++        result[name] = (mode, oid)
++    return result
++
++def repositories(source, owners):
++    outer = entries(source)
++    repos = {'': (source, outer)}
++    if any(path.startswith(FRONTEND+'/') for path in owners):
++        require(outer.get(FRONTEND, ('',))[0] == '160000', 'frontend is not indexed gitlink')
++        head_entry = git(source, 'ls-tree', 'HEAD', '--', FRONTEND).stdout.decode().strip()
++        require(head_entry, 'frontend missing from outer HEAD')
++        mode, kind, oid_and_path = head_entry.split(' ', 2)
++        oid, name = oid_and_path.split('\t')
++        require(mode == '160000' and kind == 'commit' and name == FRONTEND and
++                outer[FRONTEND][1] == oid, 'frontend gitlink index/HEAD differs')
++        nested = regular_directory(source, FRONTEND)
++        require(git(nested, 'rev-parse', '--show-toplevel').stdout.decode().strip() == str(nested), 'frontend is not independent checkout')
++        require(git(nested, 'rev-parse', 'HEAD').stdout.decode().strip() == oid, 'frontend checkout HEAD differs from gitlink')
++        repos[FRONTEND] = (nested, entries(nested))
++    return repos
++
++def regular_directory(root, relative):
++    current = root
++    for part in PurePosixPath(relative).parts:
++        current = current/part
++        require(not current.is_symlink() and current.is_dir(), 'invalid checkout directory: '+relative)
++    return current
++
++def location(relative, repos):
++    if relative.startswith(FRONTEND+'/'):
++        require(FRONTEND in repos, 'unsupported nested checkout')
++        return FRONTEND, relative[len(FRONTEND)+1:]
++    return '', relative
++
++def validate_sources(source, owners, repos):
++    for relative in owners:
++        prefix, leaf = location(relative, repos)
++        repo, index = repos[prefix]
++        require(index.get(leaf, ('',))[0] in ('100644', '100755'), 'untracked/unsupported manifest input: '+relative)
++        regular(source, relative)
++    for prefix, (repo, _) in repos.items():
++        # Explicitly inspect the nested worktree; global Git configuration may
++        # hide dirty submodules from outer status.
++        output = git(repo, 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--ignore-submodules=none').stdout
++        for item in output.split(b'\0'):
++            if not item:
++                continue
++            code, leaf = item[:2].decode(), item[3:].decode()
++            if not prefix and leaf == 'arc' and code == '??':
++                require((source/'arc').is_symlink(), 'unexpected arc checkout entry')
++                continue
++            if not prefix and leaf == FRONTEND and FRONTEND in repos:
++                require(code in (' M', '  '), 'frontend gitlink changed')
++                continue
++            require(not any(c in code for c in 'RCUD') and code != '??', 'unsupported/untracked change: '+leaf)
++            path_name(leaf)
++            relative = prefix+'/'+leaf if prefix else leaf
++            require(relative in owners, 'unassigned changed file: '+relative)
++
++def fingerprint(root, source, owners, repos):
++    def digest(path):
++        return hashlib.sha256(path.read_bytes()).hexdigest()
++    result = {'manifest': digest(root/'patches/MANIFEST')}
++    for prefix, (repo, _) in repos.items():
++        result[prefix+':HEAD'] = git(repo, 'rev-parse', 'HEAD').stdout
++        index = Path(git(repo, 'rev-parse', '--git-path', 'index').stdout.decode().strip())
++        if not index.is_absolute():
++            index = repo/index
++        result[prefix+':index'] = digest(index)
++        result[prefix+':status'] = git(repo, 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--ignore-submodules=none').stdout
++    for relative in owners:
++        result['source:'+relative] = digest(regular(source, relative))
++    for patch in set(owners.values()):
++        path = root/'patches'/patch
++        require(not path.is_symlink(), 'symlink patch output')
++        result['patch:'+patch] = digest(path) if path.exists() else None
++    return result
++
++def regenerate(root):
++    root = root.resolve();source = regular_directory(root, 'chromium/src')
++    raw, owners = manifest(root);repos = repositories(source, owners)
++    validate_sources(source, owners, repos)
++    before = fingerprint(root, source, owners, repos)
++    outputs = {}
++    for patch in sorted(set(owners.values())):
++        chunks = []
++        for prefix, (repo, _) in sorted(repos.items()):
++            leaves = sorted(location(relative, repos)[1] for relative, owner in owners.items()
++                            if owner == patch and location(relative, repos)[0] == prefix)
++            if leaves:
++                lead = prefix+'/' if prefix else ''
++                chunks.append(git(repo, 'diff', '--no-ext-diff', '--no-textconv', '--no-renames',
++                                  '--src-prefix=a/'+lead, '--dst-prefix=b/'+lead, 'HEAD', '--', *leaves).stdout)
++        outputs[patch] = b''.join(chunks)
++    validate_sources(source, owners, repositories(source, owners))
++    require((root/'patches/MANIFEST').read_bytes() == raw and
++            fingerprint(root, source, owners, repos) == before, 'inputs changed during regeneration')
++    originals = {name: (root/'patches'/name).read_bytes() if (root/'patches'/name).exists() else None for name in outputs}
++    prepared = {}
++    try:
++        for name, data in outputs.items():
++            with tempfile.NamedTemporaryFile(dir=root/'patches', prefix='.'+name+'.', delete=False) as handle:
++                handle.write(data);prepared[name] = Path(handle.name)
++            path = root/'patches'/name
++            prepared[name].chmod(path.stat().st_mode & 0o777 if path.exists() else 0o644)
++        require(fingerprint(root, source, owners, repos) == before, 'inputs changed before publishing patches')
++        for name in outputs:
++            os.replace(prepared[name], root/'patches'/name)
++            print(name+': '+str(outputs[name].count(b'\n+++ '))+' files')
++    except OSError:
++        for name, data in originals.items():
++            path = root/'patches'/name
++            if data is None:
++                path.unlink(missing_ok=True)
++            else:
++                path.write_bytes(data)
++        raise
++    finally:
++        for path in prepared.values():
++            path.unlink(missing_ok=True)
++
++def apply_one(root, patch):
++    root = root.resolve();source = regular_directory(root, 'chromium/src')
++    _, owners = manifest(root);repos = repositories(source, owners)
++    require(patch.parent.resolve() == (root/'patches').resolve() and not patch.is_symlink() and patch.is_file(), 'patch outside manifest directory')
++    require(patch.name in owners.values(), 'patch absent from manifest')
++    content = patch.read_bytes()
++    if not content:
++        print('empty patch: '+patch.name);return
++    for line in content.splitlines():
++        if line.startswith((b'old mode ', b'new mode ', b'new file mode ')):
++            require(line.split()[-1] in (b'100644', b'100755'), 'unsupported patch file mode')
++        require(not line.startswith((b'deleted file mode ', b'rename from ', b'rename to ', b'copy from ', b'copy to ')), 'unsupported patch operation')
++    records = git(source, 'apply', '--numstat', '-z', '-', input_bytes=content).stdout.split(b'\0')
++    seen = set()
++    for record in records:
++        if not record:
++            continue
++        fields = record.decode().split('\t')
++        require(len(fields) == 3 and fields[0].isdigit() and fields[1].isdigit(), 'unsupported patch format')
++        relative = path_name(fields[2])
++        require(relative not in seen and owners.get(relative) == patch.name, 'patch ownership mismatch: '+relative)
++        seen.add(relative);regular(source, relative, missing=True)
++        prefix, leaf = location(relative, repos)
++        # Outer git apply intentionally operates on worktree paths across this
++        # gitlink, without --index; checked by private real-Git round trips.
++        if prefix:
++            require(repos[prefix][1].get(leaf, ('',))[0] in ('100644', '100755'), 'untracked nested patch input')
++    require(seen, 'patch has no text files')
++    if git(source, 'apply', '--reverse', '--check', '-', check=False, input_bytes=content).returncode == 0:
++        print('patch already applied: '+patch.name);return
++    git(source, 'apply', '--check', '-', input_bytes=content)
++    git(source, 'apply', '-', input_bytes=content)
++    print('patch applied: '+patch.name)
++
++def main():
++    parser = argparse.ArgumentParser(allow_abbrev=False)
++    parser.add_argument('operation', choices=('regenerate', 'apply'))
++    parser.add_argument('root', type=Path)
++    parser.add_argument('patch', nargs='?', type=Path)
++    args = parser.parse_args()
++    try:
++        require((args.operation == 'apply') == (args.patch is not None), 'apply requires patch; regenerate takes none')
++        if args.operation == 'regenerate':regenerate(args.root)
++        else:apply_one(args.root, args.patch.absolute())
++    except (ValueError, OSError) as error:
++        parser.error(str(error))
++
++if __name__ == '__main__':main()

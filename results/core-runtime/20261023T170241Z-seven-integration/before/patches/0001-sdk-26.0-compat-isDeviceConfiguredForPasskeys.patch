@@ -1,0 +1,20 @@
+diff --git a/device/fido/mac/icloud_keychain_sys.mm b/device/fido/mac/icloud_keychain_sys.mm
+index a56ffda8f1..56fbeb5441 100644
+--- a/device/fido/mac/icloud_keychain_sys.mm
++++ b/device/fido/mac/icloud_keychain_sys.mm
+@@ -16,6 +16,15 @@
+ #include "device/fido/mac/icloud_keychain_internals.h"
+ #include "device/fido/public/features.h"
+ 
++// ArcMod engine: allow building with a macOS SDK older than 26.2 (e.g. Xcode 26.0) while the
++// Xcode Chromium targets (SDK 26.5) is unavailable. Declares the one 26.2 API this file uses; it is
++// only reached behind API_AVAILABLE(macos(26.2)) / @available checks, so behaviour is unchanged.
++#if !defined(MAC_OS_VERSION_26_2) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_VERSION_26_2
++@interface ASAuthorizationWebBrowserPublicKeyCredentialManager (ArcModSDK262)
+++ (BOOL)isDeviceConfiguredForPasskeys API_AVAILABLE(macos(26.2));
++@end
++#endif
++
+ namespace {
+ 
+ // This function is needed by the interfaces below, but interfaces must be

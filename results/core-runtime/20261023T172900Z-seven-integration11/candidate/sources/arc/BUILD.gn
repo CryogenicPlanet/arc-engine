@@ -1,0 +1,51 @@
+# Copyright 2026 ArcMod.
+# ArcCore: Arc's engine interface implemented on Chromium. Linked into the Mac framework
+# (//chrome:chrome_dll) by patches/0002-arccore-framework-layout.patch. See arc/ARCHITECTURE.md.
+# Each work package lists its own sources/deps in arc/wp/<package>.gni (absolute //arc/... paths).
+
+import("//arc/wp/ai.gni")
+import("//arc/wp/app.gni")
+import("//arc/wp/core.gni")
+import("//arc/wp/extensions.gni")
+import("//arc/wp/omnibox.gni")
+import("//arc/wp/profile.gni")
+import("//arc/wp/renderer.gni")
+import("//arc/wp/sessions.gni")
+import("//arc/wp/ui.gni")
+import("//arc/wp/webextras.gni")
+
+source_set("arc_core") {
+  sources = [
+    "api/arc_api_stubs.mm",
+    "api/arc_browser_application.mm",
+    "api/arc_browser_context.mm",
+    "api/arc_exports.mm",
+    "api/arc_internal.h",
+    "api/arc_values.mm",
+  ]
+  sources += wp_ai_sources + wp_app_sources + wp_core_sources + wp_extensions_sources + wp_omnibox_sources + wp_profile_sources + wp_renderer_sources + wp_sessions_sources + wp_ui_sources + wp_webextras_sources
+  inputs = [
+    "api/arc_api_classes.inc",
+    "api/arc_api_table.inc",
+  ]
+  frameworks = [
+    "AppKit.framework",
+    "Foundation.framework",
+  ]
+  deps = [
+    "//base",
+    "//chrome/browser",
+    "//chrome/browser/profiles:profile",
+    "//components/keep_alive_registry",
+    "//components/search_engines",
+    "//components/version_info",
+    "//content/public/browser",
+    "//skia",
+    "//url",
+  ]
+  deps += wp_ai_deps + wp_app_deps + wp_core_deps + wp_extensions_deps + wp_omnibox_deps + wp_profile_deps + wp_renderer_deps + wp_sessions_deps + wp_ui_deps + wp_webextras_deps
+
+  # Calls the hosted entry points in //chrome:chrome_dll (chrome/app/chrome_main.h), which links this
+  # target into the same framework; a gn dep back to it would be a cycle.
+  check_includes = false
+}

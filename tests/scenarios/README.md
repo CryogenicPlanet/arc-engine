@@ -44,6 +44,8 @@ replacement (`tabs-restore`). `dialogs` tests alert/confirm/prompt; beforeunload
 have their own files. Extension installation uses the explicitly enabled CDP Extensions.loadUnpacked
 route, which does not establish Arc's app-level unpacked-install selector behavior.
 
+`renderer-boost-lifecycle` covers four public effect registrations/removals across fixed main/child document lifecycles. `renderer-adblock-functional` covers eleven fixed network/count/cosmetic stages with feature11 and host/host:port exclusions. Both require exact caller-attributed raw public-call/return gates in addition to page assertions. Debug and other completion receipts are explicit sidecars; default comparator scope does not prove direct-driver API parity. Accepted original steps and latest replacement results are recorded in `SCOREBOARD.md`.
+
 ## Overnight integration and morning queue
 
 `bun tests/scenarios/scoreboard.ts` refreshes every accepted canonical golden's latest completed
@@ -86,9 +88,11 @@ any SIGTERM fallback remains a failing step.
 
 `bookmarks-public-api` has an accepted40/40 original-engine golden (36engineclasses/231selectors/19callbackselectors), adapted from the separately reviewed frozen profile.batch11 fixture. It retains23 snapshot/mutation facts and raw measured date windows. `bookmarks-public-api-raw.ts` independently pairs exact driver-image calls/returns and enforces74bookmark calls/16selectors, DTO receivers, Unicode arguments and membership order. The default v2 comparison excludes these direct driver calls; acceptance comes from its own standard original run, not the archived combined-fixture passes.
 
+`history-public-api` is written and independently reviewed, with one canonical original queued after verified host-tolerance integration. Its separate raw gate requires exact public history calls/returns and genuine deletion forwarding; six completion receipts record actual scheduling without a universal queue assertion. Archived-operation checks are separate from new canonical acceptance. See REPORT.md for current recording state.
+
 The morning `arcmod-command-bar` uses a tests-owned public current-editor AX setter and independently requires a NEW app-origin autocomplete query/paired true return plus actual same-window suggestions. It is written/reviewed and unrecorded, with runtime unverified. Existing navigation coverage remains separate; neither navigation nor block completion follows from the archived autocomplete proof.
 
-See [MORNING.md](MORNING.md) for nine ready-to-record-after-unlock scripts and one blocked plan.
+See [MORNING.md](MORNING.md) for nine ready-to-record-after-unlock scripts and one complete but blocked WRITE-only case.
 All `arcmod-*` scripts remain unrecorded overnight. The new in-process key driver tests seven whitelisted
 app-event routes, not hardware/WindowServer delivery; Foundation/DNS service results are explicit
 sidecars, not engine-selector coverage. No human profile or discovered import source may be used.

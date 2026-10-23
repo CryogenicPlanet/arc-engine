@@ -1,6 +1,6 @@
 # Minimal document-start hook for accepted Boost lifecycle
 
-**UNAPPLIED; lead-owned native change.** Apply the Chromium-root artifact
+**APPROVED in Chirp142534; first locked attempt ROLLED BACK after canonical9/9 and functional Boost success, but failed raw helper gate. Actual source9db; cache-helper owner ACK142921 and fresh retry remain pending.** Apply the Chromium-root artifact
 `renderer_document_start_hook_proposal.patch`, SHA256
 `7732bc58ec57ef2194b4270fca22895a42e12c47e1c59ab583413ef9d7bac767`,
 through the maintained Chromium patch workflow. No numbered slot is reserved.
@@ -29,8 +29,7 @@ Native registration deliberately retains existing document state; reapplying on
 configuration receipt would violate that observed behavior.
 
 The current native file has no call into the helper at document start. This is a
-verified integration gap consistent with the observed failure; the patch has not
-yet been linked or run, and no sole-cause or fix claim is made. One native-TU
+verified integration gap consistent with the observed failure; the first attempt linked/ran and all five fixed lifecycle states passed. Final raw gate rejected an unrelated nested serviceNamed dispatch; strict rollback restored9db. No full acceptance claim is made. One native-TU
 actual-flag VFS check passes with empty diagnostics; source/header sentinels and
 exact patch replay pass. Evidence:
 `logs/wp/renderer-boost-document-start-hook/`; independent clean review:
@@ -43,11 +42,10 @@ adoption; never apply both blindly. The narrow proposal does not depend on the
 core WebContents baseline, which has separately advanced to progress475.
 After lead adoption, run the unchanged Boost lifecycle case and full boundary
 diff with fresh source/package guards. Runtime and complete acceptance remain
-pending. COMMON ownership keeps actual Chromium and `patches/` writes with lead.
+pending. UpdatedCOMMON Integration authority permits the renderer worker to apply this reviewed hook under the shared lock, maintain its existing0005 ownership, require canonical9/9/package nonregression, and revert on failure.
 
-The future Boost-only runner is prepared at
-`logs/wp/renderer-boost-document-start-validation/`, unsealed/unrun until the exact
-native target above exists. Its private copied profile isolator uses a no-follow
+The completed first Boost-only runner is preserved at
+`logs/wp/renderer-boost-document-start-validation/`; its actual source seal/run now exist and are immutable. A fresh run3 copy is being prepared for a later exact approved retry. Its private copied profile isolator uses a no-follow
 Darwin directory-FD ownership attribute, preserving the unchanged fixture's empty
 storage listing and all original restore/process/lock checks. Twelve private-temp
 canaries pass; independent adaptation review339736ca is clean. Shared isolator,

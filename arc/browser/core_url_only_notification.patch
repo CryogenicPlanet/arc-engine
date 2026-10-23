@@ -1,0 +1,186 @@
+--- a/arc/api/arc_browser.mm
++++ b/arc/api/arc_browser.mm
+@@ -3,6 +3,7 @@
+ #import "arc/api/arc_internal.h"
+ 
+ #include "arc/browser/arc_browser_window.h"
++#import "arc/browser/core_browser_notifications.h"
+ #include "arc/browser/extensions_bridge.h"
+ #import <objc/message.h>
+ #include "base/check.h"
+@@ -15,6 +16,7 @@
+ #include <vector>
+ #include "base/scoped_observation.h"
+ #include "chrome/browser/ui/tabs/tab_strip_model.h"
++#include "components/tabs/public/tab_interface.h"
+ #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+ #include "base/supports_user_data.h"
+ #include "chrome/browser/profiles/profile.h"
+@@ -376,6 +378,16 @@
+ struct ArcBrowserHolder : base::SupportsUserData::Data {
+   ArcBrowser* __strong wrapper;
+ };
++
++ArcBrowserHolder* ExistingArcBrowserHolder(BrowserWindowInterface* browser) {
++  if (!browser) { return nullptr; }
++  // SAME hosted-window ownership contract as +wrapperForBrowser:, never a
++  // cast of a foreign NSWindow or a creating wrapper lookup.
++  auto* window = static_cast<arc::ArcBrowserWindow*>(browser->GetWindow());
++  return window
++      ? static_cast<ArcBrowserHolder*>(window->GetUserData(kArcBrowserKey))
++      : nullptr;
++}
+ }  // namespace
+ 
+ @interface ArcBrowser ()
+@@ -403,7 +415,7 @@
+     return nil;
+   }
+   auto* window = static_cast<arc::ArcBrowserWindow*>(browser->GetWindow());
+-  auto* holder = static_cast<ArcBrowserHolder*>(window->GetUserData(kArcBrowserKey));
++  auto* holder = ExistingArcBrowserHolder(browser);
+   if (!holder) {
+     auto owned = std::make_unique<ArcBrowserHolder>();
+     owned->wrapper = [[self alloc] initWithChromeBrowser:browser];
+@@ -574,3 +586,47 @@
+   return browser;
+ }
+ @end
++
++namespace arc {
++void QueueCoreBrowserURLOnlyNotification(content::WebContents* contents,
++                                         ArcWebContents* canonical_contents) {
++  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
++  if (!CoreExistingWebContentsWrapperMatchesNative(contents, canonical_contents)) {
++    return;
++  }
++  auto* tab = tabs::TabInterface::MaybeGetFromContents(contents);
++  auto* browser = tab ? tab->GetBrowserWindowInterface() : nullptr;
++  if (!browser || browser->IsDeleteScheduled()) { return; }
++  auto* holder = ExistingArcBrowserHolder(browser);
++  ArcBrowser* owner __attribute__((objc_precise_lifetime)) =
++      holder ? holder->wrapper : nil;
++  if (!owner) { return; }
++  const auto weak_native = contents->GetWeakPtr();
++  const auto weak_browser = browser->GetWeakPtr();
++  __weak ArcBrowser* weak_owner = owner;
++  __weak ArcWebContents* weak_contents = canonical_contents;
++  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(
++      [](void (^work)()) { work(); }, ^{
++    if (!weak_native || !weak_browser || weak_browser->IsDeleteScheduled()) {
++      return;
++    }
++    ArcBrowser* current_owner __attribute__((objc_precise_lifetime)) = weak_owner;
++    ArcWebContents* current_contents __attribute__((objc_precise_lifetime)) = weak_contents;
++    if (!current_owner || !current_contents) { return; }
++    auto* current_tab = tabs::TabInterface::MaybeGetFromContents(weak_native.get());
++    if (!current_tab ||
++        current_tab->GetBrowserWindowInterface() != weak_browser.get()) {
++      return;
++    }
++    auto* current_holder = ExistingArcBrowserHolder(weak_browser.get());
++    if (!current_holder || current_holder->wrapper != current_owner ||
++        !CoreExistingWebContentsWrapperMatchesNative(weak_native.get(),
++                                                     current_contents)) {
++      return;
++    }
++    // Notification observers may synchronously detach/destroy everything above.
++    // Terminal dispatch: no borrowed native/holder/tab access follows.
++    NotifyTabChange(current_owner, current_contents, @"updated");
++  }));
++}
++}  // namespace arc
+--- a/arc/api/arc_web_contents.mm
++++ b/arc/api/arc_web_contents.mm
+@@ -3,6 +3,7 @@
+ #import "arc/api/arc_internal.h"
+ #import "arc/browser/arc_navigation.h"
+ #import "arc/browser/core_render_state.h"
++#import "arc/browser/core_browser_notifications.h"
+ 
+ #include "base/memory/weak_ptr.h"
+ #include <bit>
+@@ -156,6 +157,7 @@
+ - (void)nativeContentsClosing __attribute__((objc_direct));
+ - (void)nativeContentsClosingWithRestorationID:(ArcSessionID*)identifier __attribute__((objc_direct));
+ - (NSNumber*)coreDiagnosticID __attribute__((objc_direct));
++- (BOOL)coreMatchesNativeContents:(content::WebContents*)contents __attribute__((objc_direct));
+ @property(nonatomic, copy) NSString* title;
+ @property(nonatomic, strong) NSURL* url;
+ @property(nonatomic, copy) NSString* selectedText;
+@@ -331,6 +333,11 @@
+         owner.url = state.url;
+         owner.navigationID = state.identifier;
+       });
++      // Chrome strips URL-only invalidation after toolbar handling, without a
++      // tab-changed event. This package event follows the queued property task.
++      if (flags == content::INVALIDATE_TYPE_URL) {
++        arc::QueueCoreBrowserURLOnlyNotification(web_contents(), wrapper_);
++      }
+     }
+     if (flags & content::INVALIDATE_TYPE_TITLE) {
+       PostCoreUI(^{
+@@ -688,6 +695,9 @@
+   }
+ }
+ - (content::WebContents*)webContents { return _contents.get(); }
++- (BOOL)coreMatchesNativeContents:(content::WebContents*)contents {
++  return contents && _contents.get() == contents;
++}
+ - (std::unique_ptr<content::WebContents>)takeOwnedWebContents {
+   if (_ownedContents) {
+     ArcContentsData::FromWebContents(_ownedContents.get())->wrapper = self;
+@@ -939,3 +949,15 @@
+   if (output) { *output = identifier.unsignedLongLongValue; }
+   return true;
+ }
++
++namespace arc {
++bool CoreExistingWebContentsWrapperMatchesNative(
++    content::WebContents* contents, ArcWebContents* owner) {
++  if (!contents || !owner) { return false; }
++  auto* data = ArcContentsData::FromWebContents(contents);
++  if (!data) { return false; }
++  ArcWebContents* canonical __attribute__((objc_precise_lifetime)) =
++      data->wrapper ?: data->weak_wrapper;
++  return canonical == owner && [owner coreMatchesNativeContents:contents];
++}
++}  // namespace arc
+--- /dev/null
++++ b/arc/browser/core_browser_notifications.h
+@@ -0,0 +1,25 @@
++// Copyright 2026 ArcMod. Private existing-identity URL notification bridge.
++#ifndef ARC_BROWSER_CORE_BROWSER_NOTIFICATIONS_H_
++#define ARC_BROWSER_CORE_BROWSER_NOTIFICATIONS_H_
++
++#ifdef __OBJC__
++@class ArcWebContents;
++namespace content { class WebContents; }
++namespace arc {
++// UI only, valid UI-local native borrow. Existing-only canonical mapping check;
++// private direct native match, no public getter/app call or wrapper creation.
++bool CoreExistingWebContentsWrapperMatchesNative(
++    content::WebContents* contents, ArcWebContents* owner);
++
++// Called ONLY for exact URL-only native invalidation, immediately after queuing
++// its existing URL/navigationID property update. Posts one package notification
++// task using weak native+ObjC identities. Native liveness gates ONLY the new
++// notification, never the preexisting property task. Requires an existing hosted
++// ArcBrowserWindow holder, using the SAME contract as +wrapperForBrowser:.
++// Delivery rejects closed/reassociated/noncanonical targets and dispatches the
++// existing tabs-changed "updated" event terminally. No public API or registry.
++void QueueCoreBrowserURLOnlyNotification(content::WebContents* contents,
++                                         ArcWebContents* canonical_contents);
++}  // namespace arc
++#endif
++#endif  // ARC_BROWSER_CORE_BROWSER_NOTIFICATIONS_H_
+--- a/arc/wp/core.gni
++++ b/arc/wp/core.gni
+@@ -4,6 +4,7 @@
+   "//arc/api/arc_navigation.mm",
+   "//arc/api/arc_web_contents.mm",
+   "//arc/browser/arc_browser_window.h",
++  "//arc/browser/core_browser_notifications.h",
+   "//arc/browser/arc_browser_window.mm",
+   "//arc/browser/arc_navigation.h",
+   "//arc/browser/core_values.mm",

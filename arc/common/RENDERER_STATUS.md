@@ -1,5 +1,20 @@
 # Renderer work package checkpoint, 2026-10-23
 
+CURRENT ATTEMPT OUTCOME: lead142534 approved7732. First locked transaction98097
+applied it, regenerated0005 and passed canonical9/9. Boost all five fixed DOM/
+CSS/isolated-JS/unregister states passed (63pass), then raw gate rejected nested
+ArcBrowserContext serviceNamed call4245 absentnative. One inconclusive; acceptance
+false. Child reaped/profile restored/prioroutputs unchanged; ONLY7732 reversed+
+regen before unlock. ActualChrome9db and patches restored, tx43438ec2. Package
+was stale/unvalidated after source rollback; next use requires freshbuild/package.
+No own lock/waiter. Exact C++ cache-helper patchbfcc (lead-ownedprimary) syntax0,
+freshreview6a302f10; owner ACK requested142921. Run3 private prep is separate;
+old Boost run/source seal/outputs are immutable and single-use. Adblocknative
+157/157 accepted9e4428a4; firstours39eb stops on emptyCDP errorText after actual
+CSS/scriptblock/count1. Real URL-loader -90 cutover is separately bounded27paths,
+app feature11 ownerACK requested142826. No Inspector string/fixture workaround.
+
+
 CURRENT INTEGRATION GATE: current WC475/source reconciliation is complete and
 independently reviewed (4bb5c387). The unchanged nativef67 + Arca044 pair strictly
 applies to fresh owned5475/WC475 source, preserves progress/quit bytes and reverses

@@ -181,7 +181,7 @@ index b269f1610a..712a1eb4d3 100644
    [AppController.sharedController didEndMainMessageLoop];
  }
 diff --git a/chrome/browser/ui/browser.cc b/chrome/browser/ui/browser.cc
-index 07de580deb..514e4ad171 100644
+index 07de580deb..57d61b0646 100644
 --- a/chrome/browser/ui/browser.cc
 +++ b/chrome/browser/ui/browser.cc
 @@ -306,7 +306,10 @@ Browser::Browser(BrowserWindowCreateParams params)
@@ -196,6 +196,23 @@ index 07de580deb..514e4ad171 100644
      CHECK_IS_TEST() << "BrowserWindowCreateParams::window is a test-only param";
    }
    window_ =
+@@ -615,6 +618,16 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
+ }
+ 
+ void Browser::TabStripEmpty() {
++  // Arc owns the window lifetime; an empty hosted tab strip can receive another
++  // tab. Explicit window-close transactions still run through the normal path.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto* unload = UnloadController::From(this);
++    if (!unload->is_attempting_to_close_browser() &&
++        !unload->force_skip_warning_user_on_close()) {
++      return;
++    }
++  }
++
+   // A touch tab drag session may still be delivering OS touch events to this
+   // window's native widget. Destroying it mid-gesture would strand the drag, so
+   // let TabDragController take ownership of closing this browser once the drag
 diff --git a/content/app/content_main.cc b/content/app/content_main.cc
 index 0fd60fa820..3dd27e1c71 100644
 --- a/content/app/content_main.cc

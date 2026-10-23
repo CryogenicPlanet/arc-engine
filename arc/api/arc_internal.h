@@ -126,6 +126,12 @@ void ArcSessionsBrowserCreated(ArcBrowser* browser);
 // restore (browser:didRestoreWebContents:...) and core must not send didCreateNewWebContents.
 BOOL ArcSessionsDidInsertWebContents(ArcBrowser* browser, content::WebContents* contents);
 
+// extensions: bind the regular-profile observer hook before Chrome initializes
+// profiles. Binding itself needs no initialized Chrome globals or UI task runner.
+namespace arc {
+void InstallExtensionProfileInitializationHook();
+}
+
 // The app's ArcBrowserApplicationDelegate (ADKApplication), weak; nil before -[ArcBrowserApplication init:].
 id ArcBrowserApplicationDelegateObject();
 

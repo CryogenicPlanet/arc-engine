@@ -1,0 +1,41 @@
+diff --git a/chrome/browser/lifetime/application_lifetime.cc b/chrome/browser/lifetime/application_lifetime.cc
+index 120cee0391..3ea6792551 100644
+--- a/chrome/browser/lifetime/application_lifetime.cc
++++ b/chrome/browser/lifetime/application_lifetime.cc
+@@ -21,6 +21,14 @@
+ #include "components/language/core/common/locale_util.h"
+ #include "components/prefs/pref_service.h"
+ 
++#if BUILDFLAG(IS_MAC)
++#include <dispatch/dispatch.h>
++
++#include "base/command_line.h"
++#include "chrome/browser/chrome_browser_application_mac.h"
++#include "content/public/common/content_switches.h"
++#endif  // BUILDFLAG(IS_MAC)
++
+ #if BUILDFLAG(IS_CHROMEOS)
+ #include "ui/aura/env.h"
+ #endif  // BUILDFLAG(IS_CHROMEOS)
+@@ -111,6 +119,21 @@ void ExitIgnoreUnloadHandlers() {
+       browser_shutdown::ShutdownType::kSilentExit);
+ #endif  // BUILDFLAG(IS_CHROMEOS)
+ #endif  // !BUILDFLAG(IS_ANDROID)
++#if BUILDFLAG(IS_MAC)
++  if (base::CommandLine::InitializedForCurrentProcess()) {
++    const auto* command_line = base::CommandLine::ForCurrentProcess();
++    if (command_line->HasSwitch("arcmod-host-app") &&
++        command_line->GetSwitchValueASCII(switches::kProcessType).empty()) {
++      // Native Arc notifies closing observers synchronously, then queues only
++      // the NSApp termination operation on the main dispatch queue.
++      OnClosingAllBrowsers(true);
++      dispatch_async_f(dispatch_get_main_queue(), nullptr, [](void*) {
++        chrome_browser_application_mac::Terminate();
++      });
++      return;
++    }
++  }
++#endif  // BUILDFLAG(IS_MAC)
+   AttemptExitInternal(true);
+ }
+ 

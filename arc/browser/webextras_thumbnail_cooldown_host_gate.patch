@@ -1,0 +1,52 @@
+diff --git a/chrome/browser/ui/thumbnails/thumbnail_capture_driver.cc b/chrome/browser/ui/thumbnails/thumbnail_capture_driver.cc
+--- a/chrome/browser/ui/thumbnails/thumbnail_capture_driver.cc
++++ b/chrome/browser/ui/thumbnails/thumbnail_capture_driver.cc
+@@ -5,6 +5,7 @@
+ #include "chrome/browser/ui/thumbnails/thumbnail_capture_driver.h"
+ 
+ #include "base/check_op.h"
++#include "base/command_line.h"
+ #include "base/time/time.h"
+ 
+ // static
+@@ -56,11 +57,16 @@
+ }
+ 
+ void ThumbnailCaptureDriver::UpdateCaptureState() {
+-  // If the page changes during or after final capture, cancel the old
+-  // cooldown and get set up for a new capture.
++  // Arc host invalidates the old cooldown when readiness decreases. Ordinary
++  // Chrome keeps its existing completed-capture reset and timer behavior.
++  const bool is_arc_host =
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app");
+   if (page_readiness_ < PageReadiness::kReadyForFinalCapture &&
+-      capture_state_ >= CaptureState::kCooldown) {
+-    cooldown_timer_.Stop();
++      (capture_state_ == CaptureState::kHaveFinalCapture ||
++       (is_arc_host && capture_state_ == CaptureState::kCooldown))) {
++    if (is_arc_host) {
++      cooldown_timer_.Stop();
++    }
+     client_->StopCapture();
+     capture_state_ = CaptureState::kNoCapture;
+   }
+diff --git a/chrome/browser/ui/thumbnails/thumbnail_capture_driver_unittest.cc b/chrome/browser/ui/thumbnails/thumbnail_capture_driver_unittest.cc
+--- a/chrome/browser/ui/thumbnails/thumbnail_capture_driver_unittest.cc
++++ b/chrome/browser/ui/thumbnails/thumbnail_capture_driver_unittest.cc
+@@ -4,6 +4,7 @@
+ 
+ #include "chrome/browser/ui/thumbnails/thumbnail_capture_driver.h"
+ 
++#include "base/test/scoped_command_line.h"
+ #include "base/test/task_environment.h"
+ #include "chrome/browser/ui/thumbnails/thumbnail_scheduler.h"
+ #include "testing/gmock/include/gmock/gmock.h"
+@@ -585,6 +586,8 @@
+ // A navigation can lower readiness before the preceding page's cooldown ends.
+ // Its timer/frame must not finalize capture for the new page.
+ TEST_F(ThumbnailCaptureDriverTest, RestartsCaptureOnReadinessDecreaseInCooldown) {
++  base::test::ScopedCommandLine command_line;
++  command_line.GetProcessCommandLine()->AppendSwitch("arcmod-host-app");
+   {
+     InSequence s;
+     EXPECT_CALL(mock_client_, StopCapture()).Times(AnyNumber());

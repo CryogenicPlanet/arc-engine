@@ -5,9 +5,11 @@ Reads the explicit private stage; writes fixtures/logs only into that stage.
 No engine build, app run, native browser integration or golden acceptance.
 """
 from pathlib import Path
-import argparse,ast,subprocess
+import argparse,ast,subprocess,hashlib
 parser=argparse.ArgumentParser();parser.add_argument('--stage',type=Path,required=True);args=parser.parse_args();stage=args.stage.resolve();root=Path.cwd();source=(stage/'arc/api/arc_webextras_devtools.mm').read_text();constants={}
-for node in ast.parse((root/'arc/browser/webextras_devtools_logical_peer_test.py').read_text()).body:
+frozen_test=(root/'arc/browser/webextras_devtools_logical_peer_test.py').read_text()
+assert hashlib.sha256(frozen_test.encode()).hexdigest()=='66c6c510f179450784e92cd7a4c898e324cc0128a55fe30aaae7e06c855a9ccd'
+for node in ast.parse(frozen_test).body:
  if isinstance(node,ast.Assign)and isinstance(node.value,ast.Constant)and isinstance(node.value.value,str):
   for target in node.targets:
    if isinstance(target,ast.Name):constants[target.id]=node.value.value

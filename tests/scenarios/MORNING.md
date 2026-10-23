@@ -15,7 +15,7 @@ engine failure. No script synthesizes global input or touches a human profile.
 | Agent MCP tools | `arcmod-agent-mcp` | ready-to-record | Actual stdio initialize/list plus all 15 tools. Attach to exact harness PID/slug/port; separate pages, redacted fixture password, trusted text/click, stale element/native/page rejection, navigate/back/forward, PNG, PID-bound observed native New Window, exact close, detach preserves externally launched app. |
 | Profiles create/switch | `arcmod-profiles` | ready-to-record; runtime unverified | Exact owned name field; guarded Create-only or Next/sole-Space selection; exact destination warning and Switch it up. Observe assignment, select exact profile names, prove independent A markers, return old marker, then new-PID/same-profile persistence for both. No private state mutation or action retry. |
 | Spaces create/switch | `arcmod-spaces` | ready-to-record; runtime unverified | Checked one initial Space; one exact owned Space-name setter and Create button; require two Space entries and fixed new name. Previous/Next must restore exact A/B selection, then repeat in a new PID with the same no-symlink disposable profile. Static identifiers/bindings are recovered; live editor behavior, placement and persistence remain unverified. |
-| Single Little Arc | `arcmod-little-arc` | unsupported; guaranteed inconclusive | Current agent Info.plist marker disables external Little Arc and singleton consolidation, and redirects New Little Arc to full windows. Full morning plan is exported, but the normal `windows` scenario tests the agent redirect only. |
+| Single Little Arc | `arcmod-little-arc` | blocked; full WRITE-only script | Reviewed full profile setup, exact-PID external A/B reuse, native profile replacement, close/reopen and new-PID restart checks are written. Missing approved isolated opt-in/default-build proof stops before launch/actions. Actual AX/menu/delivery behavior remains unverified; ordinary agent redirects are separate coverage. |
 | App-event key shortcuts | `arcmod-key-shortcuts` | ready-to-record; unrecorded until morning | Tests-owned `arcmod-key-driver.m` sends only seven whitelisted keyDown/keyUp pairs through public NSApplication.sendEvent inside the exact disposable PID and already-key observed window. Fixed native outcomes cover Cmd+T/L/comma/W/Shift+T/N/Option+N; optional local-monitor observations are retained in receipts. This tests app-event/key-equivalent routing, not OS hardware/WindowServer delivery or keyboard layouts. |
 | Import from disposable fixture | `arcmod-disposable-import` | ready-to-record; runtime unverified | One explicit directory/HTML, native13/public12 descriptor and bookmark mask2, two live dedicated targets, one import, five own-delegate sidecar events, exact folder/leaf result and new-PID/same-profile persistence. Static route and code reviewed; no ADK callback/date/parity claim. |
 
@@ -46,8 +46,8 @@ parser positive and real non-app child observation are offline proof only;
 records first observed absence and proof-writing times. Frozen inputs and exact
 check receipts are `logs/wp/scenarios-termination-{freeze.json,offline-check.ts,offline-check.json}`.
 The actual native two-Quit flow has never run. All eleven morning scripts remain
-unrecorded; the requested ten now have nine complete scripts and one blocked
-plan (true Little Arc).
+unrecorded; the requested ten are written: nine ready scripts and one complete but blocked
+WRITE-only case (true Little Arc).
 
 ## Recording after unlock
 
@@ -127,8 +127,23 @@ names are saved under outDir for review; stdout remains JSON-RPC only.
    live AX attachment or action availability. None of438 archived native snapshots
    contains the Little Arc panel/profile markers. Evidence and all19 hashed spans:
    `logs/wp/scenarios-little-arc-static-controls.json` (parent rehash passed).
-   The tools also lack an implemented exact-PID external-URL delivery wrapper;
-   public platform APIs may support one, but no helper/runtime proof exists.
+   A tests-owned public exact-PID GURL helper is now implemented/reviewed at
+   `tests/scenarios/little-arc-url-delivery.m` (SHA54804c2a). Strict clang/link
+   and64 offline checks pass; production helper execution and event delivery
+   have never occurred. Its fake binary excludes production process/permission/
+   send APIs. Frozen SDK pins, receipts and limitations are retained in
+   `logs/wp/scenarios-little-arc-url-static/`.
+   The complete guarded Little Arc script (SHA0b776f6e) is also published and
+   independently reviewed, with final-path Bun/full strict TypeScript checks.
+   It duplicates profile setup, journals five one-shot external deliveries and
+   two zero-send PID/start inspections, checks A/B panel reuse, OLD/NEW profile
+   markers, native replacement, close/reopen, restart and main-document isolation.
+   Missing-policy mock yields one inconclusive and zero launches/actions/events;
+   this is not native runtime proof. Source/inverse/proofs and the unapproved
+   receipt schema are in `logs/wp/scenarios-little-arc-full-static/`.
+   Lead#142534 approved a tools-only isolated switch preserving the default
+   build. Clarification#142744 for the concrete generated native variant remains
+   pending. No approved receipt or native variant exists; the case stays blocked.
 3. Key shortcuts now have a tests-owned in-process AppKit driver. It constructs
    public NSEvent keyDown/keyUp objects and calls NSApplication.sendEvent for an
    exact observed agent window, refusing dispatch if that window is no longer key.

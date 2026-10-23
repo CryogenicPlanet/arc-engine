@@ -27,7 +27,7 @@ class FrontendProbeTests(unittest.TestCase):
         path.write_text('''import {readFileSync} from 'node:fs';
 const source=readFileSync(%s,'utf8');
 const bodies=source.slice(source.indexOf('type RecordRow'),source.indexOf('const root ='));
-const api=new Function(new Bun.Transpiler({loader:'ts'}).transformSync(bodies+`;return{frontendCandidates,genuineFrontendURL,frontendProducerJS,frontendRuntimeEvaluation,validateFrontendCallbackSpan,runGenuineFrontendEvents,frontendEventPolicy,clockModeFromArgs,validateFrontendCallbackIdentity,frontendCallbackMetadata};`))();
+const api=new Function(new Bun.Transpiler({loader:'ts'}).transformSync(bodies+`;return{frontendCandidates,genuineFrontendURL,frontendProducerJS,frontendRuntimeEvaluation,validateFrontendCallbackSpan,runGenuineFrontendEvents,frontendEventPolicy,clockModeFromArgs,validateFrontendCallbackIdentity,frontendCallbackMetadata,validateFrontendCallbackEvidence};`))();
 const callbacksMetadata=api.frontendCallbackMetadata(readFileSync("/Users/cryogenicplanet/general/arc-engine/tests/recorder/app_callbacks.inc",'utf8'));
 const callbackIdentity=(selector:string)=>({rawSelector:selector,selectorIdentityValid:true,selectorIdentityKind:'public',recorderAliasVerified:false,
  ownerClass:'ArcWebContents',ownerRecordClass:'ArcWebContents',ownerReportedClass:'ArcWebContents',ownerIdentityValid:true,ownerIdentityKind:'exact',ownerClassChain:['ArcWebContents','NSObject'],
@@ -41,6 +41,7 @@ const execute=(expression:string,SDK:any,UI:any,Common:any)=>{
 '''%json.dumps(str(DRIVER))+body)
         result=subprocess.run(['bun',str(path)],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
+        return result.stdout
 
     def test_actual_genuine_producer_calls_actions_and_dock_and_rechecks_identity(self):
         self.bun(r'''
@@ -147,7 +148,7 @@ function fixture(nested=false){
  const lines=events.map(e=>JSON.stringify(e)+'\n');let offset=Buffer.byteLength(header);const rows=lines.map(line=>{const row={begin:offset,end:offset+Buffer.byteLength(line)};offset=row.end;return row});
  const callback=(index:number,end:number,depth:number)=>({...callbackIdentity(events[index].sel),selector:events[index].sel,mode:index?0:1,ownerTag:1,ownerClass:'ArcWebContents',serviceClass:'ArcWebContentsDevTools',delegateClass:'ADK.WebContentChromium',abi:index?'v24@0:8@16':'v32@0:8@16Q24',mainThread:true,ordinal:index?2:1,forwarded:true,forwardDepth:depth,recordOffset:rows[index].begin,recordAfterForwarding:rows[end].end,nativeBeforeTicks:'100',nativeAfterTicks:'200'});
  const record=Buffer.from(header+lines.join(''));
- return{record,span:{ok:true,quietComplete:true,ownerTag:1,spanID:'s',kind:'inspect-on',producer:{kind:'inspect-on',acknowledged:true,before:{primaryURLMatches:true,primaryTargetID:'owned',suspended:false,actionEnabled:true,actionToggled:false,uaShadow:false},after:{primaryURLMatches:true,primaryTargetID:'owned',actionToggled:true}},afterAcknowledgment:{kind:'read',after:{primaryURLMatches:true,primaryTargetID:'owned',actionToggled:true}},expectedSelector:'webContentsDevTools:inspectModeDidChange:',expectedMode:1,publicCalls:[],timeline:[],observation:{spanID:'s',ownerTag:1,recordBegin:Buffer.byteLength(header),recordEnd:record.length,callbacks:[callback(0,events.length-1,1),...(nested?[callback(1,2,2)]:[])],forwarding:0,overflow:false}},rows};
+ return{record,span:{ok:true,quietComplete:true,ownerTag:1,spanID:'s',kind:'inspect-on',producer:{kind:'inspect-on',acknowledged:true,before:{primaryURLMatches:true,primaryTargetID:'owned',suspended:false,actionEnabled:true,actionToggled:false,uaShadow:false},after:{primaryURLMatches:true,primaryTargetID:'owned',actionToggled:true}},afterAcknowledgment:{kind:'read',after:{primaryURLMatches:true,primaryTargetID:'owned',actionToggled:true}},expectedSelector:'webContentsDevTools:inspectModeDidChange:',expectedMode:1,publicCalls:[],timeline:[],observation:{spanID:'s',ownerTag:1,recordBegin:Buffer.byteLength(header),recordEnd:record.length,callbacks:[callback(0,events.length-1,1),...(nested?[callback(1,2,2)]:[])],forwarding:0,overflow:false,ignoredServiceCallbacks:0}},rows};
 }
 const good=fixture();api.validateFrontendCallbackSpan(good.span,good.record,service,1,image,undefined,callbacksMetadata);
 const alias=fixture();Object.assign(alias.span.observation.callbacks[0],{rawSelector:'__arcrec_webContentsDevTools:inspectModeDidChange:',selectorIdentityKind:'recorder-alias',recorderAliasVerified:true,recorderAliasSourceSHA256:'9ae39687fdebcf4115b8c974af1b799aeee65265185a2c512ff56e5ca287d81e',ownerClass:'NSKVONotifying_ArcWebContents',ownerClassChain:['NSKVONotifying_ArcWebContents','ArcWebContents','NSObject'],ownerIdentityKind:'kvo'});api.validateFrontendCallbackSpan(alias.span,alias.record,service,1,image,undefined,callbacksMetadata);
@@ -163,6 +164,7 @@ for(const change of [
  (x:any)=>x.span.observation.callbacks[0].ownerClassChain=['ArcWebContents','ArcWebContents'],
  (x:any)=>x.span.observation.callbacks[0].ownerReportedClass='Foreign',
  (x:any)=>x.span.observation.callbacks[0].ownerIdentityValid=false,
+ (x:any)=>x.span.observation.ignoredServiceCallbacks=1,
  (x:any)=>x.span.observation.callbacks=[],(x:any)=>x.span.quietComplete=false,(x:any)=>x.span.publicCalls=[{}],(x:any)=>x.span.observation.recordBegin++,
  (x:any)=>x.span.observation.callbacks[0].recordOffset++, (x:any)=>x.span.observation.callbacks[0].recordAfterForwarding--,
  (x:any)=>x.span.observation.callbacks[0].forwarded=false,(x:any)=>x.span.observation.callbacks[0].mainThread=false,
@@ -174,6 +176,53 @@ for(const change of [
  (x:any)=>x.record=Buffer.from(x.record.toString().replaceAll('"dir":"engine->app"','"dir":"->engine"').replaceAll('"from":"engine"','"from":"'+image+'"')),
 ]){const x=fixture();change(x);rejects(()=>api.validateFrontendCallbackSpan(x.span,x.record,service,1,image,undefined,callbacksMetadata),'bad callback evidence accepted')}
 ''')
+
+    def test_actual_ambient_metadata_nested_threads_and_negative_controls(self):
+        self.bun(r"""
+const service='<ArcWebContentsDevTools#9>',image='WebextrasNativeProbe.dylib';
+check(callbacksMetadata.has(JSON.stringify(['ADK.CrashKeysObserverBridge','onCrashKeyEmitted:value:'])),'length-mangled metadata not decoded');
+const nested=api.frontendCallbackMetadata('{"_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate", "load:"},\n');
+check(nested.has(JSON.stringify(['URLLoaderClient.URLLoaderClientImpl.DataDelegate','load:'])),'nested Swift metadata not fully decoded');
+check(!api.frontendCallbackMetadata('{"_TtC3ADK99CrashKeysObserverBridge", "onCrashKeyEmitted:value:"},\n').has(JSON.stringify(['ADK.CrashKeysObserverBridge','onCrashKeyEmitted:value:'])),'invalid Swift length silently stripped');
+function fixture(worker=false,onlyAmbient=false){
+ const header=JSON.stringify({ev:'hooked',seq:0,engine_classes:1})+'\n'+JSON.stringify({ev:'call',seq:1,thread:'main',depth:0,dir:'->engine',kind:'-',cls:'ArcBrowserApplication',sel:'run',self:'<ArcBrowserApplication#1>',args:[],from:'app'})+'\n';
+ const owned={thread:'main',depth:1,dir:'engine->app',kind:'-',cls:'ADK.WebContentChromium',self:'<ADK.WebContentChromium#8>',from:'engine',sel:'webContentsDevTools:inspectModeDidChange:'};
+ const ambient={thread:worker?'worker':'main',depth:worker?0:onlyAmbient?1:2,dir:'engine->app',kind:'-',cls:'ADK.CrashKeysObserverBridge',self:'<ADK.CrashKeysObserverBridge#7>',from:'engine',sel:'onCrashKeyEmitted:value:'};
+ const getter={...ambient,depth:ambient.depth+1,dir:'->engine',cls:'ArcWebContents',self:'<ArcWebContents#118>',from:'app',sel:'url'};
+ const events=[...(!onlyAmbient?[{...owned,ev:'call',args:[service,1]}]:[]),{...ambient,ev:'call',args:['diagnostic-key','unmasked-value']},{...getter,ev:'call',args:[]},{...getter,ev:'ret',ret:'unmasked-return'},{...ambient,ev:'ret',ret:'nonvoid-ambient-return'},...(!onlyAmbient?[{...owned,ev:'ret',ret:null}]:[])].map((event,index)=>({...event,seq:index+2}));
+ const lines=events.map(event=>JSON.stringify(event)+'\n');let offset=Buffer.byteLength(header);const rows=lines.map(line=>{const row={begin:offset,end:offset+Buffer.byteLength(line)};offset=row.end;return row});const record=Buffer.from(header+lines.join(''));
+ const callback={...callbackIdentity(owned.sel),selector:owned.sel,mode:1,ownerTag:1,serviceClass:'ArcWebContentsDevTools',delegateClass:'ADK.WebContentChromium',mainThread:true,ordinal:1,forwarded:true,forwardDepth:1,recordOffset:rows[0].begin,recordAfterForwarding:rows.at(-1).end,nativeBeforeTicks:'100',nativeAfterTicks:'200'};
+ return {record,span:{ok:true,ownerTag:1,publicCalls:[],timeline:[],spanID:'ambient',expectedSelector:owned.sel,expectedMode:1,observation:{spanID:'ambient',ownerTag:1,recordBegin:Buffer.byteLength(header),recordEnd:record.length,forwarding:0,overflow:false,ignoredServiceCallbacks:0,callbacks:onlyAmbient?[]:[callback]}}};
+}
+for(const worker of [false,true]){const x=fixture(worker);const shape=api.validateFrontendCallbackEvidence(x.span,x.record,service,1,image,undefined,callbacksMetadata);
+ check(x.span.rawCallbackCounts.total===2&&x.span.rawCallbackCounts.owned===1&&x.span.rawCallbackCounts.ambient===1&&shape.length===2,'ambient rows dropped or matched to owned journal');
+ check(shape[1].scope==='ambient'&&shape[1].ret==='nonvoid-ambient-return'&&shape[1].args[1]==='unmasked-value'&&shape[1].thread===(worker?'worker':'main'),'ambient thread/args/returns changed');}
+const ambient=fixture(false,true);rejects(()=>api.validateFrontendCallbackEvidence(ambient.span,ambient.record,service,1,image,undefined,callbacksMetadata),'ambient-only admitted as owned callback');check(ambient.span.rawCallbackCounts.ambient===1&&ambient.span.rawCallbackCounts.owned===0,'ambient-only evidence lost');
+for(const replacement of [['ADK.CrashKeysObserverBridge','ADK.UnknownCrashKeysBridge'],['"from":"engine","sel":"onCrashKeyEmitted:value:"','"from":"app","sel":"onCrashKeyEmitted:value:"'],['["diagnostic-key","unmasked-value"]','["diagnostic-key"]']]){const x=fixture();x.record=Buffer.from(x.record.toString().replaceAll(replacement[0],replacement[1]));x.span.observation.recordEnd=x.record.length;x.span.observation.callbacks[0].recordAfterForwarding=x.record.length;rejects(()=>api.validateFrontendCallbackEvidence(x.span,x.record,service,1,image,undefined,callbacksMetadata),'malformed/unrecognized/wrong-origin ambient accepted');}
+const noMeta=fixture();rejects(()=>api.validateFrontendCallbackEvidence(noMeta.span,noMeta.record,service,1,image),'missing frozen callback metadata accepted');
+""")
+
+    def test_native11_immutable_raw_replay_with_derived_bool_sidecar_only(self):
+        self.bun(r"""
+const root=__RESULTS__,results:any={};
+for(const agent of ['trace156','ours156']){
+ const observations=JSON.parse(readFileSync(root+'/'+agent+'/observations.json','utf8')),record=readFileSync(root+'/'+agent+'/record.jsonl');
+ const original=observations.frontendEvents.spans[0],span=structuredClone(original),conversions:any[]=[];
+ for(const event of span.observation.callbacks)for(const key of ['selectorIdentityValid','ownerIdentityValid']){check(typeof event[key]==='number'&&[0,1].includes(event[key]),'Native11 bool defect fixture changed');conversions.push({key,from:event[key],to:event[key]===1});event[key]=event[key]===1;}
+ const metadata=api.frontendCallbackMetadata(readFileSync(root+'/fixture-comparator/tests/recorder/app_callbacks.inc','utf8'));
+ const open=observations.actions.find((action:any)=>action.operation==='console-open'),rootCalls=apiParse(record.subarray(open.recordBegin,open.recordEnd)).filter((event:any)=>event.ev==='call'&&event.dir==='->engine'&&event.cls==='ArcWebContentsDevTools'&&event.sel==='openConsoleView');
+ check(rootCalls.length===1,'baseline service receiver not unique');const hash=new Bun.CryptoHasher('sha256').update(record).digest('hex');let error='';
+ try{api.validateFrontendCallbackEvidence(span,record,rootCalls[0].self,open.ownerTag,'WebextrasNativeProbe.dylib',undefined,metadata);}catch(caught){error=String(caught)}
+ if(agent==='trace156'){check(!error&&span.rawCallbackCounts.total===2&&span.rawCallbackCounts.owned===1&&span.rawCallbackCounts.ambient===1,'original derived matching failed: '+error);
+  check(span.quietComplete!==true,'Native11 incomplete observation invented quiet');rejects(()=>api.validateFrontendCallbackSpan(span,record,rootCalls[0].self,open.ownerTag,'WebextrasNativeProbe.dylib',undefined,metadata),'derived sidecar converted incomplete observation into acceptance');}
+ else check(error.includes('no owned DevTools callback evidence')&&span.rawCallbackCounts.total===7&&span.rawCallbackCounts.owned===0&&span.rawCallbackCounts.ambient===7,'ours ambient-only falsely covered owned callback');
+ check(hash===new Bun.CryptoHasher('sha256').update(record).digest('hex'),'raw bytes changed');
+ check(JSON.stringify(original)===JSON.stringify(JSON.parse(readFileSync(root+'/'+agent+'/observations.json','utf8')).frontendEvents.spans[0]),'original sidecar rewritten');
+ results[agent]={kind:'OFFLINE DERIVED BOOL SIDECAR DIAGNOSTIC ONLY',conversions,rawCallbackCounts:span.rawCallbackCounts,ambientCallbackIdentities:span.ambientCallbackIdentities,error,rawSHA256:hash,actualRuntimeAcceptance:false};
+}
+console.log(JSON.stringify(results));
+function apiParse(bytes:Buffer){return bytes.toString().trim().split('\n').map(line=>JSON.parse(line))}
+""".replace('__RESULTS__',json.dumps(str(ROOT/'results/webextras/native-run11'))))
 
     def test_actual_frontend_mode_acceptance_keeps_baseline_and_pending_gate(self):
         source=DRIVER.read_text()
@@ -458,11 +507,11 @@ int main(void){@autoreleasepool{
         callbackRows=comparator.filename_canary_rows(15)
         right=self.directory/'literal-canary.jsonl'
         right.write_text(''.join(json.dumps(row)+'\n' for row in callbackRows))
-        self.assertEqual(comparator.gate(right,'WebextrasNativeProbe.dylib',filename_canary=True)['callbacks'],1)
-        with self.assertRaises(ValueError):comparator.gate(right,'WebextrasNativeProbe.dylib')
+        self.assertEqual(comparator.gate(right,'WebextrasNativeProbe.dylib',filename_canary=True,known_callbacks=comparator.callback_metadata(snapshot))['callbacks'],1)
+        with self.assertRaises(ValueError):comparator.gate(right,'WebextrasNativeProbe.dylib',known_callbacks=comparator.callback_metadata(snapshot))
         for change in [lambda rows: rows[1].update(ret='unproven'),lambda rows: rows[2].update(args=['<ArcBrowserContext#1>','<ArcDownloadItem#1>','<ptr>',15]),lambda rows: rows[2].update(**{'from':'app'})]:
             bad=comparator.filename_canary_rows(15);change(bad);right.write_text(''.join(json.dumps(row)+'\n' for row in bad))
-            with self.assertRaises(ValueError):comparator.gate(right,'WebextrasNativeProbe.dylib',filename_canary=True)
+            with self.assertRaises(ValueError):comparator.gate(right,'WebextrasNativeProbe.dylib',filename_canary=True,known_callbacks=comparator.callback_metadata(snapshot))
         for case in support['cases']:
             self.assertTrue(all(count['callbacks']==1 and count['fixturePublicCalls']==0 for count in case['typedCounts']))
             if case['verified']:
@@ -495,12 +544,66 @@ int main(void){@autoreleasepool{
                      dict(original[2],seq=5,thread='worker',depth=0),
                      dict(original[1],seq=2),dict(original[2],seq=3),dict(original[3],seq=6)]
         right.write_text(''.join(json.dumps(row)+'\n' for row in interleaved))
-        self.assertEqual(comparator.gate(right,'WebextrasNativeProbe.dylib')['callbacks'],1)
+        self.assertEqual(comparator.gate(right,'WebextrasNativeProbe.dylib',known_callbacks=comparator.callback_metadata(snapshot))['callbacks'],1)
         interleaved[1]['seq']=1
         right.write_text(''.join(json.dumps(row)+'\n' for row in interleaved))
-        with self.assertRaises(ValueError):comparator.gate(right,'WebextrasNativeProbe.dylib')
+        with self.assertRaises(ValueError):comparator.gate(right,'WebextrasNativeProbe.dylib',known_callbacks=comparator.callback_metadata(snapshot))
         self.assertIn('--compare-boundary-arguments',(ROOT/'arc/browser/webextras_frontend_comparison.py').read_text())
         self.assertNotIn("'--fixture-image',",(ROOT/'arc/browser/webextras_frontend_comparison.py').read_text())
+
+    def test_frozen_gate_retains_ambient_arguments_returns_counts_and_nested_public_values(self):
+        import copy
+        import sys
+        def module(name,path):
+            spec=importlib.util.spec_from_file_location(name,path)
+            loaded=importlib.util.module_from_spec(spec);spec.loader.exec_module(loaded);return loaded
+        inputs=module('ambient_fixture_inputs',ROOT/'arc/browser/webextras_fixture_inputs.py')
+        comparator=module('ambient_callback_inputs',ROOT/'arc/browser/webextras_frontend_comparison.py')
+        snapshot=self.directory/'ambient-comparator';inputs.freeze(ROOT,snapshot,'WebextrasNativeProbe.dylib');known=comparator.callback_metadata(snapshot)
+        base=comparator.canary_rows('getter','unmasked-return')
+        ambient=dict(thread='main',depth=1,dir='engine->app',kind='-',cls='ADK.CrashKeysObserverBridge',self='<ADK.CrashKeysObserverBridge#7>',sel='onCrashKeyEmitted:value:',**{'from':'engine'})
+        rows=[base[0],dict(ambient,ev='call',args=['diagnostic-key','unmasked-argument']),dict(base[1],depth=2),dict(base[2],depth=2),dict(ambient,ev='ret',ret='nonvoid-ambient-return'),base[3]]
+        rows=[dict(row,seq=index+1) for index,row in enumerate(rows)]
+        left,right,report=[self.directory/name for name in ('ambient-left.jsonl','ambient-right.jsonl','ambient-report.json')]
+        def write(path,events):path.write_text(''.join(json.dumps(row,separators=(',',':'))+'\n' for row in events))
+        write(left,rows)
+        counts=comparator.gate(left,'WebextrasNativeProbe.dylib',known_callbacks=known)
+        self.assertEqual((counts['callbacks'],counts['ownedCallbacks'],counts['ambientCallbacks']),(2,1,1))
+        worker=copy.deepcopy(rows)
+        for row in worker[1:5]:row.update(thread='worker',depth=row['depth']-1)
+        write(right,worker);self.assertEqual(comparator.gate(right,'WebextrasNativeProbe.dylib',known_callbacks=known)['ambientIdentities'][0]['thread'],'worker')
+        negatives=[]
+        unknown=copy.deepcopy(rows)
+        for row in [unknown[1],unknown[4]]:row['cls']='ADK.UnknownCrashKeysBridge'
+        negatives.append(unknown)
+        origin=copy.deepcopy(rows)
+        for row in [origin[1],origin[4]]:row['from']='app'
+        negatives.append(origin)
+        malformed=copy.deepcopy(rows);malformed[1]['args']=['only-one'];negatives.append(malformed)
+        negatives.extend([rows[1:5],rows[:4]+rows[5:]])
+        for bad in negatives:
+            write(right,bad)
+            with self.assertRaises(ValueError):comparator.gate(right,'WebextrasNativeProbe.dylib',known_callbacks=known)
+        # Use the actual frozen DEFAULT comparator, without the new argument
+        # option: ambient payloads/returns/counts and nested public returns must
+        # remain observable even while option capability stays pending.
+        for kind in ['ambient-argument','ambient-return','nested-public-return','ambient-count']:
+            changed=copy.deepcopy(rows)
+            if kind=='ambient-argument':changed[1]['args'][1]='different-argument'
+            elif kind=='ambient-return':changed[4]['ret']='different-return'
+            elif kind=='nested-public-return':changed[3]['ret']='different-public-return'
+            else:
+                extra=[dict(ambient,ev='call',args=['diagnostic-key','unmasked-argument']),dict(ambient,ev='ret',ret='nonvoid-ambient-return')]
+                changed=changed[:-1]+extra+changed[-1:];changed=[dict(row,seq=index+1) for index,row in enumerate(changed)]
+            write(right,changed);right_counts=comparator.gate(right,'WebextrasNativeProbe.dylib',known_callbacks=known)
+            result=subprocess.run([sys.executable,'-B',str(snapshot/'tests/recorder/diff.py'),str(left),str(right),'--json',str(report)],capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr);diff=json.loads(report.read_text())
+            section='arg_mismatch' if kind=='ambient-argument' else 'count_mismatch' if kind=='ambient-count' else 'return_mismatch'
+            self.assertEqual(len(diff[section]),1,(kind,diff))
+            self.assertEqual(diff['callback_sequence']['golden'],2)
+            self.assertEqual(diff['callback_sequence']['ours'],right_counts['callbacks'])
+            self.assertTrue(result.stdout.splitlines()[0].startswith('methods differing:'))
+            self.assertTrue(result.stdout.splitlines()[1].startswith('callback sequence:'))
 
     def test_frozen_freezer_loader_never_executes_unmanifested_unchecked_bytecode(self):
         import py_compile

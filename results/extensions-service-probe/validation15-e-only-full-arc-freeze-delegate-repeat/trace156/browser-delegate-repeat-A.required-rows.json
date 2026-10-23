@@ -1,0 +1,371 @@
+{
+  "step": "browser-delegate-repeat-A",
+  "operation": "browser-delegate-repeat",
+  "basis": "actual helper-returned observations, not ArcEngineRecorder rows",
+  "complete": true,
+  "rows": [
+    {
+      "path": "operation",
+      "present": true,
+      "valid": true,
+      "value": "browser-delegate-repeat"
+    },
+    {
+      "path": "ok",
+      "present": true,
+      "valid": true,
+      "value": true
+    },
+    {
+      "path": "matches",
+      "present": true,
+      "valid": true,
+      "value": 1
+    },
+    {
+      "path": "mainThread",
+      "present": true,
+      "valid": true,
+      "value": true
+    },
+    {
+      "path": "infosAfter",
+      "present": true,
+      "valid": true,
+      "value": {
+        "A": {
+          "description": "Local fixture A π 東京",
+          "enabled": true,
+          "fromWebstore": false,
+          "hasAction": true,
+          "icon": {
+            "present": true,
+            "representations": [
+              {
+                "height": 32,
+                "width": 32
+              },
+              {
+                "height": 64,
+                "width": 64
+              }
+            ],
+            "size": [
+              32,
+              32
+            ]
+          },
+          "id": "odjkeclacjccmjnelcmpfnkogdllloom",
+          "name": "ArcCore service probe arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751 A",
+          "numRatings": 0,
+          "omniboxKeyword": "arcserviceprobea",
+          "permissions": [
+            "Read and change your data on 127.0.0.1",
+            "Read your browsing history"
+          ],
+          "rating": 0,
+          "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/",
+          "version": "1.2.3"
+        },
+        "B": {
+          "description": "Local fixture B π 東京",
+          "enabled": true,
+          "fromWebstore": false,
+          "hasAction": true,
+          "icon": {
+            "present": true,
+            "representations": [
+              {
+                "height": 32,
+                "width": 32
+              },
+              {
+                "height": 64,
+                "width": 64
+              }
+            ],
+            "size": [
+              32,
+              32
+            ]
+          },
+          "id": "dcpnjjbgnglogedjgpcbjgpbjoaboclp",
+          "name": "ArcCore service probe arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751 B",
+          "numRatings": 0,
+          "omniboxKeyword": "arcserviceprobeb",
+          "permissions": [
+            "Read and change your data on 127.0.0.1",
+            "Read your browsing history"
+          ],
+          "rating": 0,
+          "url": "chrome-extension://dcpnjjbgnglogedjgpcbjgpbjoaboclp/",
+          "version": "1.2.3"
+        }
+      }
+    },
+    {
+      "path": "pinsAfter",
+      "present": true,
+      "valid": true,
+      "value": [
+        "odjkeclacjccmjnelcmpfnkogdllloom"
+      ]
+    },
+    {
+      "path": "owned",
+      "present": true,
+      "valid": true,
+      "value": {
+        "A": "odjkeclacjccmjnelcmpfnkogdllloom",
+        "B": "dcpnjjbgnglogedjgpcbjgpbjoaboclp"
+      }
+    },
+    {
+      "path": "callbacks",
+      "present": true,
+      "valid": true,
+      "value": [
+        {
+          "selector": "browser:didOpenExtensionPopup:webContents:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom",
+            {
+              "class": "ArcWebContents",
+              "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/popup.html"
+            }
+          ],
+          "mainThread": true,
+          "synchronous": false
+        },
+        {
+          "selector": "browser:didResizeExtensionPopup:size:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom",
+            [
+              320,
+              160
+            ]
+          ],
+          "mainThread": true,
+          "synchronous": false
+        },
+        {
+          "selector": "browser:didResizeExtensionPopup:size:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom",
+            [
+              400,
+              220
+            ]
+          ],
+          "mainThread": true,
+          "synchronous": false
+        },
+        {
+          "selector": "browser:didCloseExtensionPopup:",
+          "payload": [
+            "odjkeclacjccmjnelcmpfnkogdllloom"
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      ]
+    },
+    {
+      "path": "events",
+      "present": true,
+      "valid": true,
+      "value": [
+        {
+          "type": "delegate",
+          "value": {
+            "selector": "browser:didOpenExtensionPopup:webContents:",
+            "payload": [
+              "odjkeclacjccmjnelcmpfnkogdllloom",
+              {
+                "class": "ArcWebContents",
+                "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/popup.html"
+              }
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        },
+        {
+          "type": "delegate",
+          "value": {
+            "selector": "browser:didResizeExtensionPopup:size:",
+            "payload": [
+              "odjkeclacjccmjnelcmpfnkogdllloom",
+              [
+                320,
+                160
+              ]
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        },
+        {
+          "type": "delegate",
+          "value": {
+            "selector": "browser:didResizeExtensionPopup:size:",
+            "payload": [
+              "odjkeclacjccmjnelcmpfnkogdllloom",
+              [
+                400,
+                220
+              ]
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        },
+        {
+          "type": "delegate",
+          "value": {
+            "selector": "browser:didCloseExtensionPopup:",
+            "payload": [
+              "odjkeclacjccmjnelcmpfnkogdllloom"
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        }
+      ]
+    },
+    {
+      "path": "pinsBefore",
+      "present": true,
+      "valid": true,
+      "value": [
+        "odjkeclacjccmjnelcmpfnkogdllloom"
+      ]
+    },
+    {
+      "path": "effects",
+      "present": true,
+      "valid": true,
+      "value": [
+        {
+          "label": "A",
+          "value": {
+            "kind": "popup-loaded",
+            "url": "chrome-extension://odjkeclacjccmjnelcmpfnkogdllloom/popup.html",
+            "id": "odjkeclacjccmjnelcmpfnkogdllloom"
+          }
+        },
+        {
+          "label": "A",
+          "value": {
+            "kind": "popup-resized",
+            "id": "odjkeclacjccmjnelcmpfnkogdllloom"
+          }
+        },
+        {
+          "label": "A",
+          "value": {
+            "kind": "popup-close-requested",
+            "id": "odjkeclacjccmjnelcmpfnkogdllloom"
+          }
+        }
+      ]
+    },
+    {
+      "path": "browserDelegateRepeatIdentityVerified",
+      "present": true,
+      "valid": true,
+      "value": true
+    },
+    {
+      "path": "browserDelegateRepeatPriorCapture",
+      "present": true,
+      "valid": true,
+      "value": {
+        "priorNonProbeSetterObserved": true,
+        "nonnull": true,
+        "delegateClass": "ADK.ChromiumBrowser"
+      }
+    },
+    {
+      "path": "browserDelegateRepeatDelegateClass",
+      "present": true,
+      "valid": true,
+      "value": "ADK.ChromiumBrowser"
+    },
+    {
+      "path": "browserDelegateRepeatSetterABI",
+      "present": true,
+      "valid": true,
+      "value": "v24@0:8@16"
+    },
+    {
+      "path": "browserDelegateRepeatActionABI",
+      "present": true,
+      "valid": true,
+      "value": "v24@0:8@16"
+    },
+    {
+      "path": "browserDelegateRepeatFixtureURL",
+      "present": true,
+      "valid": true,
+      "value": "http://127.0.0.1:64930/arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751/page"
+    },
+    {
+      "path": "browserDelegateRepeatActionID",
+      "present": true,
+      "valid": true,
+      "value": "odjkeclacjccmjnelcmpfnkogdllloom"
+    },
+    {
+      "path": "browserDelegateRepeatHookTopology",
+      "present": true,
+      "valid": true,
+      "value": "recorder-forwarder-to-capture"
+    },
+    {
+      "path": "browserDelegateRepeatSetterCalls",
+      "present": true,
+      "valid": true,
+      "value": 1
+    },
+    {
+      "path": "browserDelegateRepeatSameObjectAtSetter",
+      "present": true,
+      "valid": true,
+      "value": true
+    },
+    {
+      "path": "browserDelegateRepeatFunctionalVerified",
+      "present": true,
+      "valid": true,
+      "value": true
+    },
+    {
+      "path": "browserDelegateRepeatRawVerified",
+      "present": true,
+      "valid": true,
+      "value": true
+    },
+    {
+      "path": "browserDelegateRepeatCDPBefore",
+      "present": true,
+      "valid": true,
+      "value": {
+        "url": "http://127.0.0.1:64930/arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751/page",
+        "nonce": "arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751",
+        "sameTarget": true
+      }
+    },
+    {
+      "path": "browserDelegateRepeatCDPAfter",
+      "present": true,
+      "valid": true,
+      "value": {
+        "url": "http://127.0.0.1:64930/arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751/page",
+        "nonce": "arc-extensions-service-probe-7ed12c21-8bc1-45ac-bf0b-d5423a9b6751",
+        "sameTarget": true
+      }
+    }
+  ]
+}

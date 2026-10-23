@@ -1,0 +1,132 @@
+diff --git a/arc/tools/chromium-patches.py b/arc/tools/chromium-patches.py
+--- a/arc/tools/chromium-patches.py
++++ b/arc/tools/chromium-patches.py
+@@ -14,6 +14,7 @@
+ 
+ FRONTEND = 'third_party/devtools-frontend/src'
+ ENV = dict(os.environ, GIT_OPTIONAL_LOCKS='0', LC_ALL='C')
++REPO_ENV = {}
+ 
+ def require(value, message):
+     if not value:
+@@ -21,7 +22,7 @@
+ 
+ def git(repo, *args, check=True, input_bytes=None):
+     result = subprocess.run(['git', '-c', 'diff.ignoreSubmodules=none', '-C', str(repo), *args],
+-                            env=ENV, capture_output=True, input=input_bytes)
++                            env=REPO_ENV.get(str(repo), ENV), capture_output=True, input=input_bytes)
+     if check:
+         require(result.returncode == 0, result.stderr.decode(errors='replace').strip())
+     return result
+@@ -71,9 +72,15 @@
+         mode, oid, stage = head.split()
+         require(stage == '0', 'conflicted index: '+name)
+         result[name] = (mode, oid)
++    for item in git(repo, 'ls-files', '-v', '-z').stdout.split(b'\0'):
++        if item:
++            require(item[:2] == b'H ', 'hidden/unsupported index flags: '+item[2:].decode())
+     return result
+ 
+ def repositories(source, owners):
++    # An integration transaction may select an outer alternate index. It must
++    # never be used as the independent frontend checkout's index.
++    REPO_ENV.clear();REPO_ENV[str(source)] = dict(ENV)
+     outer = entries(source)
+     repos = {'': (source, outer)}
+     if any(path.startswith(FRONTEND+'/') for path in owners):
+@@ -85,6 +92,8 @@
+         require(mode == '160000' and kind == 'commit' and name == FRONTEND and
+                 outer[FRONTEND][1] == oid, 'frontend gitlink index/HEAD differs')
+         nested = regular_directory(source, FRONTEND)
++        nested_env = dict(ENV);nested_env.pop('GIT_INDEX_FILE', None)
++        REPO_ENV[str(nested)] = nested_env
+         require(git(nested, 'rev-parse', '--show-toplevel').stdout.decode().strip() == str(nested), 'frontend is not independent checkout')
+         require(git(nested, 'rev-parse', 'HEAD').stdout.decode().strip() == oid, 'frontend checkout HEAD differs from gitlink')
+         repos[FRONTEND] = (nested, entries(nested))
+@@ -108,7 +117,7 @@
+         prefix, leaf = location(relative, repos)
+         repo, index = repos[prefix]
+         require(index.get(leaf, ('',))[0] in ('100644', '100755'), 'untracked/unsupported manifest input: '+relative)
+-        regular(source, relative)
++        require(b'\0' not in regular(source, relative).read_bytes(), 'binary source is unsupported: '+relative)
+     for prefix, (repo, _) in repos.items():
+         # Explicitly inspect the nested worktree; global Git configuration may
+         # hide dirty submodules from outer status.
+@@ -160,9 +169,10 @@
+                             if owner == patch and location(relative, repos)[0] == prefix)
+             if leaves:
+                 lead = prefix+'/' if prefix else ''
+-                chunks.append(git(repo, 'diff', '--no-ext-diff', '--no-textconv', '--no-renames',
++                chunks.append(git(repo, 'diff', '--no-color', '--no-ext-diff', '--no-textconv', '--no-renames',
+                                   '--src-prefix=a/'+lead, '--dst-prefix=b/'+lead, 'HEAD', '--', *leaves).stdout)
+         outputs[patch] = b''.join(chunks)
++        if outputs[patch]:patch_paths(outputs[patch], patch, owners)
+     validate_sources(source, owners, repositories(source, owners))
+     require((root/'patches/MANIFEST').read_bytes() == raw and
+             fingerprint(root, source, owners, repos) == before, 'inputs changed during regeneration')
+@@ -190,6 +200,34 @@
+         for path in prepared.values():
+             path.unlink(missing_ok=True)
+ 
++def patch_paths(content, patch, owners):
++    require(b'\0' not in content and b'\x1b' not in content, 'binary/colored patch is unsupported')
++    sections = []
++    for line in content.splitlines():
++        if line.startswith(b'diff --git '):
++            fields = line.decode().split()
++            require(len(fields) == 4 and fields[2].startswith('a/') and fields[3].startswith('b/'), 'unsupported diff header')
++            old, new = path_name(fields[2][2:]), path_name(fields[3][2:])
++            require(old == new, 'diff source/destination ownership mismatch')
++            require(owners.get(old) == patch, 'patch ownership mismatch: '+old)
++            require(not any(section['path'] == old for section in sections), 'duplicate diff section')
++            sections.append(dict(path=old, old=[], new=[], addition=False))
++            continue
++        require(sections, 'patch lacks diff header')
++        section = sections[-1]
++        if line.startswith((b'old mode ', b'new mode ', b'new file mode ')):
++            require(line.split()[-1] in (b'100644', b'100755'), 'unsupported patch file mode')
++            if line.startswith(b'new file mode '):section['addition'] = True
++        require(not line.startswith((b'deleted file mode ', b'rename from ', b'rename to ', b'copy from ', b'copy to ', b'Binary files ', b'GIT binary patch')), 'unsupported patch operation')
++        if line.startswith(b'--- '):section['old'].append(line[4:].decode())
++        if line.startswith(b'+++ '):section['new'].append(line[4:].decode())
++    require(sections, 'patch has no file sections')
++    for section in sections:
++        path = section['path']
++        if section['old'] or section['new']:
++            require(section['old'] == ['/dev/null' if section['addition'] else 'a/'+path] and section['new'] == ['b/'+path], 'file header ownership mismatch')
++    return {section['path'] for section in sections}
++
+ def apply_one(root, patch):
+     root = root.resolve();source = regular_directory(root, 'chromium/src')
+     _, owners = manifest(root);repos = repositories(source, owners)
+@@ -198,10 +236,7 @@
+     content = patch.read_bytes()
+     if not content:
+         print('empty patch: '+patch.name);return
+-    for line in content.splitlines():
+-        if line.startswith((b'old mode ', b'new mode ', b'new file mode ')):
+-            require(line.split()[-1] in (b'100644', b'100755'), 'unsupported patch file mode')
+-        require(not line.startswith((b'deleted file mode ', b'rename from ', b'rename to ', b'copy from ', b'copy to ')), 'unsupported patch operation')
++    declared = patch_paths(content, patch.name, owners)
+     records = git(source, 'apply', '--numstat', '-z', '-', input_bytes=content).stdout.split(b'\0')
+     seen = set()
+     for record in records:
+@@ -217,7 +252,7 @@
+         # gitlink, without --index; checked by private real-Git round trips.
+         if prefix:
+             require(repos[prefix][1].get(leaf, ('',))[0] in ('100644', '100755'), 'untracked nested patch input')
+-    require(seen, 'patch has no text files')
++    require(seen and seen == declared, 'patch file sections differ from parsed paths')
+     if git(source, 'apply', '--reverse', '--check', '-', check=False, input_bytes=content).returncode == 0:
+         print('patch already applied: '+patch.name);return
+     git(source, 'apply', '--check', '-', input_bytes=content)
+@@ -231,6 +266,9 @@
+     parser.add_argument('patch', nargs='?', type=Path)
+     args = parser.parse_args()
+     try:
++        require(not ENV.get('GIT_DIR') and not ENV.get('GIT_WORK_TREE'), 'inherited GIT_DIR/GIT_WORK_TREE is unsupported')
++        if 'GIT_INDEX_FILE' in ENV:
++            require(bool(ENV['GIT_INDEX_FILE']) and Path(ENV['GIT_INDEX_FILE']).is_absolute(), 'outer GIT_INDEX_FILE must be absolute')
+         require((args.operation == 'apply') == (args.patch is not None), 'apply requires patch; regenerate takes none')
+         if args.operation == 'regenerate':regenerate(args.root)
+         else:apply_one(args.root, args.patch.absolute())

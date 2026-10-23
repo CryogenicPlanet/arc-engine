@@ -13,15 +13,22 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
+#include "base/scoped_observation.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/task/sequenced_task_runner.h"
+#include "chrome/browser/arcmod/arcmod_hooks.h"
+#include "chrome/browser/extensions/chrome_extension_system_factory.h"
 #include "chrome/browser/extensions/commands/command_service.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/webstore_install_with_prompt.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
+#include "components/keyed_service/core/keyed_service_base_factory.h"
+#include "content/public/browser/browser_thread.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -33,6 +40,7 @@
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_registrar.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/load_error_reporter.h"
@@ -145,47 +153,138 @@ struct ExtensionCallbackTarget {
   __weak ArcBrowserContext* context;
 };
 
+// Independent of the facade/target: profile shutdown revokes queued delivery
+// even if an external client still retains the facade and its callback target.
+struct ExtensionDeliveryLifetime {};
+
 void PostExtensionCallback(
+    std::weak_ptr<ExtensionDeliveryLifetime> lifetime,
     std::weak_ptr<ExtensionCallbackTarget> target,
     void (^callback)(id<ArcExtensionsContextCallbacks>, ArcBrowserContext*)) {
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(
-          [](std::weak_ptr<ExtensionCallbackTarget> weak,
+          [](std::weak_ptr<ExtensionDeliveryLifetime> lifetime,
+             std::weak_ptr<ExtensionCallbackTarget> weak,
              void (^notify)(id<ArcExtensionsContextCallbacks>, ArcBrowserContext*)) {
+            // All accesses and shutdown are on the UI sequence. Do not keep
+            // this lifetime alive across a callback that can shut down Chrome.
+            if (lifetime.expired()) return;
             auto state = weak.lock();
             if (!state) return;
             id<ArcExtensionsContextCallbacks> delegate = state->delegate;
             ArcBrowserContext* context = state->context;
             if (delegate) notify(delegate, context);
-          }, std::move(target), [callback copy]));
+          }, std::move(lifetime), std::move(target), [callback copy]));
 }
 
-class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
+// IsServiceCreated is public on this base and performs a noncreating map lookup.
+// For a regular, original macOS profile the three factories below canonicalize
+// to the same |profile| key. No user code runs between this gate and typed Get.
+template <typename Service, typename Factory, typename Getter>
+Service* ExistingRegularService(Profile* profile, Factory* factory, Getter get) {
+  if (!static_cast<KeyedServiceBaseFactory*>(factory)->IsServiceCreated(profile))
+    return nullptr;
+  return get(profile);
+}
+
+class ExtensionContextObserver : public base::SupportsUserData::Data,
+                                 public ProfileObserver,
+                                 public extensions::ExtensionRegistryObserver,
                                  public extensions::ErrorConsole::Observer,
                                  public extensions::LoadErrorReporter::Observer,
                                  public ToolbarActionsModel::Observer {
  public:
+  explicit ExtensionContextObserver(Profile* profile)
+      : profile_(profile->GetWeakPtr()),
+        order_suppression_(std::make_shared<bool>(false)),
+        delivery_lifetime_(std::make_shared<ExtensionDeliveryLifetime>()) {}
+
+  // Preserve the existing, delegate-owned late path for OTR/guest/system
+  // contexts. Their native ownership/fanout has not been established.
   ExtensionContextObserver(Profile* profile,
                            std::shared_ptr<ExtensionCallbackTarget> callbacks,
                            std::shared_ptr<bool> order_suppression)
-      : callbacks_(callbacks),
-        order_suppression_(std::move(order_suppression)), registry_(extensions::ExtensionRegistry::Get(profile)),
-        errors_(extensions::ErrorConsole::Get(profile)),
-        toolbar_(ToolbarActionsModel::Get(profile)) {
-    if (registry_) registry_->AddObserver(this);
-    if (errors_) errors_->AddObserver(this);
-    load_errors_ = extensions::LoadErrorReporter::GetInstance();
-    load_errors_->AddObserver(this);
-    if (toolbar_) toolbar_->AddObserver(this);
-    if (auto* system = extensions::ExtensionSystem::Get(profile)) {
-      if (!system->is_ready())
-        system->ready().Post(FROM_HERE,
-            base::BindOnce(&ExtensionContextObserver::Ready, weak_factory_.GetWeakPtr()));
-    }
+      : ExtensionContextObserver(profile) {
+    callbacks_ = callbacks;
+    order_suppression_ = std::move(order_suppression);
+    ObserveProfile();
+    phase_ = Phase::kAttaching;
+    Attach(extensions::ExtensionRegistry::Get(profile),
+           extensions::ErrorConsole::Get(profile),
+           ToolbarActionsModel::Get(profile),
+           extensions::ExtensionSystem::Get(profile));
   }
-  ~ExtensionContextObserver() override { Detach(); }
 
-  void Detach() {
+  ~ExtensionContextObserver() override { Shutdown(); }
+
+  base::WeakPtr<ExtensionContextObserver> GetWeakPtr() {
+    return phase_ == Phase::kShutdown ? base::WeakPtr<ExtensionContextObserver>()
+                                      : weak_factory_.GetWeakPtr();
+  }
+  std::shared_ptr<bool> order_suppression() const { return order_suppression_; }
+
+  void BindCallbacks(std::weak_ptr<ExtensionCallbackTarget> callbacks) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (phase_ != Phase::kShutdown) callbacks_ = std::move(callbacks);
+  }
+  void ClearCallbacks(const std::shared_ptr<ExtensionCallbackTarget>& target) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // An old facade must not clear a newer facade's target for the same profile.
+    if (callbacks_.lock() == target) callbacks_.reset();
+  }
+
+  void EnsureRegularAttachment(bool after_reporter_init) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (phase_ == Phase::kShutdown) return;
+    reporter_initialized_ |= after_reporter_init;
+    if (phase_ != Phase::kUnattached) return;
+    auto profile = profile_;
+    if (!profile || profile->ShutdownStarted()) {
+      Shutdown();
+      return;
+    }
+    DCHECK(profile->IsRegularProfile());
+    DCHECK_EQ(profile.get(), profile->GetOriginalProfile());
+    // Publish the profile-owned state before this function is called. A
+    // reentrant ensure/bind observes this same attaching instance.
+    phase_ = Phase::kAttaching;
+    ObserveProfile();
+    auto* registry = ExistingRegularService<extensions::ExtensionRegistry>(
+        profile.get(), extensions::ExtensionRegistryFactory::GetInstance(),
+        [](Profile* p) { return extensions::ExtensionRegistry::Get(p); });
+    auto* system = ExistingRegularService<extensions::ExtensionSystem>(
+        profile.get(), extensions::ChromeExtensionSystemFactory::GetInstance(),
+        [](Profile* p) { return extensions::ExtensionSystem::Get(p); });
+    auto* toolbar = ExistingRegularService<ToolbarActionsModel>(
+        profile.get(), ToolbarActionsModelFactory::GetInstance(),
+        [](Profile* p) { return ToolbarActionsModel::Get(p); });
+    // Testing-null/nonstandard dependencies stay explicitly unattached. A late
+    // facade request can retry; never create eager services recursively here.
+    // Without the hook, readiness proves the reporter's Init has already run.
+    if (!registry || !system || !toolbar ||
+        (!reporter_initialized_ && !system->is_ready())) {
+      phase_ = Phase::kUnattached;
+      return;
+    }
+    // The lazy ErrorConsole only uses the already present registry/prefs.
+    // It may enumerate errors internally; this observer is not attached yet.
+    auto alive = weak_factory_.GetWeakPtr();
+    auto* errors = extensions::ErrorConsole::Get(profile.get());
+    if (!alive || !profile || phase_ == Phase::kShutdown) return;
+    if (!errors) {
+      phase_ = Phase::kUnattached;
+      return;
+    }
+    Attach(registry, errors, toolbar, system);
+  }
+
+  void Shutdown() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (phase_ == Phase::kShutdown) return;
+    phase_ = Phase::kShutdown;
+    // Revoke before detaching any dependency, including when the facade lives.
+    delivery_lifetime_.reset();
+    callbacks_.reset();
     weak_factory_.InvalidateWeakPtrs();
     if (registry_) registry_->RemoveObserver(this);
     if (errors_) errors_->RemoveObserver(this);
@@ -195,19 +294,22 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
     errors_ = nullptr;
     load_errors_ = nullptr;
     toolbar_ = nullptr;
+    profile_observation_.Reset();
+    profile_.reset();
   }
-  void OnShutdown(extensions::ExtensionRegistry*) override { Detach(); }
-  void OnErrorConsoleDestroyed() override { errors_ = nullptr; }
-  void OnToolbarActionsModelShutdown() override {
-    toolbar_->RemoveObserver(this);
-    toolbar_ = nullptr;
+  void OnProfileWillBeDestroyed(Profile*) override { Shutdown(); }
+  void OnShutdown(extensions::ExtensionRegistry*) override { Shutdown(); }
+  void OnErrorConsoleDestroyed() override {
+    errors_ = nullptr;
+    Shutdown();
   }
+  void OnToolbarActionsModelShutdown() override { Shutdown(); }
   // Native RegistryObserver emits DidEnable from its Ready slot, not Loaded.
   void OnExtensionReady(content::BrowserContext*,
                          const extensions::Extension* extension) override {
     if (extension->id() == arc::kInternalExtensionId) return;
     NSString* identifier = base::SysUTF8ToNSString(extension->id());
-    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+    PostExtensionCallback(delivery_lifetime_, callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
                                        ArcBrowserContext* context) {
       if ([delegate respondsToSelector:@selector(browserContext:didEnableExtension:)])
         [delegate browserContext:context didEnableExtension:identifier];
@@ -218,7 +320,7 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
                            extensions::UnloadedExtensionReason) override {
     if (extension->id() == arc::kInternalExtensionId) return;
     NSString* identifier = base::SysUTF8ToNSString(extension->id());
-    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+    PostExtensionCallback(delivery_lifetime_, callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
                                        ArcBrowserContext* context) {
       if ([delegate respondsToSelector:@selector(browserContext:didDisableExtension:)])
         [delegate browserContext:context didDisableExtension:identifier];
@@ -228,7 +330,7 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
                             const extensions::Extension* extension, bool) override {
     if (extension->id() == arc::kInternalExtensionId) return;
     NSString* identifier = base::SysUTF8ToNSString(extension->id());
-    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+    PostExtensionCallback(delivery_lifetime_, callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
                                        ArcBrowserContext* context) {
       if ([delegate respondsToSelector:@selector(browserContext:didInstallExtension:)])
         [delegate browserContext:context didInstallExtension:identifier];
@@ -239,7 +341,7 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
                               extensions::UninstallReason) override {
     if (extension->id() == arc::kInternalExtensionId) return;
     NSString* identifier = base::SysUTF8ToNSString(extension->id());
-    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+    PostExtensionCallback(delivery_lifetime_, callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
                                        ArcBrowserContext* context) {
       if ([delegate respondsToSelector:@selector(browserContext:didUninstallExtension:)])
         [delegate browserContext:context didUninstallExtension:identifier];
@@ -250,7 +352,7 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
     // Stock observes the global reporter without filtering its source profile.
     NSString* filename = base::SysUTF8ToNSString(path.value());
     NSString* message = base::SysUTF16ToNSString(error);
-    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+    PostExtensionCallback(delivery_lifetime_, callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
                                        ArcBrowserContext* context) {
       if ([delegate respondsToSelector:@selector(browserContext:didFailLoadUnpacked:withManifestError:)])
         [delegate browserContext:context didFailLoadUnpacked:filename
@@ -274,7 +376,7 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
           snapshot.stack_trace.push_back({frame.line_number, frame.column_number,
                                           frame.source, frame.function});
         }
-        PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+        PostExtensionCallback(delivery_lifetime_, callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
                                            ArcBrowserContext* context) {
           if ([delegate respondsToSelector:@selector(browserContext:didFail:withRuntimeError:)])
             [delegate browserContext:context didFail:identifier
@@ -283,7 +385,7 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
         break;
       }
       case extensions::ExtensionError::Type::kManifestError: {
-        PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+        PostExtensionCallback(delivery_lifetime_, callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
                                            ArcBrowserContext* context) {
           if ([delegate respondsToSelector:@selector(browserContext:didFail:withManifestError:)])
             [delegate browserContext:context didFail:identifier withManifestError:message];
@@ -291,7 +393,7 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
         break;
       }
       case extensions::ExtensionError::Type::kInternalError: {
-        PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+        PostExtensionCallback(delivery_lifetime_, callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
                                            ArcBrowserContext* context) {
           if ([delegate respondsToSelector:@selector(browserContext:didFail:withInternalError:)])
             [delegate browserContext:context didFail:identifier withInternalError:message];
@@ -309,31 +411,92 @@ class ExtensionContextObserver : public extensions::ExtensionRegistryObserver,
   void OnToolbarPinnedActionsChanged() override {
     if (*order_suppression_) return;
     NSArray* order = PinnedOrder(toolbar_);
-    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+    PostExtensionCallback(delivery_lifetime_, callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
                                        ArcBrowserContext* context) {
       if ([delegate respondsToSelector:@selector(browserContext:didChangePinnedExtensionOrder:)])
         [delegate browserContext:context didChangePinnedExtensionOrder:order];
     });
   }
  private:
+  enum class Phase { kUnattached, kAttaching, kAttached, kShutdown };
+
+  void ObserveProfile() {
+    if (!profile_observation_.IsObserving() && profile_)
+      profile_observation_.Observe(profile_.get());
+  }
+  void Attach(extensions::ExtensionRegistry* registry,
+              extensions::ErrorConsole* errors,
+              ToolbarActionsModel* toolbar,
+              extensions::ExtensionSystem* system) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (phase_ == Phase::kShutdown) return;
+    registry_ = registry;
+    errors_ = errors;
+    toolbar_ = toolbar;
+    if (registry_) registry_->AddObserver(this);
+    if (errors_) errors_->AddObserver(this);
+    load_errors_ = extensions::LoadErrorReporter::GetInstance();
+    load_errors_->AddObserver(this);
+    if (toolbar_) toolbar_->AddObserver(this);
+    phase_ = Phase::kAttached;
+    // This remains the existing system-ready task boundary. It does not prove
+    // native ordering against Toolbar's earlier ready().Post registration.
+    // Binding a delegate itself never calls Ready or replays any missed event.
+    if (system && !system->is_ready())
+      system->ready().Post(FROM_HERE,
+          base::BindOnce(&ExtensionContextObserver::Ready,
+                         weak_factory_.GetWeakPtr()));
+  }
   void Ready() {
-    PostExtensionCallback(callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
+    PostExtensionCallback(delivery_lifetime_, callbacks_, ^(id<ArcExtensionsContextCallbacks> delegate,
                                        ArcBrowserContext* context) {
       if ([delegate respondsToSelector:@selector(browserContextDidExtensionSystemReady:)])
         [delegate browserContextDidExtensionSystemReady:context];
     });
   }
-  const std::weak_ptr<ExtensionCallbackTarget> callbacks_;
-  const std::shared_ptr<bool> order_suppression_;
-  raw_ptr<extensions::ExtensionRegistry> registry_;
-  raw_ptr<extensions::ErrorConsole> errors_;
-  raw_ptr<extensions::LoadErrorReporter> load_errors_;
-  raw_ptr<ToolbarActionsModel> toolbar_;
+  Phase phase_ = Phase::kUnattached;
+  bool reporter_initialized_ = false;
+  base::WeakPtr<Profile> profile_;
+  std::weak_ptr<ExtensionCallbackTarget> callbacks_;
+  std::shared_ptr<bool> order_suppression_;
+  std::shared_ptr<ExtensionDeliveryLifetime> delivery_lifetime_;
+  raw_ptr<extensions::ExtensionRegistry> registry_ = nullptr;
+  raw_ptr<extensions::ErrorConsole> errors_ = nullptr;
+  raw_ptr<extensions::LoadErrorReporter> load_errors_ = nullptr;
+  raw_ptr<ToolbarActionsModel> toolbar_ = nullptr;
+  base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
   base::WeakPtrFactory<ExtensionContextObserver> weak_factory_{this};
 };
+
+constexpr char kContextObserverKey[] = "ArcExtensionsRegularProfileObserver";
+
+ExtensionContextObserver* EnsureRegularProfileObserver(
+    Profile* profile, bool after_reporter_init) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Do not infer native OTR/guest/system fanout from redirected services.
+  if (!profile || !profile->IsRegularProfile() || profile->IsOffTheRecord() ||
+      profile->ShutdownStarted()) return nullptr;
+  auto* observer = static_cast<ExtensionContextObserver*>(
+      profile->GetUserData(kContextObserverKey));
+  if (!observer) {
+    auto state = std::make_unique<ExtensionContextObserver>(profile);
+    observer = state.get();
+    profile->SetUserData(kContextObserverKey, std::move(state));
+  }
+  auto alive = observer->GetWeakPtr();
+  observer->EnsureRegularAttachment(after_reporter_init);
+  return alive.get();
+}
 }  // namespace
 
 namespace arc {
+void InstallExtensionProfileInitializationHook() {
+  // Called before ChromeMain: only bind storage, without CommandLine, task
+  // runner, Profile or facade access. Chrome gates delivery on host mode.
+  arcmod::GetExtensionProfileWillInitializeHook() = base::BindRepeating(
+      [](Profile* profile) { EnsureRegularProfileObserver(profile, true); });
+}
+
 ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& extension) {
   ExtensionInfo result;
   result.name = extension.name();
@@ -362,7 +525,8 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
   uintptr_t _serviceIdentity;
   __weak ArcBrowserContext* _owner;
   __weak id<ArcExtensionsContextCallbacks> _delegate;
-  std::unique_ptr<ExtensionContextObserver> _observer;
+  std::unique_ptr<ExtensionContextObserver> _observer;  // Legacy non-regular path.
+  base::WeakPtr<ExtensionContextObserver> _profileObserver;
   std::shared_ptr<bool> _orderSuppression;
   std::shared_ptr<ExtensionCallbackTarget> _callbackTarget;
 }
@@ -380,6 +544,10 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
     if (Profile* profile = ArcProfileFrom(context)) {
       _profile = profile->GetWeakPtr();
       _serviceIdentity = reinterpret_cast<uintptr_t>(profile);
+      if (auto* state = EnsureRegularProfileObserver(profile, false)) {
+        _profileObserver = state->GetWeakPtr();
+        _orderSuppression = state->order_suppression();
+      }
       arc::EnsureInternalExtension(profile);
     }
   }
@@ -394,13 +562,25 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
 - (void)setDelegate:(id)delegate {
   _delegate = delegate;
   if (!delegate) {
-    _observer.reset();
-    _callbackTarget.reset();
+    if (_profileObserver) _profileObserver->ClearCallbacks(_callbackTarget);
+    // A callback already running may hold the old target while app code
+    // reenters this setter. Suppress it explicitly before releasing ownership.
+    if (_callbackTarget) _callbackTarget->delegate = nil;
+    _observer.reset();  // OTR/guest/system retain the existing late behavior.
+    _callbackTarget.reset();  // Invalidate event-time weak targets already queued.
     return;
   }
   if (_callbackTarget) _callbackTarget->delegate = delegate;
   else _callbackTarget = std::make_shared<ExtensionCallbackTarget>(delegate, _owner);
-  if (!_observer && _profile)
+  if (_profile && _profile->IsRegularProfile()) {
+    if (auto* state = EnsureRegularProfileObserver(_profile.get(), false)) {
+      _profileObserver = state->GetWeakPtr();
+      _orderSuppression = state->order_suppression();
+      state->BindCallbacks(_callbackTarget);
+    }
+    return;
+  }
+  if (!_observer && _profile && !_profile->ShutdownStarted())
     _observer = std::make_unique<ExtensionContextObserver>(
         _profile.get(), _callbackTarget, _orderSuppression);
 }
@@ -552,8 +732,8 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
     std::string value = base::SysNSStringToUTF8(identifier);
     if (seen.insert(value).second) requested.push_back(std::move(value));
   }
-  // Shared independently of the observer: reentrant setDelegate:nil can delete
-  // the observer while this guard is alive.
+  // The persistent regular observer and every facade use the same guard.
+  // Legacy observation may still be destroyed by reentrant setDelegate:nil.
   auto suppression = _orderSuppression;
   base::AutoReset<bool> setting(suppression.get(), true);
   const auto previous = model->pinned_action_ids();

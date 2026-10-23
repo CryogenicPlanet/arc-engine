@@ -26,7 +26,7 @@ assert 'command_weak_factory_.InvalidateWeakPtrs();\n  impl_->DestroyFinalProtoc
 close=source.split('  void Close() {',1)[1].split('  void DispatchProtocolMessage(',1)[0]
 after=close.split('host->DetachClient(this);',1)[1]
 for forbidden in ['host_','callback_','attached_','weak_factory_','this->']:assert forbidden not in after,forbidden
-observed=source.split('  void WebContentsDestroyed() override {',2)[2].split('  void RegisterBridge',1)[0] if False else source.split('    DeliverObservedHostClosed(pending, subscriptions);',1)[1].split('  void RegisterBridge',1)[0]
+observed=source.split('    DeliverObservedHostClosed(pending, subscriptions);',1)[1].split('  void RegisterBridge',1)[0]
 assert 'state.' not in observed and 'peer->' not in observed
 helper=source.split('void DeliverObservedHostClosed(',1)[1].split('// Keep retired panel blocks alive',1)[0]
 assert 'sorted' not in helper and 'NotifySubscription' not in helper

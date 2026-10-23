@@ -8,6 +8,7 @@ from pathlib import Path
 import argparse,subprocess,json,ast,hashlib
 parser=argparse.ArgumentParser();parser.add_argument('--stage',type=Path,required=True);args=parser.parse_args();stage=args.stage.resolve();root=Path.cwd()
 s=(root/'arc/browser/webextras_devtools_logical_peer_test.py').read_text()
+assert hashlib.sha256(s.encode()).hexdigest()=='66c6c510f179450784e92cd7a4c898e324cc0128a55fe30aaae7e06c855a9ccd'
 # Preserve the frozen test; adapt only known changed source/mocks privately.
 s=s.replace("['class ProtocolClient final','NSError* DevToolsError('","['NSError* DevToolsError('")
 s=s.replace("for old,new in [('- (void)receiveMessage:','void receiveMessage('),('- (NSNumber*)openProtocolConnection:'","for old,new in [('- (NSNumber*)openProtocolConnection:'")

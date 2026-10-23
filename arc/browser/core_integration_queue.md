@@ -1,5 +1,24 @@
 # Current core integration queue — proposals UNAPPLIED
 
+Latest actual transaction: integration10 was ROLLED_BACK and parent-reaped exit1.
+Its candidate passed launch9/9 and tabs11/11, but an index guard rejected a
+validated UNTR cache-only change. Source/MANIFEST and the exact maintained patch
+output set were restored, then the baseline was rebuilt/packaged and passed
+launch9/9. None of those seven patches is retained. Evidence:
+`results/core-runtime/20261023T170241Z-seven-integration/` and
+`logs/wp/core.run10-candidate-review/`. Candidate raw43/61/61 and core17/16/21
+are historical evidence, not current-source acceptance. Current owned WC stays
+47534304; shared peer integration state must be read on the live board.
+
+Retry preparation is private: strict validated UNTR-only index guard with no
+index writes, and footer-placement variant of close transport41 preserving
+every original added byte and foreign hooks. Conditional E preflight and all
+eight actual syntax checks pass; peer retention, fresh base checks and reviewed
+new pins are required before queueing. See
+`logs/wp/core.integration-run11-index-guard/`,
+`logs/wp/core.shared-header-seven-preflight/`, and
+`logs/wp/core.integration-run11-currentE/`. These are not adoption receipts.
+
 ACCOUNTING ADAPTER bec65249 is now HOLD for newly proved selected UI registration
 eligibility and functional logical-self/outer dispatcher guard (board141516).
 The strict11-route reconstruction remains valid evidence of composition ONLY,
@@ -10,10 +29,11 @@ CURRENT production47534304 includes the APPLIED progress-only repair0e8cd518.
 Use logs/wp/core.progress-publication/manifest.json for current bases, route variants
 and exact reconstructed16file target. logs/wp/core.integration-current/manifest.json
 is the historical ff957 composition, not the current production starting point.
-The first TEN patches strictly apply in sequence to current production bases; final
-16-file reconstruction exactly matches reviewed native transport and final
-noncreating state stages. Production bases unchanged. No full-stack link/build/
-runtime is claimed; these patches do not activate public synchronous Close.
+The historical first TEN-patch composition strictly reconstructed the reviewed
+16-file target. Later shared-header integrations require a fresh context rebase;
+that historical proof does not establish applicability to today's shared tree.
+No full-stack link/build/runtime is claimed; these proposals do not activate
+public synchronous Close.
 Do not copy an old whole WebContents file: current production47534304 includes the prior ff957456 quit guard, per-receipt
 queued progress and all4973732 integration. Exact final16 target unchanged.
 

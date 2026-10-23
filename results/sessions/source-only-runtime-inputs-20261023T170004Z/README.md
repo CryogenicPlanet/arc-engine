@@ -1,0 +1,1 @@
+Frozen tools and finalized golden inputs before lock queue. Baseline steps are snapshots of existing canonical close cutoffs, not passing acceptance. Source/native/MANIFEST/maintained patches must be merged by the reviewed transaction after approved adoption. Optional full uses only existing v5 normal WINDOW probe.
