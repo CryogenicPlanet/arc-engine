@@ -1,7 +1,8 @@
 // Copyright 2026 ArcMod. Command bar ranking values. See specs/ArcCommandBarRanking*.md.
 // These objects transport values; they do not run ranking or training.
 // Original engine C++ aggregate and native-pointer selectors are intentionally
-// omitted. Internal helpers below copy our own storage instead.
+// omitted. File-local ivars below permit direct copies of our own storage
+// without introducing extra ObjC calls at the recorded boundary.
 
 #import "arc/api/arc_internal.h"
 
@@ -97,7 +98,10 @@ NSMutableArray<NSNumber*>* BoxFloats(const std::vector<float>& values) {
 
 }  // namespace
 
-ARC_EXPORT @interface ArcCommandBarRankingCandidate : NSObject
+ARC_EXPORT @interface ArcCommandBarRankingCandidate : NSObject {
+ @public
+  std::optional<RankingCandidate> _candidate;
+}
 @property(nonatomic, readonly, copy) NSString* candidateID;
 @property(nonatomic, readonly, copy) NSString* archetype;
 @property(nonatomic, readonly, copy) NSString* destination;
@@ -111,12 +115,9 @@ ARC_EXPORT @interface ArcCommandBarRankingCandidate : NSObject
 @property(nonatomic, readonly) BOOL isBaseDomainMatch;
 @property(nonatomic, readonly) BOOL isTitlePrefix;
 @property(nonatomic, readonly, copy) NSArray<NSNumber*>* titleEmbedding;
-- (const RankingCandidate&)arcRankingCandidateValue;
 @end
 
-@implementation ArcCommandBarRankingCandidate {
-  std::optional<RankingCandidate> _candidate;
-}
+@implementation ArcCommandBarRankingCandidate
 
 - (instancetype)init:(NSString*)candidateID
              archetype:(NSString*)archetype
@@ -139,11 +140,6 @@ ARC_EXPORT @interface ArcCommandBarRankingCandidate : NSObject
                        UnboxFloats(titleEmbedding));
   }
   return self;
-}
-
-- (const RankingCandidate&)arcRankingCandidateValue {
-  CHECK(_candidate);
-  return *_candidate;
 }
 
 - (NSString*)candidateID {
@@ -213,33 +209,20 @@ ARC_EXPORT @interface ArcCommandBarRankingCandidate : NSObject
 
 @end
 
-ARC_EXPORT @interface ArcCommandBarRankingInput : NSObject
-@property(nonatomic, readonly, copy) NSArray<NSNumber*>* queryEmbedding;
-- (instancetype)initWithArcRankingInputValue:(const RankingInput&)value;
-- (const RankingInput&)arcRankingInputValue;
-@end
-
-@implementation ArcCommandBarRankingInput {
+ARC_EXPORT @interface ArcCommandBarRankingInput : NSObject {
+ @public
   std::optional<RankingInput> _input;
 }
+@property(nonatomic, readonly, copy) NSArray<NSNumber*>* queryEmbedding;
+@end
+
+@implementation ArcCommandBarRankingInput
 
 - (instancetype)init:(NSArray<NSNumber*>*)queryEmbedding {
   if ((self = [super init])) {
     _input.emplace(UnboxFloats(queryEmbedding));
   }
   return self;
-}
-
-- (instancetype)initWithArcRankingInputValue:(const RankingInput&)value {
-  if ((self = [super init])) {
-    _input = value;
-  }
-  return self;
-}
-
-- (const RankingInput&)arcRankingInputValue {
-  CHECK(_input);
-  return *_input;
 }
 
 - (NSArray<NSNumber*>*)queryEmbedding {
@@ -277,16 +260,16 @@ ARC_EXPORT @interface ArcCommandBarRankingResult : NSObject
 
 @end
 
-ARC_EXPORT @interface ArcCommandBarRankingTensor : NSObject
+ARC_EXPORT @interface ArcCommandBarRankingTensor : NSObject {
+ @public
+  std::optional<RankingTensor> _tensor;
+}
 @property(nonatomic, readonly, copy) NSString* name;
 @property(nonatomic, readonly, copy) NSArray<NSNumber*>* shape;
 @property(nonatomic, readonly, copy) NSArray<NSNumber*>* data;
-- (const RankingTensor&)arcRankingTensorValue;
 @end
 
-@implementation ArcCommandBarRankingTensor {
-  std::optional<RankingTensor> _tensor;
-}
+@implementation ArcCommandBarRankingTensor
 
 - (instancetype)init:(NSString*)name
                   shape:(NSArray<NSNumber*>*)shape
@@ -300,11 +283,6 @@ ARC_EXPORT @interface ArcCommandBarRankingTensor : NSObject
     _tensor.emplace(ArcUTF8(name), std::move(dimensions), UnboxFloats(data));
   }
   return self;
-}
-
-- (const RankingTensor&)arcRankingTensorValue {
-  CHECK(_tensor);
-  return *_tensor;
 }
 
 - (NSString*)name {
@@ -395,12 +373,15 @@ ARC_EXPORT @interface ArcCommandBarRankingExample : NSObject
           selectedIndex:(int)selectedIndex {
   if ((self = [super init])) {
     CHECK(input);
+    CHECK(input->_input);
     std::vector<RankingCandidate> values;
     values.reserve(candidates.count);
     for (ArcCommandBarRankingCandidate* candidate in candidates) {
-      values.push_back([candidate arcRankingCandidateValue]);
+      CHECK(candidate);
+      CHECK(candidate->_candidate);
+      values.push_back(*candidate->_candidate);
     }
-    _example.emplace([input arcRankingInputValue], std::move(values),
+    _example.emplace(*input->_input, std::move(values),
                      selectedIndex);
   }
   return self;
@@ -409,7 +390,7 @@ ARC_EXPORT @interface ArcCommandBarRankingExample : NSObject
 - (ArcCommandBarRankingInput*)input {
   CHECK(_example);
   return [[ArcCommandBarRankingInput alloc]
-      initWithArcRankingInputValue:_example->input];
+      init:BoxFloats(_example->input.query_embedding)];
 }
 
 - (int)selectedIndex {
@@ -464,7 +445,9 @@ ARC_EXPORT @interface ArcCommandBarRankingTrainingResult : NSObject
     std::vector<RankingTensor> tensors;
     tensors.reserve(delta.count);
     for (ArcCommandBarRankingTensor* tensor in delta) {
-      tensors.push_back([tensor arcRankingTensorValue]);
+      CHECK(tensor);
+      CHECK(tensor->_tensor);
+      tensors.push_back(*tensor->_tensor);
     }
     _result.emplace(static_cast<int>(outcome), static_cast<int>(failureReason),
                     std::move(tensors), ArcUTF8(modelName), modelVersion,

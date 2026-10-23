@@ -12,6 +12,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/arcmod/arcmod_hooks.h"
+#include "arc/common/ad_block_browser.h"
+#import <objc/message.h>
 #include "content/public/browser/render_frame_host.h"
 #include "ui/gfx/geometry/rect.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -231,6 +233,8 @@ uint64_t NextDiagnosticID() {
     wrapper = [[self alloc] initWithWebContents:contents];
     data->wrapper = wrapper;
     data->weak_wrapper = wrapper;
+    // Renderer package: per-frame config (ad blocking, effects) before the first navigation.
+    arc::InitializeRendererBridge(contents);
   }
   return wrapper;
 }
@@ -342,10 +346,16 @@ uint64_t NextDiagnosticID() {
   if (!native || generation != _refreshGeneration) { return; }
   self.visibility = visibility;
 }
+// Sub-objects (DevTools, media session, ...) that implement -initWithArcWebContents: get this wrapper;
+// shell classes get plain init.
 - (id)serviceNamed:(NSString*)className {
   id service = _services[className];
   if (!service) {
-    service = [[NSClassFromString(className) alloc] init];
+    Class cls = NSClassFromString(className);
+    SEL withContents = NSSelectorFromString(@"initWithArcWebContents:");
+    service = [cls instancesRespondToSelector:withContents]
+                  ? ((id (*)(id, SEL, id))objc_msgSend)([cls alloc], withContents, self)
+                  : [[cls alloc] init];
     if (service) {
       _services[className] = service;
     }
@@ -373,6 +383,7 @@ uint64_t NextDiagnosticID() {
 }
 - (void)setNavigationDelegate:(id)delegate { _navigationDelegate = delegate; }
 - (void)setUIDelegate:(id)delegate { _uiDelegate = delegate; }
+- (id)uiDelegate { return _uiDelegate; }
 - (void)setActionsDelegate:(id)delegate { _actionsDelegate = delegate; }
 - (void)setTopBandColorDelegate:(id)delegate { _topBandColorDelegate = delegate; }
 - (NSView*)nativeView { return _contents ? _contents->GetNativeView().GetNativeNSView() : nil; }
@@ -442,3 +453,8 @@ uint64_t NextDiagnosticID() {
   return [ArcWebContents createWithProfile:self.profile configuration:configuration];
 }
 @end
+
+// Weak default so the framework links before the renderer package defines it (renderer's definition wins).
+namespace arc {
+__attribute__((weak)) void InitializeRendererBridge(content::WebContents* contents) {}
+}  // namespace arc

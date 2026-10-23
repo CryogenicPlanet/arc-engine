@@ -49,7 +49,7 @@ Local source inspection found:
 owned snapshots, nil-string conversion, float/int/double element widths,
 array order, optional engagement, and documented integer narrowing. Original
 engine-internal native pointer/aggregate selectors are not reproduced, per
-`ARCHITECTURE.md`; the ranking layer uses its own native value accessors.
+`ARCHITECTURE.md`; ranking values are copied directly within their owned file.
 
 `ArcCommandBarRankingExample.candidates` and
 `ArcCommandBarRankingTrainingResult.delta` return fresh empty mutable arrays:
@@ -72,6 +72,11 @@ is under `results/ai-values/`. The 2026-10-23 09:04 UTC linked-engine raw
 comparison matched exactly: 14 classes, 74 public methods, 60 properties, four
 value fixtures, and signed-narrowing grids. Neither probe runs a browser or AI
 service; these results establish only the exercised value-transport surface.
+The final locked recorder probe captured 414 calls on each engine covering all
+74 public methods and found zero differences, including counts and nesting.
+Raw and recorded JSON also matched, checking recorder noninterference. The
+recorder loads after the framework's ObjC classes register; missing method
+coverage fails the harness before a diff is produced.
 
 ## Acceptance blockers and lead requests
 
@@ -80,6 +85,8 @@ transcripts contained no calls to these classes or `createAIService:`.
 An AI/command-bar scenario or explicit original-service probes are required
 to establish callbacks, errors, result shapes, cancellation and scheduling.
 The scenarios worker was notified on Chirp (#132892, #132918, #132952).
+The later 09:11 UTC census found zero AI calls in all 16 finalized transcripts;
+candidate directories were excluded.
 
 Execution remains unimplemented: `ArcAIService`, the application
 `createAIService:` category, `ArcContentConversionService`, and
@@ -97,3 +104,13 @@ claimed to be accepted behavior for invalid callers.
 The original engine's actual invalid-type error description is `Invalid type`.
 This contradicts the `Invalidtype` text in `specs/ArcAIServiceConfiguration.md`,
 which reflects a decompiler constant identifier rather than the literal.
+
+For the remaining `ArcWebContentsAIAgent`, original-engine disassembly recovers
+key values 2/3/4/5 as DEL/CR/ESC/TAB with key codes 51/36/53/48, default empty
+string/key code zero (`0x473e230`, table `0xe21b208`). Events use zero modifiers,
+no repeat, no context, current window number and system uptime. Text input
+iterates UTF-16 code units with key code zero. The original performs no focus
+change. Cached agent identity is explicit at `0x4441b4c`. However, the exact
+frame selected through native Impl+`0x8d8` remains unmapped; choosing main or
+focused frame interchangeably would invent semantics. No event implementation
+or dynamic input equivalence is claimed.

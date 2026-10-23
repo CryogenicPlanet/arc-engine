@@ -6,8 +6,11 @@
 #include "base/scoped_observation.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/download/download_core_service.h"
+#include "chrome/browser/download/download_core_service_factory.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_item_utils.h"
 
 ARC_EXPORT @interface ArcDownloadItem : NSObject
 + (instancetype)wrapperForDownload:(download::DownloadItem*)item;
@@ -38,6 +41,7 @@ class DownloadLifetime final : public download::DownloadItem::Observer {
 
 @implementation ArcDownloadItem {
   std::unique_ptr<DownloadLifetime> _lifetime;
+  ArcWebContents* _webContents;
 }
 + (instancetype)wrapperForDownload:(download::DownloadItem*)item {
   if (!item) {
@@ -60,11 +64,18 @@ class DownloadLifetime final : public download::DownloadItem::Observer {
   return _lifetime && _lifetime->item() ? ArcNSString(_lifetime->item()->GetTargetFilePath().value()) : @"";
 }
 - (NSString*)sourceURL {
-  return _lifetime && _lifetime->item() ? ArcNSString(_lifetime->item()->GetURL().spec()) : @"";
+  return _lifetime && _lifetime->item() ? ArcNSString(_lifetime->item()->GetTabUrl().spec()) : @"";
 }
 - (NSString*)id { return _lifetime && _lifetime->item() ? ArcNSString(_lifetime->item()->GetGuid()) : @""; }
 - (NSDate*)startTime {
   return _lifetime && _lifetime->item() ? ArcNSDate(_lifetime->item()->GetStartTime()) : nil;
+}
+- (ArcWebContents*)webContents {
+  if (!_webContents && _lifetime && _lifetime->item()) {
+    _webContents = [ArcWebContents wrapperForWebContents:
+        content::DownloadItemUtils::GetWebContents(_lifetime->item())];
+  }
+  return _webContents;
 }
 - (NSInteger)currentState {
   return _lifetime && _lifetime->item() ? static_cast<NSInteger>(_lifetime->item()->GetState()) + 1 : 0;
@@ -208,6 +219,8 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
   Profile* profile = ArcProfileFrom(owner);
   if (!profile) { return; }
   _observer = std::make_unique<DownloadsObserver>(profile->GetDownloadManager(), owner, delegate);
+  DownloadCoreServiceFactory::GetForBrowserContext(profile)->InitializeHistory(
+      DownloadCoreService::DownloadHistoryLoadTrigger::kDownloadsPage);
   // Registration never calls the app synchronously, even if the manager has
   // already initialized. A weak capture also cancels delivery after teardown.
   __weak ArcBrowserContextDownloads* weakSelf = self;

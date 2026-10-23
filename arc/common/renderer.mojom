@@ -1,9 +1,20 @@
 // Copyright 2026 ArcMod.
 module arc.mojom;
 
+import "mojo/public/mojom/base/file.mojom";
+
+interface RendererHost {
+  // Blink calls ReportDisallowedLoad only for an actually disallowed load.
+  ReportDisallowedLoad();
+};
+
 // Associated with a RenderFrame so ordering is preserved with navigation IPC.
 // This is our internal transport, not ArcCore's binary-private Mojo protocol.
 interface RenderFrameAgent {
   InsertStylesheet(string identifier, string stylesheet);
   RemoveStylesheet(string identifier);
+  ConfigureAdBlock(mojo_base.mojom.ReadOnlyFile? indexed_ruleset,
+                   array<string> excluded_origins,
+                   uint64 ruleset_id,
+                   pending_associated_remote<RendererHost> host);
 };

@@ -114,6 +114,19 @@ inline NSString* const kArcBrowserTabsChangedNotification = @"ArcBrowserTabsChan
 // core: an ArcBrowser is about to close (its Browser is going away). object: the ArcBrowser.
 inline NSString* const kArcBrowserWillCloseNotification = @"ArcBrowserWillClose";
 
+// ---- Cross-package entry points (lead-owned declarations) ---------------------------------------
+// Called by core; defined by the named package. Packages that can be absent get a weak no-op default in
+// the caller's file so the framework always links.
+
+// sessions: an ArcBrowser was created (end of core's initializer).
+void ArcSessionsBrowserCreated(ArcBrowser* browser);
+// sessions: core is about to report a newly inserted tab; YES means sessions already reported it as a
+// restore (browser:didRestoreWebContents:...) and core must not send didCreateNewWebContents.
+BOOL ArcSessionsDidInsertWebContents(ArcBrowser* browser, content::WebContents* contents);
+
+// The app's ArcBrowserApplicationDelegate (ADKApplication), weak; nil before -[ArcBrowserApplication init:].
+id ArcBrowserApplicationDelegateObject();
+
 // ---- app package: URL loading (implemented in arc/api/arc_app_*.mm) ------------------------------
 
 @class ArcURLLoadConfiguration;

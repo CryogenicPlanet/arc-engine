@@ -1,11 +1,11 @@
 // Copyright 2026 ArcMod. Application URL loads use Chromium's system network context.
 #include "arc/api/arc_internal.h"
-#import <objc/runtime.h>
 #include <array>
 #include <cmath>
 #include <optional>
 #include "base/functional/bind.h"
 #include "base/files/file_path.h"
+#include "base/no_destructor.h"
 #include "base/uuid.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
@@ -107,19 +107,15 @@ ARC_EXPORT @interface ArcURLLoadCancellationToken : NSObject {
 @end
 
 // Requests outlive the caller's reference to the cancellation token, until completion or cancellation.
-static NSMutableSet<ArcURLLoadCancellationToken*>* PendingLoads(id owner) {
-  static char key;
-  NSMutableSet* pending = objc_getAssociatedObject(owner, &key);
-  if (!pending) {
-    pending = [NSMutableSet set];
-    objc_setAssociatedObject(owner, &key, pending, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-  }
-  return pending;
+static NSMutableSet<ArcURLLoadCancellationToken*>* PendingLoads() {
+  static base::NoDestructor<NSMutableSet<ArcURLLoadCancellationToken*>*> pending(
+      [NSMutableSet set]);
+  return *pending;
 }
 
 ARC_EXPORT @interface ArcBrowserApplication : NSObject
 @end
-static ArcURLLoadCancellationToken* LoadURL(id owner, ArcURLLoadConfiguration* config, id<ArcURLLoadDelegate> delegate, network::SharedURLLoaderFactory* factory) {
+static ArcURLLoadCancellationToken* LoadURL(ArcURLLoadConfiguration* config, id<ArcURLLoadDelegate> delegate, network::SharedURLLoaderFactory* factory) {
   std::string identifier = base::Uuid::GenerateRandomV4().AsLowercaseString();
   ArcURLLoadCancellationToken* token = [[ArcURLLoadCancellationToken alloc] initWithToken:&identifier];
   token->_delegate = delegate;
@@ -174,7 +170,7 @@ static ArcURLLoadCancellationToken* LoadURL(id owner, ArcURLLoadConfiguration* c
   }
   token->_loader->SetOnResponseStartedCallback(base::BindOnce(^(const GURL& url, const network::mojom::URLResponseHead& head) {
     ArcURLLoadCancellationToken* current = weakToken;
-    if (!current) return;
+    if (!current || current->_terminal) return;
     NSMutableDictionary* headers = [NSMutableDictionary dictionary];
     int code = 0;
     if (head.headers) {
@@ -187,12 +183,10 @@ static ArcURLLoadCancellationToken* LoadURL(id owner, ArcURLLoadConfiguration* c
     if ([target respondsToSelector:@selector(didReceiveHeaders:withFinalURL:withCode:withHeaders:)])
       [target didReceiveHeaders:current->_identifier withFinalURL:ArcNSString(url.spec()) withCode:code withHeaders:headers];
   }));
-  NSMutableSet* pending = PendingLoads(owner);
-  [pending addObject:token];
-  __weak NSMutableSet* weakPending = pending;
+  [PendingLoads() addObject:token];
   auto complete = base::BindOnce(^(std::optional<std::string> body) {
     ArcURLLoadCancellationToken* current = weakToken;
-    if (!current) return;
+    if (!current || current->_terminal || !current->_loader) return;
     int error = current->_loader->NetError();
     id<ArcURLLoadDelegate> target = current->_delegate;
     if (error) {
@@ -202,21 +196,27 @@ static ArcURLLoadCancellationToken* LoadURL(id owner, ArcURLLoadConfiguration* c
       if (body && [target respondsToSelector:@selector(didReceiveData:withData:)])
         [target didReceiveData:current->_identifier withData:[NSData dataWithBytes:body->data() length:body->size()]];
       // A delegate may cancel inside didReceiveData:.
-      if (current->_loader) {
+      if (!current->_terminal && current->_loader) {
         current->_terminal = YES;
         if ([target respondsToSelector:@selector(didFinish:)]) [target didFinish:current->_identifier];
       }
     }
-    [weakPending removeObject:current];
+    // OnComplete may be running on the consumer itself. Keep it alive until
+    // the callback stack unwinds, even if the caller discarded its token.
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
+      current->_loader.reset();
+      current->_consumer.reset();
+    }));
+    [PendingLoads() removeObject:current];
   });
   if (config.streamResponseData) {
     token->_consumer = std::make_unique<ArcURLStreamConsumer>(base::BindRepeating(^(std::string_view data) {
       ArcURLLoadCancellationToken* current = weakToken;
-      if (!current || !current->_loader) return false;
+      if (!current || current->_terminal || !current->_loader) return false;
       id<ArcURLLoadDelegate> target = current->_delegate;
       if ([target respondsToSelector:@selector(didReceiveData:withData:)])
         [target didReceiveData:current->_identifier withData:[NSData dataWithBytes:data.data() length:data.size()]];
-      return current->_loader != nullptr;
+      return !current->_terminal && current->_loader != nullptr;
     }), std::move(complete));
     token->_loader->DownloadAsStream(factory, token->_consumer.get());
   } else {
@@ -225,12 +225,21 @@ static ArcURLLoadCancellationToken* LoadURL(id owner, ArcURLLoadConfiguration* c
   }
   return token;
 }
-static void CancelLoad(id owner, ArcURLLoadCancellationToken* token) {
-  if (!token || token->_terminal || ![PendingLoads(owner) containsObject:token] || !token->_loader) return;
+ArcURLLoadCancellationToken* ArcStartURLLoad(Profile* profile, ArcURLLoadConfiguration* configuration, id delegate) {
+  scoped_refptr<network::SharedURLLoaderFactory> factory = profile
+      ? profile->GetDefaultStoragePartition()->GetURLLoaderFactoryForBrowserProcess()
+      : SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
+  return LoadURL(configuration, delegate, factory.get());
+}
+
+void ArcCancelURLLoad(ArcURLLoadCancellationToken* token) {
+  if (!token || token->_terminal || ![PendingLoads() containsObject:token] || !token->_loader) return;
   token->_terminal = YES;
   token->_loader.reset();
-  [PendingLoads(owner) removeObject:token];
+  [PendingLoads() removeObject:token];
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
+    // A delegate can cancel inside the consumer's OnDataReceived callback.
+    token->_consumer.reset();
     id<ArcURLLoadDelegate> delegate = token->_delegate;
     if ([delegate respondsToSelector:@selector(didFail:withError:)])
       [delegate didFail:token->_identifier withError:net::ERR_ABORTED];
@@ -239,17 +248,7 @@ static void CancelLoad(id owner, ArcURLLoadCancellationToken* token) {
 
 @implementation ArcBrowserApplication (AppURLLoading)
 - (ArcURLLoadCancellationToken*)loadUrl:(ArcURLLoadConfiguration*)config withDelegate:(id<ArcURLLoadDelegate>)delegate {
-  return LoadURL(self, config, delegate, SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory().get());
+  return ArcStartURLLoad(nullptr, config, delegate);
 }
-- (void)cancelUrlLoad:(ArcURLLoadCancellationToken*)token { CancelLoad(self, token); }
-@end
-
-// The profile API uses exactly the same token/delegate protocol with its own network context.
-@implementation ArcBrowserContext (AppURLLoading)
-- (ArcURLLoadCancellationToken*)loadUrl:(ArcURLLoadConfiguration*)config withDelegate:(id<ArcURLLoadDelegate>)delegate {
-  Profile* profile = [self profile];
-  if (!profile) return nil;
-  return LoadURL(self, config, delegate, profile->GetDefaultStoragePartition()->GetURLLoaderFactoryForBrowserProcess().get());
-}
-- (void)cancelUrlLoad:(ArcURLLoadCancellationToken*)token { CancelLoad(self, token); }
+- (void)cancelUrlLoad:(ArcURLLoadCancellationToken*)token { ArcCancelURLLoad(token); }
 @end

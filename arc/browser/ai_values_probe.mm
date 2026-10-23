@@ -115,6 +115,13 @@ int main(int argc, char** argv) {
       fprintf(stderr, "%s\n", dlerror());
       return 3;
     }
+    // Cold dlopen registers ObjC classes after dyld's add-image callback. Load
+    // the recorder afterward so its callback sees the already registered classes.
+    const char* recorder = getenv("ARC_AI_RECORDER_LIBRARY");
+    if (recorder && !dlopen(recorder, RTLD_NOW | RTLD_LOCAL)) {
+      fprintf(stderr, "Recorder: %s\n", dlerror());
+      return 6;
+    }
     NSDictionary<NSString*, NSString*>* fieldNames = @{
       @"ArcAIInferenceModel": @"modelType directory",
       @"ArcAIInferenceConfiguration": @"maxTokens streamAfterEveryNTokens",

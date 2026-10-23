@@ -45,8 +45,10 @@ ARC_EXPORT @interface ArcSearchEngine : NSObject
 - (NSString*)keyword {
   return base::SysUTF16ToNSString(_data.keyword());
 }
+// Canonical form, as Arc's engine returns it ({searchTerms} percent-encoded).
 - (NSString*)url {
-  return base::SysUTF8ToNSString(_data.url());
+  GURL url(_data.url());
+  return base::SysUTF8ToNSString(url.is_valid() ? url.spec() : _data.url());
 }
 - (NSString*)faviconUrl {
   return base::SysUTF8ToNSString(_data.favicon_url.spec());

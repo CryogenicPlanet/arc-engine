@@ -3,6 +3,8 @@
 #import "arc/api/arc_internal.h"
 
 #include "arc/browser/arc_browser_window.h"
+#include "arc/browser/extensions_bridge.h"
+#import <objc/message.h>
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -140,9 +142,14 @@ struct ArcBrowserHolder : base::SupportsUserData::Data {
     _context = [ArcBrowserContext wrapperForProfile:browser->GetProfile()];
     _browserCreateParams = [[ArcBrowserCreateParams alloc]
         initWithBrowserCreateParams:&BrowserInitState::From(browser)->create_params()];
-    _sidePanel = [[NSClassFromString(@"ArcBrowserSidePanel") alloc] init];
+    Class sidePanelClass = NSClassFromString(@"ArcBrowserSidePanel");
+    SEL withBrowser = NSSelectorFromString(@"initWithArcBrowser:");
+    _sidePanel = [sidePanelClass instancesRespondToSelector:withBrowser]
+                     ? ((id (*)(id, SEL, id))objc_msgSend)([sidePanelClass alloc], withBrowser, self)
+                     : [[sidePanelClass alloc] init];
     _windowIdentifier = @"";
     _tabsObserver = std::make_unique<ArcBrowserTabsObserver>(browser->GetTabStripModel(), self);
+    ArcSessionsBrowserCreated(self);
   }
   return self;
 }
@@ -156,7 +163,14 @@ struct ArcBrowserHolder : base::SupportsUserData::Data {
 - (ArcSessionID*)sessionId {
   return _browser ? [[ArcSessionID alloc] initWithID:_browser->GetSessionID().id()] : nil;
 }
-- (void)setDelegate:(id)delegate { _delegate = delegate; }
+- (void)setDelegate:(id)delegate {
+  _delegate = delegate;
+  if (delegate) {
+    arc::InstallBrowserExtensions(self, delegate);
+    [NSNotificationCenter.defaultCenter postNotificationName:kArcBrowserDidSetDelegateNotification object:self];
+  }
+}
+- (id)delegate { return _delegate; }
 - (void)setWindow:(NSWindow*)window {
   if (_browser) {
     static_cast<arc::ArcBrowserWindow*>(_browser->GetWindow())->SetNativeWindow(gfx::NativeWindow(window));
@@ -165,6 +179,9 @@ struct ArcBrowserHolder : base::SupportsUserData::Data {
 - (BOOL)isEqual:(id)other { return self == other; }
 - (void)didInsertWebContents:(content::WebContents*)contents active:(BOOL)active {
   ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:contents];
+  if (ArcSessionsDidInsertWebContents(self, contents)) {
+    return;  // reported as a restore by the sessions package
+  }
   if ([_delegate respondsToSelector:@selector(browser:didCreateNewWebContents:isActive:)]) {
     [_delegate browser:self didCreateNewWebContents:wrapper isActive:active];
   }

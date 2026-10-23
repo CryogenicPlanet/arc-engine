@@ -3,4 +3,5 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("renderer_interfaces") {
   sources = [ "renderer.mojom" ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }

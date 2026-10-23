@@ -1,6 +1,9 @@
 // Copyright 2026 ArcMod. Per-profile preferences backed by Chromium services.
 #import "arc/api/arc_internal.h"
 
+#include <algorithm>
+#include <array>
+
 #include "base/functional/bind.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -14,6 +17,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service_observer.h"
 
 // arc_values.mm owns this primary implementation.
@@ -34,6 +38,32 @@ ARC_EXPORT @interface ArcBrowserContextPreferences : NSObject
 @end
 
 namespace {
+// Materialize the URL displayed by Arc (including regional parameters), while
+// the native service retains its substitution-aware template.
+TemplateURLData DisplaySearchData(const TemplateURL* engine, TemplateURLService* service) {
+  TemplateURLData data = engine->data();
+  if (engine->url_ref().SupportsReplacement(service->search_terms_data())) {
+    data.SetURL(GURL(engine->url_ref().ReplaceSearchTerms(
+        TemplateURLRef::SearchTermsArgs(u"{searchTerms}"), service->search_terms_data())).spec());
+  }
+  return data;
+}
+void EnsureArcSearchEngines(Profile* profile, TemplateURLService* service) {
+  // Arc exposes Perplexity alongside the regional Chromium prepopulation. Use
+  // Chromium's built-in definition and persisted TemplateURL rather than a
+  // synthetic UI-only option; existing/user-edited definitions win.
+  if (!service->loaded() || service->GetTemplateURLForKeyword(u"perplexity.ai")) return;
+  auto data = TemplateURLPrepopulateData::GetPrepopulatedEngineFromFullList(
+      *profile->GetPrefs(), {}, {}, 117);
+  if (data) service->Add(std::make_unique<TemplateURL>(*data));
+}
+int SearchOrder(const TemplateURL* engine) {
+  constexpr std::array<int, 6> ids = {1, 92, 109, 3, 101, 117};
+  for (int i = 0; i < 6; ++i) if (engine->prepopulate_id() == ids[i]) return i;
+  if (engine->prepopulate_id()) return 6;
+  if (engine->data().starter_pack_id) return 6 + engine->data().starter_pack_id;
+  return 9;
+}
 constexpr const char* kObservedPrefs[] = {
     "download.prompt_for_download", "download.default_directory",
     "download.extensions_to_open", "search.suggest_enabled",
@@ -45,7 +75,7 @@ class PreferencesObserver final : public ProfileObserver,
  public:
   PreferencesObserver(Profile* profile, base::RepeatingClosure changed,
                       base::RepeatingClosure search_changed)
-      : changed_(std::move(changed)), search_changed_(std::move(search_changed)) {
+      : profile_(profile->GetWeakPtr()), changed_(std::move(changed)), search_changed_(std::move(search_changed)) {
     profile_observation_.Observe(profile);
     registrar_.Init(profile->GetPrefs());
     for (const char* key : kObservedPrefs) {
@@ -65,12 +95,20 @@ class PreferencesObserver final : public ProfileObserver,
     profile_observation_.Reset();
   }
   void OnTemplateURLServiceChanged() override {
+    if (seeding_) return;
+    seeding_ = true;
+    if (profile_ && search_observation_.GetSource()) {
+      EnsureArcSearchEngines(profile_.get(), search_observation_.GetSource());
+    }
+    seeding_ = false;
     search_changed_.Run();
   }
   void OnTemplateURLServiceShuttingDown() override {
     search_observation_.Reset();
   }
  private:
+  base::WeakPtr<Profile> profile_;
+  bool seeding_ = false;
   void Changed() { changed_.Run(); }
   base::RepeatingClosure changed_;
   base::RepeatingClosure search_changed_;
@@ -225,15 +263,21 @@ BOOL CanModify(ArcBrowserContext* context, const char* key) {
   Profile* profile = ArcProfileFrom(_owner);
   TemplateURLService* service = profile ? TemplateURLServiceFactory::GetForProfile(profile) : nullptr;
   const TemplateURL* engine = service ? service->GetDefaultSearchProvider() : nullptr;
-  return engine ? [[ArcSearchEngine alloc] initWithTemplateURLData:engine->data()] : nil;
+  return engine ? [[ArcSearchEngine alloc] initWithTemplateURLData:DisplaySearchData(engine, service)] : nil;
 }
 - (NSArray<ArcSearchEngine*>*)getSearchEngines {
   Profile* profile = ArcProfileFrom(_owner);
   TemplateURLService* service = profile ? TemplateURLServiceFactory::GetForProfile(profile) : nullptr;
   NSMutableArray* engines = [NSMutableArray array];
   if (service) {
-    for (const TemplateURL* engine : service->GetTemplateURLs()) {
-      [engines addObject:[[ArcSearchEngine alloc] initWithTemplateURLData:engine->data()]];
+    auto native = service->GetTemplateURLs();
+    std::stable_sort(native.begin(), native.end(), [](const auto& a, const auto& b) {
+      return SearchOrder(a) < SearchOrder(b);
+    });
+    for (const TemplateURL* engine : native) {
+      // Arc supports the bookmarks/history starter packs at this boundary.
+      if (engine->data().starter_pack_id > 2) continue;
+      [engines addObject:[[ArcSearchEngine alloc] initWithTemplateURLData:DisplaySearchData(engine, service)]];
     }
   }
   return [engines copy];

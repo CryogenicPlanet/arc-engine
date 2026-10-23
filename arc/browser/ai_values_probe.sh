@@ -13,6 +13,7 @@ clang++ -fobjc-arc -framework Foundation arc/browser/ai_values_probe.mm \
   -o "$probe_dir/probe"
 original="$E/../arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
 ours="$E/chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
+rm -f "$E/results/ai-values/diff.txt" "$E/results/ai-values/diff.json"
 for name in original ours; do
   framework="$original"
   [ "$name" != ours ] || framework="$ours"
@@ -20,18 +21,29 @@ for name in original ours; do
   mkdir -p "$out"
   "$probe_dir/probe" "$framework" --observe-unresolved > "$out/values.json"
   env ARC_RECORD_PATH="$out/record.jsonl" \
-    DYLD_INSERT_LIBRARIES="$E/tests/recorder/ArcEngineRecorder.dylib" \
+    ARC_AI_RECORDER_LIBRARY="$E/tests/recorder/ArcEngineRecorder.dylib" \
     "$probe_dir/probe" "$framework" --observe-unresolved > "$out/recorded-values.json"
 done
-python3 tests/recorder/diff.py results/ai-values/original/record.jsonl \
-  results/ai-values/ours/record.jsonl --json results/ai-values/diff.json \
-  > results/ai-values/diff.txt
-head -2 results/ai-values/diff.txt
 python3 - <<'PY'
 import json
+import subprocess
 from pathlib import Path
 
 root = Path('results/ai-values')
+surface = json.loads((root / 'original' / 'values.json').read_text())['metadata']
+expected = {(name, selector) for name, item in surface.items()
+            for selector in item['methods']}
+for name in ('original', 'ours'):
+    rows = [json.loads(line) for line in
+            (root / name / 'record.jsonl').read_text().splitlines()]
+    calls = [r for r in rows if r.get('ev') == 'call']
+    classes = {r['cls'] for r in calls}
+    observed = {(r['cls'], r['sel']) for r in calls}
+    if len(classes) < 14:
+        raise SystemExit(f'{name}: recorder coverage missing: {len(classes)} classes')
+    if expected - observed:
+        raise SystemExit(f'{name}: unrecorded public methods: {sorted(expected - observed)}')
+    print(f'{name}: {len(calls)} calls across {len(classes)} classes recorded')
 for filename in ('values.json', 'recorded-values.json'):
     original = json.loads((root / 'original' / filename).read_text())
     ours = json.loads((root / 'ours' / filename).read_text())
@@ -40,6 +52,17 @@ for filename in ('values.json', 'recorded-values.json'):
                       if original.get(k) != ours.get(k))
         raise SystemExit(f'{filename}: mismatching sections: {keys}')
     print(f'{filename}: exact values and public metadata match')
+for name in ('original', 'ours'):
+    raw = json.loads((root / name / 'values.json').read_text())
+    recorded = json.loads((root / name / 'recorded-values.json').read_text())
+    if raw != recorded:
+        raise SystemExit(f'{name}: recorder changed observed values or metadata')
+with (root / 'diff.txt').open('w') as output:
+    subprocess.run(['python3', 'tests/recorder/diff.py',
+                    str(root / 'original' / 'record.jsonl'),
+                    str(root / 'ours' / 'record.jsonl'),
+                    '--json', str(root / 'diff.json')], stdout=output, check=True)
+print('\n'.join((root / 'diff.txt').read_text().splitlines()[:2]))
 report = json.loads((root / 'diff.json').read_text())
 for key in ('missing', 'extra', 'return_mismatch', 'arg_mismatch', 'count_mismatch'):
     if report[key]:

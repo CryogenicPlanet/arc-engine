@@ -135,6 +135,8 @@ ARC_EXPORT @interface ArcAutocompleteMatch : NSObject
   base::WeakPtr<Controller> _source;
   uint64_t _token;
 }
+@synthesize duplicates = _duplicates;
+@synthesize associatedKeyword = _associatedKeyword;
 - (instancetype)initWithAutocompleteMatch:(const void*)match {
   if ((self = [super init])) {
     _providerType = @"";
@@ -419,7 +421,7 @@ void EmptyBrowserCompletion(BrowserCompletion completion) {
     if (!service || !service->GetTemplateURLForKeyword(ArcUTF16(keyword))) {
       EmptyBrowserCompletion(completion);
       if (error) {
-        *error = [NSError errorWithDomain:@"company.thebrowser.Arc" code:10
+        *error = [NSError errorWithDomain:@"company.thebrowser.Arc" code:2
                                 userInfo:@{NSLocalizedDescriptionKey: @"unknown keyword"}];
       }
       return NO;

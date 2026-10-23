@@ -2,10 +2,19 @@
 wp_app_sources = [
   "//arc/api/arc_app_cpu.mm",
   "//arc/api/arc_app_flags.mm",
+  "//arc/api/arc_app_images.mm",
+  "//arc/api/arc_app_services.mm",
+  "//arc/api/arc_app_tracing.mm",
   "//arc/api/arc_app_url.mm",
 ]
 wp_app_deps = [
   "//components/webui/flags",
   "//net",
   "//services/network/public/cpp",
+  "//services/data_decoder/public/cpp",
+  "//services/media_session/public/cpp:base_cpp",
+  "//ui/gfx/codec",
+  "//chrome/browser/performance_manager",
+  "//components/performance_manager",
+  "//ui/accessibility/platform",
 ]

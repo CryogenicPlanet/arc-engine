@@ -53,6 +53,14 @@ int main(int argc, const char* argv[]) {
       values[i] = static_cast<float>(i) + 0.25f;
     }
     id matrix = [alloc(@"ArcHSLAMatrix") initWithMatrix:values.data()];
+    // Foundation NSInvocation cannot marshal the [20f] initializer argument.
+    // Exercise that ABI directly, then record the scalar getters and other DTOs.
+    // Aggregate getters/setters are already excluded by the shared recorder.
+    const char* recorder = getenv("ARC_RENDERER_RECORDER_LIBRARY");
+    if (recorder && !dlopen(recorder, RTLD_NOW | RTLD_LOCAL)) {
+      std::cerr << dlerror() << '\n';
+      return 1;
+    }
     HSLAMatrix aggregate = [matrix hslaMatrix];
     assert(aggregate.m0 == 0.25f && aggregate.m9 == 9.25f && aggregate.m19 == 19.25f);
     values[0] = -1;

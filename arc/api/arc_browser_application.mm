@@ -138,6 +138,10 @@ void AppendFeatures(std::vector<std::string>& args, const std::string& switch_na
 
 }  // namespace
 
+id ArcBrowserApplicationDelegateObject() {
+  return g_delegate;
+}
+
 ARC_EXPORT @interface ArcBrowserApplication : NSObject
 @end
 
@@ -187,8 +191,6 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
     LOG(ERROR) << "ArcCore: browser initialization stopped with exit code " << exit_code;
     return exit_code;
   }
-  AppKeepAlive() =
-      std::make_unique<ScopedKeepAlive>(KeepAliveOrigin::APP_CONTROLLER, KeepAliveRestartOption::DISABLED);
   // The app expects these once the main loop runs.
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
                                                              [g_delegate didInitializeBrowserProcess];
@@ -199,6 +201,10 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
 
 // Runs the browser's main loop until quit, then shuts the browser down.
 - (NSInteger)run {
+  // Created here rather than in -initialize: so it lands after the app's observers are registered, as in
+  // Arc's engine (its keep-alive crash key is reported from inside -run).
+  AppKeepAlive() =
+      std::make_unique<ScopedKeepAlive>(KeepAliveOrigin::APP_CONTROLLER, KeepAliveRestartOption::DISABLED);
   int exit_code = ChromeMainRunHostedBrowser();
   [g_delegate didQuitRunLoop];
   return exit_code;
