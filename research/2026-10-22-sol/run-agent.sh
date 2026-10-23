@@ -66,6 +66,12 @@ if [ "$rc" -eq 0 ] && [ -s "$root/out/$job.md" ] && [ -s "$dir/$stage/report.md"
   && [ "$dir/$stage/report.md" -nt "$attempt" ] \
   && python3 "$root/validate-stage.py" "$name" "$stage" check-identity \
   && python3 "$root/validate-stage.py" "$name" "$stage" artifacts; then
+  if [ "$stage" = synthesis ]; then
+    if ! python3 "$root/validate-stage.py" "$name" "$stage" record-completion; then
+      stamp 'FAILED completion proof (inspect; do not retry blindly)'
+      exit 1
+    fi
+  fi
   touch "$root/$job.done"
   stamp DONE
 else

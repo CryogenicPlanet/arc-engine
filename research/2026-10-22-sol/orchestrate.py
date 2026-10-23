@@ -41,7 +41,8 @@ def launch(name, stage):
 def setup():
     remote(RESEARCH, "mkdir -p ~/work/prompts ~/work/logs ~/work/out ~/work/agents")
     assets=("run-agent.sh","validate-stage.py","read-function.py","index-corpus.py",
-            "reconcile-completion.py","notify-completion.py","auto-synthesis.sh","class-followups.py")
+            "reconcile-completion.py","notify-completion.py","auto-synthesis.sh","class-followups.py",
+            "compare-metadata.py","parent-encoding-check.py")
     stage="/home/exedev/work/.harness-"+uuid.uuid4().hex
     remote(RESEARCH, "mkdir "+shlex.quote(stage))
     subprocess.run(["scp", "-q", *[str(ROOT/name) for name in assets],
@@ -75,6 +76,47 @@ def collect():
                "--exclude='*/.venv' -C /home/exedev/work agents out STATUS", stdout=output)
     with tarfile.open(archive) as bundle:
         bundle.extractall(destination, filter="data")
+    # Small work-root proofs and literal frozen metadata dependencies supplement
+    # the role tree. Never collect binaries, full shards, caches or credentials.
+    program = r'''
+import pathlib,re,tarfile,sys,json
+root=pathlib.Path('/home/exedev/work')
+names=set()
+for pattern in ('*.done','*.run.json','*.completion.json','*.completion-recovery.json','*.py','*.sh','*.tsv'):
+    names.update(str(p.relative_to(root)) for p in root.glob(pattern) if p.is_file())
+for name in ('CLASS-REVISIONS-READY','inputs/FULL-CORPUS-READY','inputs/INDEX-READY','inputs/CHROMIUM-READY'):
+    if (root/name).is_file():names.add(name)
+for folder in ('prompts','inputs/context'):
+    names.update(str(p.relative_to(root)) for p in (root/folder).glob('*')
+                 if p.is_file() and p.suffix in ('.md','.json','.tsv'))
+names.update(str(p.relative_to(root)) for p in (root/'inputs').glob('decompile*/**/MANIFEST.json'))
+def safe(name):
+    p=pathlib.PurePosixPath(name)
+    if p.is_absolute() or any(x in ('.','..') for x in name.split('/')):return False
+    if any(re.search(r'(?i)^(?:tokens?|credentials?|auth|secrets?)(?:\.|$)',part) for part in p.parts):return False
+    if name.startswith('agents/'):return True  # already in the separately collected role tree
+    return ('/' not in name and pathlib.Path(name).suffix in ('.json','.done','.py','.sh','.tsv')) \
+        or name=='CLASS-REVISIONS-READY' or name.startswith('prompts/') \
+        or name.startswith('inputs/context/') \
+        or name in ('inputs/FULL-CORPUS-READY','inputs/INDEX-READY','inputs/CHROMIUM-READY') \
+        or re.fullmatch(r'inputs/decompile(?:-extra)?/(?:batch-[0-9a-f]+/)?MANIFEST.json',name) is not None
+for proof in root.glob('*.completion.json'):
+    for name in json.loads(proof.read_text()).get('inputs',{}):
+        assert safe(name),'Unsupported frozen input: '+name
+        if not name.startswith('agents/'):names.add(name)
+with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as archive:
+    for name in sorted(names):
+        assert safe(name),'Unsupported control file: '+name
+        p=root/name
+        assert p.is_file() and not p.is_symlink() and p.resolve().is_relative_to(root)
+        assert p.stat().st_size<=16*1024*1024,'Unexpected large control input: '+name
+        archive.add(p,arcname=name,recursive=False)
+'''
+    controls=destination/'research-controls.tar.gz'
+    with controls.open('wb') as output:
+        remote(RESEARCH,'python3 -',input=program.encode(),stdout=output)
+    with tarfile.open(controls) as bundle:
+        bundle.extractall(destination,filter='data')
     print(destination)
 
 

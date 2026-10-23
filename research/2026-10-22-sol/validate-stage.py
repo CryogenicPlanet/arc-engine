@@ -32,6 +32,18 @@ def identity():
         paths+=[root/'inputs/binaries'/name for name in ('Arc-1.168.0.arm64','ArcCore-1.168.0.arm64','ArcCore-1.170.0.arm64')]
     if stage=='synthesis':
         paths+=[root/'CLASS-REVISIONS-READY']
+        for name in ('acceptance-evidence-review.md','body-evidence-review.md',
+                     'protocol-evidence-review.md','parent-encoding-check.tsv',
+                     'parent-metadata-comparison.json'):
+            paths.append(root/'inputs/context'/name)
+        # Completed role evidence is frozen, not just its summaries. The large
+        # distribution catalog is documentary discovery data omitted by the
+        # compact package, so it is not a synthesis input identity dependency.
+        for role_name in ('abi','cef','arc-layer','matcher','quality','protocols'):
+            for path in (root/'agents'/role_name).rglob('*'):
+                if path.is_file() and '__pycache__' not in path.parts and '.sqlite' not in path.name \
+                        and path != root/'agents/cef/initial/sources/cef-build-index.json':
+                    paths.append(path)
         final=json.loads((root/'CLASS-REVISIONS-READY').read_text())
         assert final['classes']==146 and final['declared_methods']==1964
         assert len(final['selected'])==4
@@ -43,7 +55,7 @@ def identity():
                     path=(root/name).resolve()
                     assert path.is_relative_to(root) and sha(path)==expected,'Published revision changed: '+name
                     paths.append(path)
-    return {str(path.relative_to(root)):sha(path) for path in paths}
+    return {str(path.relative_to(root)):sha(path) for path in dict.fromkeys(paths)}
 
 if action=='record-identity':
     path=root/(job+'.run.json')
@@ -52,6 +64,28 @@ if action=='record-identity':
     else:path.write_text(json.dumps(identity(),indent=2)+'\n')
 elif action=='check-identity':
     assert json.loads((root/(job+'.run.json')).read_text())==identity(),'Completed scope differs; use explicit follow-up job'
+elif action=='record-completion':
+    assert stage=='synthesis','Other stages use their existing completion/recovery records'
+    before=json.loads((root/(job+'.run.json')).read_text())
+    assert before==identity(),'Input changed before completion proof'
+    terminal=None
+    with (root/'logs'/(job+'.jsonl')).open() as stream:
+        for line in stream:
+            try:event=json.loads(line)
+            except ValueError:continue
+            if event.get('type') in ('turn.completed','turn.failed','error'):terminal=event
+    assert terminal and terminal['type']=='turn.completed','No final successful CLI event'
+    outputs={str(path.relative_to(root)):sha(path) for path in sorted(directory.rglob('*'))
+             if path.is_file() and '__pycache__' not in path.parts and '.sqlite' not in path.name}
+    final_output=root/'out'/(job+'.md')
+    assert final_output.stat().st_size>0
+    proof={'inputs':before,'outputs':outputs,'terminal_event':terminal,
+           'final_output':{'path':str(final_output.relative_to(root)),'sha256':sha(final_output)}}
+    target=root/(job+'.completion.json')
+    assert not target.exists(),'Never overwrite completion proof'
+    temp=root/('.'+job+'.completion.tmp')
+    with temp.open('x') as stream:stream.write(json.dumps(proof,indent=2)+'\n')
+    temp.replace(target)
 elif action=='artifacts':
     assignments=json.loads((root/'inputs/context/class-assignments.json').read_text())
     if stage=='specs':
