@@ -70,8 +70,8 @@ The producer is a custom Blink `arc::TopBandColorTracker`, proven by literals
 at `0xd5d31fa` and `0xd5d323b`:
 `../../arc/blink/core/top_band_color_tracker.cc` and
 `EmitChosenState(blink::LocalFrameView*, ChosenState)`. Emitter `0x46874c0`
-uses chosen-state equality suppression, optional color, frame token and
-crossfade state. A 100ms timer appears at `0x4684a40`. Mojo serializer
+uses chosen-state equality suppression, optional color, an opaque sampling/cache
+token and crossfade state. This token is not a proven Blink LocalFrameToken. A 100ms timer appears at `0x4684a40`. Mojo serializer
 `0x418c740` sends message `0x597900bf`; browser dispatch `0x1e3ad9c` ->
 `0x4150da4` -> `0x40c0094` reaches the per-main-frame sampler.
 
@@ -86,13 +86,13 @@ The browser fallback is separately recovered:
   corresponding second-row endpoints. Maximum >0.5 yields no color;
   zero yields the first top-row color; otherwise round the per-channel
   mean of the five top-row pixels, including alpha (`0x40c05c0`).
-- Cache by frame token and suppress equal optional/color results
+- Cache by sampling token and suppress equal optional/color results
   (`0x40c0124`). Scroll begin/end input types 11/12 affect capture deferral
   (`0x40c0ce4`); this is not simply a periodic screenshot.
 
 Current `RenderWidgetHostView::CopyFromSurface` can provide fallback pixels.
 It cannot provide the custom tracker's selected-color path, chosen-state
-transitions, frame-token gating or crossfade decisions.
+transitions, sampling-token gating or crossfade decisions.
 
 Request to lead: recover/port the Blink tracker and expose its browser
 notification hook. A screenshot-only producer cannot establish full parity.
@@ -120,3 +120,28 @@ overrides and before printing. `WebSettings::SetPreferredColorScheme` is
 not equivalent because it changes the lowest layer. Removal disengages the
 optional and reevaluates the live lower layers; it must not restore a saved
 base preference. No production approximation was added.
+
+
+### Top-band producer audit update
+
+New bounded native evidence is in `renderer_contract_evidence.md:1033` onward
+and `logs/wp/renderer-topband-producer.native.log`. It supersedes the early
+frame-token interpretation above. LocalFrame owns the tracker only for main
+frames; post-lifecycle steps perform detection and a100ms timer schedules
+animation. LCP updates mark readiness/crossfade state and clear candidate caches.
+Parsing-finished and first-paint may arrive in either order; both feed the custom
+readiness transition. The emitter compares full Blink Color/chosen state while
+the browser independently suppresses equal optional ARGB32 values.
+
+The producer performs layout hit-testing and CSS-background candidate analysis,
+including actual image-pixel analysis through the recovered sampler. Canvas and
+video candidates are explicitly excluded; IMG has a separate path. A CSS class
+`ytd-masthead` candidate is skipped only on `youtube.com` and `.youtube.com`
+hosts. It is not a tag-name rule. Fullbleed document background is separate from
+strict interior candidate admission. Geometry uses a positive reference width W;
+its upstream getter identity remains unproved, so modern viewport APIs must not
+be substituted by assumption.
+
+The precise scroll point adjustment, complete image-drawing branch admission,
+byte132 and remaining mode transitions still need recovery. There is no complete
+producer port or runtime top-band parity claim.

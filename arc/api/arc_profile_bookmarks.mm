@@ -1,4 +1,4 @@
-// Copyright 2026 ArcMod. Native profile bookmarks with canonical, invalidatable node wrappers.
+// Copyright 2026 ArcMod. Native profile bookmarks with immutable value snapshots.
 #import "arc/api/arc_internal.h"
 
 #include <optional>
@@ -77,7 +77,6 @@ ARC_EXPORT @interface ArcBookmarkTreeNode : NSObject
                                  node:(const bookmarks::BookmarkNode*)node;
 - (BookmarkSnapshot)bookmarkSnapshot;
 - (const bookmarks::BookmarkNode*)nativeNodeForState:(const std::shared_ptr<BookmarkState>&)state;
-- (void)invalidateWithSnapshot:(const bookmarks::BookmarkNode*)node;
 @property(nonatomic, readonly) NSInteger nodeType;
 @property(nonatomic, readonly) BOOL isFolder;
 @property(nonatomic, readonly) BOOL isUrl;
@@ -116,13 +115,9 @@ class BookmarkState final : public bookmarks::BookmarkModelObserver,
                             public std::enable_shared_from_this<BookmarkState> {
  public:
   explicit BookmarkState(bookmarks::BookmarkModel* model) : model_(model->AsWeakPtr()) {
-    wrappers_ = [NSMutableDictionary dictionary];
     removing_ = [NSMutableDictionary dictionary];
     observers_ = [NSMapTable weakToStrongObjectsMapTable];
     observation_.Observe(model);
-  }
-  ~BookmarkState() override {
-    for (ArcBookmarkTreeNode* wrapper in wrappers_.allValues) { [wrapper invalidateWithSnapshot:nullptr]; }
   }
   bookmarks::BookmarkModel* model() const { return model_.get(); }
   bool ready() const { return model_ && model_->loaded(); }
@@ -131,13 +126,10 @@ class BookmarkState final : public bookmarks::BookmarkModelObserver,
   }
   ArcBookmarkTreeNode* Wrap(const bookmarks::BookmarkNode* node) {
     if (!node) { return nil; }
-    NSNumber* key = @(node->id());
-    ArcBookmarkTreeNode* wrapper = wrappers_[key];
-    if (!wrapper) {
-      wrapper = [[ArcBookmarkTreeNode alloc] initWithBookmarkState:shared_from_this() node:node];
-      wrappers_[key] = wrapper;
-    }
-    return wrapper;
+    // Original 0x42b01d4..0x42b01f8 creates a fresh value Impl for each
+    // liveChildren result. Cached fields remain frozen while native operations
+    // resolve the model node through a weak state reference and stable identity.
+    return [[ArcBookmarkTreeNode alloc] initWithBookmarkState:shared_from_this() node:node];
   }
   NSArray* Children(const bookmarks::BookmarkNode* node) {
     NSMutableArray* children = [NSMutableArray array];
@@ -177,13 +169,6 @@ class BookmarkState final : public bookmarks::BookmarkModelObserver,
   }
   void BookmarkModelBeingDeleted() override {
     auto alive = shared_from_this();
-    // Snapshot live fields before the model destroys its tree.
-    for (ArcBookmarkTreeNode* wrapper in wrappers_.allValues) {
-      auto snapshot = [wrapper bookmarkSnapshot];
-      (void)snapshot;
-      [wrapper invalidateWithSnapshot:nullptr];
-    }
-    [wrappers_ removeAllObjects];
     [removing_ removeAllObjects];
     observation_.Reset();
     model_.reset();
@@ -211,11 +196,10 @@ class BookmarkState final : public bookmarks::BookmarkModelObserver,
   }
   void OnWillRemoveBookmarks(const bookmarks::BookmarkNode* parent, size_t index,
                             const bookmarks::BookmarkNode* node, const base::Location& location) override {
-    // Retain the root payload for the subsequent removed callback. All wrappers
-    // in the subtree become detached immediately, even if Chromium's undo
-    // service retains the removed native tree.
+    // Preserve the pre-removal value payload without permanently detaching
+    // retained snapshots. isValid follows current model membership; whether an
+    // undo can restore validity is intentionally left to native model identity.
     removing_[@(node->id())] = Wrap(node);
-    InvalidateSubtree(node);
   }
   void BookmarkNodeRemoved(const bookmarks::BookmarkNode* parent, size_t index,
                            const bookmarks::BookmarkNode* node, const std::set<GURL>& urls,
@@ -225,7 +209,6 @@ class BookmarkState final : public bookmarks::BookmarkModelObserver,
     ArcBookmarkTreeNode* removed_wrapper = removing_[@(node->id())];
     if (!removed_wrapper) {
       removed_wrapper = [[ArcBookmarkTreeNode alloc] initWithBookmarkState:alive node:node];
-      [removed_wrapper invalidateWithSnapshot:node];
     }
     [removing_ removeObjectForKey:@(node->id())];
     NSMutableSet* strings = [NSMutableSet setWithCapacity:urls.size()];
@@ -250,26 +233,11 @@ class BookmarkState final : public bookmarks::BookmarkModelObserver,
   void BookmarkNodeChildrenReordered(const bookmarks::BookmarkNode* node) override {
     NotifyNode(node, @selector(bookmarkNodeChildrenReordered:));
   }
-  void OnWillRemoveAllUserBookmarks(const base::Location& location) override {
-    if (!ready()) { return; }
-    for (const auto& permanent : model_->root_node()->children()) {
-      if (model_->client()->IsNodeManaged(permanent.get())) { continue; }
-      for (const auto& child : permanent->children()) { InvalidateSubtree(child.get()); }
-    }
-  }
   void BookmarkAllUserNodesRemoved(const std::set<GURL>& removed_urls,
                                    const base::Location& location) override {
     // Arc's recovered ObjC bridge has no bulk-removal callback selector.
   }
  private:
-  void InvalidateSubtree(const bookmarks::BookmarkNode* node) {
-    NSNumber* key = @(node->id());
-    if (ArcBookmarkTreeNode* wrapper = wrappers_[key]) {
-      [wrapper invalidateWithSnapshot:node];
-      [wrappers_ removeObjectForKey:key];
-    }
-    for (const auto& child : node->children()) { InvalidateSubtree(child.get()); }
-  }
   void NotifyNode(const bookmarks::BookmarkNode* node, SEL selector) {
     auto alive = shared_from_this();
     ArcBookmarkTreeNode* wrapper = Wrap(node);
@@ -282,7 +250,6 @@ class BookmarkState final : public bookmarks::BookmarkModelObserver,
     }
   }
   base::WeakPtr<bookmarks::BookmarkModel> model_;
-  NSMutableDictionary<NSNumber*, ArcBookmarkTreeNode*>* __strong wrappers_;
   NSMutableDictionary<NSNumber*, ArcBookmarkTreeNode*>* __strong removing_;
   NSMapTable<ArcBrowserContext*, NSHashTable<id<ArcProfileBookmarkObserver>>*>* __strong observers_;
   base::ScopedObservation<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver> observation_{this};
@@ -297,7 +264,7 @@ std::shared_ptr<BookmarkState> StateFor(ArcBrowserContext* context) {
   Profile* profile = ArcProfileFrom(context);
   if (!profile) { return {}; }
   // BookmarkModelFactory redirects incognito to the regular profile. Share the
-  // wrapper cache with that same owner so a native node has one identity.
+  // model state with that same owner; each lookup still returns a value snapshot.
   profile = profile->GetOriginalProfile();
   auto* holder = static_cast<BookmarkStateHolder*>(profile->GetUserData(kBookmarkState));
   if (!holder) {
@@ -341,7 +308,7 @@ bool UUIDAvailable(bookmarks::BookmarkModel* model, const bookmarks::BookmarkNod
 @implementation ArcBookmarkTreeNode {
   std::weak_ptr<BookmarkState> _state;
   int64_t _id;
-  BOOL _attached;
+  BOOL _hasNode;
   BookmarkSnapshot _snapshot;
 }
 - (instancetype)initWithBookmarkState:(const std::shared_ptr<BookmarkState>&)state
@@ -349,25 +316,20 @@ bool UUIDAvailable(bookmarks::BookmarkModel* model, const bookmarks::BookmarkNod
   if ((self = [super init])) {
     _state = state;
     _id = node ? node->id() : 0;
-    _attached = node != nullptr;
+    _hasNode = node != nullptr;
     _snapshot = Snapshot(node);
   }
   return self;
 }
 - (const bookmarks::BookmarkNode*)nativeNodeForState:(const std::shared_ptr<BookmarkState>&)state {
-  return _attached && state && _state.lock() == state ? state->Resolve(_id) : nullptr;
-}
-- (void)invalidateWithSnapshot:(const bookmarks::BookmarkNode*)node {
-  if (node) { _snapshot = Snapshot(node); }
-  _attached = NO;
+  if (!_hasNode || !state || _state.lock() != state) { return nullptr; }
+  const auto* node = state->Resolve(_id);
+  // Original 0x42affa0 also checks UUID and node ID when resolving live nodes.
+  return node && node->uuid().AsLowercaseString() == _snapshot.uuid ? node : nullptr;
 }
 - (BookmarkSnapshot)bookmarkSnapshot {
-  return BookmarkMain([&] {
-    if (auto state = _state.lock(); _attached && state) {
-      if (const auto* node = state->Resolve(_id)) { _snapshot = Snapshot(node); }
-    }
-    return _snapshot;
-  });
+  // Original scalar getters read the value Impl without refreshing its fields.
+  return _snapshot;
 }
 - (NSInteger)nodeType { return [self bookmarkSnapshot].type; }
 - (BOOL)isFolder { return [self bookmarkSnapshot].folder; }

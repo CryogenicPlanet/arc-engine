@@ -7,11 +7,14 @@
 #include <memory>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/functional/bind.h"
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/numerics/safe_conversions.h"
 #include "arc/browser/arc_browser_window.h"
 #include "chrome/browser/arcmod/arcmod_hooks.h"
@@ -27,11 +30,15 @@
 #include "chrome/browser/ui/extensions/extension_action_view_model.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/tab_list/tab_list_interface.h"
+#include "chrome/browser/tab_list/tab_list_interface_observer.h"
+#include "components/tabs/public/tab_interface.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -136,7 +143,8 @@ class ActionDelegate : public ExtensionActionDelegate,
 class BrowserExtensions : public base::SupportsUserData::Data,
                           public ExtensionsContainer,
                           public ToolbarActionsModel::Observer,
-                          public TabStripModelObserver {
+                          public TabListInterfaceObserver,
+                          public content::WebContentsObserver {
  public:
   DECLARE_USER_DATA(BrowserExtensions);
   BrowserExtensions(ArcBrowser* wrapper, id delegate)
@@ -148,12 +156,16 @@ class BrowserExtensions : public base::SupportsUserData::Data,
         browser_->GetUnownedUserDataHost(), *this);
     model_ = ToolbarActionsModel::Get(browser_->GetProfile());
     if (model_) model_->AddObserver(this);
-    browser_->GetTabStripModel()->AddObserver(this);
+    tab_list_ = TabListInterface::From(browser_.get());
+    if (tab_list_) {
+      tab_list_->AddTabListInterfaceObserver(this);
+      if (auto* active = tab_list_->GetActiveTab()) Observe(active->GetContents());
+    }
     close_ = browser_->RegisterBrowserDidClose(base::BindRepeating(
         [](base::WeakPtr<BrowserExtensions> self, BrowserWindowInterface*) {
           if (self) self->Shutdown();
         }, weak_factory_.GetWeakPtr()));
-    ScheduleSnapshot();
+    OnToolbarModelInitialized();
   }
   ~BrowserExtensions() override { Shutdown(); }
   void Shutdown() {
@@ -161,10 +173,13 @@ class BrowserExtensions : public base::SupportsUserData::Data,
     shutting_down_ = true;
     ++delegate_generation_;
     weak_factory_.InvalidateWeakPtrs();
-    TabStripModelObserver::StopObservingAll(this);
+    Observe(nullptr);
+    if (tab_list_) tab_list_->RemoveTabListInterfaceObserver(this);
+    tab_list_ = nullptr;
     scoped_data_.reset();
     typed_data_.reset();
     icon_subscriptions_.clear();
+    action_updates_.clear();
     if (model_) model_->RemoveObserver(this);
     model_ = nullptr;
     auto actions = std::move(actions_);
@@ -179,10 +194,13 @@ class BrowserExtensions : public base::SupportsUserData::Data,
     if (shutting_down_) return;
     // Existing action delegates are weak, so rebuild them on delegate replacement.
     delegate_ = delegate;
+    callback_target_present_ = delegate != nil;
+    if (!delegate) ++callback_epoch_;
     const uint64_t generation = ++delegate_generation_;
     ++popup_serial_;
     auto weak = weak_factory_.GetWeakPtr();
     icon_subscriptions_.clear();
+    action_updates_.clear();
     auto actions = std::move(actions_);
     for (auto& [id, action] : actions) {
       auto* previous = static_cast<ActionDelegate*>(action->delegate());
@@ -190,7 +208,20 @@ class BrowserExtensions : public base::SupportsUserData::Data,
       previous->HidePopup();
     }
     actions.clear();
-    if (weak && weak->delegate_generation_ == generation) weak->ScheduleSnapshot();
+    if (weak && weak->delegate_generation_ == generation)
+      weak->OnToolbarModelInitialized();
+  }
+  bool DispatchRequest(void (^request)(id delegate)) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (shutting_down_ || !browser_ || !callback_target_present_) return false;
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+        base::BindOnce([](base::WeakPtr<BrowserExtensions> self,
+                          uint64_t epoch, void (^request)(id)) {
+          if (!self || self->callback_epoch_ != epoch) return;
+          id delegate = self->delegate_;
+          if (delegate) request(delegate);
+        }, weak_factory_.GetWeakPtr(), callback_epoch_, request));
+    return true;
   }
   id GetDelegate() const { return delegate_; }
   ArcBrowser* GetWrapper() const { return wrapper_; }
@@ -208,8 +239,7 @@ class BrowserExtensions : public base::SupportsUserData::Data,
       icon_subscriptions_.emplace(id, found->second->RegisterIconUpdateObserver(
           base::BindRepeating([](base::WeakPtr<BrowserExtensions> self, std::string identifier) {
             if (!self) return;
-            base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
-                base::BindOnce(&BrowserExtensions::OnToolbarActionUpdated, self, identifier));
+            self->OnToolbarActionUpdated(identifier);
           }, weak_factory_.GetWeakPtr(), id)));
     }
     return found->second.get();
@@ -239,52 +269,93 @@ class BrowserExtensions : public base::SupportsUserData::Data,
   void ToggleExtensionsMenu() override {}
   bool HasAnyExtensions() const override { return model_ && !model_->action_ids().empty(); }
   void OnToolbarActionAdded(const std::string& identifier) override {
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
-        base::BindOnce(&BrowserExtensions::OnToolbarActionUpdated,
-                       weak_factory_.GetWeakPtr(), identifier));
+    GetActionForId(identifier);
+    ScheduleSnapshot();
   }
   void OnToolbarActionRemoved(const std::string& id) override {
     auto weak = weak_factory_.GetWeakPtr();
     icon_subscriptions_.erase(id);
+    action_updates_.erase(id);
     auto removed = actions_.extract(id);
     if (!removed.empty()) removed.mapped()->HidePopup();
     if (weak) weak->ScheduleSnapshot();
   }
   void OnToolbarActionUpdated(const std::string& action_id) override {
-    id<ArcExtensionsBrowserDelegate> delegate = delegate_;
-    if ([delegate respondsToSelector:@selector(browser:didUpdateExtensionToolbarAction:)]) {
-      ArcExtensionToolbarAction* snapshot = Snapshot(action_id);
-      if (snapshot) [delegate browser:wrapper_ didUpdateExtensionToolbarAction:snapshot];
+    if (updating_action_ || !model_ || shutting_down_) return;
+    auto& throttle = action_updates_[action_id];
+    if (!throttle) throttle = std::make_unique<ActionUpdateThrottle>();
+    const base::TimeDelta interval = model_->IsActionPinned(action_id)
+        ? base::Seconds(1) : base::Seconds(5);
+    const base::TimeTicks now = base::TimeTicks::Now();
+    if (throttle->last_fired.is_null() ||
+        now - throttle->last_fired >= interval) {
+      FireActionUpdate(action_id);
+      return;
+    }
+    // Repeated updates coalesce at the previous firing's deadline, rather than
+    // extending the delay from each incoming event.
+    throttle->timer.Start(FROM_HERE,
+        interval - (now - throttle->last_fired),
+        base::BindOnce(&BrowserExtensions::FireActionUpdate,
+                       weak_factory_.GetWeakPtr(), action_id));
+  }
+  void FireActionUpdate(const std::string& action_id) {
+    base::AutoReset<bool> updating(&updating_action_, true);
+    PublishActionUpdate(action_id);
+    auto found = action_updates_.find(action_id);
+    if (found != action_updates_.end()) {
+      found->second->last_fired = base::TimeTicks::Now();
+      found->second->timer.Stop();
     }
   }
-  void OnToolbarModelInitialized() override { ScheduleSnapshot(); }
-  void OnTabStripModelChanged(TabStripModel*, const TabStripModelChange&,
-                             const TabStripSelectionChange& selection) override {
-    if (selection.active_tab_changed()) {
+  void PublishActionUpdate(const std::string& action_id) {
+    if (!callback_target_present_) return;
+    ArcExtensionToolbarAction* snapshot = Snapshot(action_id);
+    if (snapshot) {
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
-          base::BindOnce(&BrowserExtensions::HideActivePopup,
-                         weak_factory_.GetWeakPtr()));
-      ScheduleActionUpdates();
+          base::BindOnce([](base::WeakPtr<BrowserExtensions> self,
+                            uint64_t epoch, ArcExtensionToolbarAction* value) {
+            if (!self || self->callback_epoch_ != epoch) return;
+            id<ArcExtensionsBrowserDelegate> delegate = self->delegate_;
+            if ([delegate respondsToSelector:@selector(browser:didUpdateExtensionToolbarAction:)])
+              [delegate browser:self->wrapper_ didUpdateExtensionToolbarAction:value];
+          }, weak_factory_.GetWeakPtr(), callback_epoch_, snapshot));
     }
   }
-  void OnTabChangedAt(tabs::TabInterface*, TabChangeType) override {
+  void OnToolbarModelInitialized() override {
+    if (model_)
+      for (const auto& identifier : model_->action_ids()) GetActionForId(identifier);
+    ScheduleSnapshot();
+  }
+  void OnActiveTabChanged(TabListInterface&, tabs::TabInterface* tab) override {
+    Observe(tab->GetContents());
+    ScheduleActionUpdates();
+  }
+  void OnTabListDestroyed(TabListInterface& tab_list) override {
+    tab_list.RemoveTabListInterfaceObserver(this);
+    tab_list_ = nullptr;
+    Observe(nullptr);
+  }
+  void DidFinishNavigation(content::NavigationHandle*) override {
     ScheduleActionUpdates();
   }
   void ScheduleActionUpdates() {
     if (!model_) return;
     for (const auto& identifier : model_->action_ids())
-      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
-          base::BindOnce(&BrowserExtensions::OnToolbarActionUpdated,
-                         weak_factory_.GetWeakPtr(), identifier));
+      PublishActionUpdate(identifier);
   }
   void OnToolbarPinnedActionsChanged() override { ScheduleSnapshot(); }
   void OnToolbarActionsModelShutdown() override {
     Shutdown();
   }
   ArcExtensionToolbarAction* Snapshot(const std::string& id) {
-    auto* action = GetActionForId(id);
-    if (!action || !browser_) return nil;
-    auto* contents = browser_->GetTabStripModel()->GetActiveWebContents();
+    if (!browser_) return nil;
+    auto found = actions_.find(id);
+    if (found == actions_.end() || !found->second) return nil;
+    auto* action = found->second.get();
+    auto* active = tab_list_ ? tab_list_->GetActiveTab() : nullptr;
+    auto* contents = active ? active->GetContents() : nullptr;
+    if (!contents) return nil;
     ExtensionToolbarAction result;
     result.id = id;
     result.accessible_name = action->GetAccessibleName(contents);
@@ -298,22 +369,24 @@ class BrowserExtensions : public base::SupportsUserData::Data,
     return [[ArcExtensionToolbarAction alloc] initWithExtensionToolbarAction:&result];
   }
   void ScheduleSnapshot() {
-    if (snapshot_pending_) return;
-    snapshot_pending_ = true;
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
-        base::BindOnce(&BrowserExtensions::SendSnapshot, weak_factory_.GetWeakPtr()));
-  }
-  void SendSnapshot() {
-    snapshot_pending_ = false;
-    if (!model_ || !model_->actions_initialized()) return;
+    if (!callback_target_present_ || !model_ || !model_->actions_initialized()) return;
+    // Native full refresh snapshots the cache at the event, before posting the
+    // delegate. A model with IDs but no valid active-tab snapshots emits none.
     NSMutableArray* snapshots = [NSMutableArray array];
     for (const auto& id : model_->action_ids()) {
       ArcExtensionToolbarAction* value = Snapshot(id);
       if (value) [snapshots addObject:value];
     }
-    id<ArcExtensionsBrowserDelegate> delegate = delegate_;
-    if ([delegate respondsToSelector:@selector(browser:didUpdateExtensionToolbarActions:)])
-      [delegate browser:wrapper_ didUpdateExtensionToolbarActions:[snapshots copy]];
+    if (!snapshots.count && !model_->action_ids().empty()) return;
+    NSArray* values = [snapshots copy];
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+        base::BindOnce([](base::WeakPtr<BrowserExtensions> self, uint64_t epoch,
+                          NSArray* values) {
+          if (!self || self->callback_epoch_ != epoch) return;
+          id<ArcExtensionsBrowserDelegate> delegate = self->delegate_;
+          if ([delegate respondsToSelector:@selector(browser:didUpdateExtensionToolbarActions:)])
+            [delegate browser:self->wrapper_ didUpdateExtensionToolbarActions:values];
+        }, weak_factory_.GetWeakPtr(), callback_epoch_, values));
   }
  private:
   base::WeakPtr<BrowserWindowInterface> browser_;
@@ -322,10 +395,18 @@ class BrowserExtensions : public base::SupportsUserData::Data,
   std::unique_ptr<ui::ScopedUnownedUserData<ExtensionsContainer>> scoped_data_;
   std::unique_ptr<ui::ScopedUnownedUserData<BrowserExtensions>> typed_data_;
   raw_ptr<ToolbarActionsModel> model_ = nullptr;
+  raw_ptr<TabListInterface> tab_list_ = nullptr;
   std::map<std::string, std::unique_ptr<ExtensionActionViewModel>> actions_;
   std::map<std::string, base::CallbackListSubscription> icon_subscriptions_;
-  bool snapshot_pending_ = false;
+  struct ActionUpdateThrottle {
+    base::TimeTicks last_fired;
+    base::OneShotTimer timer;
+  };
+  std::map<std::string, std::unique_ptr<ActionUpdateThrottle>> action_updates_;
+  bool updating_action_ = false;
   bool shutting_down_ = false;
+  bool callback_target_present_ = true;
+  uint64_t callback_epoch_ = 0;
   uint64_t delegate_generation_ = 0;
   uint64_t popup_serial_ = 0;
   base::CallbackListSubscription close_;
@@ -502,20 +583,29 @@ void InstallBrowserExtensions(ArcBrowser* wrapper, id delegate) {
                    provider->GetAllPermissionIDs(*permissions, extension->GetType())))
             snapshot.permissions.push_back(message.message());
         }
+        ArcExtensionInfo* info = [[ArcExtensionInfo alloc] initWithExtensionInfo:&snapshot];
         auto completion = std::make_shared<base::OnceCallback<void(bool)>>(std::move(done));
-        [delegate browser:wrapper didRequestExtensionPermissions:
-            [[ArcExtensionInfo alloc] initWithExtensionInfo:&snapshot]
-            completion:^(BOOL allowed) {
-              dispatch_async(dispatch_get_main_queue(), ^{
+        return DispatchBrowserExtensionRequest(wrapper, ^(id target) {
+          id<ArcExtensionsBrowserDelegate> request_delegate = target;
+          if (![request_delegate respondsToSelector:
+                  @selector(browser:didRequestExtensionPermissions:completion:)]) return;
+          [request_delegate browser:wrapper didRequestExtensionPermissions:info
+              completion:^(BOOL allowed) {
+                // Native permission completion invokes its callback directly.
+                // Once dispatched, a later delegate clear does not cancel it.
                 if (*completion) std::move(*completion).Run(allowed);
-              });
-            }];
-        return true;
+              }];
+        });
       });
   if (auto* bridge = Bridge(wrapper)) { bridge->SetDelegate(delegate); return; }
   if (!delegate) return;
   auto* window = static_cast<ArcBrowserWindow*>([wrapper browser]->GetWindow());
   window->SetUserData(kExtensionsKey, std::make_unique<BrowserExtensions>(wrapper,delegate));
+}
+bool DispatchBrowserExtensionRequest(ArcBrowser* wrapper,
+                                     void (^request)(id delegate)) {
+  auto* bridge = Bridge(wrapper);
+  return bridge && bridge->DispatchRequest(request);
 }
 id BrowserExtensionDelegate(ArcBrowser* wrapper) {
   auto* bridge = Bridge(wrapper);

@@ -20,6 +20,17 @@ struct DebugProperty {
   std::string name;
   std::string value;
 };
+struct GPULogMessage {
+  int32_t severity;
+  std::string header;
+  std::string message;
+};
+struct NetworkLoggingConfiguration {
+  std::string file_path;
+  double logging_duration_in_seconds;
+};
+static_assert(sizeof(GPULogMessage) == 56);
+static_assert(sizeof(NetworkLoggingConfiguration) == 32);
 static_assert(sizeof(ErrorStatus) == 8);
 static_assert(sizeof(DebugProperty) == 48);
 }  // namespace app_values
@@ -108,4 +119,125 @@ ARC_EXPORT @interface ArcBrowserApplicationDebugProperty : NSObject
 }
 - (NSString*)referenceText { return _referenceText; }
 - (NSInteger)minimumCharacterCount { return _minimumCharacterCount; }
+@end
+
+// Native std::string records preserve copy ownership and indirect aggregate ABI.
+ARC_EXPORT @interface ArcGPULogMessage : NSObject
+@property(nonatomic) app_values::GPULogMessage gpu_log_message;
+@property(nonatomic, readonly) NSInteger severity;
+@property(nonatomic, readonly, copy) NSString* header;
+@property(nonatomic, readonly, copy) NSString* message;
+- (instancetype)initWithGPULogMessage:(const void*)message;
+@end
+
+@implementation ArcGPULogMessage
+@synthesize gpu_log_message = _gpu_log_message;
+- (instancetype)initWithGPULogMessage:(const void*)message {
+  if ((self = [super init])) {
+    _gpu_log_message = *static_cast<const app_values::GPULogMessage*>(message);
+  }
+  return self;
+}
+- (NSInteger)severity { return _gpu_log_message.severity; }
+- (NSString*)header { return ArcNSString(_gpu_log_message.header); }
+- (NSString*)message { return ArcNSString(_gpu_log_message.message); }
+@end
+
+ARC_EXPORT @interface ArcNetworkLoggingConfiguration : NSObject
+@property(nonatomic) app_values::NetworkLoggingConfiguration network_logging_configuration;
+@property(nonatomic, copy) NSString* filePath;
+@property(nonatomic) double loggingDurationInSeconds;
+- (instancetype)initWithNetworkLoggingConfiguration:(const void*)configuration;
+@end
+
+@implementation ArcNetworkLoggingConfiguration
+@synthesize network_logging_configuration = _network_logging_configuration;
+- (instancetype)init {
+  if ((self = [super init])) {
+    // Native init only resets the path. Allocation supplies the initial zero
+    // duration; calling init again must preserve a duration already assigned.
+    _network_logging_configuration.file_path = std::string();
+  }
+  return self;
+}
+- (instancetype)initWithNetworkLoggingConfiguration:(const void*)configuration {
+  if ((self = [super init])) {
+    _network_logging_configuration =
+        *static_cast<const app_values::NetworkLoggingConfiguration*>(configuration);
+  }
+  return self;
+}
+- (NSString*)filePath { return ArcNSString(_network_logging_configuration.file_path); }
+- (void)setFilePath:(NSString*)path {
+  _network_logging_configuration.file_path = ArcUTF8(path);
+}
+- (double)loggingDurationInSeconds {
+  return _network_logging_configuration.logging_duration_in_seconds;
+}
+- (void)setLoggingDurationInSeconds:(double)duration {
+  _network_logging_configuration.logging_duration_in_seconds = duration;
+}
+@end
+
+namespace app_values {
+struct BrowserState {
+  unsigned int visible : 1;
+  unsigned int in_session : 1;
+  unsigned int playing_audio : 1;
+  unsigned int reserved : 29;
+};
+struct HistogramSample {
+  int value;
+  BrowserState browser_state;
+};
+static_assert(sizeof(BrowserState) == 4);
+static_assert(sizeof(HistogramSample) == 8);
+}  // namespace app_values
+
+ARC_EXPORT @interface ArcHistogramSample : NSObject {
+  BOOL _browserIsVisible;
+  BOOL _browserInSession;
+  BOOL _browserIsPlayingAudio;
+  NSNumber* _value;
+}
+@property(nonatomic, readonly) NSNumber* value;
+@property(nonatomic, readonly) BOOL browserIsVisible;
+@property(nonatomic, readonly) BOOL browserInSession;
+@property(nonatomic, readonly) BOOL browserIsPlayingAudio;
+- (instancetype)initWithHistogramSample:(const app_values::HistogramSample*)sample;
+@end
+
+@implementation ArcHistogramSample
+@synthesize value = _value, browserIsVisible = _browserIsVisible;
+@synthesize browserInSession = _browserInSession;
+@synthesize browserIsPlayingAudio = _browserIsPlayingAudio;
+- (instancetype)initWithHistogramSample:(const app_values::HistogramSample*)sample {
+  if ((self = [super init])) {
+    _value = [NSNumber numberWithInt:sample->value];
+    _browserIsVisible = sample->browser_state.visible;
+    _browserInSession = sample->browser_state.in_session;
+    _browserIsPlayingAudio = sample->browser_state.playing_audio;
+  }
+  return self;
+}
+@end
+
+ARC_EXPORT @interface ArcAdhocHistogramSample : NSObject {
+  int _value;
+  NSUInteger _type;
+}
+@property(nonatomic) NSUInteger type;
+@property(nonatomic) int value;
+- (instancetype)initWithType:(NSUInteger)type value:(int)value;
+@end
+
+@implementation ArcAdhocHistogramSample
+@synthesize type = _type, value = _value;
+- (instancetype)initWithType:(NSUInteger)type value:(int)value {
+  if ((self = [super init])) {
+    _type = type;
+    _value = value;
+  }
+  return self;
+}
 @end

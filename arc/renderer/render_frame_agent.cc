@@ -241,14 +241,17 @@ void UpdateFrameAdBlockConfiguration(content::RenderFrame* frame) {
   }
 }
 
-void RunEffectsAtDocumentStart(content::RenderFrame* frame) {
+bool RunEffectsAtDocumentStart(content::RenderFrame* frame) {
   auto* reference = static_cast<FrameAgentReference*>(frame->GetUserData(&kFrameAgentKey));
-  if (reference && reference->agent) {
-    auto agent = reference->agent;
-    agent->ApplyEffectsAtDocumentStart();
-    if (agent) {
-      agent->ApplyAdBlockCosmetics();
-    }
+  if (!reference || !reference->agent) {
+    return true;
   }
+  auto agent = reference->agent;
+  agent->ApplyEffectsAtDocumentStart();
+  if (!agent) {
+    return false;
+  }
+  agent->ApplyAdBlockCosmetics();
+  return static_cast<bool>(agent);
 }
 }  // namespace arc

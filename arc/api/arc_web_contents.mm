@@ -5,6 +5,8 @@
 #import "arc/browser/core_render_state.h"
 
 #include "base/memory/weak_ptr.h"
+#include <bit>
+#include <cstdint>
 #include <cmath>
 #include <limits>
 #include <optional>
@@ -135,6 +137,7 @@ static_assert(sizeof(CoreWebContentsConfiguration) == 24);
 - (void)invalidateNativeStateRefresh __attribute__((objc_direct));
 - (void)completeNavigationPolicy:(int64_t)identifier allowed:(BOOL)allowed __attribute__((objc_direct));
 - (void)nativeContentsDestroyed __attribute__((objc_direct));
+- (void)coreDidShowJavaScriptPopup __attribute__((objc_direct));
 - (id)serviceNamed:(NSString*)className __attribute__((objc_direct));
 - (ArcWebContentsNavigationController*)navigationController;
 - (ArcWebContentsNavigationController*)coreNavigationController __attribute__((objc_direct));
@@ -570,6 +573,7 @@ uint64_t NextDiagnosticID() {
   BOOL _foreground;
   BOOL _disallowDownloads;
   BOOL _isBlockingJavascriptPopups;
+  uint32_t _javascriptPopupsDisplayedCount;
   BOOL _closing;
   int32_t _sessionIdentifier;
   ArcSessionID* _restorationSessionID;
@@ -696,7 +700,9 @@ uint64_t NextDiagnosticID() {
   [self nativeContentsClosing];
 }
 - (void)nativeContentsDestroyed {
-  ArcSessionID* restoration = _restorationSessionID;
+  // Native removal records carry an optional historical ID. Absence (including
+  // a whole-window close) is exposed as an engaged ArcSessionID(-1), not nil.
+  ArcSessionID* restoration = _restorationSessionID ?: [[ArcSessionID alloc] initWithID:-1];
   [self nativeContentsClosing];
   _contents.reset();
   id<CoreContentsDelegate> delegate = _uiDelegate;
@@ -840,10 +846,25 @@ uint64_t NextDiagnosticID() {
 - (BOOL)muted { return _contents && _contents->IsAudioMuted(); }
 - (void)setMuted:(BOOL)muted { if (_contents) { _contents->SetAudioMuted(muted); } }
 - (BOOL)audible { return _contents && _contents->IsCurrentlyAudible(); }
+- (BOOL)isScaleFactorOne {
+  auto* controller = _contents
+      ? zoom::ZoomController::FromWebContents(_contents.get()) : nullptr;
+  return controller ? controller->PageScaleFactorIsOne() : YES;
+}
 - (BOOL)shareable { return _contents && _contents->GetLastCommittedURL().SchemeIsHTTPOrHTTPS(); }
 - (BOOL)isEqual:(id)other { return self == other; }
 - (BOOL)disallowDownloads { return _disallowDownloads; }
 - (void)setDisallowDownloads:(BOOL)disallow { _disallowDownloads = disallow; }
+- (int)javascriptPopupsDisplayedCount {
+  return std::bit_cast<int32_t>(_javascriptPopupsDisplayedCount);
+}
+- (void)coreDidShowJavaScriptPopup {
+  if (!_isBlockingJavascriptPopups) {
+    // Unsigned arithmetic preserves the native counter's 32-bit wrap without
+    // signed overflow. The count belongs to this wrapper across navigation.
+    ++_javascriptPopupsDisplayedCount;
+  }
+}
 - (BOOL)isBlockingJavascriptPopups { return _isBlockingJavascriptPopups; }
 - (void)setIsBlockingJavascriptPopups:(BOOL)blocking { _isBlockingJavascriptPopups = blocking; }
 @end
@@ -854,7 +875,36 @@ uint64_t NextDiagnosticID() {
 }
 @end
 
+// UI's dialog producer calls this before looking up the UI delegate. This
+// definition alone does not wire the producer; its shared declaration is owned
+// by the lead. Never create a wrapper in response to a late native event.
+namespace arc {
+void DidShowJavaScriptPopup(content::WebContents* contents) {
+  if (!contents) {
+    return;
+  }
+  auto* data = ArcContentsData::FromWebContents(contents);
+  if (!data) {
+    return;
+  }
+  ArcWebContents* __attribute__((objc_precise_lifetime)) wrapper =
+      data->wrapper ?: data->weak_wrapper;
+  if (wrapper && [wrapper webContents] == contents) {
+    [wrapper coreDidShowJavaScriptPopup];
+  }
+}
+}  // namespace arc
+
 // Weak default so the framework links before the renderer package defines it (renderer's definition wins).
 namespace arc {
 __attribute__((weak)) void InitializeRendererBridge(content::WebContents* contents) {}
+}  // namespace arc
+
+// Core-only marker test used before the tab-strip observer creates wrappers.
+// Existing empty/expired userdata still marks contents as already managed,
+// matching the native userdata-presence gate rather than wrapper liveness.
+namespace arc {
+bool HasCoreWebContentsData(content::WebContents* contents) {
+  return contents && ArcContentsData::FromWebContents(contents);
+}
 }  // namespace arc

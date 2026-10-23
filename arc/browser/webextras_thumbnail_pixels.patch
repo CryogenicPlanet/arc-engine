@@ -1,0 +1,224 @@
+diff --git a/chrome/browser/ui/thumbnails/thumbnail_tab_helper.cc b/chrome/browser/ui/thumbnails/thumbnail_tab_helper.cc
+--- a/chrome/browser/ui/thumbnails/thumbnail_tab_helper.cc
++++ b/chrome/browser/ui/thumbnails/thumbnail_tab_helper.cc
+@@ -11,6 +11,7 @@
+ #include <set>
+ #include <utility>
+ 
++#include "base/command_line.h"
+ #include "base/functional/bind.h"
+ #include "base/memory/raw_ptr.h"
+ #include "base/metrics/histogram_macros.h"
+@@ -417,7 +418,9 @@
+ 
+   // Calculate the region to copy from.
+   capture_info.copy_rect = gfx::Rect(source_size);
+-  if (!include_scrollbars_in_capture) {
++  // Arc's original engine captures the full source for tab-switch thumbnails.
++  if (!include_scrollbars_in_capture &&
++      !base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
+     capture_info.copy_rect.Inset(capture_info.scrollbar_insets);
+   }
+ 
+diff --git a/chrome/browser/ui/thumbnails/background_thumbnail_video_capturer.cc b/chrome/browser/ui/thumbnails/background_thumbnail_video_capturer.cc
+--- a/chrome/browser/ui/thumbnails/background_thumbnail_video_capturer.cc
++++ b/chrome/browser/ui/thumbnails/background_thumbnail_video_capturer.cc
+@@ -8,6 +8,7 @@
+ 
+ #include <utility>
+ 
++#include "base/command_line.h"
+ #include "base/time/time.h"
+ #include "base/trace_event/trace_event.h"
+ #include "base/trace_event/trace_id_helper.h"
+@@ -183,6 +184,13 @@
+       new FramePinner{std::move(mapping), callbacks_remote.Unbind()});
+   frame.setImmutable();
+ 
++  // Arc's original engine publishes the full bitmap, including scrollbar
++  // margins and any origin offset in the compositor content rectangle.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    got_frame_callback_.Run(frame, frame_id);
++    return;
++  }
++
+   SkBitmap cropped_frame;
+   if (!frame.extractSubset(&cropped_frame,
+                            gfx::RectToSkIRect(effective_content_rect))) {
+diff --git a/chrome/browser/ui/thumbnails/thumbnail_tab_helper.h b/chrome/browser/ui/thumbnails/thumbnail_tab_helper.h
+--- a/chrome/browser/ui/thumbnails/thumbnail_tab_helper.h
++++ b/chrome/browser/ui/thumbnails/thumbnail_tab_helper.h
+@@ -52,6 +52,7 @@
+   void CaptureThumbnailOnTabBackgrounded();
+ 
+  private:
++  friend class ThumbnailPixelCaptureTest;
+   class TabStateTracker;
+ 
+   // Metrics enums and helper functions:
+@@ -85,7 +86,8 @@
+   // captured from an entire webpage. Can be cropped or compressed later.
+   // If |include_scrollbars_in_capture| is false, the area which is likely to
+   // contain scrollbars will be removed from both the result's |copy_rect| and
+-  // |target_size|. In both cases, |scrollbar_insets| is calculated. This
++  // |target_size|, except in Arc host mode, which always keeps the full source.
++  // In both cases, |scrollbar_insets| is calculated. This
+   // function always returns a result with |clip_result| = kSourceNotClipped.
+   static ThumbnailCaptureInfo GetInitialCaptureInfo(
+       const gfx::Size& source_size,
+diff --git a/chrome/browser/ui/thumbnails/background_thumbnail_video_capturer.h b/chrome/browser/ui/thumbnails/background_thumbnail_video_capturer.h
+--- a/chrome/browser/ui/thumbnails/background_thumbnail_video_capturer.h
++++ b/chrome/browser/ui/thumbnails/background_thumbnail_video_capturer.h
+@@ -39,6 +39,7 @@
+   void Stop() override;
+ 
+  private:
++  friend class ThumbnailPixelCaptureTest;
+   // viz::mojom::FrameSinkVideoConsumer:
+   void OnFrameCaptured(
+       ::media::mojom::VideoBufferHandlePtr data,
+diff --git a/chrome/browser/ui/thumbnails/BUILD.gn b/chrome/browser/ui/thumbnails/BUILD.gn
+--- a/chrome/browser/ui/thumbnails/BUILD.gn
++++ b/chrome/browser/ui/thumbnails/BUILD.gn
+@@ -51,6 +51,7 @@
+     sources = [
+       "thumbnail_capture_driver_unittest.cc",
+       "thumbnail_image_unittest.cc",
++      "thumbnail_pixels_unittest.cc",
+       "thumbnail_scheduler_impl_unittest.cc",
+       "thumbnail_tracker_unittest.cc",
+     ]
+diff --git a/chrome/browser/ui/thumbnails/thumbnail_pixels_unittest.cc b/chrome/browser/ui/thumbnails/thumbnail_pixels_unittest.cc
+new file mode 100644
+--- /dev/null
++++ b/chrome/browser/ui/thumbnails/thumbnail_pixels_unittest.cc
+@@ -0,0 +1,129 @@
++// Copyright 2026 The Chromium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "chrome/browser/ui/thumbnails/background_thumbnail_video_capturer.h"
++#include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
++
++#include <memory>
++#include <utility>
++
++#include "base/functional/bind.h"
++#include "base/memory/read_only_shared_memory_region.h"
++#include "base/test/scoped_command_line.h"
++#include "content/test/test_render_view_host.h"
++#include "content/test/test_web_contents.h"
++#include "media/base/video_frame.h"
++#include "media/capture/mojom/video_capture_buffer.mojom.h"
++#include "testing/gtest/include/gtest/gtest.h"
++#include "third_party/skia/include/core/SkColor.h"
++
++class ThumbnailPixelCaptureTest : public content::RenderViewHostImplTestHarness {
++ protected:
++  static ThumbnailCaptureInfo InitialInfo(bool include_scrollbars) {
++    return ThumbnailTabHelper::GetInitialCaptureInfo(
++        gfx::Size(4096, 3072), 1.5f, include_scrollbars);
++  }
++
++  SkBitmap CaptureFrame(const gfx::Rect& content_rect) {
++    const gfx::Size size(512, 352);
++    const size_t bytes =
++        media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_ARGB, size);
++    auto memory = base::ReadOnlySharedMemoryRegion::Create(bytes);
++    EXPECT_TRUE(memory.IsValid());
++    if (!memory.IsValid()) {
++      return {};
++    }
++    SkBitmap source;
++    EXPECT_TRUE(source.installPixels(
++        SkImageInfo::MakeN32Premul(size.width(), size.height()),
++        memory.mapping.memory(), size.width() * sizeof(SkColor)));
++    source.eraseColor(SK_ColorGREEN);
++    source.erase(SK_ColorRED, SkIRect::MakeXYWH(497, 0, 15, 352));
++    source.erase(SK_ColorRED, SkIRect::MakeXYWH(0, 337, 512, 15));
++
++    SkBitmap result;
++    mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer> viz_receiver;
++    BackgroundThumbnailVideoCapturer capturer(
++        contents(), base::BindRepeating(
++                        [](SkBitmap* result, const SkBitmap& frame, uint64_t) {
++                          *result = frame;
++                        },
++                        base::Unretained(&result)));
++    // Supply a live capture endpoint without a renderer, GPU, or window. The
++    // test invokes the real consumer path with a mapped ARGB compositor frame.
++    capturer.video_capturer_ =
++        std::make_unique<viz::ClientFrameSinkVideoCapturer>(base::BindRepeating(
++            [](mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer>* target,
++               mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer> next) {
++              *target = std::move(next);
++            },
++            base::Unretained(&viz_receiver)));
++    capturer.capture_info_.source_size = size;
++    capturer.capture_info_.copy_rect = gfx::Rect(size);
++    capturer.capture_info_.target_size = size;
++    capturer.capture_info_.scrollbar_insets = gfx::Insets::TLBR(0, 0, 15, 15);
++
++    auto info = media::mojom::VideoFrameInfo::New();
++    info->pixel_format = media::PIXEL_FORMAT_ARGB;
++    info->coded_size = size;
++    info->visible_rect = gfx::Rect(size);
++    info->natural_size = size;
++    info->color_space = gfx::ColorSpace::CreateSRGB();
++    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
++        callbacks;
++    auto callbacks_receiver = callbacks.InitWithNewPipeAndPassReceiver();
++    static_cast<viz::mojom::FrameSinkVideoConsumer&>(capturer).OnFrameCaptured(
++        media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(
++            std::move(memory.region)),
++        std::move(info), content_rect, std::move(callbacks));
++    return result;
++  }
++};
++
++TEST_F(ThumbnailPixelCaptureTest, ArcHostKeepsFullTabSwitchSourceAndTarget) {
++  base::test::ScopedCommandLine command_line;
++  command_line.GetProcessCommandLine()->AppendSwitch("arcmod-host-app");
++  const auto full = InitialInfo(/*include_scrollbars=*/true);
++  const auto tab_switch = InitialInfo(/*include_scrollbars=*/false);
++  EXPECT_EQ(gfx::Rect(4096, 3072), tab_switch.copy_rect);
++  EXPECT_EQ(full.target_size, tab_switch.target_size);
++}
++
++TEST_F(ThumbnailPixelCaptureTest, ChromeKeepsTabSwitchScrollbarClipping) {
++  base::test::ScopedCommandLine command_line;
++  command_line.GetProcessCommandLine()->RemoveSwitch("arcmod-host-app");
++  const auto info = InitialInfo(/*include_scrollbars=*/false);
++  gfx::Rect expected(4096, 3072);
++  expected.Inset(info.scrollbar_insets);
++  EXPECT_EQ(expected, info.copy_rect);
++}
++
++TEST_F(ThumbnailPixelCaptureTest, ArcHostKeepsCompositorEdgePixels) {
++  base::test::ScopedCommandLine command_line;
++  command_line.GetProcessCommandLine()->AppendSwitch("arcmod-host-app");
++  const SkBitmap frame = CaptureFrame(gfx::Rect(512, 352));
++  ASSERT_EQ(512, frame.width());
++  ASSERT_EQ(352, frame.height());
++  EXPECT_EQ(SK_ColorGREEN, frame.getColor(0, 0));
++  EXPECT_EQ(SK_ColorRED, frame.getColor(511, 351));
++}
++
++TEST_F(ThumbnailPixelCaptureTest, ArcHostKeepsCompositorOriginPixels) {
++  base::test::ScopedCommandLine command_line;
++  command_line.GetProcessCommandLine()->AppendSwitch("arcmod-host-app");
++  const SkBitmap frame = CaptureFrame(gfx::Rect(3, 5, 509, 347));
++  ASSERT_EQ(512, frame.width());
++  ASSERT_EQ(352, frame.height());
++  EXPECT_EQ(SK_ColorGREEN, frame.getColor(0, 0));
++  EXPECT_EQ(SK_ColorRED, frame.getColor(511, 351));
++}
++
++TEST_F(ThumbnailPixelCaptureTest, ChromeKeepsCompositorScrollbarClipping) {
++  base::test::ScopedCommandLine command_line;
++  command_line.GetProcessCommandLine()->RemoveSwitch("arcmod-host-app");
++  const SkBitmap frame = CaptureFrame(gfx::Rect(512, 352));
++  ASSERT_EQ(497, frame.width());
++  ASSERT_EQ(337, frame.height());
++  EXPECT_EQ(SK_ColorGREEN, frame.getColor(496, 336));
++}

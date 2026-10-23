@@ -6,15 +6,28 @@
 #include "arc/browser/extensions_bridge.h"
 #import <objc/message.h>
 #include "base/memory/weak_ptr.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/location.h"
+#include "base/task/single_thread_task_runner.h"
+#include <memory>
+#include <vector>
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/browser_init_state.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "chrome/browser/ui/browser_window/public/create_browser_window.h"
 #include "components/sessions/core/session_id.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include <optional>
 
 @implementation ArcSessionID {
@@ -96,9 +109,18 @@ ARC_EXPORT @interface ArcBrowserCreateParams : NSObject
 - (void)browser:(ArcBrowser*)browser didCreateNewWebContents:(ArcWebContents*)contents isActive:(BOOL)isActive;
 @end
 
+namespace arc {
+// Core-only marker query; implemented after the WebContents weak defaults.
+// Presence is queried without constructing or retaining an ObjC wrapper.
+bool HasCoreWebContentsData(content::WebContents* contents);
+}  // namespace arc
+
 @interface ArcBrowser ()
 - (BOOL)isInitialized;
-- (void)didInsertWebContents:(content::WebContents*)contents active:(BOOL)active __attribute__((objc_direct));
+- (BOOL)hasCoreDelegateBridge __attribute__((objc_direct));
+- (id<ArcCoreBrowserDelegate>)coreDelegate __attribute__((objc_direct));
+- (void)didInsertWebContents:(content::WebContents*)contents active:(BOOL)active
+              notifyCreated:(BOOL)notifyCreated __attribute__((objc_direct));
 @end
 @interface ArcWebContents (CoreTabClosing)
 - (void)nativeContentsClosing __attribute__((objc_direct));
@@ -132,6 +154,14 @@ class ArcBrowserTabsObserver : public TabStripModelObserver {
     // Snapshot native identities before calling out: app delegates and notification
     // observers can synchronously change the tab strip again.
     ArcBrowser* wrapper = wrapper_;
+    // Native 4306358 checks the FIRST inserted contents' canonical marker for
+    // the whole change, before adopting any new contents. Transfers and public
+    // createWebContents returns are already managed and do not emit DidCreate.
+    const auto* inserted = change.type() == TabStripModelChange::kInserted
+        ? change.GetInsert() : nullptr;
+    const bool notify_created = inserted && !inserted->contents.empty() &&
+        !arc::HasCoreWebContentsData(inserted->contents.front().contents.get()) &&
+        [wrapper hasCoreDelegateBridge];
     NSMutableArray<NSDictionary*>* changes = [NSMutableArray array];
     NSMutableArray<NSArray*>* closing = [NSMutableArray array];
     auto append = [&](content::WebContents* contents, NSString* kind) {
@@ -168,7 +198,8 @@ class ArcBrowserTabsObserver : public TabStripModelObserver {
         content::WebContents* native = [tab webContents];
         BrowserWindowInterface* browser = [wrapper browser];
         if (browser && !browser->IsDeleteScheduled() && native) {
-          [wrapper didInsertWebContents:native active:tab == activated];
+          [wrapper didInsertWebContents:native active:tab == activated
+                         notifyCreated:notify_created];
         }
       }
       NotifyTabChange(wrapper, tab, entry[@"change"]);
@@ -182,6 +213,140 @@ class ArcBrowserTabsObserver : public TabStripModelObserver {
   __weak ArcBrowser* wrapper_;
   base::CallbackListSubscription close_subscription_;
 };
+// The native API reports cancellation, rather than whether closure succeeded.
+// Keep transport independent of the Objective-C wrapper: already queued
+// completions survive wrapper/native teardown.
+class CoreBrowserCloseState
+    : public std::enable_shared_from_this<CoreBrowserCloseState> {
+ public:
+  using Callback = void (^)(BOOL canceled);
+  using Completion = base::OnceCallback<void(bool)>;
+  using Batch = std::vector<Completion>;
+
+  explicit CoreBrowserCloseState(BrowserWindowInterface* browser)
+      : browser_(browser->GetWeakPtr()) {}
+
+  static std::shared_ptr<CoreBrowserCloseState> Create(
+      BrowserWindowInterface* browser) {
+    auto state = std::make_shared<CoreBrowserCloseState>(browser);
+    state->close_subscription_ = browser->RegisterBrowserDidClose(
+        base::BindRepeating(
+            [](std::weak_ptr<CoreBrowserCloseState> weak_state,
+               BrowserWindowInterface*) {
+              if (auto state = weak_state.lock()) {
+                state->NativeDidClose();
+              }
+            },
+            std::weak_ptr<CoreBrowserCloseState>(state)));
+    return state;
+  }
+
+  ~CoreBrowserCloseState() {
+    native_closed_ = true;
+    finishing_ = true;
+    RunBatch(TakePending(), false);
+  }
+
+  void Request(bool skip_beforeunload, Callback callback) {
+    auto keep_alive = shared_from_this();
+    Completion completion = base::BindOnce(
+        [](Callback callback, bool canceled) {
+          if (callback) {
+            callback(canceled);
+          }
+        },
+        [callback copy]);
+    if (native_closed_ || !browser_ || browser_->IsDeleteScheduled() ||
+        finishing_) {
+      std::move(completion).Run(false);
+      return;
+    }
+
+    const bool already_pending = !pending_.empty();
+    pending_.push_back(std::move(completion));
+    // A force/skip request may escalate an existing confirmation. Ordinary
+    // additional callers share its eventual result in insertion order.
+    if (already_pending && !skip_beforeunload) {
+      return;
+    }
+
+    UnloadController* unload = UnloadController::From(browser_.get());
+    const bool awaiting_confirmation = unload->RunBeforeUnloadForShutdown(
+        skip_beforeunload,
+        base::BindRepeating(
+            [](std::weak_ptr<CoreBrowserCloseState> weak_state,
+               bool confirmed) {
+              if (auto state = weak_state.lock()) {
+                state->Complete(confirmed);
+              }
+            },
+            weak_from_this()));
+    // This API does not invoke its confirmation callback when it returns
+    // false (including skip-beforeunload and no-handlers paths).
+    if (!awaiting_confirmation) {
+      Complete(true);
+    }
+  }
+
+ private:
+  Batch TakePending() {
+    Batch batch;
+    batch.swap(pending_);
+    return batch;
+  }
+
+  static void RunBatch(Batch batch, bool canceled) {
+    for (auto& completion : batch) {
+      std::move(completion).Run(canceled);
+    }
+  }
+
+  void NativeDidClose() {
+    auto keep_alive = shared_from_this();
+    native_closed_ = true;
+    finishing_ = true;
+    RunBatch(TakePending(), false);
+  }
+
+  void Complete(bool confirmed) {
+    auto keep_alive = shared_from_this();
+    if (pending_.empty()) {
+      return;
+    }
+    Batch batch = TakePending();
+    const bool permitted = confirmed || native_closed_ || !browser_ ||
+                           browser_->IsDeleteScheduled() || finishing_;
+    if (permitted) {
+      // Reentrant requests during these callbacks complete inline with NO,
+      // as in the original native finishing/already-closing branch.
+      finishing_ = true;
+      RunBatch(std::move(batch), false);
+      auto browser = browser_;
+      if (!native_closed_ && browser && !browser->IsDeleteScheduled()) {
+        browser->GetWindow()->Close();
+      }
+      if (!native_closed_ && browser_) {
+        finishing_ = false;
+      }
+      return;
+    }
+
+    // Reset first. It may invoke the native repeating callback again; the
+    // detached batch cannot be delivered a second time. The posted task owns
+    // its callbacks and does not depend on this state or an Objective-C owner.
+    UnloadController::From(browser_.get())->ResetBeforeUnloadForShutdown();
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(&CoreBrowserCloseState::RunBatch,
+                                  std::move(batch), true));
+  }
+
+  base::WeakPtr<BrowserWindowInterface> browser_;
+  Batch pending_;
+  bool native_closed_ = false;
+  bool finishing_ = false;
+  base::CallbackListSubscription close_subscription_;
+};
+
 const char kArcBrowserKey[] = "ArcBrowser";
 struct ArcBrowserHolder : base::SupportsUserData::Data {
   ArcBrowser* __strong wrapper;
@@ -200,7 +365,11 @@ struct ArcBrowserHolder : base::SupportsUserData::Data {
   ArcBrowserCreateParams* _browserCreateParams;
   id _sidePanel;
   __weak id<ArcCoreBrowserDelegate> _delegate;
+  // Native registration outlives a weak app delegate. Only setDelegate:nil
+  // clears it; any later nonnil delegate reuses/reestablishes registration.
+  BOOL _hasDelegateBridge;
   std::unique_ptr<ArcBrowserTabsObserver> _tabsObserver;
+  std::shared_ptr<CoreBrowserCloseState> _closeState;
 }
 @synthesize windowIdentifier = _windowIdentifier;
 
@@ -230,6 +399,7 @@ struct ArcBrowserHolder : base::SupportsUserData::Data {
                      ? ((id (*)(id, SEL, id))objc_msgSend)([sidePanelClass alloc], withBrowser, self)
                      : [[sidePanelClass alloc] init];
     _tabsObserver = std::make_unique<ArcBrowserTabsObserver>(browser, self);
+    _closeState = CoreBrowserCloseState::Create(browser);
     ArcSessionsBrowserCreated(self);
   }
   return self;
@@ -248,6 +418,32 @@ struct ArcBrowserHolder : base::SupportsUserData::Data {
     default: return 0;
   }
 }
+- (void)tryToCloseSkipBeforeUnloadHandlers:(BOOL)skipBeforeUnloadHandlers
+                                 callback:(void (^)(BOOL canceled))callback {
+  auto state = _closeState;
+  if (state) {
+    state->Request(skipBeforeUnloadHandlers, callback);
+  } else if (callback) {
+    callback(NO);
+  }
+}
+- (BOOL)isJavaScriptFromAppleEventsAllowed {
+  return _browser && _browser->GetProfile()->GetPrefs()->GetBoolean(
+                         prefs::kAllowJavascriptAppleEvents);
+}
+- (BOOL)isCastEnabled {
+  if (!_browser || !media_router::MediaRouterEnabled(_browser->GetProfile())) {
+    return NO;
+  }
+  content::WebContents* active =
+      _browser->GetTabStripModel()->GetActiveWebContents();
+  auto* manager = active
+      ? web_modal::WebContentsModalDialogManager::FromWebContents(active)
+      : nullptr;
+  // Arc's original getter requires an active contents and its modal manager;
+  // chrome::CanRouteMedia also permits the missing-manager case.
+  return manager && !manager->IsDialogActive();
+}
 - (ArcBrowserContext*)context { return _context; }
 - (ArcBrowserCreateParams*)browserCreateParams { return _browserCreateParams; }
 - (id)sidePanel { return _sidePanel; }
@@ -256,26 +452,47 @@ struct ArcBrowserHolder : base::SupportsUserData::Data {
 }
 - (void)setDelegate:(id)delegate {
   _delegate = delegate;
+  _hasDelegateBridge = delegate != nil;
   arc::InstallBrowserExtensions(self, delegate);
   if (delegate) {
     [NSNotificationCenter.defaultCenter postNotificationName:kArcBrowserDidSetDelegateNotification object:self];
   }
 }
 - (id)delegate { return _delegate; }
+- (BOOL)hasCoreDelegateBridge { return _hasDelegateBridge; }
+- (id<ArcCoreBrowserDelegate>)coreDelegate { return _delegate; }
 - (void)setWindow:(NSWindow*)window {
   if (_browser) {
     static_cast<arc::ArcBrowserWindow*>(_browser->GetWindow())->SetNativeWindow(gfx::NativeWindow(window));
   }
 }
 - (BOOL)isEqual:(id)other { return self == other; }
-- (void)didInsertWebContents:(content::WebContents*)contents active:(BOOL)active {
+- (void)didInsertWebContents:(content::WebContents*)contents active:(BOOL)active
+              notifyCreated:(BOOL)notifyCreated {
   ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:contents];
+  const auto native = contents->GetWeakPtr();
+  const auto browser = _browser;
   if (ArcSessionsDidInsertWebContents(self, contents)) {
     return;  // reported as a restore by the sessions package
   }
-  if ([_delegate respondsToSelector:@selector(browser:didCreateNewWebContents:isActive:)]) {
-    [_delegate browser:self didCreateNewWebContents:wrapper isActive:active];
-  }
+  if (!notifyCreated) { return; }
+  __weak ArcBrowser* weak_owner = self;
+  __weak ArcWebContents* weak_wrapper = wrapper;
+  // Native 43065b0 first posts a weak Browser task with copied contents/active
+  // state. Its 42fcf40 receiver checks native contents and chooses the CURRENT
+  // delegate bridge at delivery, then invokes the ObjC bridge synchronously.
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(
+      [](void (^work)()) { work(); }, ^{
+    if (!browser || !native) { return; }
+    ArcBrowser* owner __attribute__((objc_precise_lifetime)) = weak_owner;
+    ArcWebContents* current __attribute__((objc_precise_lifetime)) = weak_wrapper;
+    if (!owner || [owner browser] != browser.get() || !current ||
+        [current webContents] != native.get()) { return; }
+    id<ArcCoreBrowserDelegate> delegate = [owner coreDelegate];
+    if ([delegate respondsToSelector:@selector(browser:didCreateNewWebContents:isActive:)]) {
+      [delegate browser:owner didCreateNewWebContents:current isActive:active];
+    }
+  }));
 }
 - (ArcWebContents*)createWebContents:(id)configuration {
   if (!_browser) {

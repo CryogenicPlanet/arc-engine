@@ -2,7 +2,7 @@
 // Test-only direct boundary parity probe. Run ONLY through arc/tools/locked.sh.
 // No existing data is deleted. Only trace156/ours156 apps and their own domains are used.
 import { AgentCDP, verifyAgentEndpoint } from "../../../arc/tools/agent-cdp";
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { copyFileSync, constants, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const root = resolve(import.meta.dir, "../..");
@@ -19,6 +19,17 @@ if (!agents.length || new Set(agents).size !== agents.length || agents.some(a =>
 }
 const port = Number(option("--port", "9447"));
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("invalid CDP port");
+const adblockIdleMs = Number(option("--idle-before-adblock-ms", "0"));
+if (!Number.isInteger(adblockIdleMs) || adblockIdleMs < 0 || adblockIdleMs > 60000) {
+  throw new Error("idle-before-adblock-ms must be an integer from 0 through 60000");
+}
+const adblockReadinessMs = Number(option("--adblock-readiness-ms", "60000"));
+if (!Number.isInteger(adblockReadinessMs) || adblockReadinessMs < 1000 || adblockReadinessMs > 240000) {
+  throw new Error("adblock-readiness-ms must be an integer from 1000 through 240000");
+}
+if (args.includes("--adblock-queue-edges") && !args.includes("--adblock-toggle")) {
+  throw new Error("adblock-queue-edges requires adblock-toggle");
+}
 const lockPID = Number(readFileSync(join(root, "logs/arccore-build.lock/pid"), "utf8").trim());
 let ancestor = process.pid;
 for (let depth = 0; ancestor !== lockPID && ancestor > 1 && depth < 20; ++depth) {
@@ -26,9 +37,12 @@ for (let depth = 0; ancestor !== lockPID && ancestor > 1 && depth < 20; ++depth)
 }
 if (ancestor !== lockPID) throw new Error("run this probe under arc/tools/locked.sh; it never acquires the lock itself");
 const dylib = resolve(option("--dylib", join(root, "logs/wp/renderer-probe-build/RendererProbe.dylib"))!);
-const recorder = join(root, "tests/recorder/ArcEngineRecorder.dylib");
-for (const path of [dylib, recorder]) if (!existsSync(path)) throw new Error(`missing ${path}`);
+const recorderSource = join(root, "tests/recorder/ArcEngineRecorder.dylib");
+for (const path of [dylib, recorderSource]) if (!existsSync(path)) throw new Error(`missing ${path}`);
 mkdirSync(out, { recursive: true });
+// Preserve the exact recorder bytes for both apps even if another worker rebuilds the shared recorder.
+const recorder = join(out, "ArcEngineRecorder.frozen.dylib");
+copyFileSync(recorderSource, recorder, constants.COPYFILE_EXCL);
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 const wait = async <T>(fn: () => T | Promise<T>, timeout = 20000): Promise<NonNullable<T>> => {
   const deadline = Date.now() + timeout;
@@ -44,6 +58,27 @@ const exec = (argv: string[]) => {
   const result = Bun.spawnSync(argv, { stdout: "pipe", stderr: "pipe" });
   if (!result.success) throw new Error(`${argv[0]} failed: ${result.stderr.toString().trim()}`);
   return result.stdout.toString().trim();
+};
+const recorderHash = (path: string) => exec(["/usr/bin/shasum","-a","256",path]).split(/\s/,1)[0];
+const frozenRecorderHash = recorderHash(recorder);
+if (recorderHash(recorderSource) !== frozenRecorderHash) throw new Error("recorder changed during snapshot");
+writeFileSync(join(out,"recorder-provenance.json"),JSON.stringify({source:recorderSource,
+  frozen:recorder,sha256:frozenRecorderHash},null,2));
+const artifactProvenance = (app: string, executable: string) => {
+  const framework = join(app,"Contents/Frameworks/ArcCore.framework");
+  const files = [executable,join(framework,"Versions/A/ArcCore"),dylib,recorder];
+  const helpers=join(framework,"Helpers");
+  if(existsSync(helpers))for(const name of readdirSync(helpers).sort()) {
+    if(!name.endsWith(".app"))continue;
+    const bundle=join(helpers,name);
+    const binary=exec(["/usr/libexec/PlistBuddy","-c","Print :CFBundleExecutable",join(bundle,"Contents/Info.plist")]);
+    files.push(join(bundle,"Contents/MacOS",binary));
+  }
+  return files.map(path=>{
+    const realpath=realpathSync(path),stat=statSync(realpath);
+    const sha256=exec(["/usr/bin/shasum","-a","256",realpath]).split(/\s/,1)[0];
+    return {path,realpath,size:stat.size,mtimeMs:stat.mtimeMs,sha256};
+  });
 };
 const processes = (): { pid: number; ppid: number; command: string }[] => exec(["ps", "-axo", "pid=,ppid=,command="])
   .split("\n").flatMap(line => {
@@ -99,6 +134,7 @@ try {
     let cdp: AgentCDP | undefined;
     let pid: number | undefined;
     let target: string | undefined;
+    let provenanceBefore: ReturnType<typeof artifactProvenance> | undefined;
     try {
       if (plist("ArcModAgentSession") !== agent || plist("CFBundleIdentifier") !== `company.thebrowser.Browser.mod.agent.${agent}`) {
         throw new Error("agent bundle identity mismatch");
@@ -108,6 +144,8 @@ try {
       if (Bun.spawnSync(["/usr/sbin/lsof", "-nP", `-iTCP:${port}`, "-sTCP:LISTEN"], { stdout: "ignore", stderr: "ignore" }).success) {
         throw new Error("CDP port is already occupied");
       }
+      provenanceBefore=artifactProvenance(app,exe);
+      writeFileSync(join(dir,"artifact-provenance-before.json"),JSON.stringify(provenanceBefore,null,2));
       const data = join(process.env.HOME!, "Library/Application Support", `ArcModAgent-${agent}`);
       const chromiumData = join(data, "Agent Chromium Data");
       mkdirSync(chromiumData, { recursive: true, mode: 0o700 });
@@ -142,11 +180,11 @@ try {
         return (value.result as any)?.value;
       };
       let number = 0;
-      const action = async (operation: string, identifier?: string, stylesheet?: string, values?: string[], hostPattern?: string, scheme?: number) => {
+      const action = async (operation: string, identifier?: string, stylesheet?: string, values?: string[], hostPattern?: string, scheme?: number, matrix?: number[]) => {
         if (verifyAgentEndpoint(agent, port) !== pid) throw new Error("endpoint PID changed");
         const id = `${token}-${++number}`;
         const sentAt = Date.now() / 1000;
-        const request = { id, url: currentURL, operation, identifier, stylesheet, values, hostPattern, scheme };
+        const request = { id, url: currentURL, operation, identifier, stylesheet, values, hostPattern, scheme, matrix };
         writeFileSync(requestPath + ".tmp", JSON.stringify(request));
         renameSync(requestPath + ".tmp", requestPath);
         const response = await wait(() => {
@@ -224,6 +262,49 @@ try {
       await wait(async () => (await evaluate("document.getElementById('child').contentWindow.location.href")) === base + "/frame-navigated");
       await snapshot("existing-subframe-navigation");
       await action("remove", "arc-renderer-probe-one"); await snapshot("remove-with-subframes");
+      if (args.includes("--filters")) {
+        // Public fixture: explicit CSS, canvas, SVG image, raster image and text.
+        // The pixel output is separate from computed style, which filters do not change.
+        const gradients = args.includes("--filter-gradients") ? [
+          ["linear-gradient-red","linear-gradient(red,red)"],
+          ["radial-gradient-red","radial-gradient(red,red)"],
+          ["conic-gradient-red","conic-gradient(red,red)"],
+        ] : [];
+        await evaluate(`(() => {
+          const host=document.createElement('div'); host.id='arc-filter-swatches';
+          host.style='position:fixed;left:10px;top:10px;display:flex;gap:8px;z-index:2147483647;background:white;padding:8px';
+          const add=(element,name)=>{element.dataset.filterSwatch=name; element.style.width='48px';element.style.height='48px';host.append(element);return element;};
+          const rect=add(document.createElement('div'),'css-red');rect.style.background='rgb(255,0,0)';
+          const white=add(document.createElement('div'),'css-white');white.style.background='rgb(255,255,255)';
+          const canvas=add(document.createElement('canvas'),'canvas-red');canvas.width=48;canvas.height=48;
+          const c=canvas.getContext('2d');c.fillStyle='rgb(255,0,0)';c.fillRect(0,0,48,48);
+          const raster=add(document.createElement('img'),'raster-red');raster.src=canvas.toDataURL('image/png');
+          const svg=add(document.createElement('img'),'svg-red');svg.src='data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Crect width="48" height="48" fill="red"/%3E%3C/svg%3E';
+          for (const [name,background] of ${JSON.stringify(gradients)}) {
+            const gradient=add(document.createElement('div'),name);gradient.style.backgroundImage=background;
+          }
+          const text=add(document.createElement('span'),'text-red');text.textContent='TEST';text.style.color='red';text.style.font='bold 14px monospace';
+          document.body.append(host);
+        })()`);
+        await wait(async()=>await evaluate("[...document.querySelectorAll('#arc-filter-swatches img')].every(i=>i.complete&&i.naturalWidth===48)"));
+        const filters: unknown[] = [];
+        const sample = async(step:string)=>{
+          await sleep(400);
+          const geometry=await evaluate(`({dpr:devicePixelRatio,width:innerWidth,height:innerHeight,swatches:[...document.querySelectorAll('[data-filter-swatch]')].map(e=>{const r=e.getBoundingClientRect();return {name:e.dataset.filterSwatch,x:r.x,y:r.y,width:r.width,height:r.height};})})`);
+          const capture=await cdp!.targetCommand(target!,"Page.captureScreenshot",{format:"png"});
+          if(typeof capture.data!=="string")throw new Error("filter screenshot missing");
+          const filename="filter-"+step+".png";
+          writeFileSync(join(dir,filename),Buffer.from(capture.data,"base64"));
+          filters.push({step,geometry,screenshot:filename});
+        };
+        const identity=Array.from({length:20},(_,i)=>[0,6,12,18].includes(i)?1:0);
+        await sample("baseline");
+        await action("apply-color-filter",undefined,undefined,undefined,undefined,undefined,identity);await sample("identity");
+        const grayscale=[...identity];grayscale[6]=0;
+        await action("apply-color-filter",undefined,undefined,undefined,undefined,undefined,grayscale);await sample("grayscale");
+        await action("remove-color-filter");await sample("removed");
+        writeFileSync(join(dir,"filter-observations.json"),JSON.stringify(filters,null,2));
+      }
       if (args.includes("--schemes")) {
         const schemes: unknown[] = [];
         const sample = async(step:string)=>{ await sleep(300); schemes.push({step,dark:await evaluate("matchMedia('(prefers-color-scheme:dark)').matches")}); };
@@ -272,21 +353,46 @@ try {
           resources.push({step,loaded,count:count.count,debug:debug.info,adDisplay});
           console.log(`${agent}: adblock ${step} ${loaded}, count=${count.count}, adDisplay=${adDisplay}, debug=${JSON.stringify(debug.info)}`);
         };
+        // Read startup completion evidence without changing task priority or attaching a debugger.
+        const startupHistograms: unknown[] = [];
+        const snapshotStartup = async (stage: string) => {
+          try {
+            startupHistograms.push({stage,wallClockMs:Date.now(),
+              result:await cdp!.request("Browser.getHistograms",{query:"Startup.",delta:false})});
+          } catch (error) {
+            startupHistograms.push({stage,wallClockMs:Date.now(),error:String(error)});
+          }
+          writeFileSync(join(dir,"adblock-startup-histograms.json"),JSON.stringify(startupHistograms,null,2));
+        };
         await load("baseline");
+        await snapshotStartup("before-idle");
+        if (adblockIdleMs) {
+          console.log(`${agent}: idle ${adblockIdleMs} ms before block-list publication diagnostic`);
+          await sleep(adblockIdleMs);
+        }
+        await snapshotStartup("before-set-block-lists");
         const networkRule = `||${fixtureHost}^$script`;
         const rules = `${networkRule}\n${fixtureHost}##.arc-probe-ad`;
         await action("set-block-lists", undefined, undefined, [rules]);
         let ready = false;
         const compileStart = Date.now();
-        while (Date.now() - compileStart < 60000) {
+        writeFileSync(join(dir,"adblock-publication-request.json"),JSON.stringify({wallClockMs:compileStart,
+          readinessDeadlineMs:adblockReadinessMs,idleBeforeRequestMs:adblockIdleMs},null,2));
+        let lastStartupSnapshot = compileStart;
+        while (Date.now() - compileStart < adblockReadinessMs) {
           await sleep(500);
           const debug = await action("adblock-debug");
+          if (Date.now()-lastStartupSnapshot >= 30000) {
+            await snapshotStartup(`publication-wait-${Math.floor((Date.now()-compileStart)/1000)}s`);
+            lastStartupSnapshot = Date.now();
+          }
           if (/\/\* Result: (Success|Cached: [^*]+) \*\//.test(String(debug.info)) &&
               String(debug.info).includes(".arc-probe-ad{display:none!important;}")) {
             ready = true;
             break;
           }
         }
+        await snapshotStartup(ready ? "publication-ready" : "publication-timeout");
         if (!ready) throw new Error(`block list readiness timed out after ${Date.now()-compileStart} ms`);
         writeFileSync(join(dir,"adblock-publication.json"),JSON.stringify({elapsedMs:Date.now()-compileStart},null,2));
         await sleep(1500); await load("rule-active");
@@ -303,6 +409,17 @@ try {
           await sleep(500); await load("feature-disabled-exclusions-cleared");
           await action("set-feature-11", undefined, undefined, undefined, undefined, 1);
           await sleep(500); await load("feature-reenabled");
+          if (args.includes("--adblock-queue-edges")) {
+            await action("set-exclusions-then-disable", undefined, undefined, [fixtureHost]);
+            await sleep(500); await load("queued-exclusion-disabled");
+            await action("set-feature-11", undefined, undefined, undefined, undefined, 1);
+            await sleep(500); await load("cached-exclusion-on-reenable");
+            await action("set-feature-11", undefined, undefined, undefined, undefined, 0);
+            await action("set-exclusions", undefined, undefined, []);
+            await sleep(500); await load("disabled-retains-installed-exclusion");
+            await action("set-feature-11", undefined, undefined, undefined, undefined, 1);
+            await sleep(500); await load("cached-clear-on-reenable");
+          }
         }
         await action("set-exclusions", undefined, undefined, [fixtureHost]);
         await sleep(500); await load("exclude-ip-no-port");
@@ -336,6 +453,11 @@ try {
         }
       }
       cdp?.close();
+      if(provenanceBefore)try {
+        const after=artifactProvenance(app,exe);
+        writeFileSync(join(dir,"artifact-provenance-after.json"),JSON.stringify(after,null,2));
+        if(JSON.stringify(after)!==JSON.stringify(provenanceBefore))run.error??="app/probe artifacts changed during the run";
+      }catch(error){run.error??=`artifact provenance failed: ${String(error)}`;}
       writeFileSync(join(dir, "observations.json"), JSON.stringify(run, null, 2));
     }
   }

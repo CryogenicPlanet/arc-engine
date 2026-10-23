@@ -1,0 +1,190 @@
+--- a/chromium/src/services/network/public/cpp/resource_request.h
++++ b/chromium/src/services/network/public/cpp/resource_request.h
+@@ -205,6 +205,10 @@
+   // SECURITY NOTE: |request_initiator| is a security-sensitive field.  Please
+   // consult the doc comment for |request_initiator| in url_request.mojom.
+   std::optional<url::Origin> request_initiator;
++
++  // Blink's top-frame origin at request construction. This is renderer-supplied
++  // context for Arc content-blocker exclusions, not a trusted security origin.
++  std::optional<url::Origin> top_frame_origin;
+ 
+   // TODO(crbug.com/40137011): Remove the `isolated_world_origin` field
+   // once Chrome Platform Apps are gone.
+--- a/chromium/src/services/network/public/cpp/resource_request.cc
++++ b/chromium/src/services/network/public/cpp/resource_request.cc
+@@ -331,6 +331,7 @@
+          update_first_party_url_on_redirect ==
+              request.update_first_party_url_on_redirect &&
+          request_initiator == request.request_initiator &&
++         top_frame_origin == request.top_frame_origin &&
+          isolated_world_origin == request.isolated_world_origin &&
+          referrer == request.referrer &&
+          referrer_policy == request.referrer_policy &&
+--- a/chromium/src/services/network/public/mojom/url_request.mojom
++++ b/chromium/src/services/network/public/mojom/url_request.mojom
+@@ -623,6 +623,10 @@
+   // The policies to be used when retrying a fetch. Will only be set on fetch
+   // requests who specified its RetryOptions.
+   network.mojom.FetchRetryOptions? fetch_retry_options;
++
++  // Blink TopFrameOrigin snapshot. Renderer-supplied content-blocker context;
++  // this does not replace any trusted origin/security check.
++  url.mojom.Origin? top_frame_origin;
+ };
+ 
+ // URLRequestBody represents body (i.e. upload data) of a HTTP request.
+--- a/chromium/src/services/network/public/cpp/url_request_mojom_traits.h
++++ b/chromium/src/services/network/public/cpp/url_request_mojom_traits.h
+@@ -263,6 +263,10 @@
+       const network::ResourceRequest& request) {
+     return request.request_initiator;
+   }
++  static const std::optional<url::Origin>& top_frame_origin(
++      const network::ResourceRequest& request) {
++    return request.top_frame_origin;
++  }
+   static const std::vector<GURL>& navigation_redirect_chain(
+       const network::ResourceRequest& request) {
+     return request.navigation_redirect_chain;
+--- a/chromium/src/services/network/public/cpp/url_request_mojom_traits.cc
++++ b/chromium/src/services/network/public/cpp/url_request_mojom_traits.cc
+@@ -138,6 +138,10 @@
+     network::debug::SetDeserializationCrashKeyString("request_initiator");
+     return false;
+   }
++  if (!data.ReadTopFrameOrigin(&out->top_frame_origin)) {
++    network::debug::SetDeserializationCrashKeyString("top_frame_origin");
++    return false;
++  }
+   if (!data.ReadIsolatedWorldOrigin(&out->isolated_world_origin)) {
+     network::debug::SetDeserializationCrashKeyString("isolated_world_origin");
+     return false;
+--- a/chromium/src/services/network/public/cpp/url_request_mojom_traits_unittest.cc
++++ b/chromium/src/services/network/public/cpp/url_request_mojom_traits_unittest.cc
+@@ -61,6 +61,31 @@
+   }
+ }
+ 
++TEST_F(URLRequestMojomTraitsTest, Roundtrips_TopFrameOrigin) {
++  const std::optional<url::Origin> origins[] = {
++      std::nullopt, url::Origin::Create(GURL("https://top.test/")), url::Origin()};
++  for (const auto& origin : origins) {
++    ResourceRequest original;
++    original.top_frame_origin = origin;
++    ResourceRequest copy(original);
++    EXPECT_TRUE(original.EqualsForTesting(copy));
++    EXPECT_EQ(origin, copy.top_frame_origin);
++    ResourceRequest assigned;
++    assigned = original;
++    EXPECT_EQ(origin, assigned.top_frame_origin);
++    ResourceRequest moved(std::move(copy));
++    EXPECT_EQ(origin, moved.top_frame_origin);
++    ResourceRequest decoded;
++    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::URLRequest>(
++        original, decoded));
++    EXPECT_EQ(origin, decoded.top_frame_origin);
++    EXPECT_TRUE(original.EqualsForTesting(decoded));
++    decoded.top_frame_origin = origin ? std::nullopt
++                                     : std::make_optional(url::Origin());
++    EXPECT_FALSE(original.EqualsForTesting(decoded));
++  }
++}
++
+ TEST_F(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
+   network::ResourceRequest original;
+   original.method = "POST";
+@@ -69,6 +94,7 @@
+       net::SiteForCookies::FromUrl(GURL("https://example.com/index.html"));
+   original.update_first_party_url_on_redirect = false;
+   original.request_initiator = url::Origin::Create(original.url);
++  original.top_frame_origin = url::Origin::Create(GURL("https://top.test/"));
+   original.isolated_world_origin =
+       url::Origin::Create(GURL("chrome-extension://blah"));
+   original.referrer = GURL("https://referrer.test/");
+--- a/chromium/src/third_party/blink/renderer/platform/loader/fetch/url_loader/request_conversion.cc
++++ b/chromium/src/third_party/blink/renderer/platform/loader/fetch/url_loader/request_conversion.cc
+@@ -4,6 +4,7 @@
+ 
+ #include "third_party/blink/renderer/platform/loader/fetch/url_loader/request_conversion.h"
+ 
++#include <optional>
+ #include <string_view>
+ 
+ #include "base/feature_list.h"
+@@ -289,6 +290,10 @@
+     dest->request_initiator = src.RequestorOrigin()->ToUrlOrigin();
+   }
+ 
++  dest->top_frame_origin = src.TopFrameOrigin()
++                               ? std::make_optional(src.TopFrameOrigin()->ToUrlOrigin())
++                               : std::nullopt;
++
+   DCHECK(dest->navigation_redirect_chain.empty());
+   dest->navigation_redirect_chain.reserve(src.NavigationRedirectChain().size());
+   for (const KURL& url : src.NavigationRedirectChain()) {
+--- a/chromium/src/chrome/renderer/chrome_content_renderer_client.cc
++++ b/chromium/src/chrome/renderer/chrome_content_renderer_client.cc
+@@ -3,6 +3,8 @@
+ // found in the LICENSE file.
+ 
+ #include "chrome/renderer/chrome_content_renderer_client.h"
++
++#include "arc/renderer/network_throttle.h"
+ 
+ #include "arc/renderer/render_frame_agent.h"
+ 
+@@ -405,6 +407,9 @@
+ ChromeContentRendererClient::~ChromeContentRendererClient() = default;
+ 
+ void ChromeContentRendererClient::RenderThreadStarted() {
++  // Paired with the provider factory below; frame agents may now drop Blink's
++  // network fallback without creating an unfiltered initialization window.
++  arc::EnableRendererNetworkThrottle();
+   RenderThread* thread = RenderThread::Get();
+ 
+   main_thread_profiler_->SetAuxUnwinderFactory(base::BindRepeating(
+@@ -1656,8 +1661,9 @@
+ std::unique_ptr<blink::URLLoaderThrottleProvider>
+ ChromeContentRendererClient::CreateURLLoaderThrottleProvider(
+     blink::URLLoaderThrottleProviderType provider_type) {
+-  return URLLoaderThrottleProviderImpl::Create(provider_type, this,
++  auto upstream = URLLoaderThrottleProviderImpl::Create(provider_type, this,
+                                                browser_interface_broker_.get());
++  return arc::WrapRendererNetworkThrottleProvider(std::move(upstream));
+ }
+ 
+ blink::WebFrame* ChromeContentRendererClient::FindFrame(
+--- a/chromium/src/chrome/browser/chrome_content_browser_client.cc
++++ b/chromium/src/chrome/browser/chrome_content_browser_client.cc
+@@ -3,6 +3,8 @@
+ // found in the LICENSE file.
+ 
+ #include "chrome/browser/chrome_content_browser_client.h"
++
++#include "arc/common/network_browser.h"
+ 
+ #include "chrome/browser/arcmod/arcmod_hooks.h"
+ 
+@@ -6232,6 +6234,9 @@
+     result.push_back(std::move(glic_throttle));
+   }
+ 
++  if (auto throttle = arc::CreateBrowserNetworkThrottle(browser_context)) {
++    result.push_back(std::move(throttle));
++  }
+   return result;
+ }
+ 
+--- a/chromium/src/net/base/net_error_list.h
++++ b/chromium/src/net/base/net_error_list.h
+@@ -151,6 +151,9 @@
+ //  - The server rejected the ECH, and the client failed to establish a new ECH
+ //    connection after retrying with retry_configs.
+ NET_ERROR(STRICT_ECH_REQUIRED, -37)
++
++// The request was blocked by Arc's native content blocker.
++NET_ERROR(BLOCKED_BY_CONTENT_BLOCKER, -90)
+ 
+ // A connection was closed (corresponding to a TCP FIN).
+ NET_ERROR(CONNECTION_CLOSED, -100)

@@ -1,0 +1,128 @@
+diff --git a/arc/browser/extensions_service_probe.m b/arc/browser/extensions_service_probe.m
+--- a/arc/browser/extensions_service_probe.m
++++ b/arc/browser/extensions_service_probe.m
+@@ -11,11 +11,10 @@
+ @property(nonatomic, weak) id delegate;
+ @property(nonatomic, weak) id browser;
+ @property(nonatomic, weak) id browserDelegate;
+-@property(nonatomic, strong) NSMapTable* browsers;
+ @end
+ @implementation ExtensionsProbeEntry
+ @synthesize context = _context, service = _service, delegate = _delegate;
+-@synthesize browser = _browser, browserDelegate = _browserDelegate, browsers = _browsers;
++@synthesize browser = _browser, browserDelegate = _browserDelegate;
+ @end
+ 
+ @interface ExtensionsProbeWork : NSObject
+@@ -38,6 +37,8 @@
+ @end
+ 
+ static NSMapTable* gEntries;
++// Independent of transient ArcBrowserContext wrappers. Never retain app objects.
++static NSMapTable* gBrowserDelegates;
+ static NSMutableSet* gHooks;
+ static NSMutableDictionary* gOwned;
+ static NSMutableArray* gBaseline;
+@@ -140,7 +141,6 @@
+   ExtensionsProbeEntry* entry = [gEntries objectForKey:context];
+   if (!entry) {
+     entry = [ExtensionsProbeEntry new]; entry.context = context;
+-    entry.browsers = [NSMapTable weakToWeakObjectsMapTable];
+     [gEntries setObject:entry forKey:context];
+   }
+   return entry;
+@@ -235,12 +235,55 @@
+ }
+ static void BrowserDelegate(id browser, SEL selector, id delegate) {
+   if (NSThread.isMainThread) {
+-    ExtensionsProbeEntry* entry = Entry(Get(browser,@"context"));
+-    if (delegate) [entry.browsers setObject:delegate forKey:browser];
+-    else [entry.browsers removeObjectForKey:browser];
++    if (delegate) [gBrowserDelegates setObject:delegate forKey:browser];
++    else [gBrowserDelegates removeObjectForKey:browser];
+     HookDelegate(delegate, YES);
+   }
+   ((void (*)(id, SEL, id))gBrowserDelegate)(browser, selector, delegate);
++}
++// Context-ID fields are diagnostic only: their wrappers have no value-equality
++// selector. Browser routing uses native extension-service equality and hash.
++static NSDictionary* ContextIDFields(id context) {
++  id identifier = context ? Get(context,@"id") : nil;
++  return @{@"present":JSONBool(identifier != nil),
++           @"directoryBasename":Value(identifier ? Get(identifier,@"directoryBasename") : nil),
++           @"isIncognito":identifier ? JSONBool(((BOOL (*)(id,SEL))objc_msgSend)(identifier,NSSelectorFromString(@"isIncognito"))) : (id)NSNull.null};
++}
++static NSArray* MatchingBrowsers(id service, id targetContext, NSMutableArray* inventory) {
++  Class serviceClass = NSClassFromString(@"ArcBrowserContextExtensions");
++  if (![service isKindOfClass:serviceClass] ||
++      !ABI(class_getInstanceMethod([service class],@selector(isEqual:)),3,@"B") ||
++      !ABI(class_getInstanceMethod([service class],@selector(hash)),2,@"Q"))
++    [NSException raise:@"ExtensionsProbeABI" format:@"target extension service identity ABI mismatch"];
++  const NSUInteger targetHash = [service hash];
++  NSDictionary* targetID = ContextIDFields(targetContext);
++  NSMutableArray* matches = [NSMutableArray array];
++  for (id browser in gBrowserDelegates.keyEnumerator) {
++    id delegate = [gBrowserDelegates objectForKey:browser];
++    if (!delegate) continue;
++    // These fresh wrapper objects live only in this iteration's local scope.
++    id context = Get(browser,@"context");
++    id candidateService = context ? Get(context,@"extensions") : nil;
++    BOOL identityABI = [candidateService isKindOfClass:serviceClass] &&
++        ABI(class_getInstanceMethod([candidateService class],@selector(isEqual:)),3,@"B") &&
++        ABI(class_getInstanceMethod([candidateService class],@selector(hash)),2,@"Q");
++    BOOL equal = identityABI && [candidateService isEqual:service];
++    BOOL reverseEqual = identityABI && [service isEqual:candidateService];
++    NSNumber* candidateHash = identityABI ? @([candidateService hash]) : nil;
++    BOOL hashEqual = candidateHash && candidateHash.unsignedIntegerValue == targetHash;
++    NSDictionary* candidateID = ContextIDFields(context);
++    BOOL matchesService = equal && reverseEqual && hashEqual;
++    [inventory addObject:@{@"browserClass":NSStringFromClass([browser class]),
++        @"delegateClass":NSStringFromClass([delegate class]),@"contextPresent":JSONBool(context != nil),
++        @"candidateServicePresent":JSONBool(candidateService != nil),@"identityABI":JSONBool(identityABI),
++        @"serviceEqual":JSONBool(equal),@"reverseServiceEqual":JSONBool(reverseEqual),
++        @"targetServiceHash":@(targetHash),@"candidateServiceHash":candidateHash ?: (id)NSNull.null,
++        @"serviceHashEqual":JSONBool(hashEqual),@"matchesService":JSONBool(matchesService),
++        @"targetContextID":targetID,@"candidateContextID":candidateID,
++        @"contextIDFieldsEqual":JSONBool([targetID isEqual:candidateID])}];
++    if (matchesService) [matches addObject:browser];
++  }
++  return matches;
+ }
+ static NSDictionary* Metadata(id service, id browser) {
+   NSMutableDictionary* result = [NSMutableDictionary dictionary];
+@@ -370,18 +413,19 @@
+   gWork.settleAt = NSDate.timeIntervalSinceReferenceDate + 0.8;
+   if (matches.count != 1) { Finish(@"expected one live Default context with real app extension delegate"); return; }
+   id service = gWork.entry.service;
+-  NSMutableArray* browsers = [NSMutableArray array];
+-  for (id candidate in gWork.entry.browsers.keyEnumerator)
+-    if ([gWork.entry.browsers objectForKey:candidate]) [browsers addObject:candidate];
+-  id browser = browsers.count == 1 ? browsers.firstObject : nil;
+-  gWork.entry.browser = browser;
+-  gWork.entry.browserDelegate = browser ? [gWork.entry.browsers objectForKey:browser] : nil;
+-  gWork.response[@"browserMatches"] = @(browsers.count);
+-  gWork.browser = browser;
++  id browser = nil;
+   @synchronized(gCaptureLock) { gCaptureWork = gWork; }
+   NSString* label = request[@"label"];
+   NSString* ownedID = gOwned[label ?: @""];
+   @try {
++    NSMutableArray* inventory = [NSMutableArray array];
++    gWork.response[@"browserCandidates"] = inventory;
++    NSArray* browsers = MatchingBrowsers(service,gWork.entry.context,inventory);
++    browser = browsers.count == 1 ? browsers.firstObject : nil;
++    gWork.entry.browser = browser;
++    gWork.entry.browserDelegate = browser ? [gBrowserDelegates objectForKey:browser] : nil;
++    gWork.response[@"browserMatches"] = @(browsers.count);
++    gWork.browser = browser;
+     if ([operation isEqual:@"registry"]) {
+       gWork.response[@"metadata"] = Metadata(service,browser);
+       gWork.response[@"ready"] = JSONBool(((BOOL (*)(id,SEL))objc_msgSend)(service,NSSelectorFromString(@"isExtensionSystemReady")));
+@@ -477,6 +521,7 @@
+         ![gFixtures.lastPathComponent isEqual:@"fixtures"] || ![gToken hasPrefix:@"arc-extensions-service-probe-"]) return;
+     unsetenv("DYLD_INSERT_LIBRARIES");
+     gEntries = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsStrongMemory];
++    gBrowserDelegates = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsWeakMemory];
+     gHooks = [NSMutableSet set]; gOwned = [NSMutableDictionary dictionary];
+     gCaptureLock = [NSObject new]; gDiagnostics = [NSMutableArray array];
+     gOutstandingInstalls = [NSMutableSet set]; gInstallAttempts = [NSMutableArray array];

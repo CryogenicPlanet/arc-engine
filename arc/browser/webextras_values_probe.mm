@@ -82,12 +82,18 @@ int main(int argc, const char* argv[]) {
     result[@"metadata"] = @{
       @"action":Surface(@"ArcAccessibilityActionData", @"initWithAction: initWithAction:value: action value"),
       @"tree":Surface(@"ArcAccessibilityTreeNode", @"initWithAccessibilityTreeNode: nodeId role name value description isClickable isEditable isFocusable childTreeId children"),
-      @"entry":Surface(@"ArcBrowserSidePanelEntryInfo", @"hasActiveEntry setHasActiveEntry: extensionId setExtensionId: cachedWebContents setCachedWebContents:")
+      @"entry":Surface(@"ArcBrowserSidePanelEntryInfo", @"hasActiveEntry setHasActiveEntry: extensionId setExtensionId: cachedWebContents setCachedWebContents:"),
+      @"position":Surface(@"ArcMediaPosition", @"playbackRate duration currentTime endOfMedia"),
+      @"sidePanel":Surface(@"ArcBrowserSidePanel", @"title webContents"),
+      @"devTools":Surface(@"ArcWebContentsDevTools", @"toolboxWebContents webContents")
     };
     result[@"properties"] = @{
       @"action":Properties(@"ArcAccessibilityActionData", @"action value"),
       @"tree":Properties(@"ArcAccessibilityTreeNode", @"nodeId role name value description isClickable isEditable isFocusable childTreeId children"),
-      @"entry":Properties(@"ArcBrowserSidePanelEntryInfo", @"hasActiveEntry extensionId cachedWebContents")
+      @"entry":Properties(@"ArcBrowserSidePanelEntryInfo", @"hasActiveEntry extensionId cachedWebContents"),
+      @"position":Properties(@"ArcMediaPosition", @"playbackRate duration currentTime endOfMedia"),
+      @"sidePanel":Properties(@"ArcBrowserSidePanel", @"title webContents"),
+      @"devTools":Properties(@"ArcWebContentsDevTools", @"toolboxWebContents")
     };
     if (argc > 2 && std::string_view(argv[2]) == "--cookies") {
     WebExtrasCookieProbe* cookie = [[NSClassFromString(@"ArcCookie") alloc] init];

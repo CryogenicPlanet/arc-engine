@@ -42,3 +42,38 @@ playback/pause and media metadata, with PiP in `media-pip`. Tab restoration is s
 replacement (`tabs-restore`). `dialogs` tests alert/confirm/prompt; beforeunload and HTTP authentication
 have their own files. Extension installation uses the explicitly enabled CDP Extensions.loadUnpacked
 route, which does not establish Arc's app-level unpacked-install selector behavior.
+
+## Overnight integration and morning queue
+
+`bun tests/scenarios/scoreboard.ts` refreshes every accepted canonical golden's latest completed
+fresh-profile replacement steps and exact first two diff lines. It labels recorder versions, literal
+comparator scope and stale diffs; preserved-profile supplemental evidence is separate. `--summary`
+prints one line without starting a comparison. `--run-next` runs one least-recently-attempted scenario.
+
+`bun tests/scenarios/integrator.ts` owns a separate kernel lease, runs one comparison at a time and
+waits at least 300 seconds after completion. Its optional `--chirp-helper <path>` invokes the enrolled
+lead's helper as `python3 <path> post <summary>` hourly, including during shared-lock waits. Credentials
+belong outside this repository; subagents must not refresh them. Interrupted active runners must finish
+before another controller starts. Never delete the persistent lease inode to bypass exclusion.
+
+Lead Chirp #136425 separately authorizes caller-aware rerecording, including launch-slice first:
+`bun tests/scenarios/upgrade-recorder.ts <accepted-CDP-scenario> --lead-recorder-upgrade`.
+`bun tests/scenarios/upgrade-recorder-queue.ts --lead-recorder-upgrade` runs one accepted-CDP pass,
+skipping successful migrations and preserving a minimum300s gap after each completed helper. It has
+its own kernel lease, orphan-runner checks and interrupted-promotion recovery routing.
+Each helper takes the common lock and accepts only its explicit CDP whitelist. It preserves a complete
+SHA256-verified v1 snapshot and exact `record.v1.jsonl` beside each new transcript; failed candidates
+leave canonical untouched. `bun tests/scenarios/upgrade-recorder-check.ts` checks filesystem failure and
+recovery paths using isolated dummy artifacts, without an app or real profile. The ordinary recorder's
+launch-slice guard remains in force.
+
+`renderer-public-api` and `sessions-public-api` use tests-owned, PID/nonce-bound public ObjC drivers.
+Their raw required-call/value/order gates and callback sidecars are independent evidence: the default
+caller-aware comparator excludes calls originating in injected fixture images. An empty default diff
+cannot establish their API parity. The standard recorder remains first in DYLD_INSERT_LIBRARIES; extra
+libraries must resolve inside the current output directory and extra environment keys use ARC_SCENARIO_.
+
+See [MORNING.md](MORNING.md) for six ready-to-record-after-unlock scripts and four incomplete plans/probes.
+All `arcmod-*` scripts remain unrecorded overnight. The new in-process key driver tests seven whitelisted
+app-event routes, not hardware/WindowServer delivery; Foundation/DNS service results are explicit
+sidecars, not engine-selector coverage. No human profile or discovered import source may be used.

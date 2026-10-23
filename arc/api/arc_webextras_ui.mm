@@ -37,6 +37,8 @@ ARC_EXPORT @interface ArcBrowserSidePanel : NSObject {
 - (instancetype)initWithArcBrowser:(ArcBrowser*)browser;
 - (instancetype)initWithSidePanel:(const void*)handle;
 - (void)setDelegate:(id<WebExtrasSidePanelDelegate>)delegate;
+@property(nonatomic, readonly) NSString* title;
+@property(nonatomic, readonly) ArcWebContents* webContents;
 @end
 @implementation ArcBrowserSidePanel
 - (instancetype)initWithArcBrowser:(ArcBrowser*)browser {

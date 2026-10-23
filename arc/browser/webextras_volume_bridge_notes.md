@@ -64,7 +64,7 @@ retain its existing managed-WebContents validation and use that contents'
 lifetime; it should not add an active-MediaSession precondition or clamp.
 Managed contents with no controllers/remotes or disabled features still
 complete successfully, following the original native behavior supplied by the
-lead's bounded audit.
+package's bounded original-binary audit.
 
 All three existing classes already carry `CONTENT_EXPORT`. The two out-of-line
 methods use those existing class export declarations; no new class, symbol

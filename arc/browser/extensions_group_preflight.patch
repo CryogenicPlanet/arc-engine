@@ -1,0 +1,245 @@
+--- a/arc/browser/extensions_groups.mm
++++ b/arc/browser/extensions_groups.mm
+@@ -195,10 +195,15 @@
+     Respond(ArgumentList(std::move(result)));
+   }
+ 
+-  void Request(ArcBrowser* browser, void (^request)(id delegate)) {
++  void Request(ArcBrowser* browser, void (^request)(id delegate),
++               void (^missing)() = nil) {
+     if (!DispatchBrowserExtensionRequest(browser, request)) {
+-      scoped_refptr<HostedGroupsFunction> self(this);
+-      OnUI(^{ self->FailString(kUnavailable); });
++      // Native preflight failure is synchronous. A later nil clear is handled
++      // inside the queued weak task and never reaches this fallback.
++      if (missing)
++        missing();
++      else
++        Fail(@"No browser delegate");
+     }
+   }
+ 
+@@ -238,8 +243,28 @@
+       ArcBrowser* wrapper =
+           weak ? BrowserForHostedExtensions(weak.get()) : nil;
+       const int window_id = weak ? ExtensionTabUtil::GetWindowId(weak.get()) : 0;
+-      // Capture the bridge epoch before enqueue; nil->new must not retarget
+-      // this request. The app reply retains its separate existing task hop.
++      auto called = std::make_shared<bool>(false);
++      void (^complete)(std::shared_ptr<const GroupInfos>, bool) =
++          ^(std::shared_ptr<const GroupInfos> snapshots, bool app_reply) {
++        if (*called || state->completed)
++          return;
++        *called = true;
++        if (app_reply && !keep_inflight_results && !self->Live(wrapper)) {
++          state->completed = true;
++          completion(nullptr, base::SysUTF8ToNSString(kClosed));
++          return;
++        }
++        for (const auto& info : *snapshots)
++          state->by_browser[browser_index].push_back({wrapper, info, window_id});
++        if (--state->remaining == 0) {
++          state->completed = true;
++          for (const auto& batch : state->by_browser)
++            state->groups->insert(state->groups->end(), batch.begin(), batch.end());
++          completion(state->groups, nil);
++        }
++      };
++      // GetAll supplies an empty vector when the target is absent before
++      // enqueue; actual app completions keep the native separate reply task.
+       Request(wrapper, ^(id target) {
+         id<ArcHostedGroupDelegate> delegate = target;
+         if (!self->Live(wrapper) ||
+@@ -251,33 +276,13 @@
+           }
+           return;
+         }
+-        auto called = std::make_shared<bool>(false);
+         [delegate browser:wrapper
+           getAllTabGroupsWithCompletion:^(NSArray* infos) {
+-            const bool has_infos = infos != nil;
+             auto snapshots = SnapshotGroups(infos);
+-            OnUI(^{
+-              if (*called || state->completed)
+-                return;
+-              *called = true;
+-              if (!keep_inflight_results && (!self->Live(wrapper) || !has_infos)) {
+-                state->completed = true;
+-                completion(nullptr, base::SysUTF8ToNSString(kClosed));
+-                return;
+-              }
+-              for (const auto& info : *snapshots)
+-                state->by_browser[browser_index].push_back(
+-                    {wrapper, info, window_id});
+-              if (--state->remaining == 0) {
+-                state->completed = true;
+-                for (const auto& batch : state->by_browser) {
+-                  state->groups->insert(state->groups->end(), batch.begin(),
+-                                        batch.end());
+-                }
+-                completion(state->groups, nil);
+-              }
+-            });
++            OnUI(^{ complete(snapshots, /*app_reply=*/true); });
+           }];
++      }, ^{
++        complete(std::make_shared<const GroupInfos>(), /*app_reply=*/false);
+       });
+     }
+   }
+@@ -433,7 +438,8 @@
+             std::vector<TabBatch>* batches,
+             std::string* error,
+             NSMutableArray<NSNumber*>* ordered = nil,
+-            bool require_group_support = false) {
++            bool require_group_support = false,
++            bool preserve_ordered_duplicates = false) {
+     for (int tab_id : ids) {
+       extensions::WindowController* window = nullptr;
+       content::WebContents* contents = nullptr;
+@@ -469,7 +475,8 @@
+       ArcBrowser* wrapper = BrowserForHostedExtensions(browser);
+       NSNumber* session_id =
+           @(sessions::SessionTabHelper::IdForTab(contents).id());
+-      if (ordered && ![ordered containsObject:session_id])
++      if (ordered && (preserve_ordered_duplicates ||
++                      ![ordered containsObject:session_id]))
+         [ordered addObject:session_id];
+       bool found = false;
+       for (auto& batch : *batches) {
+@@ -532,7 +539,7 @@
+       }
+       self->Fail(@"No group with specified id");
+     }, std::nullopt, /*keep_inflight_results=*/true);
+-    return RespondLater();
++    return did_respond() ? AlreadyResponded() : RespondLater();
+   }
+ 
+  protected:
+@@ -600,7 +607,7 @@
+           self->Success(base::ListValue().Append(std::move(result)));
+         },
+         window_filter);
+-    return RespondLater();
++    return did_respond() ? AlreadyResponded() : RespondLater();
+   }
+ 
+  protected:
+@@ -657,7 +664,7 @@
+                           source_window_id, ReadbackKind::kUpdate)];
+       });
+     });
+-    return RespondLater();
++    return did_respond() ? AlreadyResponded() : RespondLater();
+   }
+ 
+  protected:
+@@ -755,7 +762,7 @@
+                         source_window_id, ReadbackKind::kMove)];
+       });
+     });
+-    return RespondLater();
++    return did_respond() ? AlreadyResponded() : RespondLater();
+   }
+ 
+  protected:
+@@ -805,7 +812,7 @@
+         return RespondNow(Error(std::move(error)));
+       self->Group(target, nil, session_ids);
+     }
+-    return RespondLater();
++    return did_respond() ? AlreadyResponded() : RespondLater();
+   }
+   void Group(ArcBrowser* browser, NSString* group_id, NSArray* session_ids) {
+     NSString* identifier = [group_id copy];
+@@ -892,57 +899,41 @@
+       ids.push_back(*params->tab_ids.as_integer);
+     std::vector<TabBatch> batches;
+     std::string error;
+-    if (!Tabs(ids, &batches, &error, nil, true))
++    NSMutableArray<NSNumber*>* ordered = [NSMutableArray array];
++    if (!Tabs(ids, &batches, &error, ordered, /*require_group_support=*/true,
++              /*preserve_ordered_duplicates=*/true))
+       return RespondNow(Error(std::move(error)));
+-    for (const auto& batch : batches) {
+-      if (![BrowserExtensionDelegate(batch.browser)
+-              respondsToSelector:
+-                  @selector(
+-                      browser:removeTabsFromGroupWithSessionIds:completion:)])
+-        return RespondNow(Error(kUnavailable));
+-    }
+-    auto remaining = std::make_shared<size_t>(batches.size());
++    ArcBrowser* browser = batches.front().browser;
++    NSArray<NSNumber*>* session_ids = [ordered copy];
++    auto called = std::make_shared<bool>(false);
+     scoped_refptr<HostedTabsUngroupFunction> self(this);
+-    for (const auto& batch : batches) {
+-      ArcBrowser* browser = batch.browser;
+-      NSArray<NSNumber*>* session_ids = [batch.ids copy];
+-      auto called = std::make_shared<bool>(false);
+-      Request(browser, ^(id target) {
+-        id<ArcHostedGroupDelegate> delegate = target;
+-        // Earlier queued requests can close another source browser before delivery.
+-        if (!self->Live(browser) ||
+-            ![delegate
+-                respondsToSelector:
+-                    @selector(
+-                        browser:removeTabsFromGroupWithSessionIds:completion:)]) {
+-          self->FailString(kClosed);
+-          return;
+-        }
+-        [delegate browser:browser
+-            removeTabsFromGroupWithSessionIds:session_ids
+-                                   completion:^(ArcTabGroupResult* result) {
+-                                     const bool succeeded = result && result.success;
+-                                     NSString* reply_error = [result.error copy];
+-                                     OnUI(^{
+-                                       if (*called || self->did_respond())
+-                                         return;
+-                                       *called = true;
+-                                       if (!self->Live(browser)) {
+-                                         self->FailString(kClosed);
+-                                         return;
+-                                       }
+-                                       if (!succeeded) {
+-                                         self->Fail(reply_error);
+-                                         return;
+-                                       }
+-                                       if (--*remaining == 0)
+-                                         self->Success(api::tabs::Ungroup::
+-                                                           Results::Create());
+-                                     });
+-                                   }];
+-      });
+-    }
+-    return RespondLater();
++    Request(browser, ^(id target) {
++      id<ArcHostedGroupDelegate> delegate = target;
++      if (!self->Live(browser) ||
++          ![delegate respondsToSelector:
++              @selector(browser:removeTabsFromGroupWithSessionIds:completion:)]) {
++        self->FailString(kClosed);
++        return;
++      }
++      [delegate browser:browser
++          removeTabsFromGroupWithSessionIds:session_ids
++                                 completion:^(ArcTabGroupResult* result) {
++                                   const bool succeeded = result && result.success;
++                                   NSString* reply_error = [result.error copy];
++                                   OnUI(^{
++                                     if (*called || self->did_respond())
++                                       return;
++                                     *called = true;
++                                     if (!succeeded) {
++                                       self->Fail(reply_error.length ? reply_error
++                                           : @"Failed to ungroup tabs");
++                                       return;
++                                     }
++                                     self->Success(api::tabs::Ungroup::Results::Create());
++                                   });
++                                 }];
++    });
++    return did_respond() ? AlreadyResponded() : RespondLater();
+   }
+ 
+  protected:

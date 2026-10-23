@@ -2,11 +2,18 @@
 #import "arc/browser/arc_navigation.h"
 
 #include <utility>
+#include <vector>
+
+#include "base/check.h"
 
 #include "base/memory/weak_ptr.h"
+#include "base/functional/bind.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_handle_user_data.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -65,64 +72,118 @@ ArcNavigationAction* CreateNavigationAction(content::NavigationHandle* handle,
 }
 }  // namespace arc
 
+namespace {
+// Original Navigation::Impl is shared across command returns and observer
+// deliveries. URL/status/redirect are live fields; each ObjC wrapper captures
+// its own response-header dictionary when it is constructed.
+struct CoreNavigationValue {
+  std::string url;
+  std::vector<std::pair<std::string, std::string>> headers;
+  int64_t identifier = 0;
+  int status = 0;
+  bool redirected_to_other_tab = false;
+};
+
+class CoreNavigationValueData final
+    : public content::NavigationHandleUserData<CoreNavigationValueData>,
+      public content::WebContentsObserver {
+ public:
+  std::shared_ptr<CoreNavigationValue> Refresh(content::NavigationHandle* handle) {
+    value_->url = handle->GetURL().spec();
+    // Native redirect handling updates URL, retaining default response state.
+    // Only a successful cross-document finish copies nonnull response headers
+    // and status; failure and same-document paths skip that operation.
+    if (handle->HasCommitted() && !handle->IsSameDocument() &&
+        handle->GetNetErrorCode() == net::OK) {
+      if (const auto* headers = handle->GetResponseHeaders()) {
+        value_->headers.clear();
+        size_t iterator = 0;
+        std::string name;
+        std::string value;
+        while (headers->EnumerateHeaderLines(&iterator, &name, &value)) {
+          value_->headers.emplace_back(name, value);
+        }
+        value_->status = headers->response_code();
+      }
+    }
+    return value_;
+  }
+
+  void DidRedirectNavigation(content::NavigationHandle* handle) override {
+    if (handle->GetNavigationId() == value_->identifier) {
+      Refresh(handle);
+    }
+  }
+
+  void DidFinishNavigation(content::NavigationHandle* handle) override {
+    if (handle->GetNavigationId() == value_->identifier) {
+      Refresh(handle);
+      Observe(nullptr);
+    }
+  }
+
+  void WebContentsDestroyed() override { Observe(nullptr); }
+
+ private:
+  explicit CoreNavigationValueData(content::NavigationHandle& handle)
+      : content::WebContentsObserver(handle.GetWebContents()),
+        value_(std::make_shared<CoreNavigationValue>()) {
+    value_->identifier = handle.GetNavigationId();
+    Refresh(&handle);
+  }
+
+  friend class content::NavigationHandleUserData<CoreNavigationValueData>;
+  NAVIGATION_HANDLE_USER_DATA_KEY_DECL();
+  const std::shared_ptr<CoreNavigationValue> value_;
+};
+NAVIGATION_HANDLE_USER_DATA_KEY_IMPL(CoreNavigationValueData);
+}  // namespace
+
 @interface ArcNavigation ()
-- (instancetype)initWithNavigationHandle:(content::NavigationHandle*)handle __attribute__((objc_direct));
+- (instancetype)initWithCoreNavigationValue:(const std::shared_ptr<CoreNavigationValue>&)value __attribute__((objc_direct));
 @end
 
 @implementation ArcNavigation {
  @public
-  NSString* _url;
+  std::shared_ptr<CoreNavigationValue> _value;
   NSDictionary* _responseHeaders;
-  NSInteger _responseStatusCode;
-  int64_t _navigationIdentifier;
 }
 + (instancetype)snapshotForNavigationHandle:(content::NavigationHandle*)handle {
-  return handle ? [[self alloc] initWithNavigationHandle:handle] : nil;
+  if (!handle) { return nil; }
+  auto* data = CoreNavigationValueData::GetOrCreateForNavigationHandle(*handle);
+  // Our WebContents observer may precede the value's observer in Chromium's
+  // observer list. Refresh now, before publishing this event or command return.
+  const auto value = data->Refresh(handle);
+  return [[self alloc] initWithCoreNavigationValue:value];
 }
-- (instancetype)initWithNavigationHandle:(content::NavigationHandle*)handle {
+- (instancetype)initWithCoreNavigationValue:(const std::shared_ptr<CoreNavigationValue>&)value {
   if ((self = [super init])) {
-    _url = ArcNSString(handle->GetURL().spec());
-    _navigationIdentifier = handle->GetNavigationId();
-    const net::HttpResponseHeaders* headers = handle->GetResponseHeaders();
-    if (headers) {
-      _responseStatusCode = headers->response_code();
-      NSMutableDictionary* snapshot = [NSMutableDictionary dictionary];
-      size_t iterator = 0;
-      std::string name;
-      std::string value;
-      while (headers->EnumerateHeaderLines(&iterator, &name, &value)) {
-        snapshot[ArcNSString(name)] = ArcNSString(value);
+    CHECK(value);
+    _value = value;
+    if (!value->headers.empty()) {
+      NSMutableDictionary* headers = [NSMutableDictionary dictionary];
+      for (const auto& [name, field] : value->headers) {
+        headers[ArcNSString(name)] = ArcNSString(field);
       }
-      if (snapshot.count) {
-        _responseHeaders = [snapshot copy];
-      }
+      _responseHeaders = [headers copy];
     }
   }
   return self;
 }
-- (NSString*)url { return _url; }
-- (BOOL)didRedirectToOtherTab { return NO; }
-- (NSInteger)responseStatusCode { return _responseStatusCode; }
+- (NSString*)url { return _value ? ArcNSString(_value->url) : nil; }
+- (BOOL)didRedirectToOtherTab { return _value && _value->redirected_to_other_tab; }
+- (NSInteger)responseStatusCode { return _value ? _value->status : 0; }
 - (NSDictionary*)responseHeaders { return _responseHeaders; }
-- (NSUInteger)hash { return static_cast<NSUInteger>(_navigationIdentifier); }
+- (NSUInteger)hash { return _value ? static_cast<NSUInteger>(_value->identifier) : [super hash]; }
 - (BOOL)isEqual:(id)other {
   return self == other || ([other isKindOfClass:[ArcNavigation class]] &&
-      _navigationIdentifier != 0 &&
-      _navigationIdentifier == ((ArcNavigation*)other)->_navigationIdentifier);
+      _value && _value == ((ArcNavigation*)other)->_value);
 }
 @end
 
 namespace {
 ArcNavigation* CopyNavigationSnapshot(ArcNavigation* navigation) {
-  if (!navigation) {
-    return nil;
-  }
-  ArcNavigation* snapshot = [[ArcNavigation alloc] init];
-  snapshot->_url = navigation->_url;
-  snapshot->_responseHeaders = navigation->_responseHeaders;
-  snapshot->_responseStatusCode = navigation->_responseStatusCode;
-  snapshot->_navigationIdentifier = navigation->_navigationIdentifier;
-  return snapshot;
+  return navigation ? [[ArcNavigation alloc] initWithCoreNavigationValue:navigation->_value] : nil;
 }
 
 struct HistoryEntrySnapshot {
@@ -173,19 +234,72 @@ struct HistoryEntrySnapshot {
 }
 @end
 
+namespace arc {
+class CoreHistoryModel {
+ public:
+  base::WeakPtr<content::WebContents> contents;
+  std::vector<HistoryEntrySnapshot> entries;
+  int current = -1;
+};
+
+void RefreshCoreHistoryModel(const std::shared_ptr<CoreHistoryModel>& model,
+                             content::WebContents* contents) {
+  CHECK(model);
+  model->contents = contents ? contents->GetWeakPtr()
+                             : base::WeakPtr<content::WebContents>();
+  model->entries.clear();
+  model->current = -1;
+  if (!contents) {
+    return;
+  }
+  auto& controller = contents->GetController();
+  model->current = controller.GetCurrentEntryIndex();
+  for (int index = 0; index < controller.GetEntryCount(); ++index) {
+    content::NavigationEntry* entry = controller.GetEntryAtIndex(index);
+    HistoryEntrySnapshot snapshot;
+    snapshot.contents = model->contents;
+    snapshot.entry_id = entry->GetUniqueID();
+    snapshot.title = entry->GetTitle();
+    snapshot.url = entry->GetVirtualURL();
+    snapshot.valid = true;
+    model->entries.push_back(std::move(snapshot));
+  }
+}
+
+std::shared_ptr<CoreHistoryModel> CreateCoreHistoryModel(
+    content::WebContents* contents) {
+  auto model = std::make_shared<CoreHistoryModel>();
+  RefreshCoreHistoryModel(model, contents);
+  return model;
+}
+
+bool UpdateCoreHistoryEntry(const std::shared_ptr<CoreHistoryModel>& model,
+                            content::NavigationEntry* entry, int index) {
+  CHECK(model);
+  CHECK_GE(index, 0);
+  CHECK_LT(static_cast<size_t>(index), model->entries.size());
+  CHECK(entry);
+  auto& cached = model->entries[index];
+  if (cached.title == entry->GetTitle() && cached.url == entry->GetVirtualURL()) {
+    return false;
+  }
+  cached.title = entry->GetTitle();
+  cached.url = entry->GetVirtualURL();
+  return true;
+}
+
+ArcBackForwardList* CreateCoreBackForwardList(
+    const std::shared_ptr<CoreHistoryModel>& model) {
+  return [[ArcBackForwardList alloc] initWithBackForwardList:&model];
+}
+}  // namespace arc
+
 namespace {
-ArcBackForwardListItem* SnapshotHistoryItem(content::WebContents* contents, int index) {
+ArcBackForwardListItem* SnapshotHistoryItem(
+    const arc::CoreHistoryModel& model, int index) {
   HistoryEntrySnapshot snapshot;
-  if (contents) {
-    snapshot.contents = contents->GetWeakPtr();
-    auto& controller = contents->GetController();
-    if (index >= 0 && index < controller.GetEntryCount()) {
-      content::NavigationEntry* entry = controller.GetEntryAtIndex(index);
-      snapshot.entry_id = entry->GetUniqueID();
-      snapshot.title = entry->GetTitle();
-      snapshot.url = entry->GetVirtualURL();
-      snapshot.valid = true;
-    }
+  if (index >= 0 && static_cast<size_t>(index) < model.entries.size()) {
+    snapshot = model.entries[index];
   }
   return [[ArcBackForwardListItem alloc] initWithBackForwardListItem:&snapshot];
 }
@@ -201,26 +315,28 @@ ArcBackForwardListItem* SnapshotHistoryItem(content::WebContents* contents, int 
 @synthesize backItem = _backItem, currentItem = _currentItem, forwardItem = _forwardItem;
 @synthesize backList = _backList, forwardList = _forwardList;
 + (instancetype)snapshotForWebContents:(content::WebContents*)contents {
-  return [[self alloc] initWithBackForwardList:contents];
+  return arc::CreateCoreBackForwardList(arc::CreateCoreHistoryModel(contents));
 }
-- (instancetype)initWithBackForwardList:(const void*)contents {
+- (instancetype)initWithBackForwardList:(const void*)data {
   if ((self = [super init])) {
-    auto* native = static_cast<content::WebContents*>(const_cast<void*>(contents));
-    const int current = native ? native->GetController().GetCurrentEntryIndex() : -1;
-    const int count = native ? native->GetController().GetEntryCount() : 0;
+    const auto& model = *static_cast<
+        const std::shared_ptr<arc::CoreHistoryModel>*>(data);
+    CHECK(model);
+    const int current = model->current;
+    const int count = static_cast<int>(model->entries.size());
     NSMutableArray<ArcBackForwardListItem*>* back = [NSMutableArray array];
     NSMutableArray<ArcBackForwardListItem*>* forward = [NSMutableArray array];
     for (int index = 0; index < current; ++index) {
-      [back addObject:SnapshotHistoryItem(native, index)];
+      [back addObject:SnapshotHistoryItem(*model, index)];
     }
     for (int index = current + 1; index < count; ++index) {
-      [forward addObject:SnapshotHistoryItem(native, index)];
+      [forward addObject:SnapshotHistoryItem(*model, index)];
     }
     _backList = [back copy];
     _forwardList = [forward copy];
-    _backItem = back.lastObject ?: SnapshotHistoryItem(native, -1);
-    _currentItem = SnapshotHistoryItem(native, current);
-    _forwardItem = forward.firstObject ?: SnapshotHistoryItem(native, -1);
+    _backItem = back.lastObject ?: SnapshotHistoryItem(*model, -1);
+    _currentItem = SnapshotHistoryItem(*model, current);
+    _forwardItem = forward.firstObject ?: SnapshotHistoryItem(*model, -1);
   }
   return self;
 }
@@ -240,6 +356,16 @@ ArcBackForwardListItem* SnapshotHistoryItem(content::WebContents* contents, int 
 - (void)webContents:(ArcWebContents*)contents didFailProvisionalNavigation:(ArcNavigation*)navigation withError:(NSError*)error;
 - (void)webContents:(ArcWebContents*)contents didStartInPageNavigation:(ArcNavigation*)navigation;
 - (void)webContents:(ArcWebContents*)contents didFinishInPageNavigation:(ArcNavigation*)navigation;
+@end
+
+// A registration owns only weak app references. Removing it expires queued
+// deliveries; adding the same observer again creates a distinct registration.
+@interface CoreNavigationRegistration : NSObject
+@property(nonatomic, weak) id<ArcCoreNavigationObserver> observer;
+@property(nonatomic, weak) ArcWebContents* owner;
+@end
+@implementation CoreNavigationRegistration
+@synthesize observer = _observer, owner = _owner;
 @end
 
 namespace {
@@ -285,8 +411,7 @@ class ReloadNavigationCapture : public content::WebContentsObserver {
 @end
 
 @implementation ArcWebContentsNavigationController {
-  NSHashTable<id>* _observers;
-  NSPointerArray* _observerOrder;
+  NSMutableArray<CoreNavigationRegistration*>* _registrations;
   ArcNavigation* _documentNavigation;
   BOOL _didStartDocumentNavigation;
   uint64_t _navigationGeneration;
@@ -303,61 +428,66 @@ class ReloadNavigationCapture : public content::WebContentsObserver {
 - (instancetype)initForWebContents:(ArcWebContents*)owner {
   if ((self = [super init])) {
     _owner = owner;
-    _observers = [NSHashTable hashTableWithOptions:
-        NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality];
-    _observerOrder = [NSPointerArray weakObjectsPointerArray];
+    _registrations = [NSMutableArray array];
   }
   return self;
 }
 - (BOOL)isEqual:(id)other { return self == other; }
 - (NSUInteger)hash { return [super hash]; }
 - (void)addObserver:(id)observer {
-  if (observer && ![_observers member:observer]) {
-    [_observers addObject:observer];
-    [_observerOrder addPointer:(__bridge void*)observer];
+  if (!observer) { return; }
+  for (CoreNavigationRegistration* registration in _registrations) {
+    if (registration.observer == observer) { return; }
   }
+  CoreNavigationRegistration* registration = [[CoreNavigationRegistration alloc] init];
+  registration.observer = observer;
+  registration.owner = _owner;
+  [_registrations addObject:registration];
 }
 - (void)removeObserver:(id)observer {
-  if (!observer) {
-    return;
-  }
-  [_observers removeObject:observer];
-  for (NSUInteger index = _observerOrder.count; index > 0; --index) {
-    if ([_observerOrder pointerAtIndex:index - 1] == (__bridge void*)observer) {
-      [_observerOrder removePointerAtIndex:index - 1];
+  if (!observer) { return; }
+  for (NSUInteger index = _registrations.count; index > 0; --index) {
+    if (_registrations[index - 1].observer == observer) {
+      [_registrations removeObjectAtIndex:index - 1];
     }
   }
-  [_observerOrder compact];
 }
 - (void)deliverSelector:(SEL)selector navigation:(ArcNavigation*)navigation error:(NSError*)error {
-  ArcWebContents* owner = _owner;
-  if (!owner || ![owner webContents] || !navigation) {
-    return;
-  }
-  for (id<ArcCoreNavigationObserver> observer in _observerOrder.allObjects) {
-    if (_owner != owner || ![owner webContents]) {
-      return;
-    }
-    if (![_observers member:observer] || ![observer respondsToSelector:selector]) {
-      continue;
-    }
-    if (selector == @selector(webContents:didStartProvisionalNavigation:)) {
-      [observer webContents:owner didStartProvisionalNavigation:navigation];
-    } else if (selector == @selector(webContents:didCommitNavigation:)) {
-      [observer webContents:owner didCommitNavigation:navigation];
-    } else if (selector == @selector(webContents:didFinishNavigation:)) {
-      [observer webContents:owner didFinishNavigation:navigation];
-    } else if (selector == @selector(webContents:didReceiveServerRedirectForProvisionalNavigation:)) {
-      [observer webContents:owner didReceiveServerRedirectForProvisionalNavigation:navigation];
-    } else if (selector == @selector(webContents:didFailNavigation:)) {
-      [observer webContents:owner didFailNavigation:navigation];
-    } else if (selector == @selector(webContents:didFailProvisionalNavigation:withError:)) {
-      [observer webContents:owner didFailProvisionalNavigation:navigation withError:error];
-    } else if (selector == @selector(webContents:didStartInPageNavigation:)) {
-      [observer webContents:owner didStartInPageNavigation:navigation];
-    } else if (selector == @selector(webContents:didFinishInPageNavigation:)) {
-      [observer webContents:owner didFinishInPageNavigation:navigation];
-    }
+  if (!navigation) { return; }
+  // Native 436bbc0 posts once per registration at event receipt. Capture no
+  // controller or native handle; ObjC owner/observer weak loads occur at delivery.
+  // Retain copied native fields through the shared value, never a native
+  // NavigationHandle. Construct a distinct ObjC wrapper per registration at
+  // delivery, capturing its header dictionary from the then-current model.
+  const auto value = navigation->_value;
+  for (CoreNavigationRegistration* registration in _registrations) {
+    __weak CoreNavigationRegistration* weak_registration = registration;
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(
+        [](void (^work)()) { work(); }, ^{
+      ArcNavigation* delivered = [[ArcNavigation alloc] initWithCoreNavigationValue:value];
+      CoreNavigationRegistration* current = weak_registration;
+      ArcWebContents* owner = current.owner;
+      id<ArcCoreNavigationObserver> observer = current.observer;
+      if (!owner || ![observer respondsToSelector:selector]) { return; }
+      // Native observer bridge has no requirement that WebContents still exists.
+      if (selector == @selector(webContents:didStartProvisionalNavigation:)) {
+        [observer webContents:owner didStartProvisionalNavigation:delivered];
+      } else if (selector == @selector(webContents:didCommitNavigation:)) {
+        [observer webContents:owner didCommitNavigation:delivered];
+      } else if (selector == @selector(webContents:didFinishNavigation:)) {
+        [observer webContents:owner didFinishNavigation:delivered];
+      } else if (selector == @selector(webContents:didReceiveServerRedirectForProvisionalNavigation:)) {
+        [observer webContents:owner didReceiveServerRedirectForProvisionalNavigation:delivered];
+      } else if (selector == @selector(webContents:didFailNavigation:)) {
+        [observer webContents:owner didFailNavigation:delivered];
+      } else if (selector == @selector(webContents:didFailProvisionalNavigation:withError:)) {
+        [observer webContents:owner didFailProvisionalNavigation:delivered withError:error];
+      } else if (selector == @selector(webContents:didStartInPageNavigation:)) {
+        [observer webContents:owner didStartInPageNavigation:delivered];
+      } else if (selector == @selector(webContents:didFinishInPageNavigation:)) {
+        [observer webContents:owner didFinishInPageNavigation:delivered];
+      }
+    }));
   }
 }
 - (void)didStartNavigation:(content::NavigationHandle*)handle {

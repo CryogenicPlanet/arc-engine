@@ -85,12 +85,14 @@
    RenderThread* thread = RenderThread::Get();
  
    main_thread_profiler_->SetAuxUnwinderFactory(base::BindRepeating(
-@@ -1494,6 +1497,8 @@
+@@ -1494,6 +1497,10 @@
  
  void ChromeContentRendererClient::RunScriptsAtDocumentStart(
      content::RenderFrame* render_frame) {
-+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app"))
-+    arc::RunEffectsAtDocumentStart(render_frame);
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++      !arc::RunEffectsAtDocumentStart(render_frame)) {
++    return;
++  }
  #if BUILDFLAG(ENABLE_EXTENSIONS_CORE)
    extensions::ExtensionsRendererClient::Get()->RunScriptsAtDocumentStart(
        render_frame);
@@ -109,7 +111,7 @@
      part->RenderProcessWillLaunch(host);
    }
 +  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app"))
-+    arc::RendererProcessWillLaunch(host);
++    arc::RendererProcessWillLaunch(host, true);
  }
  
  std::optional<GURL> ChromeContentBrowserClient::GetEffectiveURL(

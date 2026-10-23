@@ -1,0 +1,107 @@
+{
+  "nonce": "arc-ui-dialogs-3f0fed27-eeca-4543-89ab-ca4738105a68",
+  "scenario": "dialogs",
+  "backend": "actual local AppKit controls",
+  "recorded": false,
+  "acceptedGoldenModified": false,
+  "visualAcceptance": false,
+  "runs": [
+    {
+      "agent": "trace156",
+      "pid": 48793,
+      "errors": [],
+      "steps": [
+        {
+          "step": "launch",
+          "outcome": "pass",
+          "detail": "PID-bound app/helper/CDP ready"
+        },
+        {
+          "step": "fixture /a",
+          "outcome": "pass",
+          "detail": "canonical URL/title/marker"
+        },
+        {
+          "step": "alert native completion",
+          "outcome": "pass",
+          "detail": "actual native controls followed by page assertion"
+        },
+        {
+          "step": "confirm cancel",
+          "outcome": "pass",
+          "detail": "actual native controls followed by page assertion"
+        },
+        {
+          "step": "prompt native text and completion",
+          "outcome": "pass",
+          "detail": "actual native controls followed by page assertion"
+        },
+        {
+          "step": "quit",
+          "outcome": "pass",
+          "detail": "Captured browser/helpers exited; close request acknowledged"
+        }
+      ],
+      "phase": "canonical prompt",
+      "completedStages": [
+        "alert",
+        "confirm",
+        "prompt"
+      ],
+      "uncertainMutation": null,
+      "coverage": null,
+      "artifactsStable": true,
+      "cleanup": "Captured browser/helpers exited; close request acknowledged",
+      "elapsedMs": 13178
+    },
+    {
+      "agent": "ours156",
+      "pid": 49548,
+      "errors": [],
+      "steps": [
+        {
+          "step": "launch",
+          "outcome": "pass",
+          "detail": "PID-bound app/helper/CDP ready"
+        },
+        {
+          "step": "fixture /a",
+          "outcome": "pass",
+          "detail": "canonical URL/title/marker"
+        },
+        {
+          "step": "alert native completion",
+          "outcome": "pass",
+          "detail": "actual native controls followed by page assertion"
+        },
+        {
+          "step": "confirm cancel",
+          "outcome": "pass",
+          "detail": "actual native controls followed by page assertion"
+        },
+        {
+          "step": "prompt native text and completion",
+          "outcome": "pass",
+          "detail": "actual native controls followed by page assertion"
+        },
+        {
+          "step": "quit",
+          "outcome": "inconclusive",
+          "detail": "SIGTERM of exact captured identities; owned browser/helpers exited"
+        }
+      ],
+      "phase": "canonical prompt",
+      "completedStages": [
+        "alert",
+        "confirm",
+        "prompt"
+      ],
+      "uncertainMutation": null,
+      "coverage": null,
+      "artifactsStable": true,
+      "cleanup": "SIGTERM of exact captured identities; owned browser/helpers exited",
+      "elapsedMs": 36892
+    }
+  ],
+  "limitation": "Only the canonical alert/confirm/prompt sequence is exercised. Boundary diff and recorder noninterference are separate required checks; local controls do not establish external AX or visual acceptance."
+}

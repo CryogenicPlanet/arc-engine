@@ -1,0 +1,153 @@
+--- a/content/public/browser/host_app_hooks.h
++++ b/content/public/browser/host_app_hooks.h
+@@ -5,6 +5,7 @@
+ #include "base/functional/callback.h"
+ #include "content/common/content_export.h"
+ #include "content/public/browser/invalidate_type.h"
++#include "ui/gfx/native_ui_types.h"
+ 
+ class GURL;
+ namespace ui { class Compositor; }
+@@ -21,6 +22,8 @@
+     base::RepeatingCallback<void(WebContents*, RenderWidgetHost*)>;
+ using HostSurfaceCopyCallback = HostFrameTokenCallback;
+ using HostViewUnparentedCallback = HostFrameTokenCallback;
++using HostViewWindowMovedCallback =
++    base::RepeatingCallback<void(WebContents*, gfx::NativeWindow)>;
+ using HostOwnCompositorCallback =
+     base::RepeatingCallback<void(BrowserCompositorMac*, ui::Compositor*)>;
+ CONTENT_EXPORT HostNavigationStateCallback& GetHostNavigationStateCallback();
+@@ -35,6 +38,10 @@
+ // Nonnull is sent before own-compositor Unsuspend; null precedes detach and
+ // is also sent during destruction after existing weak pointers are invalid.
+ CONTENT_EXPORT HostOwnCompositorCallback& GetHostOwnCompositorCallback();
++// Only the outer in-process WebContents view's real viewDidMoveToWindow event.
++// Window is borrowed for this synchronous UI-thread call. Consumers must queue
++// app work and never call app/KVO on this stack. Empty until a host installs it.
++CONTENT_EXPORT HostViewWindowMovedCallback& GetHostViewWindowMovedCallback();
+ }  // namespace content
+ 
+ #endif  // CONTENT_PUBLIC_BROWSER_HOST_APP_HOOKS_H_
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -324,6 +324,10 @@
+   static base::NoDestructor<HostOwnCompositorCallback> callback;
+   return *callback;
+ }
++HostViewWindowMovedCallback& GetHostViewWindowMovedCallback() {
++  static base::NoDestructor<HostViewWindowMovedCallback> callback;
++  return *callback;
++}
+ 
+ namespace {
+ 
+--- a/content/app_shim_remote_cocoa/web_contents_view_cocoa.h
++++ b/content/app_shim_remote_cocoa/web_contents_view_cocoa.h
+@@ -5,6 +5,7 @@
+ #ifndef CONTENT_APP_SHIM_REMOTE_COCOA_WEB_CONTENTS_VIEW_COCOA_H_
+ #define CONTENT_APP_SHIM_REMOTE_COCOA_WEB_CONTENTS_VIEW_COCOA_H_
+ 
++#include "base/functional/callback.h"
+ #include "base/memory/raw_ptr.h"
+ #include "content/common/content_export.h"
+ #include "content/common/web_contents_ns_view_bridge.mojom.h"
+@@ -41,6 +42,10 @@
+ - (void)enableDroppedScreenShotCopier;
+ 
+ // Private interface.
++// In-process host-only observation of real outer-view window moves. Empty by
++// default and cleared when setHost: disconnects this view from its owner.
++- (void)setHostWindowMovedCallback:
++    (base::RepeatingCallback<void(NSWindow*)>)callback;
+ // TODO(ccameron): Document these functions.
+ - (instancetype)initWithViewsHostableView:(ui::ViewsHostableView*)v;
+ - (void)registerDragTypes;
+--- a/content/app_shim_remote_cocoa/web_contents_view_cocoa.mm
++++ b/content/app_shim_remote_cocoa/web_contents_view_cocoa.mm
+@@ -5,6 +5,8 @@
+ #import "content/app_shim_remote_cocoa/web_contents_view_cocoa.h"
+ 
+ #include <AppKit/AppKit.h>
++
++#include <utility>
+ 
+ #include "base/files/file_util.h"
+ #include "base/files/scoped_temp_dir.h"
+@@ -116,6 +118,7 @@
+   // Instances of this class are owned by both `_host` and AppKit. The `_host`
+   // must call `-setHost:nil` in its destructor.
+   raw_ptr<remote_cocoa::mojom::WebContentsNSViewHost> _host;
++  base::RepeatingCallback<void(NSWindow*)> _hostWindowMovedCallback;
+ 
+   // The interface exported to views::Views that embed this as a sub-view.
+   raw_ptr<ui::ViewsHostableView> _viewsHostableView;
+@@ -418,8 +421,14 @@
+   _viewsHostableView = nullptr;
+ }
+ 
++- (void)setHostWindowMovedCallback:
++    (base::RepeatingCallback<void(NSWindow*)>)callback {
++  _hostWindowMovedCallback = std::move(callback);
++}
++
+ - (void)setHost:(remote_cocoa::mojom::WebContentsNSViewHost*)host {
+   if (!host) {
++    _hostWindowMovedCallback.Reset();
+     [_dragSource webContentsIsGone];
+   }
+   _host = host;
+@@ -584,7 +593,14 @@
+ }
+ 
+ - (void)viewDidMoveToWindow {
++  // Visibility updates may reenter teardown, disconnect the host, or release
++  // this view. Keep only local copies alive across that existing callout.
++  auto callback = _hostWindowMovedCallback;
++  NSWindow* window __attribute__((objc_precise_lifetime)) = [self window];
+   [self updateWebContentsVisibility];
++  if (callback) {
++    callback.Run(window);
++  }
+ }
+ 
+ - (void)viewDidHide {
+--- a/content/browser/web_contents/web_contents_view_mac.mm
++++ b/content/browser/web_contents/web_contents_view_mac.mm
+@@ -12,7 +12,9 @@
+ #include <string>
+ #include <utility>
+ 
++#include "base/command_line.h"
+ #include "base/compiler_specific.h"
++#include "base/functional/bind.h"
+ #include "base/containers/span.h"
+ #import "base/mac/mac_util.h"
+ #import "base/mac/scoped_sending_event.h"
+@@ -37,6 +39,7 @@
+ #include "content/common/web_contents_ns_view_bridge.mojom-shared.h"
+ #include "content/public/browser/browser_context.h"
+ #include "content/public/browser/clipboard_types.h"
++#include "content/public/browser/host_app_hooks.h"
+ #include "content/public/browser/web_contents_delegate.h"
+ #include "content/public/browser/web_contents_view_delegate.h"
+ #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+@@ -435,6 +438,19 @@
+   in_process_ns_view_bridge_ =
+       std::make_unique<remote_cocoa::WebContentsNSViewBridge>(ns_view_id_,
+                                                               this);
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    [GetInProcessNSView() setHostWindowMovedCallback:base::BindRepeating(
++        [](base::WeakPtr<WebContents> contents, NSWindow* window) {
++          if (!contents) {
++            return;
++          }
++          auto callback = GetHostViewWindowMovedCallback();
++          if (callback) {
++            callback.Run(contents.get(), gfx::NativeWindow(window));
++          }
++        },
++        web_contents_->GetWeakPtr())];
++  }
+   if (web_contents_->GetVisibility() == Visibility::HIDDEN) {
+     in_process_ns_view_bridge_->SetVisible(false);
+   }

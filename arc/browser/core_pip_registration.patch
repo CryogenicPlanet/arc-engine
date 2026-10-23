@@ -1,0 +1,15 @@
+--- a/arc/api/arc_web_contents.mm
++++ b/arc/api/arc_web_contents.mm
+@@ -829,6 +829,12 @@
+     }
+   }
+ }
++- (void)skipUserActivationForPiP:(BOOL)enabled {
++  arc::SetRendererSkipUserActivationForPiP(_contents.get(), enabled);
++}
++- (void)ignoreDisablePiPAttribute:(BOOL)enabled {
++  arc::SetRendererIgnoreDisablePiPAttribute(_contents.get(), enabled);
++}
+ - (void)stop { if (_contents) { _contents->Stop(); } }
+ - (void)close {
+   if (_ownedContents) {

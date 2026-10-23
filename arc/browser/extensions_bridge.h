@@ -6,6 +6,11 @@
 namespace arc {
 void InstallBrowserExtensions(ArcBrowser* browser, id delegate);
 id BrowserExtensionDelegate(ArcBrowser* browser);
+// Queue against the current bridge target. Clearing the delegate invalidates
+// queued requests; a nonnil replacement updates the same target at delivery.
+// False means there is no live bridge/callback target to enqueue against.
+bool DispatchBrowserExtensionRequest(ArcBrowser* browser,
+                                     void (^request)(id delegate));
 ArcBrowser* BrowserForHostedExtensions(BrowserWindowInterface* browser);
 void RegisterHostedExtensionAPIs();
 }

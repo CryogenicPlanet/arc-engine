@@ -25,7 +25,8 @@ struct AdBlockConfiguration {
   base::File indexed_ruleset;
   std::vector<std::string> excluded_origins;
   uint64_t ruleset_id = 0;
-  // Revision of exclusions broadcasts (including re-enable), not rule updates.
+  // Revision of cached exclusions (including re-enable), not rule updates.
+  // Disabled mutations advance the global cache without publishing to profiles.
   uint64_t config_version = 0;
   bool enabled = false;
   // An engaged update may carry an invalid file: that explicitly clears rules.
@@ -45,9 +46,14 @@ base::CallbackListSubscription ObserveAdBlockConfiguration(
 void SetRendererAdBlockApplication(id application);
 #endif
 void RefreshRendererAdBlockFeature();
+// Pure live read for queued publication; does not refresh or mutate state.
+bool RendererAdBlockFeatureEnabled();
 void InitializeRendererProcessBridge();
 void InitializeRendererProfile(Profile* profile);
-void RendererProcessWillLaunch(content::RenderProcessHost* host);
+// Pass true only from a paired embedder patch that also installs the process
+// agent in RenderThreadStarted before associated requests can be dispatched.
+void RendererProcessWillLaunch(content::RenderProcessHost* host,
+                               bool early_process_agent_installed = false);
 void RendererProcessFrameReady(content::RenderProcessHost* host);
 void ReleaseRendererRulesetFile(base::File file);
 void GetRendererAdBlockDebugInfo(

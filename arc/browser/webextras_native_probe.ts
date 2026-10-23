@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 // Test-only owned-app boundary probe; no AX/native readiness or global input.
 import { AgentCDP, verifyAgentEndpoint } from "../../../arc/tools/agent-cdp";
-import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { chmodSync, constants, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 
 type RecordRow = { event: any; begin: number; end: number };
 function canonical(value: any): any {
@@ -119,9 +119,14 @@ function validateActionTrace(action: any, rows: RecordRow[], record: Buffer): an
     const callback = action.callbacks?.find((event: any) => event.event === (action.operation === "console-open" ? "display" : "closed"));
     const entry = delegates[0]!;
     const returned = matched.get(entry.event.seq)!;
+    const recorderInsideHook = callback?.recordOffset <= entry.begin && returned.end <= callback?.recordAfterForwarding;
+    const recorderOutsideHook = entry.end <= callback?.recordOffset && callback?.recordAfterForwarding <= returned.begin;
     assert(callback?.forwarded === true && Number.isSafeInteger(callback.recordOffset) && Number.isSafeInteger(callback.recordAfterForwarding) &&
-      callback.recordOffset >= action.recordBegin && callback.recordOffset <= returned.begin && returned.end <= callback.recordAfterForwarding &&
-      callback.recordAfterForwarding <= action.recordEnd && entry.event.args?.[0] === publicRows[0]!.event.self, "incomplete or mismatched app callback forwarding");
+      callback.recordOffset >= action.recordBegin && callback.recordOffset <= callback.recordAfterForwarding &&
+      callback.recordAfterForwarding <= action.recordEnd && returned.end <= action.recordEnd &&
+      (recorderInsideHook || recorderOutsideHook) && entry.event.thread === "main" &&
+      entry.event.depth === mainDepth + (callback.beforePublicReturn ? 1 : 0) &&
+      entry.event.args?.[0] === publicRows[0]!.event.self, "incomplete or mismatched app callback forwarding");
   } else assert(!delegates.length, "unexpected display/close callback");
   // A complete ordered boundary shape closes diff.py's depth/order/object-identity gaps.
   const identities = new Map<string, string>();
@@ -131,7 +136,7 @@ function validateActionTrace(action: any, rows: RecordRow[], record: Buffer): an
     return identities.get(full)!;
   }) : value;
   return rows.map(row => ({ ev:row.event.ev, thread:row.event.thread, depth:row.event.depth - (ambient.get(row.event.thread)?.length ?? 0), dir:row.event.dir,
-    cls:row.event.cls, kind:row.event.kind, sel:row.event.sel, self:norm(row.event.self) }));
+    cls:row.event.cls, kind:row.event.kind, sel:row.event.sel, self:norm(row.event.self), from:row.event.from }));
 }
 function arcError(error: any, code: number): boolean {
   return error?.domain === "company.thebrowser.Arc" && error.code === code && typeof error.description === "string" &&
@@ -234,6 +239,75 @@ const exec = (argv: string[]) => {
   if (!result.success) throw new Error(`${argv[0]} failed: ${result.stderr.toString().trim()}`);
   return result.stdout.toString().trim();
 };
+// One immutable recorder image is shared by both agents, even if the shared source is rebuilt.
+function recorderFileIdentity(path: string): any {
+  const realpath = realpathSync(path);
+  const before = statSync(realpath);
+  const sha256 = exec(["/usr/bin/shasum", "-a", "256", realpath]).match(/^([0-9a-f]{64})\s/)?.[1];
+  const after = statSync(realpath);
+  assert(sha256 && realpathSync(path) === realpath && before.dev === after.dev && before.ino === after.ino &&
+    before.size === after.size && before.mtimeMs === after.mtimeMs && before.ctimeMs === after.ctimeMs,
+    "recorder changed while capturing identity");
+  return { path, realpath, sha256, size: after.size, mtimeMs: after.mtimeMs, mtime: after.mtime.toISOString(),
+    dev: after.dev, ino: after.ino, ctimeMs: after.ctimeMs };
+}
+function freezeRecorder(sourcePath: string, outputRoot: string): any {
+  mkdirSync(outputRoot, { recursive: true });
+  const source = recorderFileIdentity(sourcePath);
+  const path = join(outputRoot, "ArcEngineRecorder.dylib");
+  copyFileSync(source.realpath, path, constants.COPYFILE_EXCL);
+  chmodSync(path, 0o444);
+  const frozen = recorderFileIdentity(path);
+  const after = recorderFileIdentity(sourcePath);
+  assert(JSON.stringify(source) === JSON.stringify(after) && frozen.sha256 === source.sha256 && frozen.size === source.size,
+    "recorder source changed while freezing image");
+  const identity = { capturedAt: new Date().toISOString(), originalSourcePath: sourcePath, source, frozen };
+  writeFileSync(join(outputRoot, "recorder-identity.json"), JSON.stringify(identity, null, 2));
+  return identity;
+}
+function hasCallerLabels(rows: RecordRow[]): boolean {
+  return rows.some(row => Object.hasOwn(row.event, "from"));
+}
+const fixtureComparisonPending = "pending fixture-comparison support: recorder caller labels exist, but shared diff.py has no verified explicit fixture-image option; its default diff drops probe calls";
+// The packaged app can be replaced by another worker while this run waits for the lock.
+// Hash the actual launch files under the lock; a queued build timestamp proves no source provenance.
+function captureBinaryIdentity(app: string, agent: string): any {
+  const capturedAt = new Date().toISOString();
+  const cache = new Map<string, any>();
+  const identity = (path: string): any => {
+    const realpath = realpathSync(path);
+    if (cache.has(realpath)) return { ...cache.get(realpath), path };
+    const before = statSync(realpath);
+    const output = exec(["/usr/bin/shasum", "-a", "256", realpath]);
+    const sha256 = output.match(/^([0-9a-f]{64})\s/)?.[1];
+    const after = statSync(realpath);
+    assert(sha256 && realpathSync(path) === realpath && before.dev === after.dev && before.ino === after.ino &&
+      before.size === after.size && before.mtimeMs === after.mtimeMs, "binary changed while capturing identity");
+    const value = { path, realpath, sha256, size: after.size, mtimeMs: after.mtimeMs, mtime: after.mtime.toISOString() };
+    cache.set(realpath, value);
+    return value;
+  };
+  const framework = join(app, "Contents/Frameworks/ArcCore.framework");
+  const engine = identity(join(framework, "Versions/A/ArcCore"));
+  const helpersPath = realpathSync(join(framework, "Helpers"));
+  const helpers = readdirSync(helpersPath, { withFileTypes: true }).filter(entry => entry.isDirectory() && entry.name.endsWith(".app")).map(entry => {
+    const bundle = join(helpersPath, entry.name);
+    const name = exec(["/usr/libexec/PlistBuddy", "-c", "Print :CFBundleExecutable", join(bundle, "Contents/Info.plist")]);
+    const executable = join(bundle, "Contents/MacOS", name);
+    // Ordinary helpers dlopen a relative path; Aperitif variants use @executable_path.
+    // Stream stdin because macOS strings treats parenthesized fat-binary paths as archive members.
+    const scanned = Bun.spawnSync(["/usr/bin/strings", "-a", "-"], { stdin: Bun.file(executable), stdout: "pipe", stderr: "pipe" });
+    assert(scanned.success, `helper engine path scan failed: ${entry.name}`);
+    const relativeEngines = [...new Set(scanned.stdout.toString().split("\n").filter(line => /^(?:@executable_path\/)?(?:\.\.\/)+ArcCore$/.test(line)))];
+    assert(relativeEngines.length === 1, `unrecognized helper engine path: ${entry.name}`);
+    const relativePath = relativeEngines[0]!.replace(/^@executable_path\//, "");
+    return { bundle, executable: identity(executable), engineRelativePath: relativeEngines[0],
+      engine: identity(resolve(dirname(executable), relativePath)) };
+  });
+  assert(helpers.length > 0, "no packaged helper executables identified");
+  return { agent, app, capturedAt, sourceSnapshot: "unknown", provenance: "Packaged launch-file identity only; source correspondence requires build/package/run in one lock slot.",
+    appExecutable: identity(join(app, "Contents/MacOS/Arc")), engine, helpers };
+}
 const lockPID = Number(readFileSync(join(root, "logs/arccore-build.lock/pid"), "utf8").trim());
 let ancestor = process.pid;
 for (let depth = 0; ancestor !== lockPID && ancestor > 1 && depth < 20; ++depth) {
@@ -241,8 +315,10 @@ for (let depth = 0; ancestor !== lockPID && ancestor > 1 && depth < 20; ++depth)
 }
 if (ancestor !== lockPID) throw new Error("run under arc/tools/locked.sh; this driver never acquires or bypasses the lock");
 const dylib = join(root, "logs/wp/webextras-native-probe-build/WebextrasNativeProbe.dylib");
-const recorder = join(root, "tests/recorder/ArcEngineRecorder.dylib");
-for (const file of [dylib, recorder]) if (!existsSync(file)) throw new Error(`missing ${file}`);
+const recorderSource = join(root, "tests/recorder/ArcEngineRecorder.dylib");
+for (const file of [dylib, recorderSource]) if (!existsSync(file)) throw new Error(`missing ${file}`);
+const recorderIdentity = freezeRecorder(recorderSource, out);
+const recorder = recorderIdentity.frozen.path;
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 let observeProcesses: (() => void) | undefined;
 const wait = async <T>(read: () => T | Promise<T>, timeout = 20000): Promise<NonNullable<T>> => {
@@ -274,12 +350,12 @@ const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
 } });
 const fixtureURL = `http://127.0.0.1:${server.port}${fixturePath}`;
 mkdirSync(out, { recursive: true });
-type Run = { agent: string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; actions: any[]; errors: string[]; cleanup?: string };
+type Run = { agent: string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string };
 const runs: Run[] = [];
 const operations = ["console-open", "frontend", "console-close", "panel-closed", "execute-evaluate", "execute-malformed", "execute-unknown", "subscription", "media-types", "pip-request-error", "pip-exit-error"];
 try {
   for (const agent of agents) {
-    const run: Run = { agent, phase: "preflight", actions: [], errors: [] };
+    const run: Run = { agent, phase: "preflight", recorderIdentity, actions: [], errors: [] };
     runs.push(run);
     const dir = join(out, agent);
     mkdirSync(dir, { recursive: true });
@@ -336,6 +412,11 @@ try {
       const chromiumData = join(data, "Agent Chromium Data");
       mkdirSync(chromiumData, { recursive: true, mode: 0o700 });
       for (const key of ["cloudKitSyncEnabled", "firebaseSyncEnabled"]) exec(["defaults", "write", `company.thebrowser.Browser.mod.agent.${agent}`, key, "-bool", "false"]);
+      run.phase = "binary-identity";
+      run.binaryIdentity = captureBinaryIdentity(app, agent);
+      writeFileSync(join(dir, "binary-identity.json"), JSON.stringify(run.binaryIdentity, null, 2));
+      run.phase = "recorder-identity";
+      assert(JSON.stringify(recorderFileIdentity(recorder)) === JSON.stringify(recorderIdentity.frozen), "frozen recorder changed before launch");
       run.phase = "launch";
       readiness = { agent, beforeLaunch: readySnapshot(nativeReadyPath), launchStartedMs: Date.now() };
       writeFileSync(join(dir, "readiness.json"), JSON.stringify(readiness, null, 2));
@@ -464,6 +545,9 @@ try {
         const record = readFileSync(recordPath);
         try {
           const all = parseRecords(record);
+          run.recordCallerLabels = hasCallerLabels(all);
+          run.fixtureComparisonStatus = run.recordCallerLabels ? "pending-fixture-comparison-support" : "legacy-unlabelled";
+          if (run.recordCallerLabels) run.errors.push(fixtureComparisonPending);
           if (all[0]?.event.ev !== "hooked" || all[0]?.event.seq !== 0 || !(all[0]?.event.engine_classes > 0) || all.filter(row => row.event.ev === "hooked").length !== 1) {
             throw new Error("missing initial recorder hooked event");
           }
@@ -507,6 +591,9 @@ if (golden && ours) for (let index = 0; index < Math.max(golden.actions.length, 
   if (JSON.stringify(left) !== JSON.stringify(right)) differences.push({ golden: left, ours: right });
 }
 const boundaryDiffs: unknown[] = [];
+const fixtureComparison = { status: runs.some(run => run.recordCallerLabels) ? "pending-fixture-comparison-support" : "legacy-unlabelled",
+  fixtureImageOption: null, reason: runs.some(run => run.recordCallerLabels) ? fixtureComparisonPending : null };
+if (fixtureComparison.reason) boundaryDiffs.push({ status: fixtureComparison.status, error: fixtureComparison.reason });
 if (golden && ours) for (const operation of operations) {
   const left = join(out, "trace156", `${operation}.record.jsonl`);
   const right = join(out, "ours156", `${operation}.record.jsonl`);
@@ -522,6 +609,6 @@ if (golden && ours) for (const operation of operations) {
 }
 const complete = runs.length === agents.length && runs.every(run => !run.errors.length && !!run.cleanup && run.actions.length === operations.length && run.actions.every(action => action.traceShape?.length > 0));
 const parity = golden && ours ? complete && !differences.length && !boundaryDiffs.length : null;
-writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, differences, boundaryDiffs, runs }, null, 2));
-console.log(JSON.stringify({ complete, parity, out }));
+writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, fixtureComparison, differences, boundaryDiffs, runs }, null, 2));
+console.log(JSON.stringify({ complete, parity, fixtureComparison, out }));
 process.exitCode = complete && parity !== false ? 0 : 1;

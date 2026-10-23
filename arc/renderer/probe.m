@@ -4,6 +4,10 @@
 #import <objc/message.h>
 #import <objc/runtime.h>
 
+@interface NSObject (RendererMatrixProbe)
+- (instancetype)initWithMatrix:(const float[20])matrix;
+@end
+
 static NSHashTable* gContents;
 static NSHashTable* gBrowsers;
 static NSString* gRequest;
@@ -230,6 +234,24 @@ static void Poll(void) {
     } else if ([operation isEqual:@"remove-color-scheme"]) {
       ((void (*)(id, SEL))objc_msgSend)(target, NSSelectorFromString(@"removeColorScheme"));
       response[@"ok"] = @YES;
+    } else if ([operation isEqual:@"apply-color-filter"] &&
+               [request[@"matrix"] isKindOfClass:[NSArray class]] &&
+               [request[@"matrix"] count] == 20) {
+      float values[20];
+      BOOL valid = YES;
+      for (NSUInteger i = 0; i < 20; ++i) {
+        id value = request[@"matrix"][i];
+        if (![value isKindOfClass:[NSNumber class]]) { valid = NO; break; }
+        values[i] = [value floatValue];
+      }
+      if (valid) {
+        id matrix = [[NSClassFromString(@"ArcHSLAMatrix") alloc] initWithMatrix:values];
+        ((void (*)(id, SEL, id))objc_msgSend)(target, NSSelectorFromString(@"applyColorFilter:"), matrix);
+        response[@"ok"] = @YES;
+      } else response[@"error"] = @"matrix must contain twenty numbers";
+    } else if ([operation isEqual:@"remove-color-filter"]) {
+      ((void (*)(id, SEL))objc_msgSend)(target, NSSelectorFromString(@"removeColorFilter"));
+      response[@"ok"] = @YES;
     } else if ([operation isEqual:@"adblock-debug"]) {
       id context = ProfileContext();
       if (!context) response[@"error"] = @"expected exactly one browser context";
@@ -252,6 +274,19 @@ static void Poll(void) {
       else {
         ((void (*)(id, SEL, NSUInteger, BOOL))objc_msgSend)(application,
             NSSelectorFromString(@"setFeatureEnabled:enabled:"), 11, [request[@"scheme"] boolValue]);
+        response[@"ok"] = @YES;
+      }
+    } else if ([operation isEqual:@"set-exclusions-then-disable"] &&
+               [request[@"values"] isKindOfClass:[NSArray class]]) {
+      id application = gApplication;
+      if (!application) response[@"error"] = @"application was not observed";
+      else {
+        // Keep both public calls in the same main-loop turn. Native publication
+        // checks feature 11 again when its queued per-agent task executes.
+        ((void (*)(id, SEL, id))objc_msgSend)(application,
+            NSSelectorFromString(@"setExcludedDomains:"), request[@"values"]);
+        ((void (*)(id, SEL, NSUInteger, BOOL))objc_msgSend)(application,
+            NSSelectorFromString(@"setFeatureEnabled:enabled:"), 11, NO);
         response[@"ok"] = @YES;
       }
     } else if (([operation isEqual:@"set-block-lists"] || [operation isEqual:@"set-exclusions"]) &&

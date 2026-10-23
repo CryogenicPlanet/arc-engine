@@ -1,0 +1,69 @@
+--- a/arc/common/renderer.mojom
++++ b/arc/common/renderer.mojom
+@@ -35,6 +35,8 @@
+   // The acknowledgement also confirms the first-frame process-agent fallback
+   // has installed its associated-interface binder.
+   SetRendererHost(pending_associated_remote<RendererHost> host) => ();
++  SetSkipUserActivationForPiP(bool enabled);
++  SetIgnoreDisablePiPAttribute(bool enabled);
+   // Receiver swaps the cached config; application is at document start only.
+   ConfigureEffects(array<HostEffectsConfiguration> configuration);
+ };
+--- a/arc/renderer/render_frame_agent.cc
++++ b/arc/renderer/render_frame_agent.cc
+@@ -23,6 +23,7 @@
+ #include "third_party/blink/public/platform/web_document_subresource_filter.h"
+ #include "third_party/blink/public/platform/web_security_origin.h"
+ #include "third_party/blink/public/web/web_document.h"
++#include "third_party/blink/public/web/arc_renderer_policies.h"
+ #include "third_party/blink/public/web/web_document_loader.h"
+ #include "third_party/blink/public/web/web_css_origin.h"
+ #include "third_party/blink/public/web/web_local_frame.h"
+@@ -105,6 +106,22 @@
+   void AdBlockConfigurationChanged() {
+     InstallAdBlockFilter();
+     ApplyAdBlockCosmetics();
++  }
++
++  void SetSkipUserActivationForPiP(bool enabled) override {
++    // The native receiver validates the originating frame before changing its
++    // process-wide policy. Never cache/reset this flag on the frame itself.
++    auto* frame = render_frame();
++    if (frame && frame->GetWebFrame()) {
++      blink::SetArcSkipUserActivationForPictureInPicture(enabled);
++    }
++  }
++
++  void SetIgnoreDisablePiPAttribute(bool enabled) override {
++    auto* frame = render_frame();
++    if (frame && frame->GetWebFrame()) {
++      blink::SetArcIgnoreDisablePictureInPictureAttribute(enabled);
++    }
+   }
+ 
+   void ConfigureEffects(std::vector<mojom::HostEffectsConfigurationPtr> configuration) override {
+--- a/arc/api/arc_renderer_web_contents.mm
++++ b/arc/api/arc_renderer_web_contents.mm
+@@ -177,6 +177,22 @@
+   RendererBridge::For(contents);
+ }
+ 
++void SetRendererSkipUserActivationForPiP(content::WebContents* contents, bool enabled) {
++  auto* bridge = RendererBridge::For(contents);
++  auto* agent = bridge ? bridge->Agent() : nullptr;
++  if (agent) {
++    agent->SetSkipUserActivationForPiP(enabled);
++  }
++}
++
++void SetRendererIgnoreDisablePiPAttribute(content::WebContents* contents, bool enabled) {
++  auto* bridge = RendererBridge::For(contents);
++  auto* agent = bridge ? bridge->Agent() : nullptr;
++  if (agent) {
++    agent->SetIgnoreDisablePiPAttribute(enabled);
++  }
++}
++
+ }  // namespace arc
+ 
+ @implementation ArcWebContents (RendererStylesheets)

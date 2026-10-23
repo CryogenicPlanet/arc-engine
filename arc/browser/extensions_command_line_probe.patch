@@ -1,0 +1,509 @@
+diff --git a/arc/browser/extensions_service_probe.m b/arc/browser/extensions_service_probe.m
+--- a/arc/browser/extensions_service_probe.m
++++ b/arc/browser/extensions_service_probe.m
+@@ -44,12 +44,15 @@
+ static NSString* gRequest;
+ static NSString* gFixtures;
+ static NSString* gToken;
++static NSString* gFixtureMode;
++static NSMutableSet* gStartupPending;
+ static NSString* gRecord;
+ static NSString* gLastID;
+ static BOOL gInstalled;
+ static ExtensionsProbeWork* gWork;
+ static ExtensionsProbeWork* gCaptureWork;  // Protected by gCaptureLock.
+ static NSObject* gCaptureLock;
++static BOOL gStartupObservationWindow;  // Protected by gCaptureLock.
+ static NSMutableArray* gDiagnostics;
+ static NSMutableSet* gOutstandingInstalls;
+ static NSMutableArray* gInstallAttempts;
+@@ -154,16 +157,24 @@
+   // Capture the operation at callback entry, before hopping queues. Never
+   // consult a future request's gWork to assign an earlier callback.
+   ExtensionsProbeWork* capturedWork;
++  BOOL beforeStartupAdoption;
+   id synchronous;
+   @synchronized(gCaptureLock) {
+     capturedWork = gCaptureWork;
++    beforeStartupAdoption = gStartupObservationWindow;
+     synchronous = capturedWork ? JSONBool(!capturedWork.returned) : (id)NSNull.null;
+   }
+   NSNumber* recordOffset = Offset();
+   __weak id weakOwner = contextOrBrowser;
+   void (^save)(void) = ^{
+     NSDictionary* event = @{@"selector":selector,@"payload":Value(payload),@"mainThread":JSONBool(callbackMainThread),@"synchronous":synchronous,@"recordOffset":recordOffset};
+-    if (!capturedWork) { Diagnostic(@"unassigned",nil,event); return; }
++    // Journal every actual pre-adoption callback independently of discovery
++    // requests: incomplete discoveries are not exercised-operation evidence.
++    if (beforeStartupAdoption) Diagnostic(@"startup-observation",capturedWork,event);
++    if (!capturedWork) {
++      if (!beforeStartupAdoption) Diagnostic(@"unassigned",nil,event);
++      return;
++    }
+     if (capturedWork.context != weakOwner && capturedWork.browser != weakOwner) {
+       Diagnostic(@"outside-captured-context",capturedWork,event); return;
+     }
+@@ -261,10 +272,13 @@
+   if (!identifier.length || ![@[@"A",@"B"] containsObject:label]) return NO;
+   id info = Get1(service,@"getExtensionInfo:",identifier);
+   NSString* expected = [NSString stringWithFormat:@"ArcCore service probe %@ %@",gToken,label];
+-  return info && [Get(info,@"id") isEqual:identifier] && [Get(info,@"name") isEqual:expected];
++  BOOL matches = info && [Get(info,@"id") isEqual:identifier] && [Get(info,@"name") isEqual:expected];
++  if (matches && [gFixtureMode isEqual:@"command-line"])
++    matches = [Get(info,@"version") isEqual:@"1.2.3"] && [PropertyValue(info,@"fromWebstore") isEqual:@NO];
++  return matches;
+ }
+ static void OwnershipJournal(void) {
+-  WriteJSON(@{@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy]},[gRequest stringByAppendingString:@".owned.json"]);
++  WriteJSON(@{@"fixtureMode":gFixtureMode,@"startupPending":[gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)],@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy]},[gRequest stringByAppendingString:@".owned.json"]);
+ }
+ static NSString* ReconcileOwned(id service) {
+   // An installation may have completed after its request timed out. Discover
+@@ -277,12 +291,26 @@
+       if (!Proven(service,label,identifier)) return @"nonce fixture from list failed ID/name verification";
+       if (gOwned[label] && ![gOwned[label] isEqual:identifier]) return @"multiple installed IDs share nonce fixture name; refusing ambiguous cleanup";
+       gOwned[label] = identifier;
+-    }
+-  }
++      [gStartupPending removeObject:label];
++    }
++  }
++  if ([gFixtureMode isEqual:@"command-line"] && !gStartupPending.count && gOwned.count == 2)
++    @synchronized(gCaptureLock) { gStartupObservationWindow = NO; }
+   OwnershipJournal();
+   return nil;
+ }
+ static NSString* Cleanup(ExtensionsProbeWork* work) {
++  if ([gFixtureMode isEqual:@"command-line"]) {
++    if (gOutstandingInstalls.count) return @"cleanup cannot certify while installs remain outstanding";
++    NSString* error = ReconcileOwned(work.entry.service);
++    if (error) return error;
++    if (gStartupPending.count) return @"command-line startup ownership unresolved; cleanup cannot be certified";
++    if (!gBaseline && gOwned.count == 2) {
++      gBaseline = [NSMutableArray array];
++      for (NSString* identifier in Get(work.entry.service,@"getPinnedExtensionOrder"))
++        if (![gOwned.allValues containsObject:identifier]) [gBaseline addObject:identifier];
++    }
++  }
+   if (!gBaseline) return @"baseline was never captured; refusing pin mutation";
+   if (gOutstandingInstalls.count) return @"cleanup cannot certify while installs remain outstanding";
+   id service = work.entry.service;
+@@ -308,10 +336,12 @@
+     work.response[@"pinsAfter"] = Value(Get(work.entry.service,@"getPinnedExtensionOrder"));
+     work.response[@"owned"] = [gOwned copy];
+     work.response[@"outstandingInstalls"] = gOutstandingInstalls.allObjects;
++    work.response[@"startupPending"] = [gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)];
++    work.response[@"fixtureMode"] = gFixtureMode;
+     if ([work.response[@"operation"] isEqual:@"cleanup"]) {
+       BOOL absent = YES;
+       for (id value in infos.allValues) if (value != NSNull.null) absent = NO;
+-      work.response[@"cleanupCertified"] = JSONBool(!error && absent && !gOutstandingInstalls.count && [work.response[@"pinsAfter"] isEqual:gBaseline]);
++      work.response[@"cleanupCertified"] = JSONBool(!error && absent && !gOutstandingInstalls.count && !gStartupPending.count && [work.response[@"pinsAfter"] isEqual:gBaseline]);
+     }
+   } @catch (NSException* exception) { error = exception.reason ?: exception.name; }
+   work.response[@"ok"] = JSONBool(!error);
+@@ -382,7 +412,21 @@
+   NSString* label = request[@"label"];
+   NSString* ownedID = gOwned[label ?: @""];
+   @try {
+-    if ([operation isEqual:@"registry"]) {
++    if ([operation isEqual:@"registry"] || [operation isEqual:@"adopt-command-line"]) {
++      if ([operation isEqual:@"adopt-command-line"]) {
++        if (![gFixtureMode isEqual:@"command-line"]) { Finish(@"adoption only allowed in explicit command-line fixture mode"); return; }
++        NSString* error = ReconcileOwned(service);
++        if (error) { Finish(error); return; }
++        NSMutableDictionary* adopted = [NSMutableDictionary dictionary];
++        for (NSString* item in gOwned) adopted[item] = Value(Get1(service,@"getExtensionInfo:",gOwned[item]));
++        gWork.response[@"adopted"] = adopted;
++        gWork.response[@"adoptionComplete"] = JSONBool(!gStartupPending.count && gOwned.count == 2);
++        if (!gStartupPending.count && gOwned.count == 2 && !gBaseline) {
++          gBaseline = [NSMutableArray array];
++          for (NSString* identifier in Get(service,@"getPinnedExtensionOrder"))
++            if (![gOwned.allValues containsObject:identifier]) [gBaseline addObject:identifier];
++        }
++      }
+       gWork.response[@"metadata"] = Metadata(service,browser);
+       gWork.response[@"ready"] = JSONBool(((BOOL (*)(id,SEL))objc_msgSend)(service,NSSelectorFromString(@"isExtensionSystemReady")));
+       id repeated = Get(gWork.entry.context,@"extensions");
+@@ -390,10 +434,11 @@
+       NSUInteger firstHash = [service hash];
+       gWork.response[@"hashStable"] = JSONBool(firstHash == [service hash]);
+       gWork.response[@"browserPresent"] = JSONBool(browser && gWork.entry.browserDelegate);
+-      if (!gOwned.count) gBaseline = [Get(service,@"getPinnedExtensionOrder") mutableCopy];
++      if ([gFixtureMode isEqual:@"public-install"] && !gOwned.count) gBaseline = [Get(service,@"getPinnedExtensionOrder") mutableCopy];
+       gWork.response[@"baselinePins"] = Value(gBaseline);
+     } else if ([operation isEqual:@"install"] || [operation isEqual:@"install-invalid"]) {
+       BOOL invalid = [operation isEqual:@"install-invalid"];
++      if (!invalid && ![gFixtureMode isEqual:@"public-install"]) { Finish(@"public fixture installs forbidden in command-line mode"); return; }
+       if (!invalid && (![@[@"A",@"B"] containsObject:label] || ownedID)) { Finish(@"invalid or already installed fixture label"); return; }
+       NSString* path = [gFixtures stringByAppendingPathComponent:invalid ? @"invalid" : label];
+       ExtensionsProbeWork* work = gWork;
+@@ -470,7 +515,10 @@
+     const char* fixtures = getenv("ARC_EXTENSIONS_PROBE_FIXTURES");
+     const char* token = getenv("ARC_EXTENSIONS_PROBE_TOKEN");
+     const char* record = getenv("ARC_RECORD_PATH");
++    const char* mode = getenv("ARC_EXTENSIONS_PROBE_FIXTURE_MODE");
+     if (!request || !fixtures || !token || !record) return;
++    gFixtureMode = mode ? @(mode) : @"public-install";
++    if (![@[@"public-install",@"command-line"] containsObject:gFixtureMode]) return;
+     gRequest = @(request); gFixtures = @(fixtures); gToken = @(token); gRecord = @(record);
+     if (!gRequest.isAbsolutePath || !gFixtures.isAbsolutePath || !gRecord.isAbsolutePath ||
+         ![gRequest.lastPathComponent isEqual:@"extensions-service-request.json"] ||
+@@ -480,6 +528,9 @@
+     gHooks = [NSMutableSet set]; gOwned = [NSMutableDictionary dictionary];
+     gCaptureLock = [NSObject new]; gDiagnostics = [NSMutableArray array];
+     gOutstandingInstalls = [NSMutableSet set]; gInstallAttempts = [NSMutableArray array];
++    gStartupPending = [NSMutableSet set];
++    gStartupObservationWindow = [gFixtureMode isEqual:@"command-line"];
++    if ([gFixtureMode isEqual:@"command-line"]) [gStartupPending addObjectsFromArray:@[@"A",@"B"]];
+     WriteJSON(gDiagnostics,[gRequest stringByAppendingString:@".diagnostics.json"]);
+     OwnershipJournal();
+     if (NSThread.isMainThread) Poll();
+diff --git a/arc/browser/extensions_service_probe.ts b/arc/browser/extensions_service_probe.ts
+--- a/arc/browser/extensions_service_probe.ts
++++ b/arc/browser/extensions_service_probe.ts
+@@ -3,7 +3,7 @@
+ // the lead-owned build/run lock. Native helper calls public selectors and
+ // forwards the app's actual delegates; it never substitutes callback results.
+ import { AgentCDP, verifyAgentEndpoint } from "../../../arc/tools/agent-cdp";
+-import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
++import { existsSync, mkdirSync, readFileSync, renameSync, realpathSync, statSync, writeFileSync } from "node:fs";
+ import { join, resolve, sep } from "node:path";
+ 
+ const root = resolve(import.meta.dir, "../..");
+@@ -19,6 +19,8 @@
+ if (!out.startsWith(outputRoot + sep) || existsSync(out)) throw Error("--out must be a fresh child of results/extensions-service-probe");
+ const agents = option("--agents", "trace156,ours156")!.split(",");
+ if (!agents.length || new Set(agents).size !== agents.length || agents.some(agent => !["trace156", "ours156"].includes(agent))) throw Error("only trace156/ours156, once each");
++const fixtureMode = args.find(arg => arg.startsWith("--fixture-mode="))?.slice("--fixture-mode=".length) ?? option("--fixture-mode", "public-install")!;
++if (!["public-install", "command-line"].includes(fixtureMode)) throw Error("fixture-mode must be public-install or command-line");
+ const port = Number(option("--port", "9458"));
+ if (!Number.isInteger(port) || port < 1024 || port > 65535) throw Error("invalid CDP port");
+ const exec = (argv: string[]) => {
+@@ -103,7 +105,7 @@
+   const current = statSync(file.path); return current.size === file.size && current.mtimeMs === file.mtimeMs;
+ };
+ const provenance = {
+-  capturedAt: new Date().toISOString(), fixtureEnvironmentArguments: ["--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking", "--no-error-dialogs"], builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
++  capturedAt: new Date().toISOString(), fixtureMode, fixtureEnvironmentArguments: ["--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking", "--no-error-dialogs"], builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
+   expectedStockSHA256, independentStockSibling,
+   traceMatchesVerifiedStock: packagedEngines.trace156.sha256 === expectedStockSHA256,
+   siblingMatchesVerifiedStock: independentStockSibling ? independentStockSibling.sha256 === expectedStockSHA256 : null,
+@@ -177,7 +179,7 @@
+   writeFileSync(join(dir, "readiness.json"), JSON.stringify({ pid, agent, timeoutMs, satisfied: false, events }, null, 2));
+   throw Error(`native readiness precondition timed out after ${timeoutMs}ms; current stages: ${JSON.stringify(last)}`);
+ };
+-const booleanFields = new Set(["ok", "mainThread", "synchronous", "ready", "identity", "hashStable", "browserPresent", "cleanupCertified", "enabled", "hasAction", "fromWebstore", "isGlobal", "fromIncognito", "present"]);
++const booleanFields = new Set(["ok", "mainThread", "synchronous", "ready", "identity", "hashStable", "browserPresent", "cleanupCertified", "enabled", "hasAction", "fromWebstore", "isGlobal", "fromIncognito", "present", "adoptionComplete"]);
+ const requireNativeBooleanTypes = (value: any, path = "response") => {
+   if (!value || typeof value !== "object") return;
+   if (Array.isArray(value)) { value.forEach((item, index) => requireNativeBooleanTypes(item, `${path}[${index}]`)); return; }
+@@ -230,26 +232,69 @@
+ mkdirSync(join(fixtures, "invalid"));
+ writeFileSync(join(fixtures, "invalid/manifest.json"), '{"manifest_version":3,"name":');
+ 
++const fixturePaths = ["A", "B"].map(label => realpathSync(join(fixtures,label)));
++if (fixtureMode === "command-line" && fixturePaths.some(path => path.includes(","))) throw Error("command-line fixture paths cannot contain the load-extension delimiter");
++const startupArguments = fixtureMode === "command-line" ? [`--load-extension=${fixturePaths.join(",")}`] : [];
++const fixtureInputs = ["A", "B"].map(label => ({ label, path: realpathSync(join(fixtures,label)), name: `ArcCore service probe ${token} ${label}`, version: "1.2.3",
++  files: ["manifest.json","background.js","popup.html","popup.js","icon.png"].map(file => fingerprint(join(fixtures,label,file))) }));
++writeFileSync(join(out,"fixture-inputs.json"), JSON.stringify({fixtureMode, startupArguments, fixtures:fixtureInputs},null,2));
++writeFileSync(join(out,"provenance.json"), JSON.stringify({...provenance, fixtureMode, startupArguments, fixtureInputs},null,2));
+ type Action = { step: string; [key: string]: any };
+-type Run = { agent: string; actions: Action[]; errors: string[]; uncovered: string[]; cleanup?: string; pid?: number; diagnostics?: any[]; ownership?: any; readiness?: any; policyPrecondition?: any };
++type Run = { agent: string; actions: Action[]; errors: string[]; uncovered: string[]; cleanup?: string; pid?: number; diagnostics?: any[]; ownership?: any; readiness?: any; policyPrecondition?: any; fixtureMode?: string; startupIntent?: any; reloadObservation?: any; startupCallbacks?: any[] };
+ const runs: Run[] = [];
+ const callbackSelectors = new Set([
+   "browserContext:didEnableExtension:", "browserContext:didDisableExtension:", "browserContext:didInstallExtension:", "browserContext:didUninstallExtension:",
+   "browserContext:didFailLoadUnpacked:withManifestError:", "browserContext:didFail:withRuntimeError:", "browserContext:didFail:withManifestError:", "browserContext:didFail:withInternalError:", "browserContext:didChangePinnedExtensionOrder:", "browserContextDidExtensionSystemReady:",
+   "browser:didOpenExtensionPopup:webContents:", "browser:didResizeExtensionPopup:size:", "browser:didCloseExtensionPopup:", "browser:didUpdateExtensionToolbarAction:", "browser:didUpdateExtensionToolbarActions:",
+ ]);
++const requiredPaths: Record<string,string[]> = {
++  registry:["metadata","ready","identity","hashStable","baselinePins"],
++  "adopt-command-line":["metadata","ready","identity","hashStable","baselinePins","adopted","adoptionComplete","startupPending"],
++  install:["completion","completions"], "install-invalid":["completion","completions"],
++  snapshot:["list","commands"], pins:[], command:["effects"], action:["callbacks"],
++  "background-js":["value"], disable:[], enable:[], reload:[], uninstall:[], cleanup:["cleanupCertified","outstandingInstalls","startupPending"],
++};
++function validRequiredValue(path: string, value: any): boolean {
++  const dictionary = (item: any): boolean => !!item && typeof item === "object" && !Array.isArray(item);
++  const completion = (item: any): boolean => dictionary(item) && typeof item.id === "string" && Number.isInteger(item.result) && typeof item.mainThread === "boolean" && typeof item.synchronous === "boolean";
++  const callback = (item: any): boolean => dictionary(item) && typeof item.selector === "string" && Array.isArray(item.payload) && typeof item.mainThread === "boolean" && (item.synchronous === null || typeof item.synchronous === "boolean");
++  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified"].includes(path)) return typeof value === "boolean";
++  if (path === "operation") return typeof value === "string" && Object.hasOwn(requiredPaths,value);
++  if (path === "matches") return Number.isInteger(value) && value >= 0;
++  if (["pinsAfter","baselinePins","outstandingInstalls","startupPending"].includes(path)) return Array.isArray(value) && value.every(item=>typeof item === "string");
++  if (["metadata","infosAfter","owned","adopted"].includes(path)) return dictionary(value);
++  if (["list","commands","effects"].includes(path)) return Array.isArray(value);
++  if (path === "callbacks") return Array.isArray(value) && value.every(callback);
++  if (path === "completion") return completion(value);
++  if (path === "completions") return Array.isArray(value) && value.every(completion);
++  if (path === "events") return Array.isArray(value) && value.every(item=>dictionary(item) && (item.type === "completion" ? completion(item.value) : item.type === "delegate" && callback(item.value)));
++  if (path === "value") return typeof value === "boolean";
++  return false;
++}
++function requiredRows(action: Action) {
++  const measured = semantic(action);
++  const paths = ["operation","ok","matches","mainThread","infosAfter","pinsAfter","owned","callbacks","events",...(requiredPaths[action.operation] ?? [])];
++  // Pins are scoped to fixture IDs in semantic comparison; the full native
++  // baseline-preservation check is independently asserted during the run.
++  const rows = paths.map(path => {
++    const semanticPath = path === "pinsAfter" ? "fixturePinsAfter" : path === "events" ? "eventOrder" : path === "baselinePins" ? "fixtureBaselinePins" : path;
++    const present = Object.prototype.hasOwnProperty.call(action,path);
++    return {path, present, valid:present && validRequiredValue(path,action[path]), value:measured[semanticPath]};
++  });
++  return {step:action.step, operation:action.operation, basis:"actual helper-returned observations, not ArcEngineRecorder rows", complete:rows.every(row=>row.present && row.valid), rows};
++}
+ const boundaryClasses = new Set(["ArcBrowserContextExtensions", "ArcExtensionInfo", "ArcExtensionCommand", "ArcExtensionRuntimeError", "ArcExtensionRuntimeErrorStackFrame", "ArcExtensionToolbarAction"]);
+ try {
+   for (const agent of agents) {
+     currentAgent = agent;
+-    const run: Run = { agent, actions: [], errors: [], uncovered: ["ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only"] }; runs.push(run);
++    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: ["ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only"] }; runs.push(run);
+     const dir = join(out, agent); mkdirSync(dir);
+     const app = resolve(root, `../arc/build/ArcModAgent-${agent}.app`), exe = join(app, "Contents/MacOS/Arc");
+     const plist = (key: string) => exec(["/usr/libexec/PlistBuddy", "-c", `Print :${key}`, join(app, "Contents/Info.plist")]);
+     const request = join(dir, "extensions-service-request.json"), recordPath = join(dir, "record.jsonl");
+     let pid: number | undefined, cdp: AgentCDP | undefined, target: string | undefined;
+     let requestSequence = 0;
+-    let nativeReadinessSatisfied = false, installRequestsIssued = false;
++    let nativeReadinessSatisfied = false, installRequestsIssued = false, startupLoadIssued = false;
+     const action = async (step: string, operation: string, extra: Record<string, any> = {}): Promise<Action> => {
+       if (!nativeReadinessSatisfied) throw Error("native PID-bound window/helper readiness required before probe request");
+       if (!pid || verifyAgentEndpoint(agent, port) !== pid) throw Error("owned endpoint changed");
+@@ -265,6 +310,7 @@
+     };
+     const assert = (condition: unknown, message: string) => { if (!condition) throw Error(message); };
+     try {
++      assert(fixtureInputs.every(fixture => fixture.files.every(unchanged)),"generated fixture source changed before launch");
+       assert(sources.every(unchanged) && unchanged(builtEngine) && unchanged(selectedEngine(agent)) && unchanged(probeBinary) && unchanged(recorderBinary) && unchanged(imageFingerprintTool), "provenance changed before launch; rebuild/repackage and use a fresh output directory");
+       assert(plist("ArcModAgentSession") === agent && plist("CFBundleIdentifier") === `company.thebrowser.Browser.mod.agent.${agent}` && plist("CFBundleName") === `ArcModAgent-${agent}`, "disposable bundle identity mismatch");
+       assert(!pids(exe).length, "agent already running; refusing attach/termination");
+@@ -272,12 +318,16 @@
+       const agentData = join(process.env.HOME!, "Library/Application Support", `ArcModAgent-${agent}`);
+       const data = join(agentData, "Agent Chromium Data");
+       mkdirSync(data, { recursive: true, mode: 0o700 });
++      run.startupIntent = {fixtureMode, agent, app, executable:exe, startupArguments, fixtures:fixtureInputs, state:fixtureMode === "command-line" ? "startup-load-pending" : "public-install-not-issued"};
++      writeFileSync(join(dir,"launch-intents.json"),JSON.stringify(run.startupIntent,null,2));
++      startupLoadIssued = fixtureMode === "command-line";
+       exec(["open", "-n", "-g", "-a", app,
+         "--env", `DYLD_INSERT_LIBRARIES=${dylib}:${recorder}`, "--env", `ARC_RECORD_PATH=${recordPath}`,
+-        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`,
++        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`,
+         "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args", "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking", "--no-error-dialogs",
+-        `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${data}`, "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`]);
++        `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${data}`, "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`, ...startupArguments]);
+       pid = await wait(() => pids(exe)[0], 30000); run.pid = pid;
++      run.startupIntent.pid = pid; writeFileSync(join(dir,"launch-intents.json"),JSON.stringify(run.startupIntent,null,2));
+       run.readiness = await waitForNativeReadiness(agent,pid,exe,agentData,request,recordPath,dir);
+       nativeReadinessSatisfied = true;
+       cdp = await AgentCDP.connectAgent(agent, port);
+@@ -285,7 +335,7 @@
+       assert(typeof target === "string", "missing owned local fixture tab");
+       await wait(async () => { const value = await cdp!.targetCommand(target!, "Runtime.evaluate", { expression: `document.readyState==='complete'&&document.querySelector('#fixture')?.dataset.token===${JSON.stringify(token)}`, returnByValue: true }); return (value.result as any)?.value === true; });
+       const registry = await wait(async () => {
+-        try { const value = await action(`registry-${requestSequence + 1}`, "registry"); return value.identity && value.ready ? value : undefined; } catch { return undefined; }
++        try { const value = await action(`registry-${requestSequence + 1}`, fixtureMode === "command-line" ? "adopt-command-line" : "registry"); return value.identity && value.ready && (fixtureMode !== "command-line" || value.adoptionComplete === true) ? value : undefined; } catch { return undefined; }
+       }, 25000);
+       registry.step = "registry";
+       assert(registry.identity && registry.ready, "canonical ready service unavailable");
+@@ -293,7 +343,16 @@
+       // Failed discovery attempts are retained separately, outside exercised method spans.
+       const discoveries = run.actions.filter(value => value !== registry); run.actions = [registry];
+       writeFileSync(join(dir, "discovery.json"), JSON.stringify(discoveries, null, 2));
+-      for (const label of ["A", "B"]) {
++      if (fixtureMode === "command-line") {
++        assert(registry.adoptionComplete === true && registry.startupPending?.length === 0 && Object.keys(registry.adopted ?? {}).length === 2,"startup fixture adoption unresolved");
++        for (const fixture of fixtureInputs) {
++          const info = registry.adopted[fixture.label];
++          assert(info?.id === registry.owned[fixture.label] && info.name === fixture.name && info.version === fixture.version && info.fromWebstore === false,"adopted fixture ID/name/version proof failed");
++        }
++        run.startupIntent.state = "adopted-from-public-native-info"; run.startupIntent.actualIDs = registry.owned;
++        writeFileSync(join(dir,"launch-intents.json"),JSON.stringify(run.startupIntent,null,2));
++      }
++      if (fixtureMode === "public-install") for (const label of ["A", "B"]) {
+         const installed = await action(`install-${label}`, "install", { label });
+         assert(installed.completions?.length === 1 && installed.completion?.result === 0 && installed.owned[label] === installed.completion.id, `${label}: public install completion/proven identity failed`);
+       }
+@@ -349,8 +408,10 @@
+       assert(disabledSnapshot.list?.some((info: any) => info.id === disabled.owned.A && info.enabled === false), "list omitted disabled fixture");
+       const enabled = await action("enable-A", "enable", { label: "A" });
+       assert(enabled.infosAfter.A?.enabled === true, "enable did not reach registry");
+-      const reloaded = await action("reload-A", "reload", { label: "A" });
+-      assert(reloaded.infosAfter.A?.enabled === true, "reload did not return to enabled state");
++      if (fixtureMode === "public-install") {
++        const reloaded = await action("reload-A", "reload", { label: "A" });
++        assert(reloaded.infosAfter.A?.enabled === true, "reload did not return to enabled state");
++      }
+       const beforePopup = effects.length;
+       const popup = await action("popup-A", "action", { label: "A" });
+       popup.effects = effects.slice(beforePopup).filter(event => event.agent === agent && event.label === "A" && event.value.kind.startsWith("popup-"));
+@@ -361,6 +422,11 @@
+         if (!popup.callbacks.some((event: any) => event.selector === "browser:didResizeExtensionPopup:size:")) run.uncovered.push("popup: resize callback not observed");
+         if (!popup.callbacks.some((event: any) => event.selector === "browser:didCloseExtensionPopup:")) run.uncovered.push("popup: close callback not observed");
+       }
++      if (fixtureMode === "command-line") {
++        const reloaded = await action("reload-A", "reload", { label: "A" });
++        assert(typeof reloaded.infosAfter.A?.enabled === "boolean", "command-line reload returned no typed enabled observation");
++        run.reloadObservation = reloaded.infosAfter.A;
++      }
+       const removed = await action("uninstall-A", "uninstall", { label: "A" });
+       assert(removed.infosAfter.A === null, "uninstall left fixture installed");
+       const cleanup = await action("cleanup", "cleanup");
+@@ -369,11 +435,11 @@
+       run.cleanup = "fixture IDs absent; baseline pins restored";
+     } catch (error) { run.errors.push(String(error)); }
+     finally {
+-      if (pid && !run.cleanup && !installRequestsIssued) run.cleanup = "no fixture installation or pin mutation issued; native readiness/registry precondition failed";
+-      if (pid && !run.cleanup && installRequestsIssued) {
++      if (pid && !run.cleanup && !installRequestsIssued && !startupLoadIssued) run.cleanup = "no fixture installation or pin mutation issued; native readiness/registry precondition failed";
++      if (pid && !run.cleanup && (installRequestsIssued || startupLoadIssued)) {
+         try {
+           const cleanup = await action("cleanup-after-error", "cleanup");
+-          if (cleanup.cleanupCertified !== true || cleanup.outstandingInstalls?.length !== 0) throw Error("cleanup not certified; unresolved install or fixture state");
++          if (cleanup.cleanupCertified !== true || cleanup.outstandingInstalls?.length !== 0 || (fixtureMode === "command-line" && cleanup.startupPending?.length !== 0)) throw Error("cleanup not certified; unresolved install or fixture state");
+           run.cleanup = "reconciled nonce fixtures absent; no outstanding installs; baseline pins restored";
+         }
+         catch (error) { run.errors.push(`fixture cleanup: ${error}`); }
+@@ -393,12 +459,16 @@
+       cdp?.close();
+       if (!run.readiness && existsSync(join(dir, "readiness.json"))) run.readiness = json(join(dir, "readiness.json"));
+       if (existsSync(request + ".owned.json")) run.ownership = json(request + ".owned.json");
++      if (startupLoadIssued && (!run.ownership || run.ownership.startupPending?.length !== 0)) run.errors.push("command-line startup ownership unresolved; fixture cleanup cannot be certified even after process exit");
+       if (run.ownership?.outstandingInstalls?.length) run.errors.push("outstanding installation callbacks remained at process termination; cleanup cannot be certified");
+       run.diagnostics = existsSync(request + ".diagnostics.json") ? json(request + ".diagnostics.json") : [];
+       const fixtureIDs = Object.values(run.ownership?.owned ?? {});
+       const relevantDiagnostics = run.diagnostics!.filter(event => {
+-        const serialized = JSON.stringify(event); return serialized.includes(token) || fixtureIDs.some(id => serialized.includes(String(id)));
++        const serialized = JSON.stringify(event); return (serialized.includes(token) || fixtureIDs.some(id => serialized.includes(String(id)))) && !(fixtureMode === "command-line" && event.kind === "startup-observation");
+       });
++      run.startupCallbacks = (run.diagnostics ?? []).filter(event => fixtureMode === "command-line" && event.kind === "startup-observation");
++      writeFileSync(join(dir,"startup-callbacks.json"),JSON.stringify(run.startupCallbacks,null,2));
++      if (!fixtureInputs.every(fixture => fixture.files.every(unchanged))) run.errors.push("generated fixture source changed during run");
+       if (relevantDiagnostics.length) run.errors.push(`${relevantDiagnostics.length} late/unassigned/outside-context fixture callbacks or completions; inspect diagnostics`);
+       if (!sources.every(unchanged) || !unchanged(builtEngine) || !unchanged(selectedEngine(agent)) || !unchanged(probeBinary) || !unchanged(recorderBinary) || !unchanged(imageFingerprintTool)) run.errors.push("provenance changed during run; snapshot cannot establish current-source parity");
+       if (existsSync(recordPath)) {
+@@ -408,15 +478,20 @@
+           if (!Number.isInteger(begin) || !Number.isInteger(end) || begin < 0 || end < begin || end > raw.length ||
+               (begin && raw[begin - 1] !== 10) || (end > begin && raw[end - 1] !== 10)) { run.errors.push(`${value.step}: invalid recorder span`); continue; }
+           const slice = raw.subarray(begin, end); writeFileSync(join(dir, `${value.step}.raw.record.jsonl`), slice);
+-          // Restrict comparison to the exercised extension boundary. These DTO
+-          // getter calls include measurements by this probe, identically in
+-          // both engines; they are not claimed as independent app demand.
++          // Preserve true caller labels. V2 omits probe-image calls; retained
++          // app/engine events are supplementary and cannot prove that public
++          // fixture calls and returns were recorded.
+           const selected = slice.toString().split("\n").filter(Boolean).map(line => JSON.parse(line)).filter(event =>
+             boundaryClasses.has(event.cls) || callbackSelectors.has(event.sel) ||
+             (event.cls === "ArcBrowser" && event.sel === "executeExtensionAction:"));
+           writeFileSync(join(dir, `${value.step}.record.jsonl`), selected.map(event => JSON.stringify(event)).join("\n") + (selected.length ? "\n" : ""));
++          writeFileSync(join(dir, `${value.step}.retained-row-inventory.json`), JSON.stringify({
++            fixtureMethodCoverage:"unsupported: recorder v2 excludes probe image calls; no caller-attribution opt-in or verified fixture-call/return inventory", fixtureMethodInventory:[],
++            retainedRows:selected.map(({dir,ev,kind,cls,sel,from}:any)=>({dir,ev,kind,cls,sel,from})),
++          },null,2));
+         }
+       }
++      for (const observed of run.actions) writeFileSync(join(dir,`${observed.step}.required-rows.json`),JSON.stringify(requiredRows(observed),null,2));
+       writeFileSync(join(dir, "observations.json"), JSON.stringify(run, null, 2));
+       writeFileSync(join(dir, "effects.json"), JSON.stringify(effects.filter(event => event.agent === agent), null, 2));
+     }
+@@ -427,7 +502,7 @@
+ // error text, metadata, and callback order. Only transport PID/request IDs,
+ // recorder offsets, and the redundant engine label are excluded. Baseline pin
+ // preservation is checked independently against each engine's original state.
+-const semantic = (action: Action) => {
++function semantic(action: Action) {
+   const ids = Object.values(action.owned ?? {});
+   const own = (id: any) => ids.includes(id);
+   const scopeCallback = (event: any): any | null => {
+@@ -440,7 +515,7 @@
+     return { selector: event.selector, payload, mainThread: event.mainThread, synchronous: event.synchronous };
+   };
+   const callbacks = (action.callbacks ?? []).map(scopeCallback).filter(Boolean);
+-  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "list", "commands", "infosAfter", "owned", "value"];
++  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value"];
+   const result: Record<string, any> = Object.fromEntries(keep.filter(key => key in action).map(key => [key, action[key]]));
+   result.callbacks = callbacks;
+   result.eventOrder = (action.events ?? []).flatMap((event: any) => {
+@@ -449,20 +524,32 @@
+     return callback ? [{ type: "delegate", value: callback }] : [];
+   });
+   result.fixturePinsAfter = (action.pinsAfter ?? []).filter(own);
++  if ("baselinePins" in action) result.fixtureBaselinePins = action.baselinePins === null ? null : action.baselinePins.filter(own);
+   if (action.effects) result.effects = action.effects.map(({ label, value }: any) => ({ label, value }));
+   return result;
+ };
+ const golden = runs.find(run => run.agent === "trace156"), ours = runs.find(run => run.agent === "ours156");
+-const differences: any[] = [], boundaryDiffs: any[] = [], operationParity: any[] = [];
++const differences: any[] = [], boundaryDiffs: any[] = [], boundaryUnavailable: any[] = [], requiredRowDifferences: any[] = [], operationParity: any[] = [];
+ if (golden && ours) {
++  if (fixtureMode === "command-line") {
++    const startup = (run: Run) => (run.startupCallbacks ?? []).map(item => ({kind:item.kind,event:{selector:item.event.selector,payload:item.event.payload,mainThread:item.event.mainThread,synchronous:item.event.synchronous}}));
++    const leftStartup = startup(golden), rightStartup = startup(ours);
++    writeFileSync(join(out,"startup-callbacks.semantic.json"),JSON.stringify({golden:leftStartup,ours:rightStartup},null,2));
++    if (JSON.stringify(leftStartup) !== JSON.stringify(rightStartup)) differences.push({step:"startup-callbacks",golden:leftStartup,ours:rightStartup});
++  }
+   const steps = new Set([...golden.actions, ...ours.actions].map(action => action.step));
+   for (const step of steps) {
+     const left = golden.actions.find(action => action.step === step), right = ours.actions.find(action => action.step === step);
+     const a = left ? semantic(left) : null, b = right ? semantic(right) : null;
+     writeFileSync(join(out, `${step}.semantic.json`), JSON.stringify({ golden: a, ours: b }, null, 2));
+     if (JSON.stringify(a) !== JSON.stringify(b)) differences.push({ step, golden: a, ours: b });
++    const leftRows = left ? requiredRows(left) : null, rightRows = right ? requiredRows(right) : null;
++    writeFileSync(join(out,`${step}.required-rows.json`),JSON.stringify({golden:leftRows,ours:rightRows},null,2));
++    if (!leftRows?.complete || !rightRows?.complete || JSON.stringify(leftRows) !== JSON.stringify(rightRows)) requiredRowDifferences.push({step,golden:leftRows,ours:rightRows});
+     const leftPath = join(out, "trace156", `${step}.record.jsonl`), rightPath = join(out, "ours156", `${step}.record.jsonl`);
+     if (!existsSync(leftPath) || !existsSync(rightPath)) { boundaryDiffs.push({ step, error: "missing scoped record" }); continue; }
++    boundaryUnavailable.push({step,reason:"no verified paired fixture-call/return inventory: recorder v2 excludes probe-image calls; retained app/engine rows do not prove fixture method coverage"});
++    if (!readFileSync(leftPath,"utf8").trim() && !readFileSync(rightPath,"utf8").trim()) continue;
+     const diffPath = join(out, `${step}.diff.json`);
+     const diff = Bun.spawnSync(["python3", join(root, "tests/recorder/diff.py"), leftPath, rightPath, "--json", diffPath], { stdout: "pipe", stderr: "pipe" });
+     writeFileSync(join(out, `${step}.diff.txt`), diff.stdout);
+@@ -479,24 +566,31 @@
+   for (const step of steps) operationParity.push({
+     step, observedInBoth: golden.actions.some(action => action.step === step) && ours.actions.some(action => action.step === step),
+     semanticEqual: !differences.some(value => value.step === step),
+-    scopedBoundaryEqual: !boundaryDiffs.some(value => value.step === step),
++    requiredRowsEqual: !requiredRowDifferences.some(value => value.step === step),
++    scopedBoundaryEqual: boundaryDiffs.some(value=>value.step===step) ? false : boundaryUnavailable.some(value=>value.step===step) ? null : true,
++    boundaryMethodParity:null,
+   });
+ }
+ const validObservation = (action: Action, run: Run) => action.ok === true && action.mainThread === true && action.pid === run.pid &&
+-  action.matches === 1 && Number.isInteger(action.recordBegin) && Number.isInteger(action.recordEnd) && action.recordEnd > action.recordBegin &&
+-  existsSync(join(out, run.agent, `${action.step}.record.jsonl`)) && statSync(join(out, run.agent, `${action.step}.record.jsonl`)).size > 0;
++  action.matches === 1 && Number.isInteger(action.recordBegin) && Number.isInteger(action.recordEnd) && action.recordEnd >= action.recordBegin && requiredRows(action).complete;
+ const comparedOperationCount = golden && ours ? golden.actions.filter(left => {
+   const right = ours.actions.find(action => action.step === left.step);
+   return right && validObservation(left,golden) && validObservation(right,ours);
+ }).length : 0;
+-const observedParity = golden && ours && comparedOperationCount > 0 ? !differences.length && !boundaryDiffs.length : null;
+-const parity = golden && ours ? complete && observedParity === true : null;
++const observedParity = golden && ours ? (differences.length || requiredRowDifferences.length ? false : comparedOperationCount > 0 ? true : null) : null;
++const standardBoundaryParity = golden && ours ? (boundaryDiffs.length ? false : comparedOperationCount > 0 && !boundaryUnavailable.length ? true : null) : null;
++// No v2 fixture-caller inventory is available. Never promote unrelated retained
++// rows or an empty default diff to public API call/return proof.
++const boundaryMethodParity = null;
++const parity = golden && ours ? (!complete || observedParity === false || standardBoundaryParity === false ? false : boundaryMethodParity) : null;
+ const notes = [
+   "Both disposable launches include --no-error-dialogs as an explicit fixture environment precondition, suppressing modal install-error presentation while preserving native LoadErrorReporter errors/callbacks. No fake errors or callback substitutions are used.",
++  "Command-line mode is a separate fixture phase using explicit --load-extension paths, not public-install success evidence. Startup intents and exact fixture file hashes are recorded before launch; all real callbacks entering before adoption are independently retained as startup-observation diagnostics, including callbacks during incomplete discovery requests and compared separately without reassigning them to later requests; adopted IDs/names/versions come only from actual public native info. Readiness alone never resolves a missing startup fixture. CLI baseline pins exclude only adopted IDs. Positive command/pin/popup probes precede reload; the returned reload enabled state is preserved exactly because current Chromium may convert command-line loading to normal unpacked policy.",
+   "Supplemental probe only; canonical extensions scenario acceptance remains separate.",
+   "Native metadata encodings and fixture DTO scalar/string/ordered-array observations compare exactly; image observations include NSImage dimensions and representation sizes, not pixel equivalence.",
+   "Semantic comparison omits transport PID/request IDs, recorder offsets and engine labels; callback and pin arrays are scoped to proven fixture IDs. Each baseline pin order is independently restored and asserted.",
+-  "Scoped boundary records include probe-generated DTO getter measurements and real app callbacks; they are not claimed as independent app demand.",
++  "Recorder v2 excludes probe-image calls. Exact helper semantic and required-row sidecars are a separate evidence stream, not synthetic recorder rows. Without a verified paired fixture-call/return inventory, standardBoundaryParity and boundaryMethodParity remain null even if retained app/engine rows compare cleanly. Known mismatches remain false and dominate unavailable coverage. At least one valid paired helper observation is required for observedParity.",
++  "Scoped boundary records preserve true caller labels and may include real app callbacks or app/engine calls. V2 excludes probe-image DTO getters/public calls; no fake app attribution or caller-label removal is used.",
+   "Existing diff.py renumbers recording object identities and masks loopback ports, temporary folders and UUID strings. The exact supplemental semantic comparison applies none of those string masks.",
+   "ArcBrowser pinExtension:, unpinExtension:, moveExtension:targetIndex: are metadata-only here; their executable behavior is uncovered. Context setPinnedExtensionOrder: is exercised separately when the native enable precondition permits it.",
+   "MV3 background-page JavaScript negative path only; positive legacy background-page execution is uncovered and no legacy fixture is enabled.",
+@@ -510,6 +604,6 @@
+   "Initial installed enabled flags are retained exactly. Explicit public enable operations precede enabled-dependent exercise; policy blockage keeps per-operation observations/diffs but marks the overall probe incomplete and downstream coverage uncovered.",
+   "Callbacks are observed within 800ms after method return/completion; popup actions use 3 seconds. Absence beyond those windows is not a synthesized callback result.",
+ ];
+-writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, observedParity, comparedOperationCount, operationParity, differences, boundaryDiffs, provenance, notes, runs }, null, 2));
+-console.log(JSON.stringify({ complete, parity, observedParity, comparedOperationCount, out, errors: runs.map(run => ({ agent: run.agent, errors: run.errors, uncovered: run.uncovered })) }));
+-process.exitCode = complete && parity !== false ? 0 : 1;
++writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, observedParity, standardBoundaryParity, boundaryMethodParity, comparedOperationCount, operationParity, differences, requiredRowDifferences, boundaryDiffs, boundaryUnavailable, fixtureMode, fixtureInputs, provenance, notes, runs }, null, 2));
++console.log(JSON.stringify({ complete, parity, observedParity, standardBoundaryParity, boundaryMethodParity, comparedOperationCount, fixtureMode, out, errors: runs.map(run => ({ agent: run.agent, errors: run.errors, uncovered: run.uncovered })) }));
++process.exitCode = complete && (!(golden && ours) || observedParity === true) && standardBoundaryParity !== false ? 0 : 1;

@@ -1,0 +1,320 @@
+--- a/arc/common/effects_browser.h
++++ b/arc/common/effects_browser.h
+@@ -2,8 +2,10 @@
+ #ifndef ARC_COMMON_EFFECTS_BROWSER_H_
+ #define ARC_COMMON_EFFECTS_BROWSER_H_
+ 
++#include <array>
+ #include <cstdint>
+ #include <map>
++#include <optional>
+ #include <string>
+ #include <vector>
+ 
+@@ -20,9 +22,15 @@
+   std::string source;
+ };
+ 
++enum class EffectColorScheme : int64_t { kLight = 0, kDark = 1 };
++// Native public low-32-bit values other than Light/Dark trap.
++EffectColorScheme CheckedEffectColorScheme(int64_t value);
++
+ struct HostEffectsConfiguration {
+   std::vector<EffectSource> stylesheets;
+   std::vector<EffectSource> scripts;
++  std::optional<std::array<float, 20>> color_filter;
++  std::optional<EffectColorScheme> color_scheme;
+ };
+ 
+ // Original keys are raw strings in lexicographic order. Application compares
+--- a/arc/common/renderer.mojom
++++ b/arc/common/renderer.mojom
+@@ -13,10 +13,21 @@
+   string source;
+ };
+ 
++struct EffectColorFilter {
++  array<float, 20> matrix;
++};
++
++enum EffectColorScheme { kLight = 0, kDark = 1 };
++struct EffectColorSchemeValue {
++  EffectColorScheme value;
++};
++
+ struct HostEffectsConfiguration {
+   string host;
+   array<EffectSource> stylesheets;
+   array<EffectSource> scripts;
++  EffectColorFilter? color_filter;
++  EffectColorSchemeValue? color_scheme;
+ };
+ 
+ // Associated with a RenderFrame so ordering is preserved with navigation IPC.
+@@ -37,6 +48,8 @@
+   SetRendererHost(pending_associated_remote<RendererHost> host) => ();
+   // Receiver swaps the cached config; application is at document start only.
+   ConfigureEffects(array<HostEffectsConfiguration> configuration);
++  SetColorFilter(EffectColorFilter? filter);
++  SetColorScheme(EffectColorSchemeValue? scheme);
+ };
+ 
+ // One agent/cache per renderer process, independent of public WebContents.
+--- a/arc/api/arc_renderer_effects.mm
++++ b/arc/api/arc_renderer_effects.mm
+@@ -8,6 +8,9 @@
+ 
+ #include "arc/common/effects_browser.h"
+ #include "base/functional/bind.h"
++#include "base/immediate_crash.h"
++#include "base/compiler_specific.h"
++#include "base/containers/span.h"
+ #include "base/location.h"
+ #include "base/no_destructor.h"
+ #include "base/supports_user_data.h"
+@@ -95,17 +98,54 @@
+       continue;
+     }
+     sources.erase(found);
+-    // Original 0x42e2384 tests only the remaining CSS size and the color-filter
+-    // optional. For our CSS/JS-only entries it drops a host with no CSS, even
+-    // if other scripts remain. It returns after the first sorted-host match.
+-    if (host->second.stylesheets.empty()) {
++    // Native cleanup deliberately ignores remaining scripts and color scheme.
++    // Unregister returns after the first match in sorted host order.
++    if (host->second.stylesheets.empty() && !host->second.color_filter) {
+       configuration.erase(host);
+     }
+     NotifyEffectsChanged(profile);
+     return;
+   }
+ }
++void RegisterColorFilter(std::array<float, 20> matrix, std::string host, Profile* profile) {
++  ProfileEffectsData::For(profile)->configuration[host].color_filter = std::move(matrix);
++  NotifyEffectsChanged(profile);
++}
++
++void RegisterColorScheme(int64_t scheme, std::string host, Profile* profile) {
++  const auto checked = CheckedEffectColorScheme(scheme);
++  ProfileEffectsData::For(profile)->configuration[host].color_scheme = checked;
++  NotifyEffectsChanged(profile);
++}
++
++void UnregisterColorOverride(bool filter, std::string host, Profile* profile) {
++  auto& configuration = ProfileEffectsData::For(profile)->configuration;
++  const auto found = configuration.find(host);
++  if (found == configuration.end()) {
++    return;
++  }
++  if (filter) {
++    found->second.color_filter.reset();
++  } else {
++    found->second.color_scheme.reset();
++  }
++  if (found->second.stylesheets.empty() && !found->second.color_filter) {
++    configuration.erase(found);
++  }
++  // An existing host notifies even when its selected optional was absent.
++  NotifyEffectsChanged(profile);
++}
++
+ }  // namespace
++
++EffectColorScheme CheckedEffectColorScheme(int64_t value) {
++  // Native backends compare w19/w20: only the low 32 bits participate.
++  switch (static_cast<uint32_t>(value)) {
++    case 0: return EffectColorScheme::kLight;
++    case 1: return EffectColorScheme::kDark;
++    default: base::ImmediateCrash();
++  }
++}
+ 
+ const ProfileEffectsConfiguration& GetProfileEffectsConfiguration(Profile* profile) {
+   if (!profile) {
+@@ -188,6 +228,27 @@
+ - (void)unregisterScript:(NSString*)identifier {
+   arc::WithEffectsProfile(_profile, base::BindOnce(&arc::UnregisterSource, true, ArcUTF8(identifier)));
+ }
++- (void)registerColorFilter:(const float[20])matrix forHostPattern:(NSString*)host {
++  // The array ABI supplies twenty floats. Copy before any asynchronous UI hop.
++  // SAFETY: Arc's [20f] parameter contract supplies exactly twenty floats.
++  auto values = UNSAFE_BUFFERS(base::span<const float, 20>(matrix, size_t{20}));
++  std::array<float, 20> copy;
++  base::span(copy).copy_from(values);
++  arc::WithEffectsProfile(_profile, base::BindOnce(&arc::RegisterColorFilter,
++                                                 std::move(copy), ArcUTF8(host)));
++}
++- (void)unregisterColorFilter:(NSString*)host {
++  arc::WithEffectsProfile(_profile, base::BindOnce(&arc::UnregisterColorOverride,
++                                                 true, ArcUTF8(host)));
++}
++- (void)registerColorScheme:(NSInteger)scheme forHostPattern:(NSString*)host {
++  arc::WithEffectsProfile(_profile, base::BindOnce(&arc::RegisterColorScheme,
++                                                 scheme, ArcUTF8(host)));
++}
++- (void)unregisterColorScheme:(NSString*)host {
++  arc::WithEffectsProfile(_profile, base::BindOnce(&arc::UnregisterColorOverride,
++                                                 false, ArcUTF8(host)));
++}
+ - (void)registerZoomFactor:(float)factor forHostPattern:(NSString*)hostPattern {
+   arc::WithEffectsProfile(_profile, base::BindOnce([](float factor, std::string host, Profile* profile) {
+     if (auto* zoom = content::HostZoomMap::GetDefaultForBrowserContext(profile)) {
+--- a/arc/api/arc_renderer_web_contents.mm
++++ b/arc/api/arc_renderer_web_contents.mm
+@@ -8,6 +8,7 @@
+ #include "arc/common/ad_block_browser.h"
+ #include "arc/common/effects_browser.h"
+ #include "arc/common/renderer.mojom.h"
++#include "arc/common/renderer_values.h"
+ #include "base/functional/bind.h"
+ #include "base/memory/weak_ptr.h"
+ #include "chrome/browser/profiles/profile.h"
+@@ -147,6 +148,15 @@
+       for (const auto& source : rule.scripts) {
+         entry->scripts.push_back(mojom::EffectSource::New(source.identifier, source.source));
+       }
++      if (rule.color_filter) {
++        entry->color_filter = mojom::EffectColorFilter::New(
++            std::vector<float>(rule.color_filter->begin(), rule.color_filter->end()));
++      }
++      if (rule.color_scheme) {
++        entry->color_scheme = mojom::EffectColorSchemeValue::New(
++            *rule.color_scheme == EffectColorScheme::kLight
++                ? mojom::EffectColorScheme::kLight : mojom::EffectColorScheme::kDark);
++      }
+       serialized.push_back(std::move(entry));
+     }
+     connection.agent->ConfigureEffects(std::move(serialized));
+@@ -195,3 +205,46 @@
+   }
+ }
+ @end
++
++@implementation ArcWebContents (RendererColorEffects)
++- (void)applyColorFilter:(ArcHSLAMatrix*)matrix {
++  // Resolve the overridable getter before retaining any native bridge pointer:
++  // it can reenter and destroy/navigate this WebContents.
++  const HSLAMatrix value = matrix ? matrix.hslaMatrix : HSLAMatrix{};
++  auto* bridge = arc::RendererBridge::For([self webContents]);
++  auto* agent = bridge ? bridge->Agent() : nullptr;
++  if (agent) {
++    // The native getter is one aggregate message. Nil installs an engaged zero
++    // matrix; only removeColorFilter sends an absent optional.
++    agent->SetColorFilter(arc::mojom::EffectColorFilter::New(
++        std::vector<float>{value.m0, value.m1, value.m2, value.m3, value.m4,
++            value.m5, value.m6, value.m7, value.m8, value.m9, value.m10, value.m11,
++            value.m12, value.m13, value.m14, value.m15, value.m16, value.m17,
++            value.m18, value.m19}));
++  }
++}
++- (void)removeColorFilter {
++  auto* bridge = arc::RendererBridge::For([self webContents]);
++  auto* agent = bridge ? bridge->Agent() : nullptr;
++  if (agent) {
++    agent->SetColorFilter(nullptr);
++  }
++}
++- (void)applyColorScheme:(NSInteger)scheme {
++  auto* bridge = arc::RendererBridge::For([self webContents]);
++  auto* agent = bridge ? bridge->Agent() : nullptr;
++  if (agent) {
++    const auto checked = arc::CheckedEffectColorScheme(scheme);
++    agent->SetColorScheme(arc::mojom::EffectColorSchemeValue::New(
++        checked == arc::EffectColorScheme::kLight
++            ? arc::mojom::EffectColorScheme::kLight : arc::mojom::EffectColorScheme::kDark));
++  }
++}
++- (void)removeColorScheme {
++  auto* bridge = arc::RendererBridge::For([self webContents]);
++  auto* agent = bridge ? bridge->Agent() : nullptr;
++  if (agent) {
++    agent->SetColorScheme(nullptr);
++  }
++}
++@end
+--- a/arc/renderer/render_frame_agent.cc
++++ b/arc/renderer/render_frame_agent.cc
+@@ -2,7 +2,9 @@
+ #include "arc/renderer/render_frame_agent.h"
+ 
+ #include <map>
++#include <array>
+ #include <memory>
++#include <optional>
+ #include <string>
+ #include <utility>
+ 
+@@ -10,6 +12,7 @@
+ #include "arc/renderer/ad_block_filter.h"
+ #include "arc/renderer/render_process_agent.h"
+ #include "base/command_line.h"
++#include "base/containers/span.h"
+ #include "base/functional/bind.h"
+ #include "base/memory/weak_ptr.h"
+ #include "base/supports_user_data.h"
+@@ -27,6 +30,7 @@
+ #include "third_party/blink/public/web/web_css_origin.h"
+ #include "third_party/blink/public/web/web_local_frame.h"
+ #include "third_party/blink/public/web/web_script_source.h"
++#include "third_party/blink/public/web/web_view.h"
+ #include "url/gurl.h"
+ #include "url/origin.h"
+ 
+@@ -112,6 +116,36 @@
+     effects_ = std::move(configuration);
+   }
+ 
++  void SetColorFilter(mojom::EffectColorFilterPtr filter) override {
++    auto* frame = render_frame()->GetWebFrame();
++    auto* view = frame ? frame->View() : nullptr;
++    if (!view) {
++      return;
++    }
++    std::optional<std::array<float, 20>> matrix;
++    if (filter) {
++      matrix.emplace();
++      // Mojo validates the fixed-size array before dispatching this method.
++      base::span(*matrix).copy_from(filter->matrix);
++    }
++    view->SetArcColorFilter(matrix);
++  }
++
++  void SetColorScheme(mojom::EffectColorSchemeValuePtr scheme) override {
++    auto* frame = render_frame()->GetWebFrame();
++    auto* view = frame ? frame->View() : nullptr;
++    if (!view) {
++      return;
++    }
++    std::optional<blink::mojom::PreferredColorScheme> value;
++    if (scheme) {
++      value = scheme->value == mojom::EffectColorScheme::kLight
++                  ? blink::mojom::PreferredColorScheme::kLight
++                  : blink::mojom::PreferredColorScheme::kDark;
++    }
++    view->SetArcPreferredColorScheme(value);
++  }
++
+   void ApplyAdBlockCosmetics() {
+     auto* frame = render_frame()->GetWebFrame();
+     auto document = frame->GetDocument();
+@@ -147,6 +181,9 @@
+       }
+     }
+     if (!selected) {
++      // No host entry clears Page optionals, reevaluating current lower layers.
++      SetColorFilter(nullptr);
++      SetColorScheme(nullptr);
+       return;
+     }
+     for (const auto& source : selected->stylesheets) {
+@@ -163,6 +200,10 @@
+       if (!weak) {
+         return;
+       }
++    }
++    SetColorFilter(std::move(selected->color_filter));
++    if (weak) {
++      SetColorScheme(std::move(selected->color_scheme));
+     }
+   }
+ 

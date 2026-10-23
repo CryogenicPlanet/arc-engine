@@ -1,0 +1,673 @@
+2026-10-23 10:49:05 +0000 [ArcMod pid 86719] loaded into /private/tmp/ArcSessionsProbe-v4.dylib (main image slide 0x105e74000)
+
+DevTools listening on ws://127.0.0.1:9463/devtools/browser/127bf823-1768-438a-a1db-b82eddf80477
+[ArcMod] blocked service: o298668.ingest.sentry.io
+[ArcMod] blocked service: o298668.ingest.sentry.io
+[ArcMod] blocked service: cdn-settings.segment.com
+2026-10-23 10:49:05 +0000 [ArcMod pid 86719] didFinishLaunching, NSApp class = Arc.BrowserApp
+2026-10-23 10:49:05 +0000 [ArcMod pid 86719] local browser command validation installed on Arc.AppDelegate
+2026-10-23 10:49:05 +0000 [ArcMod pid 86719] local browser command validation installed on Arc.MainWindowController
+2026-10-23 10:49:05 +0000 [ArcMod pid 86719] local browser command validation installed on Arc.BrowserWindow
+2026-10-23 10:49:05 +0000 [ArcMod pid 86719] local browser command validation installed on Arc.LittleBrowserWindow
+[86863:4388267:1023/034905.903262:ERROR:content/child/child_thread_impl.cc:875] Receiver for unknown Channel-associated interface: arc.mojom.RenderProcessAgent
+[86863:4388267:1023/034905.903728:FATAL:content/child/child_thread_impl.cc:877] NOTREACHED hit. 
+0   ArcCore                             0x00000001324b7658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x000000013249f130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x00000001323806f4 logging::LogMessage::Flush() + 180
+3   ArcCore                             0x000000013238059c logging::LogMessage::~LogMessage() + 36
+4   ArcCore                             0x000000013236188c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 196
+5   ArcCore                             0x000000013236190c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 12
+6   ArcCore                             0x0000000132360e18 logging::CheckError::~CheckError() + 44
+7   ArcCore                             0x0000000132360e58 logging::CheckError::~CheckError() + 12
+8   ArcCore                             0x0000000132361004 logging::NotReachedError::~NotReachedError() + 12
+9   ArcCore                             0x000000013664e5bc content::ChildThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+10  ArcCore                             0x00000001366dd234 non-virtual thunk to content::RenderThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 72
+11  ArcCore                             0x0000000133c0f5d8 IPC::ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+12  ArcCore                             0x0000000133c107cc base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelProxy::Context::*&&)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), IPC::ChannelProxy::Context*&&, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>&&, mojo::ScopedInterfaceEndpointHandle&&>, base::internal::BindState<true, true, false, void (IPC::ChannelProxy::Context::*)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), scoped_refptr<IPC::ChannelProxy::Context>, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, mojo::ScopedInterfaceEndpointHandle>, void ()>::RunOnce(base::internal::BindStateBase*) + 80
+13  ArcCore                             0x0000000132404bd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+14  ArcCore                             0x000000013243410c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+15  ArcCore                             0x00000001324338f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+16  ArcCore                             0x0000000132390878 base::MessagePumpDefault::Run(base::MessagePump::Delegate*) + 352
+17  ArcCore                             0x0000000132434cb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+18  ArcCore                             0x00000001323d7f30 base::RunLoop::Run(base::Location const&) + 1056
+19  ArcCore                             0x000000013670db34 content::RendererMain(content::MainFunctionParams) + 1796
+20  ArcCore                             0x0000000130fa492c content::RunOtherNamedProcessTypeMain(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, content::MainFunctionParams, content::ContentMainDelegate*) + 844
+21  ArcCore                             0x0000000130fa674c content::ContentMainRunnerImpl::Run() + 1740
+22  ArcCore                             0x0000000130fa3b6c content::RunContentProcess(content::ContentMainParams, content::ContentMainRunner*) + 524
+23  ArcCore                             0x0000000130fa3c08 content::ContentMain(content::ContentMainParams) + 104
+24  ArcCore                             0x0000000128a60ef0 ChromeMain + 560
+25  Browser Helper (Aperitif Renderer)  0x00000001024085b8 main + 12
+26  dyld                                0x00000001827844e4 start + 6992
+Task trace:
+0   ArcCore                             0x0000000133c0f458 IPC::ChannelProxy::Context::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 92
+Crash keys:
+  "renderer_foreground" = "true"
+  "v8_ro_space_firstpage_address" = "0x214b00000000"
+  "v8_isolate_address" = "0x13400ab0000"
+  "num-variations-runtime-overrides" = "0"
+  "variations" = "c203d55b-3f4a17df,a66dbd64-71c38a98,1e11dbbb-3f4a17df,fa220cc1-3f4a17df,76e51e2c-3f4a17df,171eed38-3f4a17df,ce94569c-3f4a17df,6f87b0c-3f4a17df,5d43ba47-3f4a17df,9f488d92-3f4a17df,2ad3343-3f4a17df,6e153b90-4fb74fee,47a0a3b2-3f4a17df,63ef0138-3f4a17df,8f80c10-78198108,a4ca7cb1-3f4a17df,9a26d980-13a3e431,3b79d4f4-3f4a17df,ae727645-d13781e7,99fb13df-c3c0f822,cdc6dc11-e921803b,92b406bd-3f4a17df,e51c83b-dc4755e5,d6ad7f9a-a9080253,c2bfaa56-3f4a17df,797fe373-3f4a17df,e4d43646-3f4a17df,f7d06457-e9d42fcd,4b86e77-9609086,8e887d5e-3f4a17df,18b8e9fd-3f4a17df,ff1e0777-3f4a17df,eb689255-3f4a17df,b127f8bf-3f4a17df,4dc2f223-3f4a17df,ada18eb5-3f4a17df,f314f5b9-a2b13a7f,820f17d2-e484eeec,44666d99-3d47f4f4,b1b6eab0-381bdb0c,f914376f-3f4a17df,21e47f2a-3f4a17df,c295f76c-3f4a17df,e14ee5ee-c6d6098d,fd051c38-3f4a17df,c5c172fe-443695d8,8f9d758f-f0fa2256,73f2ea1f-7fe57363,35c106c9-3f4a17df,e6d68be3-85c54e1c,186230f2-3f4a17df,f6f5c542-3f4a17df,5e05ef36-3f4a17df,25d1e44f-9c275af9,52a4deb3-9c275af9,305240ad-3f4a17df,6a64ab7e-d0b22900,3b02c079-3f4a17df,54b15be4-e3ec50a6,bd6dd170-b5b075b6,a028f288-d24710ce,19784e46-3f4a17df,ed3f5f6e-3f4a17df,9d5ecd8d-ca7d8d80,3299018c-3f4a17df,3e15bfc6-3f4a17df,6e4912ad-3f4a17df,8ad00b0c-3f4a17df,ed102d29-3f4a17df,4b781a51-23ee7c7b,f980930-642c19ed,8f4b3221-3f4a17df,779782d3-3f4a17df,1e12d864-94f75473,efd40742-3f4a17df,a2d45efe-2319ef5a,7ccab089-3f4a17df,3ca85ee1-3d47f4f4,f4159b43-3f4a17df,151258bf-3f4a17df,3e672fd9-e109e63f,1db33038-3f4a17df,3c978b59-3f4a17df,3d3f8872-3f4a17df,b60ea2ed-51a6e3be,bab9965f-76c70532,f181271f-4d066f7c,78049c75-111140a5,46294e3b-3f4a17df,c6fc28a7-3f4a17df,6ddea229-6ddea229,68d69905-3f4a17df,210f81c-3f4a17df,4369f1a2-3f4a17df,4146cc26-775f6248,e9844d40-3f4a17df,d1ae5bf4-3f4a17df,8ba22946-3f4a17df,55cc39e1-3f4a17df,3661073c-3f4a17df,eac788b4-77795d80,8643cb65-cf4f6ead,c1e2f598-3f4a17df,c219b73b-1edfaeb9,f6ce9b08-3f4a17df,4d625646-3f4a17df,9f0fccc2-3f4a17df,2394f90f-ecc8f8cf,d5f746a4-39aaf314,6eb9a8f-3f4a17df,5199db31-f0c504d5,260bef7d-9973a429,56aa5797-e5fec5a6,73d480d9-3f4a17df,265c01cc-265c01cc,a008700b-4593a253,da493d3c-3f4a17df,72bafd3e-cdb4c186,c290aefb-d8d91f8f,a29130c-3f4a17df,f3ed486d-3f4a17df,b3c54bb3-88fcaf7d,4076100b-3f4a17df,8c162025-3d47f4f4,4354ea6d-3f4a17df,3ac9fcb9-3f4a17df,959459a8-3f4a17df,b706019d-3f4a17df,36f9655f-d14604de,8f418b04-299bae22,d3566fbd-c6f74b94,4ce582eb-3f4a17df,6821fcbe-3f4a17df,af943b4f-b3e166c8,2e862394-fb669628,35a386c3-3f4a17df,258151b3-3f4a17df,44fe0078-3f4a17df,a52330dc-6d77353e,aa540f4f-3f4a17df,81bf947e-3f4a17df,f86bc1e2-3f4a17df,6cd68a95-3f4a17df,5e7a6b04-3f4a17df,2385f431-3f4a17df,53c64de7-3f4a17df,e3559213-c0f46cd5,f3b01c08-3f4a17df,d990c4ac-3f4a17df,a374fdf0-964ff297,5e2ea1a-3f4a17df,53fa9d2a-3f4a17df,8ed472ab-3f4a17df,4e83575c-3f4a17df,b63743ab-3f4a17df,9ba1837a-3f4a17df,1a6f8066-3f4a17df,ef4764d7-88fcaf7d,30cd3e72-fe6486b2,ad757a37-3f4a17df,a1777c74-3f4a17df,f7f6ed33-3f4a17df,7a7cc1e6-3f4a17df,f3dbf5bd-faff9ce0,c6080aa-3f4a17df,fd0aa8ec-3f4a17df,a39574eb-3f4a17df,80b60e4a-3f4a17df,533ac6d2-3f4a17df,d5e1fd03-72564c9d,9cdd2223-3f4a17df,f2f8b883-3f4a17df,bc3ce3e6-60a1867b,77ca3281-3f4a17df,c21c2b8b-3d47f4f4,5d6e19f0-3d47f4f4,3728c466-3d47f4f4,a3652538-7f6593f0,da968c94-3f4a17df,ba1f9add-3f4a17df,57d64459-3f4a17df,7ca2dd7e-3f4a17df,c823d1e9-3d47f4f4,e2d38844-3f4a17df,29be5797-3f4a17df,d00bdbf9-3f4a17df,2faf225b-3f4a17df,2cee8ab6-3f4a17df,a49a69c3-3f4a17df,a2c6574d-3f4a17df,798ea899-3f4a17df,7b4be1f2-3f4a17df,6331e4d6-3f4a17df,6332ffaf-3f4a17df,595f5eb0-f23d1dea,5910121-3f4a17df,"
+  "num-experiments" = "196"
+  "chrome-trace-id" = "4152687535025217548"
+  "reentry_guard_tls_slot" = "263"
+  "switch-21" = "--seatbelt-client=118"
+  "switch-20" = "--trace-process-track-uuid=2603063194989879613"
+  "switch-19" = "--pseudonymization-salt-handle=1935764596,r,7146213430806795924,"
+  "switch-18" = "--variations-seed-version"
+  "switch-17" = "--field-trial-handle=1718379636,r,14765298038498543401,562423409"
+  "switch-16" = "--metrics-shmem-handle=1752395122,r,3477637817940347529,43210306"
+  "switch-15" = "--shared-files"
+  "switch-14" = "--launch-time-ticks=52931797513"
+  "switch-13" = "--gpu-channel-request-start-time-ticks=52931796741"
+  "switch-12" = "--renderer-client-id=6"
+  "switch-11" = "--enable-main-frame-before-activation"
+  "switch-10" = "--enable-gpu-memory-buffer-compositor-resources"
+  "switch-9" = "--enable-zero-copy"
+  "switch-8" = "--num-raster-threads=4"
+  "switch-7" = "--lang=en-US"
+  "switch-6" = "--remote-debugging-port=9463"
+  "switch-5" = "--file-url-path-alias=/gen=/Users/cryogenicplanet/general/arc/bu"
+  "switch-4" = "--extension-process"
+  "switch-3" = "--user-data-dir=/Users/cryogenicplanet/Library/Application Suppo"
+  "switch-2" = "--arcmod-host-app"
+  "switch-1" = "--gpu-client-id=6"
+  "num-switches" = "23"
+  "commandline-disabled-feature-1" = "MacAppCodeSignClone"
+  "osarch" = "arm64"
+  "pid" = "86863"
+  "ptype" = "renderer"
+
+Received signal 6
+0   ArcCore                             0x00000001324b7658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x000000013249f130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x00000001324b75b0 base::debug::(anonymous namespace)::StackDumpSignalHandler(int, __siginfo*, void*) + 924
+3   libsystem_platform.dylib            0x0000000182b59744 _sigtramp + 56
+4   libsystem_pthread.dylib             0x0000000182b4f8d8 pthread_kill + 296
+5   libsystem_c.dylib                   0x0000000182a55978 abort + 148
+6   ArcCore                             0x0000000132381288 logging::LogMessage::HandleFatal(unsigned long, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&) const + 456
+7   ArcCore                             0x0000000132380d14 logging::LogMessage::Flush() + 1748
+8   ArcCore                             0x000000013238059c logging::LogMessage::~LogMessage() + 36
+9   ArcCore                             0x000000013236188c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 196
+10  ArcCore                             0x000000013236190c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 12
+11  ArcCore                             0x0000000132360e18 logging::CheckError::~CheckError() + 44
+12  ArcCore                             0x0000000132360e58 logging::CheckError::~CheckError() + 12
+13  ArcCore                             0x0000000132361004 logging::NotReachedError::~NotReachedError() + 12
+14  ArcCore                             0x000000013664e5bc content::ChildThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+15  ArcCore                             0x00000001366dd234 non-virtual thunk to content::RenderThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 72
+16  ArcCore                             0x0000000133c0f5d8 IPC::ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+17  ArcCore                             0x0000000133c107cc base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelProxy::Context::*&&)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), IPC::ChannelProxy::Context*&&, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>&&, mojo::ScopedInterfaceEndpointHandle&&>, base::internal::BindState<true, true, false, void (IPC::ChannelProxy::Context::*)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), scoped_refptr<IPC::ChannelProxy::Context>, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, mojo::ScopedInterfaceEndpointHandle>, void ()>::RunOnce(base::internal::BindStateBase*) + 80
+18  ArcCore                             0x0000000132404bd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+19  ArcCore                             0x000000013243410c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+20  ArcCore                             0x00000001324338f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+21  ArcCore                             0x0000000132390878 base::MessagePumpDefault::Run(base::MessagePump::Delegate*) + 352
+22  ArcCore                             0x0000000132434cb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+23  ArcCore                             0x00000001323d7f30 base::RunLoop::Run(base::Location const&) + 1056
+24  ArcCore                             0x000000013670db34 content::RendererMain(content::MainFunctionParams) + 1796
+25  ArcCore                             0x0000000130fa492c content::RunOtherNamedProcessTypeMain(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, content::MainFunctionParams, content::ContentMainDelegate*) + 844
+26  ArcCore                             0x0000000130fa674c content::ContentMainRunnerImpl::Run() + 1740
+27  ArcCore                             0x0000000130fa3b6c content::RunContentProcess(content::ContentMainParams, content::ContentMainRunner*) + 524
+28  ArcCore                             0x0000000130fa3c08 content::ContentMain(content::ContentMainParams) + 104
+29  ArcCore                             0x0000000128a60ef0 ChromeMain + 560
+30  Browser Helper (Aperitif Renderer)  0x00000001024085b8 main + 12
+31  dyld                                0x00000001827844e4 start + 6992
+[end of stack trace]
+2026-10-23 10:49:06 +0000 [ArcMod pid 86719] creating local browser window (no account session)
+[86901:4388638:1023/034907.043296:ERROR:content/child/child_thread_impl.cc:875] Receiver for unknown Channel-associated interface: arc.mojom.RenderProcessAgent
+[86901:4388638:1023/034907.043533:FATAL:content/child/child_thread_impl.cc:877] NOTREACHED hit. 
+0   ArcCore                             0x000000013291f658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x0000000132907130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x00000001327e86f4 logging::LogMessage::Flush() + 180
+3   ArcCore                             0x00000001327e859c logging::LogMessage::~LogMessage() + 36
+4   ArcCore                             0x00000001327c988c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 196
+5   ArcCore                             0x00000001327c990c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 12
+6   ArcCore                             0x00000001327c8e18 logging::CheckError::~CheckError() + 44
+7   ArcCore                             0x00000001327c8e58 logging::CheckError::~CheckError() + 12
+8   ArcCore                             0x00000001327c9004 logging::NotReachedError::~NotReachedError() + 12
+9   ArcCore                             0x0000000136ab65bc content::ChildThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+10  ArcCore                             0x0000000136b45234 non-virtual thunk to content::RenderThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 72
+11  ArcCore                             0x00000001340775d8 IPC::ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+12  ArcCore                             0x00000001340787cc base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelProxy::Context::*&&)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), IPC::ChannelProxy::Context*&&, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>&&, mojo::ScopedInterfaceEndpointHandle&&>, base::internal::BindState<true, true, false, void (IPC::ChannelProxy::Context::*)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), scoped_refptr<IPC::ChannelProxy::Context>, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, mojo::ScopedInterfaceEndpointHandle>, void ()>::RunOnce(base::internal::BindStateBase*) + 80
+13  ArcCore                             0x000000013286cbd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+14  ArcCore                             0x000000013289c10c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+15  ArcCore                             0x000000013289b8f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+16  ArcCore                             0x00000001327f8878 base::MessagePumpDefault::Run(base::MessagePump::Delegate*) + 352
+17  ArcCore                             0x000000013289ccb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+18  ArcCore                             0x000000013283ff30 base::RunLoop::Run(base::Location const&) + 1056
+19  ArcCore                             0x0000000136b75b34 content::RendererMain(content::MainFunctionParams) + 1796
+20  ArcCore                             0x000000013140c92c content::RunOtherNamedProcessTypeMain(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, content::MainFunctionParams, content::ContentMainDelegate*) + 844
+21  ArcCore                             0x000000013140e74c content::ContentMainRunnerImpl::Run() + 1740
+22  ArcCore                             0x000000013140bb6c content::RunContentProcess(content::ContentMainParams, content::ContentMainRunner*) + 524
+23  ArcCore                             0x000000013140bc08 content::ContentMain(content::ContentMainParams) + 104
+24  ArcCore                             0x0000000128ec8ef0 ChromeMain + 560
+25  Browser Helper (Aperitif Renderer)  0x00000001028685b8 main + 12
+26  dyld                                0x00000001827844e4 start + 6992
+Task trace:
+0   ArcCore                             0x0000000134077458 IPC::ChannelProxy::Context::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 92
+Crash keys:
+  "renderer_foreground" = "true"
+  "v8_ro_space_firstpage_address" = "0x289200000000"
+  "v8_isolate_address" = "0x11400ab0000"
+  "num-variations-runtime-overrides" = "0"
+  "variations" = "c203d55b-3f4a17df,a66dbd64-71c38a98,1e11dbbb-3f4a17df,fa220cc1-3f4a17df,76e51e2c-3f4a17df,171eed38-3f4a17df,ce94569c-3f4a17df,6f87b0c-3f4a17df,5d43ba47-3f4a17df,3fcef0b9-3f4a17df,9f488d92-3f4a17df,16f47e60-3f4a17df,2ad3343-3f4a17df,6e153b90-4fb74fee,47a0a3b2-3f4a17df,63ef0138-3f4a17df,8f80c10-78198108,a4ca7cb1-3f4a17df,9a26d980-13a3e431,3b79d4f4-3f4a17df,ae727645-d13781e7,99fb13df-c3c0f822,cdc6dc11-e921803b,92b406bd-3f4a17df,e51c83b-dc4755e5,d6ad7f9a-a9080253,c2bfaa56-3f4a17df,797fe373-3f4a17df,e4d43646-3f4a17df,f7d06457-e9d42fcd,4b86e77-9609086,8e887d5e-3f4a17df,18b8e9fd-3f4a17df,ff1e0777-3f4a17df,5e40cc59-a9e4c666,eb689255-3f4a17df,b127f8bf-3f4a17df,4dc2f223-3f4a17df,ada18eb5-3f4a17df,f314f5b9-a2b13a7f,820f17d2-e484eeec,44666d99-3d47f4f4,b1b6eab0-381bdb0c,f914376f-3f4a17df,21e47f2a-3f4a17df,c295f76c-3f4a17df,e14ee5ee-c6d6098d,fd051c38-3f4a17df,c5c172fe-443695d8,8f9d758f-f0fa2256,73f2ea1f-7fe57363,35c106c9-3f4a17df,e6d68be3-85c54e1c,186230f2-3f4a17df,f6f5c542-3f4a17df,5e05ef36-3f4a17df,25d1e44f-9c275af9,52a4deb3-9c275af9,305240ad-3f4a17df,6a64ab7e-d0b22900,3b02c079-3f4a17df,54b15be4-e3ec50a6,bd6dd170-b5b075b6,a028f288-d24710ce,19784e46-3f4a17df,ed3f5f6e-3f4a17df,9d5ecd8d-ca7d8d80,3299018c-3f4a17df,3e15bfc6-3f4a17df,6e4912ad-3f4a17df,8ad00b0c-3f4a17df,ed102d29-3f4a17df,4b781a51-23ee7c7b,f980930-642c19ed,8f4b3221-3f4a17df,779782d3-3f4a17df,1e12d864-94f75473,efd40742-3f4a17df,a2d45efe-2319ef5a,ef3132a9-3f4a17df,7ccab089-3f4a17df,3ca85ee1-3d47f4f4,f4159b43-3f4a17df,151258bf-3f4a17df,3e672fd9-e109e63f,334b1a1c-3f4a17df,1db33038-3f4a17df,3c978b59-3f4a17df,3d3f8872-3f4a17df,b60ea2ed-51a6e3be,bab9965f-76c70532,f181271f-4d066f7c,78049c75-111140a5,46294e3b-3f4a17df,c6fc28a7-3f4a17df,6ddea229-6ddea229,68d69905-3f4a17df,210f81c-3f4a17df,4369f1a2-3f4a17df,4146cc26-775f6248,e9844d40-3f4a17df,d1ae5bf4-3f4a17df,8ba22946-3f4a17df,55cc39e1-3f4a17df,3661073c-3f4a17df,eac788b4-77795d80,8643cb65-cf4f6ead,c1e2f598-3f4a17df,c219b73b-1edfaeb9,f6ce9b08-3f4a17df,4d625646-3f4a17df,9f0fccc2-3f4a17df,2394f90f-ecc8f8cf,d5f746a4-39aaf314,6eb9a8f-3f4a17df,5199db31-f0c504d5,260bef7d-9973a429,56aa5797-e5fec5a6,73d480d9-3f4a17df,265c01cc-265c01cc,a008700b-4593a253,da493d3c-3f4a17df,72bafd3e-cdb4c186,c290aefb-d8d91f8f,a29130c-3f4a17df,f3ed486d-3f4a17df,b3c54bb3-88fcaf7d,4076100b-3f4a17df,8c162025-3d47f4f4,4354ea6d-3f4a17df,63c162ac-e2001c64,3ac9fcb9-3f4a17df,959459a8-3f4a17df,b706019d-3f4a17df,56c4f1cd-8c7df51c,36f9655f-d14604de,8f418b04-299bae22,d3566fbd-c6f74b94,4ce582eb-3f4a17df,6821fcbe-3f4a17df,af943b4f-b3e166c8,2e862394-fb669628,35a386c3-3f4a17df,e642bc8f-3f4a17df,258151b3-3f4a17df,44fe0078-3f4a17df,a52330dc-6d77353e,aa540f4f-3f4a17df,81bf947e-3f4a17df,f86bc1e2-3f4a17df,6cd68a95-3f4a17df,5e7a6b04-3f4a17df,2385f431-3f4a17df,53c64de7-3f4a17df,e3559213-c0f46cd5,f3b01c08-3f4a17df,d990c4ac-3f4a17df,a374fdf0-964ff297,5e2ea1a-3f4a17df,53fa9d2a-3f4a17df,8ed472ab-3f4a17df,4e83575c-3f4a17df,b63743ab-3f4a17df,9ba1837a-3f4a17df,1a6f8066-3f4a17df,ef4764d7-88fcaf7d,30cd3e72-fe6486b2,bc0b4e45-c1092d08,ad757a37-3f4a17df,42e76f32-3f4a17df,a1777c74-3f4a17df,f7f6ed33-3f4a17df,7a7cc1e6-3f4a17df,f3dbf5bd-faff9ce0,c6080aa-3f4a17df,fd0aa8ec-3f4a17df,a39574eb-3f4a17df,c7ee0c67-3f4a17df,80b60e4a-3f4a17df,533ac6d2-3f4a17df,d5e1fd03-72564c9d,9cdd2223-3f4a17df,c5be9d88-3f4a17df,f2f8b883-3f4a17df,bc3ce3e6-60a1867b,77ca3281-3f4a17df,c21c2b8b-3d47f4f4,5d6e19f0-3d47f4f4,3728c466-3d47f4f4,a3652538-7f6593f0,da968c94-3f4a17df,ba1f9add-3f4a17df,57d64459-3f4a17df,7ca2dd7e-3f4a17df,c823d1e9-3d47f4f4,e2d38844-3f4a17df,29be5797-3f4a17df,d00bdbf9-3f4a17df,2faf225b-3f4a17df,2cee8ab6-3f4a17df,a49a69c3-3f4a17df,a2c6574d-3f4a17df,798ea899-3f4a17df,7b4be1f2-3f4a17df,6331e4d6-3f4a17df,6332ffaf-3f4a17df,595f5eb0-f23d1dea,5910121-3f4a17df,"
+  "num-experiments" = "208"
+  "chrome-trace-id" = "15845750292036552687"
+  "reentry_guard_tls_slot" = "263"
+  "switch-21" = "--seatbelt-client=77"
+  "switch-20" = "--trace-process-track-uuid=4181612643912065575"
+  "switch-19" = "--pseudonymization-salt-handle=1935764596,r,7146213430806795924,"
+  "switch-18" = "--variations-seed-version"
+  "switch-17" = "--field-trial-handle=1718379636,r,14765298038498543401,562423409"
+  "switch-16" = "--metrics-shmem-handle=1752395122,r,7456493578938909522,60305016"
+  "switch-15" = "--shared-files"
+  "switch-14" = "--launch-time-ticks=52932955499"
+  "switch-13" = "--gpu-channel-request-start-time-ticks=52932955160"
+  "switch-12" = "--renderer-client-id=8"
+  "switch-11" = "--enable-main-frame-before-activation"
+  "switch-10" = "--enable-gpu-memory-buffer-compositor-resources"
+  "switch-9" = "--enable-zero-copy"
+  "switch-8" = "--num-raster-threads=4"
+  "switch-7" = "--lang=en-US"
+  "switch-6" = "--remote-debugging-port=9463"
+  "switch-5" = "--file-url-path-alias=/gen=/Users/cryogenicplanet/general/arc/bu"
+  "switch-4" = "--extension-process"
+  "switch-3" = "--user-data-dir=/Users/cryogenicplanet/Library/Application Suppo"
+  "switch-2" = "--arcmod-host-app"
+  "switch-1" = "--gpu-client-id=8"
+  "num-switches" = "23"
+  "commandline-disabled-feature-1" = "MacAppCodeSignClone"
+  "osarch" = "arm64"
+  "pid" = "86901"
+  "ptype" = "renderer"
+
+Received signal 6
+0   ArcCore                             0x000000013291f658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x0000000132907130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x000000013291f5b0 base::debug::(anonymous namespace)::StackDumpSignalHandler(int, __siginfo*, void*) + 924
+3   libsystem_platform.dylib            0x0000000182b59744 _sigtramp + 56
+4   libsystem_pthread.dylib             0x0000000182b4f8d8 pthread_kill + 296
+5   libsystem_c.dylib                   0x0000000182a55978 abort + 148
+6   ArcCore                             0x00000001327e9288 logging::LogMessage::HandleFatal(unsigned long, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&) const + 456
+7   ArcCore                             0x00000001327e8d14 logging::LogMessage::Flush() + 1748
+8   ArcCore                             0x00000001327e859c logging::LogMessage::~LogMessage() + 36
+9   ArcCore                             0x00000001327c988c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 196
+10  ArcCore                             0x00000001327c990c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 12
+11  ArcCore                             0x00000001327c8e18 logging::CheckError::~CheckError() + 44
+12  ArcCore                             0x00000001327c8e58 logging::CheckError::~CheckError() + 12
+13  ArcCore                             0x00000001327c9004 logging::NotReachedError::~NotReachedError() + 12
+14  ArcCore                             0x0000000136ab65bc content::ChildThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+15  ArcCore                             0x0000000136b45234 non-virtual thunk to content::RenderThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 72
+16  ArcCore                             0x00000001340775d8 IPC::ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+17  ArcCore                             0x00000001340787cc base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelProxy::Context::*&&)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), IPC::ChannelProxy::Context*&&, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>&&, mojo::ScopedInterfaceEndpointHandle&&>, base::internal::BindState<true, true, false, void (IPC::ChannelProxy::Context::*)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), scoped_refptr<IPC::ChannelProxy::Context>, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, mojo::ScopedInterfaceEndpointHandle>, void ()>::RunOnce(base::internal::BindStateBase*) + 80
+18  ArcCore                             0x000000013286cbd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+19  ArcCore                             0x000000013289c10c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+20  ArcCore                             0x000000013289b8f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+21  ArcCore                             0x00000001327f8878 base::MessagePumpDefault::Run(base::MessagePump::Delegate*) + 352
+22  ArcCore                             0x000000013289ccb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+23  ArcCore                             0x000000013283ff30 base::RunLoop::Run(base::Location const&) + 1056
+24  ArcCore                             0x0000000136b75b34 content::RendererMain(content::MainFunctionParams) + 1796
+25  ArcCore                             0x000000013140c92c content::RunOtherNamedProcessTypeMain(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, content::MainFunctionParams, content::ContentMainDelegate*) + 844
+26  ArcCore                             0x000000013140e74c content::ContentMainRunnerImpl::Run() + 1740
+27  ArcCore                             0x000000013140bb6c content::RunContentProcess(content::ContentMainParams, content::ContentMainRunner*) + 524
+28  ArcCore                             0x000000013140bc08 content::ContentMain(content::ContentMainParams) + 104
+29  ArcCore                             0x0000000128ec8ef0 ChromeMain + 560
+30  Browser Helper (Aperitif Renderer)  0x00000001028685b8 main + 12
+31  dyld                                0x00000001827844e4 start + 6992
+[end of stack trace]
+2026-10-23 10:49:07 +0000 [ArcMod pid 86719] menu installed
+2026-10-23 10:49:07 +0000 [ArcMod pid 86719] ARC MOD sidebar badge installed
+[86719:4386964:1023/034907.809713:ERROR:arc/api/arc_api_stubs.mm:47] ArcCore unimplemented: -[NSKVONotifying_ArcWebContents ignoreDisablePiPAttribute:]
+[86912:4388760:1023/034907.837580:ERROR:content/child/child_thread_impl.cc:875] Receiver for unknown Channel-associated interface: arc.mojom.RenderProcessAgent
+[86913:4388761:1023/034907.837619:ERROR:content/child/child_thread_impl.cc:875] Receiver for unknown Channel-associated interface: arc.mojom.RenderProcessAgent
+[86912:4388760:1023/034907.837797:FATAL:content/child/child_thread_impl.cc:877] NOTREACHED hit. 
+0   ArcCore                             0x0000000134957658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x000000013493f130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x00000001348206f4 logging::LogMessage::Flush() + 180
+3   ArcCore                             0x000000013482059c logging::LogMessage::~LogMessage() + 36
+4   ArcCore                             0x000000013480188c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 196
+5   ArcCore                             0x000000013480190c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 12
+6   ArcCore                             0x0000000134800e18 logging::CheckError::~CheckError() + 44
+7   ArcCore                             0x0000000134800e58 logging::CheckError::~CheckError() + 12
+8   ArcCore                             0x0000000134801004 logging::NotReachedError::~NotReachedError() + 12
+9   ArcCore                             0x0000000138aee5bc content::ChildThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+10  ArcCore                             0x0000000138b7d234 non-virtual thunk to content::RenderThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 72
+11  ArcCore                             0x00000001360af5d8 IPC::ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+12  ArcCore                             0x00000001360b07cc base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelProxy::Context::*&&)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), IPC::ChannelProxy::Context*&&, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>&&, mojo::ScopedInterfaceEndpointHandle&&>, base::internal::BindState<true, true, false, void (IPC::ChannelProxy::Context::*)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), scoped_refptr<IPC::ChannelProxy::Context>, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, mojo::ScopedInterfaceEndpointHandle>, void ()>::RunOnce(base::internal::BindStateBase*) + 80
+13  ArcCore                             0x00000001348a4bd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+14  ArcCore                             0x00000001348d410c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+15  ArcCore                             0x00000001348d38f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+16  ArcCore                             0x0000000134830878 base::MessagePumpDefault::Run(base::MessagePump::Delegate*) + 352
+17  ArcCore                             0x00000001348d4cb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+18  ArcCore                             0x0000000134877f30 base::RunLoop::Run(base::Location const&) + 1056
+19  ArcCore                             0x0000000138badb34 content::RendererMain(content::MainFunctionParams) + 1796
+20  ArcCore                             0x000000013344492c content::RunOtherNamedProcessTypeMain(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, content::MainFunctionParams, content::ContentMainDelegate*) + 844
+21  ArcCore                             0x000000013344674c content::ContentMainRunnerImpl::Run() + 1740
+22  ArcCore                             0x0000000133443b6c content::RunContentProcess(content::ContentMainParams, content::ContentMainRunner*) + 524
+23  ArcCore                             0x0000000133443c08 content::ContentMain(content::ContentMainParams) + 104
+24  ArcCore                             0x000000012af00ef0 ChromeMain + 560
+25  Browser Helper (Aperitif Renderer)  0x00000001046a45b8 main + 12
+26  dyld                                0x00000001827844e4 start + 6992
+Task trace:
+0   ArcCore                             0x00000001360af458 IPC::ChannelProxy::Context::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 92
+Crash keys:
+  "renderer_foreground" = "true"
+  "v8_ro_space_firstpage_address" = "0x22af00000000"
+  "v8_isolate_address" = "0x11400ab0000"
+  "num-variations-runtime-overrides" = "0"
+  "variations" = "c203d55b-3f4a17df,a66dbd64-71c38a98,1e11dbbb-3f4a17df,89986dbe-3f01b610,75251bde-3d47f4f4,fbf04c3e-3f4a17df,fa220cc1-3f4a17df,76e51e2c-3f4a17df,f7adf49b-3f4a17df,171eed38-3f4a17df,ce94569c-3f4a17df,6f87b0c-3f4a17df,5d6e19f0-3d47f4f4,5d43ba47-3f4a17df,3fcef0b9-3f4a17df,9f488d92-3f4a17df,16f47e60-3f4a17df,2ad3343-3f4a17df,6e153b90-4fb74fee,ee06daaa-3f4a17df,47a0a3b2-3f4a17df,63ef0138-3f4a17df,8f80c10-78198108,a4ca7cb1-3f4a17df,9a26d980-13a3e431,da968c94-3f4a17df,3b79d4f4-3f4a17df,ae727645-d13781e7,99fb13df-c3c0f822,cdc6dc11-e921803b,92b406bd-3f4a17df,e51c83b-dc4755e5,d6ad7f9a-a9080253,c2bfaa56-3f4a17df,797fe373-3f4a17df,b0b483da-3f4a17df,e4d43646-3f4a17df,f7d06457-e9d42fcd,d512da3a-513c429d,fd36b611-c64b7b92,4b86e77-9609086,8e887d5e-3f4a17df,18b8e9fd-3f4a17df,ff1e0777-3f4a17df,5e40cc59-a9e4c666,eb689255-3f4a17df,b127f8bf-3f4a17df,4dc2f223-3f4a17df,ada18eb5-3f4a17df,f314f5b9-a2b13a7f,531e1626-4513f3bf,820f17d2-e484eeec,44666d99-3d47f4f4,b1b6eab0-381bdb0c,f914376f-3f4a17df,21e47f2a-3f4a17df,c295f76c-3f4a17df,e14ee5ee-c6d6098d,fd051c38-3f4a17df,c5c172fe-443695d8,8f9d758f-f0fa2256,73f2ea1f-7fe57363,35c106c9-3f4a17df,7dcaa2cd-3f4a17df,e6d68be3-85c54e1c,186230f2-3f4a17df,f6f5c542-3f4a17df,5e05ef36-3f4a17df,25d1e44f-9c275af9,52a4deb3-9c275af9,305240ad-3f4a17df,6a64ab7e-d0b22900,3b02c079-3f4a17df,54b15be4-e3ec50a6,bd6dd170-b5b075b6,a028f288-d24710ce,19784e46-3f4a17df,92ee5c9-a2abbf9f,ed3f5f6e-3f4a17df,9d5ecd8d-ca7d8d80,3299018c-3f4a17df,c0a2fd9b-3d47f4f4,3e15bfc6-3f4a17df,6e4912ad-3f4a17df,8ad00b0c-3f4a17df,ed102d29-3f4a17df,4b781a51-23ee7c7b,67dae843-3f4a17df,f980930-642c19ed,8f4b3221-3f4a17df,779782d3-3f4a17df,1e12d864-94f75473,efd40742-3f4a17df,a2d45efe-2319ef5a,ef3132a9-3f4a17df,7ccab089-3f4a17df,e770b78e-3f4a17df,3ca85ee1-3d47f4f4,f4159b43-3f4a17df,151258bf-3f4a17df,3e672fd9-e109e63f,334b1a1c-3f4a17df,1db33038-3f4a17df,3c978b59-3f4a17df,3d3f8872-3f4a17df,b60ea2ed-51a6e3be,9cf6c713-7585e9f1,bab9965f-76c70532,f181271f-4d066f7c,78049c75-111140a5,46294e3b-3f4a17df,c6fc28a7-3f4a17df,6ddea229-6ddea229,6678bb8a-ef96dc7c,68d69905-3f4a17df,f6264095-c3f8eab0,210f81c-3f4a17df,4369f1a2-3f4a17df,4146cc26-775f6248,e9844d40-3f4a17df,d1ae5bf4-3f4a17df,8ba22946-3f4a17df,55cc39e1-3f4a17df,3661073c-3f4a17df,70404afa-803f8fc4,eac788b4-77795d80,8643cb65-cf4f6ead,c1e2f598-3f4a17df,7262ef2c-140d00b2,c219b73b-1edfaeb9,6ec84df5-3f4a17df,f6ce9b08-3f4a17df,4d625646-3f4a17df,9f0fccc2-3f4a17df,2394f90f-ecc8f8cf,d5f746a4-39aaf314,6eb9a8f-3f4a17df,5199db31-f0c504d5,260bef7d-9973a429,56aa5797-e5fec5a6,73d480d9-3f4a17df,265c01cc-265c01cc,b252442a-3f4a17df,a008700b-4593a253,da493d3c-3f4a17df,72bafd3e-cdb4c186,c290aefb-d8d91f8f,a29130c-3f4a17df,f3ed486d-3f4a17df,b3c54bb3-88fcaf7d,4076100b-3f4a17df,8c162025-3d47f4f4,4354ea6d-3f4a17df,63c162ac-e2001c64,3ac9fcb9-3f4a17df,959459a8-3f4a17df,b706019d-3f4a17df,b76b514f-3ac589b9,56c4f1cd-8c7df51c,36f9655f-d14604de,8f418b04-299bae22,d3566fbd-c6f74b94,4ce582eb-3f4a17df,6821fcbe-3f4a17df,af943b4f-b3e166c8,2e862394-fb669628,35a386c3-3f4a17df,626538e5-3f4a17df,e642bc8f-3f4a17df,258151b3-3f4a17df,44fe0078-3f4a17df,a52330dc-6d77353e,aa540f4f-3f4a17df,81bf947e-3f4a17df,f86bc1e2-3f4a17df,6cd68a95-3f4a17df,5e7a6b04-3f4a17df,2385f431-3f4a17df,53c64de7-3f4a17df,e3559213-c0f46cd5,f3b01c08-3f4a17df,d990c4ac-3f4a17df,a374fdf0-964ff297,5e2ea1a-3f4a17df,53fa9d2a-3f4a17df,8ed472ab-3f4a17df,4e83575c-3f4a17df,b63743ab-3f4a17df,c71292e0-3f4a17df,e043b5f9-3f4a17df,9ba1837a-3f4a17df,d0083347-3ec702d4,1a6f8066-3f4a17df,ef4764d7-88fcaf7d,30cd3e72-fe6486b2,bc0b4e45-c1092d08,ad757a37-3f4a17df,42e76f32-3f4a17df,ba98e1e4-3f4a17df,a1777c74-3f4a17df,f7f6ed33-3f4a17df,7a7cc1e6-3f4a17df,f3dbf5bd-faff9ce0,299dc502-3f4a17df,3728c466-3d47f4f4,c6080aa-3f4a17df,ad4acdda-3f4a17df,fd0aa8ec-3f4a17df,a39574eb-3f4a17df,c7ee0c67-3f4a17df,80b60e4a-3f4a17df,533ac6d2-3f4a17df,d5e1fd03-72564c9d,9cdd2223-3f4a17df,c5be9d88-3f4a17df,f2f8b883-3f4a17df,bc3ce3e6-60a1867b,77ca3281-3f4a17df,c21c2b8b-3d47f4f4,a3652538-7f6593f0,ba1f9add-3f4a17df,57d64459-3f4a17df,7ca2dd7e-3f4a17df,c823d1e9-3d47f4f4,e2d38844-3f4a17df,29be5797-3f4a17df,d00bdbf9-3f4a17df,2faf225b-3f4a17df,2cee8ab6-3f4a17df,a49a69c3-3f4a17df,a2c6574d-3f4a17df,798ea899-3f4a17df,7b4be1f2-3f4a17df,6331e4d6-3f4a17df,6332ffaf-3f4a17df,595f5eb0-f23d1dea,5910121-3f4a17df,"
+  "num-experiments" = "237"
+  "chrome-trace-id" = "11378241566188210414"
+  "reentry_guard_tls_slot" = "263"
+  "switch-20" = "--seatbelt-client=106"
+  "switch-19" = "--trace-process-track-uuid=2142491086830210324"
+  "switch-18" = "--pseudonymization-salt-handle=1935764596,r,7146213430806795924,"
+  "switch-17" = "--variations-seed-version"
+  "switch-16" = "--field-trial-handle=1718379636,r,14765298038498543401,562423409"
+  "switch-15" = "--metrics-shmem-handle=1752395122,r,1318181080229406676,29340128"
+  "switch-14" = "--shared-files"
+  "switch-13" = "--launch-time-ticks=52933753930"
+  "switch-12" = "--gpu-channel-request-start-time-ticks=52933753505"
+  "switch-11" = "--renderer-client-id=10"
+  "switch-10" = "--enable-main-frame-before-activation"
+  "switch-9" = "--enable-gpu-memory-buffer-compositor-resources"
+  "switch-8" = "--enable-zero-copy"
+  "switch-7" = "--num-raster-threads=4"
+  "switch-6" = "--lang=en-US"
+  "switch-5" = "--remote-debugging-port=9463"
+  "switch-4" = "--file-url-path-alias=/gen=/Users/cryogenicplanet/general/arc/bu"
+  "switch-3" = "--user-data-dir=/Users/cryogenicplanet/Library/Application Suppo"
+  "switch-2" = "--arcmod-host-app"
+  "switch-1" = "--gpu-client-id=10"
+  "num-switches" = "22"
+  "commandline-disabled-feature-1" = "MacAppCodeSignClone"
+  "osarch" = "arm64"
+  "pid" = "86912"
+  "ptype" = "renderer"
+
+[86913:4388761:1023/034907.837821:FATAL:content/child/child_thread_impl.cc:877] NOTREACHED hit. 
+0   ArcCore                             0x0000000130513658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x00000001304fb130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x00000001303dc6f4 logging::LogMessage::Flush() + 180
+3   ArcCore                             0x00000001303dc59c logging::LogMessage::~LogMessage() + 36
+4   ArcCore                             0x00000001303bd88c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 196
+5   ArcCore                             0x00000001303bd90c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 12
+6   ArcCore                             0x00000001303bce18 logging::CheckError::~CheckError() + 44
+7   ArcCore                             0x00000001303bce58 logging::CheckError::~CheckError() + 12
+8   ArcCore                             0x00000001303bd004 logging::NotReachedError::~NotReachedError() + 12
+9   ArcCore                             0x00000001346aa5bc content::ChildThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+10  ArcCore                             0x0000000134739234 non-virtual thunk to content::RenderThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 72
+11  ArcCore                             0x0000000131c6b5d8 IPC::ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+12  ArcCore                             0x0000000131c6c7cc base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelProxy::Context::*&&)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), IPC::ChannelProxy::Context*&&, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>&&, mojo::ScopedInterfaceEndpointHandle&&>, base::internal::BindState<true, true, false, void (IPC::ChannelProxy::Context::*)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), scoped_refptr<IPC::ChannelProxy::Context>, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, mojo::ScopedInterfaceEndpointHandle>, void ()>::RunOnce(base::internal::BindStateBase*) + 80
+13  ArcCore                             0x0000000130460bd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+14  ArcCore                             0x000000013049010c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+15  ArcCore                             0x000000013048f8f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+16  ArcCore                             0x00000001303ec878 base::MessagePumpDefault::Run(base::MessagePump::Delegate*) + 352
+17  ArcCore                             0x0000000130490cb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+18  ArcCore                             0x0000000130433f30 base::RunLoop::Run(base::Location const&) + 1056
+19  ArcCore                             0x0000000134769b34 content::RendererMain(content::MainFunctionParams) + 1796
+20  ArcCore                             0x000000012f00092c content::RunOtherNamedProcessTypeMain(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, content::MainFunctionParams, content::ContentMainDelegate*) + 844
+21  ArcCore                             0x000000012f00274c content::ContentMainRunnerImpl::Run() + 1740
+22  ArcCore                             0x000000012efffb6c content::RunContentProcess(content::ContentMainParams, content::ContentMainRunner*) + 524
+23  ArcCore                             0x000000012efffc08 content::ContentMain(content::ContentMainParams) + 104
+24  ArcCore                             0x0000000126abcef0 ChromeMain + 560
+25  Browser Helper (Aperitif Renderer)  0x00000001003605b8 main + 12
+26  dyld                                0x00000001827844e4 start + 6992
+Task trace:
+0   ArcCore                             0x0000000131c6b458 IPC::ChannelProxy::Context::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 92
+Crash keys:
+  "renderer_foreground" = "true"
+  "v8_ro_space_firstpage_address" = "0xc0a00000000"
+  "v8_isolate_address" = "0x11c00ab0000"
+  "num-variations-runtime-overrides" = "0"
+  "variations" = "c203d55b-3f4a17df,a66dbd64-71c38a98,1e11dbbb-3f4a17df,89986dbe-3f01b610,75251bde-3d47f4f4,fbf04c3e-3f4a17df,fa220cc1-3f4a17df,76e51e2c-3f4a17df,f7adf49b-3f4a17df,171eed38-3f4a17df,ce94569c-3f4a17df,6f87b0c-3f4a17df,5d6e19f0-3d47f4f4,5d43ba47-3f4a17df,3fcef0b9-3f4a17df,9f488d92-3f4a17df,16f47e60-3f4a17df,2ad3343-3f4a17df,6e153b90-4fb74fee,ee06daaa-3f4a17df,47a0a3b2-3f4a17df,63ef0138-3f4a17df,8f80c10-78198108,a4ca7cb1-3f4a17df,9a26d980-13a3e431,da968c94-3f4a17df,3b79d4f4-3f4a17df,ae727645-d13781e7,99fb13df-c3c0f822,cdc6dc11-e921803b,92b406bd-3f4a17df,e51c83b-dc4755e5,d6ad7f9a-a9080253,c2bfaa56-3f4a17df,797fe373-3f4a17df,b0b483da-3f4a17df,e4d43646-3f4a17df,f7d06457-e9d42fcd,d512da3a-513c429d,fd36b611-c64b7b92,4b86e77-9609086,8e887d5e-3f4a17df,18b8e9fd-3f4a17df,ff1e0777-3f4a17df,5e40cc59-a9e4c666,eb689255-3f4a17df,b127f8bf-3f4a17df,4dc2f223-3f4a17df,ada18eb5-3f4a17df,f314f5b9-a2b13a7f,531e1626-4513f3bf,820f17d2-e484eeec,44666d99-3d47f4f4,b1b6eab0-381bdb0c,f914376f-3f4a17df,21e47f2a-3f4a17df,c295f76c-3f4a17df,e14ee5ee-c6d6098d,fd051c38-3f4a17df,c5c172fe-443695d8,8f9d758f-f0fa2256,73f2ea1f-7fe57363,35c106c9-3f4a17df,7dcaa2cd-3f4a17df,e6d68be3-85c54e1c,186230f2-3f4a17df,f6f5c542-3f4a17df,5e05ef36-3f4a17df,25d1e44f-9c275af9,52a4deb3-9c275af9,305240ad-3f4a17df,6a64ab7e-d0b22900,3b02c079-3f4a17df,54b15be4-e3ec50a6,bd6dd170-b5b075b6,a028f288-d24710ce,19784e46-3f4a17df,92ee5c9-a2abbf9f,ed3f5f6e-3f4a17df,9d5ecd8d-ca7d8d80,3299018c-3f4a17df,c0a2fd9b-3d47f4f4,3e15bfc6-3f4a17df,6e4912ad-3f4a17df,8ad00b0c-3f4a17df,ed102d29-3f4a17df,4b781a51-23ee7c7b,67dae843-3f4a17df,f980930-642c19ed,8f4b3221-3f4a17df,779782d3-3f4a17df,1e12d864-94f75473,efd40742-3f4a17df,a2d45efe-2319ef5a,ef3132a9-3f4a17df,7ccab089-3f4a17df,e770b78e-3f4a17df,3ca85ee1-3d47f4f4,f4159b43-3f4a17df,151258bf-3f4a17df,3e672fd9-e109e63f,334b1a1c-3f4a17df,1db33038-3f4a17df,3c978b59-3f4a17df,3d3f8872-3f4a17df,b60ea2ed-51a6e3be,9cf6c713-7585e9f1,bab9965f-76c70532,f181271f-4d066f7c,78049c75-111140a5,46294e3b-3f4a17df,c6fc28a7-3f4a17df,6ddea229-6ddea229,6678bb8a-ef96dc7c,68d69905-3f4a17df,f6264095-c3f8eab0,210f81c-3f4a17df,4369f1a2-3f4a17df,4146cc26-775f6248,e9844d40-3f4a17df,d1ae5bf4-3f4a17df,8ba22946-3f4a17df,55cc39e1-3f4a17df,3661073c-3f4a17df,70404afa-803f8fc4,eac788b4-77795d80,8643cb65-cf4f6ead,c1e2f598-3f4a17df,7262ef2c-140d00b2,c219b73b-1edfaeb9,6ec84df5-3f4a17df,f6ce9b08-3f4a17df,4d625646-3f4a17df,9f0fccc2-3f4a17df,2394f90f-ecc8f8cf,d5f746a4-39aaf314,6eb9a8f-3f4a17df,5199db31-f0c504d5,260bef7d-9973a429,56aa5797-e5fec5a6,73d480d9-3f4a17df,265c01cc-265c01cc,b252442a-3f4a17df,a008700b-4593a253,da493d3c-3f4a17df,72bafd3e-cdb4c186,c290aefb-d8d91f8f,a29130c-3f4a17df,f3ed486d-3f4a17df,b3c54bb3-88fcaf7d,4076100b-3f4a17df,8c162025-3d47f4f4,4354ea6d-3f4a17df,63c162ac-e2001c64,3ac9fcb9-3f4a17df,959459a8-3f4a17df,b706019d-3f4a17df,b76b514f-3ac589b9,56c4f1cd-8c7df51c,36f9655f-d14604de,8f418b04-299bae22,d3566fbd-c6f74b94,4ce582eb-3f4a17df,6821fcbe-3f4a17df,af943b4f-b3e166c8,2e862394-fb669628,35a386c3-3f4a17df,626538e5-3f4a17df,e642bc8f-3f4a17df,258151b3-3f4a17df,44fe0078-3f4a17df,a52330dc-6d77353e,aa540f4f-3f4a17df,81bf947e-3f4a17df,f86bc1e2-3f4a17df,6cd68a95-3f4a17df,5e7a6b04-3f4a17df,2385f431-3f4a17df,53c64de7-3f4a17df,e3559213-c0f46cd5,f3b01c08-3f4a17df,d990c4ac-3f4a17df,a374fdf0-964ff297,5e2ea1a-3f4a17df,53fa9d2a-3f4a17df,8ed472ab-3f4a17df,4e83575c-3f4a17df,b63743ab-3f4a17df,c71292e0-3f4a17df,e043b5f9-3f4a17df,9ba1837a-3f4a17df,d0083347-3ec702d4,1a6f8066-3f4a17df,ef4764d7-88fcaf7d,30cd3e72-fe6486b2,bc0b4e45-c1092d08,ad757a37-3f4a17df,42e76f32-3f4a17df,ba98e1e4-3f4a17df,a1777c74-3f4a17df,f7f6ed33-3f4a17df,7a7cc1e6-3f4a17df,f3dbf5bd-faff9ce0,299dc502-3f4a17df,3728c466-3d47f4f4,c6080aa-3f4a17df,ad4acdda-3f4a17df,fd0aa8ec-3f4a17df,a39574eb-3f4a17df,c7ee0c67-3f4a17df,80b60e4a-3f4a17df,533ac6d2-3f4a17df,d5e1fd03-72564c9d,9cdd2223-3f4a17df,c5be9d88-3f4a17df,f2f8b883-3f4a17df,bc3ce3e6-60a1867b,77ca3281-3f4a17df,c21c2b8b-3d47f4f4,a3652538-7f6593f0,ba1f9add-3f4a17df,57d64459-3f4a17df,7ca2dd7e-3f4a17df,c823d1e9-3d47f4f4,e2d38844-3f4a17df,29be5797-3f4a17df,d00bdbf9-3f4a17df,2faf225b-3f4a17df,2cee8ab6-3f4a17df,a49a69c3-3f4a17df,a2c6574d-3f4a17df,798ea899-3f4a17df,7b4be1f2-3f4a17df,6331e4d6-3f4a17df,6332ffaf-3f4a17df,595f5eb0-f23d1dea,5910121-3f4a17df,"
+  "num-experiments" = "237"
+  "chrome-trace-id" = "15634557971456095871"
+  "reentry_guard_tls_slot" = "263"
+  "switch-20" = "--seatbelt-client=116"
+  "switch-19" = "--trace-process-track-uuid=4970887368373158556"
+  "switch-18" = "--pseudonymization-salt-handle=1935764596,r,7146213430806795924,"
+  "switch-17" = "--variations-seed-version"
+  "switch-16" = "--field-trial-handle=1718379636,r,14765298038498543401,562423409"
+  "switch-15" = "--metrics-shmem-handle=1752395122,r,15548927279913516121,2713158"
+  "switch-14" = "--shared-files"
+  "switch-13" = "--launch-time-ticks=52933754389"
+  "switch-12" = "--gpu-channel-request-start-time-ticks=52933754192"
+  "switch-11" = "--renderer-client-id=9"
+  "switch-10" = "--enable-main-frame-before-activation"
+  "switch-9" = "--enable-gpu-memory-buffer-compositor-resources"
+  "switch-8" = "--enable-zero-copy"
+  "switch-7" = "--num-raster-threads=4"
+  "switch-6" = "--lang=en-US"
+  "switch-5" = "--remote-debugging-port=9463"
+  "switch-4" = "--file-url-path-alias=/gen=/Users/cryogenicplanet/general/arc/bu"
+  "switch-3" = "--user-data-dir=/Users/cryogenicplanet/Library/Application Suppo"
+  "switch-2" = "--arcmod-host-app"
+  "switch-1" = "--gpu-client-id=9"
+  "num-switches" = "22"
+  "commandline-disabled-feature-1" = "MacAppCodeSignClone"
+  "osarch" = "arm64"
+  "pid" = "86913"
+  "ptype" = "renderer"
+
+Received signal Received signal 6
+6
+[86914:4388790:1023/034907.923639:ERROR:content/child/child_thread_impl.cc:875] Receiver for unknown Channel-associated interface: arc.mojom.RenderProcessAgent
+0   ArcCore                             0x0000000134957658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x000000013493f130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x00000001349575b0 base::debug::(anonymous namespace)::StackDumpSignalHandler(int, __siginfo*, void*) + 924
+3   libsystem_platform.dylib            0x0000000182b59744 _sigtramp + 56
+4   libsystem_pthread.dylib             0x0000000182b4f8d8 pthread_kill + 296
+5   libsystem_c.dylib                   0x0000000182a55978 abort + 148
+6   ArcCore                             0x0000000134821288 logging::LogMessage::HandleFatal(unsigned long, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&) const + 456
+7   ArcCore                             0x0000000134820d14 logging::LogMessage::Flush() + 1748
+8   ArcCore                             0x000000013482059c logging::LogMessage::~LogMessage() + 36
+9   ArcCore                             0x000000013480188c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 196
+10  ArcCore                             0x000000013480190c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 12
+11  ArcCore                             0x0000000134800e18 logging::CheckError::~CheckError() + 44
+12  ArcCore                             0x0000000134800e58 logging::CheckError::~CheckError() + 12
+13  ArcCore                             0x0000000134801004 logging::NotReachedError::~NotReachedError() + 12
+14  ArcCore                             0x0000000138aee5bc content::ChildThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+15  ArcCore                             0x0000000138b7d234 non-virtual thunk to content::RenderThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 72
+16  ArcCore                             0x00000001360af5d8 IPC::ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+17  ArcCore                             0x00000001360b07cc base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelProxy::Context::*&&)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), IPC::ChannelProxy::Context*&&, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>&&, mojo::ScopedInterfaceEndpointHandle&&>, base::internal::BindState<true, true, false, void (IPC::ChannelProxy::Context::*)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), scoped_refptr<IPC::ChannelProxy::Context>, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, mojo::ScopedInterfaceEndpointHandle>, void ()>::RunOnce(base::internal::BindStateBase*) + 80
+18  ArcCore                             0x00000001348a4bd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+19  ArcCore                             0x00000001348d410c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+20  ArcCore                             0x00000001348d38f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+21  ArcCore                             0x0000000134830878 base::MessagePumpDefault::Run(base::MessagePump::Delegate*) + 352
+22  ArcCore                             0x00000001348d4cb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+23  ArcCore                             0x0000000134877f30 base::RunLoop::Run(base::Location const&) + 1056
+24  ArcCore                             0x0000000138badb34 content::RendererMain(content::MainFunctionParams) + 1796
+25  ArcCore                             0x000000013344492c content::RunOtherNamedProcessTypeMain(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, content::MainFunctionParams, content::ContentMainDelegate*) + 844
+26  ArcCore                             0x000000013344674c content::ContentMainRunnerImpl::Run() + 1740
+27  ArcCore                             0x0000000133443b6c content::RunContentProcess(content::ContentMainParams, content::ContentMainRunner*) + 524
+28  ArcCore                             0x0000000133443c08 content::ContentMain(content::ContentMainParams) + 104
+29  ArcCore                             0x000000012af00ef0 ChromeMain + 560
+30  Browser Helper (Aperitif Renderer)  0x00000001046a45b8 main + 12
+31  dyld                                0x00000001827844e4 start + 6992
+[end of stack trace]
+0   ArcCore                             0x0000000130513658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x00000001304fb130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x00000001305135b0 base::debug::(anonymous namespace)::StackDumpSignalHandler(int, __siginfo*, void*) + 924
+3   libsystem_platform.dylib            0x0000000182b59744 _sigtramp + 56
+4   libsystem_pthread.dylib             0x0000000182b4f8d8 pthread_kill + 296
+5   libsystem_c.dylib                   0x0000000182a55978 abort + 148
+6   ArcCore                             0x00000001303dd288 logging::LogMessage::HandleFatal(unsigned long, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&) const + 456
+7   ArcCore                             0x00000001303dcd14 logging::LogMessage::Flush() + 1748
+8   ArcCore                             0x00000001303dc59c logging::LogMessage::~LogMessage() + 36
+9   ArcCore                             0x00000001303bd88c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 196
+10  ArcCore                             0x00000001303bd90c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 12
+11  ArcCore                             0x00000001303bce18 logging::CheckError::~CheckError() + 44
+12  ArcCore                             0x00000001303bce58 logging::CheckError::~CheckError() + 12
+13  ArcCore                             0x00000001303bd004 logging::NotReachedError::~NotReachedError() + 12
+14  ArcCore                             0x00000001346aa5bc content::ChildThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+15  ArcCore                             0x0000000134739234 non-virtual thunk to content::RenderThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 72
+16  ArcCore                             0x0000000131c6b5d8 IPC::ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+17  ArcCore                             0x0000000131c6c7cc base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelProxy::Context::*&&)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), IPC::ChannelProxy::Context*&&, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>&&, mojo::ScopedInterfaceEndpointHandle&&>, base::internal::BindState<true, true, false, void (IPC::ChannelProxy::Context::*)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), scoped_refptr<IPC::ChannelProxy::Context>, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, mojo::ScopedInterfaceEndpointHandle>, void ()>::RunOnce(base::internal::BindStateBase*) + 80
+18  ArcCore                             0x0000000130460bd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+19  ArcCore                             0x000000013049010c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+20  ArcCore                             0x000000013048f8f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+21  ArcCore                             0x00000001303ec878 base::MessagePumpDefault::Run(base::MessagePump::Delegate*) + 352
+22  ArcCore                             0x0000000130490cb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+23  ArcCore                             0x0000000130433f30 base::RunLoop::Run(base::Location const&) + 1056
+24  ArcCore                             0x0000000134769b34 content::RendererMain(content::MainFunctionParams) + 1796
+25  ArcCore                             0x000000012f00092c content::RunOtherNamedProcessTypeMain(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, content::MainFunctionParams, content::ContentMainDelegate*) + 844
+26  ArcCore                             0x000000012f00274c content::ContentMainRunnerImpl::Run() + 1740
+27  ArcCore                             0x000000012efffb6c content::RunContentProcess(content::ContentMainParams, content::ContentMainRunner*) + 524
+28  ArcCore                             0x000000012efffc08 content::ContentMain(content::ContentMainParams) + 104
+29  ArcCore                             0x0000000126abcef0 ChromeMain + 560
+30  Browser Helper (Aperitif Renderer)  0x00000001003605b8 main + 12
+31  dyld                                0x00000001827844e4 start + 6992
+[end of stack trace]
+[86914:4388790:1023/034907.923859:FATAL:content/child/child_thread_impl.cc:877] NOTREACHED hit. 
+0   ArcCore                             0x00000001323ff658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x00000001323e7130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x00000001322c86f4 logging::LogMessage::Flush() + 180
+3   ArcCore                             0x00000001322c859c logging::LogMessage::~LogMessage() + 36
+4   ArcCore                             0x00000001322a988c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 196
+5   ArcCore                             0x00000001322a990c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 12
+6   ArcCore                             0x00000001322a8e18 logging::CheckError::~CheckError() + 44
+7   ArcCore                             0x00000001322a8e58 logging::CheckError::~CheckError() + 12
+8   ArcCore                             0x00000001322a9004 logging::NotReachedError::~NotReachedError() + 12
+9   ArcCore                             0x00000001365965bc content::ChildThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+10  ArcCore                             0x0000000136625234 non-virtual thunk to content::RenderThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 72
+11  ArcCore                             0x0000000133b575d8 IPC::ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+12  ArcCore                             0x0000000133b587cc base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelProxy::Context::*&&)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), IPC::ChannelProxy::Context*&&, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>&&, mojo::ScopedInterfaceEndpointHandle&&>, base::internal::BindState<true, true, false, void (IPC::ChannelProxy::Context::*)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), scoped_refptr<IPC::ChannelProxy::Context>, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, mojo::ScopedInterfaceEndpointHandle>, void ()>::RunOnce(base::internal::BindStateBase*) + 80
+13  ArcCore                             0x000000013234cbd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+14  ArcCore                             0x000000013237c10c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+15  ArcCore                             0x000000013237b8f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+16  ArcCore                             0x00000001322d8878 base::MessagePumpDefault::Run(base::MessagePump::Delegate*) + 352
+17  ArcCore                             0x000000013237ccb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+18  ArcCore                             0x000000013231ff30 base::RunLoop::Run(base::Location const&) + 1056
+19  ArcCore                             0x0000000136655b34 content::RendererMain(content::MainFunctionParams) + 1796
+20  ArcCore                             0x0000000130eec92c content::RunOtherNamedProcessTypeMain(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, content::MainFunctionParams, content::ContentMainDelegate*) + 844
+21  ArcCore                             0x0000000130eee74c content::ContentMainRunnerImpl::Run() + 1740
+22  ArcCore                             0x0000000130eebb6c content::RunContentProcess(content::ContentMainParams, content::ContentMainRunner*) + 524
+23  ArcCore                             0x0000000130eebc08 content::ContentMain(content::ContentMainParams) + 104
+24  ArcCore                             0x00000001289a8ef0 ChromeMain + 560
+25  Browser Helper (Aperitif Renderer)  0x00000001021fc5b8 main + 12
+26  dyld                                0x00000001827844e4 start + 6992
+Task trace:
+0   ArcCore                             0x0000000133b57458 IPC::ChannelProxy::Context::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 92
+Crash keys:
+  "renderer_foreground" = "true"
+  "v8_ro_space_firstpage_address" = "0x22d100000000"
+  "v8_isolate_address" = "0x11400ab0000"
+  "num-variations-runtime-overrides" = "0"
+  "variations" = "c203d55b-3f4a17df,a66dbd64-71c38a98,1e11dbbb-3f4a17df,89986dbe-3f01b610,75251bde-3d47f4f4,fbf04c3e-3f4a17df,fa220cc1-3f4a17df,76e51e2c-3f4a17df,f7adf49b-3f4a17df,171eed38-3f4a17df,ce94569c-3f4a17df,6f87b0c-3f4a17df,5d6e19f0-3d47f4f4,5d43ba47-3f4a17df,3fcef0b9-3f4a17df,9f488d92-3f4a17df,16f47e60-3f4a17df,2ad3343-3f4a17df,6e153b90-4fb74fee,ee06daaa-3f4a17df,47a0a3b2-3f4a17df,63ef0138-3f4a17df,8f80c10-78198108,a4ca7cb1-3f4a17df,9a26d980-13a3e431,da968c94-3f4a17df,3b79d4f4-3f4a17df,ae727645-d13781e7,99fb13df-c3c0f822,cdc6dc11-e921803b,92b406bd-3f4a17df,e51c83b-dc4755e5,d6ad7f9a-a9080253,c2bfaa56-3f4a17df,797fe373-3f4a17df,b0b483da-3f4a17df,e4d43646-3f4a17df,f7d06457-e9d42fcd,d512da3a-513c429d,fd36b611-c64b7b92,4b86e77-9609086,8e887d5e-3f4a17df,18b8e9fd-3f4a17df,ff1e0777-3f4a17df,5e40cc59-a9e4c666,eb689255-3f4a17df,b127f8bf-3f4a17df,4dc2f223-3f4a17df,ada18eb5-3f4a17df,f314f5b9-a2b13a7f,531e1626-4513f3bf,820f17d2-e484eeec,44666d99-3d47f4f4,b1b6eab0-381bdb0c,f914376f-3f4a17df,21e47f2a-3f4a17df,c295f76c-3f4a17df,e14ee5ee-c6d6098d,fd051c38-3f4a17df,c5c172fe-443695d8,8f9d758f-f0fa2256,73f2ea1f-7fe57363,47b4cae6-3f4a17df,35c106c9-3f4a17df,7dcaa2cd-3f4a17df,e6d68be3-85c54e1c,186230f2-3f4a17df,f6f5c542-3f4a17df,5e05ef36-3f4a17df,25d1e44f-9c275af9,52a4deb3-9c275af9,305240ad-3f4a17df,6a64ab7e-d0b22900,3b02c079-3f4a17df,54b15be4-e3ec50a6,bd6dd170-b5b075b6,a028f288-d24710ce,19784e46-3f4a17df,92ee5c9-a2abbf9f,ed3f5f6e-3f4a17df,9d5ecd8d-ca7d8d80,3299018c-3f4a17df,c0a2fd9b-3d47f4f4,3e15bfc6-3f4a17df,6e4912ad-3f4a17df,8ad00b0c-3f4a17df,ed102d29-3f4a17df,4b781a51-23ee7c7b,67dae843-3f4a17df,f980930-642c19ed,8f4b3221-3f4a17df,779782d3-3f4a17df,1e12d864-94f75473,efd40742-3f4a17df,a2d45efe-2319ef5a,ef3132a9-3f4a17df,7ccab089-3f4a17df,e770b78e-3f4a17df,3ca85ee1-3d47f4f4,f4159b43-3f4a17df,151258bf-3f4a17df,3e672fd9-e109e63f,334b1a1c-3f4a17df,1db33038-3f4a17df,3c978b59-3f4a17df,3d3f8872-3f4a17df,b60ea2ed-51a6e3be,9cf6c713-7585e9f1,bab9965f-76c70532,f181271f-4d066f7c,78049c75-111140a5,46294e3b-3f4a17df,c6fc28a7-3f4a17df,6ddea229-6ddea229,6678bb8a-ef96dc7c,68d69905-3f4a17df,f6264095-c3f8eab0,210f81c-3f4a17df,4369f1a2-3f4a17df,4146cc26-775f6248,e9844d40-3f4a17df,d1ae5bf4-3f4a17df,8ba22946-3f4a17df,55cc39e1-3f4a17df,3661073c-3f4a17df,70404afa-803f8fc4,eac788b4-77795d80,8643cb65-cf4f6ead,c1e2f598-3f4a17df,7262ef2c-140d00b2,c219b73b-1edfaeb9,b4c2bd17-23db2647,6ec84df5-3f4a17df,f6ce9b08-3f4a17df,4d625646-3f4a17df,9f0fccc2-3f4a17df,97604fae-c1092d08,2394f90f-ecc8f8cf,d5f746a4-39aaf314,6eb9a8f-3f4a17df,5199db31-f0c504d5,260bef7d-9973a429,56aa5797-e5fec5a6,73d480d9-3f4a17df,265c01cc-265c01cc,b252442a-3f4a17df,a008700b-4593a253,da493d3c-3f4a17df,72bafd3e-cdb4c186,c290aefb-d8d91f8f,a29130c-3f4a17df,f3ed486d-3f4a17df,b3c54bb3-88fcaf7d,4076100b-3f4a17df,8c162025-3d47f4f4,4354ea6d-3f4a17df,63c162ac-e2001c64,3ac9fcb9-3f4a17df,959459a8-3f4a17df,b706019d-3f4a17df,b76b514f-3ac589b9,56c4f1cd-8c7df51c,36f9655f-d14604de,8f418b04-299bae22,d09b7b7d-3f4a17df,d3566fbd-c6f74b94,4ce582eb-3f4a17df,6821fcbe-3f4a17df,fec9e2f8-3f4a17df,af943b4f-b3e166c8,2e862394-fb669628,5abe5347-3f4a17df,35a386c3-3f4a17df,626538e5-3f4a17df,e642bc8f-3f4a17df,258151b3-3f4a17df,44fe0078-3f4a17df,a52330dc-6d77353e,aa540f4f-3f4a17df,81bf947e-3f4a17df,2d2b187a-3f4a17df,f86bc1e2-3f4a17df,6cd68a95-3f4a17df,5e7a6b04-3f4a17df,2385f431-3f4a17df,53c64de7-3f4a17df,e3559213-c0f46cd5,f3b01c08-3f4a17df,d990c4ac-3f4a17df,a374fdf0-964ff297,5e2ea1a-3f4a17df,53fa9d2a-3f4a17df,8ed472ab-3f4a17df,4e83575c-3f4a17df,b63743ab-3f4a17df,c71292e0-3f4a17df,e043b5f9-3f4a17df,9ba1837a-3f4a17df,d0083347-3ec702d4,1a6f8066-3f4a17df,ef4764d7-88fcaf7d,30cd3e72-fe6486b2,bc0b4e45-c1092d08,ad757a37-3f4a17df,42e76f32-3f4a17df,ba98e1e4-3f4a17df,a1777c74-3f4a17df,f7f6ed33-3f4a17df,7a7cc1e6-3f4a17df,f3dbf5bd-faff9ce0,299dc502-3f4a17df,eff066ba-463f4d40,3728c466-3d47f4f4,c6080aa-3f4a17df,8018a043-3f4a17df,ad4acdda-3f4a17df,fd0aa8ec-3f4a17df,a39574eb-3f4a17df,c7ee0c67-3f4a17df,80b60e4a-3f4a17df,533ac6d2-3f4a17df,d5e1fd03-72564c9d,9cdd2223-3f4a17df,c5be9d88-3f4a17df,f2f8b883-3f4a17df,bc3ce3e6-60a1867b,77ca3281-3f4a17df,c21c2b8b-3d47f4f4,a3652538-7f6593f0,ba1f9add-3f4a17df,57d64459-3f4a17df,7ca2dd7e-3f4a17df,c823d1e9-3d47f4f4,e2d38844-3f4a17df,29be5797-3f4a17df,d00bdbf9-3f4a17df,2faf225b-3f4a17df,2cee8ab6-3f4a17df,a49a69c3-3f4a17df,a2c6574d-3f4a17df,798ea899-3f4a17df,7b4be1f2-3f4a17df,6331e4d6-3f4a17df,6332ffaf-3f4a17df,595f5eb0-f23d1dea,5910121-3f4a17df,"
+  "num-experiments" = "246"
+  "chrome-trace-id" = "5072490383142149544"
+  "reentry_guard_tls_slot" = "263"
+  "switch-20" = "--seatbelt-client=118"
+  "switch-19" = "--trace-process-track-uuid=2931765811291303305"
+  "switch-18" = "--pseudonymization-salt-handle=1935764596,r,7146213430806795924,"
+  "switch-17" = "--variations-seed-version"
+  "switch-16" = "--field-trial-handle=1718379636,r,14765298038498543401,562423409"
+  "switch-15" = "--metrics-shmem-handle=1752395122,r,2740362879690942214,82982108"
+  "switch-14" = "--shared-files"
+  "switch-13" = "--launch-time-ticks=52933838167"
+  "switch-12" = "--gpu-channel-request-start-time-ticks=52933837757"
+  "switch-11" = "--renderer-client-id=11"
+  "switch-10" = "--enable-main-frame-before-activation"
+  "switch-9" = "--enable-gpu-memory-buffer-compositor-resources"
+  "switch-8" = "--enable-zero-copy"
+  "switch-7" = "--num-raster-threads=4"
+  "switch-6" = "--lang=en-US"
+  "switch-5" = "--remote-debugging-port=9463"
+  "switch-4" = "--file-url-path-alias=/gen=/Users/cryogenicplanet/general/arc/bu"
+  "switch-3" = "--user-data-dir=/Users/cryogenicplanet/Library/Application Suppo"
+  "switch-2" = "--arcmod-host-app"
+  "switch-1" = "--gpu-client-id=11"
+  "num-switches" = "22"
+  "commandline-disabled-feature-1" = "MacAppCodeSignClone"
+  "osarch" = "arm64"
+  "pid" = "86914"
+  "ptype" = "renderer"
+
+Received signal 6
+0   ArcCore                             0x00000001323ff658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x00000001323e7130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x00000001323ff5b0 base::debug::(anonymous namespace)::StackDumpSignalHandler(int, __siginfo*, void*) + 924
+3   libsystem_platform.dylib            0x0000000182b59744 _sigtramp + 56
+4   libsystem_pthread.dylib             0x0000000182b4f8d8 pthread_kill + 296
+5   libsystem_c.dylib                   0x0000000182a55978 abort + 148
+6   ArcCore                             0x00000001322c9288 logging::LogMessage::HandleFatal(unsigned long, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&) const + 456
+7   ArcCore                             0x00000001322c8d14 logging::LogMessage::Flush() + 1748
+8   ArcCore                             0x00000001322c859c logging::LogMessage::~LogMessage() + 36
+9   ArcCore                             0x00000001322a988c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 196
+10  ArcCore                             0x00000001322a990c logging::(anonymous namespace)::NotReachedLogMessage::~NotReachedLogMessage() + 12
+11  ArcCore                             0x00000001322a8e18 logging::CheckError::~CheckError() + 44
+12  ArcCore                             0x00000001322a8e58 logging::CheckError::~CheckError() + 12
+13  ArcCore                             0x00000001322a9004 logging::NotReachedError::~NotReachedError() + 12
+14  ArcCore                             0x00000001365965bc content::ChildThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+15  ArcCore                             0x0000000136625234 non-virtual thunk to content::RenderThreadImpl::OnAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 72
+16  ArcCore                             0x0000000133b575d8 IPC::ChannelProxy::Context::OnDispatchAssociatedInterfaceRequest(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle) + 176
+17  ArcCore                             0x0000000133b587cc base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelProxy::Context::*&&)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), IPC::ChannelProxy::Context*&&, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>&&, mojo::ScopedInterfaceEndpointHandle&&>, base::internal::BindState<true, true, false, void (IPC::ChannelProxy::Context::*)(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, mojo::ScopedInterfaceEndpointHandle), scoped_refptr<IPC::ChannelProxy::Context>, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>>, mojo::ScopedInterfaceEndpointHandle>, void ()>::RunOnce(base::internal::BindStateBase*) + 80
+18  ArcCore                             0x000000013234cbd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+19  ArcCore                             0x000000013237c10c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+20  ArcCore                             0x000000013237b8f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+21  ArcCore                             0x00000001322d8878 base::MessagePumpDefault::Run(base::MessagePump::Delegate*) + 352
+22  ArcCore                             0x000000013237ccb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+23  ArcCore                             0x000000013231ff30 base::RunLoop::Run(base::Location const&) + 1056
+24  ArcCore                             0x0000000136655b34 content::RendererMain(content::MainFunctionParams) + 1796
+25  ArcCore                             0x0000000130eec92c content::RunOtherNamedProcessTypeMain(std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, content::MainFunctionParams, content::ContentMainDelegate*) + 844
+26  ArcCore                             0x0000000130eee74c content::ContentMainRunnerImpl::Run() + 1740
+27  ArcCore                             0x0000000130eebb6c content::RunContentProcess(content::ContentMainParams, content::ContentMainRunner*) + 524
+28  ArcCore                             0x0000000130eebc08 content::ContentMain(content::ContentMainParams) + 104
+29  ArcCore                             0x00000001289a8ef0 ChromeMain + 560
+30  Browser Helper (Aperitif Renderer)  0x00000001021fc5b8 main + 12
+31  dyld                                0x00000001827844e4 start + 6992
+[end of stack trace]
+[86719:4386964:1023/034908.227698:FATAL:chrome/browser/ui/sad_tab_controller.cc:32] DCHECK failed: browser_view. 
+0   ArcCore                             0x0000000135dbb658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x0000000135da3130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x0000000135c846f4 logging::LogMessage::Flush() + 180
+3   ArcCore                             0x0000000135c8459c logging::LogMessage::~LogMessage() + 36
+4   ArcCore                             0x0000000135c655c8 logging::(anonymous namespace)::DCheckLogMessage::~DCheckLogMessage() + 196
+5   ArcCore                             0x0000000135c6563c logging::(anonymous namespace)::DCheckLogMessage::~DCheckLogMessage() + 12
+6   ArcCore                             0x0000000135c64e18 logging::CheckError::~CheckError() + 44
+7   ArcCore                             0x0000000135c64e58 logging::CheckError::~CheckError() + 12
+8   ArcCore                             0x0000000134f6fee8 (anonymous namespace)::FindContentsWebView(content::WebContents*) + 304
+9   ArcCore                             0x0000000134f70140 SadTabController::ReinstallInWebView() + 256
+10  ArcCore                             0x0000000134f705ec SadTab::Create(content::WebContents*, SadTabKind) + 100
+11  ArcCore                             0x0000000134f70ee0 SadTabHelper::PrimaryMainFrameRenderProcessGone(base::TerminationStatus) + 204
+12  ArcCore                             0x0000000131d63b58 content::WebContentsImpl::RenderViewTerminated(content::RenderViewHost*, base::TerminationStatus, int) + 1072
+13  ArcCore                             0x0000000131b54554 content::RenderViewHostImpl::RenderProcessExited(content::RenderProcessHost*, content::ChildProcessTerminationInfo const&) + 228
+14  ArcCore                             0x0000000131b368e0 content::RenderProcessHostImpl::ProcessDied(content::ChildProcessTerminationInfo const&) + 908
+15  ArcCore                             0x0000000131b363c8 content::RenderProcessHostImpl::OnChannelError() + 56
+16  ArcCore                             0x00000001375133d0 IPC::ChannelProxy::Context::OnDispatchError() + 144
+17  ArcCore                             0x0000000135d08bd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+18  ArcCore                             0x0000000135d3810c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+19  ArcCore                             0x0000000135d378f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+20  ArcCore                             0x0000000135dd10a4 base::MessagePumpCFRunLoopBase::RunWork() + 320
+21  ArcCore                             0x0000000135dc910c base::apple::CallWithEHFrame(void () block_pointer) + 16
+22  ArcCore                             0x0000000135dd052c base::MessagePumpCFRunLoopBase::RunWorkSource(void*) + 60
+23  CoreFoundation                      0x0000000182c0cfb0 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28
+24  CoreFoundation                      0x0000000182c0cf44 __CFRunLoopDoSource0 + 172
+25  CoreFoundation                      0x0000000182c0ccb0 __CFRunLoopDoSources0 + 232
+26  CoreFoundation                      0x0000000182c0b8d4 __CFRunLoopRun + 820
+27  CoreFoundation                      0x0000000182cde508 _CFRunLoopRunSpecificWithOptions + 532
+28  HIToolbox                           0x000000018f9fa560 RunCurrentEventLoopInMode + 320
+29  HIToolbox                           0x000000018f9fd8bc ReceiveNextEventCommon + 488
+30  HIToolbox                           0x000000018fb8714c _BlockUntilNextEventMatchingListInMode + 48
+31  AppKit                              0x00000001876f13d0 _DPSBlockUntilNextEventMatchingListInMode + 228
+32  AppKit                              0x0000000187045084 _DPSNextEvent + 576
+33  AppKit                              0x0000000187bda96c -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:] + 688
+34  AppKit                              0x0000000187bda678 -[NSApplication(NSEventRouting) nextEventMatchingMask:untilDate:inMode:dequeue:] + 72
+35  Arc                                 0x0000000103ea3988 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 39350248
+36  Arc                                 0x00000001010def2c Arc + 1077036
+37  Arc                                 0x00000001011ebf00 Arc + 2178816
+38  ArcCore                             0x0000000135dc910c base::apple::CallWithEHFrame(void () block_pointer) + 16
+39  Arc                                 0x00000001010dedd4 Arc + 1076692
+40  Arc                                 0x00000001010df05c Arc + 1077340
+41  AppKit                              0x000000018703813c -[NSApplication run] + 368
+42  ArcCore                             0x0000000135dd18e8 base::MessagePumpNSApplication::DoRun(base::MessagePump::Delegate*) + 316
+43  ArcCore                             0x0000000135dcfc0c base::MessagePumpCFRunLoopBase::Run(base::MessagePump::Delegate*) + 124
+44  ArcCore                             0x0000000135d38cb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+45  ArcCore                             0x0000000135cdbf30 base::RunLoop::Run(base::Location const&) + 1056
+46  ArcCore                             0x000000013146ccb4 content::BrowserMainLoop::RunMainMessageLoop() + 308
+47  ArcCore                             0x000000013146f0ac content::BrowserMainRunnerImpl::Run() + 344
+48  ArcCore                             0x000000012c366948 ChromeMainRunHostedBrowser() + 72
+49  ArcCore                             0x0000000135bb50e0 -[ArcBrowserApplication run] + 84
+50  Arc                                 0x0000000101486258 Arc + 4907608
+51  Arc                                 0x0000000100fdb890 Arc + 14480
+52  Arc                                 0x0000000100fdb2d4 Arc + 13012
+53  dyld                                0x00000001827844e4 start + 6992
+Task trace:
+0   ArcCore                             0x0000000137513240 IPC::ChannelProxy::Context::OnChannelError() + 80
+1   ArcCore                             0x00000001360a9624 mojo::SimpleWatcher::Context::Notify(unsigned int, MojoHandleSignalsState, unsigned int) + 228
+Crash keys:
+  "component-extension-3" = "Contextual Tasks"
+  "gpu-glver" = "OpenGL ES 3.0 (ANGLE 2.1.1 git hash: 3b89d84e9d59)"
+  "gpu-generation-intel" = "0"
+  "gpu-vsver" = "3.00"
+  "gpu-psver" = "3.00"
+  "gpu-driver" = "26.7.1"
+  "gpu_count" = "1"
+  "gpu-devid" = "0x0000"
+  "gpu-venid" = "0x106b"
+  "component-extension-2" = "Chromium PDF Viewer"
+  "component-extension-1" = "Arc Internal Extension"
+  "num-component-extensions" = "3"
+  "num-extensions" = "0"
+  "keep_alive_registry" = "{registered_count_=3, restart_allowed_count_=0, KeepAlives=[BROWSER (1), APP_CONTROLLER (1), REMOTE_DEBUGGING (1)]}"
+  "chrome-trace-id" = "3816440799389295818"
+  "reentry_guard_tls_slot" = "273"
+  "num-variations-runtime-overrides" = "0"
+  "variations" = "9cdd2223-3f4a17df,bd6dd170-b5b075b6,f6f5c542-3f4a17df,d5e1fd03-72564c9d,63ef0138-3f4a17df,c6fc28a7-3f4a17df,bc3ce3e6-60a1867b,ae727645-d13781e7,f3dbf5bd-faff9ce0,ce94569c-3f4a17df,c290aefb-d8d91f8f,f3ed486d-3f4a17df,da493d3c-3f4a17df,a29130c-3f4a17df,72bafd3e-cdb4c186,35c106c9-3f4a17df,a66dbd64-71c38a98,e51c83b-dc4755e5,1e12d864-94f75473,92b406bd-3f4a17df,6e4912ad-3f4a17df,4dc2f223-3f4a17df,d6ad7f9a-a9080253,3e15bfc6-3f4a17df,f6ce9b08-3f4a17df,5e7a6b04-3f4a17df,a1777c74-3f4a17df,73f2ea1f-7fe57363,53fa9d2a-3f4a17df,99fb13df-c3c0f822,6cd68a95-3f4a17df,305240ad-3f4a17df,a4ca7cb1-3f4a17df,73d480d9-3f4a17df,265c01cc-265c01cc,c6080aa-3f4a17df,b63743ab-3f4a17df,fa220cc1-3f4a17df,5e2ea1a-3f4a17df,4076100b-3f4a17df,533ac6d2-3f4a17df,ed3f5f6e-3f4a17df,b127f8bf-3f4a17df,e9844d40-3f4a17df,b1b6eab0-381bdb0c,8f80c10-78198108,46294e3b-3f4a17df,81bf947e-3f4a17df,d1ae5bf4-3f4a17df,8f9d758f-f0fa2256,8f418b04-299bae22,6f87b0c-3f4a17df,9d5ecd8d-ca7d8d80,44fe0078-3f4a17df,55cc39e1-3f4a17df,8e887d5e-3f4a17df,f2f8b883-3f4a17df,b706019d-3f4a17df,c2bfaa56-3f4a17df,21e47f2a-3f4a17df,4146cc26-775f6248,2385f431-3f4a17df,e14ee5ee-c6d6098d,76e51e2c-3f4a17df,25d1e44f-9c275af9,186230f2-3f4a17df,ef4764d7-88fcaf7d,53c64de7-3f4a17df,2e862394-fb669628,9f0fccc2-3f4a17df,7a7cc1e6-3f4a17df,80b60e4a-3f4a17df,c203d55b-3f4a17df,d5f746a4-39aaf314,4d625646-3f4a17df,4ce582eb-3f4a17df,6e153b90-4fb74fee,3ac9fcb9-3f4a17df,8c162025-3d47f4f4,151258bf-3f4a17df,260bef7d-9973a429,2394f90f-ecc8f8cf,f7d06457-e9d42fcd,fd0aa8ec-3f4a17df,f914376f-3f4a17df,4369f1a2-3f4a17df,ff1e0777-3f4a17df,210f81c-3f4a17df,54b15be4-e3ec50a6,9ba1837a-3f4a17df,a374fdf0-964ff297,30cd3e72-fe6486b2,d990c4ac-3f4a17df,f980930-642c19ed,3d3f8872-3f4a17df,4354ea6d-3f4a17df,35a386c3-3f4a17df,258151b3-3f4a17df,68d69905-3f4a17df,a39574eb-3f4a17df,d3566fbd-c6f74b94,18b8e9fd-3f4a17df,959459a8-3f4a17df,a008700b-4593a253,779782d3-3f4a17df,8f4b3221-3f4a17df,8ad00b0c-3f4a17df,3299018c-3f4a17df,4b781a51-23ee7c7b,4b86e77-9609086,52a4deb3-9c275af9,5d43ba47-3f4a17df,ada18eb5-3f4a17df,1db33038-3f4a17df,3c978b59-3f4a17df,eb689255-3f4a17df,3b02c079-3f4a17df,8ba22946-3f4a17df,820f17d2-e484eeec,a028f288-d24710ce,44666d99-3d47f4f4,6821fcbe-3f4a17df,56aa5797-e5fec5a6,f181271f-4d066f7c,3b79d4f4-3f4a17df,ad757a37-3f4a17df,c219b73b-1edfaeb9,a52330dc-6d77353e,e4d43646-3f4a17df,6ddea229-6ddea229,f4159b43-3f4a17df,f3b01c08-3f4a17df,6a64ab7e-d0b22900,c295f76c-3f4a17df,b60ea2ed-51a6e3be,3661073c-3f4a17df,e6d68be3-85c54e1c,eac788b4-77795d80,fd051c38-3f4a17df,1e11dbbb-3f4a17df,bab9965f-76c70532,b3c54bb3-88fcaf7d,9a26d980-13a3e431,78049c75-111140a5,f86bc1e2-3f4a17df,3e672fd9-e109e63f,47a0a3b2-3f4a17df,1a6f8066-3f4a17df,c1e2f598-3f4a17df,e3559213-c0f46cd5,171eed38-3f4a17df,6eb9a8f-3f4a17df,7ccab089-3f4a17df,5199db31-f0c504d5,8643cb65-cf4f6ead,f7f6ed33-3f4a17df,5e05ef36-3f4a17df,efd40742-3f4a17df,797fe373-3f4a17df,4e83575c-3f4a17df,8ed472ab-3f4a17df,a2d45efe-2319ef5a,cdc6dc11-e921803b,c5c172fe-443695d8,19784e46-3f4a17df,9f488d92-3f4a17df,2ad3343-3f4a17df,f314f5b9-a2b13a7f,aa540f4f-3f4a17df,af943b4f-b3e166c8,77ca3281-3f4a17df,ed102d29-3f4a17df,36f9655f-d14604de,3ca85ee1-3d47f4f4,56c4f1cd-8c7df51c,bc0b4e45-c1092d08,e642bc8f-3f4a17df,c5be9d88-3f4a17df,334b1a1c-3f4a17df,ef3132a9-3f4a17df,5e40cc59-a9e4c666,42e76f32-3f4a17df,16f47e60-3f4a17df,c7ee0c67-3f4a17df,63c162ac-e2001c64,3fcef0b9-3f4a17df,c21c2b8b-3d47f4f4,5d6e19f0-3d47f4f4,3728c466-3d47f4f4,ee06daaa-3f4a17df,7dcaa2cd-3f4a17df,89986dbe-3f01b610,75251bde-3d47f4f4,fbf04c3e-3f4a17df,b0b483da-3f4a17df,d512da3a-513c429d,b252442a-3f4a17df,67dae843-3f4a17df,c71292e0-3f4a17df,e770b78e-3f4a17df,ba98e1e4-3f4a17df,ad4acdda-3f4a17df,299dc502-3f4a17df,9cf6c713-7585e9f1,f7adf49b-3f4a17df,70404afa-803f8fc4,531e1626-4513f3bf,7262ef2c-140d00b2,fd36b611-c64b7b92,f6264095-c3f8eab0,d0083347-3ec702d4,6678bb8a-ef96dc7c,b76b514f-3ac589b9,e043b5f9-3f4a17df,92ee5c9-a2abbf9f,626538e5-3f4a17df,6ec84df5-3f4a17df,c0a2fd9b-3d47f4f4,da968c94-3f4a17df,8018a043-3f4a17df,eff066ba-463f4d40,d09b7b7d-3f4a17df,b4c2bd17-23db2647,5abe5347-3f4a17df,47b4cae6-3f4a17df,fec9e2f8-3f4a17df,2d2b187a-3f4a17df,97604fae-c1092d08,a015f6e1-3f4a17df,c297985a-3f4a17df,3ede7bd6-3f4a17df,c7afe1d5-3f4a17df,5870a003-3f4a17df,703ef460-3f4a17df,4776ceb-3f4a17df,18324944-3f4a17df,9507cc99-f2018abe,70640dfa-3f4a17df,b357b792-3f4a17df,f4f00e05-ca7d8d80,9481ce98-3d47f4f4,2a426c03-3d47f4f4,4b935545-bb2d3403,70678518-dee66fa8,be338734-dee66fa8,5f9907a9-dee66fa8,8eeccb9a-dee66fa8,2b465683-dee66fa8,52fc7926-dee66fa8,bc9b361d-dee66fa8,a41a7188-dee66fa8,ff71bfdc-dee66fa8,251fc742-dee66fa8,2159dd0c-dee66fa8,4330e9a4-dee66fa8,e7cc79d5-dee66fa8,9a38bae3-3d47f4f4,2d1e43a3-3f4a17df,370ace14-3f4a17df,386dc267-3d47f4f4,d69d967d-9cce7190,3c8f75a1-dcfbe471,a4406b35-1657e2d6,408da146-1657e2d6,"
+  "num-experiments" = "264"
+  "switch-11" = "--no-first-run"
+  "switch-10" = "--no-startup-window"
+  "switch-9" = "--arcmod-host-app"
+  "switch-8" = "--remote-debugging-port=9463"
+  "switch-7" = "--remote-debugging-address=127.0.0.1"
+  "switch-6" = "--user-data-dir=/Users/cryogenicplanet/Library/Application Suppo"
+  "switch-5" = "--host-resolver-rules=MAP arc.net ~NOTFOUND, MAP *.arc.net ~NOTF"
+  "switch-4" = "--disable-background-networking"
+  "switch-3" = "--disable-sync"
+  "switch-2" = "--no-default-browser-check"
+  "switch-1" = "--use-mock-keychain"
+  "num-switches" = "14"
+  "commandline-disabled-feature-1" = "MacAppCodeSignClone"
+  "osarch" = "arm64"
+  "pid" = "86719"
+  "ptype" = "browser"
+
+Received signal 6
+0   ArcCore                             0x0000000135dbb658 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x0000000135da3130 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x0000000135dbb5b0 base::debug::(anonymous namespace)::StackDumpSignalHandler(int, __siginfo*, void*) + 924
+3   libsystem_platform.dylib            0x0000000182b59744 _sigtramp + 56
+4   libsystem_pthread.dylib             0x0000000182b4f8d8 pthread_kill + 296
+5   libsystem_c.dylib                   0x0000000182a55978 abort + 148
+6   ArcCore                             0x0000000135c85288 logging::LogMessage::HandleFatal(unsigned long, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&) const + 456
+7   ArcCore                             0x0000000135c84d14 logging::LogMessage::Flush() + 1748
+8   ArcCore                             0x0000000135c8459c logging::LogMessage::~LogMessage() + 36
+9   ArcCore                             0x0000000135c655c8 logging::(anonymous namespace)::DCheckLogMessage::~DCheckLogMessage() + 196
+10  ArcCore                             0x0000000135c6563c logging::(anonymous namespace)::DCheckLogMessage::~DCheckLogMessage() + 12
+11  ArcCore                             0x0000000135c64e18 logging::CheckError::~CheckError() + 44
+12  ArcCore                             0x0000000135c64e58 logging::CheckError::~CheckError() + 12
+13  ArcCore                             0x0000000134f6fee8 (anonymous namespace)::FindContentsWebView(content::WebContents*) + 304
+14  ArcCore                             0x0000000134f70140 SadTabController::ReinstallInWebView() + 256
+15  ArcCore                             0x0000000134f705ec SadTab::Create(content::WebContents*, SadTabKind) + 100
+16  ArcCore                             0x0000000134f70ee0 SadTabHelper::PrimaryMainFrameRenderProcessGone(base::TerminationStatus) + 204
+17  ArcCore                             0x0000000131d63b58 content::WebContentsImpl::RenderViewTerminated(content::RenderViewHost*, base::TerminationStatus, int) + 1072
+18  ArcCore                             0x0000000131b54554 content::RenderViewHostImpl::RenderProcessExited(content::RenderProcessHost*, content::ChildProcessTerminationInfo const&) + 228
+19  ArcCore                             0x0000000131b368e0 content::RenderProcessHostImpl::ProcessDied(content::ChildProcessTerminationInfo const&) + 908
+20  ArcCore                             0x0000000131b363c8 content::RenderProcessHostImpl::OnChannelError() + 56
+21  ArcCore                             0x00000001375133d0 IPC::ChannelProxy::Context::OnDispatchError() + 144
+22  ArcCore                             0x0000000135d08bd8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+23  ArcCore                             0x0000000135d3810c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+24  ArcCore                             0x0000000135d378f8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+25  ArcCore                             0x0000000135dd10a4 base::MessagePumpCFRunLoopBase::RunWork() + 320
+26  ArcCore                             0x0000000135dc910c base::apple::CallWithEHFrame(void () block_pointer) + 16
+27  ArcCore                             0x0000000135dd052c base::MessagePumpCFRunLoopBase::RunWorkSource(void*) + 60
+28  CoreFoundation                      0x0000000182c0cfb0 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28
+29  CoreFoundation                      0x0000000182c0cf44 __CFRunLoopDoSource0 + 172
+30  CoreFoundation                      0x0000000182c0ccb0 __CFRunLoopDoSources0 + 232
+31  CoreFoundation                      0x0000000182c0b8d4 __CFRunLoopRun + 820
+32  CoreFoundation                      0x0000000182cde508 _CFRunLoopRunSpecificWithOptions + 532
+33  HIToolbox                           0x000000018f9fa560 RunCurrentEventLoopInMode + 320
+34  HIToolbox                           0x000000018f9fd8bc ReceiveNextEventCommon + 488
+35  HIToolbox                           0x000000018fb8714c _BlockUntilNextEventMatchingListInMode + 48
+36  AppKit                              0x00000001876f13d0 _DPSBlockUntilNextEventMatchingListInMode + 228
+37  AppKit                              0x0000000187045084 _DPSNextEvent + 576
+38  AppKit                              0x0000000187bda96c -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:] + 688
+39  AppKit                              0x0000000187bda678 -[NSApplication(NSEventRouting) nextEventMatchingMask:untilDate:inMode:dequeue:] + 72
+40  Arc                                 0x0000000103ea3988 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 39350248
+41  Arc                                 0x00000001010def2c Arc + 1077036
+42  Arc                                 0x00000001011ebf00 Arc + 2178816
+43  ArcCore                             0x0000000135dc910c base::apple::CallWithEHFrame(void () block_pointer) + 16
+44  Arc                                 0x00000001010dedd4 Arc + 1076692
+45  Arc                                 0x00000001010df05c Arc + 1077340
+46  AppKit                              0x000000018703813c -[NSApplication run] + 368
+47  ArcCore                             0x0000000135dd18e8 base::MessagePumpNSApplication::DoRun(base::MessagePump::Delegate*) + 316
+48  ArcCore                             0x0000000135dcfc0c base::MessagePumpCFRunLoopBase::Run(base::MessagePump::Delegate*) + 124
+49  ArcCore                             0x0000000135d38cb4 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+50  ArcCore                             0x0000000135cdbf30 base::RunLoop::Run(base::Location const&) + 1056
+51  ArcCore                             0x000000013146ccb4 content::BrowserMainLoop::RunMainMessageLoop() + 308
+52  ArcCore                             0x000000013146f0ac content::BrowserMainRunnerImpl::Run() + 344
+53  ArcCore                             0x000000012c366948 ChromeMainRunHostedBrowser() + 72
+54  ArcCore                             0x0000000135bb50e0 -[ArcBrowserApplication run] + 84
+55  Arc                                 0x0000000101486258 Arc + 4907608
+56  Arc                                 0x0000000100fdb890 Arc + 14480
+57  Arc                                 0x0000000100fdb2d4 Arc + 13012
+58  dyld                                0x00000001827844e4 start + 6992
+[end of stack trace]

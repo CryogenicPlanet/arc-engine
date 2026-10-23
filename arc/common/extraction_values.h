@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+
 namespace arc {
 // These are our producer contracts, not the proprietary ArcCore native ABI.
 // Every public const-void initializer copies the corresponding value.
@@ -35,9 +37,10 @@ struct ExtractedPageContentData {
   ExtractedContentNodeData root_node;
 };
 
+using PageContentExtractionIdentity = base::RefCountedData<uint8_t>;
 struct PageContentExtractionData {
   base::WeakPtr<Profile> profile;
-  uintptr_t identity = 0;
+  scoped_refptr<PageContentExtractionIdentity> identity;
 };
 }  // namespace arc
 

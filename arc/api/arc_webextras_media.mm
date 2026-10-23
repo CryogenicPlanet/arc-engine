@@ -212,7 +212,7 @@ ARC_EXPORT @interface ArcWebContentsMediaSession : NSObject
 - (BOOL)scrubTo:(int64_t)time error:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->ScrubTo(base::Seconds(time)); return YES; }
 - (BOOL)setMute:(BOOL)mute error:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->SetMute(mute); return YES; }
 - (BOOL)setVolume:(double)volume error:(NSError**)error {
-  auto* s = [self requireSession:error]; if (!s) return NO;
+  if (![_owner webContents]) { return ArcMediaFailure(error, @"managed webcontents is null"); }
   return ArcMediaFailure(error, @"media volume bridge is unavailable");
 }
 - (BOOL)requestPictureInPicture:(NSError**)error {

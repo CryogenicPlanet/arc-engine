@@ -34,7 +34,8 @@ ARC_EXPORT @interface ArcTracingConfiguration : NSObject {
   }
   return self;
 }
-- (void)setFilePath:(NSString*)path { _filePath = [path copy] ?: @""; }
+- (NSString*)filePath { return ArcNSString(ArcUTF8(_filePath)); }
+- (void)setFilePath:(NSString*)path { _filePath = ArcNSString(ArcUTF8(path)); }
 - (BOOL)privacyFilteringEnabled { return _privacyFilteringEnabled; }
 - (void)setPrivacyFilteringEnabled:(BOOL)value { _privacyFilteringEnabled = value; }
 @end

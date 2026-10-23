@@ -9,11 +9,12 @@
 #include "chrome/browser/about_flags.h"
 #include "components/webui/flags/flags_storage.h"
 
+#include <cstdint>
 #include <map>
 #include <variant>
 
 namespace {
-BASE_FEATURE(kArcMacCoalescedResizing, "ArcMacCoalescedResizing", base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kArcMacCoalescedResizing, "ArcMacCoalescedResizing", base::FEATURE_DISABLED_BY_DEFAULT);
 // Arc's IDs are its own runtime configuration table, distinct from chrome://flags.
 // Defaults below were recovered from ArcCore 1.170's DAT_0dff3480 initializers;
 // platform/environment-specific overrides need a separate mapping when recovered.
@@ -42,7 +43,8 @@ RuntimeFeatures& Features() {
 bool ArcRuntimeFeatureEnabled(NSUInteger identifier) {
   // Arc's getter special-cases this upstream-style feature independently of its
   // mutable Arc runtime table, including after setFeatureEnabled:enabled:.
-  if (identifier == 45) return base::FeatureList::IsEnabled(kArcMacCoalescedResizing);
+  if (static_cast<uint32_t>(identifier) == 45)
+    return base::FeatureList::IsEnabled(kArcMacCoalescedResizing);
   auto& features = Features();
   base::AutoLock hold(features.lock);
   auto entry = features.values.find(identifier);

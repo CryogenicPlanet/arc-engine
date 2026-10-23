@@ -12,6 +12,8 @@
 #include "base/supports_user_data.h"
 #include "base/scoped_multi_source_observation.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_creation_observer.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -42,8 +44,7 @@ class RendererProcessRegistry final
     for (auto it = content::RenderProcessHost::AllHostsIterator(); !it.IsAtEnd(); it.Advance()) {
       auto* host = it.GetCurrentValue();
       if (host->IsInitializedAndNotDead()) {
-        Track(host);
-        Bind(host);
+        ProcessWillLaunch(host, false);
       }
     }
   }
@@ -66,24 +67,28 @@ class RendererProcessRegistry final
   }
 
   void OnRenderProcessHostCreated(content::RenderProcessHost* host) override {
-    ProcessWillLaunch(host);
+    ProcessWillLaunch(host, false);
   }
 
-  void ProcessWillLaunch(content::RenderProcessHost* host) {
+  void ProcessWillLaunch(content::RenderProcessHost* host,
+                          bool early_process_agent_installed) {
     Track(host);
     auto& entry = entries_.at(host->GetID());
+    if (!entry.bound_sequence) {
+      // Reserve native launch order even when the process binder cannot safely
+      // be requested until a frame acknowledges its installation.
+      entry.bound_sequence = ++bound_sequence_;
+    }
+    CaptureInitialConfiguration(entry);
+    entry.early_agent_known |= early_process_agent_installed;
     // The embedder launch hook precedes Created/Ready. Their fallback must not
     // register the same incarnation twice or change its original sequence.
-    if (!entry.attempted) {
+    if (!entry.attempted && (entry.early_agent_known || entry.frame_ready)) {
       Bind(host);
     }
   }
   void RenderProcessReady(content::RenderProcessHost* host) override {
-    Track(host);
-    auto& entry = entries_.at(host->GetID());
-    if (!entry.attempted) {
-      Bind(host);
-    }
+    ProcessWillLaunch(host, false);
   }
   void OnRenderProcessHostCreationFailed(
       content::RenderProcessHost* host,
@@ -106,12 +111,16 @@ class RendererProcessRegistry final
     if (!host || !host->IsInitializedAndNotDead()) {
       return;
     }
-    Track(host);
+    ProcessWillLaunch(host, false);
     auto& entry = entries_.at(host->GetID());
     entry.frame_ready = true;
-    if (!entry.remote.is_bound() && !entry.retried) {
-      entry.retried = true;
-      Bind(host);
+    if (!entry.remote.is_bound()) {
+      if (!entry.attempted) {
+        Bind(host);
+      } else if (!entry.retried) {
+        entry.retried = true;
+        Bind(host);
+      }
     }
   }
 
@@ -143,6 +152,7 @@ class RendererProcessRegistry final
     uint64_t bound_sequence = 0;
     bool attempted = false;
     bool acknowledged = false;
+    bool early_agent_known = false;
     bool frame_ready = false;
     bool retried = false;
     bool initial_configuration_captured = false;
@@ -165,16 +175,14 @@ class RendererProcessRegistry final
 
   void Bind(content::RenderProcessHost* host) {
     auto& entry = entries_.at(host->GetID());
-    if (!host->GetChannel() || !entry.profile ||
+    if ((!entry.early_agent_known && !entry.frame_ready) ||
+        !host->GetChannel() || !entry.profile ||
         host->GetBrowserContext() != entry.profile.get()) {
       return;
     }
     entry.remote.reset();
     entry.attempted = true;
     entry.acknowledged = false;
-    // Native registers/counters synchronously at the browser bind attempt,
-    // independently of renderer startup or Ping response ordering.
-    entry.bound_sequence = ++bound_sequence_;
     const auto id = host->GetID();
     const auto incarnation = entry.incarnation;
     const auto attempt = ++entry.attempt;
@@ -205,7 +213,6 @@ class RendererProcessRegistry final
     }
     auto& entry = it->second;
     entry.remote.reset();
-    entry.bound_sequence = 0;
     if (entry.frame_ready && !entry.retried) {
       entry.retried = true;
       auto* host = content::RenderProcessHost::FromID(id);
@@ -227,6 +234,8 @@ class RendererProcessRegistry final
     entry.incarnation = ++incarnation_;
     entry.bound_sequence = 0;
     entry.attempted = false;
+    entry.acknowledged = false;
+    entry.early_agent_known = false;
     entry.frame_ready = false;
     entry.retried = false;
   }
@@ -300,18 +309,47 @@ class RendererProcessRegistry final
     }
   }
 
+  void BroadcastExclusions(base::WeakPtr<Profile> profile) {
+    if (!profile) {
+      return;
+    }
+    auto* rules = Rules(profile.get());
+    for (auto& [id, entry] : entries_) {
+      if (entry.profile.get() != profile.get() ||
+          !entry.initial_configuration_captured ||
+          !RendererAdBlockFeatureEnabled()) {
+        continue;
+      }
+      // Native queued callback 0x4730fa0 captures only its weak service. It
+      // reads the live feature for each agent and the latest profile origins.
+      entry.pending.excluded_origins = rules->excluded_origins;
+      entry.pending.exclusions_version = rules->exclusions_version;
+      entry.has_exclusions = true;
+      if (entry.remote.is_bound()) {
+        entry.remote->SetAdBlockExcludedOrigins(entry.pending.excluded_origins,
+                                                entry.pending.exclusions_version);
+      }
+    }
+  }
+
   void ConfigurationChanged() {
     const auto& configuration = GetAdBlockConfiguration();
+    // Manager updates while disabled retain only the global cache. Existing
+    // profile and renderer state continues filtering with its previous values.
+    if (!configuration.enabled) {
+      return;
+    }
     std::erase_if(profiles_, [](const auto& pair) { return !pair.second; });
     for (const auto& [identity, weak_profile] : profiles_) {
       auto* rules = Rules(weak_profile.get());
-      // Explicit exclusions are delivered even while disabled. Compiled rules
-      // remain gated at the browser service until an enabled publication.
-      const bool update_rules = configuration.enabled && ApplyManagerRules(*rules);
+      const bool update_rules = ApplyManagerRules(*rules);
       const bool update_exclusions = rules->exclusions_version != configuration.config_version;
       if (update_exclusions) {
         rules->excluded_origins = configuration.excluded_origins;
         rules->exclusions_version = configuration.config_version;
+        content::GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(&RendererProcessRegistry::BroadcastExclusions,
+                                      weak_factory_.GetWeakPtr(), weak_profile));
       }
       for (auto& [id, entry] : entries_) {
         if (entry.profile.get() != weak_profile.get() ||
@@ -322,15 +360,6 @@ class RendererProcessRegistry final
           CopyRules(entry.pending, *rules);
           if (entry.remote.is_bound()) {
             SendRules(entry, entry.pending);
-          }
-        }
-        if (update_exclusions) {
-          entry.pending.excluded_origins = rules->excluded_origins;
-          entry.pending.exclusions_version = rules->exclusions_version;
-          entry.has_exclusions = true;
-          if (entry.remote.is_bound()) {
-            entry.remote->SetAdBlockExcludedOrigins(entry.pending.excluded_origins,
-                                                    entry.pending.exclusions_version);
           }
         }
       }
@@ -355,7 +384,10 @@ RendererProcessRegistry& Registry() {
 
 void InitializeRendererProcessBridge() { Registry(); }
 void InitializeRendererProfile(Profile* profile) { Registry().InitializeProfile(profile); }
-void RendererProcessWillLaunch(content::RenderProcessHost* host) { Registry().ProcessWillLaunch(host); }
+void RendererProcessWillLaunch(content::RenderProcessHost* host,
+                               bool early_process_agent_installed) {
+  Registry().ProcessWillLaunch(host, early_process_agent_installed);
+}
 void RendererProcessFrameReady(content::RenderProcessHost* host) { Registry().FrameReady(host); }
 void GetRendererAdBlockDebugInfo(Profile* profile, const GURL& url,
                                  base::OnceCallback<void(const std::string&)> completion) {

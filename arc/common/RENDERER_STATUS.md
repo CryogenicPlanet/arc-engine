@@ -150,15 +150,15 @@ Native feature11=false continues blocking/counting and keeps cosmetics; only
 browser debug is disabled. Reenable republishes exclusions and clears debug
 cache. Native debug chooses the earliest surviving bound renderer-process agent
 by registration counter; this can differ from the fixture's renderer. Process
-ownership/routing refactor is being planned; current per-frame selection and
-renderer feature gate do not yet satisfy this observed contract.
+ownership/routing is now implemented in the process registry/agent below;
+its runtime validation exposed a startup ordering bug being corrected.
 
 PiP flags requested by core are process-global (skipfalse/ignoretrue defaults),
 with distinct video/document activation semantics. A host-gated shared Blink
 proposal is ready in renderer_pip_blink_proposal.patch; core keeps public
 selectors and renderer will supply the native common/IPC bridge. No Chromium
-source was edited. Proposal compile validation is in progress with temporary
-VFS overlays.
+source was edited. All three affected Blink translation units pass actual Base
+flags using temporary VFS overlays, zero diagnostics. This is not link/runtime proof.
 
 ## Process ownership refactor checkpoint
 
@@ -175,7 +175,211 @@ All three changed .mm and both renderer .cc files pass actual flags, and fresh
 review found no remaining concrete source blocker. Evidence:
 `logs/wp/renderer.process-refactor.checks.log`. Legacy frame config/debug Mojo
 methods remain unused temporarily so shared incremental builds stay compiling.
-Fresh full build/package/paired runtime is queued in
-`logs/wp/renderer.process-parity.run2.log`, output `results/renderer-process-parity-run2`.
+Fresh full build/package passed 10:44 UTC. Paired runtime in
+`logs/wp/renderer.process-parity.run2.log`, output `results/renderer-process-parity-run2`,
+FAILED before any ours CSS observations: browser requested the process associated
+interface before the first-frame fallback registered it; both renderers hit
+unknown-interface NOTREACHED and aborted, followed by the browser sad-tab check.
+This is an owned startup bug, not measured feature mismatches. The original
+independently timed out cosmetic publication after 60 seconds. Corrective work
+defers actual binding until the frame acknowledgment unless paired startup hooks
+are guaranteed; registration order/configuration capture remains at launch.
 No process-refactor runtime parity is claimed yet. Exact lifecycle and shared
 feature/document-start hooks are still required as listed in INTEGRATION.
+
+A fresh review also found that document-start Boost JS can destroy the frame.
+The helper must report liveness and Chrome must skip extensions after deletion.
+The owned hooks proposal now includes that guard; source correction is in progress.
+
+
+## Safe fallback runtime verified
+
+Fresh full build passed 2026-10-23 10:58:32 UTC, package/deep strict signing
+passed. Framework SHA256 is preserved in
+`logs/wp/renderer.framework.safe.run2.sha256`.
+`results/renderer-safe-parity-run2` completes both engines with 14 stylesheet
+states each and exact computed-style parity. Selected CSS boundary diff:
+
+```text
+methods differing: 0 (missing 0, extra 0, returns 0, callback args 0, counts 0; internal-only 0)
+callback sequence: {"golden": 0, "ours": 0, "first_divergence": null, "golden_from": [], "ours_from": []}
+```
+
+The strict extraction comparator also passes both rich extractions, including
+a changed text node: exact recursive trees, public runtime metadata, asynchronous
+main-thread callback shape, and bounded Unix wall-clock timestamps. Both actual
+styled screenshots were inspected. No unknown-interface, fatal or signal marker
+occurred. This verifies the safe process fallback removed the prior startup crash.
+
+The separate `results/renderer-safe-adblock-run2` is INCOMPLETE: its BEST_EFFORT
+compiler request never became visible to debug within 60,588ms. There was no
+crash; feature toggles were not reached. The original also repeatedly stalls in
+cold uninstrumented runs, but shared cause has not been proved. Preserve the
+prior successful bounded native checkpoint run as separate evidence. A new
+paired idle-before-request diagnostic is queued in
+`logs/wp/renderer.followup.run2.log`; it also records native filter pixels and
+all eight classes' public runtime surface. Its outcome is pending.
+
+Refreshed `arc/renderer/coverage_report.py` snapshot now covers 24 accepted launch
+transcripts: 24 empty-exclusions calls, 34 zero-count setters, 56 getters,
+28 top-band delegate setters and 60 stylesheet inserts. No active blocking,
+Boost, extraction, scheme/filter or top-band sample callbacks occur there.
+Shared current diffs still contain count/path differences and a stale
+pre-fix tabs-navigation failure; provenance/hashes and exact first two diff lines
+are captured in `logs/wp/renderer.coverage.run2.json`. These are shared mutable
+artifacts, distinct from the immutable owned paired probes and launch snapshot.
+
+The visual effects proposal is compiler checked in nine translation units,
+including six codec tests under two security modes (compiled, not executed).
+`arc/common/renderer_effects_blink_proposal.patch` remains proposal-only;
+`logs/wp/renderer-effects-proposal/REVIEW.md` lists transport, runtime and native
+image-path gaps. Owned transport work is being prepared as a separate unapplied
+proposal, keeping production source stable for runtime validation.
+
+
+## Native network and visual follow-up
+
+Native error -90 is now pinned to `ERR_BLOCKED_BY_CONTENT_BLOCKER` through the
+numeric ErrorToShortString jump table, with an independent -20/CLIENT
+cross-check. The exact shared enum request is
+`NET_ERROR(BLOCKED_BY_CONTENT_BLOCKER, -90)`; stock Chromium lacks it.
+Native `URLLoaderThrottle` evaluates only WillStartRequest; redirect and later
+hooks are no-ops. Clone shares a thread-safe dealer; each throttle captures an
+exclusion snapshot but reads the current ruleset under the dealer lock at start.
+The full renderer/browser network replacement is being prepared as an unapplied
+proposal. It must replace fallback filtering only when the paired provider hook
+is installed. Browser ResourceLoadComplete(error -90) owns native counts.
+
+The extra native ResourceRequest final optional Origin (+1840/+1920) is now
+proven to come from Blink ResourceRequestHead::TopFrameOrigin (+208), through
+PopulateResourceRequest0x1f83a94. Independent getter/setter and frame/worker
+producer evidence is in renderer_extra_origin_evidence.md. Earlier Mojo Read
+identification was wrong and is explicitly corrected there. This is distinct
+from isolated_world_origin and trusted isolation-info top-frame origin. A full
+minimal request/Mojo/converter plus throttle proposal revision is being checked;
+it remains unapplied, so this bypass is not production/runtime verified. Native count equality suppression is now proven at
+0x438eba4-0x438ebac, so the existing nonzero PrimaryPageChanged reset guard is
+correct; independent bulk wrapper initialization can still emit setter calls.
+
+The owned filter/scheme transport proposal is now concrete and compiler checked
+in five staged TUs with generated Mojo isolated under logs:
+`renderer_effects_transport_proposal.patch`. It requires the shared Blink APIs
+and remains unapplied. Eight public encodings match exactly; independent review
+caught/fixed low-32-bit enum aliasing and missing peer guards. No compatibility
+no-op branch was introduced. Production remains stable for current validation.
+
+TopBandColorTracker recovery continues. Its native producer hit-tests layout
+objects and analyzes CSS candidates, including a ytd-masthead heuristic. A root
+background/screenshot approximation cannot establish that behavior.
+
+
+## Follow-up build-only failure
+
+The identity-fix follow-up acquired 11:17:07 UTC and failed both build attempts
+before packaging/runtime in foreign `arc_omnibox_controller.mm:388` (-Wshadow
+of matches declared373). Current owner source already uses provider_values;
+app monitor confirmed that on Chirp136318. Exact attempts are preserved in
+`logs/wp/renderer.followup-first-build-failure/`. No new metadata, pixel or adblock
+outcome exists from this attempt. A single retry is planned after the COMMON
+few-minute wait; no foreign source was changed.
+
+
+## Follow-up retry and canonical baseline
+
+After the required few-minute wait, a single retry was queued11:23:43UTC
+(waiter80059, toolsession35162), logs/wp/renderer.followup-retry1.run2.sh.
+It includes eight-class public surface comparison, newly accepted
+renderer-public-api canonical original/ours diff, then the paired45s-idle
+adblock/native-filter diagnostic. It was paused only while confirmed unstarted
+under foreign lock95985 to insert the new canonical scenario, then resumed.
+No new runtime result is claimed yet. Canonical sources/driver/script hashes
+are frozen in logs/wp/renderer.canonical.source.freeze.run2.json.
+
+PiP owned transport proposal is complete (threefiles, fourrealflagchecks0),
+with an alternative18file combined effects/network/PiP owned patch,11checks0.
+Both apply-check0/fresh review clean and remain unapplied. Core forwarding
+code/dependency/overlap details are in
+logs/wp/renderer-pip-transport-proposal/REVIEW.md.
+
+The same unstarted retry waiter was briefly paused under foreignowner75168 to
+add diagnostic-only CDP Startup.* histogram snapshots beforeidle/beforesetlists
+and at ready/timeout. Sourcefreeze refreshed; standaloneObjC+Bunbuild0. These
+read state and retain errors without changing task priority or readiness rules.
+Existing runs show uninstrumented native publication can succeed, while mixed
+startup ages rule out a universal60s threshold. No fence-cause claim is made.
+
+
+The shared recorder/diff upgrade can omit injected-image calls when both files
+have caller attribution. probe_diff.py now additionally compares all10raw
+fixture calls/pairedreturns exactly (arguments, return values, order, mainthread
+and single receiver), independent of that filter. Preserved safe-pair records
+pass; a copied-data caller-filtered positive passes and a deliberate CSS-argument
+negative exits1. No raw runtime transcript changed. Shared diff was recomputed
+with tool/output hashes in logs/wp/renderer.safe-css.recomputed.run2.json;
+its zero count is separate from the exact ten-call comparison.
+
+
+## TopFrameOrigin proposal revision ready
+
+The revised15owned network and10shared hooks/request/Mojo/converter/test
+patches are published, still unapplied. Revised18owned combined transport
+changes only the network broker relative to its prior effects/network/PiP
+version.19network/shared/test and11combined actualflags compilerchecks exit0;
+fresh review clean. Fixtures are compiled, not linked/executed. Exact native
+field spelling/Mojo ordinal remain unknown; top_frame_origin is our descriptive
+name for the independently proven Blink value. Browser-initiated population
+policy is not invented. Details/hashes/repro in
+logs/wp/renderer-network-top-origin-proposal/REVIEW.md.
+
+One all-integration private composition is being prepared to merge the shared
+Chrome startup overlap and current owned patches. App pending integration
+already contains exact duplicate nativefeature/Refresh/AppFlags hunks; adoption
+must deduplicate those. No actual shared/production source changed.
+
+Retry1 acquired at11:30:40UTC; build attempt1 began11:30:43. Own frozen source hashes all still match; packaging/canonical/runtime outcomes pending.
+
+
+## Canonical renderer scenario run2
+
+Fresh11:31:37UTC fullbuild/package strictsignPASS, identityfix nowlinked.
+results/renderer-surface-run2 matches136publicrows/eightclasses exactly.
+results/renderer-canonical-run2 passes14CSSstates, twoexactrich extraction
+trees, asyncmainonce completions andrawrequiredrowcounts. Solefunctional
+scenario failure is Browser.close15stimeout thenSIGTERM/browser+7helpersexit.
+Fullstandarddiff retains69differences (goldenv1nocaller/oursv2); ownentries
+are themeCSS3native/5ours (extrasbeforefixture), internalextractionconstructors
+2/1 andextraone-pointerconstructor. Oursconstructorsarefrom:engine; newnative
+caller-aware recording willdisambiguate. Exact10fixtureCSScalls/pairedreturns
+match independently in css-boundary/. These retainedcountdifferences are not
+allowlisted andfullruntimeacceptance is notclaimed.
+
+Native filterfixtures nowexist in renderer-idle-diagnostic-run2/trace156.
+Observed CSSred/text grayscaleandidentity255→254, whilecanvas,PNGIMG,SVGIMG
+remainred. Remove restoresbaseline. Parentinspectedactualgrayscalescreenshot;
+separatevisual/nativepathreviewinprogress. This narrowscoverage toexactfixtures.
+
+
+New runtime-only paired diagnostic queued11:40UTC, waiter23677/toolsession8502,
+logs/wp/renderer.long-diagnostic.run2.sh. It uses240s readiness tospanstartup
+3minfallback, keeps60sdefaultandnativeBEST_EFFORTunchanged, recordsperiodic
+Startup.* snapshots andactualrequestdeadline. BothappsreceiveoneCOPYFILE_EXCL
+frozenrecordersnapshotwithimmediatesource/hashcheck; perappartifactsstillchecked.
+Threeopaque-redgeneratedgradientfixturesaddedoptionally. ObjC+Bunchecks0 and
+freshread-onlyreviewclean. Nooutcomeyet; baseCSSsummaryparitydoesnotimply
+filter/adblockparity. Framework/hashatactualrunwillcomefromprovenance.
+
+
+Provenancecorrection: the11:31standardrenderer-public-api scenario batch at
+results/renderer-canonical-run2 is SUPPLEMENTAL. Itpreserveddisposableprofile
+state; officialdiff-runwrapper resetsit. Scenariosinformed136769; canonical
+results/ours/renderer-public-api remainsmissing. Fixturefunctionality/rawcall
+checksretainmeaning, butthisisnotcanonicalcompletion. Officialrunwillfollow
+currentwarmdiagnosticorbehandledbyconfirmedscenariosintegrator, avoidingduplicate
+waiters.
+
+FullTopBand producer/browser contracts nowpersisted in renderer_contract_evidence
+(mainsection1038+, browser1528+). Nativebrowserstate is DocumentUserData onroot
+mainRFHdocument, notunkeyedWebContents/wholeRFHlifetime; BFCachepersistsand
+sameRFHcrossdocresets. Missingview/width<1 retains pending, failedcopy cachesnil.
+Separatefaithfulportproposalwillpreserve these. Arc36relay/liveupdatesremain
+unproven; bothnativebasefeaturedefaultsDISABLED.

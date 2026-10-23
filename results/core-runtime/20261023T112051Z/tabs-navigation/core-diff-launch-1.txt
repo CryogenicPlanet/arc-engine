@@ -1,0 +1,36 @@
+Core-owned raw rows: missing 1, extra 0, return_mismatch 8, arg_mismatch 1, count_mismatch 24, internal 0
+Ownership filter only; no normalization or parity claim. Raw callback sequence remains in input diff.
+missing: {"method": "->engine -ArcWebContents ignoreDisablePiPAttribute:", "golden_calls": 4, "example": {"args": "[false]", "ret": "null"}}
+return_mismatch: {"method": "->engine -ArcBrowser context", "call": 0, "args": "[]", "golden": "\"<ArcBrowserContext#2>\"", "ours": "\"<ArcBrowserContext#1>\""}
+return_mismatch: {"method": "->engine -ArcSessionID identifier", "call": 0, "args": "[]", "golden": "1189391990", "ours": "1534712856"}
+return_mismatch: {"method": "->engine -ArcWebContents isReadyToDisplay", "call": 6, "args": "[]", "golden": "true", "ours": "false"}
+return_mismatch: {"method": "->engine -ArcWebContents loadProgress", "call": 36, "args": "[]", "golden": "1", "ours": "0.1"}
+return_mismatch: {"method": "->engine -ArcWebContents nativeView", "call": 0, "args": "[]", "golden": "\"<WebContentsHostView#1>\"", "ours": "\"<WebContentsViewCocoa#1>\""}
+return_mismatch: {"method": "->engine -ArcWebContents navigationID", "call": 4, "args": "[]", "golden": "0", "ours": "1"}
+return_mismatch: {"method": "->engine -ArcWebContents url", "call": 4, "args": "[]", "golden": "\"url:http://*/b\"", "ours": "\"url:http://*/a\""}
+return_mismatch: {"method": "->engine -ArcWebContents visibility", "call": 8, "args": "[]", "golden": "0", "ours": "1"}
+arg_mismatch: {"method": "engine->app -ADK.WebContentChromium webContents:didChangeStatusText:", "call": 2, "golden": "[\"<ArcWebContents#1>\", \"\"]", "ours": "[\"<ArcWebContents#2>\", \"\"]"}
+count_mismatch: {"method": "->engine -ArcBackForwardList initWithBackForwardList:", "golden": 16, "ours": 17}
+count_mismatch: {"method": "->engine -ArcBackForwardListItem initWithBackForwardListItem:", "golden": 59, "ours": 57}
+count_mismatch: {"method": "->engine -ArcWebContents backForwardList", "golden": 32, "ours": 34}
+count_mismatch: {"method": "->engine -ArcWebContents favicon", "golden": 34, "ours": 28}
+count_mismatch: {"method": "->engine -ArcWebContents insertStylesheet:stylesheet:", "golden": 3, "ours": 5}
+count_mismatch: {"method": "->engine -ArcWebContents isReadyToDisplay", "golden": 34, "ours": 20}
+count_mismatch: {"method": "->engine -ArcWebContents loadProgress", "golden": 62, "ours": 60}
+count_mismatch: {"method": "->engine -ArcWebContents navigationController", "golden": 7, "ours": 5}
+count_mismatch: {"method": "->engine -ArcWebContents navigationID", "golden": 34, "ours": 54}
+count_mismatch: {"method": "->engine -ArcWebContents setBackForwardList:", "golden": 16, "ours": 17}
+count_mismatch: {"method": "->engine -ArcWebContents setFavicon:", "golden": 17, "ours": 14}
+count_mismatch: {"method": "->engine -ArcWebContents setIsReadyToDisplay:", "golden": 17, "ours": 10}
+count_mismatch: {"method": "->engine -ArcWebContents setLoadProgress:", "golden": 31, "ours": 30}
+count_mismatch: {"method": "->engine -ArcWebContents setNavigationID:", "golden": 17, "ours": 27}
+count_mismatch: {"method": "->engine -ArcWebContents setState:", "golden": 5, "ours": 6}
+count_mismatch: {"method": "->engine -ArcWebContents setTabTraits:", "golden": 17, "ours": 14}
+count_mismatch: {"method": "->engine -ArcWebContents setUrl:", "golden": 17, "ours": 27}
+count_mismatch: {"method": "->engine -ArcWebContents setVisibility:", "golden": 5, "ours": 6}
+count_mismatch: {"method": "->engine -ArcWebContents state", "golden": 10, "ours": 12}
+count_mismatch: {"method": "->engine -ArcWebContents tabTraits", "golden": 36, "ours": 30}
+count_mismatch: {"method": "->engine -ArcWebContents url", "golden": 34, "ours": 54}
+count_mismatch: {"method": "->engine -ArcWebContents visibility", "golden": 10, "ours": 12}
+count_mismatch: {"method": "->engine -ArcWebContentsNavigationController removeObserver:", "golden": 3, "ours": 1}
+count_mismatch: {"method": "engine->app -ADK.WebContentChromium webContents:didChangeStatusText:", "golden": 35, "ours": 26}

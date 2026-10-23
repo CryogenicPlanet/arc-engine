@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <array>
 #include <limits>
-#include <map>
 #include <optional>
 #include <set>
 
@@ -14,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/scoped_observation.h"
 #include "base/task/sequenced_task_runner.h"
+#include "chrome/browser/apps/app_service/web_contents_app_id_utils.h"
 #include "arc/browser/arc_browser_window.h"
 #include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "chrome/browser/ui/browser_window/public/create_browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/sessions/core/session_types.h"
@@ -380,13 +380,26 @@ class SessionsLoadObserver : public sessions::TabRestoreServiceObserver {
   BrowserWindowCreateParams params(profile, true);
   if (selected->type == sessions::tab_restore::WINDOW) {
     const auto& window = static_cast<const sessions::tab_restore::Window&>(*selected);
-    params.type = static_cast<BrowserWindowInterface::Type>(window.window_type);
-    params.app_name = window.app_name;
-    params.initial_bounds = window.bounds;
-    params.initial_origin_specified = BrowserWindowCreateParams::ValueSpecified::kSpecified;
-    params.initial_show_state = window.show_state;
-    params.initial_workspace = window.workspace;
-    params.user_title = window.user_title;
+    // A descendant tab uses RestoreTab's fresh normal-window defaults. Only
+    // whole-window restoration consumes the stored window configuration.
+    if (restoreID == window.id || restoreID == window.original_id || !window.app_name.empty()) {
+      // SessionWindow and BrowserWindowInterface use different type enums.
+      // Native restoration creates an app window only for a restorable app
+      // name; otherwise even stored popup/devtools types use a normal window.
+      const std::string appID = web_app::GetAppIdFromApplicationName(window.app_name);
+      if (!window.app_name.empty() && (appID.empty() || apps::IsInstalledApp(profile, appID))) {
+        params = window.window_type == sessions::SessionWindow::TYPE_APP_POPUP
+            ? BrowserWindowCreateParams::CreateForAppPopup(
+                  window.app_name, true, window.bounds, profile, true)
+            : BrowserWindowCreateParams::CreateForApp(
+                  window.app_name, true, window.bounds, profile, true);
+      } else {
+        params.initial_bounds = window.bounds;
+      }
+      params.initial_show_state = window.show_state;
+      params.initial_workspace = window.workspace;
+      params.user_title = window.user_title;
+    }
   }
   params.should_trigger_session_restore = false;
   params.creation_source = BrowserWindowCreateParams::CreationSource::kSessionRestore;
@@ -644,7 +657,6 @@ ARC_EXPORT @interface ArcSessionWindow : NSObject
 
 namespace {
 const char kSessionInsertionState = 0;
-const char kSessionAliases[] = "ArcSessionAliases";
 
 void QueueRestorationCallback(ArcBrowser* browser, content::WebContents* contents,
                               ArcSessionID* identifier, SessionsRestoreIDs* full) {
@@ -672,20 +684,6 @@ void QueueRestorationCallback(ArcBrowser* browser, content::WebContents* content
       CompleteFullRestore(full);
     }
   }));
-}
-
-struct SessionAliases : base::SupportsUserData::Data {
-  std::map<SessionID, SessionID> historical_ids;
-};
-
-SessionAliases& AliasesForProfile(Profile* profile) {
-  auto* aliases = static_cast<SessionAliases*>(profile->GetUserData(kSessionAliases));
-  if (!aliases) {
-    auto owned = std::make_unique<SessionAliases>();
-    aliases = owned.get();
-    profile->SetUserData(kSessionAliases, std::move(owned));
-  }
-  return *aliases;
 }
 
 class ScopedSessionInsertion {
@@ -881,9 +879,6 @@ void PopulateOriginalTabIDs(sessions::tab_restore::Entry& entry, BrowserWindowIn
       const auto live = sessions::SessionTabHelper::IdForTab(tabs->GetWebContentsAt(tab.tabstrip_index));
       // Arc's PopulateTab does this; stock Chromium leaves original_id empty.
       tab.original_id = live;
-      if (live.is_valid()) {
-        AliasesForProfile(browser->GetProfile()).historical_ids.insert_or_assign(live, tab.id);
-      }
     }
     return;
   }
@@ -912,12 +907,9 @@ void PopulateOriginalTabIDs(sessions::tab_restore::Entry& entry, BrowserWindowIn
   }
 }
 
-class SessionsTabsObserver : public TabStripModelObserver,
-                             public sessions::TabRestoreServiceObserver {
+class SessionsServiceObserver : public sessions::TabRestoreServiceObserver {
  public:
-  explicit SessionsTabsObserver(ArcBrowser* browser) : browser_(browser) {
-    // TabStripModelObserver tracks observed models and detaches on destruction.
-    [browser browser]->GetTabStripModel()->AddObserver(this);
+  explicit SessionsServiceObserver(ArcBrowser* browser) : browser_(browser) {
     Profile* profile = [browser browser]->GetProfile();
     if (!profile->IsOffTheRecord()) {
       if (auto* service = TabRestoreServiceFactory::GetForProfile(profile)) {
@@ -948,37 +940,6 @@ class SessionsTabsObserver : public TabStripModelObserver,
     service_observation_.Reset();
     seen_entries_.clear();
   }
-  void OnTabStripModelChanged(TabStripModel* tabs, const TabStripModelChange& change,
-                             const TabStripSelectionChange& selection) override {
-    ArcBrowser* wrapper = browser_;
-    BrowserWindowInterface* browser = [wrapper browser];
-    if (!browser || change.type() != TabStripModelChange::kRemoved ||
-        browser->GetProfile()->IsOffTheRecord()) {
-      return;
-    }
-    Profile* profile = browser->GetProfile();
-    auto& aliases = AliasesForProfile(profile).historical_ids;
-    for (const auto& removed : change.GetRemove()->contents) {
-      if (removed.session_id) {
-        const auto live_id = sessions::SessionTabHelper::IdForTab(removed.contents.get());
-        if (live_id.is_valid()) {
-          aliases.insert_or_assign(live_id, *removed.session_id);
-        }
-      }
-    }
-    // Bound this cache to records still owned by the native restoration service.
-    auto* service = TabRestoreServiceFactory::GetForProfile(profile);
-    std::erase_if(aliases, [service](const auto& alias) {
-      if (service) {
-        for (const auto& entry : service->entries()) {
-          if (FindRestoreEntry(*entry, alias.second)) {
-            return false;
-          }
-        }
-      }
-      return true;
-    });
-  }
  private:
   __weak ArcBrowser* browser_;
   std::set<SessionID> seen_entries_;
@@ -992,14 +953,14 @@ class SessionsTabsObserver : public TabStripModelObserver,
 - (void)browserDidClose:(BrowserWindowInterface*)browser;
 @end
 @implementation SessionsBrowserObservation {
-  std::unique_ptr<SessionsTabsObserver> _observer;
+  std::unique_ptr<SessionsServiceObserver> _observer;
   base::CallbackListSubscription _closeSubscription;
   __weak ArcBrowser* _browser;
 }
 - (instancetype)initWithBrowser:(ArcBrowser*)browser {
   if ((self = [super init])) {
     _browser = browser;
-    _observer = std::make_unique<SessionsTabsObserver>(browser);
+    _observer = std::make_unique<SessionsServiceObserver>(browser);
     __weak SessionsBrowserObservation* weakSelf = self;
     _closeSubscription = [browser browser]->RegisterBrowserDidClose(base::BindRepeating(
         ^(BrowserWindowInterface* native) { [weakSelf browserDidClose:native]; }));
@@ -1052,20 +1013,6 @@ void ArcSessionsBrowserCreated(ArcBrowser* browser) {
       }
     }
   }
-}
-
-ArcSessionID* ArcSessionsRestorationIDForWebContents(content::WebContents* contents) {
-  if (!contents) {
-    return nil;
-  }
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  if (!profile || profile->IsOffTheRecord()) {
-    return nil;
-  }
-  const auto live = sessions::SessionTabHelper::IdForTab(contents);
-  const auto& aliases = AliasesForProfile(profile).historical_ids;
-  auto found = aliases.find(live);
-  return found != aliases.end() ? [[ArcSessionID alloc] initWithID:found->second.id()] : nil;
 }
 
 BOOL ArcSessionsDidInsertWebContents(ArcBrowser* browser, content::WebContents* contents) {
@@ -1157,7 +1104,7 @@ BOOL ArcSessionsDidInsertWebContents(ArcBrowser* browser, content::WebContents* 
       browser, native->navigations, browser->GetTabStripModel()->active_index() + 1,
       native->normalized_navigation_index(), native->extension_app_id, native->group,
       false, native->pinned, base::TimeTicks(), native->last_active_time, nullptr,
-      native->user_agent_override, native->extra_data, true, std::nullopt);
+      native->user_agent_override, native->extra_data, false, std::nullopt);
   if (restored) {
     restored->GetController().LoadIfNecessary();
   }

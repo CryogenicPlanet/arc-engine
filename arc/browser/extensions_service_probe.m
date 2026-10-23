@@ -11,11 +11,10 @@
 @property(nonatomic, weak) id delegate;
 @property(nonatomic, weak) id browser;
 @property(nonatomic, weak) id browserDelegate;
-@property(nonatomic, strong) NSMapTable* browsers;
 @end
 @implementation ExtensionsProbeEntry
 @synthesize context = _context, service = _service, delegate = _delegate;
-@synthesize browser = _browser, browserDelegate = _browserDelegate, browsers = _browsers;
+@synthesize browser = _browser, browserDelegate = _browserDelegate;
 @end
 
 @interface ExtensionsProbeWork : NSObject
@@ -38,18 +37,23 @@
 @end
 
 static NSMapTable* gEntries;
+// Independent of transient ArcBrowserContext wrappers. Never retain app objects.
+static NSMapTable* gBrowserDelegates;
 static NSMutableSet* gHooks;
 static NSMutableDictionary* gOwned;
 static NSMutableArray* gBaseline;
 static NSString* gRequest;
 static NSString* gFixtures;
 static NSString* gToken;
+static NSString* gFixtureMode;
+static NSMutableSet* gStartupPending;
 static NSString* gRecord;
 static NSString* gLastID;
 static BOOL gInstalled;
 static ExtensionsProbeWork* gWork;
 static ExtensionsProbeWork* gCaptureWork;  // Protected by gCaptureLock.
 static NSObject* gCaptureLock;
+static BOOL gStartupObservationWindow;  // Protected by gCaptureLock.
 static NSMutableArray* gDiagnostics;
 static NSMutableSet* gOutstandingInstalls;
 static NSMutableArray* gInstallAttempts;
@@ -140,7 +144,6 @@ static ExtensionsProbeEntry* Entry(id context) {
   ExtensionsProbeEntry* entry = [gEntries objectForKey:context];
   if (!entry) {
     entry = [ExtensionsProbeEntry new]; entry.context = context;
-    entry.browsers = [NSMapTable weakToWeakObjectsMapTable];
     [gEntries setObject:entry forKey:context];
   }
   return entry;
@@ -154,16 +157,24 @@ static void Callback(id contextOrBrowser, NSString* selector, id payload) {
   // Capture the operation at callback entry, before hopping queues. Never
   // consult a future request's gWork to assign an earlier callback.
   ExtensionsProbeWork* capturedWork;
+  BOOL beforeStartupAdoption;
   id synchronous;
   @synchronized(gCaptureLock) {
     capturedWork = gCaptureWork;
+    beforeStartupAdoption = gStartupObservationWindow;
     synchronous = capturedWork ? JSONBool(!capturedWork.returned) : (id)NSNull.null;
   }
   NSNumber* recordOffset = Offset();
   __weak id weakOwner = contextOrBrowser;
   void (^save)(void) = ^{
     NSDictionary* event = @{@"selector":selector,@"payload":Value(payload),@"mainThread":JSONBool(callbackMainThread),@"synchronous":synchronous,@"recordOffset":recordOffset};
-    if (!capturedWork) { Diagnostic(@"unassigned",nil,event); return; }
+    // Journal every actual pre-adoption callback independently of discovery
+    // requests: incomplete discoveries are not exercised-operation evidence.
+    if (beforeStartupAdoption) Diagnostic(@"startup-observation",capturedWork,event);
+    if (!capturedWork) {
+      if (!beforeStartupAdoption) Diagnostic(@"unassigned",nil,event);
+      return;
+    }
     if (capturedWork.context != weakOwner && capturedWork.browser != weakOwner) {
       Diagnostic(@"outside-captured-context",capturedWork,event); return;
     }
@@ -235,12 +246,55 @@ static void Delegate(id service, SEL selector, id delegate) {
 }
 static void BrowserDelegate(id browser, SEL selector, id delegate) {
   if (NSThread.isMainThread) {
-    ExtensionsProbeEntry* entry = Entry(Get(browser,@"context"));
-    if (delegate) [entry.browsers setObject:delegate forKey:browser];
-    else [entry.browsers removeObjectForKey:browser];
+    if (delegate) [gBrowserDelegates setObject:delegate forKey:browser];
+    else [gBrowserDelegates removeObjectForKey:browser];
     HookDelegate(delegate, YES);
   }
   ((void (*)(id, SEL, id))gBrowserDelegate)(browser, selector, delegate);
+}
+// Context-ID fields are diagnostic only: their wrappers have no value-equality
+// selector. Browser routing uses native extension-service equality and hash.
+static NSDictionary* ContextIDFields(id context) {
+  id identifier = context ? Get(context,@"id") : nil;
+  return @{@"present":JSONBool(identifier != nil),
+           @"directoryBasename":Value(identifier ? Get(identifier,@"directoryBasename") : nil),
+           @"isIncognito":identifier ? JSONBool(((BOOL (*)(id,SEL))objc_msgSend)(identifier,NSSelectorFromString(@"isIncognito"))) : (id)NSNull.null};
+}
+static NSArray* MatchingBrowsers(id service, id targetContext, NSMutableArray* inventory) {
+  Class serviceClass = NSClassFromString(@"ArcBrowserContextExtensions");
+  if (![service isKindOfClass:serviceClass] ||
+      !ABI(class_getInstanceMethod([service class],@selector(isEqual:)),3,@"B") ||
+      !ABI(class_getInstanceMethod([service class],@selector(hash)),2,@"Q"))
+    [NSException raise:@"ExtensionsProbeABI" format:@"target extension service identity ABI mismatch"];
+  const NSUInteger targetHash = [service hash];
+  NSDictionary* targetID = ContextIDFields(targetContext);
+  NSMutableArray* matches = [NSMutableArray array];
+  for (id browser in gBrowserDelegates.keyEnumerator) {
+    id delegate = [gBrowserDelegates objectForKey:browser];
+    if (!delegate) continue;
+    // These fresh wrapper objects live only in this iteration's local scope.
+    id context = Get(browser,@"context");
+    id candidateService = context ? Get(context,@"extensions") : nil;
+    BOOL identityABI = [candidateService isKindOfClass:serviceClass] &&
+        ABI(class_getInstanceMethod([candidateService class],@selector(isEqual:)),3,@"B") &&
+        ABI(class_getInstanceMethod([candidateService class],@selector(hash)),2,@"Q");
+    BOOL equal = identityABI && [candidateService isEqual:service];
+    BOOL reverseEqual = identityABI && [service isEqual:candidateService];
+    NSNumber* candidateHash = identityABI ? @([candidateService hash]) : nil;
+    BOOL hashEqual = candidateHash && candidateHash.unsignedIntegerValue == targetHash;
+    NSDictionary* candidateID = ContextIDFields(context);
+    BOOL matchesService = equal && reverseEqual && hashEqual;
+    [inventory addObject:@{@"browserClass":NSStringFromClass([browser class]),
+        @"delegateClass":NSStringFromClass([delegate class]),@"contextPresent":JSONBool(context != nil),
+        @"candidateServicePresent":JSONBool(candidateService != nil),@"identityABI":JSONBool(identityABI),
+        @"serviceEqual":JSONBool(equal),@"reverseServiceEqual":JSONBool(reverseEqual),
+        @"targetServiceHash":@(targetHash),@"candidateServiceHash":candidateHash ?: (id)NSNull.null,
+        @"serviceHashEqual":JSONBool(hashEqual),@"matchesService":JSONBool(matchesService),
+        @"targetContextID":targetID,@"candidateContextID":candidateID,
+        @"contextIDFieldsEqual":JSONBool([targetID isEqual:candidateID])}];
+    if (matchesService) [matches addObject:browser];
+  }
+  return matches;
 }
 static NSDictionary* Metadata(id service, id browser) {
   NSMutableDictionary* result = [NSMutableDictionary dictionary];
@@ -261,10 +315,13 @@ static BOOL Proven(id service, NSString* label, NSString* identifier) {
   if (!identifier.length || ![@[@"A",@"B"] containsObject:label]) return NO;
   id info = Get1(service,@"getExtensionInfo:",identifier);
   NSString* expected = [NSString stringWithFormat:@"ArcCore service probe %@ %@",gToken,label];
-  return info && [Get(info,@"id") isEqual:identifier] && [Get(info,@"name") isEqual:expected];
+  BOOL matches = info && [Get(info,@"id") isEqual:identifier] && [Get(info,@"name") isEqual:expected];
+  if (matches && [gFixtureMode isEqual:@"command-line"])
+    matches = [Get(info,@"version") isEqual:@"1.2.3"] && [PropertyValue(info,@"fromWebstore") isEqual:@NO];
+  return matches;
 }
 static void OwnershipJournal(void) {
-  WriteJSON(@{@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy]},[gRequest stringByAppendingString:@".owned.json"]);
+  WriteJSON(@{@"fixtureMode":gFixtureMode,@"startupPending":[gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)],@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy]},[gRequest stringByAppendingString:@".owned.json"]);
 }
 static NSString* ReconcileOwned(id service) {
   // An installation may have completed after its request timed out. Discover
@@ -277,12 +334,26 @@ static NSString* ReconcileOwned(id service) {
       if (!Proven(service,label,identifier)) return @"nonce fixture from list failed ID/name verification";
       if (gOwned[label] && ![gOwned[label] isEqual:identifier]) return @"multiple installed IDs share nonce fixture name; refusing ambiguous cleanup";
       gOwned[label] = identifier;
+      [gStartupPending removeObject:label];
     }
   }
+  if ([gFixtureMode isEqual:@"command-line"] && !gStartupPending.count && gOwned.count == 2)
+    @synchronized(gCaptureLock) { gStartupObservationWindow = NO; }
   OwnershipJournal();
   return nil;
 }
 static NSString* Cleanup(ExtensionsProbeWork* work) {
+  if ([gFixtureMode isEqual:@"command-line"]) {
+    if (gOutstandingInstalls.count) return @"cleanup cannot certify while installs remain outstanding";
+    NSString* error = ReconcileOwned(work.entry.service);
+    if (error) return error;
+    if (gStartupPending.count) return @"command-line startup ownership unresolved; cleanup cannot be certified";
+    if (!gBaseline && gOwned.count == 2) {
+      gBaseline = [NSMutableArray array];
+      for (NSString* identifier in Get(work.entry.service,@"getPinnedExtensionOrder"))
+        if (![gOwned.allValues containsObject:identifier]) [gBaseline addObject:identifier];
+    }
+  }
   if (!gBaseline) return @"baseline was never captured; refusing pin mutation";
   if (gOutstandingInstalls.count) return @"cleanup cannot certify while installs remain outstanding";
   id service = work.entry.service;
@@ -308,10 +379,12 @@ static void Finish(NSString* error) {
     work.response[@"pinsAfter"] = Value(Get(work.entry.service,@"getPinnedExtensionOrder"));
     work.response[@"owned"] = [gOwned copy];
     work.response[@"outstandingInstalls"] = gOutstandingInstalls.allObjects;
+    work.response[@"startupPending"] = [gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)];
+    work.response[@"fixtureMode"] = gFixtureMode;
     if ([work.response[@"operation"] isEqual:@"cleanup"]) {
       BOOL absent = YES;
       for (id value in infos.allValues) if (value != NSNull.null) absent = NO;
-      work.response[@"cleanupCertified"] = JSONBool(!error && absent && !gOutstandingInstalls.count && [work.response[@"pinsAfter"] isEqual:gBaseline]);
+      work.response[@"cleanupCertified"] = JSONBool(!error && absent && !gOutstandingInstalls.count && !gStartupPending.count && [work.response[@"pinsAfter"] isEqual:gBaseline]);
     }
   } @catch (NSException* exception) { error = exception.reason ?: exception.name; }
   work.response[@"ok"] = JSONBool(!error);
@@ -370,19 +443,34 @@ static void Poll(void) {
   gWork.settleAt = NSDate.timeIntervalSinceReferenceDate + 0.8;
   if (matches.count != 1) { Finish(@"expected one live Default context with real app extension delegate"); return; }
   id service = gWork.entry.service;
-  NSMutableArray* browsers = [NSMutableArray array];
-  for (id candidate in gWork.entry.browsers.keyEnumerator)
-    if ([gWork.entry.browsers objectForKey:candidate]) [browsers addObject:candidate];
-  id browser = browsers.count == 1 ? browsers.firstObject : nil;
-  gWork.entry.browser = browser;
-  gWork.entry.browserDelegate = browser ? [gWork.entry.browsers objectForKey:browser] : nil;
-  gWork.response[@"browserMatches"] = @(browsers.count);
-  gWork.browser = browser;
+  id browser = nil;
   @synchronized(gCaptureLock) { gCaptureWork = gWork; }
   NSString* label = request[@"label"];
   NSString* ownedID = gOwned[label ?: @""];
   @try {
-    if ([operation isEqual:@"registry"]) {
+    NSMutableArray* inventory = [NSMutableArray array];
+    gWork.response[@"browserCandidates"] = inventory;
+    NSArray* browsers = MatchingBrowsers(service,gWork.entry.context,inventory);
+    browser = browsers.count == 1 ? browsers.firstObject : nil;
+    gWork.entry.browser = browser;
+    gWork.entry.browserDelegate = browser ? [gBrowserDelegates objectForKey:browser] : nil;
+    gWork.response[@"browserMatches"] = @(browsers.count);
+    gWork.browser = browser;
+    if ([operation isEqual:@"registry"] || [operation isEqual:@"adopt-command-line"]) {
+      if ([operation isEqual:@"adopt-command-line"]) {
+        if (![gFixtureMode isEqual:@"command-line"]) { Finish(@"adoption only allowed in explicit command-line fixture mode"); return; }
+        NSString* error = ReconcileOwned(service);
+        if (error) { Finish(error); return; }
+        NSMutableDictionary* adopted = [NSMutableDictionary dictionary];
+        for (NSString* item in gOwned) adopted[item] = Value(Get1(service,@"getExtensionInfo:",gOwned[item]));
+        gWork.response[@"adopted"] = adopted;
+        gWork.response[@"adoptionComplete"] = JSONBool(!gStartupPending.count && gOwned.count == 2);
+        if (!gStartupPending.count && gOwned.count == 2 && !gBaseline) {
+          gBaseline = [NSMutableArray array];
+          for (NSString* identifier in Get(service,@"getPinnedExtensionOrder"))
+            if (![gOwned.allValues containsObject:identifier]) [gBaseline addObject:identifier];
+        }
+      }
       gWork.response[@"metadata"] = Metadata(service,browser);
       gWork.response[@"ready"] = JSONBool(((BOOL (*)(id,SEL))objc_msgSend)(service,NSSelectorFromString(@"isExtensionSystemReady")));
       id repeated = Get(gWork.entry.context,@"extensions");
@@ -390,10 +478,11 @@ static void Poll(void) {
       NSUInteger firstHash = [service hash];
       gWork.response[@"hashStable"] = JSONBool(firstHash == [service hash]);
       gWork.response[@"browserPresent"] = JSONBool(browser && gWork.entry.browserDelegate);
-      if (!gOwned.count) gBaseline = [Get(service,@"getPinnedExtensionOrder") mutableCopy];
+      if ([gFixtureMode isEqual:@"public-install"] && !gOwned.count) gBaseline = [Get(service,@"getPinnedExtensionOrder") mutableCopy];
       gWork.response[@"baselinePins"] = Value(gBaseline);
     } else if ([operation isEqual:@"install"] || [operation isEqual:@"install-invalid"]) {
       BOOL invalid = [operation isEqual:@"install-invalid"];
+      if (!invalid && ![gFixtureMode isEqual:@"public-install"]) { Finish(@"public fixture installs forbidden in command-line mode"); return; }
       if (!invalid && (![@[@"A",@"B"] containsObject:label] || ownedID)) { Finish(@"invalid or already installed fixture label"); return; }
       NSString* path = [gFixtures stringByAppendingPathComponent:invalid ? @"invalid" : label];
       ExtensionsProbeWork* work = gWork;
@@ -470,16 +559,23 @@ __attribute__((constructor)) static void StartExtensionsServiceProbe(void) {
     const char* fixtures = getenv("ARC_EXTENSIONS_PROBE_FIXTURES");
     const char* token = getenv("ARC_EXTENSIONS_PROBE_TOKEN");
     const char* record = getenv("ARC_RECORD_PATH");
+    const char* mode = getenv("ARC_EXTENSIONS_PROBE_FIXTURE_MODE");
     if (!request || !fixtures || !token || !record) return;
+    gFixtureMode = mode ? @(mode) : @"public-install";
+    if (![@[@"public-install",@"command-line"] containsObject:gFixtureMode]) return;
     gRequest = @(request); gFixtures = @(fixtures); gToken = @(token); gRecord = @(record);
     if (!gRequest.isAbsolutePath || !gFixtures.isAbsolutePath || !gRecord.isAbsolutePath ||
         ![gRequest.lastPathComponent isEqual:@"extensions-service-request.json"] ||
         ![gFixtures.lastPathComponent isEqual:@"fixtures"] || ![gToken hasPrefix:@"arc-extensions-service-probe-"]) return;
     unsetenv("DYLD_INSERT_LIBRARIES");
     gEntries = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsStrongMemory];
+    gBrowserDelegates = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsWeakMemory];
     gHooks = [NSMutableSet set]; gOwned = [NSMutableDictionary dictionary];
     gCaptureLock = [NSObject new]; gDiagnostics = [NSMutableArray array];
     gOutstandingInstalls = [NSMutableSet set]; gInstallAttempts = [NSMutableArray array];
+    gStartupPending = [NSMutableSet set];
+    gStartupObservationWindow = [gFixtureMode isEqual:@"command-line"];
+    if ([gFixtureMode isEqual:@"command-line"]) [gStartupPending addObjectsFromArray:@[@"A",@"B"]];
     WriteJSON(gDiagnostics,[gRequest stringByAppendingString:@".diagnostics.json"]);
     OwnershipJournal();
     if (NSThread.isMainThread) Poll();

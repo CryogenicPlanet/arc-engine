@@ -1,0 +1,301 @@
+--- a/arc/browser/extensions_bridge.h
++++ b/arc/browser/extensions_bridge.h
+@@ -6,6 +6,11 @@
+ namespace arc {
+ void InstallBrowserExtensions(ArcBrowser* browser, id delegate);
+ id BrowserExtensionDelegate(ArcBrowser* browser);
++// Queue against the current bridge target. Clearing the delegate invalidates
++// queued requests; a nonnil replacement updates the same target at delivery.
++// False means there is no live bridge/callback target to enqueue against.
++bool DispatchBrowserExtensionRequest(ArcBrowser* browser,
++                                     void (^request)(id delegate));
+ ArcBrowser* BrowserForHostedExtensions(BrowserWindowInterface* browser);
+ void RegisterHostedExtensionAPIs();
+ }
+--- a/arc/api/arc_extensions_browser.mm
++++ b/arc/api/arc_extensions_browser.mm
+@@ -34,6 +34,7 @@
+ #include "chrome/browser/tab_list/tab_list_interface_observer.h"
+ #include "components/tabs/public/tab_interface.h"
+ #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
++#include "content/public/browser/browser_thread.h"
+ #include "content/public/browser/render_frame_host.h"
+ #include "content/public/browser/render_widget_host_view.h"
+ #include "content/public/browser/web_contents.h"
+@@ -209,6 +210,18 @@
+     actions.clear();
+     if (weak && weak->delegate_generation_ == generation)
+       weak->OnToolbarModelInitialized();
++  }
++  bool DispatchRequest(void (^request)(id delegate)) {
++    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
++    if (shutting_down_ || !browser_ || !callback_target_present_) return false;
++    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
++        base::BindOnce([](base::WeakPtr<BrowserExtensions> self,
++                          uint64_t epoch, void (^request)(id)) {
++          if (!self || self->callback_epoch_ != epoch) return;
++          id delegate = self->delegate_;
++          if (delegate) request(delegate);
++        }, weak_factory_.GetWeakPtr(), callback_epoch_, request));
++    return true;
+   }
+   id GetDelegate() const { return delegate_; }
+   ArcBrowser* GetWrapper() const { return wrapper_; }
+@@ -570,21 +583,30 @@
+                    provider->GetAllPermissionIDs(*permissions, extension->GetType())))
+             snapshot.permissions.push_back(message.message());
+         }
++        ArcExtensionInfo* info = [[ArcExtensionInfo alloc] initWithExtensionInfo:&snapshot];
+         auto completion = std::make_shared<base::OnceCallback<void(bool)>>(std::move(done));
+-        [delegate browser:wrapper didRequestExtensionPermissions:
+-            [[ArcExtensionInfo alloc] initWithExtensionInfo:&snapshot]
+-            completion:^(BOOL allowed) {
+-              dispatch_async(dispatch_get_main_queue(), ^{
++        return DispatchBrowserExtensionRequest(wrapper, ^(id target) {
++          id<ArcExtensionsBrowserDelegate> request_delegate = target;
++          if (![request_delegate respondsToSelector:
++                  @selector(browser:didRequestExtensionPermissions:completion:)]) return;
++          [request_delegate browser:wrapper didRequestExtensionPermissions:info
++              completion:^(BOOL allowed) {
++                // Native permission completion invokes its callback directly.
++                // Once dispatched, a later delegate clear does not cancel it.
+                 if (*completion) std::move(*completion).Run(allowed);
+-              });
+-            }];
+-        return true;
++              }];
++        });
+       });
+   if (auto* bridge = Bridge(wrapper)) { bridge->SetDelegate(delegate); return; }
+   if (!delegate) return;
+   auto* window = static_cast<ArcBrowserWindow*>([wrapper browser]->GetWindow());
+   window->SetUserData(kExtensionsKey, std::make_unique<BrowserExtensions>(wrapper,delegate));
+ }
++bool DispatchBrowserExtensionRequest(ArcBrowser* wrapper,
++                                     void (^request)(id delegate)) {
++  auto* bridge = Bridge(wrapper);
++  return bridge && bridge->DispatchRequest(request);
++}
+ id BrowserExtensionDelegate(ArcBrowser* wrapper) {
+   auto* bridge = Bridge(wrapper);
+   return bridge ? bridge->GetDelegate() : nil;
+--- a/arc/browser/extensions_groups.mm
++++ b/arc/browser/extensions_groups.mm
+@@ -166,6 +166,13 @@
+       return;
+     }
+     Respond(ArgumentList(std::move(result)));
++  }
++
++  void Request(ArcBrowser* browser, void (^request)(id delegate)) {
++    if (!DispatchBrowserExtensionRequest(browser, request)) {
++      scoped_refptr<HostedGroupsFunction> self(this);
++      OnUI(^{ self->FailString(kUnavailable); });
++    }
+   }
+ 
+   void Gather(GroupsCompletion completion,
+@@ -202,10 +209,10 @@
+       const auto& weak = browsers[browser_index];
+       ArcBrowser* wrapper =
+           weak ? BrowserForHostedExtensions(weak.get()) : nil;
+-      // DelegateWrapper::InvokeAsync posts the app invocation as well as its
+-      // reply. Resolve the current delegate only when that task is delivered.
+-      OnUI(^{
+-        id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(wrapper);
++      // Capture the bridge epoch before enqueue; nil->new must not retarget
++      // this request. The app reply retains its separate existing task hop.
++      Request(wrapper, ^(id target) {
++        id<ArcHostedGroupDelegate> delegate = target;
+         if (!self->Live(wrapper) ||
+             ![delegate respondsToSelector:
+                 @selector(browser:getAllTabGroupsWithCompletion:)]) {
+@@ -537,26 +544,29 @@
+         self->Fail(error);
+         return;
+       }
+-      auto* native = self->Live(browser);
+-      if (!native) {
+-        self->FailString(kClosed);
+-        return;
+-      }
+-      if (!ExtensionTabUtil::IsTabStripEditable(*native->GetProfile())) {
+-        self->FailString(ExtensionTabUtil::kTabStripNotEditableError);
+-        return;
+-      }
+-      id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(browser);
+-      if (!properties ||
+-          ![delegate respondsToSelector:@selector(browser:updateTabGroupWithId:
+-                                                  properties:completion:)]) {
+-        self->FailString(kUnavailable);
+-        return;
+-      }
+-      [delegate browser:browser
+-          updateTabGroupWithId:info.groupId
+-                    properties:properties
+-                    completion:self->MutationCompletion(browser, false)];
++      NSString* group_id = [info.groupId copy];
++      self->Request(browser, ^(id target) {
++        auto* native = self->Live(browser);
++        if (!native) {
++          self->FailString(kClosed);
++          return;
++        }
++        if (!ExtensionTabUtil::IsTabStripEditable(*native->GetProfile())) {
++          self->FailString(ExtensionTabUtil::kTabStripNotEditableError);
++          return;
++        }
++        id<ArcHostedGroupDelegate> delegate = target;
++        if (!properties ||
++            ![delegate respondsToSelector:@selector(browser:updateTabGroupWithId:
++                                                    properties:completion:)]) {
++          self->FailString(kUnavailable);
++          return;
++        }
++        [delegate browser:browser
++            updateTabGroupWithId:group_id
++                      properties:properties
++                      completion:self->MutationCompletion(browser, false)];
++      });
+     });
+     return RespondLater();
+   }
+@@ -636,17 +646,23 @@
+       // The retained app wrapper ignores the ArcBrowser argument and passes its
+       // receiver to a Swift helper. Selecting the destination's delegate is an
+       // inference from that shape; cross-window routing needs runtime evidence.
+-      id<ArcHostedGroupDelegate> delegate =
+-          BrowserExtensionDelegate(destination);
+-      if (![delegate respondsToSelector:@selector(browser:moveTabGroupWithId:
+-                                                  toNewIndex:completion:)]) {
+-        self->FailString(kUnavailable);
+-        return;
+-      }
+-      [delegate browser:destination
+-          moveTabGroupWithId:info.groupId
+-                  toNewIndex:index
+-                  completion:self->MutationCompletion(destination, false)];
++      NSString* group_id = [info.groupId copy];
++      self->Request(destination, ^(id target) {
++        if (!self->Live(browser) || !self->Live(destination)) {
++          self->FailString(kClosed);
++          return;
++        }
++        id<ArcHostedGroupDelegate> delegate = target;
++        if (![delegate respondsToSelector:@selector(browser:moveTabGroupWithId:
++                                                    toNewIndex:completion:)]) {
++          self->FailString(kUnavailable);
++          return;
++        }
++        [delegate browser:destination
++            moveTabGroupWithId:group_id
++                    toNewIndex:index
++                    completion:self->MutationCompletion(destination, false)];
++      });
+     });
+     return RespondLater();
+   }
+@@ -695,13 +711,19 @@
+       ArcBrowser* target = Window(window_id, &error);
+       if (!target)
+         return RespondNow(Error(std::move(error)));
+-      OnUI(^{
+-        self->Group(target, nil, session_ids);
+-      });
++      self->Group(target, nil, session_ids);
+     }
+     return RespondLater();
+   }
+   void Group(ArcBrowser* browser, NSString* group_id, NSArray* session_ids) {
++    NSString* identifier = [group_id copy];
++    scoped_refptr<HostedTabsGroupFunction> self(this);
++    Request(browser, ^(id delegate) {
++      self->GroupAtDelivery(browser, identifier, session_ids, delegate);
++    });
++  }
++  void GroupAtDelivery(ArcBrowser* browser, NSString* group_id,
++                       NSArray* session_ids, id<ArcHostedGroupDelegate> delegate) {
+     auto* native = Live(browser);
+     if (!native) {
+       FailString(kClosed);
+@@ -731,7 +753,6 @@
+         return;
+       }
+     }
+-    id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(browser);
+     if (group_id) {
+       if (![delegate respondsToSelector:@selector(browser:addTabsToGroupWithId:
+                                                   sessionIds:completion:)]) {
+@@ -792,40 +813,40 @@
+     scoped_refptr<HostedTabsUngroupFunction> self(this);
+     for (const auto& batch : batches) {
+       ArcBrowser* browser = batch.browser;
++      NSArray<NSNumber*>* session_ids = [batch.ids copy];
+       auto called = std::make_shared<bool>(false);
+-      id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(browser);
+-      // An earlier synchronous callback may have closed another source window
+-      // or cleared its delegate before this iteration.
+-      if (!Live(browser) ||
+-          ![delegate
+-              respondsToSelector:
+-                  @selector(
+-                      browser:removeTabsFromGroupWithSessionIds:completion:)]) {
+-        OnUI(^{
++      Request(browser, ^(id target) {
++        id<ArcHostedGroupDelegate> delegate = target;
++        // Earlier queued requests can close another source browser before delivery.
++        if (!self->Live(browser) ||
++            ![delegate
++                respondsToSelector:
++                    @selector(
++                        browser:removeTabsFromGroupWithSessionIds:completion:)]) {
+           self->FailString(kClosed);
+-        });
+-        break;
+-      }
+-      [delegate browser:browser
+-          removeTabsFromGroupWithSessionIds:batch.ids
+-                                 completion:^(ArcTabGroupResult* result) {
+-                                   OnUI(^{
+-                                     if (*called || self->did_respond())
+-                                       return;
+-                                     *called = true;
+-                                     if (!self->Live(browser)) {
+-                                       self->FailString(kClosed);
+-                                       return;
+-                                     }
+-                                     if (!result || !result.success) {
+-                                       self->Fail(result.error);
+-                                       return;
+-                                     }
+-                                     if (--*remaining == 0)
+-                                       self->Success(api::tabs::Ungroup::
+-                                                         Results::Create());
+-                                   });
+-                                 }];
++          return;
++        }
++        [delegate browser:browser
++            removeTabsFromGroupWithSessionIds:session_ids
++                                   completion:^(ArcTabGroupResult* result) {
++                                     OnUI(^{
++                                       if (*called || self->did_respond())
++                                         return;
++                                       *called = true;
++                                       if (!self->Live(browser)) {
++                                         self->FailString(kClosed);
++                                         return;
++                                       }
++                                       if (!result || !result.success) {
++                                         self->Fail(result.error);
++                                         return;
++                                       }
++                                       if (--*remaining == 0)
++                                         self->Success(api::tabs::Ungroup::
++                                                           Results::Create());
++                                     });
++                                   }];
++      });
+     }
+     return RespondLater();
+   }

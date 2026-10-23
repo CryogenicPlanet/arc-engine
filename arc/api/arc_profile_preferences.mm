@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "base/functional/bind.h"
-#include "base/logging.h"
 #include "base/scoped_observation.h"
 #include "base/supports_user_data.h"
 #include "base/task/sequenced_task_runner.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/webdata_services/web_data_service_factory.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -24,8 +22,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service_observer.h"
-#include "components/search_engines/keyword_web_data_service.h"
-#include "components/webdata/common/web_data_service_consumer.h"
 
 // arc_values.mm owns this primary implementation.
 @interface ArcSearchEngine : NSObject
@@ -53,6 +49,7 @@ ARC_EXPORT @interface ArcBrowserContextPreferences : NSObject
 @property(nonatomic, readonly, copy) NSArray* autoOpenFileExtensions;
 @property(nonatomic) BOOL keywordSearchSpaceTriggeringEnabled;
 - (instancetype)initWithArcBrowserContext:(ArcBrowserContext*)context;
+- (void)bindOwner:(ArcBrowserContext*)owner __attribute__((objc_direct));
 @end
 
 namespace {
@@ -123,7 +120,6 @@ constexpr const char* kObservedPrefs[] = {
 
 class PreferencesObserver final : public ProfileObserver,
                                   public TemplateURLServiceObserver,
-                                  public WebDataServiceConsumer,
                                   public std::enable_shared_from_this<PreferencesObserver> {
  public:
   PreferencesObserver(Profile* profile, base::RepeatingClosure changed,
@@ -169,20 +165,10 @@ class PreferencesObserver final : public ProfileObserver,
     search_observation_.Reset();
     if (profile_) ReleaseSearchStartup(profile_.get());
   }
-  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle handle,
-                                 std::unique_ptr<WDTypedResult> result) override {
-    // The native read is also the startup persistence barrier. It does not
-    // replace the in-memory search model or generate another app notification.
-    VLOG(1) << "Arc profile startup keyword read succeeded: " << bool(result)
-            << "; rows: " << (result && result->GetType() == KEYWORDS_RESULT
-                    ? static_cast<WDResult<WDKeywordsResult>*>(result.get())->GetValue().keywords.size()
-                    : 0);
-  }
  private:
   base::WeakPtr<Profile> profile_;
   bool seeding_ = false;
   bool search_update_pending_ = false;
-  bool startup_keywords_flushed_ = false;
   void ScheduleSearchUpdate() {
     if (search_update_pending_) return;
     search_update_pending_ = true;
@@ -199,17 +185,6 @@ class PreferencesObserver final : public ProfileObserver,
         alive->seeding_ = true;
         EnsureArcSearchEngines(alive->profile_.get(), alive->search_observation_.GetSource());
         alive->seeding_ = false;
-      }
-      if (!alive->startup_keywords_flushed_ && loaded) {
-        alive->startup_keywords_flushed_ = true;
-        if (auto keywords = WebDataServiceFactory::GetKeywordWebDataForProfile(
-                alive->profile_.get(), ServiceAccessType::EXPLICIT_ACCESS)) {
-          // Chromium delays keyword inserts for five seconds but writes the
-          // builtin-version metadata immediately. A quick host shutdown can
-          // interrupt that batch. GetKeywords commits pending inserts before
-          // its read; WebDataServiceConsumer cancels delivery after teardown.
-          keywords->GetKeywords(alive.get());
-        }
       }
       alive->search_changed_.Run();
       if (alive->profile_ && loaded) ReleaseSearchStartup(alive->profile_.get());
@@ -268,7 +243,7 @@ void AfterInitialSearchUpdate(Profile* profile, base::OnceClosure callback) {
 }
 - (instancetype)initWithArcBrowserContext:(ArcBrowserContext*)context {
   if ((self = [self init])) {
-    self.owner = context;
+    [self bindOwner:context];
   }
   return self;
 }
@@ -277,7 +252,8 @@ void AfterInitialSearchUpdate(Profile* profile, base::OnceClosure callback) {
   return [self initWithArcBrowserContext:context];
 }
 - (ArcBrowserContext*)owner { return _owner; }
-- (void)setOwner:(ArcBrowserContext*)owner {
+- (void)setOwner:(ArcBrowserContext*)owner { [self bindOwner:owner]; }
+- (void)bindOwner:(ArcBrowserContext*)owner {
   if (_owner == owner) {
     return;
   }

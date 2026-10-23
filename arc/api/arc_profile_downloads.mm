@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_item_model.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -20,7 +21,8 @@
 #include "content/public/browser/download_item_utils.h"
 
 ARC_EXPORT @interface ArcDownloadItem : NSObject
-+ (instancetype)wrapperForDownload:(download::DownloadItem*)item;
++ (instancetype)wrapperForDownload:(download::DownloadItem*)item __attribute__((objc_direct));
+- (download::DownloadItem*)nativeDownload __attribute__((objc_direct));
 @end
 
 namespace arc_profile {
@@ -53,6 +55,7 @@ class DownloadLifetime final : public download::DownloadItem::Observer {
 
 @implementation ArcDownloadItem {
   std::unique_ptr<DownloadLifetime> _lifetime;
+  std::unique_ptr<DownloadItemModel> _nativeModel;
   ArcWebContents* _webContents;
 }
 + (instancetype)wrapperForDownload:(download::DownloadItem*)item {
@@ -64,13 +67,15 @@ class DownloadLifetime final : public download::DownloadItem::Observer {
     auto owned = std::make_unique<DownloadHolder>();
     owned->wrapper = [[ArcDownloadItem alloc] init];
     owned->wrapper->_lifetime = std::make_unique<DownloadLifetime>(item);
+    owned->wrapper->_nativeModel = std::make_unique<DownloadItemModel>(item);
     holder = owned.get();
     item->SetUserData(kDownloadWrapperKey, std::move(owned));
   }
   return holder->wrapper;
 }
-- (int64_t)completedBytes { return _lifetime && _lifetime->item() ? _lifetime->item()->GetReceivedBytes() : 0; }
-- (int64_t)totalBytes { return _lifetime && _lifetime->item() ? _lifetime->item()->GetTotalBytes() : 0; }
+- (download::DownloadItem*)nativeDownload { return _lifetime ? _lifetime->item() : nullptr; }
+- (int64_t)completedBytes { return _nativeModel && _nativeModel->GetDownloadItem() ? _nativeModel->GetCompletedBytes() : 0; }
+- (int64_t)totalBytes { return _nativeModel && _nativeModel->GetDownloadItem() ? _nativeModel->GetTotalBytes() : 0; }
 - (int64_t)currentSpeed { return _lifetime && _lifetime->item() ? _lifetime->item()->CurrentSpeed() : 0; }
 - (NSString*)targetPath {
   return _lifetime && _lifetime->item() ? ArcNSString(_lifetime->item()->GetTargetFilePath().value()) : @"";
@@ -182,13 +187,33 @@ bool DetermineFilename(Profile* profile, download::DownloadItem* item,
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 15 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
     decision->Resolve(nil);
   });
-  base::AutoReset<unsigned> in_callback(&gDownloadCallbackDepth, gDownloadCallbackDepth + 1);
-  [delegate browserContext:owner onDeterminingFilename:[ArcDownloadItem wrapperForDownload:item]
-           defaultFilename:ArcNSString(basename.value()) completionTimeout:15.0
-                completion:^(NSString* filename) {
-    if ([NSThread isMainThread]) decision->Resolve(filename);
-    else dispatch_async(dispatch_get_main_queue(), ^{ decision->Resolve(filename); });
-  }];
+  base::WeakPtr<Profile> weakProfile = profile->GetWeakPtr();
+  ArcDownloadItem* wrapper = [ArcDownloadItem wrapperForDownload:item];
+  NSString* filename = ArcNSString(basename.value());
+  // Arc's native DelegateWrapper::InvokeAsync posts this event with delay zero.
+  // Keep the app callback outside the target determiner's native stack, and
+  // resolve the current weak bridge only when the UI task runs.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (!weakProfile || ![wrapper nativeDownload]) {
+      decision->Resolve(nil);
+      return;
+    }
+    auto* current = static_cast<FilenameTarget*>(weakProfile->GetUserData(kFilenameTargetKey));
+    id<ArcProfileDownloadsDelegate> currentDelegate = current ? current->delegate : nil;
+    ArcBrowserContext* currentOwner = current ? current->owner : nil;
+    if (!current || !current->service || !currentOwner ||
+        ![currentDelegate respondsToSelector:@selector(browserContext:onDeterminingFilename:defaultFilename:completionTimeout:completion:)]) {
+      decision->Resolve(nil);
+      return;
+    }
+    base::AutoReset<unsigned> in_callback(&gDownloadCallbackDepth, gDownloadCallbackDepth + 1);
+    [currentDelegate browserContext:currentOwner onDeterminingFilename:wrapper
+                   defaultFilename:filename completionTimeout:15.0
+                        completion:^(NSString* selected) {
+      if ([NSThread isMainThread]) decision->Resolve(selected);
+      else dispatch_async(dispatch_get_main_queue(), ^{ decision->Resolve(selected); });
+    }];
+  });
   return true;
 }
 // The native observer owns no ObjC delegate or context. Profile shutdown detaches

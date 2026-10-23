@@ -23,14 +23,18 @@ At the start of `ChromeContentRendererClient::RunScriptsAtDocumentStart`, before
 extension dispatch (which can destroy the frame), call:
 
 ```cpp
-if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app"))
-  arc::RunEffectsAtDocumentStart(render_frame);
+if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
+    !arc::RunEffectsAtDocumentStart(render_frame)) {
+  return;
+}
 ```
 
 Declaration/definition exist in `arc/renderer/render_frame_agent.{h,cc}`.
 The receiver caches profile configuration without applying it to the current
 document. Document-start applies exact-host main-frame Boost CSS and isolated
-world 6 JavaScript, then cosmetics for all frames. An observer callback after
+world 6 JavaScript, then cosmetics for all surviving frames. False reports that
+Boost JavaScript destroyed the frame, so Chrome must skip extension dispatch.
+An observer callback after
 document creation does not establish the recovered native timing contract.
 
 ### Process and profile lifecycle
@@ -41,10 +45,12 @@ No shared source was changed by the renderer worker.
 - Include `arc/renderer/render_process_agent.h` and call
   `arc::EnsureRenderProcessAgent()` in hosted `RenderThreadStarted`.
 - Include `arc/common/ad_block_browser.h` and call
-  `arc::RendererProcessWillLaunch(host)` after existing Chrome setup in hosted
+  `arc::RendererProcessWillLaunch(host, true)` after existing Chrome setup in hosted
   `ChromeContentBrowserClient::RenderProcessWillLaunch`. Native registration
-  sequence is assigned here, before readiness/acknowledgment. Ready-only
-  fallback cannot preserve launch ordering.
+  sequence is reserved here, before readiness/acknowledgment. The true argument
+  is valid only when the paired renderer-thread startup hook is included in
+  the same build. The default false argument safely delays actual binding
+  until a frame acknowledgment proves the process binder is registered.
 - Declare/call `arc::InitializeRendererProfile(profile)` when Profile is created
   or adopted. Lead-owned `arc_browser_context.mm::initWithProfile:` is the
   earliest wrapper adoption point in the proposal. Actual earlier Profile

@@ -119,6 +119,7 @@ class ProtocolClient final : public content::DevToolsAgentHostClient,
     host_->DetachClient(this);
     host_.reset();
     Notify(callback_, nil, DevToolsError(10, @"DevTools connection closed"));
+    callback_ = nil;
   }
   void DispatchProtocolMessage(content::DevToolsAgentHost*,
                                base::span<const uint8_t> bytes) override {
@@ -140,9 +141,11 @@ class ProtocolClient final : public content::DevToolsAgentHostClient,
   }
   void AgentHostClosed(content::DevToolsAgentHost*) override {
     if (!attached_) { return; }
+    auto keep_alive = shared_from_this();
     attached_ = false;
     host_.reset();
     Notify(callback_, nil, DevToolsError(10, @"DevTools connection closed"));
+    callback_ = nil;
   }
  private:
   scoped_refptr<content::DevToolsAgentHost> host_;
@@ -183,7 +186,7 @@ ARC_EXPORT @interface ArcWebContentsDevTools : NSObject {
   NSMutableDictionary<NSNumber*, ProtocolNotification>* _pending;
   NSMutableDictionary<NSNumber*, NSDictionary*>* _subscriptions;
   int _nextConnection;
-  __weak ArcWebContents* _toolbox;
+  ArcWebContents* _toolboxWebContents;
   base::WeakPtr<content::WebContents> _frontend;
   std::unique_ptr<FrontendObserver> _frontendObserver;
   NSMutableArray<ProtocolNotification>* _panelQueries;
@@ -192,6 +195,7 @@ ARC_EXPORT @interface ArcWebContentsDevTools : NSObject {
   BOOL _shown;
 }
 - (instancetype)initWithArcWebContents:(ArcWebContents*)owner;
+@property(nonatomic, readonly) ArcWebContents* toolboxWebContents;
 - (void)setDelegate:(id<WebExtrasDevToolsDelegate>)delegate;
 - (void)receiveMessage:(NSString*)message error:(NSError*)error __attribute__((objc_direct));
 - (void)didShowFrontend:(content::WebContents*)frontend docked:(BOOL)docked;
@@ -206,6 +210,7 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
 }  // namespace
 
 @implementation ArcWebContentsDevTools
+@synthesize toolboxWebContents = _toolboxWebContents;
 - (instancetype)initWithArcWebContents:(ArcWebContents*)owner {
   if ((self = [super init])) {
     _owner = owner;
@@ -227,7 +232,7 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
 - (ArcWebContents*)webContents {
   return _frontend ? [ArcWebContents wrapperForWebContents:_frontend.get()] : nil;
 }
-- (ArcWebContents*)toolboxWebContents { return _toolbox; }
+- (ArcWebContents*)toolboxWebContents { return _toolboxWebContents; }
 - (void)didShowFrontend:(content::WebContents*)frontend docked:(BOOL)docked {
   _opening = NO;
   _shown = YES;
@@ -249,7 +254,7 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
   }
 }
 - (void)frontendClosed {
-  _toolbox = nil;
+  _toolboxWebContents = nil;
   _frontend.reset();
   _opening = NO;
   [_panelQueries removeAllObjects];
@@ -263,8 +268,11 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
 - (void)openWithAction:(const DevToolsToggleAction&)action {
   auto* contents = [_owner webContents];
   if (!contents) { return; }
+  auto weakContents = contents->GetWeakPtr();
   DevToolsWindow::OpenDevToolsWindow(contents, action, DevToolsOpenedByAction::kUnknown);
-  _opening = !_shown && DevToolsWindow::GetInstanceForInspectedWebContents(contents);
+  // Display delegates may destroy the inspected contents while opening the UI.
+  _opening = !_shown && weakContents &&
+      DevToolsWindow::GetInstanceForInspectedWebContents(weakContents.get());
 }
 - (void)open { [self openWithAction:DevToolsToggleAction::ShowElementsPanel()]; }
 - (void)openInspectView { [self openWithAction:DevToolsToggleAction::Inspect()]; }
@@ -325,7 +333,15 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
   auto client = found->second;
   return client->Send(message, error);
 }
-- (void)closeProtocolConnection:(NSNumber*)identifier { _connections.erase(identifier.intValue); }
+- (void)closeProtocolConnection:(NSNumber*)identifier {
+  auto found = _connections.find(identifier.intValue);
+  if (found == _connections.end()) { return; }
+  auto client = found->second;
+  _connections.erase(found);
+  // A pending oversized-message task can still own the client. Detach now,
+  // rather than relying on its eventual destruction to close the connection.
+  client->Close();
+}
 - (BOOL)ensureCommandClient:(NSError**)error {
   if (_commands) { return YES; }
   auto* contents = [_owner webContents];

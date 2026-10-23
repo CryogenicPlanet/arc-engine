@@ -2,8 +2,8 @@
 
 Proposal: `arc/browser/webextras_devtools_hooks.patch`. The lead owns applying
 these changes to Chromium and incorporating them into maintained patch 0004.
-No Chromium source, maintained patch, shared header, application, or existing
-notes were modified to prepare or validate this proposal.
+No Chromium source, maintained patch, shared header, application, or other
+existing notes were modified to prepare or validate this proposal.
 
 The current hooks implementation is header-only. There is no
 `chrome/browser/arcmod/arcmod_hooks.cc`, so this proposal changes the existing
@@ -45,6 +45,44 @@ header and the two real call sites only.
   ordinary Chromium activation continues. An empty hook preserves existing
   behavior. This hook does not synthesize a display/inspect-mode callback.
 
+## Existing Show hook and its callers
+
+The existing `DevToolsWindow::Show` host hook also runs synchronously. The
+package's `didShowFrontend:docked:` calls the actual app
+`webContentsDevTools:displayAs:` delegate before returning. That delegate can
+call the public `close`, which calls the frontend's `ClosePage`. Native
+`DevToolsWindow::CloseContents` marks the window closing and resets its owned
+frontend; destruction of `DevToolsUIBindings` destroys its owning window.
+The old Show path called `DoAction(action)` unconditionally after this reentry;
+`DoAction` accesses `bindings_` for inspect/reveal actions.
+
+- Show now snapshots the callback, captures the window WeakPtr before invoking
+  it, and returns if the window died or entered `kClosing`. Otherwise it runs
+  the same action. No new `kLoadCompleted` requirement is added: the existing
+  early undocked Show path remains valid.
+- Copying the callback gives an explicit invocation snapshot. Chromium's
+  current `RepeatingCallback::Run` already retains its bind state across the
+  invocation (`base/functional/callback.h`); callback replacement by itself is
+  not claimed as a separate closure lifetime defect.
+- `DevToolsWindow::LoadCompleted` applies the same lifetime/closing check after
+  Show, before resetting its pending action or accessing its completion
+  callback.
+- `DevToolsUIBindings::FrontendLoaded` checks its own WeakPtr after invoking
+  `delegate_->OnLoadCompleted`, which reaches window LoadCompleted and Show.
+  Its outer `LoadCompleted` checks again before the Android-specific client
+  call. Thus unwinding this same close-from-display chain does not access a
+  destroyed bindings object.
+- `OpenNodeFrontendWindow` checks a saved window WeakPtr after either
+  `ActivateWindow` or `ScheduleShow`, returning the live window or nullptr if
+  it died/entered closing. It cannot return the previous stale raw pointer.
+
+All other direct Show/ScheduleShow callers in `devtools_window.cc` perform no
+post-call member/raw-window use: ScheduleShow, SetIsDocked, OnLoadCompleted,
+worker/frame/external opening and toggle paths return directly. InspectElement
+re-finds the window after opening before accessing it. These paths are left
+unchanged. The guards preserve the existing behavior when the objects remain
+alive and the window is not closing; they do not queue or synthesize callbacks.
+
 ## Package wiring
 
 The package's existing `ToolsForContents` user-data mapping already associates
@@ -66,5 +104,8 @@ does not invent that interpretation.
   `-ivfsoverlay`, `use-external-names: false`; object/dependency output flags
   were removed. No build graph changes, builds, application launches, or lock
   acquisition were performed.
+- The updated Show/caller proposal was rechecked using freshly queried current
+  macOS arm64 `out/Base` compiler commands. The Android-only client-call branch
+  was not compiled or run; its surrounding WeakPtr guard was compiled on macOS.
 - This is compile evidence only. Runtime callback timing/behavior awaits lead
   application, package registration, and the owned-app comparison run.

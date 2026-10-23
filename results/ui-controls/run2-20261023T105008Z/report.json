@@ -1,0 +1,44 @@
+{
+  "nonce": "arc-ui-control-inventory-34bf7847-7ee1-4b87-b233-b2d3f3caf78f",
+  "purpose": "Read-only local AppKit control capability inventory",
+  "functionalAcceptance": false,
+  "nativeActionsPerformed": 0,
+  "runs": [
+    {
+      "agent": "trace156",
+      "pid": 90279,
+      "errors": [],
+      "phase": "read local dialog inventory",
+      "reconnects": 0,
+      "pageAlertScheduled": true,
+      "cleanup": "Captured browser/helpers exited; close request acknowledged",
+      "elapsedMs": 4333,
+      "observations": 1,
+      "capabilityStatus": "candidate-controls-observed-unexercised",
+      "fixtureObserved": true,
+      "possibleNSButtons": 1,
+      "possibleAccessibilityPressResponders": 2,
+      "truncated": false
+    },
+    {
+      "agent": "ours156",
+      "pid": 90602,
+      "errors": [
+        "verify nonce fixture page: Error: bounded wait expired: Error: CDP websocket is closed"
+      ],
+      "phase": "verify nonce fixture page",
+      "browserAliveOnFailure": false,
+      "reconnects": 0,
+      "pageAlertScheduled": false,
+      "cleanup": "Captured browser/helpers exited; close request not acknowledged",
+      "elapsedMs": 18394,
+      "observations": 0,
+      "capabilityStatus": "fixture-not-locally-observed-inconclusive",
+      "fixtureObserved": false,
+      "possibleNSButtons": 0,
+      "possibleAccessibilityPressResponders": 0,
+      "truncated": false
+    }
+  ],
+  "limitation": "This inventories method availability without invoking any controls. It does not establish pressability, real app-handler completion, AX equivalence, visual acceptance, or functional engine parity. Missing/ambiguous/truncated fixture controls are inconclusive."
+}

@@ -1,0 +1,612 @@
+--- a/arc/api/arc_web_contents.mm
++++ b/arc/api/arc_web_contents.mm
+@@ -17,6 +17,7 @@
+ #include "content/public/browser/browser_task_traits.h"
+ #include "content/public/browser/browser_thread.h"
+ #include "chrome/browser/profiles/profile.h"
++#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+ #include "chrome/browser/ssl/chrome_security_state_util.h"
+ #include "chrome/browser/arcmod/arcmod_hooks.h"
+ #include "arc/common/ad_block_browser.h"
+@@ -30,6 +31,7 @@
+ #include "content/public/browser/navigation_entry.h"
+ #include "content/public/browser/navigation_handle.h"
+ #include "content/public/browser/favicon_status.h"
++#include "content/public/browser/host_app_hooks.h"
+ #include "content/public/browser/reload_type.h"
+ #include "content/public/browser/navigation_throttle.h"
+ #include "content/public/browser/render_widget_host_view.h"
+@@ -38,6 +40,8 @@
+ #include "content/public/browser/web_contents_user_data.h"
+ #include "content/public/browser/visibility.h"
+ #include "ui/base/page_transition_types.h"
++#include "components/url_formatter/elide_url.h"
++#include "ui/gfx/font_list.h"
+ 
+ ARC_EXPORT @interface ArcWebContentsConfiguration : NSObject
+ @property(nonatomic) BOOL foreground;
+@@ -116,6 +120,7 @@
+ }
+ @end
+ 
++@class CoreUIDelegateBridge;
+ @class ArcColor4f;
+ @class ArcWebContentsPDFController;
+ @protocol ArcWebContentsUserActivityDelegate;
+@@ -135,7 +140,10 @@
+ - (instancetype)initWithWebContents:(const void*)contents;
+ - (void)refreshNativeState __attribute__((objc_direct));
+ - (void)invalidateNativeStateRefresh __attribute__((objc_direct));
+-- (void)completeNavigationPolicy:(int64_t)identifier allowed:(BOOL)allowed __attribute__((objc_direct));
++- (void)nativeNavigationStateChanged:(content::InvalidateTypes)flags fromContents:(content::WebContents*)contents __attribute__((objc_direct));
++- (void)nativeTargetURLChanged:(const GURL&)url fromContents:(content::WebContents*)contents __attribute__((objc_direct));
++- (CoreUIDelegateBridge*)coreUIDelegateBridge __attribute__((objc_direct));
++- (id)coreUIDelegate __attribute__((objc_direct));
+ - (void)nativeContentsDestroyed __attribute__((objc_direct));
+ - (void)coreDidShowJavaScriptPopup __attribute__((objc_direct));
+ - (id)serviceNamed:(NSString*)className __attribute__((objc_direct));
+@@ -204,7 +212,21 @@
+ - (void)webContents:(ArcWebContents*)contents didChangeVisibleSecurityState:(ArcSecureContext*)context;
+ @end
+ 
++// The stored bridge survives nil unregister. Every nonnil delegate assignment
++// replaces it, so an old queued weak bridge expires even for the same delegate.
++@interface CoreUIDelegateBridge : NSObject
++@property(nonatomic, weak) id<CoreContentsDelegate> delegate;
++@end
++@implementation CoreUIDelegateBridge
++@synthesize delegate = _delegate;
++@end
++
+ namespace {
++void PostCoreUI(void (^callback)()) {
++  content::GetUIThreadTaskRunner({})->PostTask(
++      FROM_HERE, base::BindOnce([](void (^work)()) { work(); }, callback));
++}
++
+ bool NeedsNavigationPolicy(content::NavigationHandle* handle) {
+   return handle->IsInPrimaryMainFrame() && handle->IsRendererInitiated() &&
+       !handle->IsSameDocument() && handle->GetReloadType() == content::ReloadType::NONE &&
+@@ -221,25 +243,27 @@
+     if (!NeedsNavigationPolicy(handle)) {
+       return PROCEED;
+     }
+-    const int64_t identifier = handle->GetNavigationId();
+     ArcWebContents* owner = [ArcWebContents wrapperForWebContents:handle->GetWebContents()];
+     id<CoreContentsDelegate> delegate = [owner navigationDelegate];
+     if (![delegate respondsToSelector:@selector(webContents:decidePolicyForNavigationAction:)]) {
+-      [owner completeNavigationPolicy:identifier allowed:YES];
+       return PROCEED;
+     }
+     const NSInteger policy = [delegate webContents:owner
+         decidePolicyForNavigationAction:arc::CreateNavigationAction(handle, 1)];
+     CHECK_GE(policy, 0);
+     CHECK_LT(policy, 12);
+-    [owner completeNavigationPolicy:identifier allowed:policy == 1];
+     // The delegate returns the destination disposition; current-tab navigation
+     // continues here. A declined/redirected request must not also commit here.
+     return policy == 1 ? PROCEED : CANCEL_AND_IGNORE;
+   }
+ };
+ 
++void ForwardNavigationState(content::WebContents*, content::InvalidateTypes);
++void ForwardTargetURL(content::WebContents*, const GURL&);
++
+ void InstallNavigationPolicyHook() {
++  content::GetHostNavigationStateCallback() = base::BindRepeating(&ForwardNavigationState);
++  content::GetHostTargetURLCallback() = base::BindRepeating(&ForwardTargetURL);
+   arcmod::GetNavigationThrottleHook() = base::BindRepeating(
+       [](content::NavigationThrottleRegistry& registry) {
+         registry.AddThrottle(std::make_unique<CoreNavigationPolicyThrottle>(registry));
+@@ -251,137 +275,113 @@
+   ArcContentsObserver(content::WebContents* contents, ArcWebContents* wrapper)
+       : content::WebContentsObserver(contents), wrapper_(wrapper),
+         last_committed_entry_count_(contents->GetController().GetEntryCount()) {}
+-  void CompleteNavigationPolicy(int64_t identifier, bool allowed) {
+-    if (!awaiting_policy_ || identifier != pending_navigation_identifier_) { return; }
++  void DidStartNavigation(content::NavigationHandle* handle) override {
++    if (!handle->IsInPrimaryMainFrame()) { return; }
+     ArcWebContents* wrapper = wrapper_;
+-    ArcNavigation* navigation = pending_navigation_;
+-    const uint64_t generation = pending_navigation_generation_;
+-    std::vector<PendingStateEvent> events = std::move(pending_state_events_);
+-    pending_state_events_.clear();
+-    ResetPendingNavigation();
+-    if (!allowed || !web_contents() || generation != navigation_generation_) {
+-      return;
+-    }
+-    UpdateURLForStart(wrapper);
+-    if (!web_contents() || generation != navigation_generation_) { return; }
+-    PublishPendingState(std::move(events), generation);
+-    if (!web_contents() || generation != navigation_generation_) { return; }
+-    [[wrapper coreNavigationController] didStartNavigationSnapshot:navigation inPage:NO];
+-  }
+-  void TitleWasSet(content::NavigationEntry*) override {
+-    ArcWebContents* wrapper = wrapper_;
+-    if (web_contents()) {
+-      wrapper.title = web_contents()->GetTitle().empty() ? nil : ArcNSString(web_contents()->GetTitle());
+-    }
+-  }
+-  void DidStartNavigation(content::NavigationHandle* handle) override {
+-    ArcWebContents* wrapper = wrapper_;
+-    const bool primary = handle->IsInPrimaryMainFrame();
+-    if (!primary) {
+-      if (awaiting_navigation_start_ && !awaiting_policy_) {
+-        awaiting_navigation_start_ = false;
+-        FlushPendingState(navigation_generation_);
+-      }
+-      return;
+-    }
+-    const bool in_page = handle->IsSameDocument();
+-    const bool needs_policy = NeedsNavigationPolicy(handle);
+-    const int64_t identifier = handle->GetNavigationId();
+-    const uint64_t generation = ++navigation_generation_;
+-    ArcNavigation* navigation = primary ? [ArcNavigation snapshotForNavigationHandle:handle] : nil;
++    ++navigation_generation_;
+     [wrapper invalidateNativeStateRefresh];
+-    // A superseding navigation must not inherit an older policy's queued state.
+-    if (awaiting_policy_) { pending_state_events_.clear(); }
+-    ResetPendingNavigation();
+-    awaiting_navigation_start_ = false;
+-    if (needs_policy) {
+-      pending_navigation_ = navigation;
+-      pending_navigation_identifier_ = identifier;
+-      pending_navigation_generation_ = generation;
+-      awaiting_policy_ = true;
+-      return;
+-    }
+-    FlushPendingState(generation);
+-    if (!web_contents() || generation != navigation_generation_) { return; }
+-    if (!in_page) { UpdateURLForStart(wrapper); }
+-    if (web_contents() && generation == navigation_generation_ && primary) {
+-      [[wrapper coreNavigationController] didStartNavigationSnapshot:navigation inPage:in_page];
+-    }
++    // The controller posts the observer call at receipt, like native 436bbc0.
++    // Synchronous throttle policy naturally precedes delivery on this UI stack;
++    // no barrier is imposed across an asynchronous beforeunload or nested loop.
++    [[wrapper coreNavigationController] didStartNavigation:handle];
+   }
+   void DidRedirectNavigation(content::NavigationHandle* handle) override {
+     ArcWebContents* wrapper = wrapper_;
+     [[wrapper coreNavigationController] didRedirectNavigation:handle];
+   }
+-  void ReadyToCommitNavigation(content::NavigationHandle* handle) override {
+-    if (!handle->IsInPrimaryMainFrame() || handle->IsSameDocument() ||
+-        saw_navigation_start_ || initial_ready_to_commit_) {
+-      return;
+-    }
++  void DidFinishNavigation(content::NavigationHandle* handle) override {
++    if (!handle->IsInPrimaryMainFrame()) { return; }
+     ArcWebContents* wrapper = wrapper_;
+-    NSURL* destination = ArcNSURL(handle->GetURL());
+-    const uint64_t generation = navigation_generation_;
+-    initial_ready_to_commit_ = true;
+-    wrapper.url = destination;
+-    if (web_contents() && generation == navigation_generation_) {
+-      wrapper.navigationID = visible_navigation_id_;
+-    }
+-  }
+-  void DidFinishNavigation(content::NavigationHandle* handle) override {
+-    ArcWebContents* wrapper = wrapper_;
+-    const bool primary = handle->IsInPrimaryMainFrame();
+-    if (!primary) { return; }
++    const bool committed = handle->HasCommitted();
+     const bool in_page = handle->IsSameDocument();
+-    const bool committed = handle->HasCommitted();
+     const bool restored = handle->IsServedFromBackForwardCache();
+     const int error = handle->GetNetErrorCode();
+-    if (awaiting_policy_ && pending_navigation_identifier_ == handle->GetNavigationId()) {
+-      ResetPendingNavigation();
+-      pending_state_events_.clear();
+-    }
+     const uint64_t generation = ++navigation_generation_;
+-    ArcNavigation* navigation = primary ? [ArcNavigation snapshotForNavigationHandle:handle] : nil;
+-    NSURL* destination = ArcNSURL(handle->GetURL());
+-    if (committed) {
+-      // A contents first observed after its navigation started still receives
+-      // the start/commit URL state transitions before the app's commit callback.
+-      if (!saw_navigation_start_) { UpdateURLForStart(wrapper); }
+-      if (!web_contents() || generation != navigation_generation_) { return; }
+-      saw_navigation_start_ = true;
+-      wrapper.url = destination;
+-      if (!web_contents() || generation != navigation_generation_) { return; }
+-      wrapper.navigationID = ++visible_navigation_id_;
+-      if (!web_contents() || generation != navigation_generation_) { return; }
+-      [wrapper refreshNativeState];
+-    }
+-    if (web_contents() && generation == navigation_generation_ && primary) {
+-      [[wrapper coreNavigationController] didFinishNavigationSnapshot:navigation inPage:in_page
+-          committed:committed error:error restored:restored];
+-    }
++    auto native = web_contents()->GetWeakPtr();
++    ArcNavigation* navigation = [ArcNavigation snapshotForNavigationHandle:handle];
++    if (committed) { [wrapper refreshNativeState]; }
++    // Zoom still calls out synchronously. A close or superseding navigation in
++    // that setter must not let this older finish overwrite controller state.
++    // This protects event receipt; queued deliveries have no generation filter.
++    if (!native || generation != navigation_generation_) { return; }
++    [[wrapper coreNavigationController] didFinishNavigationSnapshot:navigation inPage:in_page
++        committed:committed error:error restored:restored];
+   }
+   void DidFinishLoad(content::RenderFrameHost* frame, const GURL&) override {
+     if (web_contents() && frame == web_contents()->GetPrimaryMainFrame()) {
+       [[wrapper_ coreNavigationController] didFinishDocumentLoad];
+     }
+   }
+-  void DidStartLoading() override {
++  void NativeNavigationStateChanged(content::InvalidateTypes flags) {
+     if (!web_contents()) { return; }
+-    if (!awaiting_policy_) {
+-      pending_state_events_.clear();
+-      awaiting_navigation_start_ = true;
+-      const uint64_t token = ++pending_loading_token_;
+-      content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(
+-          &ArcContentsObserver::FlushUnclaimedLoading, weak_factory_.GetWeakPtr(), token));
+-    }
+-    pending_state_events_.push_back(CaptureLoadingState());
+-  }
+-  void DidStopLoading() override {
++    const NativeNavigationState state = CaptureState(flags);
++    __weak ArcWebContents* weak_owner = wrapper_;
++    // Native 4385538 posts each branch separately in this order. Capture and
++    // counter advancement happen now; delivery is not tied to a navigation
++    // generation, NavigationHandle, observer lifetime, or native WC lifetime.
++    if (flags & content::INVALIDATE_TYPE_URL) {
++      PostCoreUI(^{
++        ArcWebContents* owner = weak_owner;
++        if (!owner) { return; }
++        owner.url = state.url;
++        owner.navigationID = state.identifier;
++      });
++    }
++    if (flags & content::INVALIDATE_TYPE_TITLE) {
++      PostCoreUI(^{
++        ArcWebContents* owner = weak_owner;
++        if (owner) { owner.title = state.title; }
++      });
++    }
++    if (flags & content::INVALIDATE_TYPE_LOAD) {
++      PostCoreUI(^{
++        ArcWebContents* owner = weak_owner;
++        if (!owner) { return; }
++        owner.isLoading = state.loading;
++        // Native 44130fc queries history after loading, then again after the
++        // back setter. Reacquire the current native pointer after each callout.
++        auto* native = [owner webContents];
++        const bool back = native && native->GetController().CanGoBack();
++        owner.canGoBack = back;
++        native = [owner webContents];
++        const bool forward = native && native->GetController().CanGoForward();
++        owner.canGoForward = forward;
++      });
++      __weak CoreUIDelegateBridge* weak_bridge = [wrapper_ coreUIDelegateBridge];
++      PostCoreUI(^{
++        ArcWebContents* owner = weak_owner;
++        CoreUIDelegateBridge* bridge = weak_bridge;
++        id<CoreContentsDelegate> delegate = bridge.delegate;
++        if (owner && [delegate respondsToSelector:@selector(webContents:didChangeStatusText:)]) {
++          [delegate webContents:owner didChangeStatusText:state.status];
++        }
++      });
++    }
++    if (flags & content::INVALIDATE_TYPE_TAB) {
++      PostCoreUI(^{
++        ArcWebContents* owner = weak_owner;
++        if (owner) { owner.favicon = state.favicon.IsEmpty() ? nil : state.favicon.AsNSImage(); }
++      });
++    }
++    if (flags & content::INVALIDATE_TYPE_AUDIO) {
++      PostCoreUI(^{
++        ArcWebContents* owner = weak_owner;
++        if (owner) { owner.tabTraits = state.traits; }
++      });
++    }
++  }
++  void NativeTargetURLChanged(const GURL& url) {
+     ArcWebContents* wrapper __attribute__((objc_precise_lifetime)) = wrapper_;
+-    if (!wrapper) { return; }
+-    if (awaiting_navigation_start_ && !awaiting_policy_) {
+-      awaiting_navigation_start_ = false;
+-      FlushPendingState(navigation_generation_);
+-    }
+-    UpdateLoadingState();
++    NSString* text = url.is_empty() ? @"" : ArcNSString(
++        url_formatter::ElideUrl(url, gfx::FontList(), 400));
++    // Native 4388630 uses InvokeSync, after forwarding to Chrome. The normal
++    // renderer and ClearTargetURL sites both reach the hook. Nondefault native
++    // width/font selection remains unaudited; 400/default is the proven fallback.
++    CoreUIDelegateBridge* bridge = [wrapper coreUIDelegateBridge];
++    id<CoreContentsDelegate> delegate = bridge.delegate;
++    if ([delegate respondsToSelector:@selector(webContents:didChangeStatusText:)]) {
++      [delegate webContents:wrapper didChangeStatusText:text];
++    }
+   }
+   void NavigationEntryCommitted(const content::LoadCommittedDetails&) override {
+     if (web_contents()) {
+@@ -392,17 +392,10 @@
+   }
+   void NavigationListPruned(const content::PrunedDetails&) override { UpdateHistory(); }
+   void NavigationEntriesDeleted() override { UpdateHistory(); }
+-  void LoadProgressChanged(double progress) override {
+-    if (awaiting_navigation_start_ || awaiting_policy_) {
+-      PendingStateEvent event;
+-      event.kind = PendingStateEvent::Kind::kProgress;
+-      event.progress = progress;
+-      pending_state_events_.push_back(event);
+-    } else {
+-      wrapper_.loadProgress = progress;
+-    }
+-  }
+-  void DidFirstVisuallyNonEmptyPaint() override { wrapper_.isReadyToDisplay = YES; }
++  // Audit gap: scheduling of progress/history/security and other WebContents
++  // observer callbacks is unchanged here; only native flags and nav lifecycle
++  // have been traced through the original task dispatcher.
++  void LoadProgressChanged(double progress) override { wrapper_.loadProgress = progress; }
+   void OnVisibilityChanged(content::Visibility visibility) override {
+     ArcWebContents* wrapper = wrapper_;
+     wrapper.visibility = static_cast<NSInteger>(visibility);
+@@ -419,7 +412,7 @@
+       UpdateHistory();
+       if (!native || generation != navigation_generation_) { return; }
+     }
+-    id<CoreContentsDelegate> delegate = [wrapper uiDelegate];
++    id<CoreContentsDelegate> delegate = [wrapper coreUIDelegate];
+     if (web_contents() && [delegate respondsToSelector:@selector(webContents:didChangeVisibleSecurityState:)]) {
+       ArcSecureContext* state = [[ArcSecureContext alloc] initWithSecureContext:web_contents()];
+       [delegate webContents:wrapper didChangeVisibleSecurityState:state];
+@@ -435,82 +428,49 @@
+   void OnWebContentsLostFocus(content::RenderWidgetHost*) override { wrapper_.hasFocus = NO; }
+   void WebContentsDestroyed() override {
+     ArcWebContents* wrapper = wrapper_;
+-    ResetPendingNavigation();
+-    pending_state_events_.clear();
+-    weak_factory_.InvalidateWeakPtrs();
+     Observe(nullptr);
+     [wrapper nativeContentsDestroyed];
+   }
+  private:
+-  struct PendingStateEvent {
+-    enum class Kind { kLoading, kProgress };
+-    Kind kind = Kind::kLoading;
++  struct NativeNavigationState {
++    int32_t identifier = 0;
+     bool loading = false;
+-    bool back = false;
+-    bool forward = false;
+-    double progress = 0;
++    NSURL* __strong url = nil;
++    NSString* __strong title = nil;
++    NSString* __strong status = nil;
++    gfx::Image favicon;
++    NSMutableIndexSet* __strong traits = nil;
+   };
+-  void ResetPendingNavigation() {
+-    pending_navigation_ = nil;
+-    pending_navigation_identifier_ = 0;
+-    pending_navigation_generation_ = 0;
+-    awaiting_policy_ = false;
+-  }
+-  PendingStateEvent CaptureLoadingState() {
+-    PendingStateEvent event;
+-    event.loading = web_contents()->ShouldShowLoadingUI();
+-    event.back = web_contents()->GetController().CanGoBack();
+-    event.forward = web_contents()->GetController().CanGoForward();
+-    return event;
+-  }
+-  void PublishLoadingState(const PendingStateEvent& state, uint64_t generation) {
+-    if (!web_contents() || generation != navigation_generation_) { return; }
+-    ArcWebContents* wrapper = wrapper_;
+-    auto native = web_contents()->GetWeakPtr();
+-    wrapper.isLoading = state.loading;
+-    if (!native || generation != navigation_generation_) { return; }
+-    wrapper.canGoBack = state.back;
+-    if (!native || generation != navigation_generation_) { return; }
+-    wrapper.canGoForward = state.forward;
+-    id<CoreContentsDelegate> delegate = [wrapper uiDelegate];
+-    if (native && generation == navigation_generation_ &&
+-        [delegate respondsToSelector:@selector(webContents:didChangeStatusText:)]) {
+-      [delegate webContents:wrapper didChangeStatusText:@""];
+-    }
+-  }
+-  void FlushPendingState(uint64_t generation) {
+-    std::vector<PendingStateEvent> events = std::move(pending_state_events_);
+-    pending_state_events_.clear();
+-    PublishPendingState(std::move(events), generation);
+-  }
+-  void PublishPendingState(std::vector<PendingStateEvent> events, uint64_t generation) {
+-    ArcWebContents* wrapper __attribute__((objc_precise_lifetime)) = wrapper_;
+-    for (const auto& event : events) {
+-      if (!web_contents() || generation != navigation_generation_) { return; }
+-      if (event.kind == PendingStateEvent::Kind::kLoading) {
+-        PublishLoadingState(event, generation);
+-      } else {
+-        wrapper.loadProgress = event.progress;
+-      }
+-    }
+-  }
+-  void FlushUnclaimedLoading(uint64_t token) {
+-    if (token != pending_loading_token_ || !awaiting_navigation_start_ || awaiting_policy_) {
+-      return;
+-    }
+-    awaiting_navigation_start_ = false;
+-    FlushPendingState(navigation_generation_);
+-  }
+-  void UpdateURLForStart(ArcWebContents* wrapper) {
+-    if (!web_contents()) { return; }
+-    saw_navigation_start_ = true;
+-    const GURL& committed = web_contents()->GetLastCommittedURL();
+-    NSURL* url = ArcNSURL(committed.is_empty() ? web_contents()->GetVisibleURL() : committed);
+-    const uint64_t generation = navigation_generation_;
+-    wrapper.url = url;
+-    if (web_contents() && generation == navigation_generation_) {
+-      wrapper.navigationID = ++visible_navigation_id_;
+-    }
++  NativeNavigationState CaptureState(content::InvalidateTypes flags) {
++    NativeNavigationState state;
++    auto* native = web_contents();
++    if (flags & content::INVALIDATE_TYPE_URL) {
++      auto* committed = native->GetController().GetLastCommittedEntry();
++      const GURL& url = committed ? committed->GetVirtualURL() : native->GetVisibleURL();
++      state.url = ArcNSURL(url.is_empty() ? native->GetVisibleURL() : url);
++      // Native 4385614 captures the old signed32 value and advances immediately,
++      // even if its queued delivery is subsequently canceled by wrapper death.
++      state.identifier = std::bit_cast<int32_t>(next_navigation_id_++);
++    }
++    if (flags & content::INVALIDATE_TYPE_TITLE) {
++      state.title = native->GetTitle().empty() ? nil : ArcNSString(native->GetTitle());
++    }
++    if (flags & content::INVALIDATE_TYPE_LOAD) {
++      state.loading = native->ShouldShowLoadingUI();
++      auto* helper = CoreTabHelper::FromWebContents(native);
++      // GetStatusText delegates to the exact static native status helper.
++      state.status = helper ? ArcNSString(helper->GetStatusText()) : @"";
++    }
++    if (flags & content::INVALIDATE_TYPE_TAB) {
++      auto* entry = native->GetController().GetLastCommittedEntry();
++      if (entry && entry->GetFavicon().valid) { state.favicon = entry->GetFavicon().image; }
++    }
++    if (flags & content::INVALIDATE_TYPE_AUDIO) {
++      // Audit gap: original 4378e28 emits a native vector of trait ordinals,
++      // filtered to 0..13 by 4413050; its producer mapping remains unrecovered.
++      state.traits = [NSMutableIndexSet indexSet];
++    }
++    return state;
+   }
+   void UpdateHistory() {
+     ArcWebContents* wrapper = wrapper_;
+@@ -518,25 +478,11 @@
+       wrapper.backForwardList = [ArcBackForwardList snapshotForWebContents:web_contents()];
+     }
+   }
+-  void UpdateLoadingState() {
+-    if (!web_contents()) { return; }
+-    PublishLoadingState(CaptureLoadingState(), navigation_generation_);
+-  }
+   __weak ArcWebContents* wrapper_;
+   uint64_t navigation_generation_ = 0;
+-  int visible_navigation_id_ = 0;
+-  bool saw_navigation_start_ = false;
+-  bool initial_ready_to_commit_ = false;
+-  bool awaiting_navigation_start_ = false;
+-  bool awaiting_policy_ = false;
+-  ArcNavigation* __strong pending_navigation_ = nil;
+-  int64_t pending_navigation_identifier_ = 0;
+-  uint64_t pending_navigation_generation_ = 0;
+-  uint64_t pending_loading_token_ = 0;
+-  std::vector<PendingStateEvent> pending_state_events_;
++  uint32_t next_navigation_id_ = 0;
+   int last_committed_entry_count_ = 0;
+   int early_history_entry_count_ = -1;
+-  base::WeakPtrFactory<ArcContentsObserver> weak_factory_{this};
+ };
+ 
+ class ArcContentsData : public content::WebContentsUserData<ArcContentsData> {
+@@ -551,6 +497,20 @@
+ };
+ WEB_CONTENTS_USER_DATA_KEY_IMPL(ArcContentsData);
+ 
++void ForwardNavigationState(content::WebContents* contents, content::InvalidateTypes flags) {
++  auto* data = ArcContentsData::FromWebContents(contents);
++  ArcWebContents* wrapper __attribute__((objc_precise_lifetime)) =
++      data ? (data->wrapper ?: data->weak_wrapper) : nil;
++  [wrapper nativeNavigationStateChanged:flags fromContents:contents];
++}
++void ForwardTargetURL(content::WebContents* contents, const GURL& url) {
++  auto* data = ArcContentsData::FromWebContents(contents);
++  ArcWebContents* wrapper __attribute__((objc_precise_lifetime)) =
++      data ? (data->wrapper ?: data->weak_wrapper) : nil;
++  [wrapper nativeTargetURLChanged:url fromContents:contents];
++}
++
++
+ uint64_t NextDiagnosticID() {
+   static constinit uint64_t next = 0;
+   return ++next;
+@@ -567,6 +527,8 @@
+   ArcWebContentsNavigationController* _navigationController;
+   __weak id _navigationDelegate;
+   __weak id _uiDelegate;
++  CoreUIDelegateBridge* _uiDelegateBridge;
++  __weak CoreUIDelegateBridge* _activeUIDelegateBridge;
+   __weak id _actionsDelegate;
+   __weak id _topBandColorDelegate;
+   uint64_t _refreshGeneration;
+@@ -713,42 +675,22 @@
+ - (BOOL)foregroundForInsertion { return _foreground; }
+ - (BOOL)isInitialized { return !!_contents; }
+ - (void)invalidateNativeStateRefresh { ++_refreshGeneration; }
+-- (void)completeNavigationPolicy:(int64_t)identifier allowed:(BOOL)allowed {
+-  if (_observer) { _observer->CompleteNavigationPolicy(identifier, allowed); }
+-}
++- (void)nativeNavigationStateChanged:(content::InvalidateTypes)flags
++                       fromContents:(content::WebContents*)contents {
++  if (_contents.get() == contents && _observer) { _observer->NativeNavigationStateChanged(flags); }
++}
++- (void)nativeTargetURLChanged:(const GURL&)url fromContents:(content::WebContents*)contents {
++  if (_contents.get() == contents && _observer) { _observer->NativeTargetURLChanged(url); }
++}
++- (CoreUIDelegateBridge*)coreUIDelegateBridge { return _activeUIDelegateBridge; }
++- (id)coreUIDelegate { return _uiDelegate; }
+ - (void)refreshNativeState {
+-  if (!_contents) {
+-    return;
+-  }
+-  // Setters run the app's KVO callbacks, which can close or navigate this contents.
+-  // Copy all native values before the first setter so no native dereference crosses a callback.
+-  const uint64_t generation = ++_refreshGeneration;
+-  auto native = _contents;
+-  NSString* title = native->GetTitle().empty() ? nil : ArcNSString(native->GetTitle());
+-  const BOOL loading = native->ShouldShowLoadingUI();
+-  const BOOL back = native->GetController().CanGoBack();
+-  const BOOL forward = native->GetController().CanGoForward();
+-  const float zoom = blink::ZoomLevelToZoomFactor(zoom::ZoomController::GetZoomLevelForWebContents(native.get()));
+-  content::NavigationEntry* entry = native->GetController().GetLastCommittedEntry();
+-  NSImage* favicon = entry && entry->GetFavicon().valid ? entry->GetFavicon().image.AsNSImage() : nil;
+-  self.title = title;
+-  if (!native || generation != _refreshGeneration) { return; }
+-  self.isLoading = loading;
+-  if (!native || generation != _refreshGeneration) { return; }
+-  self.canGoBack = back;
+-  if (!native || generation != _refreshGeneration) { return; }
+-  self.canGoForward = forward;
+-  if (!native || generation != _refreshGeneration) { return; }
+-  id<CoreContentsDelegate> delegate = _uiDelegate;
+-  if ([delegate respondsToSelector:@selector(webContents:didChangeStatusText:)]) {
+-    [delegate webContents:self didChangeStatusText:@""];
+-  }
+-  if (!native || generation != _refreshGeneration) { return; }
+-  self.favicon = favicon;
+-  if (!native || generation != _refreshGeneration) { return; }
+-  self.tabTraits = [NSMutableIndexSet indexSet];
+-  if (!native || generation != _refreshGeneration) { return; }
+-  self.zoomLevel = zoom;
++  // Native invalidation hooks now own URL/title/loading/history flags/favicon.
++  // Zoom's existing per-commit scheduling is outside this dispatcher audit.
++  if (_contents) {
++    self.zoomLevel = blink::ZoomLevelToZoomFactor(
++        zoom::ZoomController::GetZoomLevelForWebContents(_contents.get()));
++  }
+ }
+ // Sub-objects (DevTools, media session, ...) that implement -initWithArcWebContents: get this wrapper;
+ // shell classes get plain init.
+@@ -790,7 +732,19 @@
+ }
+ - (void)setNavigationDelegate:(id)delegate { _navigationDelegate = delegate; }
+ - (id)navigationDelegate { return _navigationDelegate; }
+-- (void)setUIDelegate:(id)delegate { _uiDelegate = delegate; }
++- (void)setUIDelegate:(id)delegate {
++  _uiDelegate = delegate;
++  if (delegate) {
++    CoreUIDelegateBridge* bridge = [[CoreUIDelegateBridge alloc] init];
++    bridge.delegate = delegate;
++    _uiDelegateBridge = bridge;
++    _activeUIDelegateBridge = bridge;
++  } else {
++    // Native nil unregister leaves the last stored shared bridge alive. Old
++    // queued weak-bridge status tasks remain eligible; future captures stop.
++    _activeUIDelegateBridge = nil;
++  }
++}
+ - (id)uiDelegate { return _uiDelegate; }
+ - (void)setActionsDelegate:(id)delegate { _actionsDelegate = delegate; }
+ - (void)setTopBandColorDelegate:(id)delegate { _topBandColorDelegate = delegate; }

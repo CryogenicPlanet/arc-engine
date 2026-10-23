@@ -7,8 +7,8 @@ import { summarize } from "../scenarios/coverage";
 import { AgentCDP, verifyAgentEndpoint } from "../../../arc/tools/agent-cdp";
 import { NativeController } from "../../../arc/tools/agent-native";
 import { spawn, spawnSync, type Subprocess } from "bun";
-import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
-import { basename, join, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync, realpathSync } from "node:fs";
+import { basename, join, resolve, relative, isAbsolute } from "node:path";
 
 const ARCMOD = resolve(import.meta.dir, "../../../arc");
 const argv = process.argv.slice(2);
@@ -84,10 +84,26 @@ const waitFor = async <T>(fn: () => T | undefined, ms: number): Promise<T | unde
 let launchNo = 0;
 const launches: Launch[] = [];
 type Launch = { proc: Subprocess; pid: () => number | undefined };
-const launch = (): Launch => {
-  const l = launchProcess(); launches.push(l); return l;
+export type LaunchOptions = { libraries?: readonly string[]; environment?: Readonly<Record<string, string>> };
+const launch = (options: LaunchOptions = {}): Launch => {
+  const l = launchProcess(options); launches.push(l); return l;
 };
-const launchProcess = (): Launch => {
+const launchProcess = (options: LaunchOptions): Launch => {
+  const extraEnv = Object.entries(options.environment ?? {});
+  const libraries = (options.libraries ?? []).map(path => {
+    if (!isAbsolute(path) || /[:\r\n]/.test(path)) throw new Error("test library must be an absolute dylib path below outDir");
+    const library = realpathSync(path), child = relative(realpathSync(outDir), library);
+    if (/[:\r\n]/.test(library) || !library.endsWith(".dylib") || !child || child === ".." || child.startsWith("../") || isAbsolute(child))
+      throw new Error("test library must be below outDir");
+    return library;
+  });
+  if (new Set(libraries).size !== libraries.length) throw new Error("duplicate test launch library");
+  if (extraEnv.some(([key, value]) => !/^ARC_SCENARIO_[A-Z0-9_]+$/.test(key) || typeof value !== "string" || value.includes("\0")))
+    throw new Error("test environment keys must use ARC_SCENARIO_ and contain string values");
+  if (libraries.length || extraEnv.length) {
+    if (traced) throw new Error("test launch injection is supported through LaunchServices, not --trace");
+    if (plist("CFBundleIdentifier") !== domain) throw new Error("test injection requires the exact disposable agent bundle identity");
+  }
   if (pgrepExe(join(app, "Contents/MacOS/Arc")).length) throw new Error("agent app already running; refusing duplicate launch");
   launchNo += 1;
   spawnSync(["defaults", "write", domain, "cloudKitSyncEnabled", "-bool", "false"]);
@@ -106,9 +122,14 @@ const launchProcess = (): Launch => {
   const exe = join(app, "Contents/MacOS/Arc");
   const before = new Set(pgrepExe(exe));
   const log = join(dir, "app.log");
-  const env = recorded
-    ? ["--env", `DYLD_INSERT_LIBRARIES=${recorderDylib}`, "--env", `ARC_RECORD_PATH=${join(dir, "record.jsonl")}`]
-    : [];
+  // The standard recorder stays first. Scenario-owned libraries cannot replace
+  // it or redirect its output, and helpers inherit neither injected library.
+  const injected = [...(recorded ? [recorderDylib] : []), ...libraries];
+  const env = [
+    ...(injected.length ? ["--env", `DYLD_INSERT_LIBRARIES=${injected.join(":")}`] : []),
+    ...(recorded ? ["--env", `ARC_RECORD_PATH=${join(dir, "record.jsonl")}`] : []),
+    ...extraEnv.flatMap(([key, value]) => ["--env", `${key}=${value}`]),
+  ];
   const proc = spawn(["open", "-n", "-g", "-a", app, ...env, "--stdout", log, "--stderr", log, "--args", ...chromiumArgs]);
   let pid: number | undefined;
   return { proc, pid: () => (pid ??= pgrepExe(exe).find((p) => !before.has(p))) };
@@ -174,7 +195,7 @@ const titleIs = async (target: string, title: string, ms = 30000) =>
   (await waitFor(() => (evaluate(target, "document.title") === title ? true : undefined), ms)) === true;
 
 const context = {
-  app, slug, port: Number(port), outDir, data, base, EXPECT, launch, ready, quit, open, titleIs,
+  app, slug, port: Number(port), outDir, data, base, EXPECT, recorded, traced, launch, ready, quit, open, titleIs,
   evaluate, record, waitFor, cdp, sleep,
   assert(step: string, ok: unknown, detail = "") { record(step, ok ? "pass" : "fail", detail); },
   async client() { return client ??= await AgentCDP.connectAgent(slug, Number(port)); },

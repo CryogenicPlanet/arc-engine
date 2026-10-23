@@ -10,7 +10,8 @@ namespace arc {
 // Called only in hosted Arc mode by ChromeContentRendererClient.
 void CreateRenderFrameAgent(content::RenderFrame* frame);
 // ChromeContentRendererClient calls this before extension document-start code.
-void RunEffectsAtDocumentStart(content::RenderFrame* frame);
+// False means a script destroyed the frame; the caller must return immediately.
+bool RunEffectsAtDocumentStart(content::RenderFrame* frame);
 // Process configuration publication visits every live renderer frame.
 void UpdateFrameAdBlockConfiguration(content::RenderFrame* frame);
 }  // namespace arc

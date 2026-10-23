@@ -1,6 +1,5 @@
 // Copyright 2026 ArcMod. Arc extension services backed by Chromium's profile.
 #import "arc/browser/extensions_context.h"
-#import "arc/browser/extensions_bridge.h"
 #include "arc/browser/extensions_internal_manifest.h"
 
 #include <algorithm>
@@ -20,15 +19,10 @@
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/extensions/commands/command_service.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/webstore_install_with_prompt.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_list/tab_list_interface.h"
-#include "chrome/browser/ui/browser_window/public/profile_browser_collection.h"
-#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
-#include "components/tabs/public/tab_interface.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/isolated_world_ids.h"
@@ -41,8 +35,8 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/load_error_reporter.h"
+#include "extensions/browser/ui_util.h"
 #include "extensions/browser/extension_util.h"
-#include "extensions/browser/permissions/active_tab_permission_granter.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/browser/scripting_utils.h"
@@ -56,10 +50,6 @@
 #include "extensions/common/manifest_handlers/manifest_url_handlers.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/origin.h"
-
-@interface ArcBrowser (ArcExtensionCommandDispatch)
-- (void)executeExtensionAction:(NSString*)extensionID;
-@end
 
 @protocol ArcExtensionsContextCallbacks <NSObject>
 - (void)browserContext:(ArcBrowserContext*)context didEnableExtension:(NSString*)identifier;
@@ -86,13 +76,6 @@ namespace {
 constexpr int kInstalledMask = extensions::ExtensionRegistry::ENABLED |
                                extensions::ExtensionRegistry::DISABLED |
                                extensions::ExtensionRegistry::TERMINATED;
-
-bool VisibleExtension(Profile* profile, const extensions::Extension& extension) {
-  return profile && extension.is_extension() &&
-         !extensions::Manifest::IsComponentLocation(extension.location()) &&
-         (!profile->IsOffTheRecord() ||
-          extensions::util::IsIncognitoEnabled(extension.id(), profile));
-}
 
 // IconImage owns its asynchronous load and unregisters from the registry on
 // shutdown. Retain it on the profile so a later snapshot sees the loaded icon.
@@ -427,7 +410,7 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
   auto* registry = _profile ? extensions::ExtensionRegistry::Get(_profile.get()) : nullptr;
   if (!registry) return [result copy];
   for (const auto& extension : registry->GenerateInstalledExtensionsSet(kInstalledMask)) {
-    if (!VisibleExtension(_profile.get(), *extension)) continue;
+    if (!extensions::ui_util::ShouldDisplayInExtensionSettings(*extension)) continue;
     auto info = arc::MakeExtensionInfo(_profile.get(), *extension);
     [result addObject:[[ArcExtensionInfo alloc] initWithExtensionInfo:&info]];
   }
@@ -436,7 +419,7 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
 - (ArcExtensionInfo*)getExtensionInfo:(NSString*)extensionID {
   auto* registry = _profile ? extensions::ExtensionRegistry::Get(_profile.get()) : nullptr;
   const auto* extension = registry ? registry->GetExtensionById(base::SysNSStringToUTF8(extensionID), kInstalledMask) : nullptr;
-  if (!extension || !VisibleExtension(_profile.get(), *extension)) return nil;
+  if (!extension) return nil;
   auto info = arc::MakeExtensionInfo(_profile.get(), *extension);
   return [[ArcExtensionInfo alloc] initWithExtensionInfo:&info];
 }
@@ -513,27 +496,20 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
   auto* registry = extensions::ExtensionRegistry::Get(_profile.get());
   auto* service = extensions::CommandService::Get(_profile.get());
   if (!registry || !service) return [result copy];
-  for (const auto& extension : registry->GenerateInstalledExtensionsSet(kInstalledMask)) {
-    if (!VisibleExtension(_profile.get(), *extension)) continue;
+  for (const auto& extension : registry->enabled_extensions()) {
+    if (!extensions::ui_util::ShouldDisplayInExtensionSettings(*extension)) continue;
     ui::CommandMap commands;
-    service->GetNamedCommands(extension->id(), extensions::CommandService::ALL,
+    service->GetNamedCommands(extension->id(),
+                             extensions::CommandService::ACTIVE_OR_USER_MODIFIED,
                              extensions::CommandService::ANY_SCOPE, &commands);
-    for (auto type : {extensions::ActionInfo::Type::kAction,
-                      extensions::ActionInfo::Type::kBrowser,
-                      extensions::ActionInfo::Type::kPage}) {
-      extensions::Command command;
-      if (service->GetExtensionActionCommand(extension->id(), type,
-          extensions::CommandService::ALL, &command, nullptr))
-        commands.insert_or_assign(command.command_name(), command);
-    }
     for (const auto& [name, command] : commands) {
       arc::ExtensionCommand snapshot;
       snapshot.extension_id = extension->id();
       snapshot.command_name = name;
       snapshot.command_description = base::UTF16ToUTF8(command.description());
       snapshot.is_global = command.global();
-      if (command.accelerator().key_code() != ui::VKEY_UNKNOWN)
-        snapshot.shortcut = ui::Command::AcceleratorToString(command.accelerator());
+      std::string shortcut = ui::Command::AcceleratorToString(command.accelerator());
+      if (!shortcut.empty()) snapshot.shortcut = std::move(shortcut);
       [result addObject:[[ArcExtensionCommand alloc] initWithExtensionCommand:&snapshot]];
     }
   }
@@ -545,35 +521,9 @@ ExtensionInfo MakeExtensionInfo(Profile* profile, const extensions::Extension& e
   const std::string command = base::SysNSStringToUTF8(name);
   auto* registry = extensions::ExtensionRegistry::Get(_profile.get());
   const auto* extension = registry ? registry->enabled_extensions().GetByID(identifier) : nullptr;
-  if (!extension || !VisibleExtension(_profile.get(), *extension)) return;
-  BrowserWindowInterface* browser = nullptr;
-  ProfileBrowserCollection::GetForProfile(_profile.get())->ForEach(
-      [&](BrowserWindowInterface* candidate) {
-        if (candidate->GetType() == BrowserWindowInterface::TYPE_NORMAL &&
-            !candidate->IsDeleteScheduled() && arc::BrowserForHostedExtensions(candidate)) {
-          browser = candidate;
-          return false;
-        }
-        return true;
-      }, BrowserCollection::Order::kActivation);
-  if (extensions::Command::IsActionRelatedCommand(command)) {
-    if (browser) [arc::BrowserForHostedExtensions(browser) executeExtensionAction:extensionID];
-    return;
-  }
+  if (!extension) return;
   base::ListValue arguments;
   arguments.Append(command);
-  base::Value tab;
-  auto* tabs = browser ? TabListInterface::From(browser) : nullptr;
-  auto* active = tabs ? tabs->GetActiveTab() : nullptr;
-  auto* contents = active ? active->GetContents() : nullptr;
-  if (contents) {
-    if (auto* granter = extensions::ActiveTabPermissionGranter::FromWebContents(contents))
-      granter->GrantIfRequested(extension);
-    auto scrub = extensions::ExtensionTabUtil::GetScrubTabBehavior(
-        extension, extensions::mojom::ContextType::kPrivilegedExtension, contents);
-    tab = base::Value(extensions::ExtensionTabUtil::CreateTabObject(contents, scrub, extension).ToValue());
-  }
-  arguments.Append(std::move(tab));
   auto event = std::make_unique<extensions::Event>(extensions::events::COMMANDS_ON_COMMAND,
       "commands.onCommand", std::move(arguments), _profile.get());
   event->user_gesture = extensions::EventRouter::UserGestureState::kEnabled;

@@ -1,0 +1,188 @@
+--- a/arc/api/arc_browser.mm
++++ b/arc/api/arc_browser.mm
+@@ -6,6 +6,12 @@
+ #include "arc/browser/extensions_bridge.h"
+ #import <objc/message.h>
+ #include "base/memory/weak_ptr.h"
++#include "base/functional/bind.h"
++#include "base/functional/callback.h"
++#include "base/location.h"
++#include "base/task/single_thread_task_runner.h"
++#include <memory>
++#include <vector>
+ #include "base/scoped_observation.h"
+ #include "chrome/browser/ui/tabs/tab_strip_model.h"
+ #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+@@ -182,6 +188,140 @@
+   __weak ArcBrowser* wrapper_;
+   base::CallbackListSubscription close_subscription_;
+ };
++// The native API reports cancellation, rather than whether closure succeeded.
++// Keep transport independent of the Objective-C wrapper: already queued
++// completions survive wrapper/native teardown.
++class CoreBrowserCloseState
++    : public std::enable_shared_from_this<CoreBrowserCloseState> {
++ public:
++  using Callback = void (^)(BOOL canceled);
++  using Completion = base::OnceCallback<void(bool)>;
++  using Batch = std::vector<Completion>;
++
++  explicit CoreBrowserCloseState(BrowserWindowInterface* browser)
++      : browser_(browser->GetWeakPtr()) {}
++
++  static std::shared_ptr<CoreBrowserCloseState> Create(
++      BrowserWindowInterface* browser) {
++    auto state = std::make_shared<CoreBrowserCloseState>(browser);
++    state->close_subscription_ = browser->RegisterBrowserDidClose(
++        base::BindRepeating(
++            [](std::weak_ptr<CoreBrowserCloseState> weak_state,
++               BrowserWindowInterface*) {
++              if (auto state = weak_state.lock()) {
++                state->NativeDidClose();
++              }
++            },
++            std::weak_ptr<CoreBrowserCloseState>(state)));
++    return state;
++  }
++
++  ~CoreBrowserCloseState() {
++    native_closed_ = true;
++    finishing_ = true;
++    RunBatch(TakePending(), false);
++  }
++
++  void Request(bool skip_beforeunload, Callback callback) {
++    auto keep_alive = shared_from_this();
++    Completion completion = base::BindOnce(
++        [](Callback callback, bool canceled) {
++          if (callback) {
++            callback(canceled);
++          }
++        },
++        [callback copy]);
++    if (native_closed_ || !browser_ || browser_->IsDeleteScheduled() ||
++        finishing_) {
++      std::move(completion).Run(false);
++      return;
++    }
++
++    const bool already_pending = !pending_.empty();
++    pending_.push_back(std::move(completion));
++    // A force/skip request may escalate an existing confirmation. Ordinary
++    // additional callers share its eventual result in insertion order.
++    if (already_pending && !skip_beforeunload) {
++      return;
++    }
++
++    UnloadController* unload = UnloadController::From(browser_.get());
++    const bool awaiting_confirmation = unload->RunBeforeUnloadForShutdown(
++        skip_beforeunload,
++        base::BindRepeating(
++            [](std::weak_ptr<CoreBrowserCloseState> weak_state,
++               bool confirmed) {
++              if (auto state = weak_state.lock()) {
++                state->Complete(confirmed);
++              }
++            },
++            weak_from_this()));
++    // This API does not invoke its confirmation callback when it returns
++    // false (including skip-beforeunload and no-handlers paths).
++    if (!awaiting_confirmation) {
++      Complete(true);
++    }
++  }
++
++ private:
++  Batch TakePending() {
++    Batch batch;
++    batch.swap(pending_);
++    return batch;
++  }
++
++  static void RunBatch(Batch batch, bool canceled) {
++    for (auto& completion : batch) {
++      std::move(completion).Run(canceled);
++    }
++  }
++
++  void NativeDidClose() {
++    auto keep_alive = shared_from_this();
++    native_closed_ = true;
++    finishing_ = true;
++    RunBatch(TakePending(), false);
++  }
++
++  void Complete(bool confirmed) {
++    auto keep_alive = shared_from_this();
++    if (pending_.empty()) {
++      return;
++    }
++    Batch batch = TakePending();
++    const bool permitted = confirmed || native_closed_ || !browser_ ||
++                           browser_->IsDeleteScheduled() || finishing_;
++    if (permitted) {
++      // Reentrant requests during these callbacks complete inline with NO,
++      // as in the original native finishing/already-closing branch.
++      finishing_ = true;
++      RunBatch(std::move(batch), false);
++      auto browser = browser_;
++      if (!native_closed_ && browser && !browser->IsDeleteScheduled()) {
++        browser->GetWindow()->Close();
++      }
++      if (!native_closed_ && browser_) {
++        finishing_ = false;
++      }
++      return;
++    }
++
++    // Reset first. It may invoke the native repeating callback again; the
++    // detached batch cannot be delivered a second time. The posted task owns
++    // its callbacks and does not depend on this state or an Objective-C owner.
++    UnloadController::From(browser_.get())->ResetBeforeUnloadForShutdown();
++    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
++        FROM_HERE, base::BindOnce(&CoreBrowserCloseState::RunBatch,
++                                  std::move(batch), true));
++  }
++
++  base::WeakPtr<BrowserWindowInterface> browser_;
++  Batch pending_;
++  bool native_closed_ = false;
++  bool finishing_ = false;
++  base::CallbackListSubscription close_subscription_;
++};
++
+ const char kArcBrowserKey[] = "ArcBrowser";
+ struct ArcBrowserHolder : base::SupportsUserData::Data {
+   ArcBrowser* __strong wrapper;
+@@ -201,6 +341,7 @@
+   id _sidePanel;
+   __weak id<ArcCoreBrowserDelegate> _delegate;
+   std::unique_ptr<ArcBrowserTabsObserver> _tabsObserver;
++  std::shared_ptr<CoreBrowserCloseState> _closeState;
+ }
+ @synthesize windowIdentifier = _windowIdentifier;
+ 
+@@ -230,6 +371,7 @@
+                      ? ((id (*)(id, SEL, id))objc_msgSend)([sidePanelClass alloc], withBrowser, self)
+                      : [[sidePanelClass alloc] init];
+     _tabsObserver = std::make_unique<ArcBrowserTabsObserver>(browser, self);
++    _closeState = CoreBrowserCloseState::Create(browser);
+     ArcSessionsBrowserCreated(self);
+   }
+   return self;
+@@ -248,6 +390,15 @@
+     default: return 0;
+   }
+ }
++- (void)tryToCloseSkipBeforeUnloadHandlers:(BOOL)skipBeforeUnloadHandlers
++                                 callback:(void (^)(BOOL canceled))callback {
++  auto state = _closeState;
++  if (state) {
++    state->Request(skipBeforeUnloadHandlers, callback);
++  } else if (callback) {
++    callback(NO);
++  }
++}
+ - (ArcBrowserContext*)context { return _context; }
+ - (ArcBrowserCreateParams*)browserCreateParams { return _browserCreateParams; }
+ - (id)sidePanel { return _sidePanel; }

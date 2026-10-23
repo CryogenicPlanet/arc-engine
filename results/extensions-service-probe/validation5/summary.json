@@ -1,0 +1,2106 @@
+{
+  "complete": false,
+  "parity": false,
+  "observedParity": false,
+  "comparedOperationCount": 1,
+  "operationParity": [
+    {
+      "step": "registry",
+      "observedInBoth": true,
+      "semanticEqual": false,
+      "scopedBoundaryEqual": true
+    },
+    {
+      "step": "install-A",
+      "observedInBoth": false,
+      "semanticEqual": false,
+      "scopedBoundaryEqual": false
+    },
+    {
+      "step": "install-B",
+      "observedInBoth": false,
+      "semanticEqual": false,
+      "scopedBoundaryEqual": false
+    },
+    {
+      "step": "snapshot-loaded",
+      "observedInBoth": false,
+      "semanticEqual": false,
+      "scopedBoundaryEqual": false
+    },
+    {
+      "step": "install-invalid",
+      "observedInBoth": false,
+      "semanticEqual": false,
+      "scopedBoundaryEqual": false
+    },
+    {
+      "step": "cleanup-after-error",
+      "observedInBoth": false,
+      "semanticEqual": false,
+      "scopedBoundaryEqual": false
+    }
+  ],
+  "differences": [
+    {
+      "step": "registry",
+      "golden": {
+        "step": "registry",
+        "operation": "registry",
+        "ok": true,
+        "matches": 1,
+        "mainThread": true,
+        "metadata": {
+          "ArcBrowser": {
+            "executeExtensionAction:": "v24@0:8@16",
+            "moveExtension:targetIndex:": "v32@0:8@16Q24",
+            "pinExtension:": "v24@0:8@16",
+            "unpinExtension:": "v24@0:8@16"
+          },
+          "ArcBrowserContextExtensions": {
+            "disableExtension:": "v24@0:8@16",
+            "enableExtension:": "v24@0:8@16",
+            "executeExtensionCommand:commandName:": "v32@0:8@16@24",
+            "getAllExtensionCommands": "@16@0:8",
+            "getExtensionInfo:": "@24@0:8@16",
+            "getPinnedExtensionOrder": "@16@0:8",
+            "hash": "Q16@0:8",
+            "installExtensionFromUnpackedPath:completion:": "v32@0:8@16@?24",
+            "isEqual:": "B24@0:8@16",
+            "isExtensionSystemReady": "B16@0:8",
+            "listExtensions": "@16@0:8",
+            "owner": "@16@0:8",
+            "reloadExtension:": "v24@0:8@16",
+            "runJSInExtensionBackgroundPage:js_code:": "B32@0:8@16@24",
+            "setDelegate:": "v24@0:8@16",
+            "setPinnedExtensionOrder:": "v24@0:8@16",
+            "uninstallExtension:": "v24@0:8@16"
+          }
+        },
+        "ready": true,
+        "identity": true,
+        "hashStable": true,
+        "browserPresent": false,
+        "browserMatches": 0,
+        "completions": [],
+        "outstandingInstalls": [],
+        "infosAfter": {},
+        "owned": {},
+        "callbacks": [],
+        "eventOrder": [],
+        "fixturePinsAfter": []
+      },
+      "ours": {
+        "step": "registry",
+        "operation": "registry",
+        "ok": true,
+        "matches": 1,
+        "mainThread": true,
+        "metadata": {
+          "ArcBrowser": {
+            "executeExtensionAction:": "v24@0:8@16",
+            "moveExtension:targetIndex:": "v32@0:8@16Q24",
+            "pinExtension:": "v24@0:8@16",
+            "unpinExtension:": "v24@0:8@16"
+          },
+          "ArcBrowserContextExtensions": {
+            "disableExtension:": "v24@0:8@16",
+            "enableExtension:": "v24@0:8@16",
+            "executeExtensionCommand:commandName:": "v32@0:8@16@24",
+            "getAllExtensionCommands": "@16@0:8",
+            "getExtensionInfo:": "@24@0:8@16",
+            "getPinnedExtensionOrder": "@16@0:8",
+            "hash": "Q16@0:8",
+            "installExtensionFromUnpackedPath:completion:": "v32@0:8@16@?24",
+            "isEqual:": "B24@0:8@16",
+            "isExtensionSystemReady": "B16@0:8",
+            "listExtensions": "@16@0:8",
+            "owner": "@16@0:8",
+            "reloadExtension:": "v24@0:8@16",
+            "runJSInExtensionBackgroundPage:js_code:": "B32@0:8@16@24",
+            "setDelegate:": "v24@0:8@16",
+            "setPinnedExtensionOrder:": "v24@0:8@16",
+            "uninstallExtension:": "v24@0:8@16"
+          }
+        },
+        "ready": true,
+        "identity": true,
+        "hashStable": true,
+        "browserPresent": true,
+        "browserMatches": 1,
+        "completions": [],
+        "outstandingInstalls": [],
+        "infosAfter": {},
+        "owned": {},
+        "callbacks": [],
+        "eventOrder": [],
+        "fixturePinsAfter": []
+      }
+    },
+    {
+      "step": "install-A",
+      "golden": null,
+      "ours": {
+        "step": "install-A",
+        "operation": "install",
+        "ok": true,
+        "matches": 1,
+        "mainThread": true,
+        "browserMatches": 1,
+        "completion": {
+          "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+          "mainThread": true,
+          "result": 0,
+          "synchronous": false
+        },
+        "completions": [
+          {
+            "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "mainThread": true,
+            "result": 0,
+            "synchronous": false
+          }
+        ],
+        "outstandingInstalls": [],
+        "infosAfter": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+            "version": "1.2.3"
+          }
+        },
+        "owned": {
+          "A": "mmcddddaclflpjmgnjhfehhphihokiab"
+        },
+        "callbacks": [
+          {
+            "selector": "browserContext:didInstallExtension:",
+            "payload": [
+              "mmcddddaclflpjmgnjhfehhphihokiab"
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        ],
+        "eventOrder": [
+          {
+            "type": "completion",
+            "value": {
+              "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+              "mainThread": true,
+              "result": 0,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browserContext:didInstallExtension:",
+              "payload": [
+                "mmcddddaclflpjmgnjhfehhphihokiab"
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          }
+        ],
+        "fixturePinsAfter": []
+      }
+    },
+    {
+      "step": "install-B",
+      "golden": null,
+      "ours": {
+        "step": "install-B",
+        "operation": "install",
+        "ok": true,
+        "matches": 1,
+        "mainThread": true,
+        "browserMatches": 1,
+        "completion": {
+          "id": "ejffhdckdamepiakeogldebaplnedcil",
+          "mainThread": true,
+          "result": 0,
+          "synchronous": false
+        },
+        "completions": [
+          {
+            "id": "ejffhdckdamepiakeogldebaplnedcil",
+            "mainThread": true,
+            "result": 0,
+            "synchronous": false
+          }
+        ],
+        "outstandingInstalls": [],
+        "infosAfter": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+            "version": "1.2.3"
+          },
+          "B": {
+            "description": "Local fixture B π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "ejffhdckdamepiakeogldebaplnedcil",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://ejffhdckdamepiakeogldebaplnedcil/",
+            "version": "1.2.3"
+          }
+        },
+        "owned": {
+          "A": "mmcddddaclflpjmgnjhfehhphihokiab",
+          "B": "ejffhdckdamepiakeogldebaplnedcil"
+        },
+        "callbacks": [
+          {
+            "selector": "browserContext:didInstallExtension:",
+            "payload": [
+              "ejffhdckdamepiakeogldebaplnedcil"
+            ],
+            "mainThread": true,
+            "synchronous": false
+          }
+        ],
+        "eventOrder": [
+          {
+            "type": "completion",
+            "value": {
+              "id": "ejffhdckdamepiakeogldebaplnedcil",
+              "mainThread": true,
+              "result": 0,
+              "synchronous": false
+            }
+          },
+          {
+            "type": "delegate",
+            "value": {
+              "selector": "browserContext:didInstallExtension:",
+              "payload": [
+                "ejffhdckdamepiakeogldebaplnedcil"
+              ],
+              "mainThread": true,
+              "synchronous": false
+            }
+          }
+        ],
+        "fixturePinsAfter": []
+      }
+    },
+    {
+      "step": "snapshot-loaded",
+      "golden": null,
+      "ours": {
+        "step": "snapshot-loaded",
+        "operation": "snapshot",
+        "ok": true,
+        "matches": 1,
+        "mainThread": true,
+        "browserMatches": 1,
+        "completions": [],
+        "outstandingInstalls": [],
+        "list": [
+          {
+            "description": "Local fixture B π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "ejffhdckdamepiakeogldebaplnedcil",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://ejffhdckdamepiakeogldebaplnedcil/",
+            "version": "1.2.3"
+          },
+          {
+            "description": "Local fixture A π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+            "version": "1.2.3"
+          }
+        ],
+        "commands": [],
+        "infosAfter": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+            "version": "1.2.3"
+          },
+          "B": {
+            "description": "Local fixture B π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "ejffhdckdamepiakeogldebaplnedcil",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://ejffhdckdamepiakeogldebaplnedcil/",
+            "version": "1.2.3"
+          }
+        },
+        "owned": {
+          "A": "mmcddddaclflpjmgnjhfehhphihokiab",
+          "B": "ejffhdckdamepiakeogldebaplnedcil"
+        },
+        "callbacks": [],
+        "eventOrder": [],
+        "fixturePinsAfter": []
+      }
+    },
+    {
+      "step": "install-invalid",
+      "golden": null,
+      "ours": {
+        "step": "install-invalid",
+        "operation": "install-invalid",
+        "ok": false,
+        "probeError": "bounded operation timeout; installs outstanding; cleanup not certified",
+        "matches": 1,
+        "mainThread": true,
+        "browserMatches": 1,
+        "completions": [],
+        "outstandingInstalls": [
+          "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-5"
+        ],
+        "infosAfter": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+            "version": "1.2.3"
+          },
+          "B": {
+            "description": "Local fixture B π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "ejffhdckdamepiakeogldebaplnedcil",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://ejffhdckdamepiakeogldebaplnedcil/",
+            "version": "1.2.3"
+          }
+        },
+        "owned": {
+          "A": "mmcddddaclflpjmgnjhfehhphihokiab",
+          "B": "ejffhdckdamepiakeogldebaplnedcil"
+        },
+        "callbacks": [],
+        "eventOrder": [],
+        "fixturePinsAfter": []
+      }
+    },
+    {
+      "step": "cleanup-after-error",
+      "golden": null,
+      "ours": {
+        "step": "cleanup-after-error",
+        "operation": "cleanup",
+        "ok": false,
+        "probeError": "bounded operation timeout; installs outstanding; cleanup not certified",
+        "matches": 1,
+        "mainThread": true,
+        "browserMatches": 1,
+        "completions": [],
+        "outstandingInstalls": [
+          "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-5"
+        ],
+        "cleanupCertified": false,
+        "infosAfter": {
+          "A": {
+            "description": "Local fixture A π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobea",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+            "version": "1.2.3"
+          },
+          "B": {
+            "description": "Local fixture B π 東京",
+            "enabled": false,
+            "fromWebstore": false,
+            "hasAction": true,
+            "icon": {
+              "present": true,
+              "representations": [
+                {
+                  "height": 32,
+                  "width": 32
+                },
+                {
+                  "height": 64,
+                  "width": 64
+                }
+              ],
+              "size": [
+                32,
+                32
+              ]
+            },
+            "id": "ejffhdckdamepiakeogldebaplnedcil",
+            "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 B",
+            "numRatings": 0,
+            "omniboxKeyword": "arcserviceprobeb",
+            "permissions": [
+              "Read and change your data on 127.0.0.1",
+              "Read your browsing history"
+            ],
+            "rating": 0,
+            "url": "chrome-extension://ejffhdckdamepiakeogldebaplnedcil/",
+            "version": "1.2.3"
+          }
+        },
+        "owned": {
+          "A": "mmcddddaclflpjmgnjhfehhphihokiab",
+          "B": "ejffhdckdamepiakeogldebaplnedcil"
+        },
+        "callbacks": [],
+        "eventOrder": [],
+        "fixturePinsAfter": []
+      }
+    }
+  ],
+  "boundaryDiffs": [
+    {
+      "step": "install-A",
+      "error": "missing scoped record"
+    },
+    {
+      "step": "install-B",
+      "error": "missing scoped record"
+    },
+    {
+      "step": "snapshot-loaded",
+      "error": "missing scoped record"
+    },
+    {
+      "step": "install-invalid",
+      "error": "missing scoped record"
+    },
+    {
+      "step": "cleanup-after-error",
+      "error": "missing scoped record"
+    }
+  ],
+  "provenance": {
+    "capturedAt": "2026-10-23T11:40:45.917Z",
+    "fixtureEnvironmentArguments": [
+      "--use-mock-keychain",
+      "--no-default-browser-check",
+      "--disable-sync",
+      "--disable-background-networking",
+      "--no-error-dialogs"
+    ],
+    "builtEngine": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+      "sha256": "0e091a64cdd71fade6e79da9f3f91902183be3aa3741115cd082e879209b1f1e",
+      "size": 644989136,
+      "mtimeMs": 1792755628577.255,
+      "image": {
+        "imageSHA256": "0c554049c42124389dd1a43858f27a7b39d2edadc5534c3feb8ad458bce2fb30",
+        "normalizedFields": {
+          "LC_CODE_SIGNATURE.dataoff_datasize": 10312,
+          "__LINKEDIT.filesize": 3728,
+          "__LINKEDIT.vmsize": 3712
+        },
+        "rawSHA256": "0e091a64cdd71fade6e79da9f3f91902183be3aa3741115cd082e879209b1f1e",
+        "scope": "All bytes before trailing code signature, excluding only its locator and signature-dependent linkedit sizes",
+        "signatureOffset": 639989072,
+        "signatureSize": 5000064
+      }
+    },
+    "packagedEngines": {
+      "trace156": {
+        "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+        "sha256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d",
+        "size": 501736176,
+        "mtimeMs": 1792740257176.9219
+      },
+      "ours156": {
+        "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+        "sha256": "0e9216cea26d38f245d97ecc768c15bcbe2e00e6cc62f5e7554afff0a1341979",
+        "size": 641257328,
+        "mtimeMs": 1792755636142.5762,
+        "image": {
+          "imageSHA256": "0c554049c42124389dd1a43858f27a7b39d2edadc5534c3feb8ad458bce2fb30",
+          "normalizedFields": {
+            "LC_CODE_SIGNATURE.dataoff_datasize": 10312,
+            "__LINKEDIT.filesize": 3728,
+            "__LINKEDIT.vmsize": 3712
+          },
+          "rawSHA256": "0e9216cea26d38f245d97ecc768c15bcbe2e00e6cc62f5e7554afff0a1341979",
+          "scope": "All bytes before trailing code signature, excluding only its locator and signature-dependent linkedit sizes",
+          "signatureOffset": 639989072,
+          "signatureSize": 1268256
+        }
+      }
+    },
+    "probeBinary": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/logs/wp/extensions-service-probe-build/ExtensionsServiceProbe.dylib",
+      "sha256": "c2a3961338b4a716447ebac7ca49f54b69cdcce3cf4e79d7c6d92c7d080f164e",
+      "size": 133952,
+      "mtimeMs": 1792755129614.4036
+    },
+    "recorderBinary": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/tests/recorder/ArcEngineRecorder.dylib",
+      "sha256": "fee95e1339e8c1aa2ecf1fcb0e9ebf1137efe64193031b60ead9c110677bba9a",
+      "size": 92224,
+      "mtimeMs": 1792754648280.6172
+    },
+    "frameworkMetadata": {
+      "trace156": {
+        "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/Resources/Info.plist",
+        "sha256": "2994f7303cf7a6c24ef976dc8421929e7ccb1d70e102044399fd8886c9a7fe75",
+        "size": 1067,
+        "mtimeMs": 1792616318000,
+        "values": {
+          "CFBundleIdentifier": "company.thebrowser.browser.framework",
+          "CFBundleShortVersionString": "156.0.8078.48",
+          "CFBundleVersion": "8078.48"
+        }
+      },
+      "ours156": {
+        "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/Frameworks/ArcCore.framework/Versions/A/Resources/Info.plist",
+        "sha256": "0c1b1c8a8452d415abb4ac9ca77131e841a6388f8604f16b513b984088b5c272",
+        "size": 1064,
+        "mtimeMs": 1792755628577.255,
+        "values": {
+          "CFBundleIdentifier": "org.chromium.Chromium.framework",
+          "CFBundleShortVersionString": "156.0.8078.48",
+          "CFBundleVersion": "8078.48"
+        }
+      },
+      "built": {
+        "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/Resources/Info.plist",
+        "sha256": "0c1b1c8a8452d415abb4ac9ca77131e841a6388f8604f16b513b984088b5c272",
+        "size": 1064,
+        "mtimeMs": 1792755628577.255,
+        "values": {
+          "CFBundleIdentifier": "org.chromium.Chromium.framework",
+          "CFBundleShortVersionString": "156.0.8078.48",
+          "CFBundleVersion": "8078.48"
+        }
+      }
+    },
+    "imageFingerprintTool": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_macho_fingerprint.py",
+      "sha256": "0828a85965721b9a6cfcb349d783c9e8c076b8555828cd3c09077c9e8eb1010c",
+      "size": 5105,
+      "mtimeMs": 1792751269410.3079
+    },
+    "sources": [
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_extensions_browser.mm",
+        "sha256": "b3aabc4d7fd31bc0fb92c72632752205574f1f16efbb8dd621329a3696950b58",
+        "size": 30500,
+        "mtimeMs": 1792755571932.989
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_extensions_context.mm",
+        "sha256": "468bc9da0bdf22561ccb96e2e9af53b6ff5d9087c8b0bb21d1b584c6d62098e5",
+        "size": 28822,
+        "mtimeMs": 1792755571933.042
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_extensions_internal.mm",
+        "sha256": "cf61b5c5baeb28691229b5f4c61ed60a0f2993d3a9c383be1952e2d305793db3",
+        "size": 2645,
+        "mtimeMs": 1792755571933.07
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_extensions_values.mm",
+        "sha256": "1a3994ea1ff0a38b7cf696a3d467b14da948479eb9ae418fcbb06db0dee33845",
+        "size": 6793,
+        "mtimeMs": 1792755571933.094
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_bridge.h",
+        "sha256": "ca3958062677e582bdf98798f61bbf95011fc9c50c2fde6e2f777efcaaac87e5",
+        "size": 441,
+        "mtimeMs": 1792747467980.8384
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_context.h",
+        "sha256": "9a77800fb0751b6322b982df5a6f5a215a82c1f2e9c347b19a786fe14b3d5894",
+        "size": 1922,
+        "mtimeMs": 1792749273357.487
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_groups.mm",
+        "sha256": "6e52d7060590040cc24a70a9fc2d8f099a17c19a1cf5848944967c20a0ed494b",
+        "size": 32849,
+        "mtimeMs": 1792755571933.118
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_internal/BUILD.gn",
+        "sha256": "3846d4debc646efd0d543c1ca7172624eaec3d8d2f1c90cf845f492f3fdf2988",
+        "size": 343,
+        "mtimeMs": 1792749294005.2222
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_internal/background.js",
+        "sha256": "eef3ebab7af63e3a72df06882a8185732d3c6bf71c9575bd7a4ea9785baf01fd",
+        "size": 3301,
+        "mtimeMs": 1792749217121.28
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_internal/manifest.json",
+        "sha256": "0badd5b743eaf75d894b8abf1a8ac29ba4233123bd48217bf9ebf6b2ed6f6bd9",
+        "size": 762,
+        "mtimeMs": 1792749217121.016
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_internal_manifest.h",
+        "sha256": "5044b52a016b9b47ea2fab9b74ec9105c0dfed811d47c1b6cf4aba40360cb7e6",
+        "size": 1280,
+        "mtimeMs": 1792749273358.1736
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/extensions_values.h",
+        "sha256": "0626fc241700feebf62592b86e1659c644e7cf2a6a90f8d28e19187a484d2d74",
+        "size": 5134,
+        "mtimeMs": 1792746539080.6416
+      },
+      {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/wp/extensions.gni",
+        "sha256": "9b7531a27300061d5b67aa9cc35371f078ef2e7ad8578a18fc2338f7d5368a8a",
+        "size": 756,
+        "mtimeMs": 1792749294005.0881
+      }
+    ],
+    "exportPreflight": {
+      "expectedClassCount": 146,
+      "missingClasses": [],
+      "metadata": {
+        "path": "/Users/cryogenicplanet/general/arc-engine/arc/tools/arccore-1.170.0-objc.tsv",
+        "sha256": "9ba3d4750f15e80ca6836966af5ec50523ccfe5e0ed3c22faa31f8b347492cf5",
+        "size": 313666,
+        "mtimeMs": 1792742248409.2395
+      },
+      "packagedOursSHA256": "0e9216cea26d38f245d97ecc768c15bcbe2e00e6cc62f5e7554afff0a1341979"
+    },
+    "expectedStockSHA256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d",
+    "independentStockSibling": {
+      "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-swap156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+      "sha256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d",
+      "size": 501736176,
+      "mtimeMs": 1792731612324.267
+    },
+    "traceMatchesVerifiedStock": true,
+    "siblingMatchesVerifiedStock": true,
+    "sourcesUnchangedDuringFingerprint": true,
+    "packagedOursRawMatchesBuilt": false,
+    "packagedOursMatchesBuilt": true,
+    "ownProductSourcesNotNewerThanBuilt": true,
+    "scope": "Actual packaged binaries and extension-package sources/assets only. ArcMod re-signs nested binaries: raw hashes are retained, build/package equality hashes every pre-signature Mach-O byte except the signature locator and signature-dependent linkedit sizes. Mtime freshness is snapshot-specific and does not prove other concurrent packages are included."
+  },
+  "notes": [
+    "Both disposable launches include --no-error-dialogs as an explicit fixture environment precondition, suppressing modal install-error presentation while preserving native LoadErrorReporter errors/callbacks. No fake errors or callback substitutions are used.",
+    "Supplemental probe only; canonical extensions scenario acceptance remains separate.",
+    "Native metadata encodings and fixture DTO scalar/string/ordered-array observations compare exactly; image observations include NSImage dimensions and representation sizes, not pixel equivalence.",
+    "Semantic comparison omits transport PID/request IDs, recorder offsets and engine labels; callback and pin arrays are scoped to proven fixture IDs. Each baseline pin order is independently restored and asserted.",
+    "Scoped boundary records include probe-generated DTO getter measurements and real app callbacks; they are not claimed as independent app demand.",
+    "Existing diff.py renumbers recording object identities and masks loopback ports, temporary folders and UUID strings. The exact supplemental semantic comparison applies none of those string masks.",
+    "ArcBrowser pinExtension:, unpinExtension:, moveExtension:targetIndex: are metadata-only here; their executable behavior is uncovered. Context setPinnedExtensionOrder: is exercised separately when the native enable precondition permits it.",
+    "MV3 background-page JavaScript negative path only; positive legacy background-page execution is uncovered and no legacy fixture is enabled.",
+    "Browser captures retain all weak live browser/delegate entries per context; ambiguous selection fails a probe precondition. Action-B onClicked effects must prove a real numeric tab ID and the exact nonce fixture URL; no activation is attempted.",
+    "Context command dispatch targets an enabled extension, supplies only its command string, sets user gesture, and has no target-tab or independent activeTab permission-grant coverage. Listener argumentCount/types and noTab are retained exactly; optional undefined binding padding is observed rather than invented or normalized.",
+    "provenance.json requires all original metadata class exports and records raw engine/probe/recorder/source hashes plus framework versions. Build/package equality compares every pre-signature Mach-O byte except its signature locator and signature-dependent __LINKEDIT sizes; ArcMod ad-hoc re-signing changes those fields and the trailing signature. The guarded read-only fingerprint helper and its hash are recorded. All owned product sources must precede the build; this is snapshot-specific.",
+    "Install attempts are journaled before invocation. Cleanup waits for all outstanding completions, reconciles exact nonce names/verified IDs from the actual installed-extension list, then certifies fixture absence and baseline pin restoration. Timeouts leave explicit unresolved ownership evidence rather than claiming cleanup.",
+    "Callback operation attribution is captured under a synchronization lock at callback entry. Deferred late/unassigned/outside-context deliveries are retained in diagnostics; fixture-related diagnostics fail completion rather than being reassigned to a future request.",
+    "PID-bound helper, actual app-window readiness (including agent identity), recorder and verified CDP process must all agree within 120 seconds before any probe request or CDP mutation. Current stage observations are persisted to readiness.json; startup failure issues no cleanup mutation when no install was attempted.",
+    "Helper Boolean expressions emit Foundation Boolean singletons; DTO Boolean getters are invoked using their declared B/c metadata and reject unexpected encodings/noncanonical char values. The runner rejects numeric substitutes for Boolean fields; native false remains false.",
+    "Initial installed enabled flags are retained exactly. Explicit public enable operations precede enabled-dependent exercise; policy blockage keeps per-operation observations/diffs but marks the overall probe incomplete and downstream coverage uncovered.",
+    "Callbacks are observed within 800ms after method return/completion; popup actions use 3 seconds. Absence beyond those windows is not a synthesized callback result."
+  ],
+  "runs": [
+    {
+      "agent": "trace156",
+      "actions": [
+        {
+          "step": "registry",
+          "baselinePins": [],
+          "browserMatches": 0,
+          "browserPresent": false,
+          "callbacks": [],
+          "completions": [],
+          "events": [],
+          "hashStable": true,
+          "id": "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-1",
+          "identity": true,
+          "infosAfter": {},
+          "mainThread": true,
+          "matches": 1,
+          "metadata": {
+            "ArcBrowser": {
+              "executeExtensionAction:": "v24@0:8@16",
+              "moveExtension:targetIndex:": "v32@0:8@16Q24",
+              "pinExtension:": "v24@0:8@16",
+              "unpinExtension:": "v24@0:8@16"
+            },
+            "ArcBrowserContextExtensions": {
+              "disableExtension:": "v24@0:8@16",
+              "enableExtension:": "v24@0:8@16",
+              "executeExtensionCommand:commandName:": "v32@0:8@16@24",
+              "getAllExtensionCommands": "@16@0:8",
+              "getExtensionInfo:": "@24@0:8@16",
+              "getPinnedExtensionOrder": "@16@0:8",
+              "hash": "Q16@0:8",
+              "installExtensionFromUnpackedPath:completion:": "v32@0:8@16@?24",
+              "isEqual:": "B24@0:8@16",
+              "isExtensionSystemReady": "B16@0:8",
+              "listExtensions": "@16@0:8",
+              "owner": "@16@0:8",
+              "reloadExtension:": "v24@0:8@16",
+              "runJSInExtensionBackgroundPage:js_code:": "B32@0:8@16@24",
+              "setDelegate:": "v24@0:8@16",
+              "setPinnedExtensionOrder:": "v24@0:8@16",
+              "uninstallExtension:": "v24@0:8@16"
+            }
+          },
+          "ok": true,
+          "operation": "registry",
+          "outstandingInstalls": [],
+          "owned": {},
+          "pid": 25386,
+          "pinsAfter": [],
+          "ready": true,
+          "recordAfterReturn": 775319,
+          "recordBegin": 773479,
+          "recordEnd": 784735
+        }
+      ],
+      "errors": [
+        "Error: probe precondition failed: missing or ambiguous real app browser; no selection/activation attempted"
+      ],
+      "uncovered": [
+        "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered",
+        "Positive legacy background-page JavaScript uncovered; MV3 negative path only"
+      ],
+      "pid": 25386,
+      "readiness": {
+        "pid": 25386,
+        "agent": "trace156",
+        "timeoutMs": 120000,
+        "satisfied": true,
+        "elapsedMs": 3197,
+        "events": [
+          {
+            "elapsedMs": 56,
+            "processPIDs": [
+              25386
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/trace156/extensions-service-request.json.ready.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/trace156/extensions-service-request.json.ready.json'"
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json",
+              "exists": true,
+              "mtimeMs": 1792755544560.8374,
+              "data": {
+                "pid": 20478,
+                "agent": "trace156",
+                "ready": true
+              }
+            },
+            "recorder": {
+              "exists": false,
+              "size": 0
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 689,
+            "processPIDs": [
+              25386
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/trace156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792755646569.0366,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 25386
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json",
+              "exists": true,
+              "mtimeMs": 1792755544560.8374,
+              "data": {
+                "pid": 20478,
+                "agent": "trace156",
+                "ready": true
+              }
+            },
+            "recorder": {
+              "exists": true,
+              "size": 8466
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 1928,
+            "processPIDs": [
+              25386
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/trace156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792755646569.0366,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 25386
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json",
+              "exists": true,
+              "mtimeMs": 1792755544560.8374,
+              "data": {
+                "pid": 20478,
+                "agent": "trace156",
+                "ready": true
+              }
+            },
+            "recorder": {
+              "exists": true,
+              "size": 370317
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 3197,
+            "processPIDs": [
+              25386
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/trace156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792755646569.0366,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 25386
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/ArcModAgentReady.json",
+              "exists": true,
+              "mtimeMs": 1792755649248.488,
+              "data": {
+                "pid": 25386,
+                "agent": "trace156",
+                "ready": true
+              }
+            },
+            "recorder": {
+              "exists": true,
+              "size": 567396
+            },
+            "endpoint": {
+              "checked": true,
+              "pid": 25386
+            },
+            "satisfied": true
+          }
+        ]
+      },
+      "cleanup": "no fixture installation or pin mutation issued; native readiness/registry precondition failed",
+      "ownership": {
+        "attempts": [],
+        "outstandingInstalls": [],
+        "owned": {}
+      },
+      "diagnostics": [
+        {
+          "event": {
+            "mainThread": true,
+            "payload": [
+              []
+            ],
+            "recordOffset": 535831,
+            "selector": "browser:didUpdateExtensionToolbarActions:",
+            "synchronous": null
+          },
+          "kind": "unassigned",
+          "operationID": null
+        }
+      ]
+    },
+    {
+      "agent": "ours156",
+      "actions": [
+        {
+          "step": "registry",
+          "baselinePins": [],
+          "browserMatches": 1,
+          "browserPresent": true,
+          "callbacks": [],
+          "completions": [],
+          "events": [],
+          "hashStable": true,
+          "id": "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-1",
+          "identity": true,
+          "infosAfter": {},
+          "mainThread": true,
+          "matches": 1,
+          "metadata": {
+            "ArcBrowser": {
+              "executeExtensionAction:": "v24@0:8@16",
+              "moveExtension:targetIndex:": "v32@0:8@16Q24",
+              "pinExtension:": "v24@0:8@16",
+              "unpinExtension:": "v24@0:8@16"
+            },
+            "ArcBrowserContextExtensions": {
+              "disableExtension:": "v24@0:8@16",
+              "enableExtension:": "v24@0:8@16",
+              "executeExtensionCommand:commandName:": "v32@0:8@16@24",
+              "getAllExtensionCommands": "@16@0:8",
+              "getExtensionInfo:": "@24@0:8@16",
+              "getPinnedExtensionOrder": "@16@0:8",
+              "hash": "Q16@0:8",
+              "installExtensionFromUnpackedPath:completion:": "v32@0:8@16@?24",
+              "isEqual:": "B24@0:8@16",
+              "isExtensionSystemReady": "B16@0:8",
+              "listExtensions": "@16@0:8",
+              "owner": "@16@0:8",
+              "reloadExtension:": "v24@0:8@16",
+              "runJSInExtensionBackgroundPage:js_code:": "B32@0:8@16@24",
+              "setDelegate:": "v24@0:8@16",
+              "setPinnedExtensionOrder:": "v24@0:8@16",
+              "uninstallExtension:": "v24@0:8@16"
+            }
+          },
+          "ok": true,
+          "operation": "registry",
+          "outstandingInstalls": [],
+          "owned": {},
+          "pid": 25791,
+          "pinsAfter": [],
+          "ready": true,
+          "recordAfterReturn": 847756,
+          "recordBegin": 845443,
+          "recordEnd": 851237
+        },
+        {
+          "step": "install-A",
+          "browserMatches": 1,
+          "callbacks": [
+            {
+              "mainThread": true,
+              "payload": [
+                "mmcddddaclflpjmgnjhfehhphihokiab"
+              ],
+              "recordOffset": 854969,
+              "selector": "browserContext:didInstallExtension:",
+              "synchronous": false
+            }
+          ],
+          "completion": {
+            "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "mainThread": true,
+            "result": 0,
+            "synchronous": false
+          },
+          "completions": [
+            {
+              "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+              "mainThread": true,
+              "result": 0,
+              "synchronous": false
+            }
+          ],
+          "events": [
+            {
+              "type": "completion",
+              "value": {
+                "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+                "mainThread": true,
+                "result": 0,
+                "synchronous": false
+              }
+            },
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "mmcddddaclflpjmgnjhfehhphihokiab"
+                ],
+                "recordOffset": 854969,
+                "selector": "browserContext:didInstallExtension:",
+                "synchronous": false
+              }
+            }
+          ],
+          "id": "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-2",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "install",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mmcddddaclflpjmgnjhfehhphihokiab"
+          },
+          "pid": 25791,
+          "pinsAfter": [],
+          "recordAfterReturn": 853139,
+          "recordBegin": 852505,
+          "recordEnd": 876939
+        },
+        {
+          "step": "install-B",
+          "browserMatches": 1,
+          "callbacks": [
+            {
+              "mainThread": true,
+              "payload": [
+                "ejffhdckdamepiakeogldebaplnedcil"
+              ],
+              "recordOffset": 880671,
+              "selector": "browserContext:didInstallExtension:",
+              "synchronous": false
+            }
+          ],
+          "completion": {
+            "id": "ejffhdckdamepiakeogldebaplnedcil",
+            "mainThread": true,
+            "result": 0,
+            "synchronous": false
+          },
+          "completions": [
+            {
+              "id": "ejffhdckdamepiakeogldebaplnedcil",
+              "mainThread": true,
+              "result": 0,
+              "synchronous": false
+            }
+          ],
+          "events": [
+            {
+              "type": "completion",
+              "value": {
+                "id": "ejffhdckdamepiakeogldebaplnedcil",
+                "mainThread": true,
+                "result": 0,
+                "synchronous": false
+              }
+            },
+            {
+              "type": "delegate",
+              "value": {
+                "mainThread": true,
+                "payload": [
+                  "ejffhdckdamepiakeogldebaplnedcil"
+                ],
+                "recordOffset": 880671,
+                "selector": "browserContext:didInstallExtension:",
+                "synchronous": false
+              }
+            }
+          ],
+          "id": "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-3",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "ejffhdckdamepiakeogldebaplnedcil",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://ejffhdckdamepiakeogldebaplnedcil/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "install",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "B": "ejffhdckdamepiakeogldebaplnedcil"
+          },
+          "pid": 25791,
+          "pinsAfter": [],
+          "recordAfterReturn": 878841,
+          "recordBegin": 878207,
+          "recordEnd": 917810
+        },
+        {
+          "step": "snapshot-loaded",
+          "browserMatches": 1,
+          "callbacks": [],
+          "commands": [],
+          "completions": [],
+          "events": [],
+          "id": "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-4",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "ejffhdckdamepiakeogldebaplnedcil",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://ejffhdckdamepiakeogldebaplnedcil/",
+              "version": "1.2.3"
+            }
+          },
+          "list": [
+            {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "ejffhdckdamepiakeogldebaplnedcil",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://ejffhdckdamepiakeogldebaplnedcil/",
+              "version": "1.2.3"
+            },
+            {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+              "version": "1.2.3"
+            }
+          ],
+          "mainThread": true,
+          "matches": 1,
+          "ok": true,
+          "operation": "snapshot",
+          "outstandingInstalls": [],
+          "owned": {
+            "A": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "B": "ejffhdckdamepiakeogldebaplnedcil"
+          },
+          "pid": 25791,
+          "pinsAfter": [],
+          "recordAfterReturn": 933080,
+          "recordBegin": 920291,
+          "recordEnd": 945558
+        },
+        {
+          "step": "install-invalid",
+          "browserMatches": 1,
+          "callbacks": [],
+          "completions": [],
+          "events": [],
+          "id": "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-5",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "ejffhdckdamepiakeogldebaplnedcil",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://ejffhdckdamepiakeogldebaplnedcil/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": false,
+          "operation": "install-invalid",
+          "outstandingInstalls": [
+            "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-5"
+          ],
+          "owned": {
+            "A": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "B": "ejffhdckdamepiakeogldebaplnedcil"
+          },
+          "pid": 25791,
+          "pinsAfter": [],
+          "probeError": "bounded operation timeout; installs outstanding; cleanup not certified",
+          "recordAfterReturn": 947466,
+          "recordBegin": 946826,
+          "recordEnd": 962532
+        },
+        {
+          "step": "cleanup-after-error",
+          "browserMatches": 1,
+          "callbacks": [],
+          "cleanupCertified": false,
+          "completions": [],
+          "events": [],
+          "id": "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-6",
+          "infosAfter": {
+            "A": {
+              "description": "Local fixture A π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "mmcddddaclflpjmgnjhfehhphihokiab",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 A",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobea",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://mmcddddaclflpjmgnjhfehhphihokiab/",
+              "version": "1.2.3"
+            },
+            "B": {
+              "description": "Local fixture B π 東京",
+              "enabled": false,
+              "fromWebstore": false,
+              "hasAction": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "ejffhdckdamepiakeogldebaplnedcil",
+              "name": "ArcCore service probe arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088 B",
+              "numRatings": 0,
+              "omniboxKeyword": "arcserviceprobeb",
+              "permissions": [
+                "Read and change your data on 127.0.0.1",
+                "Read your browsing history"
+              ],
+              "rating": 0,
+              "url": "chrome-extension://ejffhdckdamepiakeogldebaplnedcil/",
+              "version": "1.2.3"
+            }
+          },
+          "mainThread": true,
+          "matches": 1,
+          "ok": false,
+          "operation": "cleanup",
+          "outstandingInstalls": [
+            "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-5"
+          ],
+          "owned": {
+            "A": "mmcddddaclflpjmgnjhfehhphihokiab",
+            "B": "ejffhdckdamepiakeogldebaplnedcil"
+          },
+          "pid": 25791,
+          "pinsAfter": [],
+          "probeError": "bounded operation timeout; installs outstanding; cleanup not certified",
+          "recordAfterReturn": 963800,
+          "recordBegin": 963800,
+          "recordEnd": 976278
+        }
+      ],
+      "errors": [
+        "Error: install-invalid: bounded operation timeout; installs outstanding; cleanup not certified",
+        "fixture cleanup: Error: cleanup-after-error: bounded operation timeout; installs outstanding; cleanup not certified",
+        "outstanding installation callbacks remained at process termination; cleanup cannot be certified"
+      ],
+      "uncovered": [
+        "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered",
+        "Positive legacy background-page JavaScript uncovered; MV3 negative path only"
+      ],
+      "pid": 25791,
+      "readiness": {
+        "pid": 25791,
+        "agent": "ours156",
+        "timeoutMs": 120000,
+        "satisfied": true,
+        "elapsedMs": 6934,
+        "events": [
+          {
+            "elapsedMs": 54,
+            "processPIDs": [
+              25791
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json'"
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": false,
+              "size": 0
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 1062,
+            "processPIDs": [
+              25791
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json'"
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": false,
+              "size": 0
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 2278,
+            "processPIDs": [
+              25791
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json'"
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": false,
+              "size": 0
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 3499,
+            "processPIDs": [
+              25791
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json'"
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": false,
+              "size": 0
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 4421,
+            "processPIDs": [
+              25791
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792755655641.9539,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 25791
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": true,
+              "size": 4074
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 5655,
+            "processPIDs": [
+              25791
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792755655641.9539,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 25791
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": false,
+              "error": "Error: ENOENT: no such file or directory, stat '/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json'"
+            },
+            "recorder": {
+              "exists": true,
+              "size": 396786
+            },
+            "endpoint": {
+              "checked": false
+            },
+            "satisfied": false
+          },
+          {
+            "elapsedMs": 6934,
+            "processPIDs": [
+              25791
+            ],
+            "helper": {
+              "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/ours156/extensions-service-request.json.ready.json",
+              "exists": true,
+              "mtimeMs": 1792755655641.9539,
+              "data": {
+                "installed": true,
+                "mainThread": true,
+                "pid": 25791
+              }
+            },
+            "appWindow": {
+              "path": "/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/ArcModAgentReady.json",
+              "exists": true,
+              "mtimeMs": 1792755658235.7778,
+              "data": {
+                "pid": 25791,
+                "agent": "ours156",
+                "ready": true
+              }
+            },
+            "recorder": {
+              "exists": true,
+              "size": 598863
+            },
+            "endpoint": {
+              "checked": true,
+              "pid": 25791
+            },
+            "satisfied": true
+          }
+        ]
+      },
+      "ownership": {
+        "attempts": [
+          {
+            "label": "A",
+            "operationID": "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-2",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/fixtures/A"
+          },
+          {
+            "label": "B",
+            "operationID": "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-3",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/fixtures/B"
+          },
+          {
+            "label": "invalid",
+            "operationID": "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-5",
+            "path": "/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/validation5/fixtures/invalid"
+          }
+        ],
+        "outstandingInstalls": [
+          "arc-extensions-service-probe-4969a5fa-e17d-475a-8335-0519248a0088-5"
+        ],
+        "owned": {
+          "A": "mmcddddaclflpjmgnjhfehhphihokiab",
+          "B": "ejffhdckdamepiakeogldebaplnedcil"
+        }
+      },
+      "diagnostics": [
+        {
+          "event": {
+            "mainThread": true,
+            "payload": [
+              []
+            ],
+            "recordOffset": 564788,
+            "selector": "browser:didUpdateExtensionToolbarActions:",
+            "synchronous": null
+          },
+          "kind": "unassigned",
+          "operationID": null
+        }
+      ]
+    }
+  ]
+}

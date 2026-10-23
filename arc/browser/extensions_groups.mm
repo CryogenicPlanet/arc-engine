@@ -98,19 +98,51 @@ void OnUI(void (^block)()) {
       FROM_HERE, base::BindOnce([](void (^work)()) { work(); }, block));
 }
 
+struct GroupInfo {
+  __strong NSString* group_id;
+  int extension_group_id;
+  std::string title;
+  NSInteger color;
+  bool collapsed;
+};
+using GroupInfos = std::vector<std::shared_ptr<const GroupInfo>>;
+
+std::shared_ptr<const GroupInfos> SnapshotGroups(NSArray* values) {
+  auto snapshots = std::make_shared<GroupInfos>();
+  for (id value in values) {
+    if (![value isKindOfClass:NSClassFromString(@"ArcTabGroupInfo")])
+      continue;
+    ArcTabGroupInfo* info = value;
+    snapshots->push_back(std::make_shared<const GroupInfo>(GroupInfo{
+        [info.groupId copy], static_cast<int>(info.extensionGroupId),
+        base::SysNSStringToUTF8(info.title ?: @""), info.color,
+        static_cast<bool>(info.collapsed)}));
+  }
+  return snapshots;
+}
+
 struct GroupRecord {
   __strong ArcBrowser* browser;
-  __strong ArcTabGroupInfo* info;
+  std::shared_ptr<const GroupInfo> info;
+  int window_id;
 };
 using Groups = std::vector<GroupRecord>;
 using GroupsCompletion = void (^)(std::shared_ptr<Groups>, NSString*);
-using GroupCompletion = void (^)(ArcBrowser*, ArcTabGroupInfo*, NSString*);
+using GroupCompletion =
+    void (^)(ArcBrowser*, std::shared_ptr<const GroupInfo>, int window_id,
+             NSString*);
+enum class ReadbackKind { kUpdate, kMove };
 
 class HostedGroupsFunction : public ExtensionFunction {
  public:
   void Begin() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     profile_ = Profile::FromBrowserContext(browser_context())->GetWeakPtr();
+    // The app may discard a group completion without invoking it. RespondLater
+    // does not retain the function: keep the real request pending until its
+    // response or context shutdown, rather than destroying an unanswered Mojo
+    // request (or manufacturing a successful group result).
+    pending_ = this;
   }
 
   bool Allowed(BrowserWindowInterface* browser) const {
@@ -163,8 +195,21 @@ class HostedGroupsFunction : public ExtensionFunction {
     Respond(ArgumentList(std::move(result)));
   }
 
+  void Request(ArcBrowser* browser, void (^request)(id delegate),
+               void (^missing)() = nil) {
+    if (!DispatchBrowserExtensionRequest(browser, request)) {
+      // Native preflight failure is synchronous. A later nil clear is handled
+      // inside the queued weak task and never reaches this fallback.
+      if (missing)
+        missing();
+      else
+        Fail(@"No browser delegate");
+    }
+  }
+
   void Gather(GroupsCompletion completion,
-              std::optional<int> window_filter = std::nullopt) {
+              std::optional<int> window_filter = std::nullopt,
+              bool keep_inflight_results = false) {
     struct Pending {
       size_t remaining = 0;
       bool completed = false;
@@ -197,125 +242,176 @@ class HostedGroupsFunction : public ExtensionFunction {
       const auto& weak = browsers[browser_index];
       ArcBrowser* wrapper =
           weak ? BrowserForHostedExtensions(weak.get()) : nil;
-      id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(wrapper);
-      if (!wrapper ||
-          ![delegate
-              respondsToSelector:@selector(
-                                     browser:getAllTabGroupsWithCompletion:)]) {
-        OnUI(^{
+      const int window_id = weak ? ExtensionTabUtil::GetWindowId(weak.get()) : 0;
+      auto called = std::make_shared<bool>(false);
+      void (^complete)(std::shared_ptr<const GroupInfos>, bool) =
+          ^(std::shared_ptr<const GroupInfos> snapshots, bool app_reply) {
+        if (*called || state->completed)
+          return;
+        *called = true;
+        if (app_reply && !keep_inflight_results && !self->Live(wrapper)) {
+          state->completed = true;
+          completion(nullptr, base::SysUTF8ToNSString(kClosed));
+          return;
+        }
+        for (const auto& info : *snapshots)
+          state->by_browser[browser_index].push_back({wrapper, info, window_id});
+        if (--state->remaining == 0) {
+          state->completed = true;
+          for (const auto& batch : state->by_browser)
+            state->groups->insert(state->groups->end(), batch.begin(), batch.end());
+          completion(state->groups, nil);
+        }
+      };
+      // GetAll supplies an empty vector when the target is absent before
+      // enqueue; actual app completions keep the native separate reply task.
+      Request(wrapper, ^(id target) {
+        id<ArcHostedGroupDelegate> delegate = target;
+        if (!self->Live(wrapper) ||
+            ![delegate respondsToSelector:
+                @selector(browser:getAllTabGroupsWithCompletion:)]) {
           if (!state->completed) {
             state->completed = true;
             completion(nullptr, base::SysUTF8ToNSString(kUnavailable));
           }
-        });
-        continue;
-      }
-      auto called = std::make_shared<bool>(false);
-      [delegate browser:wrapper
+          return;
+        }
+        [delegate browser:wrapper
           getAllTabGroupsWithCompletion:^(NSArray* infos) {
-            OnUI(^{
-              if (*called || state->completed)
-                return;
-              *called = true;
-              if (!self->Live(wrapper) || !infos) {
-                state->completed = true;
-                completion(nullptr, base::SysUTF8ToNSString(kClosed));
-                return;
-              }
-              for (id info in infos) {
-                if ([info
-                        isKindOfClass:NSClassFromString(@"ArcTabGroupInfo")]) {
-                  state->by_browser[browser_index].push_back({wrapper, info});
-                }
-              }
-              if (--state->remaining == 0) {
-                state->completed = true;
-                for (const auto& batch : state->by_browser) {
-                  state->groups->insert(state->groups->end(), batch.begin(),
-                                        batch.end());
-                }
-                completion(state->groups, nil);
-              }
-            });
+            auto snapshots = SnapshotGroups(infos);
+            OnUI(^{ complete(snapshots, /*app_reply=*/true); });
           }];
+      }, ^{
+        complete(std::make_shared<const GroupInfos>(), /*app_reply=*/false);
+      });
     }
   }
 
   void Find(int group_id, GroupCompletion completion) {
     Gather(^(std::shared_ptr<Groups> groups, NSString* error) {
       if (error) {
-        completion(nil, nil, error);
+        completion(nil, nullptr, 0, error);
         return;
       }
       for (const auto& group : *groups) {
-        if (group.info.extensionGroupId == group_id &&
-            group.info.groupId.length) {
-          completion(group.browser, group.info, nil);
+        if (group.info->extension_group_id == group_id &&
+            group.info->group_id.length) {
+          completion(group.browser, group.info, group.window_id, nil);
           return;
         }
       }
-      completion(nil, nil,
+      completion(nil, nullptr, 0,
                  base::SysUTF8ToNSString("No group with id: " +
                                          base::NumberToString(group_id) + "."));
     });
   }
 
-  base::DictValue Serialize(ArcBrowser* browser, ArcTabGroupInfo* info) {
+  base::DictValue Serialize(int window_id, const GroupInfo& info) {
     base::DictValue value;
-    value.Set("id", static_cast<int>(info.extensionGroupId));
-    value.Set("windowId", ExtensionTabUtil::GetWindowId(Live(browser)));
-    value.Set("title", base::SysNSStringToUTF8(info.title ?: @""));
-    auto color = info.color >= 0 && info.color < 9
-                     ? static_cast<tab_groups::TabGroupColorId>(info.color)
+    value.Set("id", info.extension_group_id);
+    value.Set("windowId", window_id);
+    value.Set("title", info.title);
+    const NSInteger color_value = info.color;
+    auto color = color_value >= 0 && color_value < 9
+                     ? static_cast<tab_groups::TabGroupColorId>(color_value)
                      : tab_groups::TabGroupColorId::kGrey;
     value.Set("color", api::tab_groups::ToString(
                            ExtensionTabUtil::ColorIdToColor(color)));
-    value.Set("collapsed", static_cast<bool>(info.collapsed));
+    value.Set("collapsed", info.collapsed);
     value.Set("shared", false);
     return value;
   }
 
-  void ReadGroup(ArcBrowser* browser, NSString* group_id) {
-    if (!Live(browser)) {
-      FailString(kClosed);
-      return;
+  void RespondGroupInfo(int window_id, const GroupInfo& info) {
+    base::ListValue result;
+    result.Append(Serialize(window_id, info));
+    Success(std::move(result));
+  }
+
+  void FinishReadback(ReadbackKind kind, int group_id, int window_id,
+                      std::shared_ptr<const GroupInfo> info) {
+    if (info) {
+      RespondGroupInfo(window_id, *info);
+    } else if (kind == ReadbackKind::kMove) {
+      Success(base::ListValue());
+    } else {
+      // Native update emits this generated default object on a missing group
+      // or an expired source browser. kNone serializes to the empty string.
+      api::tab_groups::TabGroup fallback;
+      fallback.id = group_id;
+      fallback.window_id = window_id;
+      Success(base::ListValue().Append(fallback.ToValue()));
     }
-    id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(browser);
-    if (![delegate
-            respondsToSelector:@selector(
-                                   browser:getTabGroupWithId:completion:)]) {
-      FailString(kUnavailable);
+  }
+
+  void ReadBack(ArcBrowser* source, int group_id, int window_id,
+                ReadbackKind kind) {
+    if (!Live(source)) {
+      FinishReadback(kind, group_id, window_id, nullptr);
       return;
     }
     scoped_refptr<HostedGroupsFunction> self(this);
     auto called = std::make_shared<bool>(false);
-    [delegate browser:browser
-        getTabGroupWithId:group_id
-               completion:^(ArcTabGroupInfo* info) {
-                 OnUI(^{
-                   if (*called)
-                     return;
-                   *called = true;
-                   if (!self->Live(browser)) {
-                     self->FailString(kClosed);
-                     return;
-                   }
-                   if (!info) {
-                     self->Fail(@"Tab group was not found.");
-                     return;
-                   }
-                   base::ListValue result;
-                   result.Append(self->Serialize(browser, info));
-                   self->Success(std::move(result));
-                 });
-               }];
+    if (!DispatchBrowserExtensionRequest(source, ^(id target) {
+          id<ArcHostedGroupDelegate> delegate = target;
+          if (![delegate respondsToSelector:
+                  @selector(browser:getAllTabGroupsWithCompletion:)]) {
+            self->FailString(kUnavailable);
+            return;
+          }
+          [delegate browser:source
+              getAllTabGroupsWithCompletion:^(NSArray* infos) {
+                auto snapshots = SnapshotGroups(infos);
+                OnUI(^{
+                  if (*called || self->did_respond())
+                    return;
+                  *called = true;
+                  // Native reply uses the captured window ID. It does not
+                  // dereference the source browser again after this lookup.
+                  for (const auto& info : *snapshots) {
+                    if (info->extension_group_id == group_id) {
+                      self->FinishReadback(kind, group_id, window_id, info);
+                      return;
+                    }
+                  }
+                  self->FinishReadback(kind, group_id, window_id, nullptr);
+                });
+              }];
+        })) {
+      FinishReadback(kind, group_id, window_id, nullptr);
+    }
   }
 
-  void (^MutationCompletion(ArcBrowser* browser,
-                            bool return_id))(ArcTabGroupResult*) {
+  void (^ReadbackCompletion(ArcBrowser* source, int group_id, int window_id,
+                            ReadbackKind kind))(ArcTabGroupResult*) {
     scoped_refptr<HostedGroupsFunction> self(this);
     auto called = std::make_shared<bool>(false);
     return ^(ArcTabGroupResult* result) {
+      const bool succeeded = result && result.success;
+      NSString* error = [result.error copy];
+      OnUI(^{
+        if (*called || self->did_respond())
+          return;
+        *called = true;
+        if (!succeeded) {
+          self->Fail(error.length ? error : kind == ReadbackKind::kUpdate
+              ? @"Failed to update tab group" : @"Failed to move tab group");
+          return;
+        }
+        // Both native paths read the original numeric ID from the original
+        // source browser, including requests without a JavaScript callback.
+        self->ReadBack(source, group_id, window_id, kind);
+      });
+    };
+  }
+
+  void (^GroupMutationCompletion(ArcBrowser* browser))(ArcTabGroupResult*) {
+    scoped_refptr<HostedGroupsFunction> self(this);
+    auto called = std::make_shared<bool>(false);
+    return ^(ArcTabGroupResult* result) {
+      const bool succeeded = result && result.success;
+      NSString* error = [result.error copy];
+      const int extension_group_id = static_cast<int>(result.extensionGroupId);
       OnUI(^{
         if (*called)
           return;
@@ -324,20 +420,12 @@ class HostedGroupsFunction : public ExtensionFunction {
           self->FailString(kClosed);
           return;
         }
-        if (!result || !result.success) {
-          self->Fail(result.error);
+        if (!succeeded) {
+          self->Fail(error);
           return;
         }
-        if (return_id) {
-          self->Success(api::tabs::Group::Results::Create(
-              static_cast<int>(result.extensionGroupId)));
-        } else if (!self->has_callback()) {
-          self->Success(base::ListValue());
-        } else if (result.groupId.length) {
-          self->ReadGroup(browser, result.groupId);
-        } else {
-          self->Fail(@"Tab group operation returned no group ID.");
-        }
+        self->Success(api::tabs::Group::Results::Create(
+            extension_group_id));
       });
     };
   }
@@ -350,7 +438,8 @@ class HostedGroupsFunction : public ExtensionFunction {
             std::vector<TabBatch>* batches,
             std::string* error,
             NSMutableArray<NSNumber*>* ordered = nil,
-            bool require_group_support = false) {
+            bool require_group_support = false,
+            bool preserve_ordered_duplicates = false) {
     for (int tab_id : ids) {
       extensions::WindowController* window = nullptr;
       content::WebContents* contents = nullptr;
@@ -386,7 +475,8 @@ class HostedGroupsFunction : public ExtensionFunction {
       ArcBrowser* wrapper = BrowserForHostedExtensions(browser);
       NSNumber* session_id =
           @(sessions::SessionTabHelper::IdForTab(contents).id());
-      if (ordered && ![ordered containsObject:session_id])
+      if (ordered && (preserve_ordered_duplicates ||
+                      ![ordered containsObject:session_id]))
         [ordered addObject:session_id];
       bool found = false;
       for (auto& batch : *batches) {
@@ -405,8 +495,16 @@ class HostedGroupsFunction : public ExtensionFunction {
   }
 
  protected:
+  void OnResponded() override { pending_.reset(); }
+  void OnBrowserContextShutdown() override {
+    // ExtensionFunction::Shutdown keeps this alive until it has cleared its
+    // browser_context_, so releasing the pending request here is safe.
+    profile_.reset();
+    pending_.reset();
+  }
   ~HostedGroupsFunction() override = default;
   base::WeakPtr<Profile> profile_;
+  scoped_refptr<HostedGroupsFunction> pending_;
 };
 
 class HostedTabGroupsGetFunction : public HostedGroupsFunction {
@@ -417,14 +515,31 @@ class HostedTabGroupsGetFunction : public HostedGroupsFunction {
     EXTENSION_FUNCTION_VALIDATE(params);
     Begin();
     scoped_refptr<HostedTabGroupsGetFunction> self(this);
-    Find(params->group_id,
-         ^(ArcBrowser* browser, ArcTabGroupInfo* info, NSString* error) {
-           if (error)
-             self->Fail(error);
-           else
-             self->ReadGroup(browser, info.groupId);
-         });
-    return RespondLater();
+    bool has_browser = false;
+    GlobalBrowserCollection::GetInstance()->ForEach(
+        [&](BrowserWindowInterface* browser) {
+          has_browser |= Allowed(browser) &&
+                         ExtensionTabUtil::SupportsTabGroups(browser);
+          return true;
+        });
+    if (!has_browser)
+      return RespondNow(Error("No group with id: " +
+                              base::NumberToString(params->group_id) + "."));
+    const int group_id = params->group_id;
+    Gather(^(std::shared_ptr<Groups> groups, NSString* error) {
+      if (error) {
+        self->Fail(error);
+        return;
+      }
+      for (const auto& group : *groups) {
+        if (group.info->extension_group_id == group_id) {
+          self->RespondGroupInfo(group.window_id, *group.info);
+          return;
+        }
+      }
+      self->Fail(@"No group with specified id");
+    }, std::nullopt, /*keep_inflight_results=*/true);
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
  protected:
@@ -474,25 +589,25 @@ class HostedTabGroupsQueryFunction : public HostedGroupsFunction {
                   current_id != window_id)))
               continue;
             if (query->collapsed &&
-                *query->collapsed != static_cast<bool>(group.info.collapsed))
+                *query->collapsed != static_cast<bool>(group.info->collapsed))
               continue;
             if (query->title &&
                 !base::MatchPattern(
-                    base::SysNSStringToUTF16(group.info.title ?: @""),
+                    base::UTF8ToUTF16(group.info->title),
                     base::UTF8ToUTF16(*query->title)))
               continue;
             if (query->color != api::tab_groups::Color::kNone &&
                 static_cast<NSInteger>(ExtensionTabUtil::ColorToColorId(
-                    query->color)) != group.info.color)
+                    query->color)) != group.info->color)
               continue;
             if (query->shared.value_or(false))
               continue;
-            result.Append(self->Serialize(group.browser, group.info));
+            result.Append(self->Serialize(window_id, *group.info));
           }
           self->Success(base::ListValue().Append(std::move(result)));
         },
         window_filter);
-    return RespondLater();
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
  protected:
@@ -516,35 +631,40 @@ class HostedTabGroupsUpdateFunction : public HostedGroupsFunction {
           ExtensionTabUtil::ColorToColorId(params->update_properties.color)));
     if (params->update_properties.collapsed)
       properties.collapsed = @(*params->update_properties.collapsed);
+    const int original_group_id = params->group_id;
     scoped_refptr<HostedTabGroupsUpdateFunction> self(this);
-    Find(params->group_id, ^(ArcBrowser* browser, ArcTabGroupInfo* info,
-                             NSString* error) {
+    Find(original_group_id, ^(ArcBrowser* browser, std::shared_ptr<const GroupInfo> info,
+                              int source_window_id, NSString* error) {
       if (error) {
         self->Fail(error);
         return;
       }
-      auto* native = self->Live(browser);
-      if (!native) {
-        self->FailString(kClosed);
-        return;
-      }
-      if (!ExtensionTabUtil::IsTabStripEditable(*native->GetProfile())) {
-        self->FailString(ExtensionTabUtil::kTabStripNotEditableError);
-        return;
-      }
-      id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(browser);
-      if (!properties ||
-          ![delegate respondsToSelector:@selector(browser:updateTabGroupWithId:
-                                                  properties:completion:)]) {
-        self->FailString(kUnavailable);
-        return;
-      }
-      [delegate browser:browser
-          updateTabGroupWithId:info.groupId
-                    properties:properties
-                    completion:self->MutationCompletion(browser, false)];
+      NSString* group_id = [info->group_id copy];
+      self->Request(browser, ^(id target) {
+        auto* native = self->Live(browser);
+        if (!native) {
+          self->FailString(kClosed);
+          return;
+        }
+        if (!ExtensionTabUtil::IsTabStripEditable(*native->GetProfile())) {
+          self->FailString(ExtensionTabUtil::kTabStripNotEditableError);
+          return;
+        }
+        id<ArcHostedGroupDelegate> delegate = target;
+        if (!properties ||
+            ![delegate respondsToSelector:@selector(browser:updateTabGroupWithId:
+                                                    properties:completion:)]) {
+          self->FailString(kUnavailable);
+          return;
+        }
+        [delegate browser:browser
+            updateTabGroupWithId:group_id
+                      properties:properties
+                      completion:self->ReadbackCompletion(browser, original_group_id,
+                          source_window_id, ReadbackKind::kUpdate)];
+      });
     });
-    return RespondLater();
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
  protected:
@@ -560,9 +680,10 @@ class HostedTabGroupsMoveFunction : public HostedGroupsFunction {
     Begin();
     const auto window_id = params->move_properties.window_id;
     const int index = params->move_properties.index;
+    const int original_group_id = params->group_id;
     scoped_refptr<HostedTabGroupsMoveFunction> self(this);
-    Find(params->group_id, ^(ArcBrowser* browser, ArcTabGroupInfo* info,
-                             NSString* error) {
+    Find(original_group_id, ^(ArcBrowser* browser, std::shared_ptr<const GroupInfo> info,
+                              int source_window_id, NSString* error) {
       if (error) {
         self->Fail(error);
         return;
@@ -622,19 +743,26 @@ class HostedTabGroupsMoveFunction : public HostedGroupsFunction {
       // The retained app wrapper ignores the ArcBrowser argument and passes its
       // receiver to a Swift helper. Selecting the destination's delegate is an
       // inference from that shape; cross-window routing needs runtime evidence.
-      id<ArcHostedGroupDelegate> delegate =
-          BrowserExtensionDelegate(destination);
-      if (![delegate respondsToSelector:@selector(browser:moveTabGroupWithId:
-                                                  toNewIndex:completion:)]) {
-        self->FailString(kUnavailable);
-        return;
-      }
-      [delegate browser:destination
-          moveTabGroupWithId:info.groupId
-                  toNewIndex:index
-                  completion:self->MutationCompletion(destination, false)];
+      NSString* group_id = [info->group_id copy];
+      self->Request(destination, ^(id target) {
+        if (!self->Live(browser) || !self->Live(destination)) {
+          self->FailString(kClosed);
+          return;
+        }
+        id<ArcHostedGroupDelegate> delegate = target;
+        if (![delegate respondsToSelector:@selector(browser:moveTabGroupWithId:
+                                                    toNewIndex:completion:)]) {
+          self->FailString(kUnavailable);
+          return;
+        }
+        [delegate browser:destination
+            moveTabGroupWithId:group_id
+                    toNewIndex:index
+                    completion:self->ReadbackCompletion(browser, original_group_id,
+                        source_window_id, ReadbackKind::kMove)];
+      });
     });
-    return RespondLater();
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
  protected:
@@ -666,12 +794,13 @@ class HostedTabsGroupFunction : public HostedGroupsFunction {
     scoped_refptr<HostedTabsGroupFunction> self(this);
     if (params->options.group_id) {
       Find(*params->options.group_id,
-           ^(ArcBrowser* browser, ArcTabGroupInfo* info, NSString* find_error) {
+           ^(ArcBrowser* browser, std::shared_ptr<const GroupInfo> info, int,
+             NSString* find_error) {
              if (find_error) {
                self->Fail(find_error);
                return;
              }
-             self->Group(browser, info.groupId, session_ids);
+             self->Group(browser, info->group_id, session_ids);
            });
     } else {
       int window_id = extension_misc::kCurrentWindowId;
@@ -681,13 +810,19 @@ class HostedTabsGroupFunction : public HostedGroupsFunction {
       ArcBrowser* target = Window(window_id, &error);
       if (!target)
         return RespondNow(Error(std::move(error)));
-      OnUI(^{
-        self->Group(target, nil, session_ids);
-      });
+      self->Group(target, nil, session_ids);
     }
-    return RespondLater();
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
   void Group(ArcBrowser* browser, NSString* group_id, NSArray* session_ids) {
+    NSString* identifier = [group_id copy];
+    scoped_refptr<HostedTabsGroupFunction> self(this);
+    Request(browser, ^(id delegate) {
+      self->GroupAtDelivery(browser, identifier, session_ids, delegate);
+    });
+  }
+  void GroupAtDelivery(ArcBrowser* browser, NSString* group_id,
+                       NSArray* session_ids, id<ArcHostedGroupDelegate> delegate) {
     auto* native = Live(browser);
     if (!native) {
       FailString(kClosed);
@@ -717,7 +852,6 @@ class HostedTabsGroupFunction : public HostedGroupsFunction {
         return;
       }
     }
-    id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(browser);
     if (group_id) {
       if (![delegate respondsToSelector:@selector(browser:addTabsToGroupWithId:
                                                   sessionIds:completion:)]) {
@@ -727,7 +861,7 @@ class HostedTabsGroupFunction : public HostedGroupsFunction {
       [delegate browser:browser
           addTabsToGroupWithId:group_id
                     sessionIds:session_ids
-                    completion:MutationCompletion(browser, true)];
+                    completion:GroupMutationCompletion(browser)];
     } else {
       ArcTabGroupProperties* properties =
           [[NSClassFromString(@"ArcTabGroupProperties") alloc] init];
@@ -741,7 +875,7 @@ class HostedTabsGroupFunction : public HostedGroupsFunction {
       [delegate browser:browser
           createTabGroupWithSessionIds:session_ids
                             properties:properties
-                            completion:MutationCompletion(browser, true)];
+                            completion:GroupMutationCompletion(browser)];
     }
   }
 
@@ -765,55 +899,41 @@ class HostedTabsUngroupFunction : public HostedGroupsFunction {
       ids.push_back(*params->tab_ids.as_integer);
     std::vector<TabBatch> batches;
     std::string error;
-    if (!Tabs(ids, &batches, &error, nil, true))
+    NSMutableArray<NSNumber*>* ordered = [NSMutableArray array];
+    if (!Tabs(ids, &batches, &error, ordered, /*require_group_support=*/true,
+              /*preserve_ordered_duplicates=*/true))
       return RespondNow(Error(std::move(error)));
-    for (const auto& batch : batches) {
-      if (![BrowserExtensionDelegate(batch.browser)
-              respondsToSelector:
-                  @selector(
-                      browser:removeTabsFromGroupWithSessionIds:completion:)])
-        return RespondNow(Error(kUnavailable));
-    }
-    auto remaining = std::make_shared<size_t>(batches.size());
+    ArcBrowser* browser = batches.front().browser;
+    NSArray<NSNumber*>* session_ids = [ordered copy];
+    auto called = std::make_shared<bool>(false);
     scoped_refptr<HostedTabsUngroupFunction> self(this);
-    for (const auto& batch : batches) {
-      ArcBrowser* browser = batch.browser;
-      auto called = std::make_shared<bool>(false);
-      id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(browser);
-      // An earlier synchronous callback may have closed another source window
-      // or cleared its delegate before this iteration.
-      if (!Live(browser) ||
-          ![delegate
-              respondsToSelector:
-                  @selector(
-                      browser:removeTabsFromGroupWithSessionIds:completion:)]) {
-        OnUI(^{
-          self->FailString(kClosed);
-        });
-        break;
+    Request(browser, ^(id target) {
+      id<ArcHostedGroupDelegate> delegate = target;
+      if (!self->Live(browser) ||
+          ![delegate respondsToSelector:
+              @selector(browser:removeTabsFromGroupWithSessionIds:completion:)]) {
+        self->FailString(kClosed);
+        return;
       }
       [delegate browser:browser
-          removeTabsFromGroupWithSessionIds:batch.ids
+          removeTabsFromGroupWithSessionIds:session_ids
                                  completion:^(ArcTabGroupResult* result) {
+                                   const bool succeeded = result && result.success;
+                                   NSString* reply_error = [result.error copy];
                                    OnUI(^{
                                      if (*called || self->did_respond())
                                        return;
                                      *called = true;
-                                     if (!self->Live(browser)) {
-                                       self->FailString(kClosed);
+                                     if (!succeeded) {
+                                       self->Fail(reply_error.length ? reply_error
+                                           : @"Failed to ungroup tabs");
                                        return;
                                      }
-                                     if (!result || !result.success) {
-                                       self->Fail(result.error);
-                                       return;
-                                     }
-                                     if (--*remaining == 0)
-                                       self->Success(api::tabs::Ungroup::
-                                                         Results::Create());
+                                     self->Success(api::tabs::Ungroup::Results::Create());
                                    });
                                  }];
-    }
-    return RespondLater();
+    });
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
  protected:

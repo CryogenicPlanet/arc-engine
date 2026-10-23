@@ -74,7 +74,7 @@ class RenderProcessAgent final : public content::RenderThreadObserver,
   }
   void SetAdBlockExcludedOrigins(const std::vector<std::string>& excluded_origins,
                                  uint64_t config_version) override {
-    if (configured_ && config_version <= config_version_) {
+    if (configured_ && config_version < config_version_) {
       return;
     }
     configured_ = true;

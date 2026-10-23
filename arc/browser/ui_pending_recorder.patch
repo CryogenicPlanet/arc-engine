@@ -7,8 +7,8 @@
 +LOCALHOST_PORT = re.compile(r"(?<![A-Za-z0-9_.-])localhost:\d+")
  
  
- def load(path):
-@@ -35,7 +36,7 @@
+ def has_callers(path):
+@@ -49,7 +50,7 @@
                  per_class[m.group(1)] += 1
                  ids[key] = per_class[m.group(1)]
              return "<%s#%d>" % (m.group(1), ids[key])

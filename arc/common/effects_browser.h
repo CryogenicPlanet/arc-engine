@@ -10,6 +10,7 @@
 #include "base/callback_list.h"
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
 
 class Profile;
 
@@ -29,9 +30,11 @@ struct HostEffectsConfiguration {
 using ProfileEffectsConfiguration = std::map<std::string, HostEffectsConfiguration>;
 
 // Our native service initializer contract, independent of mutable weak owner.
+// Opaque retained identity, distinct from the weak native Profile address.
+using EffectsServiceIdentity = base::RefCountedData<uint8_t>;
 struct EffectsServiceData {
   base::WeakPtr<Profile> profile;
-  uintptr_t identity = 0;
+  scoped_refptr<EffectsServiceIdentity> identity;
 };
 
 const ProfileEffectsConfiguration& GetProfileEffectsConfiguration(Profile* profile);

@@ -1,0 +1,9 @@
+methods differing: 6 (missing 6, extra 0, returns 0, callback args 0, counts 0; internal-only 2, ours-internal 0)
+callback sequence: {"golden": 4, "ours": 0, "first_divergence": 0, "golden_from": ["ADK.WebContentChromium webContents:willAskForPermission:withRequests:withQuietUIReason:completion:", "ADK.WebContentChromium webContentsClosePermission:", "ADK.WebContentChromium webContents:willAskForPermission:withRequests:withQuietUIReason:completion:", "ADK.WebContentChromium webContentsClosePermission:"], "ours_from": []}
+caller attribution: off (a transcript predates it)
+missing {"method": "->engine -ArcDisplayNameOrOrigin isOrigin", "golden_calls": 2, "example": {"args": "[]", "ret": "true"}}
+missing {"method": "->engine -ArcDisplayNameOrOrigin nameOrOrigin", "golden_calls": 2, "example": {"args": "[]", "ret": "\"http://*\""}}
+missing {"method": "->engine -ArcPermissionRequest originUrl", "golden_calls": 2, "example": {"args": "[]", "ret": "\"http://*/\""}}
+missing {"method": "->engine -ArcPermissionRequest type", "golden_calls": 2, "example": {"args": "[]", "ret": "16"}}
+missing {"method": "engine->app -ADK.WebContentChromium webContents:willAskForPermission:withRequests:withQuietUIReason:completion:", "golden_calls": 2, "example": {"args": "[\"<ArcWebContents#1>\", \"<ArcDisplayNameOrOrigin#1>\", [\"<ArcPermissionRequest#1>\"], 0, \"<block>\"]", "ret": "null"}}
+missing {"method": "engine->app -ADK.WebContentChromium webContentsClosePermission:", "golden_calls": 2, "example": {"args": "[\"<ArcWebContents#1>\"]", "ret": "null"}}

@@ -38,6 +38,8 @@ class ProfileEffectsData final : public base::SupportsUserData::Data {
     return data;
   }
 
+  const scoped_refptr<EffectsServiceIdentity> identity =
+      base::MakeRefCounted<EffectsServiceIdentity>(uint8_t{0});
   ProfileEffectsConfiguration configuration;
   base::RepeatingClosureList observers;
 
@@ -123,7 +125,7 @@ base::CallbackListSubscription ObserveProfileEffectsConfiguration(
 
 @implementation ArcBrowserContextEffects {
   base::WeakPtr<Profile> _profile;
-  uintptr_t _serviceIdentity;
+  scoped_refptr<arc::EffectsServiceIdentity> _serviceIdentity;
 }
 @synthesize owner = _owner;
 - (instancetype)initWithArcBrowserContext:(ArcBrowserContext*)context {
@@ -131,7 +133,7 @@ base::CallbackListSubscription ObserveProfileEffectsConfiguration(
   Profile* profile = [context profile];
   if (profile) {
     native.profile = profile->GetWeakPtr();
-    native.identity = reinterpret_cast<uintptr_t>(profile);
+    native.identity = arc::ProfileEffectsData::For(profile)->identity;
   }
   return [self initWithBrowserContextEffects:&native forBrowserContext:context];
 }
@@ -140,11 +142,10 @@ base::CallbackListSubscription ObserveProfileEffectsConfiguration(
     if (service) {
       const auto& native = *static_cast<const arc::EffectsServiceData*>(service);
       _profile = native.profile;
-      _serviceIdentity = native.identity ? native.identity
-                                        : reinterpret_cast<uintptr_t>(native.profile.get());
+      _serviceIdentity = native.identity;
     }
     if (!_serviceIdentity) {
-      _serviceIdentity = reinterpret_cast<uintptr_t>((__bridge void*)self);
+      _serviceIdentity = base::MakeRefCounted<arc::EffectsServiceIdentity>(uint8_t{0});
     }
   }
   return self;
@@ -164,10 +165,10 @@ base::CallbackListSubscription ObserveProfileEffectsConfiguration(
     return NO;
   }
   ArcBrowserContextEffects* other = object;
-  return _serviceIdentity && _serviceIdentity == other->_serviceIdentity;
+  return _serviceIdentity && _serviceIdentity.get() == other->_serviceIdentity.get();
 }
 - (NSUInteger)hash {
-  return _serviceIdentity ? static_cast<NSUInteger>(_serviceIdentity) : [super hash];
+  return _serviceIdentity ? reinterpret_cast<NSUInteger>(_serviceIdentity.get()) : [super hash];
 }
 - (void)registerStylesheet:(NSString*)stylesheet
             withIdentifier:(NSString*)identifier

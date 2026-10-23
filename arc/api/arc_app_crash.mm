@@ -106,7 +106,9 @@ void OnCrashAnnotationSet(const crashpad::Annotation& annotation) {
   }
   std::string value(static_cast<const char*>(annotation.value()),
                     annotation.size());
-  if ([NSThread isMainThread]) {
+  // Native tests the registered Chromium UI sequence, including initialization
+  // phases where Cocoa's main thread is not yet that sequence.
+  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     RecordCrashKey(std::move(name), std::move(value));
     return;
   }

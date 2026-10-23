@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
-// Paired, read-only local-control capability probe. Run only under the shared
-// build/run lock. This does not press controls or establish functional acceptance.
+// Paired local-control capability probe under the shared build/run lock.
+// Default is read-only; --press-alert-ok 1 performs one nonce-scoped real click.
+// Neither mode establishes golden-scenario or visual acceptance.
 import { AgentCDP, verifyAgentEndpoint } from "../../../arc/tools/agent-cdp";
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -13,10 +14,11 @@ type Inventory = { id: string; nonce: string; pid: number; mainThread: boolean;
   nodes: unknown[]; foregroundBefore: number; foregroundAfter: number };
 type Run = { agent: string; pid?: number; errors: string[]; observations: Inventory[];
   cleanup?: string; elapsedMs?: number; pageAlertScheduled?: boolean; phase?: string;
-  browserAliveOnFailure?: boolean; reconnects?: number; closeAcknowledged?: boolean };
+  browserAliveOnFailure?: boolean; reconnects?: number; closeAcknowledged?: boolean;
+  nativeActionRequested?: boolean; nativeActionResponse?: Record<string, unknown>; nativeActionValidated?: boolean; pageResumed?: boolean };
 const root = resolve(import.meta.dir, "../..");
 const args = process.argv.slice(2);
-const allowed = new Set(["--out", "--dylib", "--agents", "--port"]);
+const allowed = new Set(["--out", "--dylib", "--agents", "--port", "--press-alert-ok"]);
 const options = new Map<string, string>();
 for (let i = 0; i < args.length; i += 2) {
   const key = args[i]!, value = args[i + 1];
@@ -30,6 +32,8 @@ const out = resolve(options.get("--out")!);
 const dylib = resolve(options.get("--dylib")!);
 const agents = (options.get("--agents") ?? "trace156,ours156").split(",");
 if (!agents.length || new Set(agents).size !== agents.length || agents.some(agent => !["trace156", "ours156"].includes(agent))) throw new Error("only exact disposable trace156/ours156 agents are allowed");
+if (options.has("--press-alert-ok") && options.get("--press-alert-ok") !== "1") throw new Error("--press-alert-ok must be 1");
+const exerciseAlert = options.has("--press-alert-ok");
 const port = Number(options.get("--port") ?? "9464");
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("invalid CDP port");
 if (!existsSync(dylib)) throw new Error("inventory dylib missing; build it first");
@@ -134,7 +138,8 @@ try {
       launchRequested = true;
       exec(["open", "-n", "-g", "-a", app,
         "--env", `DYLD_INSERT_LIBRARIES=${dylib}`, "--env", `ARC_UI_INVENTORY_REQUEST=${requestPath}`,
-        "--env", `ARC_UI_INVENTORY_NONCE=${nonce}`, "--stdout", "/dev/null", "--stderr", "/dev/null", "--args",
+        "--env", `ARC_UI_INVENTORY_NONCE=${nonce}`,
+        ...(exerciseAlert ? ["--env", "ARC_UI_ALERT_ACTION_ENABLE=press-alert-ok"] : []), "--stdout", join(dir, "app.stdout.log"), "--stderr", join(dir, "app.stderr.log"), "--args",
         "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking",
         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${data}`,
         "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`]);
@@ -143,8 +148,8 @@ try {
         return matches.length === 1 ? matches[0] : undefined;
       }, 20000); run.pid = browser.pid;
       await wait(() => {
-        const ready = json<{installed: boolean; pid: number; nonce: string; mainThread: boolean}>(requestPath + ".ready.json");
-        return ready.installed && ready.pid === browser!.pid && ready.nonce === nonce && ready.mainThread;
+        const ready = json<{installed: boolean; pid: number; nonce: string; mainThread: boolean; actionCapabilityEnabled?: boolean}>(requestPath + ".ready.json");
+        return ready.installed && ready.pid === browser!.pid && ready.nonce === nonce && ready.mainThread && (!exerciseAlert || ready.actionCapabilityEnabled === true);
       }, 20000);
       await wait(() => {
         const ready = json<{ready: boolean; pid: number}>(join(applicationData, "ArcModAgentReady.json"));
@@ -154,7 +159,7 @@ try {
       client = await wait(connect, 15000);
       if (Date.now() >= workDeadline) throw new Error("work deadline reached");
       run.phase = "create nonce fixture target";
-      const created = await client.request("Target.createTarget", { url: fixtureURL });
+      const created = await client.request("Target.createTarget", { url: fixtureURL, background: true });
       if (typeof created.targetId !== "string") throw new Error("no owned fixture target");
       const target = created.targetId;
       run.phase = "verify nonce fixture page";
@@ -191,6 +196,43 @@ try {
         if (inventory.fixtureContainerCount > 0 && inventory.fixtureButtonCount > 0) break;
         await sleep(250);
       }
+      if (exerciseAlert) {
+        run.phase = "press exact nonce alert OK once";
+        const observed = run.observations.at(-1);
+        if (!observed || observed.truncated || observed.fixtureMarkerCount !== 1 ||
+            observed.fixtureContainerCount !== 1 || observed.fixtureNSButtonCount !== 1) {
+          throw new Error("nonce alert scope/control is missing, ambiguous or truncated; no action requested");
+        }
+        if (verifyAgentEndpoint(agent, port) !== browser.pid || !snapshot().some(row => same(row, browser!))) {
+          throw new Error("captured browser/endpoint identity changed before action; no request sent");
+        }
+        const id = `${nonce}-press-alert-ok`;
+        // Record intent before the request. An uncertain response is never retried.
+        run.nativeActionRequested = true;
+        writeFileSync(join(dir, "action-intent.json"), JSON.stringify({ id, nonce, pid: browser.pid,
+          operation: "press-alert-ok", retriesAllowed: false }), { mode: 0o600 });
+        writeFileSync(requestPath + ".tmp", JSON.stringify({ id, nonce, pid: browser.pid,
+          operation: "press-alert-ok" }), { mode: 0o600 });
+        renameSync(requestPath + ".tmp", requestPath);
+        const response = await wait(() => {
+          const value = json<Record<string, unknown>>(requestPath + ".response.json");
+          return value.id === id ? value : undefined;
+        }, 2500);
+        run.nativeActionResponse = response;
+        writeFileSync(join(dir, "action-response.json"), JSON.stringify(response, null, 2), { mode: 0o600 });
+        if (response.pid !== browser.pid || response.nonce !== nonce || response.mainThread !== true ||
+            response.functionalAcceptance !== false || response.actionAttempted !== true ||
+            response.nativeActionsPerformed !== 1) throw new Error("native action refused or response identity/semantics mismatch");
+        run.nativeActionValidated = true;
+        run.phase = "verify page resumed after actual control action";
+        await wait(async () => {
+          const result = await client!.targetCommand(target, "Runtime.evaluate", {
+            expression: `location.href===${JSON.stringify(fixtureURL)}&&window.inventoryNonce===${JSON.stringify(nonce)}&&window.inventoryAlertState==='returned'`,
+            returnByValue: true });
+          return (result.result as {value?: unknown} | undefined)?.value === true;
+        }, 5000);
+        run.pageResumed = true;
+      }
     } catch (error) {
       run.errors.push(`${run.phase}: ${String(error)}`);
       if (browser) { try { run.browserAliveOnFailure = snapshot().some(row => same(row, browser!)); } catch {} }
@@ -218,8 +260,8 @@ try {
           }
         }
       }
-      // Never resolve the alert. Browser shutdown or exact captured process
-      // termination performs cleanup without a synthetic dialog completion.
+      // Cleanup never resolves a dialog or invokes a completion block. Browser
+      // shutdown or exact captured process termination removes pending UI.
       if (browser) {
         try {
           track();
@@ -242,19 +284,25 @@ try {
     if (stopAfterRun) break;
   }
 } finally { fixture.stop(true); }
-const report = { nonce, purpose: "Read-only local AppKit control capability inventory", functionalAcceptance: false,
-  nativeActionsPerformed: 0, runs: runs.map(run => ({ agent: run.agent, pid: run.pid, errors: run.errors,
+const report = { nonce, purpose: exerciseAlert ? "One nonce-scoped actual NSButton alert action with page assertion" : "Read-only local AppKit control capability inventory", functionalAcceptance: false,
+  confirmedNativeActionCount: runs.reduce((sum, run) => sum + Number(run.nativeActionValidated === true), 0),
+  uncertainActionRequestCount: runs.filter(run => run.nativeActionRequested && !run.nativeActionValidated).length, runs: runs.map(run => ({ agent: run.agent, pid: run.pid, errors: run.errors,
     phase: run.phase, browserAliveOnFailure: run.browserAliveOnFailure, reconnects: run.reconnects,
-    pageAlertScheduled: run.pageAlertScheduled ?? false, cleanup: run.cleanup, elapsedMs: run.elapsedMs,
+    pageAlertScheduled: run.pageAlertScheduled ?? false, nativeActionRequested: run.nativeActionRequested ?? false,
+    confirmedNativeActionCount: run.nativeActionValidated ? 1 : 0,
+    nativeActionOutcomeUncertain: !!run.nativeActionRequested && !run.nativeActionValidated,
+    nativeActionsReported: run.nativeActionResponse?.nativeActionsPerformed ?? (run.nativeActionRequested ? null : 0), pageResumed: run.pageResumed ?? false, cleanup: run.cleanup, elapsedMs: run.elapsedMs,
     observations: run.observations.length,
-    capabilityStatus: run.observations.some(row => row.truncated) ? "inventory-truncated-inconclusive" :
+    capabilityStatus: run.pageResumed ? "native-alert-control-exercised-page-resumed" :
+      run.nativeActionRequested ? "native-action-requested-completion-unconfirmed" :
+      run.observations.some(row => row.truncated) ? "inventory-truncated-inconclusive" :
       run.observations.some(row => row.fixtureContainerCount > 0 && row.fixtureButtonCount > 0) ? "candidate-controls-observed-unexercised" :
       run.observations.some(row => row.fixtureMarkerCount > 0) ? "fixture-observed-controls-unresolved" : "fixture-not-locally-observed-inconclusive",
     fixtureObserved: run.observations.some(row => row.fixtureMarkerCount > 0),
     possibleNSButtons: Math.max(0, ...run.observations.map(row => row.fixtureNSButtonCount)),
     possibleAccessibilityPressResponders: Math.max(0, ...run.observations.map(row => row.fixtureAccessibilityPressResponderCount)),
     truncated: run.observations.some(row => row.truncated) })),
-  limitation: "This inventories method availability without invoking any controls. It does not establish pressability, real app-handler completion, AX equivalence, visual acceptance, or functional engine parity. Missing/ambiguous/truncated fixture controls are inconclusive." };
+  limitation: exerciseAlert ? "This tests only a nonce alert OK through a concrete NSButton and checks page resumption. It does not establish accepted-golden boundary parity, other control types, AX equivalence or visual acceptance." : "This inventories method availability without invoking any controls. It does not establish pressability, real app-handler completion, AX equivalence, visual acceptance, or functional engine parity. Missing/ambiguous/truncated fixture controls are inconclusive." };
 writeFileSync(join(out, "report.json"), JSON.stringify(report, null, 2), { mode: 0o600 });
 console.log(JSON.stringify(report, null, 2));
-process.exitCode = runs.some(run => run.errors.length > 0 || !run.pageAlertScheduled || run.observations.length === 0) ? 1 : 0;
+process.exitCode = runs.some(run => run.errors.length > 0 || !run.pageAlertScheduled || run.observations.length === 0 || (exerciseAlert && !run.pageResumed)) ? 1 : 0;

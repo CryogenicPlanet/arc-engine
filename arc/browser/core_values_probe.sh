@@ -55,10 +55,35 @@ for name in original ours; do
   [ "$name" != ours ] || framework="$ours"
   out="$engine_root/results/core-values/$name"
   mkdir -p "$out"
-  "$probe_dir/probe" "$framework" > "$out/values.json"
-  env ARC_RECORD_PATH="$out/record.jsonl" \
-    ARC_CORE_VALUES_RECORDER_LIBRARY="$engine_root/tests/recorder/ArcEngineRecorder.dylib" \
-    "$probe_dir/probe" "$framework" > "$out/recorded-values.json"
+  python3 - "$probe_dir/probe" "$framework" "$out" <<'PROBE'
+import datetime, hashlib, json, os, subprocess, sys
+from pathlib import Path
+probe, framework, output = sys.argv[1:]
+binary, out = Path(framework), Path(output)
+def fingerprint():
+    digest = hashlib.sha256()
+    with binary.open('rb') as source:
+        for block in iter(lambda: source.read(1024 * 1024), b''):
+            digest.update(block)
+    return {'sha256': digest.hexdigest(), 'size': binary.stat().st_size,
+            'mtime_ns': binary.stat().st_mtime_ns}
+before = fingerprint()
+started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+with (out/'values.json').open('w') as stream:
+    subprocess.run([probe, framework], stdout=stream, check=True)
+environment = {**os.environ, 'ARC_RECORD_PATH': str(out/'record.jsonl'),
+               'ARC_CORE_VALUES_RECORDER_LIBRARY':
+               str(Path.cwd()/'tests/recorder/ArcEngineRecorder.dylib')}
+with (out/'recorded-values.json').open('w') as stream:
+    subprocess.run([probe, framework], stdout=stream, env=environment, check=True)
+after = fingerprint()
+stable = before == after
+(out/'provenance.json').write_text(json.dumps({
+    'framework': str(binary.resolve()), 'started_utc': started,
+    'before': before, 'after': after, 'stable': stable}, indent=2) + '\n')
+if not stable:
+    raise SystemExit('Framework changed during probe; results require a retry')
+PROBE
 done
 python3 - <<'COMPARE'
 import json, subprocess

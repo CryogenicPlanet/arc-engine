@@ -1,0 +1,45 @@
+{
+  "pass": true,
+  "runs": [
+    {
+      "agent": "trace156",
+      "checks": {
+        "unrecorded_pages_complete": true,
+        "recorded_pages_complete": true,
+        "page_assertions_present_and_pass": true,
+        "page_outcomes_equal": true,
+        "four_real_control_receipts": true,
+        "control_receipts_equal": true,
+        "no_uncertain_mutations": true,
+        "stable_unrecorded_artifacts": true,
+        "stable_recorded_artifacts": true,
+        "same_main_engine_helper_across_modes": true,
+        "recorder_valid": true
+      },
+      "pass": true,
+      "unrecorded_cleanup": "Captured browser/helpers exited; close request acknowledged",
+      "recorded_cleanup": "Captured browser/helpers exited; close request acknowledged",
+      "limitation": "Independent page/control noninterference only. Browser shutdown, full boundary parity and visual acceptance remain separate."
+    },
+    {
+      "agent": "ours156",
+      "checks": {
+        "unrecorded_pages_complete": true,
+        "recorded_pages_complete": true,
+        "page_assertions_present_and_pass": true,
+        "page_outcomes_equal": true,
+        "four_real_control_receipts": true,
+        "control_receipts_equal": true,
+        "no_uncertain_mutations": true,
+        "stable_unrecorded_artifacts": true,
+        "stable_recorded_artifacts": true,
+        "same_main_engine_helper_across_modes": true,
+        "recorder_valid": true
+      },
+      "pass": true,
+      "unrecorded_cleanup": "SIGTERM of exact captured identities; owned browser/helpers exited",
+      "recorded_cleanup": "SIGTERM of exact captured identities; owned browser/helpers exited",
+      "limitation": "Independent page/control noninterference only. Browser shutdown, full boundary parity and visual acceptance remain separate."
+    }
+  ]
+}

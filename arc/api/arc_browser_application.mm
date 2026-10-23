@@ -210,10 +210,10 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
   return exit_code;
 }
 
-// Ends the browser: drops the app's keep-alive and exits through Chrome's normal path, which ends -run.
+// Releases Arc's application keep-alive; Chromium ends -run once its remaining
+// keep-alives permit shutdown.
 - (void)quit {
   AppKeepAlive().reset();
-  chrome::AttemptExit();
 }
 
 - (NSString*)version {

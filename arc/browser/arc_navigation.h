@@ -4,8 +4,13 @@
 
 #import "arc/api/arc_internal.h"
 
+#include <memory>
+
+@class ArcBackForwardList;
+
 namespace content {
 class NavigationHandle;
+class NavigationEntry;
 }
 
 ARC_EXPORT @interface ArcNavigationAction : NSObject
@@ -17,6 +22,17 @@ ARC_EXPORT @interface ArcNavigationAction : NSObject
 @end
 
 namespace arc {
+// A shared mutable native history model. Queued publications retain the model;
+// their immutable Objective-C arrays are materialized when delivery runs.
+class CoreHistoryModel;
+std::shared_ptr<CoreHistoryModel> CreateCoreHistoryModel(content::WebContents*);
+void RefreshCoreHistoryModel(const std::shared_ptr<CoreHistoryModel>&,
+                             content::WebContents*);
+bool UpdateCoreHistoryEntry(const std::shared_ptr<CoreHistoryModel>&,
+                            content::NavigationEntry*, int index);
+ArcBackForwardList* CreateCoreBackForwardList(
+    const std::shared_ptr<CoreHistoryModel>&);
+
 // Captures the synchronous policy payload. The disposition is an Arc boundary
 // ordinal (the engine's supported range is 0 through 11).
 ArcNavigationAction* CreateNavigationAction(content::NavigationHandle* handle,

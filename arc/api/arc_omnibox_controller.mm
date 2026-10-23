@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <map>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -31,7 +32,37 @@
 // These native inputs belong to this implementation; Arc's C++ accessors are
 // internal ABI, not app-facing selectors (ARCHITECTURE.md).
 using ArcOmniboxStringPair = std::pair<std::string, std::string>;
-namespace { class Controller; }
+@class ArcAutocompleteMatch;
+namespace {
+class Controller;
+
+// Detached values remain readable after their controller and profile disappear.
+// Keep provider names separately; native providers and actions belong to the
+// controller, including those referenced by nested duplicate matches.
+struct DetachedMatch {
+  explicit DetachedMatch(const AutocompleteMatch& native)
+      : value(native),
+        provider_type(native.provider
+                          ? ArcNSString(AutocompleteProvider::TypeToString(native.provider->type()))
+                          : @"") {
+    value.provider = nullptr;
+    value.actions.clear();
+    value.takeover_action.reset();
+    value.duplicate_matches.clear();
+    duplicates.reserve(native.duplicate_matches.size());
+    for (const auto& duplicate : native.duplicate_matches) {
+      duplicates.push_back(std::make_shared<DetachedMatch>(duplicate));
+    }
+  }
+
+  AutocompleteMatch value;
+  NSString* __strong provider_type;
+  std::vector<std::shared_ptr<const DetachedMatch>> duplicates;
+};
+
+void RegisterLazyDuplicate(base::WeakPtr<Controller> source, uint64_t parent_token,
+                           size_t index, ArcAutocompleteMatch* wrapper);
+}
 
 ARC_EXPORT @interface ArcAutocompleteMatchAdditionalData : NSObject
 - (instancetype)init:(NSString*)key value:(NSString*)value;
@@ -102,7 +133,7 @@ ARC_EXPORT @interface ArcAutocompleteMatch : NSObject
 - (void)setSource:(base::WeakPtr<Controller>)source token:(uint64_t)token;
 - (base::WeakPtr<Controller>)source;
 - (uint64_t)token __attribute__((objc_direct));
-- (NSArray*)snapshotDuplicates __attribute__((objc_direct));
+- (void)adoptDetachedSnapshot:(std::shared_ptr<const DetachedMatch>)snapshot __attribute__((objc_direct));
 @property(nonatomic, readonly) NSURL* destinationUrl;
 @property(nonatomic, readonly, copy) NSString* destinationUrlSpec;
 @property(nonatomic, readonly) NSURL* imageUrl;
@@ -130,6 +161,7 @@ ARC_EXPORT @interface ArcAutocompleteMatch : NSObject
 
 @implementation ArcAutocompleteMatch {
   AutocompleteMatch _match;
+  std::shared_ptr<const DetachedMatch> _snapshot;
   NSString* _providerType;
   NSArray* _duplicates;
   ArcAutocompleteMatch* _associatedKeyword;
@@ -142,20 +174,9 @@ ARC_EXPORT @interface ArcAutocompleteMatch : NSObject
   if ((self = [super init])) {
     _providerType = @"";
     if (match) {
-      const auto& native = *static_cast<const AutocompleteMatch*>(match);
-      _providerType = native.provider ? ArcNSString(AutocompleteProvider::TypeToString(native.provider->type())) : @"";
-      _match = native;
-      // Providers reference the controller's client and profile. Copy values,
-      // never retain providers or leave their pointers in app-held snapshots.
-      _match.provider = nullptr;
-      _match.actions.clear();
-      _match.takeover_action.reset();
-      _match.duplicate_matches.clear();
-      NSMutableArray* duplicates = [NSMutableArray arrayWithCapacity:native.duplicate_matches.size()];
-      for (const auto& duplicate : native.duplicate_matches) {
-        [duplicates addObject:[[ArcAutocompleteMatch alloc] initWithAutocompleteMatch:&duplicate]];
-      }
-      _duplicates = [duplicates copy];
+      _snapshot = std::make_shared<DetachedMatch>(*static_cast<const AutocompleteMatch*>(match));
+      _match = _snapshot->value;
+      _providerType = _snapshot->provider_type;
     }
   }
   return self;
@@ -166,7 +187,11 @@ ARC_EXPORT @interface ArcAutocompleteMatch : NSObject
 }
 - (base::WeakPtr<Controller>)source { return _source; }
 - (uint64_t)token { return _token; }
-- (NSArray*)snapshotDuplicates { return _duplicates; }
+- (void)adoptDetachedSnapshot:(std::shared_ptr<const DetachedMatch>)snapshot {
+  _snapshot = std::move(snapshot);
+  _match = _snapshot->value;
+  _providerType = _snapshot->provider_type;
+}
 - (NSURL*)destinationUrl { return ArcNSURL(_match.destination_url); }
 - (NSString*)destinationUrlSpec { return ArcNSString(_match.destination_url.spec()); }
 - (NSURL*)imageUrl { return ArcNSURL(_match.image_url); }
@@ -196,11 +221,27 @@ ARC_EXPORT @interface ArcAutocompleteMatch : NSObject
 - (NSString*)fillIntoEdit { return ArcNSString(_match.fill_into_edit); }
 - (NSString*)fillIntoEditAdditionalText { return ArcNSString(_match.additional_text); }
 - (NSString*)transition { return ArcNSString(ui::PageTransitionGetCoreTransitionString(_match.transition)); }
-- (NSArray*)duplicates { return _duplicates ?: @[]; }
+- (NSArray*)duplicates {
+  if (!_duplicates) {
+    NSMutableArray* values = [NSMutableArray array];
+    if (_snapshot) {
+      size_t index = 0;
+      for (const auto& duplicate : _snapshot->duplicates) {
+        ArcAutocompleteMatch* wrapper =
+            [[ArcAutocompleteMatch alloc] initWithAutocompleteMatch:&duplicate->value];
+        [wrapper adoptDetachedSnapshot:duplicate];
+        RegisterLazyDuplicate(_source, _token, index++, wrapper);
+        [values addObject:wrapper];
+      }
+    }
+    _duplicates = values;
+  }
+  return _duplicates;
+}
 - (ArcAutocompleteMatch*)associatedKeyword {
   if (!_associatedKeyword && !_match.associated_keyword.empty()) {
     AutocompleteMatch match;
-    match.keyword = _match.associated_keyword;
+    match.associated_keyword = _match.associated_keyword;
     _associatedKeyword = [[ArcAutocompleteMatch alloc] initWithAutocompleteMatch:&match];
   }
   return _associatedKeyword;
@@ -240,9 +281,9 @@ class Controller : public AutocompleteController::Observer,
     browser_completion_ = nil;
     if (native_) {
       native_->RemoveObserver(this);
-      matches_.clear();
-      native_.reset();
     }
+    matches_.clear();
+    native_.reset();
   }
   void Stop() {
     const uint64_t generation = generation_;
@@ -283,20 +324,31 @@ class Controller : public AutocompleteController::Observer,
     auto found = matches_.find([match token]);
     if (found != matches_.end() && found->second.native.SupportsDeletion()) {
       AutocompleteMatch value = found->second.native;
+      // Arc cancels the query subscription before mutating the native result.
+      // DeleteMatch can synchronously notify observers while removing the match.
+      context_completion_ = nil;
+      browser_completion_ = nil;
       native_->Stop(AutocompleteStopReason::kInteraction);
       native_->DeleteMatch(value);
     }
   }
   void RegisterMatch(ArcAutocompleteMatch* wrapper, const AutocompleteMatch& match) {
-    if (match.SupportsDeletion()) {
-      const uint64_t token = ++next_match_;
-      matches_.emplace(token, MatchRecord{wrapper, match});
-      [wrapper setSource:weak_factory_.GetWeakPtr() token:token];
+    // Nondeletable parents still need an identity for deletable lazy children.
+    const uint64_t token = ++next_match_;
+    matches_.emplace(token, MatchRecord{wrapper, match});
+    [wrapper setSource:weak_factory_.GetWeakPtr() token:token];
+  }
+  void RegisterLazyDuplicate(uint64_t parent_token, size_t index,
+                             ArcAutocompleteMatch* wrapper) {
+    if (!native_ || !profile_ || !wrapper) {
+      return;
     }
-    NSArray* duplicates = [wrapper snapshotDuplicates];
-    for (size_t i = 0; i < match.duplicate_matches.size(); ++i) {
-      RegisterMatch(duplicates[i], match.duplicate_matches[i]);
+    auto parent = matches_.find(parent_token);
+    if (parent == matches_.end() || !parent->second.wrapper ||
+        index >= parent->second.native.duplicate_matches.size()) {
+      return;
     }
+    RegisterMatch(wrapper, parent->second.native.duplicate_matches[index]);
   }
   NSArray* WrapMatches(const ACMatches& matches) {
     NSMutableArray* values = [NSMutableArray arrayWithCapacity:matches.size()];
@@ -305,7 +357,7 @@ class Controller : public AutocompleteController::Observer,
       RegisterMatch(wrapper, match);
       [values addObject:wrapper];
     }
-    return [values copy];
+    return values;
   }
   void OnResultChanged(AutocompleteController* controller, bool) override {
     // NotifyChanged continues using the native controller after observers
@@ -314,21 +366,29 @@ class Controller : public AutocompleteController::Observer,
     auto keep_alive = shared_from_this();
     auto context = context_completion_;
     auto browser = browser_completion_;
+    if (!context && !browser) {
+      return;
+    }
     const BOOL done = controller->done();
     ACMatches matches(controller->result().begin(), controller->result().end());
     NSArray* combined = WrapMatches(matches);
     if (context) {
       context(combined, done);
     } else if (browser) {
-      NSMutableDictionary* per_provider = [NSMutableDictionary dictionary];
+      // Arc's native result bridge collects providers in a string hash map
+      // before materializing their ObjC matches.
+      std::unordered_map<std::string, ACMatches> provider_matches;
       for (const auto& provider : controller->providers()) {
-        if (provider->matches().empty()) {
-          continue;
+        if (!provider->matches().empty()) {
+          provider_matches.emplace(AutocompleteProvider::TypeToString(provider->type()),
+                                   provider->matches());
         }
-        per_provider[ArcNSString(AutocompleteProvider::TypeToString(provider->type()))] =
-            WrapMatches(provider->matches());
       }
-      browser([[ArcAutocompleteResult alloc] init:combined perProviderMatches:[per_provider copy]], done);
+      NSMutableDictionary* per_provider = [NSMutableDictionary dictionary];
+      for (const auto& [name, provider_values] : provider_matches) {
+        per_provider[ArcNSString(name)] = WrapMatches(provider_values);
+      }
+      browser([[ArcAutocompleteResult alloc] init:[combined copy] perProviderMatches:[per_provider copy]], done);
     }
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce([](std::shared_ptr<Controller>) {}, std::move(keep_alive)));
@@ -347,10 +407,18 @@ class Controller : public AutocompleteController::Observer,
   BrowserCompletion __strong browser_completion_;
   base::WeakPtrFactory<Controller> weak_factory_{this};
 };
+
+void RegisterLazyDuplicate(base::WeakPtr<Controller> source, uint64_t parent_token,
+                           size_t index, ArcAutocompleteMatch* wrapper) {
+  if (source) {
+    auto keep_alive = source->shared_from_this();
+    keep_alive->RegisterLazyDuplicate(parent_token, index, wrapper);
+  }
+}
 }
 
 ARC_EXPORT @interface ArcBrowserContextAutocomplete : NSObject
-- (instancetype)initWithProfile:(Profile*)profile providers:(NSUInteger)providers;
+- (instancetype)initWithProfile:(Profile*)profile providers:(NSUInteger)providers __attribute__((objc_direct));
 - (void)autocomplete:(NSString*)text cursorPosition:(NSInteger)cursor
     preventInlineAutocomplete:(BOOL)preventInline completion:(ContextCompletion)completion;
 - (void)stop;

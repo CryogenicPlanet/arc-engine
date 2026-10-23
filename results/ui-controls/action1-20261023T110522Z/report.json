@@ -1,0 +1,52 @@
+{
+  "nonce": "arc-ui-control-inventory-5b992cc5-97b9-455f-a8b1-7b7d1bfe0f4b",
+  "purpose": "One nonce-scoped actual NSButton alert action with page assertion",
+  "functionalAcceptance": false,
+  "confirmedNativeActionCount": 2,
+  "uncertainActionRequestCount": 0,
+  "runs": [
+    {
+      "agent": "trace156",
+      "pid": 30298,
+      "errors": [],
+      "phase": "verify page resumed after actual control action",
+      "reconnects": 0,
+      "pageAlertScheduled": true,
+      "nativeActionRequested": true,
+      "confirmedNativeActionCount": 1,
+      "nativeActionOutcomeUncertain": false,
+      "nativeActionsReported": 1,
+      "pageResumed": true,
+      "cleanup": "Captured browser/helpers exited; close request acknowledged",
+      "elapsedMs": 4764,
+      "observations": 1,
+      "capabilityStatus": "native-alert-control-exercised-page-resumed",
+      "fixtureObserved": true,
+      "possibleNSButtons": 1,
+      "possibleAccessibilityPressResponders": 2,
+      "truncated": false
+    },
+    {
+      "agent": "ours156",
+      "pid": 30732,
+      "errors": [],
+      "phase": "verify page resumed after actual control action",
+      "reconnects": 0,
+      "pageAlertScheduled": true,
+      "nativeActionRequested": true,
+      "confirmedNativeActionCount": 1,
+      "nativeActionOutcomeUncertain": false,
+      "nativeActionsReported": 1,
+      "pageResumed": true,
+      "cleanup": "SIGTERM of exact captured identities; owned browser/helpers exited",
+      "elapsedMs": 24753,
+      "observations": 1,
+      "capabilityStatus": "native-alert-control-exercised-page-resumed",
+      "fixtureObserved": true,
+      "possibleNSButtons": 1,
+      "possibleAccessibilityPressResponders": 2,
+      "truncated": false
+    }
+  ],
+  "limitation": "This tests only a nonce alert OK through a concrete NSButton and checks page resumption. It does not establish accepted-golden boundary parity, other control types, AX equivalence or visual acceptance."
+}

@@ -2,6 +2,7 @@
 #import "arc/common/extraction_values.h"
 
 #include <array>
+#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
@@ -9,6 +10,7 @@
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/supports_user_data.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +25,23 @@
 namespace arc {
 namespace {
 namespace proto = optimization_guide::proto;
+
+class ProfileExtractionIdentity final : public base::SupportsUserData::Data {
+ public:
+  static scoped_refptr<PageContentExtractionIdentity> For(Profile* profile) {
+    auto* data = static_cast<ProfileExtractionIdentity*>(profile->GetUserData(&kKey));
+    if (!data) {
+      auto owned = std::make_unique<ProfileExtractionIdentity>();
+      data = owned.get();
+      profile->SetUserData(&kKey, std::move(owned));
+    }
+    return data->identity_;
+  }
+ private:
+  const scoped_refptr<PageContentExtractionIdentity> identity_ =
+      base::MakeRefCounted<PageContentExtractionIdentity>(uint8_t{0});
+  inline static const int kKey = 0;
+};
 
 NSString* OptionalString(const std::optional<std::string>& value) {
   return value ? ArcNSString(*value) : nil;
@@ -232,7 +251,7 @@ void CompleteExtraction(
 
 @implementation ArcBrowserContextPageContentExtraction {
   base::WeakPtr<Profile> _profile;
-  uintptr_t _serviceIdentity;
+  scoped_refptr<arc::PageContentExtractionIdentity> _serviceIdentity;
 }
 @synthesize owner = _owner;
 - (instancetype)initWithArcBrowserContext:(ArcBrowserContext*)context {
@@ -240,7 +259,7 @@ void CompleteExtraction(
   Profile* profile = [context profile];
   if (profile) {
     native.profile = profile->GetWeakPtr();
-    native.identity = reinterpret_cast<uintptr_t>(profile);
+    native.identity = arc::ProfileExtractionIdentity::For(profile);
   }
   return [self initWithBrowserContextPageContentExtraction:&native forBrowserContext:context];
 }
@@ -249,11 +268,10 @@ void CompleteExtraction(
     if (service) {
       const auto& native = *static_cast<const arc::PageContentExtractionData*>(service);
       _profile = native.profile;
-      _serviceIdentity = native.identity ? native.identity
-                                        : reinterpret_cast<uintptr_t>(native.profile.get());
+      _serviceIdentity = native.identity;
     }
     if (!_serviceIdentity) {
-      _serviceIdentity = reinterpret_cast<uintptr_t>((__bridge void*)self);
+      _serviceIdentity = base::MakeRefCounted<arc::PageContentExtractionIdentity>(uint8_t{0});
     }
   }
   return self;
@@ -273,10 +291,10 @@ void CompleteExtraction(
     return NO;
   }
   ArcBrowserContextPageContentExtraction* other = object;
-  return _serviceIdentity && _serviceIdentity == other->_serviceIdentity;
+  return _serviceIdentity && _serviceIdentity.get() == other->_serviceIdentity.get();
 }
 - (NSUInteger)hash {
-  return _serviceIdentity ? static_cast<NSUInteger>(_serviceIdentity) : [super hash];
+  return _serviceIdentity ? reinterpret_cast<NSUInteger>(_serviceIdentity.get()) : [super hash];
 }
 - (void)getExtractedContentForWebContents:(ArcWebContents*)contents
                               completion:(void (^)(ArcExtractedPageContent*))completion {

@@ -7,9 +7,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/lifetime/application_lifetime_desktop.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/ui/browser_window/public/global_browser_collection.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "components/prefs/pref_service.h"
@@ -72,25 +74,30 @@ class TerminationRequest final {
       });
       // The native Arc transaction completes after storage flushes, without
       // waiting for the host's NSWindows or Chromium Browser objects to close.
-      ProfileManager::ShutdownSessionServices();
-      chrome::MarkAsCleanShutdown();
       pending_flushes_ = 1;  // Prevent an inline reply finishing during setup.
       // Arc forces permission to terminate after ten seconds if a storage
       // service never replies. Late replies must not invoke the block again.
       flush_timeout_.Start(FROM_HERE, base::Seconds(10),
           base::BindOnce(&TerminationRequest::Finish, weak_factory_.GetWeakPtr()));
-      if (PrefService* local_state = g_browser_process->local_state()) {
-        ++pending_flushes_;
-        local_state->CommitPendingWrite(FlushCompletion());
-      }
       for (Profile* profile : g_browser_process->profile_manager()->GetLoadedProfiles()) {
+        if (auto* exit_type = ExitTypeService::GetInstanceForProfile(profile))
+          exit_type->SetCurrentSessionExitType(ExitType::kClean);
         ++pending_flushes_;
         profile->GetDefaultStoragePartition()->GetCookieManagerForBrowserProcess()->FlushCookieStore(FlushCompletion());
-        ++pending_flushes_;
-        profile->GetPrefs()->CommitPendingWrite(FlushCompletion());
+        // Native obtains the service with create=true before shutting down
+        // its platform bridges; this does not replay notification Close events.
+        if (auto* service = NotificationDisplayServiceFactory::GetForProfile(profile))
+          service->Shutdown();
         profile->ForEachLoadedStoragePartition([](content::StoragePartition* partition) {
           partition->Flush();
         });
+        ++pending_flushes_;
+        profile->GetPrefs()->CommitPendingWrite(FlushCompletion());
+      }
+      ProfileManager::ShutdownSessionServices();
+      if (PrefService* local_state = g_browser_process->local_state()) {
+        ++pending_flushes_;
+        local_state->CommitPendingWrite(FlushCompletion());
       }
       FlushDone();
     }

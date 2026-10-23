@@ -1,0 +1,2727 @@
+{
+  "complete": false,
+  "parity": false,
+  "differences": [
+    {
+      "golden": {
+        "callbacks": [
+          {
+            "beforePublicReturn": false,
+            "event": "display",
+            "forwarded": true,
+            "mainThread": true,
+            "mode": 3,
+            "publicSelector": "openConsoleView"
+          }
+        ],
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "console-open",
+        "publicCalls": [
+          "openConsoleView"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "openConsoleView"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "openConsoleView"
+          },
+          {
+            "beforePublicReturn": false,
+            "event": "display",
+            "mainThread": true,
+            "selector": "openConsoleView"
+          }
+        ]
+      },
+      "ours": null
+    },
+    {
+      "golden": {
+        "callbacks": [],
+        "frontendClass": "ArcWebContents",
+        "frontendPresent": true,
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "frontend",
+        "publicCalls": [
+          "webContents"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "webContents"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "webContents"
+          }
+        ],
+        "traceShape": [
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "webContents",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 1,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "initWithWebContents:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setTitle:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setTitle:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setUrl:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setUrl:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setSelectedText:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setSelectedText:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setIsLoading:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setIsLoading:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setLoadProgress:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setLoadProgress:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setFavicon:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setFavicon:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcBackForwardList",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "initWithBackForwardList:",
+            "self": "<ArcBackForwardList#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcBackForwardListItem",
+            "depth": 3,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "initWithBackForwardListItem:",
+            "self": "<ArcBackForwardListItem#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcBackForwardListItem",
+            "depth": 3,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "initWithBackForwardListItem:",
+            "self": "<ArcBackForwardListItem#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcBackForwardListItem",
+            "depth": 3,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "initWithBackForwardListItem:",
+            "self": "<ArcBackForwardListItem#2>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcBackForwardListItem",
+            "depth": 3,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "initWithBackForwardListItem:",
+            "self": "<ArcBackForwardListItem#2>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcBackForwardListItem",
+            "depth": 3,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "initWithBackForwardListItem:",
+            "self": "<ArcBackForwardListItem#3>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcBackForwardListItem",
+            "depth": 3,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "initWithBackForwardListItem:",
+            "self": "<ArcBackForwardListItem#3>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcBackForwardList",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "initWithBackForwardList:",
+            "self": "<ArcBackForwardList#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setBackForwardList:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setBackForwardList:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setUndoableFieldActive:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setUndoableFieldActive:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setFreeformTextFieldActive:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setFreeformTextFieldActive:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setPasswordTextFieldActive:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setPasswordTextFieldActive:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setTabTraits:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setTabTraits:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setState:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setState:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setZoomLevel:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setZoomLevel:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setThemeColor:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setThemeColor:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setIsReadyToDisplay:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setIsReadyToDisplay:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setPendingRenderFrameViewportSize:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setPendingRenderFrameViewportSize:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setNavigationID:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setNavigationID:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setCanGoBack:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setCanGoBack:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setCanGoForward:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setCanGoForward:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setHadFormOrUserEdits:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setHadFormOrUserEdits:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setHasDirtyTextField:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setHasDirtyTextField:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setRootBackgroundColor:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setRootBackgroundColor:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setBlockedResourceCount:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setBlockedResourceCount:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setVisibility:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setVisibility:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "setHasFocus:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 2,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "setHasFocus:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContents",
+            "depth": 1,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "initWithWebContents:",
+            "self": "<ArcWebContents#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "webContents",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          }
+        ]
+      },
+      "ours": null
+    },
+    {
+      "golden": {
+        "callbacks": [
+          {
+            "beforePublicReturn": true,
+            "event": "closed",
+            "forwarded": true,
+            "mainThread": true,
+            "mode": 0,
+            "publicSelector": "close"
+          }
+        ],
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "console-close",
+        "publicCalls": [
+          "close"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "close"
+          },
+          {
+            "beforePublicReturn": true,
+            "event": "closed",
+            "mainThread": true,
+            "selector": "close"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "close"
+          }
+        ]
+      },
+      "ours": null
+    },
+    {
+      "golden": {
+        "callbacks": [],
+        "error": {
+          "code": 10,
+          "description": "DevTools window not open",
+          "domain": "company.thebrowser.Arc",
+          "userInfo": {
+            "NSLocalizedDescription": "DevTools window not open"
+          }
+        },
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "panel-closed",
+        "publicCalls": [
+          "currentPanel:error:"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "currentPanel:error:"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "currentPanel:error:"
+          }
+        ],
+        "traceShape": [
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "currentPanel:error:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "currentPanel:error:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          }
+        ],
+        "value": false
+      },
+      "ours": null
+    },
+    {
+      "golden": {
+        "callbacks": [
+          {
+            "beforePublicReturn": false,
+            "error": null,
+            "event": "completion",
+            "mainThread": true,
+            "message": "{\"result\":{\"description\":\"42\",\"type\":\"number\",\"value\":42}}",
+            "parsed": {
+              "result": {
+                "description": "42",
+                "type": "number",
+                "value": 42
+              }
+            },
+            "publicSelector": "execute:completion:error:"
+          }
+        ],
+        "error": null,
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "execute-evaluate",
+        "publicCalls": [
+          "execute:completion:error:"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "execute:completion:error:"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "execute:completion:error:"
+          },
+          {
+            "beforePublicReturn": false,
+            "event": "completion",
+            "mainThread": true,
+            "selector": "execute:completion:error:"
+          }
+        ],
+        "traceShape": [
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "execute:completion:error:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "execute:completion:error:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          }
+        ],
+        "value": true
+      },
+      "ours": null
+    },
+    {
+      "golden": {
+        "callbacks": [],
+        "error": {
+          "code": 2,
+          "description": "Malformed params.",
+          "domain": "company.thebrowser.Arc",
+          "userInfo": {
+            "NSLocalizedDescription": "Malformed params."
+          }
+        },
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "execute-malformed",
+        "publicCalls": [
+          "execute:completion:error:"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "execute:completion:error:"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "execute:completion:error:"
+          }
+        ],
+        "traceShape": [
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "execute:completion:error:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "execute:completion:error:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          }
+        ],
+        "value": false
+      },
+      "ours": null
+    },
+    {
+      "golden": {
+        "callbacks": [
+          {
+            "beforePublicReturn": false,
+            "error": {
+              "code": 7,
+              "description": "{\"code\":-32601,\"message\":\"'ArcWebextrasMissing.noSuchMethod' wasn't found\"}",
+              "domain": "company.thebrowser.Arc",
+              "userInfo": {
+                "NSLocalizedDescription": "{\"code\":-32601,\"message\":\"'ArcWebextrasMissing.noSuchMethod' wasn't found\"}"
+              }
+            },
+            "event": "completion",
+            "mainThread": true,
+            "message": null,
+            "parsed": null,
+            "publicSelector": "execute:completion:error:"
+          }
+        ],
+        "error": null,
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "execute-unknown",
+        "publicCalls": [
+          "execute:completion:error:"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "execute:completion:error:"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "execute:completion:error:"
+          },
+          {
+            "beforePublicReturn": false,
+            "event": "completion",
+            "mainThread": true,
+            "selector": "execute:completion:error:"
+          }
+        ],
+        "traceShape": [
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "execute:completion:error:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "execute:completion:error:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          }
+        ],
+        "value": true
+      },
+      "ours": null
+    },
+    {
+      "golden": {
+        "callbacks": [
+          {
+            "beforePublicReturn": false,
+            "error": null,
+            "event": "completion",
+            "mainThread": true,
+            "message": "{\"result\":{\"description\":\"42\",\"type\":\"number\",\"value\":42}}",
+            "parsed": {
+              "result": {
+                "description": "42",
+                "type": "number",
+                "value": 42
+              }
+            },
+            "publicSelector": "execute:completion:error:"
+          },
+          {
+            "beforePublicReturn": false,
+            "error": null,
+            "event": "subscription",
+            "mainThread": true,
+            "message": "{\"args\":[{\"type\":\"string\",\"value\":\"<probe-nonce>\"}],\"executionContextId\":<execution-context>,\"stackTrace\":{\"callFrames\":[{\"columnNumber\":8,\"functionName\":\"\",\"lineNumber\":0,\"scriptId\":\"<script-id>\",\"url\":\"\"}]},\"timestamp\":<timestamp>,\"type\":\"log\"}",
+            "parsed": {
+              "args": [
+                {
+                  "type": "string",
+                  "value": "<probe-nonce>"
+                }
+              ],
+              "executionContextId": "<execution-context>",
+              "stackTrace": {
+                "callFrames": [
+                  {
+                    "columnNumber": 8,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "<script-id>",
+                    "url": ""
+                  }
+                ]
+              },
+              "timestamp": "<timestamp>",
+              "type": "log"
+            },
+            "publicSelector": "execute:completion:error:",
+            "subscriptionMatches": true
+          }
+        ],
+        "error": null,
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "subscription",
+        "publicCalls": [
+          "subscribe:autoEnable:notification:",
+          "execute:completion:error:",
+          "unsubscribe:"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "subscribe:autoEnable:notification:"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "subscribe:autoEnable:notification:"
+          },
+          {
+            "event": "publicCall",
+            "selector": "execute:completion:error:"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "execute:completion:error:"
+          },
+          {
+            "beforePublicReturn": false,
+            "event": "completion",
+            "mainThread": true,
+            "selector": "execute:completion:error:"
+          },
+          {
+            "beforePublicReturn": false,
+            "event": "subscription",
+            "mainThread": true,
+            "selector": "execute:completion:error:"
+          },
+          {
+            "event": "publicCall",
+            "selector": "unsubscribe:"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "unsubscribe:"
+          }
+        ],
+        "traceShape": [
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "subscribe:autoEnable:notification:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "subscribe:autoEnable:notification:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "execute:completion:error:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "execute:completion:error:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "unsubscribe:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsDevTools",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "unsubscribe:",
+            "self": "<ArcWebContentsDevTools#1>",
+            "thread": "main"
+          }
+        ],
+        "unsubscribeReturn": true,
+        "value": true
+      },
+      "ours": null
+    },
+    {
+      "golden": {
+        "callbacks": [],
+        "error": null,
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "media-types",
+        "publicCalls": [
+          "getMediaContentTypes:"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "getMediaContentTypes:"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "getMediaContentTypes:"
+          }
+        ],
+        "traceShape": [
+          {
+            "cls": "ArcWebContentsMediaSession",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "getMediaContentTypes:",
+            "self": "<ArcWebContentsMediaSession#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsMediaSession",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "getMediaContentTypes:",
+            "self": "<ArcWebContentsMediaSession#1>",
+            "thread": "main"
+          }
+        ],
+        "types": []
+      },
+      "ours": null
+    },
+    {
+      "golden": {
+        "callbacks": [],
+        "error": {
+          "code": 6,
+          "description": "media session does not support picture in picture",
+          "domain": "company.thebrowser.Arc",
+          "userInfo": {
+            "NSLocalizedDescription": "media session does not support picture in picture"
+          }
+        },
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "pip-request-error",
+        "publicCalls": [
+          "requestPictureInPicture:"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "requestPictureInPicture:"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "requestPictureInPicture:"
+          }
+        ],
+        "traceShape": [
+          {
+            "cls": "ArcWebContentsMediaSession",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "requestPictureInPicture:",
+            "self": "<ArcWebContentsMediaSession#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsMediaSession",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "requestPictureInPicture:",
+            "self": "<ArcWebContentsMediaSession#1>",
+            "thread": "main"
+          }
+        ],
+        "value": false
+      },
+      "ours": null
+    },
+    {
+      "golden": {
+        "callbacks": [],
+        "error": {
+          "code": 6,
+          "description": "webcontents has no active picture in picture videos",
+          "domain": "company.thebrowser.Arc",
+          "userInfo": {
+            "NSLocalizedDescription": "webcontents has no active picture in picture videos"
+          }
+        },
+        "mainThread": true,
+        "matches": 1,
+        "ok": true,
+        "operation": "pip-exit-error",
+        "publicCalls": [
+          "exitPictureInPicture:error:"
+        ],
+        "timeline": [
+          {
+            "event": "publicCall",
+            "selector": "exitPictureInPicture:error:"
+          },
+          {
+            "event": "publicReturn",
+            "selector": "exitPictureInPicture:error:"
+          }
+        ],
+        "traceShape": [
+          {
+            "cls": "ArcWebContentsMediaSession",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "call",
+            "kind": "-",
+            "sel": "exitPictureInPicture:error:",
+            "self": "<ArcWebContentsMediaSession#1>",
+            "thread": "main"
+          },
+          {
+            "cls": "ArcWebContentsMediaSession",
+            "depth": 0,
+            "dir": "->engine",
+            "ev": "ret",
+            "kind": "-",
+            "sel": "exitPictureInPicture:error:",
+            "self": "<ArcWebContentsMediaSession#1>",
+            "thread": "main"
+          }
+        ],
+        "value": false
+      },
+      "ours": null
+    }
+  ],
+  "boundaryDiffs": [],
+  "runs": [
+    {
+      "agent": "trace156",
+      "phase": "complete",
+      "actions": [
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-2",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "openConsoleView"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "openConsoleView"
+            },
+            {
+              "beforePublicReturn": false,
+              "selector": "openConsoleView",
+              "mainThread": true,
+              "event": "display"
+            }
+          ],
+          "matches": 1,
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "console-open",
+          "recordAfterReturn": 644266,
+          "callbacks": [
+            {
+              "publicSelector": "openConsoleView",
+              "forwarded": true,
+              "mode": 3,
+              "event": "display",
+              "recordAfterForwarding": 669730,
+              "beforePublicReturn": false,
+              "mainThread": true,
+              "recordOffset": 644498
+            }
+          ],
+          "recordEnd": 670893,
+          "publicCalls": [
+            {
+              "recordBegin": 643902,
+              "recordEnd": 644266,
+              "selector": "openConsoleView"
+            }
+          ],
+          "mainThread": true,
+          "pid": 87464,
+          "ok": true,
+          "ownerTag": 1,
+          "recordBegin": 643902
+        },
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-3",
+          "frontendPresent": true,
+          "frontendClass": "ArcWebContents",
+          "matches": 1,
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "frontend",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "webContents"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "webContents"
+            }
+          ],
+          "recordAfterReturn": 688365,
+          "callbacks": [],
+          "recordEnd": 688365,
+          "publicCalls": [
+            {
+              "recordBegin": 677092,
+              "recordEnd": 688365,
+              "selector": "webContents"
+            }
+          ],
+          "mainThread": true,
+          "pid": 87464,
+          "ok": true,
+          "ownerTag": 1,
+          "recordBegin": 677092,
+          "traceShape": [
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "webContents",
+              "self": "<ArcWebContentsDevTools#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 1,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "initWithWebContents:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setTitle:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setTitle:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setUrl:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setUrl:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setSelectedText:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setSelectedText:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setIsLoading:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setIsLoading:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setLoadProgress:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setLoadProgress:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setFavicon:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setFavicon:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcBackForwardList",
+              "kind": "-",
+              "sel": "initWithBackForwardList:",
+              "self": "<ArcBackForwardList#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 3,
+              "dir": "->engine",
+              "cls": "ArcBackForwardListItem",
+              "kind": "-",
+              "sel": "initWithBackForwardListItem:",
+              "self": "<ArcBackForwardListItem#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 3,
+              "dir": "->engine",
+              "cls": "ArcBackForwardListItem",
+              "kind": "-",
+              "sel": "initWithBackForwardListItem:",
+              "self": "<ArcBackForwardListItem#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 3,
+              "dir": "->engine",
+              "cls": "ArcBackForwardListItem",
+              "kind": "-",
+              "sel": "initWithBackForwardListItem:",
+              "self": "<ArcBackForwardListItem#2>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 3,
+              "dir": "->engine",
+              "cls": "ArcBackForwardListItem",
+              "kind": "-",
+              "sel": "initWithBackForwardListItem:",
+              "self": "<ArcBackForwardListItem#2>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 3,
+              "dir": "->engine",
+              "cls": "ArcBackForwardListItem",
+              "kind": "-",
+              "sel": "initWithBackForwardListItem:",
+              "self": "<ArcBackForwardListItem#3>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 3,
+              "dir": "->engine",
+              "cls": "ArcBackForwardListItem",
+              "kind": "-",
+              "sel": "initWithBackForwardListItem:",
+              "self": "<ArcBackForwardListItem#3>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcBackForwardList",
+              "kind": "-",
+              "sel": "initWithBackForwardList:",
+              "self": "<ArcBackForwardList#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setBackForwardList:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setBackForwardList:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setUndoableFieldActive:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setUndoableFieldActive:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setFreeformTextFieldActive:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setFreeformTextFieldActive:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setPasswordTextFieldActive:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setPasswordTextFieldActive:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setTabTraits:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setTabTraits:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setState:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setState:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setZoomLevel:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setZoomLevel:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setThemeColor:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setThemeColor:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setIsReadyToDisplay:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setIsReadyToDisplay:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setPendingRenderFrameViewportSize:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setPendingRenderFrameViewportSize:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setNavigationID:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setNavigationID:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setCanGoBack:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setCanGoBack:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setCanGoForward:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setCanGoForward:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setHadFormOrUserEdits:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setHadFormOrUserEdits:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setHasDirtyTextField:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setHasDirtyTextField:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setRootBackgroundColor:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setRootBackgroundColor:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setBlockedResourceCount:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setBlockedResourceCount:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setVisibility:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setVisibility:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setHasFocus:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 2,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "setHasFocus:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 1,
+              "dir": "->engine",
+              "cls": "ArcWebContents",
+              "kind": "-",
+              "sel": "initWithWebContents:",
+              "self": "<ArcWebContents#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "webContents",
+              "self": "<ArcWebContentsDevTools#1>"
+            }
+          ]
+        },
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-4",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "close"
+            },
+            {
+              "beforePublicReturn": true,
+              "selector": "close",
+              "mainThread": true,
+              "event": "closed"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "close"
+            }
+          ],
+          "matches": 1,
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "console-close",
+          "recordAfterReturn": 696820,
+          "callbacks": [
+            {
+              "publicSelector": "close",
+              "forwarded": true,
+              "mode": 0,
+              "event": "closed",
+              "recordAfterForwarding": 696450,
+              "beforePublicReturn": true,
+              "mainThread": true,
+              "recordOffset": 689773
+            }
+          ],
+          "recordEnd": 698275,
+          "publicCalls": [
+            {
+              "recordBegin": 689373,
+              "recordEnd": 696820,
+              "selector": "close"
+            }
+          ],
+          "mainThread": true,
+          "pid": 87464,
+          "ok": true,
+          "ownerTag": 1,
+          "recordBegin": 689373
+        },
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-5",
+          "matches": 1,
+          "error": {
+            "code": 10,
+            "domain": "company.thebrowser.Arc",
+            "description": "DevTools window not open",
+            "userInfo": {
+              "NSLocalizedDescription": "DevTools window not open"
+            }
+          },
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "panel-closed",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "currentPanel:error:"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "currentPanel:error:"
+            }
+          ],
+          "value": false,
+          "recordAfterReturn": 698665,
+          "callbacks": [],
+          "recordEnd": 698665,
+          "publicCalls": [
+            {
+              "recordBegin": 698275,
+              "recordEnd": 698665,
+              "selector": "currentPanel:error:"
+            }
+          ],
+          "mainThread": true,
+          "pid": 87464,
+          "ok": true,
+          "ownerTag": 1,
+          "recordBegin": 698275,
+          "traceShape": [
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "currentPanel:error:",
+              "self": "<ArcWebContentsDevTools#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "currentPanel:error:",
+              "self": "<ArcWebContentsDevTools#1>"
+            }
+          ]
+        },
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-6",
+          "nonce": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-execute-evaluate",
+          "matches": 1,
+          "error": null,
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "execute-evaluate",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "execute:completion:error:"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "execute:completion:error:"
+            },
+            {
+              "beforePublicReturn": false,
+              "selector": "execute:completion:error:",
+              "mainThread": true,
+              "event": "completion"
+            }
+          ],
+          "value": true,
+          "recordAfterReturn": 699638,
+          "callbacks": [
+            {
+              "publicSelector": "execute:completion:error:",
+              "parsed": {
+                "result": {
+                  "type": "number",
+                  "value": 42,
+                  "description": "42"
+                }
+              },
+              "event": "completion",
+              "message": "{\"result\":{\"description\":\"42\",\"type\":\"number\",\"value\":42}}",
+              "beforePublicReturn": false,
+              "mainThread": true,
+              "error": null,
+              "recordOffset": 699638,
+              "subscriptionID": null
+            }
+          ],
+          "recordEnd": 699638,
+          "publicCalls": [
+            {
+              "recordBegin": 699207,
+              "recordEnd": 699638,
+              "selector": "execute:completion:error:"
+            }
+          ],
+          "mainThread": true,
+          "pid": 87464,
+          "ok": true,
+          "ownerTag": 1,
+          "recordBegin": 699207,
+          "traceShape": [
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "execute:completion:error:",
+              "self": "<ArcWebContentsDevTools#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "execute:completion:error:",
+              "self": "<ArcWebContentsDevTools#1>"
+            }
+          ]
+        },
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-7",
+          "nonce": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-execute-malformed",
+          "matches": 1,
+          "error": {
+            "code": 2,
+            "domain": "company.thebrowser.Arc",
+            "description": "Malformed params.",
+            "userInfo": {
+              "NSLocalizedDescription": "Malformed params."
+            }
+          },
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "execute-malformed",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "execute:completion:error:"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "execute:completion:error:"
+            }
+          ],
+          "value": false,
+          "recordAfterReturn": 700070,
+          "callbacks": [],
+          "recordEnd": 700070,
+          "publicCalls": [
+            {
+              "recordBegin": 699638,
+              "recordEnd": 700070,
+              "selector": "execute:completion:error:"
+            }
+          ],
+          "mainThread": true,
+          "pid": 87464,
+          "ok": true,
+          "ownerTag": 1,
+          "recordBegin": 699638,
+          "traceShape": [
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "execute:completion:error:",
+              "self": "<ArcWebContentsDevTools#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "execute:completion:error:",
+              "self": "<ArcWebContentsDevTools#1>"
+            }
+          ]
+        },
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-8",
+          "nonce": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-execute-unknown",
+          "matches": 1,
+          "error": null,
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "execute-unknown",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "execute:completion:error:"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "execute:completion:error:"
+            },
+            {
+              "beforePublicReturn": false,
+              "selector": "execute:completion:error:",
+              "mainThread": true,
+              "event": "completion"
+            }
+          ],
+          "value": true,
+          "recordAfterReturn": 700501,
+          "callbacks": [
+            {
+              "publicSelector": "execute:completion:error:",
+              "parsed": null,
+              "event": "completion",
+              "message": null,
+              "beforePublicReturn": false,
+              "mainThread": true,
+              "error": {
+                "code": 7,
+                "domain": "company.thebrowser.Arc",
+                "description": "{\"code\":-32601,\"message\":\"'ArcWebextrasMissing.noSuchMethod' wasn't found\"}",
+                "userInfo": {
+                  "NSLocalizedDescription": "{\"code\":-32601,\"message\":\"'ArcWebextrasMissing.noSuchMethod' wasn't found\"}"
+                }
+              },
+              "recordOffset": 700501,
+              "subscriptionID": null
+            }
+          ],
+          "recordEnd": 700501,
+          "publicCalls": [
+            {
+              "recordBegin": 700070,
+              "recordEnd": 700501,
+              "selector": "execute:completion:error:"
+            }
+          ],
+          "mainThread": true,
+          "pid": 87464,
+          "ok": true,
+          "ownerTag": 1,
+          "recordBegin": 700070,
+          "traceShape": [
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "execute:completion:error:",
+              "self": "<ArcWebContentsDevTools#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "execute:completion:error:",
+              "self": "<ArcWebContentsDevTools#1>"
+            }
+          ]
+        },
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-9",
+          "recordBegin": 701464,
+          "ok": true,
+          "nonce": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-subscription",
+          "matches": 1,
+          "error": null,
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "subscription",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "subscribe:autoEnable:notification:"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "subscribe:autoEnable:notification:"
+            },
+            {
+              "event": "publicCall",
+              "selector": "execute:completion:error:"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "execute:completion:error:"
+            },
+            {
+              "beforePublicReturn": false,
+              "selector": "execute:completion:error:",
+              "mainThread": true,
+              "event": "completion"
+            },
+            {
+              "beforePublicReturn": false,
+              "selector": "execute:completion:error:",
+              "mainThread": true,
+              "event": "subscription"
+            },
+            {
+              "event": "publicCall",
+              "selector": "unsubscribe:"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "unsubscribe:"
+            }
+          ],
+          "value": true,
+          "recordAfterReturn": 702697,
+          "callbacks": [
+            {
+              "publicSelector": "execute:completion:error:",
+              "parsed": {
+                "result": {
+                  "type": "number",
+                  "value": 42,
+                  "description": "42"
+                }
+              },
+              "event": "completion",
+              "message": "{\"result\":{\"description\":\"42\",\"type\":\"number\",\"value\":42}}",
+              "beforePublicReturn": false,
+              "mainThread": true,
+              "error": null,
+              "recordOffset": 702338,
+              "subscriptionID": null
+            },
+            {
+              "publicSelector": "execute:completion:error:",
+              "parsed": {
+                "timestamp": 1792752568802.044,
+                "args": [
+                  {
+                    "type": "string",
+                    "value": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-subscription"
+                  }
+                ],
+                "type": "log",
+                "executionContextId": 1,
+                "stackTrace": {
+                  "callFrames": [
+                    {
+                      "scriptId": "9",
+                      "lineNumber": 0,
+                      "url": "",
+                      "functionName": "",
+                      "columnNumber": 8
+                    }
+                  ]
+                }
+              },
+              "event": "subscription",
+              "message": "{\"args\":[{\"type\":\"string\",\"value\":\"arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-subscription\"}],\"executionContextId\":1,\"stackTrace\":{\"callFrames\":[{\"columnNumber\":8,\"functionName\":\"\",\"lineNumber\":0,\"scriptId\":\"9\",\"url\":\"\"}]},\"timestamp\":1.792752568802044e+12,\"type\":\"log\"}",
+              "beforePublicReturn": false,
+              "mainThread": true,
+              "error": null,
+              "recordOffset": 702338,
+              "subscriptionID": 1
+            }
+          ],
+          "recordEnd": 702697,
+          "unsubscribeReturn": true,
+          "mainThread": true,
+          "pid": 87464,
+          "publicCalls": [
+            {
+              "recordBegin": 701464,
+              "recordEnd": 701907,
+              "selector": "subscribe:autoEnable:notification:"
+            },
+            {
+              "recordBegin": 701907,
+              "recordEnd": 702338,
+              "selector": "execute:completion:error:"
+            },
+            {
+              "recordBegin": 702338,
+              "recordEnd": 702697,
+              "selector": "unsubscribe:"
+            }
+          ],
+          "subscriptionToken": 1,
+          "ownerTag": 1,
+          "traceShape": [
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "subscribe:autoEnable:notification:",
+              "self": "<ArcWebContentsDevTools#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "subscribe:autoEnable:notification:",
+              "self": "<ArcWebContentsDevTools#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "execute:completion:error:",
+              "self": "<ArcWebContentsDevTools#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "execute:completion:error:",
+              "self": "<ArcWebContentsDevTools#1>"
+            },
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "unsubscribe:",
+              "self": "<ArcWebContentsDevTools#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsDevTools",
+              "kind": "-",
+              "sel": "unsubscribe:",
+              "self": "<ArcWebContentsDevTools#1>"
+            }
+          ]
+        },
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-10",
+          "ok": true,
+          "matches": 1,
+          "error": null,
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "media-types",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "getMediaContentTypes:"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "getMediaContentTypes:"
+            }
+          ],
+          "recordAfterReturn": 709787,
+          "callbacks": [],
+          "recordEnd": 709787,
+          "publicCalls": [
+            {
+              "recordBegin": 709374,
+              "recordEnd": 709787,
+              "selector": "getMediaContentTypes:"
+            }
+          ],
+          "types": [],
+          "mainThread": true,
+          "pid": 87464,
+          "ownerTag": 1,
+          "recordBegin": 709374,
+          "traceShape": [
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsMediaSession",
+              "kind": "-",
+              "sel": "getMediaContentTypes:",
+              "self": "<ArcWebContentsMediaSession#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsMediaSession",
+              "kind": "-",
+              "sel": "getMediaContentTypes:",
+              "self": "<ArcWebContentsMediaSession#1>"
+            }
+          ]
+        },
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-11",
+          "matches": 1,
+          "error": {
+            "code": 6,
+            "domain": "company.thebrowser.Arc",
+            "description": "media session does not support picture in picture",
+            "userInfo": {
+              "NSLocalizedDescription": "media session does not support picture in picture"
+            }
+          },
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "pip-request-error",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "requestPictureInPicture:"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "requestPictureInPicture:"
+            }
+          ],
+          "value": false,
+          "recordAfterReturn": 710620,
+          "callbacks": [],
+          "recordEnd": 710620,
+          "publicCalls": [
+            {
+              "recordBegin": 710214,
+              "recordEnd": 710620,
+              "selector": "requestPictureInPicture:"
+            }
+          ],
+          "mainThread": true,
+          "pid": 87464,
+          "ok": true,
+          "ownerTag": 1,
+          "recordBegin": 710214,
+          "traceShape": [
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsMediaSession",
+              "kind": "-",
+              "sel": "requestPictureInPicture:",
+              "self": "<ArcWebContentsMediaSession#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsMediaSession",
+              "kind": "-",
+              "sel": "requestPictureInPicture:",
+              "self": "<ArcWebContentsMediaSession#1>"
+            }
+          ]
+        },
+        {
+          "id": "arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491-12",
+          "matches": 1,
+          "error": {
+            "code": 6,
+            "domain": "company.thebrowser.Arc",
+            "description": "webcontents has no active picture in picture videos",
+            "userInfo": {
+              "NSLocalizedDescription": "webcontents has no active picture in picture videos"
+            }
+          },
+          "url": "http://127.0.0.1:62615/arc-webextras-probe-0b174e26-0f47-43e6-b1c5-4bd6e57e6491/fixture",
+          "operation": "pip-exit-error",
+          "timeline": [
+            {
+              "event": "publicCall",
+              "selector": "exitPictureInPicture:error:"
+            },
+            {
+              "event": "publicReturn",
+              "selector": "exitPictureInPicture:error:"
+            }
+          ],
+          "value": false,
+          "recordAfterReturn": 711038,
+          "callbacks": [],
+          "recordEnd": 711038,
+          "publicCalls": [
+            {
+              "recordBegin": 710620,
+              "recordEnd": 711038,
+              "selector": "exitPictureInPicture:error:"
+            }
+          ],
+          "mainThread": true,
+          "pid": 87464,
+          "ok": true,
+          "ownerTag": 1,
+          "recordBegin": 710620,
+          "traceShape": [
+            {
+              "ev": "call",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsMediaSession",
+              "kind": "-",
+              "sel": "exitPictureInPicture:error:",
+              "self": "<ArcWebContentsMediaSession#1>"
+            },
+            {
+              "ev": "ret",
+              "thread": "main",
+              "depth": 0,
+              "dir": "->engine",
+              "cls": "ArcWebContentsMediaSession",
+              "kind": "-",
+              "sel": "exitPictureInPicture:error:",
+              "self": "<ArcWebContentsMediaSession#1>"
+            }
+          ]
+        }
+      ],
+      "errors": [
+        "console-open: Error: incomplete or mismatched app callback forwarding",
+        "console-close: Error: incomplete or mismatched app callback forwarding"
+      ],
+      "pid": 87464,
+      "cleanup": "Browser.close; 8 owned helpers checked"
+    },
+    {
+      "agent": "ours156",
+      "phase": "cdp-fixture-eval",
+      "actions": [],
+      "errors": [
+        "[cdp-fixture-eval] Error: timeout after 20000ms: Error: CDP websocket is closed"
+      ],
+      "pid": 87770,
+      "failure": {
+        "phase": "cdp-fixture-eval",
+        "message": "Error: timeout after 20000ms: Error: CDP websocket is closed"
+      },
+      "cleanup": "SIGTERM of captured identities; 8 owned helpers checked"
+    }
+  ]
+}

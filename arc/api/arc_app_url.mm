@@ -12,6 +12,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/net_errors.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
+#include "components/url_formatter/url_formatter.h"
+#include "url/url_canon.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -30,6 +34,53 @@
 - (void)didFinish:(NSString*)token;
 - (void)didFail:(NSString*)token withError:(int)error;
 @end
+
+ARC_EXPORT @interface ArcURLUtilities : NSObject
++ (NSString*)effectiveTopLevelDomainFromHost:(NSString*)host
+                  includePrivateRegistries:(BOOL)includePrivate;
++ (NSString*)formatHostForDisplay:(NSString*)host;
+@end
+@implementation ArcURLUtilities
++ (NSString*)effectiveTopLevelDomainFromHost:(NSString*)host
+                  includePrivateRegistries:(BOOL)includePrivate {
+  std::string raw = ArcUTF8(host);
+  url::RawCanonOutput<128> output;
+  url::CanonHostInfo info;
+  url::CanonicalizeIPAddress(raw, &output, &info);
+  if (info.IsIPAddress()) return nil;
+  namespace domains = net::registry_controlled_domains;
+  auto suffix = domains::PermissiveGetHostRegistry(
+      raw, domains::EXCLUDE_UNKNOWN_REGISTRIES,
+      includePrivate ? domains::INCLUDE_PRIVATE_REGISTRIES
+                     : domains::EXCLUDE_PRIVATE_REGISTRIES);
+  return suffix && !suffix->empty() ? ArcNSString(*suffix) : nil;
+}
++ (NSString*)formatHostForDisplay:(NSString*)host {
+  std::string raw = ArcUTF8(host);
+  url::CanonHostInfo info;
+  std::string canonical = net::CanonicalizeHost(raw, &info);
+  if (canonical.empty()) return ArcNSString(raw);
+  if (info.IsIPAddress()) return ArcNSString(canonical);
+  if (!net::IsCanonicalizedHostCompliant(canonical)) return ArcNSString(raw);
+  return ArcNSString(url_formatter::IDNToUnicode(canonical));
+}
+@end
+
+// Internal request state is copied directly, matching the native config bridge.
+// Defaults preserve the old loader's Objective-C nil-message behavior.
+struct ArcAppURLLoadSnapshot {
+  GURL url;
+  NSUInteger method = 0;
+  std::map<std::string, std::string> headers;
+  NSUInteger cache_policy = 0;
+  bool follow_redirects = false;
+  std::string payload_data;
+  std::string payload_content_type;
+  base::FilePath payload_file;
+  double timeout = 0;
+  bool block_local_request = false;
+  bool stream_response_data = false;
+};
 
 ARC_EXPORT @interface ArcURLLoadConfiguration : NSObject {
   NSURL* _url;
@@ -56,8 +107,35 @@ ARC_EXPORT @interface ArcURLLoadConfiguration : NSObject {
 @property(nonatomic) double timeout;
 @property(nonatomic) NSUInteger cachePolicy;
 @property(nonatomic) BOOL blockLocalRequest;
+// A direct method has no runtime selector entry for the boundary recorder.
+- (ArcAppURLLoadSnapshot)appURLLoadSnapshot __attribute__((objc_direct));
 @end
 @implementation ArcURLLoadConfiguration
+- (ArcAppURLLoadSnapshot)appURLLoadSnapshot {
+  ArcAppURLLoadSnapshot snapshot;
+  GURL url = ArcGURL(_url);
+  // The public URL getter returns nil for invalid GURLs.
+  snapshot.url = url.is_valid() ? std::move(url) : GURL();
+  snapshot.method = _method;
+  snapshot.headers = _headerValues;
+  snapshot.cache_policy = _cachePolicy;
+  snapshot.follow_redirects = _followRedirects;
+  const NSUInteger payload_length = _payloadData.length;
+  if (payload_length > 0) {
+    snapshot.payload_data.assign(static_cast<const char*>(_payloadData.bytes),
+                                 payload_length);
+  }
+  snapshot.payload_content_type = ArcUTF8(_payloadContentType);
+  // Match the canonical URL exposed by payloadFileURL before decoding its path.
+  NSURL* file_url = ArcNSURL(ArcGURL(_payloadFileURL));
+  if (file_url.isFileURL) {
+    snapshot.payload_file = base::FilePath(ArcUTF8(file_url.path));
+  }
+  snapshot.timeout = _timeout;
+  snapshot.block_local_request = _blockLocalRequest;
+  snapshot.stream_response_data = _streamResponseData;
+  return snapshot;
+}
 - (instancetype)init {
   if ((self = [super init])) {
     _payloadData = [NSData data];
@@ -71,7 +149,10 @@ ARC_EXPORT @interface ArcURLLoadConfiguration : NSObject {
 - (NSURL*)payloadFileURL { return ArcNSURL(ArcGURL(_payloadFileURL)); }
 - (void)setPayloadFileURL:(NSURL*)url { _payloadFileURL = [url copy]; }
 - (NSString*)payload { return [[NSString alloc] initWithData:_payloadData encoding:NSUTF8StringEncoding]; }
-- (void)setPayload:(NSString*)payload { _payloadData = [payload dataUsingEncoding:NSUTF8StringEncoding] ?: [NSData data]; }
+- (void)setPayload:(NSString*)payload {
+  std::string bytes = ArcUTF8(payload);
+  _payloadData = [NSData dataWithBytes:bytes.data() length:bytes.size()];
+}
 - (NSData*)payloadData { return [NSData dataWithBytes:_payloadData.bytes length:_payloadData.length]; }
 - (void)setPayloadData:(NSData*)data { _payloadData = [data copy] ?: [NSData data]; }
 - (NSDictionary*)headers {
@@ -87,8 +168,8 @@ ARC_EXPORT @interface ArcURLLoadConfiguration : NSObject {
     _headerValues[ArcUTF8(name)] = ArcUTF8(headers[name]);
   }
 }
-- (NSString*)payloadContentType { return _payloadContentType; }
-- (void)setPayloadContentType:(NSString*)type { _payloadContentType = [type copy] ?: @""; }
+- (NSString*)payloadContentType { return ArcNSString(ArcUTF8(_payloadContentType)); }
+- (void)setPayloadContentType:(NSString*)type { _payloadContentType = ArcNSString(ArcUTF8(type)); }
 - (NSUInteger)method { return _method; }
 - (void)setMethod:(NSUInteger)method { _method = method <= 3 ? method : 0; }
 - (NSUInteger)cachePolicy { return _cachePolicy; }
@@ -149,19 +230,19 @@ static NSMutableSet<ArcURLLoadCancellationToken*>* PendingLoads() {
 
 ARC_EXPORT @interface ArcBrowserApplication : NSObject
 @end
-static ArcURLLoadCancellationToken* LoadURL(ArcURLLoadConfiguration* config, id<ArcURLLoadDelegate> delegate, network::SharedURLLoaderFactory* factory) {
+static ArcURLLoadCancellationToken* LoadURL(const ArcAppURLLoadSnapshot& snapshot, id<ArcURLLoadDelegate> delegate, network::SharedURLLoaderFactory* factory) {
   std::string identifier = base::Uuid::GenerateRandomV4().AsLowercaseString();
   ArcURLLoadCancellationToken* token = [[ArcURLLoadCancellationToken alloc] initWithToken:&identifier];
   token->_delegate = delegate;
   auto request = std::make_unique<network::ResourceRequest>();
-  request->url = ArcGURL(config.url);
+  request->url = snapshot.url;
   constexpr std::array<const char*, 4> methods = {"GET", "HEAD", "POST", "PUT"};
-  request->method = methods[config.method <= 3 ? config.method : 0];
-  for (NSString* key in config.headers) {
-    request->headers.SetHeader(ArcUTF8(key), ArcUTF8(config.headers[key]));
+  request->method = methods[snapshot.method <= 3 ? snapshot.method : 0];
+  for (const auto& [name, value] : snapshot.headers) {
+    request->headers.SetHeader(name, value);
   }
-  if (config.cachePolicy == 1) request->load_flags = net::LOAD_BYPASS_CACHE;
-  if (!config.followRedirects) request->redirect_mode = network::mojom::RedirectMode::kManual;
+  if (snapshot.cache_policy == 1) request->load_flags = net::LOAD_BYPASS_CACHE;
+  if (!snapshot.follow_redirects) request->redirect_mode = network::mojom::RedirectMode::kManual;
   token->_loader = network::SimpleURLLoader::Create(std::move(request), net::DefineNetworkTrafficAnnotation("arc_application_url_loader", R"(
     semantics {
       sender: "Arc application URL loader"
@@ -178,18 +259,18 @@ static ArcURLLoadCancellationToken* LoadURL(ArcURLLoadConfiguration* config, id<
       policy_exception_justification: "The host application owns request policy."
     })"));
   bool has_upload = false;
-  if ((config.method == 2 || config.method == 3) && config.payloadData.length) {
+  if ((snapshot.method == 2 || snapshot.method == 3) && !snapshot.payload_data.empty()) {
     has_upload = true;
-    token->_loader->AttachStringForUpload(std::string(static_cast<const char*>(config.payloadData.bytes), config.payloadData.length), ArcUTF8(config.payloadContentType));
-  } else if ((config.method == 2 || config.method == 3) && config.payloadFileURL.isFileURL) {
+    token->_loader->AttachStringForUpload(snapshot.payload_data, snapshot.payload_content_type);
+  } else if ((snapshot.method == 2 || snapshot.method == 3) && !snapshot.payload_file.empty()) {
     has_upload = true;
-    token->_loader->AttachFileForUpload(base::FilePath(ArcUTF8(config.payloadFileURL.path)), ArcUTF8(config.payloadContentType));
+    token->_loader->AttachFileForUpload(snapshot.payload_file, snapshot.payload_content_type);
   }
-  if (std::isfinite(config.timeout) && config.timeout > 0) {
-    token->_loader->SetTimeoutDuration(base::Seconds(config.timeout));
+  if (std::isfinite(snapshot.timeout) && snapshot.timeout > 0) {
+    token->_loader->SetTimeoutDuration(base::Seconds(snapshot.timeout));
   }
   token->_loader->SetAllowHttpErrorResults(true);
-  if (config.blockLocalRequest) token->_loader->SetURLLoaderFactoryOptions(network::mojom::kURLLoadOptionBlockLocalRequest);
+  if (snapshot.block_local_request) token->_loader->SetURLLoaderFactoryOptions(network::mojom::kURLLoadOptionBlockLocalRequest);
   // Holding only a weak token in the callbacks avoids a loader -> block -> token cycle.
   __weak ArcURLLoadCancellationToken* weakToken = token;
   if (has_upload) {
@@ -244,7 +325,7 @@ static ArcURLLoadCancellationToken* LoadURL(ArcURLLoadConfiguration* config, id<
     }));
     [PendingLoads() removeObject:current];
   });
-  if (config.streamResponseData) {
+  if (snapshot.stream_response_data) {
     token->_consumer = std::make_unique<ArcURLStreamConsumer>(base::BindRepeating(^(std::string_view data) {
       ArcURLLoadCancellationToken* current = weakToken;
       if (!current || current->_terminal || !current->_loader) return false;
@@ -264,7 +345,10 @@ ArcURLLoadCancellationToken* ArcStartURLLoad(Profile* profile, ArcURLLoadConfigu
   scoped_refptr<network::SharedURLLoaderFactory> factory = profile
       ? profile->GetDefaultStoragePartition()->GetURLLoaderFactoryForBrowserProcess()
       : SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
-  return LoadURL(configuration, delegate, factory.get());
+  const ArcAppURLLoadSnapshot snapshot = configuration
+      ? [configuration appURLLoadSnapshot]
+      : ArcAppURLLoadSnapshot{};
+  return LoadURL(snapshot, delegate, factory.get());
 }
 
 void ArcCancelURLLoad(ArcURLLoadCancellationToken* token) {

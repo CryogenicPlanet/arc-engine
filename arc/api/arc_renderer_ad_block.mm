@@ -245,6 +245,10 @@ base::CallbackListSubscription ObserveAdBlockConfiguration(
   return State().observers.Add(std::move(callback));
 }
 
+bool RendererAdBlockFeatureEnabled() {
+  return State().application && [State().application isFeatureEnabled:11];
+}
+
 void RefreshRendererAdBlockFeature() {
   if (![NSThread isMainThread]) {
     content::GetUIThreadTaskRunner({})->PostTask(
@@ -319,7 +323,11 @@ void SetRendererExcludedDomains(std::vector<std::string> domains) {
   }
   State().configuration.excluded_origins = std::move(origins);
   ++State().configuration.config_version;
-  State().observers.Notify();
+  // Native manager 0x42971f0 caches strings before its feature-11 guard.
+  // Disabled changes become visible only at the next enabled publication.
+  if (State().configuration.enabled) {
+    State().observers.Notify();
+  }
 }
 }  // namespace arc
 

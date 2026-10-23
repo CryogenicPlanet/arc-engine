@@ -1,0 +1,21 @@
+{
+  "scenario": "dialogs-auth-cancel",
+  "backend": "local AppKit controls",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "PID-bound app/helper/CDP ready"
+    },
+    {
+      "step": "connect after app-ready",
+      "outcome": "inconclusive",
+      "detail": "Error: isolated process has foreign or unexpected executable targets; no fixture action allowed"
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Captured browser/helpers exited; close request acknowledged"
+    }
+  ]
+}

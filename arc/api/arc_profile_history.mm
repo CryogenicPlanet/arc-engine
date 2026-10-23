@@ -177,11 +177,13 @@ ARC_EXPORT @interface ArcHistoryDeletion : NSObject
       _begin = info.time_range().begin();
       _end = info.time_range().end();
     }
-    if (info.restrict_urls()) { _restrictUrls = *info.restrict_urls(); }
-    if (!_allHistory) {
-      _rows = info.deleted_rows();
-      _favicons = info.favicon_urls();
-      _visitIds = info.deleted_visit_ids();
+    // Arc retains row/favicon/visit payloads even for an all-time deletion.
+    // Only the restricted-URL set is omitted when its all-history flag is set.
+    _rows = info.deleted_rows();
+    _favicons = info.favicon_urls();
+    _visitIds = info.deleted_visit_ids();
+    if (!_allHistory && info.restrict_urls()) {
+      _restrictUrls = *info.restrict_urls();
     }
   }
   return self;
@@ -401,9 +403,13 @@ ARC_EXPORT @interface ArcBrowserContextHistory : NSObject
     auto state = [self nativeHistoryState];
     GURL url = ArcGURL(value);
     if (!state || !state->service() || !url.is_valid()) { return; }
-    // The recovered bridge uses the extension AddURL path, then supplies title.
-    state->service()->AddPage(url, base::Time::Now(), history::SOURCE_BROWSED);
-    state->service()->SetPageTitle(url, ArcUTF16(title));
+    // The native bridge fills a default HistoryAddPageArgs and submits the
+    // title with the visit, so history observers see the complete row at once.
+    history::HistoryAddPageArgs args;
+    args.url = url;
+    args.time = base::Time::Now();
+    args.title = ArcUTF16(title);
+    state->service()->AddPage(std::move(args));
   });
 }
 - (void)deleteUrlsFromHistory:(NSArray*)values completion:(HistoryMutationCompletion)completion {
