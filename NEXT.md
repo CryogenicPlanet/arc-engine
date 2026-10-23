@@ -2,6 +2,7 @@
 
 Goal: keep ArcMod on current Chromium after Arc shuts down on 2026-12-22, by building our own
 engine that matches Arc's `ArcCore` interface. Updated 2026-10-23.
+Facts, locations, procedures and the step-by-step runbook are in `ENGINE.md`.
 
 ## Now (running)
 

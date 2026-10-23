@@ -5,6 +5,8 @@ so ArcMod keeps getting Chromium security updates after Arc shuts down on 2026-1
 The ArcMod repo (`~/general/arc`) holds the app-layer mod; this folder holds the engine work.
 
 - `NEXT.md`: the living plan and task list. Start here.
+- `ENGINE.md`: knowledge base (engine facts, where everything lives, proven procedures) and the runbook
+  for the steps after the decompile.
 - Mac (builds): `sync-chromium.sh` checks out Chromium 156.0.8078.48 into `chromium/`.
   `build-babysit.sh` builds `out/Base` with preflight checks and recovery. `switch-xcode.sh` points
   builds at a side-by-side Xcode. `memory-log.sh` samples RAM during builds.
