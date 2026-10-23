@@ -1,0 +1,75 @@
+{
+  "result": "PASS_BOUNDED_CONDITIONAL_NIL_OWNER_POLICY",
+  "reviewer": "/root/sessions_recon/full_probe_review",
+  "createdUTC": "2026-10-23T20:14:56.252871+00:00",
+  "reviewedPacket": {
+    "README.md": {
+      "path": "results/sessions/discard-nil-owner-review/README.md",
+      "sha256": "40577fad701bd23b9be1b2948591741b821a6361a8dea3e593093c36f9e08dc4",
+      "size": 5777
+    },
+    "manifest.json": {
+      "path": "results/sessions/discard-nil-owner-review/manifest.json",
+      "sha256": "f327ccb127dea967598c03d167e5533598bc1adca80e550ab891a05b4d27933d",
+      "size": 4353
+    },
+    "original-disassembly.txt": {
+      "path": "results/sessions/discard-nil-owner-review/original-disassembly.txt",
+      "sha256": "7091ccae29585016661d27a9ee988790b5b982a6deaa27e4b233b09bb0227a71",
+      "size": 7950
+    },
+    "mapping.json": {
+      "path": "results/sessions/discard-nil-owner-review/mapping.json",
+      "sha256": "1c40b083c626716f35f911509bb994da37db6b7b3dec39b1c72036c7289eafb9",
+      "size": 683
+    },
+    "extract.py": {
+      "path": "results/sessions/discard-nil-owner-review/extract.py",
+      "sha256": "1607efeadbbb48027d4ffe7bd33ef0bac1e5b92fc7706ecb6ae9599e82a90b7f",
+      "size": 3680
+    }
+  },
+  "actualOriginalBinary": {
+    "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+    "sha256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d",
+    "size": 501736176
+  },
+  "currentSource": {
+    "path": "arc/api/arc_sessions_restore.mm",
+    "sha256": "178091e65d07409a00eeeb86101a7234afd44f00a3597512c2b1be0095118978",
+    "size": 47900
+  },
+  "checks": {
+    "packetInputHashes": "PASS_ALL",
+    "packetOutputHashes": "PASS_ALL",
+    "originalRangeHashes": "PASS_ALL_11_IN_INDEPENDENT_READ_ONLY_REVIEW",
+    "actualChainedImportsAndSelector": "PASS",
+    "bridgeNoOwnerPresenceBranch": "PASS",
+    "selectedDelegateReferenceHeldThroughOwnerLoadAndSend": "PASS",
+    "knownInvokerNativeChecksDoNotReadBridgeWeakObjCOwner": "PASS",
+    "ownedPreciseAdapterAndPendingOrder": "PASS"
+  },
+  "evidence": {
+    "bridge": "0x4446b10..0x4446b74",
+    "selectedDelegate": "objc_loadWeakRetained at0x4446b2c; savedx21 at0x4446b30; ownerload0x4446b38; unconditionalobjc_msgSend0x4446b54; selected reference release0x4446b70",
+    "ownerAndResult": "x2=owner,x3=actualresult at0x4446b4c..50; incoming nativeImpl argumentx1 is not read by bridge",
+    "bridgeFields": "installed receiver+8 weakObjCowner,+0x10 weakObjCdelegate",
+    "knownInvokers": [
+      "0x42c1740..0x42c17e0",
+      "0x42c0840..0x42c0980",
+      "0x42c29d0..0x42c2a2c"
+    ],
+    "owned": "arc/api/arc_sessions_restore.mm:126-133"
+  },
+  "limits": [
+    "Conditional bridge policy only; intact canonical live-registration/surviving-delegate/nil-owner reachability remains unproved.",
+    "Earlier post-PM native binding guard is distinct and remains outside the proposed owner-condition removal.",
+    "No general selector/registration/Root/queue/accounting parity or ultimate ownership theorem.",
+    "The separately prepared private candidate was not inspected by this reviewer in this task.",
+    "No runtime, app launch, probe, compiler, query, build, Git, index, queue, lock, Chirp, credential, or production source action."
+  ],
+  "reviewerWrites": [
+    "fresh-review.md",
+    "fresh-review.json"
+  ]
+}

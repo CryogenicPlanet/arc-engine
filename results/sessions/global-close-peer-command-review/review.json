@@ -1,0 +1,82 @@
+{
+  "review_utc": "2026-10-23T19:09:13.916036+00:00",
+  "status": "HOLD forced-path App/Core command eligibility prerequisite; no activation or runtime claim",
+  "finding": {
+    "severity": "P2 integration prerequisite",
+    "owner": "App + Core/native",
+    "trigger": "Fresh tryToTerminate with nonnull completion during proposed pre-fallback forced/direct browser-destruction publication; inactive app termination request and process/profile admission true",
+    "entry": "arc/api/arc_app_termination.mm:162",
+    "begin": "arc/api/arc_app_termination.mm:31",
+    "check": "arc/api/arc_app_termination.mm:71",
+    "commands": [
+      77,
+      88,
+      64
+    ],
+    "forced_shutdown": "chromium/src/chrome/browser/ui/browser_manager_service.cc:42",
+    "global_read": "chromium/src/chrome/browser/ui/browser_window/internal/global_browser_collection.cc:37",
+    "global_remove": "chromium/src/chrome/browser/ui/browser_window/internal/global_browser_collection.cc:58",
+    "for_each": "chromium/src/chrome/browser/ui/browser_window/internal/browser_collection.cc:33",
+    "fallback": "chromium/src/chrome/browser/ui/browser.cc:358",
+    "did_close": "chromium/src/chrome/browser/ui/unload_controller.cc:1130",
+    "native_dereference": "chromium/src/chrome/browser/ui/unload_controller.cc:508",
+    "normal_scheduled_case": "Already DidClose/global removed, distinct from forced interval",
+    "original_forced_behavior": "UNKNOWN",
+    "runtime_failure": "not executed/proved"
+  },
+  "existing_prerequisites": [
+    "legacy sessions post-created native command revalidation at497\u2192502/514",
+    "factory/request-generation and full-finish result policy separate",
+    "extensions native-facing popup admission/backend reads require owner contract if supported after deassociation"
+  ],
+  "not_justified": [
+    "queued logical restore/native equality cancellation",
+    "blanket weak-factory invalidation",
+    "observer/service/renderer/WC purge",
+    "inferred native helper108/180 mapping",
+    "global collection reorder or arbitrary closing skip"
+  ],
+  "input_sha256": {
+    "arc/api/arc_app_termination.mm": "146348e5c7a273286c8ad237bda7b2553dfc8277fb2e0fb5fefd4f6fbed0aefb",
+    "chromium/src/chrome/browser/ui/browser_manager_service.cc": "492fbdf3867cddffe1c93ce83da91a3b8226635f8293640ebd89f792b2fa5d84",
+    "chromium/src/chrome/browser/ui/browser_window/internal/global_browser_collection.cc": "55550f78e867b1fecfd03ba96fa10bcb0d1118dd41561bcf2babdafcb6ec25ef",
+    "chromium/src/chrome/browser/ui/browser_window/internal/browser_collection.cc": "ba596208fe06c6676131e6027261beecb679cfd9ae619f76b577fa1db430cf0f",
+    "chromium/src/chrome/browser/ui/browser.cc": "b1cb9dda88b6c54b97eb04f7f14d1f18f487edd068159bca2dfe2c19ccdcb37f",
+    "chromium/src/chrome/browser/ui/unload_controller.cc": "0508871a32deca88a711143995436f1fd02613b0c021701b3688310fe6995621",
+    "arc/api/arc_sessions_restore.mm": "178091e65d07409a00eeeb86101a7234afd44f00a3597512c2b1be0095118978",
+    "arc/api/arc_browser.mm": "cf20d597283ad0b817a47ab97021e9d30ce0a6f76b0442a1ec2c8ea68500c79c",
+    "arc/api/arc_extensions_browser.mm": "99496aeb55684aac98f6b83bed1a8505a9e89ac06dbb107bac7fc50ccc2dd728",
+    "arc/browser/extensions_groups.mm": "4779348d2122a9f811f42474de2df1c8a60ad3ec0ea1689c44c6ab3f586812ab",
+    "arc/browser/arc_browser_window.mm": "8615c32234a29498c4b73ff50bbee78cdf87cb541424308bcaa109861795889a",
+    "arc/api/arc_omnibox_controller.mm": "bf9861885a119737b78cc69ed6c7db166fa78b7a927e9ca412d6bd634af208e8",
+    "arc/api/arc_profile_cookies.mm": "6c40b6a118f4f7c3a27c39e9da80b542bcb2f6d336af8ff689c9b05c2402b863",
+    "arc/api/arc_webextras_ui.mm": "c81979094d55cdc9ba0f2df57a2ec7a3cbfe5af04ac5fdece255ec54287e95b4",
+    "results/sessions/proposals/global-close-physical-phase-v2-core-endpoint/after/arc/api/arc_browser.mm": "0ff8978a630a02d7aff8b62bcabdf4b08e405f43c392c5864757b3276153a510",
+    "logs/wp/core.browser-deassociation-plan-v2/README.md": "fe89bfc9701bcf6747c40845c2a536acd4b8ecc824a149aafd4b08d1aa8c2e43",
+    "results/sessions/browser-deassociation-cached-binding-audit/README.md": "8566c10ce5c1d16ca5026719276d0b486ba9234460100b40210bc221da1ee546",
+    "results/sessions/restore-receiver-deassociation-review/README.md": "53b3264cc5df2df56df2dea41710771b22711c0e95d1af73e6e9f9556d78dda1",
+    "results/sessions/proposals/global-close-physical-phase-v2-core-endpoint/README.md": "4505d52ef3cb7923672961697b44b3c1049a8e3ab57d6a82f5506016bf72c355",
+    "results/sessions/proposals/global-close-physical-phase-v2-core-endpoint/manifest.json": "b81d37813174fdbe8b9b3c5d88a276a7ac8ca72c47db3161359165dc50818d05",
+    "results/sessions/proposals/global-close-physical-phase-v2-core-endpoint/inputs/core-endpoint.patch": "796c6944b2461d4fd30bbec055c4c25391535206e8a38953bba22bedd251592a",
+    "arc/browser/extensions_bridge.h": "b541fadc210b57d9fdfc18205181904ce4344051182ac32fad5fd89811fba39f",
+    "arc/api/arc_web_contents.mm": "b210c05d02133d40923b9dbad5fdcd4c0fa9fd187b702fe21291e93246b5758a",
+    "arc/api/arc_renderer_process.mm": "80f5776ed3ca7dbef63edc82b9d3615e8c99e852a148cd4547562e036a452363",
+    "arc/api/arc_renderer_web_contents.mm": "7ce805a9a4c7b0caf3f4efbaa4c6e845c4d7c3ccf443b9113761ec92fe8a62f8",
+    "arc/api/arc_renderer_effects.mm": "ff3e544a732c75e29a0dafbf61076bd02cfb5c70d8dfba5613193eeca83956cc",
+    "arc/api/arc_renderer_extraction.mm": "4ce047a21b04faa3d380e42fc877688d2ab6fce24c487317ddf954ec525124cc",
+    "arc/browser/core_render_state.mm": "2bb4d28035ac9fd5f8d5ae12ae30411764742df440292be137e0dd35977d523f",
+    "arc/api/arc_app_url.mm": "949d1bf1ae4a3af402f3bb308e2cfff62213fc0e6a925b01f8b7f8f416d93613",
+    "arc/api/arc_app_services.mm": "34701c972e4b4ae811e66627afaaec338d28fcb43ae36c421edd58ef6375c2b6",
+    "chromium/src/chrome/browser/ui/browser_window/internal/global_browser_collection_platform_delegate_non_android.cc": "e6337e9b401fbe45909e8ef0a68ce1f361bca3b9280d6770e28f7eea1cb803a8"
+  },
+  "outputs_sha256": {
+    "README.md": "eaafb3bbd919b247eb0a1eb0249d4f4ea97421c7317800d7be65f88332c432ff",
+    "source-excerpts.txt": "5b5bf30a5867e7c9794c7ca6793d0e7168ce4d2eff22cca543c652da63552849"
+  },
+  "read_only_children": [
+    "/root/sessions_review/extension_commands",
+    "/root/sessions_review/renderer_commands"
+  ],
+  "scope": "Evidence writes only under this directory; no execution/source edits/Git/index/queue/Chirp.",
+  "final_input_hash_recheck_all_match": true
+}

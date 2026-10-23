@@ -1,0 +1,60 @@
+{
+  "status": "HOLD_PRIVATE_COMPOSITION_NOT_ADOPTION_CANDIDATE",
+  "scope": "exact five-source composition only; no production/compiler/query/build/app/Git/index/queue/Chirp actions",
+  "inputs": {
+    "logs/wp/core.browser-deassociation-endpoint/README.md": "952da46f67bf563a442ec30d80b7c007af9ac423c2e4cdc36d0eac398ec20584",
+    "logs/wp/core.browser-deassociation-endpoint/endpoint.patch": "796c6944b2461d4fd30bbec055c4c25391535206e8a38953bba22bedd251592a",
+    "logs/wp/core.browser-deassociation-endpoint/manifest.json": "9f725772926787e5ae1520ff2568c3bd4afa4e1fddb8990d2cdd5b94e58469bd",
+    "logs/wp/core.browser-deassociation-endpoint-review/REPORT.md": "f12b8b7cb5c9f606a059e786b3223579fb19ee2520b3953146b99a48f9cb7520",
+    "logs/wp/core.browser-deassociation-plan-v2/README.md": "fe89bfc9701bcf6747c40845c2a536acd4b8ecc824a149aafd4b08d1aa8c2e43",
+    "results/sessions/proposals/global-close-physical-phase/candidate-native.patch": "27678469f4437ce6a5639ea08e4e9b01a342435a4e5e7bd5aa4edfc014b688f2",
+    "results/sessions/proposals/global-close-physical-phase/candidate-owned.patch": "ea4ad9088f0e3d7581f76c387b17e31d074f5cd009d98e747d2c888c374c4eca",
+    "results/sessions/proposals/global-close-physical-phase/README.md": "900ea682adfe249fadc30988dad45ccf9a63c15e4dd480e385131416dc1325fc",
+    "results/sessions/proposals/global-close-physical-phase/seal.json": "c78e4ed2508577ab563bb3c29cd28e9b0077c63313c33b01c49062fb29f06aee",
+    "arc/api/arc_browser_context.mm": "fd6b15cb37974d1e26251d98e204d9aa878838f5b241c23822d9d5750ce353aa",
+    "results/sessions/browser-deassociation-cached-binding-audit/README.md": "8566c10ce5c1d16ca5026719276d0b486ba9234460100b40210bc221da1ee546",
+    "results/sessions/restore-receiver-deassociation-review/README.md": "53b3264cc5df2df56df2dea41710771b22711c0e95d1af73e6e9f9556d78dda1",
+    "results/sessions/full-finish-deassociation-review/README.md": "a56ec55ae5c9b2f3ab1a1aaca6dca2e61c1258e1a59a0aed61c2404ebcb4ba00"
+  },
+  "five_files": {
+    "arc/api/arc_browser.mm": {
+      "base": "cf20d597283ad0b817a47ab97021e9d30ce0a6f76b0442a1ec2c8ea68500c79c",
+      "target": "0ff8978a630a02d7aff8b62bcabdf4b08e405f43c392c5864757b3276153a510"
+    },
+    "arc/api/arc_internal.h": {
+      "base": "7a7e50cf663b5f6a63fad3cfc88bb329998368dead5663f7b590cb24bc0f84b9",
+      "target": "11d8448af7c119a08cdcb384fed6db56ad8303bfaeac4708c611efb4894ac39d"
+    },
+    "arc/api/arc_sessions_restore.mm": {
+      "base": "178091e65d07409a00eeeb86101a7234afd44f00a3597512c2b1be0095118978",
+      "target": "35b078e469f4ad5c4e28cf482fb62b67a98c086d3318ef9e285c7086ede4b4df"
+    },
+    "chromium/src/chrome/browser/arcmod/arcmod_hooks.h": {
+      "base": "2e38023bb82b5abe43fd20fd8d592152e8d5c9dbbc2e4a3444772df4acf8427d",
+      "target": "9a3774df703bfa4f242099e7cfa3351518ba9bd738302e0adbb94b6f7bdce23e"
+    },
+    "chromium/src/chrome/browser/ui/browser.cc": {
+      "base": "b1cb9dda88b6c54b97eb04f7f14d1f18f487edd068159bca2dfe2c19ccdcb37f",
+      "target": "a08f5bc400e637f2107cbbfb61b55a208632d9d1d4c75755193344f687102cee"
+    }
+  },
+  "patches": {
+    "combined-five-file.patch": "62acf942d47c327d5b562c081fdae1e8feae16b7b737b0bdaf1ff55f5c24d9c7",
+    "sessions-pipeline-refinement.patch": "3357d871059ed9dc965c5200b89401d98044e99fc5eeaef809f45fe0f0177b22"
+  },
+  "core_patch_preserved_exact": "796c6944b2461d4fd30bbec055c4c25391535206e8a38953bba22bedd251592a",
+  "native_patch_preserved_exact": "27678469f4437ce6a5639ea08e4e9b01a342435a4e5e7bd5aa4edfc014b688f2",
+  "owned_v1_patch_preserved_exact": "ea4ad9088f0e3d7581f76c387b17e31d074f5cd009d98e747d2c888c374c4eca",
+  "guards": {
+    "queue_and_source_scope_unchanged": true,
+    "all_restore_request_factory_and_finish_policy_unchanged": true,
+    "discard_unchanged": true,
+    "public_legacy_restore_unchanged": true,
+    "typed_transport_v1_unchanged": true,
+    "core_patch_outputs_exact": true,
+    "native_hook_and_foreign_header_outputs_exact_v1": true,
+    "no_native_profile_or_facade_query_after_prepare": true,
+    "state_completion_one_explicit_run_after_publication": true,
+    "production_five_preimages_unchanged": true
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "status": "PROTOCOL_AND_STATIC_WITNESS_TARGETS_IDENTIFIED_DYNAMIC_RECEIVER_UNRESOLVED",
+  "protocol": "ADK.BrowserDelegate",
+  "protocol_descriptor": "0x103c73d5c",
+  "callsite": "10052e168 witness+8 in helper10052dfe0",
+  "requirement": "first callable BrowserDelegate requirement at witness table+8",
+  "exact_swift_requirement_spelling": "UNRESOLVED_STRIPPED",
+  "semantic_role": "ordinary new-web-content notification; ADK concrete witness builds ADKBrowserAction.onNewWebContentCreated",
+  "dynamic_receiver": "UNRESOLVED_NO_CONSTRUCTOR_OR_ASSIGNMENT_BINDING_PROOF",
+  "positive_static_targets": [
+    {
+      "class": "ADK.ADKBrowserDelegate",
+      "conformance": "0x10363b388",
+      "table": "0x104187fd8",
+      "slot8_target": "0x1004eba88",
+      "saved_body": "0x1004.c:184429",
+      "scope": "constructs tag0 action carrying param3/4 and selection flag; forwards100586f60; persistent receiver storage not proved by this body"
+    },
+    {
+      "class": "ADK.SessionRestorationBrowserDelegate",
+      "conformance": "0x103642ac8",
+      "table": "0x10418f348",
+      "slot8_target": "0x100555d48",
+      "thunk_target": "0x10055a3bc",
+      "saved_body": "0x1005.c:74420",
+      "scope": "conditional path writes incoming pairparam3/4 into dictionary-backed array in unreceivedRestoredContents; exact concrete instance registration at inspected callback unproved"
+    }
+  ],
+  "conformance_scan_exhaustive": false,
+  "persistent_storage_for_dynamic_actual_callback_proven": false,
+  "retains_alone_used_as_storage_proof": false,
+  "source_or_runtime_changes": false
+}

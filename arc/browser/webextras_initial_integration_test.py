@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Private temporary-root safety tests; no real lock, build, app or profile."""
 import copy
+import ast
 import difflib
+import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
+import struct
 import subprocess
 import tempfile
 import types
@@ -15,6 +18,26 @@ from unittest.mock import patch
 MODULE_PATH = Path(__file__).with_name('webextras_initial_integration.py')
 M = types.ModuleType('integration'); M.__file__ = str(MODULE_PATH)
 exec(compile(MODULE_PATH.read_bytes(), str(MODULE_PATH), 'exec'), M.__dict__)
+
+
+def index_bytes(entries=None, version=2, stat_seed=0, extensions=()):
+    """Disposable-format fixtures only, not a second index parser."""
+    entries = entries if entries is not None else [dict(path=b'native.cc',mode=0o100644,oid=b'\x11'*20)]
+    result=struct.pack('>4sII',b'DIRC',version,len(entries)); previous=b''
+    for row in entries:
+        name=row['path']; stage=row.get('stage',0); extended=(0x2000 if row.get('ita') else 0)|(0x4000 if row.get('skip') else 0)
+        flags=min(len(name),0xfff)|(stage<<12)|(0x8000 if row.get('valid') else 0)|(0x4000 if extended else 0)
+        data=struct.pack('>10I',stat_seed,1,stat_seed,2,3,4,row['mode'],5,6,7)+row['oid']+struct.pack('>H',flags)
+        if extended: data+=struct.pack('>H',extended)
+        if version==4:
+            # All fixture prior names are short, so complete-prefix removal is one byte.
+            assert len(previous)<128
+            data+=bytes([len(previous)])+name+b'\0'
+        else:
+            data+=name+b'\0';data+=b'\0'*((-len(data))%8)
+        result+=data;previous=name
+    for kind,payload in extensions:result+=kind+struct.pack('>I',len(payload))+payload
+    return result+hashlib.sha1(result).digest()
 
 
 class Held(Exception):
@@ -71,6 +94,7 @@ class Fixture(unittest.TestCase):
         self.old_node = M.NODE; M.NODE = self.root / 'private-node'
         self.old_python = M.PYTHON; M.PYTHON = self.root / 'private-python'
         self.old_policy = M.RESOURCE_POLICY; M.RESOURCE_POLICY = {}
+        self.old_logical_policy = M.LOGICAL_INDEX_POLICY; M.LOGICAL_INDEX_POLICY = {}
         self.head = patch.object(M.subprocess, 'check_output', side_effect=lambda argv, **_: (
             '.git/index\n' if '--git-path' in argv else 'private-head\n')); self.head.start()
         self.home = patch.object(M.Path, 'home', return_value=Path(self.temporary.name) / 'home'); self.home.start()
@@ -121,6 +145,9 @@ class Fixture(unittest.TestCase):
             if path not in self.config['pins']:
                 self.put(path, b'private policy fixture\n'); self.config['pins'][path] = M.sha(self.root / path)
         M.RESOURCE_POLICY = {n: self.config['pins'][n] for n in self.old_policy}
+        for path in self.old_logical_policy:
+            self.put(path,b'private attributed policy fixture\n');self.config['pins'][path]=M.sha(self.root/path)
+        M.LOGICAL_INDEX_POLICY={n:self.config['pins'][n] for n in self.old_logical_policy}
         self.config['pins'][str(M.NODE)] = self.config['pins'].pop('private-node')
         self.config['pins'][str(M.PYTHON)] = self.config['pins'].pop('private-python')
         runner = 'arc/browser/webextras_scenario_current_run.py'
@@ -134,9 +161,9 @@ class Fixture(unittest.TestCase):
         self.config['resourceChecks'] = {role: {'argv': [str(M.PYTHON), '-B', M.RESOURCE_CHECKER,
             '--expect-host-gate', mode, '--output', '{resource_output}'], 'cwd': '.', 'expectHostGate': mode}
             for role, mode in [('candidate', 'present'), ('recovery', 'absent')]}
-        self.put('chromium/src/.git/index', b'PRIVATE INDEX\n')
-        self.config['gitRepos'] = [{'path': 'chromium/src', 'index': 'chromium/src/.git/index',
-            'sha256': M.sha(self.root / 'chromium/src/.git/index'), 'head': 'private-head'}]
+        self.initial_index=index_bytes()
+        self.put('chromium/src/.git/index', self.initial_index)
+        self.config['gitRepos'] = [self.repo_contract('chromium/src','chromium/src/.git/index','private-head')]
         for name, mode in M.REGEN_TOOLS.items():
             self.put(name, b'private already-adopted generator fixture\n'); (self.root/name).chmod(mode)
             self.config['pins'][name] = M.sha(self.root/name)
@@ -160,6 +187,12 @@ class Fixture(unittest.TestCase):
     def put(self, name, data):
         path = self.root / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(data)
 
+    def repo_contract(self,path,index,head):
+        snapshot='private-index-snapshots/'+path.replace('/','_').replace('.','root')+'.index'
+        self.put(snapshot,(self.root/index).read_bytes());digest=M.sha(self.root/snapshot);self.config['pins'][snapshot]=digest
+        return dict(path=path,index=index,sha256=digest,head=head,snapshot=snapshot,
+                    logicalSeal=list(M.logical_index_seal((self.root/snapshot).read_bytes())))
+
     def tx(self):
         M.write(self.output / 'config.json', self.config)
         tx = PrivateTransaction(copy.deepcopy(self.config), self.output, self.backend)
@@ -168,7 +201,8 @@ class Fixture(unittest.TestCase):
 
     def tearDown(self):
         self.head.stop(); self.home.stop(); M.ROOT = self.old_root; M.NODE = self.old_node; M.PYTHON = self.old_python
-        M.RESOURCE_POLICY = self.old_policy; M.CANCELLED = False; self.temporary.cleanup()
+        M.RESOURCE_POLICY = self.old_policy; M.LOGICAL_INDEX_POLICY=self.old_logical_policy
+        M.CANCELLED = False; self.temporary.cleanup()
 
     def scenario_fixture(self, scenario='launch-slice', known_failure=False):
         output = self.root / f'results/webextras/{scenario}-current-run2'; output.mkdir(parents=True)
@@ -249,7 +283,7 @@ class Fixture(unittest.TestCase):
         self.assertFalse((self.root / 'patches/0010-webextras.patch').exists())
         self.assertEqual(tx.seen[-1], ('launch-slice', 7, True))
         self.assertEqual(json.loads((self.output / 'completion.json').read_text())['status'], 'ROLLED_BACK')
-        self.assertEqual((self.root/'chromium/src/.git/index').read_bytes(), b'PRIVATE INDEX\n')
+        self.assertEqual((self.root/'chromium/src/.git/index').read_bytes(), self.initial_index)
         for name, mode in M.REGEN_TOOLS.items():
             self.assertEqual(M.image_state(self.root/name), (self.config['pins'][name], mode))
         self.assertEqual(M.sha(self.root / 'arc/browser/webextras_scenario_current_run.py'), self.config['observationTool']['after'])
@@ -818,7 +852,8 @@ class Fixture(unittest.TestCase):
     def test_early_refusal_rejects_attempted_or_unknown_output_evidence(self):
         names = ['publication.json', 'observation-tool.json', '001-any.inputs.json', '001-any.child.json',
                  '001-any.log', 'observation-stage/anything', 'observation-tool.before',
-                 'directory-identities.json', 'before/anything', 'modes/anything', 'unknown.json']
+                 'directory-identities.json', 'before/anything', 'modes/anything', 'unknown.json',
+                 'regeneration-lease-0001.json', 'regeneration-failure-latch.json']
         self.refusal_negative_cases([(name, lambda f, g, c, p, n=name: f.put('evidence/' + n, b'{}')) for name in names])
 
     def test_early_refusal_rejects_config_nonce_worker_completion_and_failure_ambiguity(self):
@@ -976,8 +1011,8 @@ class Fixture(unittest.TestCase):
         self.assertEqual({str(p.relative_to(self.root)):p.read_bytes() for p in (self.root/'patches').glob('*.patch')},old_outputs)
         self.config['patchOutputs']={name:dict(before=__import__('hashlib').sha256(old_outputs[name]).hexdigest() if name in old_outputs else None,
             after=__import__('hashlib').sha256(data).hexdigest()) for name,data in after_outputs.items()}
-        self.config['gitRepos']=[dict(path=str(repo.relative_to(self.root)),index=str((repo/'.git/index').relative_to(self.root)),
-            sha256=M.sha(repo/'.git/index'),head=git(repo,'rev-parse','HEAD')) for repo in (source,nested)]
+        self.config['gitRepos']=[self.repo_contract(str(repo.relative_to(self.root)),str((repo/'.git/index').relative_to(self.root)),
+            git(repo,'rev-parse','HEAD')) for repo in (source,nested)]
         self.head.stop()  # All remaining Git discovery stays inside these real PRIVATE repos.
         original=self.backend.command
         def command(argv,label,cwd=None,env=None):
@@ -1003,6 +1038,266 @@ class Fixture(unittest.TestCase):
                 candidateAndRecoveryRealHelper=True,originalOutputsRestored=True,
                 expectedBefore={n:__import__('hashlib').sha256(v).hexdigest() for n,v in old_outputs.items()},
                 expectedCandidate={n:__import__('hashlib').sha256(v).hexdigest() for n,v in after_outputs.items()},commands=commands))
+
+    def tool_alias_target(self, tool):
+        (self.root/'chromium/src/arc').symlink_to(self.root/'arc', target_is_directory=True)
+        name='chromium/src/arc/tools/'+Path(tool).name
+        before=(self.root/tool).read_bytes(); after=before+b'alias must never publish\n'
+        blob='private-images/alias-'+Path(tool).name; self.put(blob,after)
+        self.config['pins'][blob]=M.sha(self.root/blob)
+        mode=(self.root/tool).stat().st_mode&0o777
+        self.config['targets'][name]=dict(before=M.sha(self.root/tool),after=M.sha(self.root/blob),blob=blob,beforeMode=mode,afterMode=mode)
+        proposal='proposals/alias-disguised.patch'
+        self.put(proposal,''.join(difflib.unified_diff(before.decode().splitlines(True),after.decode().splitlines(True),
+            fromfile='a/'+Path(tool).name,tofile='b/'+Path(tool).name)).encode())
+        self.config['pins'][proposal]=M.sha(self.root/proposal)
+        self.config['patches'].append(dict(path=proposal,sha256=M.sha(self.root/proposal),cwd='chromium/src/arc/tools'))
+        self.put('private-images/MANIFEST',(self.root/'private-images/MANIFEST').read_bytes()+
+                 ('0010-webextras.patch arc/tools/'+Path(tool).name+'\n').encode())
+        self.config['manifest']['after']=M.sha(self.root/'private-images/MANIFEST')
+        self.config['pins']['private-images/MANIFEST']=self.config['manifest']['after']
+
+    def test_actual_prepare_publish_rejects_wrapper_and_helper_symlink_aliases(self):
+        for tool in M.REGEN_TOOLS:
+            with self.subTest(tool=tool):
+                fixture=Fixture('runTest'); fixture.setUp()
+                try:
+                    before=M.file_identity(fixture.root/tool); fixture.tool_alias_target(tool)
+                    try:
+                        with self.assertRaisesRegex(RuntimeError,'symlink|aliases'):
+                            tx=fixture.tx(); tx.prepare(); tx.publish()
+                    finally:
+                        self.assertEqual(M.file_identity(fixture.root/tool),before)
+                    self.assertEqual(fixture.backend.commands,[])
+                    self.assertFalse((fixture.output/'publication.json').exists())
+                finally:
+                    fixture.tearDown()
+
+    def test_mixed_engine_patch_metadata_rejects_aliased_tool_without_target(self):
+        (self.root/'chromium/src/arc').symlink_to(self.root/'arc',target_is_directory=True)
+        for tool in M.REGEN_TOOLS:
+            name='chromium/src/arc/tools/'+Path(tool).name
+            text=''.join(difflib.unified_diff(['old\n'],['new\n'],fromfile='a/arc/api/test.mm',tofile='b/arc/api/test.mm'))
+            text+=''.join(difflib.unified_diff(['old\n'],['new\n'],fromfile='a/'+name,tofile='b/'+name))
+            path='proposals/mixed-innocent.patch';self.put(path,text.encode())
+            config=copy.deepcopy(self.config);digest=M.sha(self.root/path);config['pins'][path]=digest
+            config['patches'].append(dict(path=path,sha256=digest,cwd='.'))
+            with self.assertRaisesRegex(RuntimeError,'symlink|aliases'):M.validate(config,self.root)
+            rename=('diff --git a/'+name+' b/arc/browser/renamed.sh\nsimilarity index 100%\nrename from '+name+
+                    '\nrename to arc/browser/renamed.sh\n').encode()
+            self.put(path,rename);digest=M.sha(self.root/path);config['pins'][path]=digest;config['patches'][-1]['sha256']=digest
+            with self.assertRaisesRegex(RuntimeError,'rename/copy'):M.validate(config,self.root)
+
+    def test_missing_and_normalized_mutable_paths_cannot_alias_baseline(self):
+        (self.root/'chromium/src/arc').symlink_to(self.root/'arc',target_is_directory=True)
+        for name in ['chromium/src/arc/browser/never-created.h','arc//tools/regen-patches.sh',
+                     'arc/./tools/regen-chromium-patches.py']:
+            with self.assertRaisesRegex(RuntimeError,'symlink|aliases'):M.engine_path(self.root,name)
+        self.assertFalse((self.root/'arc/browser/never-created.h').exists())
+        self.assertEqual(M.engine_path(self.root,'arc/browser/future-parent/new.h'),self.root/'arc/browser/future-parent/new.h')
+
+    def test_logical_parser_is_exact_attributed_copy_and_optimized_module_refuses(self):
+        source=MODULE_PATH.read_bytes();tree=ast.parse(source)
+        function=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='logical_index_seal')
+        body=b''.join(source.splitlines(True)[function.lineno-1:function.end_lineno])
+        self.assertEqual(hashlib.sha256(body).hexdigest(),M.LOGICAL_INDEX_FUNCTION_SHA256)
+        module=types.ModuleType('optimized_must_refuse');module.__file__=str(MODULE_PATH)
+        with patch.object(M.subprocess,'Popen') as spawn:
+            with self.assertRaisesRegex(RuntimeError,'optimized Python'):exec(compile(source,str(MODULE_PATH),'exec',optimize=1),module.__dict__)
+        spawn.assert_not_called()
+
+    def test_logical_stat_cache_and_v2_v4_boundaries_keep_original_anchor(self):
+        tx=self.tx();original=copy.deepcopy(tx.original_indexes)
+        for version,seed,extensions in [(3,10,()),(4,20,((b'TREE',b'opaque'),)),(2,30,((b'UNTR',b'opaque'),))]:
+            self.put('chromium/src/.git/index',index_bytes(version=version,stat_seed=seed,extensions=extensions))
+            tx.file_state('before')
+            self.assertEqual(tx.original_indexes,original)
+            self.assertEqual(M.sha(self.root/original[0]['snapshot']),original[0]['sha256'])
+        tx.prepare();tx.publish();tx.regenerate();tx.file_state('after')
+        ledger=json.loads(next(self.output.glob('regeneration-lease-*.json')).read_text())
+        self.assertEqual(ledger['originals'],original);self.assertNotEqual(ledger['before']['chromium/src']['identity']['sha256'],original[0]['sha256'])
+        self.put('chromium/src/.git/index',index_bytes([dict(path=b'native.cc',mode=0o100644,oid=b'\x77'*20)],version=3,stat_seed=50))
+        with self.assertRaisesRegex(RuntimeError,'original full logical'):tx.index_boundary()
+        self.assertEqual(tx.original_indexes,original)
+        self.put('chromium/src/.git/index',index_bytes(version=4,stat_seed=60))
+        tx.config['gitRepos'][0]['logicalSeal']=[0,'0'*64]
+        with self.assertRaisesRegex(RuntimeError,'cannot be rebound'):tx.index_boundary()
+
+    def test_original_snapshot_provenance_and_policy_cannot_be_rebound(self):
+        for mutate in [lambda c:c['gitRepos'][0].pop('snapshot'),lambda c:c['gitRepos'][0].update(logicalSeal=[0,'0'*64]),
+                       lambda c:c['gitRepos'][0].update(sha256='0'*64),lambda c:c['pins'].pop(next(iter(M.LOGICAL_INDEX_POLICY))),
+                       lambda c:c['gitRepos'][0].update(snapshot=c['gitRepos'][0]['index'])]:
+            config=copy.deepcopy(self.config);mutate(config)
+            with self.assertRaises((RuntimeError,AssertionError)):M.validate(config,self.root)
+        tx=self.tx();self.put(self.config['gitRepos'][0]['snapshot'],index_bytes(stat_seed=3))
+        with self.assertRaisesRegex(RuntimeError,'immutable input drift'):tx.pin_check()
+
+    def test_all_index_semantic_fields_reject_before_git_without_restoring_foreign_staging(self):
+        tx=self.tx();base=dict(path=b'native.cc',mode=0o100644,oid=b'\x11'*20)
+        variants=[('path',dict(path=b'changed.cc')),('mode',dict(mode=0o100755)),('oid',dict(oid=b'\x22'*20)),
+                  ('stage',dict(stage=2)),('assume-valid',dict(valid=True)),('ITA',dict(ita=True)),('skip',dict(skip=True)),
+                  ('symlink',dict(mode=0o120000)),('gitlink',dict(mode=0o160000))]
+        images=[(name,index_bytes([{**base,**change}],version=3)) for name,change in variants]
+        images += [('empty',index_bytes([])),('added-entry',index_bytes([base,dict(path=b'z.cc',mode=0o100644,oid=b'\x33'*20)]))]
+        for name,data in images:
+            with self.subTest(name=name):
+                self.put('chromium/src/.git/index',data)
+                with patch.object(M.subprocess,'check_output') as git:
+                    with self.assertRaisesRegex(RuntimeError,'index drift'):tx.index_boundary()
+                git.assert_not_called();self.assertEqual((self.root/'chromium/src/.git/index').read_bytes(),data)
+
+    def test_unsupported_index_formats_frames_and_checksum_refuse_before_git(self):
+        def edit(data,offset,replacement):
+            raw=bytearray(data[:-20]);raw[offset:offset+len(replacement)]=replacement;return bytes(raw)+hashlib.sha1(raw).digest()
+        base=index_bytes();extended=index_bytes([dict(path=b'native.cc',mode=0o100644,oid=b'\x11'*20,ita=True)],version=3)
+        row=dict(path=b'native.cc',mode=0o100644,oid=b'\x11'*20)
+        bad=[b'not an index',base[:-1],base[:-1]+bytes([base[-1]^1]),edit(base,0,b'NOPE'),edit(base,4,struct.pack('>I',5)),
+             edit(base,8,struct.pack('>I',1000)),index_bytes(extensions=((b'link',b''),)),index_bytes(extensions=((b'sdir',b''),)),
+             index_bytes(extensions=((b'ZZZZ',b''),)),index_bytes(extensions=((b'TREE',b''),(b'TREE',b''))),
+             index_bytes([dict(path=b'x',mode=0o040000,oid=b'\x11'*20)]),edit(extended,74,b'\x80\x00'),
+             edit(index_bytes(version=4),74,b'\x01'),edit(index_bytes(extensions=((b'TREE',b''),)),88,struct.pack('>I',999999)),
+             index_bytes([row,row]),index_bytes([{**row,'path':b'z.cc'},row]),index_bytes([{**row,'path':b'../escape'}]),
+             edit(index_bytes([{**row,'path':b'xy'}]),77,b'\x01'),index_bytes([{**row,'ita':True}],version=2)]
+        tx=self.tx()
+        for data in bad:
+            with self.subTest(rawSHA=hashlib.sha256(data).hexdigest()):
+                self.put('chromium/src/.git/index',data)
+                with patch.object(M.subprocess,'check_output') as git:
+                    with self.assertRaisesRegex(RuntimeError,'index drift'):tx.index_boundary()
+                git.assert_not_called()
+        self.put('chromium/src/.git/index',base);self.put('chromium/src/.git/sharedindex.stale',b'untouched')
+        with patch.object(M.subprocess,'check_output') as git:
+            with self.assertRaisesRegex(RuntimeError,'shared index'):tx.index_boundary()
+        git.assert_not_called();self.assertEqual((self.root/'chromium/src/.git/sharedindex.stale').read_bytes(),b'untouched')
+
+    def test_root_outer_nested_original_seals_and_heads_are_independent(self):
+        repos=[('.', '.git/index',b'root.txt'),('chromium/src','chromium/src/.git/index',b'native.cc'),
+               ('chromium/src/third_party/devtools-frontend/src','chromium/src/third_party/devtools-frontend/src/.git/index',b'frontend.ts')]
+        contracts=[]
+        for path,index,name in repos:
+            self.put(index,index_bytes([dict(path=name,mode=0o100644,oid=b'\x11'*20)]))
+            contracts.append(self.repo_contract(path,index,'private-head'))
+        self.config['gitRepos']=contracts;tx=self.tx();tx.index_boundary()
+        for path,index,name in repos:
+            data=index_bytes([dict(path=name,mode=0o100644,oid=b'\x22'*20)])
+            self.put(index,data)
+            with self.assertRaisesRegex(RuntimeError,'logical index'):tx.index_boundary()
+            self.put(index,(self.root/next(r['snapshot'] for r in contracts if r['path']==path)).read_bytes())
+            def head(argv,**kwargs):return '.git/index\n' if '--git-path' in argv else ('changed-head\n' if Path(kwargs['cwd'])==self.root/path else 'private-head\n')
+            with patch.object(M.subprocess,'check_output',side_effect=head):
+                with self.assertRaisesRegex(RuntimeError,'HEAD drift'):tx.index_boundary()
+        self.assertEqual(tx.original_indexes,contracts)
+
+    def inject_regeneration_drift(self,tx,kind='stat',outcome=0):
+        original=self.backend.command
+        def command(argv,*args,**kwargs):
+            code=original(argv,*args,**kwargs)
+            if argv==['./arc/tools/regen-patches.sh']:
+                path=self.root/'chromium/src/.git/index'
+                if kind=='stat':path.write_bytes(index_bytes(stat_seed=9))
+                elif kind=='replace':
+                    temporary=path.with_suffix('.replacement');temporary.write_bytes(path.read_bytes());temporary.replace(path)
+                elif kind=='chmod':path.chmod(0o755)
+                elif kind=='restore-bytes':path.write_bytes(index_bytes(stat_seed=9));path.write_bytes(self.initial_index)
+                elif kind=='unsupported':path.write_bytes(b'unsupported changed index')
+                if outcome=='raise':raise RuntimeError('private helper exception after index change')
+                return outcome
+            return code
+        self.backend.command=command
+
+    def test_regeneration_raw_or_physical_drift_latches_for_success_failure_and_exception(self):
+        for kind,outcome in [('stat',0),('stat',1),('stat','raise'),('replace',0),('chmod',0),('restore-bytes',1),('unsupported','raise')]:
+            with self.subTest(kind=kind,outcome=outcome):
+                f=Fixture('runTest');f.setUp()
+                try:
+                    tx=f.tx();tx.prepare();tx.publish();f.inject_regeneration_drift(tx,kind,outcome)
+                    with self.assertRaises(RuntimeError):tx.regenerate()
+                    latch=f.output/'regeneration-failure-latch.json';self.assertTrue(latch.is_file())
+                    identity=M.file_identity(latch);self.assertEqual(identity['st_mode']&0o777,0o600)
+                    previous=len(f.backend.commands);candidate=(f.root/'arc/api/test.mm').read_bytes()
+                    for action in [lambda:tx.regenerate(True),tx.rollback,lambda:tx.command(['must-not-start'],'forbidden',rollback=True),
+                                   lambda:tx.scenario('launch-slice',99),tx.pin_check]:
+                        with self.assertRaisesRegex(RuntimeError,'latched'):action()
+                    guardian=f.worker_for_guardian();self.assertFalse(guardian._lease_failed)
+                    with self.assertRaisesRegex(RuntimeError,'latched'):guardian.regeneration_clear()
+                    self.assertEqual(len(f.backend.commands),previous);self.assertEqual(M.file_identity(latch),identity)
+                    self.assertEqual((f.root/'arc/api/test.mm').read_bytes(),candidate)
+                finally:f.tearDown()
+
+    def test_failed_latch_write_still_blocks_separate_guardian_via_open_ledger(self):
+        tx=self.tx();tx.prepare();tx.publish();self.inject_regeneration_drift(tx)
+        original=M.atomic_bytes
+        def write_failure(path,*args,**kwargs):
+            if path.name=='regeneration-failure-latch.json':raise OSError('private latch storage failure')
+            return original(path,*args,**kwargs)
+        with patch.object(M,'atomic_bytes',side_effect=write_failure):
+            with self.assertRaises(OSError):tx.regenerate()
+        with self.assertRaisesRegex(RuntimeError,'latched'):tx.rollback()
+        guardian=self.worker_for_guardian()
+        with self.assertRaisesRegex(RuntimeError,'incomplete/foreign'):guardian.regeneration_clear()
+
+    def test_incomplete_malformed_or_rebound_regeneration_ledger_cannot_start_new_lease(self):
+        tx=self.tx();tx.prepare();tx.publish();tx.regenerate()
+        path=next(self.output.glob('regeneration-lease-*.json'));good=json.loads(path.read_text())
+        variants=[{**good,'status':'OPEN'},{**good,'configSHA256':'0'*64},{**good,'before':True,'after':True},
+                  {**good,'before':{},'after':{}},{**good,'originals':[]},{**good,'exit':False},{**good,'exit':None,'error':None},
+                  {**good,'after':{}},{k:v for k,v in good.items() if k!='exit'}]
+        previous=len(self.backend.commands)
+        for value in variants:
+            M.write(path,value)
+            with self.assertRaises(RuntimeError):tx.regenerate(True)
+        self.assertEqual(len(self.backend.commands),previous)
+
+    def test_actual_guardian_sees_durable_drift_latch_before_release(self):
+        guardian=self.tx();digest=M.sha(self.output/'config.json')
+        M.write(self.output/'launch.json',{'configSHA256':digest,'nonce':'private-latched-main'})
+        fixture=self
+        class Child:
+            pid=424242;returncode=None
+            def wait(self):
+                worker=fixture.worker_for_guardian();worker.adopt_observation_tool();worker.prepare();worker.publish()
+                fixture.inject_regeneration_drift(worker)
+                with fixture.assertRaises(RuntimeError):worker.regenerate()
+                M.write(fixture.output/'completion.json',dict(status='APPLIED',persistentObservationToolRetained=True,
+                    scenarios=[dict(scenario=s,noEarlierStepRegression=True) for s in M.SCENARIOS]))
+                self.returncode=0;return 0
+        original=M.subprocess.Popen
+        def popen(argv,*args,**kwargs):return Child() if '_worker' in argv else original(argv,*args,**kwargs)
+        argv=['executor','_guardian','--config',str(self.output/'config.json'),'--config-sha',digest,'--out',str(self.output)]
+        with patch.object(M,'Transaction',return_value=guardian),patch.object(M.subprocess,'Popen',side_effect=popen),\
+             patch.object(M.sys,'argv',argv),patch.object(M.signal,'signal'):
+            with self.assertRaisesRegex(Held,'latched'):M.main()
+        self.assertFalse((self.output/'release-safe.json').exists())
+
+    def test_actual_main_foreign_valid_logical_index_refusal_preserves_no_write_release(self):
+        guardian=self.tx();digest=M.sha(self.output/'config.json')
+        M.write(self.output/'launch.json',{'configSHA256':digest,'nonce':'private-semantic-refusal'})
+        foreign=index_bytes([dict(path=b'native.cc',mode=0o100644,oid=b'\x99'*20)],version=3)
+        fixture=self
+        class Child:
+            pid=424242;returncode=None
+            def wait(self):
+                fixture.put('chromium/src/.git/index',foreign)
+                self.returncode=fixture.worker_for_guardian().execute();return self.returncode
+        original=M.subprocess.Popen
+        def popen(argv,*args,**kwargs):return Child() if '_worker' in argv else original(argv,*args,**kwargs)
+        argv=['executor','_guardian','--config',str(self.output/'config.json'),'--config-sha',digest,'--out',str(self.output)]
+        with patch.object(M,'Transaction',return_value=guardian),patch.object(M.subprocess,'Popen',side_effect=popen),\
+             patch.object(M.sys,'argv',argv),patch.object(M.signal,'signal'):
+            self.assertEqual(M.main(),1)
+        certificate=json.loads((self.output/'release-safe.json').read_text())
+        self.assertEqual(certificate['state'],'REFUSED_WITHOUT_WRITES_NOT_CURRENT_BASELINE')
+        self.assertIs(certificate['currentBaselineAsserted'],False);self.assertEqual(self.backend.commands,[])
+        self.assertEqual((self.root/'chromium/src/.git/index').read_bytes(),foreign)
+        self.assertTrue((self.output/'index-drift.json').is_file());self.assertTrue((self.output/'index-semantic-diagnostic.txt').is_file())
+        self.assertFalse(list(self.output.glob('regeneration-lease-*')))
+
+    def test_even_checked_operation_ledger_disqualifies_no_attempt_certificate(self):
+        guardian,completion,child=self.early_refusal_fixture();before=guardian.index_boundary()
+        M.write(self.output/'regeneration-lease-0001.json',dict(status='CHECKED',configSHA256=guardian.config_digest,
+            originals=guardian.original_indexes,before=before,after=before,exit=0,error=None))
+        guardian.regeneration_clear()
+        with self.assertRaisesRegex(RuntimeError,'attempted/unknown'):guardian.certify_refused_without_writes(completion,child)
 
 
 

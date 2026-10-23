@@ -1,0 +1,1462 @@
+
+## _RecForwardInvocation 0x174c..0x1f2c
+174c: stp x28, x27, [sp, #-0x20]!
+1750: stp x29, x30, [sp, #0x10]
+1754: add x29, sp, #0x10
+1758: sub sp, sp, #0x270
+175c: str x2, [sp, #0x158]
+1760: str x1, [sp, #0x150]
+1764: mov x1, x0
+1768: mov x8, #0
+176c: str x8, [sp, #0x160]
+1770: stur x8, [x29, #-0x18]
+1774: sub x0, x29, #0x18
+1778: bl #0x4300 // _objc_storeStrong
+177c: ldr x9, [sp, #0x150]
+1780: ldr x1, [sp, #0x158]
+1784: ldr x8, [sp, #0x160]
+1788: stur x9, [x29, #-0x20]
+178c: stur x8, [x29, #-0x28]
+1790: sub x0, x29, #0x28
+1794: bl #0x4300 // _objc_storeStrong
+1798: ldur x0, [x29, #-0x28]
+179c: bl #0x4820 // _objc_msgSend$selector
+17a0: ldr x8, [sp, #0x160]
+17a4: stur x0, [x29, #-0x30]
+17a8: stur x8, [x29, #-0x38]
+17ac: stur x8, [x29, #-0x40]
+17b0: ldur x0, [x29, #-0x18]
+17b4: bl #0x4318 // _object_isClass
+17b8: sturb w0, [x29, #-0x41]
+17bc: ldur x0, [x29, #-0x18]
+17c0: bl #0x430c // _object_getClass
+17c4: stur x0, [x29, #-0x50]
+17c8: b #0x17cc
+17cc: ldur x8, [x29, #-0x50]
+17d0: cbz x8, #0x1854
+17d4: b #0x17d8
+17d8: adrp x8, #0xc000
+17dc: ldr x8, [x8, #0x280]
+17e0: str x8, [sp, #0x140]
+17e4: ldur x0, [x29, #-0x50]
+17e8: ldur x1, [x29, #-0x30]
+17ec: bl #0x163c // _HookKey
+17f0: mov x29, x29
+17f4: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+17f8: mov x2, x0
+17fc: ldr x0, [sp, #0x140]
+1800: str x2, [sp, #0x148]
+1804: bl #0x47e0 // _objc_msgSend$objectForKeyedSubscript:
+1808: mov x29, x29
+180c: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1810: mov x8, x0
+1814: ldur x0, [x29, #-0x40]
+1818: stur x8, [x29, #-0x40]
+181c: bl #0x42c4 // _objc_release
+1820: ldr x0, [sp, #0x148]
+1824: bl #0x42c4 // _objc_release
+1828: ldur x8, [x29, #-0x40]
+182c: cbz x8, #0x1840
+1830: b #0x1834
+1834: ldur x8, [x29, #-0x50]
+1838: stur x8, [x29, #-0x38]
+183c: b #0x1854
+1840: b #0x1844
+1844: ldur x0, [x29, #-0x50]
+1848: bl #0x41c8 // _class_getSuperclass
+184c: stur x0, [x29, #-0x50]
+1850: b #0x17cc
+1854: ldur x8, [x29, #-0x40]
+1858: cbnz x8, #0x1944
+185c: b #0x1860
+1860: ldur x0, [x29, #-0x18]
+1864: bl #0x430c // _object_getClass
+1868: stur x0, [x29, #-0x58]
+186c: b #0x1870
+1870: ldur x8, [x29, #-0x58]
+1874: cbz x8, #0x192c
+1878: b #0x187c
+187c: adrp x8, #0xc000
+1880: ldr x8, [x8, #0x288]
+1884: str x8, [sp, #0x130]
+1888: ldur x0, [x29, #-0x58]
+188c: bl #0x16d0 // _ClassKey
+1890: mov x29, x29
+1894: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1898: mov x2, x0
+189c: ldr x0, [sp, #0x130]
+18a0: str x2, [sp, #0x138]
+18a4: bl #0x47e0 // _objc_msgSend$objectForKeyedSubscript:
+18a8: mov x29, x29
+18ac: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+18b0: mov x8, x0
+18b4: ldr x0, [sp, #0x138]
+18b8: stur x8, [x29, #-0x60]
+18bc: bl #0x42c4 // _objc_release
+18c0: ldur x8, [x29, #-0x60]
+18c4: cbz x8, #0x18f4
+18c8: b #0x18cc
+18cc: ldur x0, [x29, #-0x60]
+18d0: bl #0x4800 // _objc_msgSend$pointerValue
+18d4: mov x8, x0
+18d8: ldur x0, [x29, #-0x18]
+18dc: ldur x1, [x29, #-0x20]
+18e0: ldur x2, [x29, #-0x28]
+18e4: blr x8
+18e8: mov w8, #1
+18ec: stur w8, [x29, #-0x64]
+18f0: b #0x1900
+18f4: mov w8, #0
+18f8: stur w8, [x29, #-0x64]
+18fc: b #0x1900
+1900: sub x0, x29, #0x60
+1904: mov x1, #0
+1908: bl #0x4300 // _objc_storeStrong
+190c: ldur w8, [x29, #-0x64]
+1910: cbnz w8, #0x1ef0
+1914: b #0x1918
+1918: b #0x191c
+191c: ldur x0, [x29, #-0x58]
+1920: bl #0x41c8 // _class_getSuperclass
+1924: stur x0, [x29, #-0x58]
+1928: b #0x1870
+192c: ldur x0, [x29, #-0x18]
+1930: ldur x2, [x29, #-0x30]
+1934: bl #0x45c0 // _objc_msgSend$doesNotRecognizeSelector:
+1938: mov w8, #1
+193c: stur w8, [x29, #-0x64]
+1940: b #0x1ef0
+1944: ldur x0, [x29, #-0x28]
+1948: bl #0x4760 // _objc_msgSend$methodSignature
+194c: mov x29, x29
+1950: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1954: stur x0, [x29, #-0x70]
+1958: adrp x8, #0x8000
+195c: ldr x0, [x8, #0x228]
+1960: bl #0x4440 // _objc_msgSend$array
+1964: mov x29, x29
+1968: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+196c: stur x0, [x29, #-0x78]
+1970: mov w8, #2
+1974: stur x8, [x29, #-0x80]
+1978: b #0x197c
+197c: ldur x8, [x29, #-0x80]
+1980: str x8, [sp, #0x128]
+1984: ldur x0, [x29, #-0x70]
+1988: bl #0x4780 // _objc_msgSend$numberOfArguments
+198c: ldr x8, [sp, #0x128]
+1990: subs x8, x8, x0
+1994: b.hs #0x1a98
+1998: b #0x199c
+199c: mov x8, #0
+19a0: str x8, [sp, #0x120]
+19a4: stur x8, [x29, #-0x88]
+19a8: ldur x0, [x29, #-0x70]
+19ac: str x0, [sp, #0x118]
+19b0: bl #0x42dc // _objc_retainAutorelease
+19b4: ldr x0, [sp, #0x118]
+19b8: ldur x2, [x29, #-0x80]
+19bc: bl #0x4640 // _objc_msgSend$getArgumentTypeAtIndex:
+19c0: ldr x2, [sp, #0x120]
+19c4: sub x1, x29, #0x88
+19c8: bl #0x4120 // _NSGetSizeAndAlignment
+19cc: ldur x8, [x29, #-0x88]
+19d0: stur x8, [x29, #-0x98]
+19d4: mov w8, #0x10
+19d8: stur w8, [x29, #-0x9c]
+19dc: ldur x8, [x29, #-0x98]
+19e0: ldursw x9, [x29, #-0x9c]
+19e4: subs x8, x8, x9
+19e8: b.hs #0x19fc
+19ec: b #0x19f0
+19f0: ldursw x8, [x29, #-0x9c]
+19f4: str x8, [sp, #0x110]
+19f8: b #0x1a08
+19fc: ldur x8, [x29, #-0x98]
+1a00: str x8, [sp, #0x110]
+1a04: b #0x1a08
+1a08: ldr x8, [sp, #0x110]
+1a0c: stur x8, [x29, #-0xa8]
+1a10: ldur x1, [x29, #-0xa8]
+1a14: mov w8, #1
+1a18: mov x0, x8
+1a1c: bl #0x418c // _calloc
+1a20: stur x0, [x29, #-0x90]
+1a24: ldur x0, [x29, #-0x28]
+1a28: ldur x2, [x29, #-0x90]
+1a2c: ldur x3, [x29, #-0x80]
+1a30: bl #0x4620 // _objc_msgSend$getArgument:atIndex:
+1a34: ldur x8, [x29, #-0x78]
+1a38: str x8, [sp, #0x100]
+1a3c: ldur x0, [x29, #-0x70]
+1a40: str x0, [sp, #0xf8]
+1a44: bl #0x42dc // _objc_retainAutorelease
+1a48: ldr x0, [sp, #0xf8]
+1a4c: ldur x2, [x29, #-0x80]
+1a50: bl #0x4640 // _objc_msgSend$getArgumentTypeAtIndex:
+1a54: ldur x1, [x29, #-0x90]
+1a58: bl #0x1f2c // _DescribeValue
+1a5c: mov x29, x29
+1a60: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1a64: mov x2, x0
+1a68: ldr x0, [sp, #0x100]
+1a6c: str x2, [sp, #0x108]
+1a70: bl #0x4400 // _objc_msgSend$addObject:
+1a74: ldr x0, [sp, #0x108]
+1a78: bl #0x42c4 // _objc_release
+1a7c: ldur x0, [x29, #-0x90]
+1a80: bl #0x4210 // _free
+1a84: b #0x1a88
+1a88: ldur x8, [x29, #-0x80]
+1a8c: add x8, x8, #1
+1a90: stur x8, [x29, #-0x80]
+1a94: b #0x197c
+1a98: mov w8, #1
+1a9c: stur x8, [x29, #-0xb8]
+1aa0: ldur x9, [x29, #-0xb8]
+1aa4: adrp x8, #0xc000
+1aa8: add x8, x8, #0x290
+1aac: ldadd x9, x8, [x8]
+1ab0: add x8, x8, x9
+1ab4: stur x8, [x29, #-0xc0]
+1ab8: ldur x8, [x29, #-0xc0]
+1abc: stur x8, [x29, #-0xb0]
+1ac0: ldur x0, [x29, #-0x38]
+1ac4: bl #0x4138 // _NSStringFromClass
+1ac8: mov x29, x29
+1acc: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1ad0: stur x0, [x29, #-0xc8]
+1ad4: adrp x8, #0x8000
+1ad8: ldr x0, [x8, #0x48]
+1adc: str x0, [sp, #0xa8]
+1ae0: bl #0x2e18 // _ThreadName
+1ae4: mov x29, x29
+1ae8: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1aec: mov x1, x0
+1af0: str x1, [sp, #0xb0]
+1af4: bl #0x2c04 // _Quote
+1af8: mov x29, x29
+1afc: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1b00: str x0, [sp, #0xb8]
+1b04: adrp x0, #0xc000
+1b08: add x0, x0, #0x258
+1b0c: ldr x8, [x0]
+1b10: blr x8
+1b14: ldr w0, [x0]
+1b18: str w0, [sp, #0xc4]
+1b1c: bl #0x2f68 // _Caller
+1b20: mov x29, x29
+1b24: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1b28: str x0, [sp, #0xc8]
+1b2c: ldur x8, [x29, #-0x40]
+1b30: str x8, [sp, #0xd0]
+1b34: ldur x0, [x29, #-0xc8]
+1b38: bl #0x2c04 // _Quote
+1b3c: mov x29, x29
+1b40: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1b44: str x0, [sp, #0xd8]
+1b48: ldurb w10, [x29, #-0x41]
+1b4c: adrp x9, #0x9000
+1b50: add x9, x9, #0x418
+1b54: adrp x8, #0x9000
+1b58: add x8, x8, #0x3f8
+1b5c: ands w10, w10, #1
+1b60: csel x8, x8, x9, ne
+1b64: str x8, [sp, #0xe0]
+1b68: ldur x0, [x29, #-0x30]
+1b6c: bl #0x415c // _NSStringFromSelector
+1b70: mov x29, x29
+1b74: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1b78: mov x1, x0
+1b7c: str x1, [sp, #0xe8]
+1b80: bl #0x2c04 // _Quote
+1b84: mov x29, x29
+1b88: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1b8c: str x0, [sp, #0xf0]
+1b90: ldurb w8, [x29, #-0x41]
+1b94: mov w9, #0
+1b98: sturb w9, [x29, #-0xd9]
+1b9c: tbz w8, #0, #0x1bb4
+1ba0: b #0x1ba4
+1ba4: adrp x0, #0x9000
+1ba8: add x0, x0, #0x438
+1bac: str x0, [sp, #0xa0]
+1bb0: b #0x1be4
+1bb4: ldur x0, [x29, #-0x18]
+1bb8: mov w1, #0
+1bbc: bl #0x3238 // _Describe
+1bc0: mov x29, x29
+1bc4: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1bc8: mov x8, x0
+1bcc: mov x0, x8
+1bd0: stur x8, [x29, #-0xd8]
+1bd4: mov w8, #1
+1bd8: sturb w8, [x29, #-0xd9]
+1bdc: str x0, [sp, #0xa0]
+1be0: b #0x1be4
+1be4: ldr x0, [sp, #0xa8]
+1be8: ldr x8, [sp, #0xb8]
+1bec: ldr w1, [sp, #0xc4]
+1bf0: ldr x10, [sp, #0xc8]
+1bf4: ldr x11, [sp, #0xd0]
+1bf8: ldr x12, [sp, #0xd8]
+1bfc: ldr x13, [sp, #0xe0]
+1c00: ldr x14, [sp, #0xf0]
+1c04: ldr x15, [sp, #0xa0]
+1c08: mov x9, sp
+1c0c: str x9, [sp, #0x98]
+1c10: str x15, [x9, #0x38]
+1c14: str x14, [x9, #0x30]
+1c18: str x13, [x9, #0x28]
+1c1c: str x12, [x9, #0x20]
+1c20: str x11, [x9, #0x18]
+1c24: str x10, [x9, #0x10]
+1c28: mov x10, x1
+1c2c: str x10, [x9, #8]
+1c30: str x8, [x9]
+1c34: adrp x2, #0x9000
+1c38: add x2, x2, #0x3d8
+1c3c: bl #0x4920 // _objc_msgSend$stringWithFormat:
+1c40: mov x29, x29
+1c44: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1c48: stur x0, [x29, #-0xd0]
+1c4c: ldurb w8, [x29, #-0xd9]
+1c50: subs w8, w8, #1
+1c54: b.ne #0x1c68
+1c58: b #0x1c5c
+1c5c: ldur x0, [x29, #-0xd8]
+1c60: bl #0x42c4 // _objc_release
+1c64: b #0x1c68
+1c68: ldr x0, [sp, #0xf0]
+1c6c: bl #0x42c4 // _objc_release
+1c70: ldr x0, [sp, #0xe8]
+1c74: bl #0x42c4 // _objc_release
+1c78: ldr x0, [sp, #0xd8]
+1c7c: bl #0x42c4 // _objc_release
+1c80: ldr x0, [sp, #0xc8]
+1c84: bl #0x42c4 // _objc_release
+1c88: ldr x0, [sp, #0xb8]
+1c8c: bl #0x42c4 // _objc_release
+1c90: ldr x0, [sp, #0xb0]
+1c94: bl #0x42c4 // _objc_release
+1c98: adrp x8, #0x8000
+1c9c: ldr x8, [x8, #0x48]
+1ca0: str x8, [sp, #0x78]
+1ca4: ldur x8, [x29, #-0xb0]
+1ca8: str x8, [sp, #0x70]
+1cac: ldur x8, [x29, #-0xd0]
+1cb0: str x8, [sp, #0x68]
+1cb4: ldur x0, [x29, #-0x78]
+1cb8: adrp x2, #0x9000
+1cbc: add x2, x2, #0x478
+1cc0: bl #0x44c0 // _objc_msgSend$componentsJoinedByString:
+1cc4: mov x29, x29
+1cc8: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1ccc: ldr x10, [sp, #0x68]
+1cd0: ldr x8, [sp, #0x70]
+1cd4: mov x11, x0
+1cd8: ldr x0, [sp, #0x78]
+1cdc: str x11, [sp, #0x88]
+1ce0: mov x9, sp
+1ce4: str x11, [x9, #0x10]
+1ce8: str x10, [x9, #8]
+1cec: str x8, [x9]
+1cf0: adrp x2, #0x9000
+1cf4: add x2, x2, #0x458
+1cf8: bl #0x4920 // _objc_msgSend$stringWithFormat:
+1cfc: mov x29, x29
+1d00: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1d04: str x0, [sp, #0x80]
+1d08: bl #0x1370 // _Emit
+1d0c: ldr x0, [sp, #0x80]
+1d10: bl #0x42c4 // _objc_release
+1d14: ldr x0, [sp, #0x88]
+1d18: bl #0x42c4 // _objc_release
+1d1c: adrp x0, #0xc000
+1d20: add x0, x0, #0x258
+1d24: ldr x8, [x0]
+1d28: blr x8
+1d2c: str x0, [sp, #0x90]
+1d30: ldr w8, [x0]
+1d34: add w8, w8, #1
+1d38: str w8, [x0]
+1d3c: ldur x0, [x29, #-0x30]
+1d40: bl #0x15bc // _AliasFor
+1d44: mov x2, x0
+1d48: ldur x0, [x29, #-0x28]
+1d4c: bl #0x4880 // _objc_msgSend$setSelector:
+1d50: ldur x0, [x29, #-0x28]
+1d54: bl #0x46c0 // _objc_msgSend$invoke
+1d58: ldur x2, [x29, #-0x30]
+1d5c: ldur x0, [x29, #-0x28]
+1d60: bl #0x4880 // _objc_msgSend$setSelector:
+1d64: ldr x0, [sp, #0x90]
+1d68: ldr w8, [x0]
+1d6c: subs w8, w8, #1
+1d70: str w8, [x0]
+1d74: adrp x0, #0x9000
+1d78: add x0, x0, #0x438
+1d7c: bl #0x42d0 // _objc_retain
+1d80: stur x0, [x29, #-0xe8]
+1d84: ldur x0, [x29, #-0x70]
+1d88: bl #0x4720 // _objc_msgSend$methodReturnLength
+1d8c: cbz x0, #0x1e3c
+1d90: b #0x1d94
+1d94: ldur x0, [x29, #-0x70]
+1d98: bl #0x4720 // _objc_msgSend$methodReturnLength
+1d9c: stur x0, [x29, #-0xf8]
+1da0: mov w8, #0x10
+1da4: stur w8, [x29, #-0xfc]
+1da8: ldur x8, [x29, #-0xf8]
+1dac: ldursw x9, [x29, #-0xfc]
+1db0: subs x8, x8, x9
+1db4: b.hs #0x1dc8
+1db8: b #0x1dbc
+1dbc: ldursw x8, [x29, #-0xfc]
+1dc0: str x8, [sp, #0x60]
+1dc4: b #0x1dd4
+1dc8: ldur x8, [x29, #-0xf8]
+1dcc: str x8, [sp, #0x60]
+1dd0: b #0x1dd4
+1dd4: ldr x8, [sp, #0x60]
+1dd8: str x8, [sp, #0x178]
+1ddc: ldr x1, [sp, #0x178]
+1de0: mov w8, #1
+1de4: mov x0, x8
+1de8: bl #0x418c // _calloc
+1dec: stur x0, [x29, #-0xf0]
+1df0: ldur x0, [x29, #-0x28]
+1df4: ldur x2, [x29, #-0xf0]
+1df8: bl #0x4660 // _objc_msgSend$getReturnValue:
+1dfc: ldur x0, [x29, #-0x70]
+1e00: str x0, [sp, #0x58]
+1e04: bl #0x42dc // _objc_retainAutorelease
+1e08: ldr x0, [sp, #0x58]
+1e0c: bl #0x4740 // _objc_msgSend$methodReturnType
+1e10: ldur x1, [x29, #-0xf0]
+1e14: bl #0x1f2c // _DescribeValue
+1e18: mov x29, x29
+1e1c: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1e20: mov x8, x0
+1e24: ldur x0, [x29, #-0xe8]
+1e28: stur x8, [x29, #-0xe8]
+1e2c: bl #0x42c4 // _objc_release
+1e30: ldur x0, [x29, #-0xf0]
+1e34: bl #0x4210 // _free
+1e38: b #0x1e3c
+1e3c: adrp x8, #0x8000
+1e40: ldr x0, [x8, #0x48]
+1e44: mov w8, #1
+1e48: str x8, [sp, #0x170]
+1e4c: ldr x9, [sp, #0x170]
+1e50: adrp x8, #0xc000
+1e54: add x8, x8, #0x290
+1e58: ldadd x9, x8, [x8]
+1e5c: add x8, x8, x9
+1e60: str x8, [sp, #0x168]
+1e64: ldr x8, [sp, #0x168]
+1e68: ldur x10, [x29, #-0xd0]
+1e6c: ldur x11, [x29, #-0xe8]
+1e70: mov x9, sp
+1e74: str x11, [x9, #0x10]
+1e78: str x10, [x9, #8]
+1e7c: str x8, [x9]
+1e80: adrp x2, #0x9000
+1e84: add x2, x2, #0x498
+1e88: bl #0x4920 // _objc_msgSend$stringWithFormat:
+1e8c: mov x29, x29
+1e90: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+1e94: str x0, [sp, #0x48]
+1e98: bl #0x1370 // _Emit
+1e9c: ldr x0, [sp, #0x48]
+1ea0: bl #0x42c4 // _objc_release
+1ea4: sub x0, x29, #0xe8
+1ea8: mov x1, #0
+1eac: str x1, [sp, #0x50]
+1eb0: bl #0x4300 // _objc_storeStrong
+1eb4: ldr x1, [sp, #0x50]
+1eb8: sub x0, x29, #0xd0
+1ebc: bl #0x4300 // _objc_storeStrong
+1ec0: ldr x1, [sp, #0x50]
+1ec4: sub x0, x29, #0xc8
+1ec8: bl #0x4300 // _objc_storeStrong
+1ecc: ldr x1, [sp, #0x50]
+1ed0: sub x0, x29, #0x78
+1ed4: bl #0x4300 // _objc_storeStrong
+1ed8: ldr x1, [sp, #0x50]
+1edc: sub x0, x29, #0x70
+1ee0: bl #0x4300 // _objc_storeStrong
+1ee4: mov w8, #0
+1ee8: stur w8, [x29, #-0x64]
+1eec: b #0x1ef0
+1ef0: sub x0, x29, #0x40
+1ef4: mov x1, #0
+1ef8: str x1, [sp, #0x40]
+1efc: bl #0x4300 // _objc_storeStrong
+1f00: ldr x1, [sp, #0x40]
+1f04: sub x0, x29, #0x28
+1f08: bl #0x4300 // _objc_storeStrong
+1f0c: ldr x1, [sp, #0x40]
+1f10: sub x0, x29, #0x18
+1f14: bl #0x4300 // _objc_storeStrong
+1f18: add sp, sp, #0x270
+1f1c: ldp x29, x30, [sp, #0x10]
+1f20: ldp x28, x27, [sp], #0x20
+1f24: ret 
+1f28: brk #1
+
+## _Describe 0x3238..0x4120
+3238: stp x28, x27, [sp, #-0x20]!
+323c: stp x29, x30, [sp, #0x10]
+3240: add x29, sp, #0x10
+3244: sub sp, sp, #0x470
+3248: str x0, [sp, #0x220]
+324c: mov x8, x1
+3250: ldr x1, [sp, #0x220]
+3254: str w8, [sp, #0x22c]
+3258: adrp x8, #0x8000
+325c: ldr x8, [x8, #0x160]
+3260: ldr x8, [x8]
+3264: stur x8, [x29, #-0x18]
+3268: add x0, sp, #0x340
+326c: str xzr, [sp, #0x340]
+3270: bl #0x4300 // _objc_storeStrong
+3274: ldr w1, [sp, #0x22c]
+3278: str w1, [sp, #0x33c]
+327c: ldr x8, [sp, #0x340]
+3280: cbnz x8, #0x32ac
+3284: b #0x3288
+3288: adrp x8, #0x8000
+328c: ldr x8, [x8, #0x118]
+3290: adrp x0, #0x9000
+3294: add x0, x0, #0x438
+3298: blr x8
+329c: str x0, [sp, #0x348]
+32a0: mov w8, #1
+32a4: str w8, [sp, #0x338]
+32a8: b #0x40d8
+32ac: ldr x8, [sp, #0x340]
+32b0: str x8, [sp, #0x218]
+32b4: adrp x8, #0x8000
+32b8: ldr x0, [x8, #0x48]
+32bc: bl #0x42ac // _objc_opt_class
+32c0: mov x1, x0
+32c4: ldr x0, [sp, #0x218]
+32c8: bl #0x42b8 // _objc_opt_isKindOfClass
+32cc: tbz w0, #0, #0x32f4
+32d0: b #0x32d4
+32d4: ldr x0, [sp, #0x340]
+32d8: bl #0x2c04 // _Quote
+32dc: mov x29, x29
+32e0: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+32e4: str x0, [sp, #0x348]
+32e8: mov w8, #1
+32ec: str w8, [sp, #0x338]
+32f0: b #0x40d8
+32f4: ldr x8, [sp, #0x340]
+32f8: str x8, [sp, #0x210]
+32fc: adrp x8, #0x8000
+3300: ldr x0, [x8, #0x40]
+3304: bl #0x42ac // _objc_opt_class
+3308: mov x1, x0
+330c: ldr x0, [sp, #0x210]
+3310: bl #0x42b8 // _objc_opt_isKindOfClass
+3314: tbz w0, #0, #0x3570
+3318: b #0x331c
+331c: ldr x1, [sp, #0x208]
+3320: ldr x0, [sp, #0x340]
+3324: bl #0x4600 // _objc_msgSend$doubleValue
+3328: str d0, [sp, #0x330]
+332c: mov w8, #0
+3330: mov w10, #1
+3334: and w9, w8, #1
+3338: and w9, w9, #1
+333c: strb w9, [sp, #0x327]
+3340: and w9, w8, #1
+3344: and w9, w9, w10
+3348: strb w9, [sp, #0x317]
+334c: and w9, w8, #1
+3350: and w9, w9, w10
+3354: strb w9, [sp, #0x307]
+3358: tbz w8, #0, #0x33b4
+335c: b #0x3360
+3360: ldr d0, [sp, #0x330]
+3364: fcvt s0, d0
+3368: str s0, [sp, #0x354]
+336c: ldr s0, [sp, #0x354]
+3370: ldr s1, [sp, #0x354]
+3374: mov w8, #0
+3378: fcmp s0, s1
+337c: str w8, [sp, #0x204]
+3380: b.ne #0x33a8
+3384: b #0x3388
+3388: ldr s0, [sp, #0x354]
+338c: fabs s0, s0
+3390: mov w8, #0x7f800000
+3394: fmov s1, w8
+3398: fcmp s0, s1
+339c: cset w8, ne
+33a0: str w8, [sp, #0x204]
+33a4: b #0x33a8
+33a8: ldr w8, [sp, #0x204]
+33ac: tbnz w8, #0, #0x3460
+33b0: b #0x3494
+33b4: mov w8, #1
+33b8: tbz w8, #0, #0x3410
+33bc: b #0x33c0
+33c0: ldr d0, [sp, #0x330]
+33c4: str d0, [sp, #0x358]
+33c8: ldr d0, [sp, #0x358]
+33cc: ldr d1, [sp, #0x358]
+33d0: mov w8, #0
+33d4: fcmp d0, d1
+33d8: str w8, [sp, #0x200]
+33dc: b.ne #0x3404
+33e0: b #0x33e4
+33e4: ldr d0, [sp, #0x358]
+33e8: fabs d0, d0
+33ec: mov x8, #0x7ff0000000000000
+33f0: fmov d1, x8
+33f4: fcmp d0, d1
+33f8: cset w8, ne
+33fc: str w8, [sp, #0x200]
+3400: b #0x3404
+3404: ldr w8, [sp, #0x200]
+3408: tbnz w8, #0, #0x3460
+340c: b #0x3494
+3410: ldr d0, [sp, #0x330]
+3414: str d0, [sp, #0x360]
+3418: ldr d0, [sp, #0x360]
+341c: ldr d1, [sp, #0x360]
+3420: mov w8, #0
+3424: fcmp d0, d1
+3428: str w8, [sp, #0x1fc]
+342c: b.ne #0x3454
+3430: b #0x3434
+3434: ldr d0, [sp, #0x360]
+3438: fabs d0, d0
+343c: mov x8, #0x7ff0000000000000
+3440: fmov d1, x8
+3444: fcmp d0, d1
+3448: cset w8, ne
+344c: str w8, [sp, #0x1fc]
+3450: b #0x3454
+3454: ldr w8, [sp, #0x1fc]
+3458: tbz w8, #0, #0x3494
+345c: b #0x3460
+3460: ldr x1, [sp, #0x208]
+3464: ldr x0, [sp, #0x340]
+3468: bl #0x4900 // _objc_msgSend$stringValue
+346c: mov x29, x29
+3470: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3474: mov x8, x0
+3478: str x8, [sp, #0x328]
+347c: mov w8, #1
+3480: and w8, w8, #1
+3484: and w8, w8, #1
+3488: strb w8, [sp, #0x327]
+348c: str x0, [sp, #0x1f0]
+3490: b #0x34f0
+3494: ldr x1, [sp, #0x208]
+3498: ldr x0, [sp, #0x340]
+349c: bl #0x4900 // _objc_msgSend$stringValue
+34a0: mov x29, x29
+34a4: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+34a8: mov x8, x0
+34ac: str x8, [sp, #0x318]
+34b0: mov w8, #1
+34b4: str w8, [sp, #0x1ec]
+34b8: and w8, w8, #1
+34bc: and w8, w8, #1
+34c0: strb w8, [sp, #0x317]
+34c4: bl #0x2c04 // _Quote
+34c8: mov x29, x29
+34cc: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+34d0: ldr w9, [sp, #0x1ec]
+34d4: mov x8, x0
+34d8: str x8, [sp, #0x308]
+34dc: and w8, w9, #1
+34e0: and w8, w8, w9
+34e4: strb w8, [sp, #0x307]
+34e8: str x0, [sp, #0x1f0]
+34ec: b #0x34f0
+34f0: ldr x0, [sp, #0x1f0]
+34f4: adrp x8, #0x8000
+34f8: ldr x8, [x8, #0x118]
+34fc: blr x8
+3500: str x0, [sp, #0x348]
+3504: ldrb w8, [sp, #0x307]
+3508: tbz w8, #0, #0x3524
+350c: b #0x3510
+3510: ldr x0, [sp, #0x308]
+3514: adrp x8, #0x8000
+3518: ldr x8, [x8, #0x110]
+351c: blr x8
+3520: b #0x3524
+3524: ldrb w8, [sp, #0x317]
+3528: tbz w8, #0, #0x3544
+352c: b #0x3530
+3530: ldr x0, [sp, #0x318]
+3534: adrp x8, #0x8000
+3538: ldr x8, [x8, #0x110]
+353c: blr x8
+3540: b #0x3544
+3544: ldrb w8, [sp, #0x327]
+3548: tbz w8, #0, #0x3564
+354c: b #0x3550
+3550: ldr x0, [sp, #0x328]
+3554: adrp x8, #0x8000
+3558: ldr x8, [x8, #0x110]
+355c: blr x8
+3560: b #0x3564
+3564: mov w8, #1
+3568: str w8, [sp, #0x338]
+356c: b #0x40d8
+3570: ldr x8, [sp, #0x340]
+3574: str x8, [sp, #0x1e0]
+3578: adrp x8, #0x8000
+357c: ldr x0, [x8, #0x250]
+3580: bl #0x42ac // _objc_opt_class
+3584: mov x1, x0
+3588: ldr x0, [sp, #0x1e0]
+358c: bl #0x42b8 // _objc_opt_isKindOfClass
+3590: tbz w0, #0, #0x3634
+3594: b #0x3598
+3598: ldr x1, [sp, #0x208]
+359c: ldr x0, [sp, #0x340]
+35a0: bl #0x43e0 // _objc_msgSend$absoluteString
+35a4: mov x29, x29
+35a8: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+35ac: str x0, [sp, #0x1d8]
+35b0: cbz x0, #0x35c4
+35b4: b #0x35b8
+35b8: ldr x8, [sp, #0x1d8]
+35bc: str x8, [sp, #0x1d0]
+35c0: b #0x35d4
+35c4: adrp x8, #0x9000
+35c8: add x8, x8, #0x6f8
+35cc: str x8, [sp, #0x1d0]
+35d0: b #0x35d4
+35d4: ldr x1, [sp, #0x208]
+35d8: ldr x2, [sp, #0x1d0]
+35dc: adrp x0, #0x9000
+35e0: add x0, x0, #0x6d8
+35e4: bl #0x48e0 // _objc_msgSend$stringByAppendingString:
+35e8: mov x29, x29
+35ec: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+35f0: str x0, [sp, #0x1c8]
+35f4: bl #0x2c04 // _Quote
+35f8: mov x29, x29
+35fc: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3600: mov x8, x0
+3604: ldr x0, [sp, #0x1c8]
+3608: str x8, [sp, #0x348]
+360c: adrp x8, #0x8000
+3610: ldr x8, [x8, #0x110]
+3614: blr x8
+3618: ldr x0, [sp, #0x1d8]
+361c: adrp x8, #0x8000
+3620: ldr x8, [x8, #0x110]
+3624: blr x8
+3628: mov w8, #1
+362c: str w8, [sp, #0x338]
+3630: b #0x40d8
+3634: ldr x0, [sp, #0x340]
+3638: bl #0x42ac // _objc_opt_class
+363c: bl #0x4138 // _NSStringFromClass
+3640: mov x29, x29
+3644: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3648: ldr x1, [sp, #0x208]
+364c: str x0, [sp, #0x1b8]
+3650: adrp x2, #0x9000
+3654: add x2, x2, #0x718
+3658: bl #0x4500 // _objc_msgSend$containsString:
+365c: mov x8, x0
+3660: ldr x0, [sp, #0x1b8]
+3664: str w8, [sp, #0x1c4]
+3668: adrp x8, #0x8000
+366c: ldr x8, [x8, #0x110]
+3670: blr x8
+3674: ldr w0, [sp, #0x1c4]
+3678: tbz w0, #0, #0x36a4
+367c: b #0x3680
+3680: adrp x8, #0x8000
+3684: ldr x8, [x8, #0x118]
+3688: adrp x0, #0x9000
+368c: add x0, x0, #0x4b8
+3690: blr x8
+3694: str x0, [sp, #0x348]
+3698: mov w8, #1
+369c: str w8, [sp, #0x338]
+36a0: b #0x40d8
+36a4: ldr x8, [sp, #0x340]
+36a8: str x8, [sp, #0x1b0]
+36ac: adrp x8, #0x8000
+36b0: ldr x0, [x8, #0x30]
+36b4: bl #0x42ac // _objc_opt_class
+36b8: mov x1, x0
+36bc: ldr x0, [sp, #0x1b0]
+36c0: bl #0x42b8 // _objc_opt_isKindOfClass
+36c4: tbz w0, #0, #0x3770
+36c8: b #0x36cc
+36cc: ldr x1, [sp, #0x208]
+36d0: adrp x8, #0x8000
+36d4: ldr x8, [x8, #0x48]
+36d8: str x8, [sp, #0x198]
+36dc: ldr x0, [sp, #0x340]
+36e0: bl #0x45e0 // _objc_msgSend$domain
+36e4: mov x29, x29
+36e8: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+36ec: ldr x1, [sp, #0x208]
+36f0: str x0, [sp, #0x1a8]
+36f4: ldr x0, [sp, #0x340]
+36f8: bl #0x44a0 // _objc_msgSend$code
+36fc: ldr x1, [sp, #0x208]
+3700: ldr x10, [sp, #0x1a8]
+3704: mov x8, x0
+3708: ldr x0, [sp, #0x198]
+370c: mov x9, sp
+3710: str x10, [x9]
+3714: str x8, [x9, #8]
+3718: adrp x2, #0x9000
+371c: add x2, x2, #0x738
+3720: bl #0x4920 // _objc_msgSend$stringWithFormat:
+3724: mov x29, x29
+3728: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+372c: str x0, [sp, #0x1a0]
+3730: bl #0x2c04 // _Quote
+3734: mov x29, x29
+3738: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+373c: mov x8, x0
+3740: ldr x0, [sp, #0x1a0]
+3744: str x8, [sp, #0x348]
+3748: adrp x8, #0x8000
+374c: ldr x8, [x8, #0x110]
+3750: blr x8
+3754: ldr x0, [sp, #0x1a8]
+3758: adrp x8, #0x8000
+375c: ldr x8, [x8, #0x110]
+3760: blr x8
+3764: mov w8, #1
+3768: str w8, [sp, #0x338]
+376c: b #0x40d8
+3770: ldr x8, [sp, #0x340]
+3774: str x8, [sp, #0x190]
+3778: adrp x8, #0x8000
+377c: ldr x0, [x8, #0x210]
+3780: bl #0x42ac // _objc_opt_class
+3784: mov x1, x0
+3788: ldr x0, [sp, #0x190]
+378c: bl #0x42b8 // _objc_opt_isKindOfClass
+3790: tbz w0, #0, #0x380c
+3794: b #0x3798
+3798: ldr x1, [sp, #0x208]
+379c: adrp x8, #0x8000
+37a0: ldr x8, [x8, #0x48]
+37a4: str x8, [sp, #0x180]
+37a8: ldr x0, [sp, #0x340]
+37ac: bl #0x4700 // _objc_msgSend$length
+37b0: ldr x1, [sp, #0x208]
+37b4: mov x8, x0
+37b8: ldr x0, [sp, #0x180]
+37bc: mov x9, sp
+37c0: str x8, [x9]
+37c4: adrp x2, #0x9000
+37c8: add x2, x2, #0x758
+37cc: bl #0x4920 // _objc_msgSend$stringWithFormat:
+37d0: mov x29, x29
+37d4: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+37d8: str x0, [sp, #0x188]
+37dc: bl #0x2c04 // _Quote
+37e0: mov x29, x29
+37e4: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+37e8: mov x8, x0
+37ec: ldr x0, [sp, #0x188]
+37f0: str x8, [sp, #0x348]
+37f4: adrp x8, #0x8000
+37f8: ldr x8, [x8, #0x110]
+37fc: blr x8
+3800: mov w8, #1
+3804: str w8, [sp, #0x338]
+3808: b #0x40d8
+380c: ldr x8, [sp, #0x340]
+3810: str x8, [sp, #0x178]
+3814: adrp x8, #0x8000
+3818: ldr x0, [x8, #0x218]
+381c: bl #0x42ac // _objc_opt_class
+3820: mov x1, x0
+3824: ldr x0, [sp, #0x178]
+3828: bl #0x42b8 // _objc_opt_isKindOfClass
+382c: tbz w0, #0, #0x3858
+3830: b #0x3834
+3834: adrp x8, #0x8000
+3838: ldr x8, [x8, #0x118]
+383c: adrp x0, #0x9000
+3840: add x0, x0, #0x778
+3844: blr x8
+3848: str x0, [sp, #0x348]
+384c: mov w8, #1
+3850: str w8, [sp, #0x338]
+3854: b #0x40d8
+3858: ldr x8, [sp, #0x340]
+385c: str x8, [sp, #0x170]
+3860: adrp x8, #0x8000
+3864: ldr x0, [x8, #0x60]
+3868: bl #0x42ac // _objc_opt_class
+386c: mov x1, x0
+3870: ldr x0, [sp, #0x170]
+3874: bl #0x42b8 // _objc_opt_isKindOfClass
+3878: tbz w0, #0, #0x38fc
+387c: b #0x3880
+3880: ldr x1, [sp, #0x208]
+3884: ldr x0, [sp, #0x340]
+3888: bl #0x48a0 // _objc_msgSend$size
+388c: ldr x1, [sp, #0x208]
+3890: str d0, [sp, #0x2f0]
+3894: str d1, [sp, #0x2f8]
+3898: adrp x8, #0x8000
+389c: ldr x0, [x8, #0x48]
+38a0: ldr d1, [sp, #0x2f0]
+38a4: ldr d0, [sp, #0x2f8]
+38a8: mov x8, sp
+38ac: str d1, [x8]
+38b0: str d0, [x8, #8]
+38b4: adrp x2, #0x9000
+38b8: add x2, x2, #0x798
+38bc: bl #0x4920 // _objc_msgSend$stringWithFormat:
+38c0: mov x29, x29
+38c4: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+38c8: str x0, [sp, #0x168]
+38cc: bl #0x2c04 // _Quote
+38d0: mov x29, x29
+38d4: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+38d8: mov x8, x0
+38dc: ldr x0, [sp, #0x168]
+38e0: str x8, [sp, #0x348]
+38e4: adrp x8, #0x8000
+38e8: ldr x8, [x8, #0x110]
+38ec: blr x8
+38f0: mov w8, #1
+38f4: str w8, [sp, #0x338]
+38f8: b #0x40d8
+38fc: ldr w8, [sp, #0x33c]
+3900: subs w8, w8, #2
+3904: b.ge #0x3bd4
+3908: b #0x390c
+390c: ldr x8, [sp, #0x340]
+3910: str x8, [sp, #0x160]
+3914: adrp x8, #0x8000
+3918: ldr x0, [x8, #0x208]
+391c: bl #0x42ac // _objc_opt_class
+3920: mov x1, x0
+3924: ldr x0, [sp, #0x160]
+3928: bl #0x42b8 // _objc_opt_isKindOfClass
+392c: tbnz w0, #0, #0x3984
+3930: b #0x3934
+3934: ldr x8, [sp, #0x340]
+3938: str x8, [sp, #0x158]
+393c: adrp x8, #0x8000
+3940: ldr x0, [x8, #0x248]
+3944: bl #0x42ac // _objc_opt_class
+3948: mov x1, x0
+394c: ldr x0, [sp, #0x158]
+3950: bl #0x42b8 // _objc_opt_isKindOfClass
+3954: tbnz w0, #0, #0x3984
+3958: b #0x395c
+395c: ldr x8, [sp, #0x340]
+3960: str x8, [sp, #0x150]
+3964: adrp x8, #0x8000
+3968: ldr x0, [x8, #0x240]
+396c: bl #0x42ac // _objc_opt_class
+3970: mov x1, x0
+3974: ldr x0, [sp, #0x150]
+3978: bl #0x42b8 // _objc_opt_isKindOfClass
+397c: tbz w0, #0, #0x3bd4
+3980: b #0x3984
+3984: ldr x1, [sp, #0x208]
+3988: adrp x8, #0x8000
+398c: ldr x0, [x8, #0x228]
+3990: bl #0x4440 // _objc_msgSend$array
+3994: mov x29, x29
+3998: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+399c: str x0, [sp, #0x2e8]
+39a0: add x0, sp, #0x2a0
+39a4: str x0, [sp, #0x138]
+39a8: mov x2, #0x40
+39ac: mov w1, #0
+39b0: bl #0x4228 // _memset
+39b4: ldr x0, [sp, #0x340]
+39b8: adrp x8, #0x8000
+39bc: ldr x8, [x8, #0x118]
+39c0: blr x8
+39c4: ldr x1, [sp, #0x208]
+39c8: ldr x2, [sp, #0x138]
+39cc: str x0, [sp, #0x140]
+39d0: sub x3, x29, #0x98
+39d4: mov x4, #0x10
+39d8: bl #0x4540 // _objc_msgSend$countByEnumeratingWithState:objects:count:
+39dc: str x0, [sp, #0x148]
+39e0: cbz x0, #0x3b1c
+39e4: b #0x39e8
+39e8: ldr x0, [sp, #0x148]
+39ec: ldr x8, [sp, #0x2b0]
+39f0: ldr x8, [x8]
+39f4: str x8, [sp, #0x120]
+39f8: mov x8, #0
+39fc: str x8, [sp, #0x128]
+3a00: str x0, [sp, #0x130]
+3a04: b #0x3a08
+3a08: ldr x9, [sp, #0x120]
+3a0c: ldr x8, [sp, #0x128]
+3a10: ldr x10, [sp, #0x130]
+3a14: str x10, [sp, #0x110]
+3a18: str x8, [sp, #0x118]
+3a1c: ldr x8, [sp, #0x2b0]
+3a20: ldr x8, [x8]
+3a24: subs x8, x8, x9
+3a28: b.eq #0x3a3c
+3a2c: b #0x3a30
+3a30: ldr x0, [sp, #0x140]
+3a34: bl #0x4288 // _objc_enumerationMutation
+3a38: b #0x3a3c
+3a3c: ldr x1, [sp, #0x208]
+3a40: ldr x9, [sp, #0x118]
+3a44: ldr x8, [sp, #0x2a8]
+3a48: ldr x8, [x8, x9, lsl #3]
+3a4c: str x8, [sp, #0x2e0]
+3a50: ldr x0, [sp, #0x2e8]
+3a54: bl #0x4520 // _objc_msgSend$count
+3a58: subs x8, x0, #8
+3a5c: b.ne #0x3a84
+3a60: b #0x3a64
+3a64: ldr x1, [sp, #0x208]
+3a68: ldr x0, [sp, #0x2e8]
+3a6c: adrp x2, #0x9000
+3a70: add x2, x2, #0x7b8
+3a74: bl #0x4400 // _objc_msgSend$addObject:
+3a78: mov w8, #2
+3a7c: str w8, [sp, #0x338]
+3a80: b #0x3b24
+3a84: ldr x8, [sp, #0x2e8]
+3a88: str x8, [sp, #0x100]
+3a8c: ldr x0, [sp, #0x2e0]
+3a90: ldr w8, [sp, #0x33c]
+3a94: add w1, w8, #1
+3a98: bl #0x3238 // _Describe
+3a9c: mov x29, x29
+3aa0: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3aa4: ldr x1, [sp, #0x208]
+3aa8: mov x2, x0
+3aac: ldr x0, [sp, #0x100]
+3ab0: str x2, [sp, #0x108]
+3ab4: bl #0x4400 // _objc_msgSend$addObject:
+3ab8: ldr x0, [sp, #0x108]
+3abc: adrp x8, #0x8000
+3ac0: ldr x8, [x8, #0x110]
+3ac4: blr x8
+3ac8: b #0x3acc
+3acc: ldr x0, [sp, #0x110]
+3ad0: ldr x8, [sp, #0x118]
+3ad4: add x8, x8, #1
+3ad8: subs x9, x8, x0
+3adc: str x8, [sp, #0x128]
+3ae0: str x0, [sp, #0x130]
+3ae4: b.lo #0x3a08
+3ae8: b #0x3aec
+3aec: ldr x1, [sp, #0x208]
+3af0: ldr x0, [sp, #0x140]
+3af4: add x2, sp, #0x2a0
+3af8: sub x3, x29, #0x98
+3afc: mov x4, #0x10
+3b00: bl #0x4540 // _objc_msgSend$countByEnumeratingWithState:objects:count:
+3b04: mov x8, #0
+3b08: str x8, [sp, #0x128]
+3b0c: mov x8, x0
+3b10: str x8, [sp, #0x130]
+3b14: cbnz x0, #0x3a08
+3b18: b #0x3b1c
+3b1c: str wzr, [sp, #0x338]
+3b20: b #0x3b24
+3b24: ldr x0, [sp, #0x140]
+3b28: adrp x8, #0x8000
+3b2c: ldr x8, [x8, #0x110]
+3b30: blr x8
+3b34: ldr w8, [sp, #0x338]
+3b38: cbz w8, #0x3b44
+3b3c: b #0x3b40
+3b40: b #0x3b48
+3b44: b #0x3b48
+3b48: ldr x1, [sp, #0x208]
+3b4c: adrp x8, #0x8000
+3b50: ldr x8, [x8, #0x48]
+3b54: str x8, [sp, #0xe8]
+3b58: add x8, sp, #0x2e8
+3b5c: str x8, [sp, #0xf8]
+3b60: ldr x0, [sp, #0x2e8]
+3b64: adrp x2, #0x9000
+3b68: add x2, x2, #0x478
+3b6c: bl #0x44c0 // _objc_msgSend$componentsJoinedByString:
+3b70: mov x29, x29
+3b74: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3b78: ldr x1, [sp, #0x208]
+3b7c: mov x8, x0
+3b80: ldr x0, [sp, #0xe8]
+3b84: str x8, [sp, #0xf0]
+3b88: mov x9, sp
+3b8c: str x8, [x9]
+3b90: adrp x2, #0x9000
+3b94: add x2, x2, #0x7d8
+3b98: bl #0x4920 // _objc_msgSend$stringWithFormat:
+3b9c: mov x29, x29
+3ba0: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3ba4: mov x8, x0
+3ba8: ldr x0, [sp, #0xf0]
+3bac: str x8, [sp, #0x348]
+3bb0: adrp x8, #0x8000
+3bb4: ldr x8, [x8, #0x110]
+3bb8: blr x8
+3bbc: ldr x0, [sp, #0xf8]
+3bc0: mov w8, #1
+3bc4: str w8, [sp, #0x338]
+3bc8: mov x1, #0
+3bcc: bl #0x4300 // _objc_storeStrong
+3bd0: b #0x40d8
+3bd4: ldr w8, [sp, #0x33c]
+3bd8: subs w8, w8, #2
+3bdc: b.ge #0x3f40
+3be0: b #0x3be4
+3be4: ldr x8, [sp, #0x340]
+3be8: str x8, [sp, #0xe0]
+3bec: adrp x8, #0x8000
+3bf0: ldr x0, [x8, #0x220]
+3bf4: bl #0x42ac // _objc_opt_class
+3bf8: mov x1, x0
+3bfc: ldr x0, [sp, #0xe0]
+3c00: bl #0x42b8 // _objc_opt_isKindOfClass
+3c04: tbz w0, #0, #0x3f40
+3c08: b #0x3c0c
+3c0c: ldr x1, [sp, #0x208]
+3c10: adrp x8, #0x8000
+3c14: ldr x0, [x8, #0x228]
+3c18: bl #0x4440 // _objc_msgSend$array
+3c1c: mov x29, x29
+3c20: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3c24: str x0, [sp, #0x298]
+3c28: add x0, sp, #0x250
+3c2c: str x0, [sp, #0xd0]
+3c30: mov x2, #0x40
+3c34: mov w1, #0
+3c38: bl #0x4228 // _memset
+3c3c: ldr x1, [sp, #0x208]
+3c40: ldr x0, [sp, #0x340]
+3c44: bl #0x4420 // _objc_msgSend$allKeys
+3c48: mov x29, x29
+3c4c: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3c50: ldr x1, [sp, #0x208]
+3c54: str x0, [sp, #0xc0]
+3c58: adrp x8, #0xc000
+3c5c: ldr x2, [x8, #8]
+3c60: bl #0x48c0 // _objc_msgSend$sortedArrayUsingSelector:
+3c64: mov x29, x29
+3c68: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3c6c: mov x1, x0
+3c70: ldr x0, [sp, #0xc0]
+3c74: str x1, [sp, #0xc8]
+3c78: adrp x8, #0x8000
+3c7c: ldr x8, [x8, #0x110]
+3c80: blr x8
+3c84: ldr x0, [sp, #0xc8]
+3c88: ldr x1, [sp, #0x208]
+3c8c: ldr x2, [sp, #0xd0]
+3c90: add x3, sp, #0x368
+3c94: mov x4, #0x10
+3c98: bl #0x4540 // _objc_msgSend$countByEnumeratingWithState:objects:count:
+3c9c: str x0, [sp, #0xd8]
+3ca0: cbz x0, #0x3e88
+3ca4: b #0x3ca8
+3ca8: ldr x0, [sp, #0xd8]
+3cac: ldr x8, [sp, #0x260]
+3cb0: ldr x8, [x8]
+3cb4: str x8, [sp, #0xa8]
+3cb8: mov x8, #0
+3cbc: str x8, [sp, #0xb0]
+3cc0: str x0, [sp, #0xb8]
+3cc4: b #0x3cc8
+3cc8: ldr x9, [sp, #0xa8]
+3ccc: ldr x8, [sp, #0xb0]
+3cd0: ldr x10, [sp, #0xb8]
+3cd4: str x10, [sp, #0x98]
+3cd8: str x8, [sp, #0xa0]
+3cdc: ldr x8, [sp, #0x260]
+3ce0: ldr x8, [x8]
+3ce4: subs x8, x8, x9
+3ce8: b.eq #0x3cfc
+3cec: b #0x3cf0
+3cf0: ldr x0, [sp, #0xc8]
+3cf4: bl #0x4288 // _objc_enumerationMutation
+3cf8: b #0x3cfc
+3cfc: ldr x1, [sp, #0x208]
+3d00: ldr x9, [sp, #0xa0]
+3d04: ldr x8, [sp, #0x258]
+3d08: ldr x8, [x8, x9, lsl #3]
+3d0c: str x8, [sp, #0x290]
+3d10: ldr x0, [sp, #0x298]
+3d14: bl #0x4520 // _objc_msgSend$count
+3d18: subs x8, x0, #8
+3d1c: b.ne #0x3d30
+3d20: b #0x3d24
+3d24: mov w8, #4
+3d28: str w8, [sp, #0x338]
+3d2c: b #0x3e90
+3d30: ldr x1, [sp, #0x208]
+3d34: ldr x8, [sp, #0x298]
+3d38: str x8, [sp, #0x68]
+3d3c: adrp x8, #0x8000
+3d40: ldr x8, [x8, #0x48]
+3d44: str x8, [sp, #0x60]
+3d48: ldr x0, [sp, #0x290]
+3d4c: bl #0x4580 // _objc_msgSend$description
+3d50: mov x29, x29
+3d54: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3d58: str x0, [sp, #0x90]
+3d5c: bl #0x2c04 // _Quote
+3d60: mov x29, x29
+3d64: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3d68: ldr x1, [sp, #0x208]
+3d6c: str x0, [sp, #0x88]
+3d70: ldr x0, [sp, #0x340]
+3d74: ldr x2, [sp, #0x290]
+3d78: bl #0x47e0 // _objc_msgSend$objectForKeyedSubscript:
+3d7c: mov x29, x29
+3d80: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3d84: str x0, [sp, #0x80]
+3d88: ldr w8, [sp, #0x33c]
+3d8c: add w1, w8, #1
+3d90: bl #0x3238 // _Describe
+3d94: mov x29, x29
+3d98: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3d9c: ldr x1, [sp, #0x208]
+3da0: ldr x10, [sp, #0x88]
+3da4: mov x8, x0
+3da8: ldr x0, [sp, #0x60]
+3dac: str x8, [sp, #0x78]
+3db0: mov x9, sp
+3db4: str x10, [x9]
+3db8: str x8, [x9, #8]
+3dbc: adrp x2, #0x9000
+3dc0: add x2, x2, #0x7f8
+3dc4: bl #0x4920 // _objc_msgSend$stringWithFormat:
+3dc8: mov x29, x29
+3dcc: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3dd0: ldr x1, [sp, #0x208]
+3dd4: mov x2, x0
+3dd8: ldr x0, [sp, #0x68]
+3ddc: str x2, [sp, #0x70]
+3de0: bl #0x4400 // _objc_msgSend$addObject:
+3de4: ldr x0, [sp, #0x70]
+3de8: adrp x8, #0x8000
+3dec: ldr x8, [x8, #0x110]
+3df0: blr x8
+3df4: ldr x0, [sp, #0x78]
+3df8: adrp x8, #0x8000
+3dfc: ldr x8, [x8, #0x110]
+3e00: blr x8
+3e04: ldr x0, [sp, #0x80]
+3e08: adrp x8, #0x8000
+3e0c: ldr x8, [x8, #0x110]
+3e10: blr x8
+3e14: ldr x0, [sp, #0x88]
+3e18: adrp x8, #0x8000
+3e1c: ldr x8, [x8, #0x110]
+3e20: blr x8
+3e24: ldr x0, [sp, #0x90]
+3e28: adrp x8, #0x8000
+3e2c: ldr x8, [x8, #0x110]
+3e30: blr x8
+3e34: b #0x3e38
+3e38: ldr x0, [sp, #0x98]
+3e3c: ldr x8, [sp, #0xa0]
+3e40: add x8, x8, #1
+3e44: subs x9, x8, x0
+3e48: str x8, [sp, #0xb0]
+3e4c: str x0, [sp, #0xb8]
+3e50: b.lo #0x3cc8
+3e54: b #0x3e58
+3e58: ldr x1, [sp, #0x208]
+3e5c: ldr x0, [sp, #0xc8]
+3e60: add x2, sp, #0x250
+3e64: add x3, sp, #0x368
+3e68: mov x4, #0x10
+3e6c: bl #0x4540 // _objc_msgSend$countByEnumeratingWithState:objects:count:
+3e70: mov x8, #0
+3e74: str x8, [sp, #0xb0]
+3e78: mov x8, x0
+3e7c: str x8, [sp, #0xb8]
+3e80: cbnz x0, #0x3cc8
+3e84: b #0x3e88
+3e88: str wzr, [sp, #0x338]
+3e8c: b #0x3e90
+3e90: ldr x0, [sp, #0xc8]
+3e94: adrp x8, #0x8000
+3e98: ldr x8, [x8, #0x110]
+3e9c: blr x8
+3ea0: ldr w8, [sp, #0x338]
+3ea4: cbz w8, #0x3eb0
+3ea8: b #0x3eac
+3eac: b #0x3eb4
+3eb0: b #0x3eb4
+3eb4: ldr x1, [sp, #0x208]
+3eb8: adrp x8, #0x8000
+3ebc: ldr x8, [x8, #0x48]
+3ec0: str x8, [sp, #0x48]
+3ec4: add x8, sp, #0x298
+3ec8: str x8, [sp, #0x58]
+3ecc: ldr x0, [sp, #0x298]
+3ed0: adrp x2, #0x9000
+3ed4: add x2, x2, #0x478
+3ed8: bl #0x44c0 // _objc_msgSend$componentsJoinedByString:
+3edc: mov x29, x29
+3ee0: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3ee4: ldr x1, [sp, #0x208]
+3ee8: mov x8, x0
+3eec: ldr x0, [sp, #0x48]
+3ef0: str x8, [sp, #0x50]
+3ef4: mov x9, sp
+3ef8: str x8, [x9]
+3efc: adrp x2, #0x9000
+3f00: add x2, x2, #0x818
+3f04: bl #0x4920 // _objc_msgSend$stringWithFormat:
+3f08: mov x29, x29
+3f0c: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3f10: mov x8, x0
+3f14: ldr x0, [sp, #0x50]
+3f18: str x8, [sp, #0x348]
+3f1c: adrp x8, #0x8000
+3f20: ldr x8, [x8, #0x110]
+3f24: blr x8
+3f28: ldr x0, [sp, #0x58]
+3f2c: mov w8, #1
+3f30: str w8, [sp, #0x338]
+3f34: mov x1, #0
+3f38: bl #0x4300 // _objc_storeStrong
+3f3c: b #0x40d8
+3f40: ldr x0, [sp, #0x340]
+3f44: adrp x8, #0xc000
+3f48: ldr x1, [x8, #0x210]
+3f4c: bl #0x4294 // _objc_getAssociatedObject
+3f50: mov x29, x29
+3f54: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3f58: str x0, [sp, #0x248]
+3f5c: ldr x8, [sp, #0x248]
+3f60: cbnz x8, #0x3fdc
+3f64: b #0x3f68
+3f68: ldr x1, [sp, #0x208]
+3f6c: adrp x8, #0x8000
+3f70: ldr x0, [x8, #0x40]
+3f74: mov x8, #1
+3f78: str x8, [sp, #0x40]
+3f7c: str x8, [sp, #0x240]
+3f80: ldr x9, [sp, #0x240]
+3f84: adrp x8, #0xc000
+3f88: add x8, x8, #0x2a0
+3f8c: ldadd x9, x8, [x8]
+3f90: add x8, x8, x9
+3f94: str x8, [sp, #0x238]
+3f98: ldr x2, [sp, #0x238]
+3f9c: bl #0x47a0 // _objc_msgSend$numberWithUnsignedLongLong:
+3fa0: mov x29, x29
+3fa4: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3fa8: mov x8, x0
+3fac: ldr x0, [sp, #0x248]
+3fb0: str x8, [sp, #0x248]
+3fb4: adrp x8, #0x8000
+3fb8: ldr x8, [x8, #0x110]
+3fbc: blr x8
+3fc0: ldr x3, [sp, #0x40]
+3fc4: ldr x0, [sp, #0x340]
+3fc8: adrp x8, #0xc000
+3fcc: ldr x1, [x8, #0x210]
+3fd0: ldr x2, [sp, #0x248]
+3fd4: bl #0x42f4 // _objc_setAssociatedObject
+3fd8: b #0x3fdc
+3fdc: ldr x0, [sp, #0x340]
+3fe0: bl #0x430c // _object_getClass
+3fe4: bl #0x4138 // _NSStringFromClass
+3fe8: mov x29, x29
+3fec: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+3ff0: ldr x1, [sp, #0x208]
+3ff4: str x0, [sp, #0x230]
+3ff8: ldr x0, [sp, #0x230]
+3ffc: adrp x2, #0x9000
+4000: add x2, x2, #0x838
+4004: bl #0x4680 // _objc_msgSend$hasPrefix:
+4008: tbz w0, #0, #0x4044
+400c: b #0x4010
+4010: ldr x1, [sp, #0x208]
+4014: ldr x0, [sp, #0x230]
+4018: mov x2, #0xf
+401c: bl #0x4960 // _objc_msgSend$substringFromIndex:
+4020: mov x29, x29
+4024: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+4028: mov x8, x0
+402c: ldr x0, [sp, #0x230]
+4030: str x8, [sp, #0x230]
+4034: adrp x8, #0x8000
+4038: ldr x8, [x8, #0x110]
+403c: blr x8
+4040: b #0x4044
+4044: ldr x1, [sp, #0x208]
+4048: adrp x8, #0x8000
+404c: ldr x0, [x8, #0x48]
+4050: add x8, sp, #0x230
+4054: str x8, [sp, #0x28]
+4058: ldr x10, [sp, #0x230]
+405c: add x8, sp, #0x248
+4060: str x8, [sp, #0x30]
+4064: ldr x8, [sp, #0x248]
+4068: mov x9, sp
+406c: str x10, [x9]
+4070: str x8, [x9, #8]
+4074: adrp x2, #0x9000
+4078: add x2, x2, #0x858
+407c: bl #0x4920 // _objc_msgSend$stringWithFormat:
+4080: mov x29, x29
+4084: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+4088: str x0, [sp, #0x20]
+408c: bl #0x2c04 // _Quote
+4090: mov x29, x29
+4094: bl #0x42e8 // _objc_retainAutoreleasedReturnValue
+4098: mov x8, x0
+409c: ldr x0, [sp, #0x20]
+40a0: str x8, [sp, #0x348]
+40a4: adrp x8, #0x8000
+40a8: ldr x8, [x8, #0x110]
+40ac: blr x8
+40b0: ldr x0, [sp, #0x28]
+40b4: mov w8, #1
+40b8: str w8, [sp, #0x338]
+40bc: mov x1, #0
+40c0: str x1, [sp, #0x38]
+40c4: bl #0x4300 // _objc_storeStrong
+40c8: ldr x0, [sp, #0x30]
+40cc: ldr x1, [sp, #0x38]
+40d0: bl #0x4300 // _objc_storeStrong
+40d4: b #0x40d8
+40d8: add x0, sp, #0x340
+40dc: mov x1, #0
+40e0: bl #0x4300 // _objc_storeStrong
+40e4: ldr x8, [sp, #0x348]
+40e8: str x8, [sp, #0x18]
+40ec: ldur x9, [x29, #-0x18]
+40f0: adrp x8, #0x8000
+40f4: ldr x8, [x8, #0x160]
+40f8: ldr x8, [x8]
+40fc: subs x8, x8, x9
+4100: b.eq #0x410c
+4104: b #0x4108
+4108: bl #0x4174 // ___stack_chk_fail
+410c: ldr x0, [sp, #0x18]
+4110: add sp, sp, #0x470
+4114: ldp x29, x30, [sp, #0x10]
+4118: ldp x28, x27, [sp], #0x20
+411c: b #0x4270

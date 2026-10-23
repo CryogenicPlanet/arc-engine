@@ -1,0 +1,388 @@
+diff --git a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.h b/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.h
+index 360d1abf0b..8ddc0d2826 100644
+--- a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.h
++++ b/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.h
+@@ -6,6 +6,7 @@
+ #define CHROME_BROWSER_UI_BROWSER_WEB_CONTENTS_DELEGATE_BROWSER_WEB_CONTENTS_DELEGATE_H_
+ 
+ #include "base/memory/raw_ref.h"
++#include "base/memory/weak_ptr.h"
+ #include "base/timer/elapsed_timer.h"
+ #include "content/public/browser/file_select_listener.h"
+ #include "content/public/browser/web_contents_delegate.h"
+@@ -267,6 +268,9 @@ class BrowserWebContentsDelegate : public content::WebContentsDelegate {
+       content::RenderFrameHost* render_frame_host) override;
+ 
+  private:
++  void CloseContentsWithoutHostHook(content::WebContents* source);
++  void ContinueHostCloseContents(base::WeakPtr<content::WebContents> source);
++
+   const base::ElapsedTimer creation_timer_;
+ 
+   const raw_ref<ExclusiveAccessManager> exclusive_access_manager_;
+@@ -278,6 +282,7 @@ class BrowserWebContentsDelegate : public content::WebContentsDelegate {
+   const raw_ref<BrowserUiController> browser_ui_controller_;
+   const raw_ref<BrowserWindowInterface> browser_;
+   ui::ScopedUnownedUserData<BrowserWebContentsDelegate> scoped_data_holder_;
++  base::WeakPtrFactory<BrowserWebContentsDelegate> weak_factory_{this};
+ };
+ 
+ #endif  // CHROME_BROWSER_UI_BROWSER_WEB_CONTENTS_DELEGATE_BROWSER_WEB_CONTENTS_DELEGATE_H_
+diff --git a/chrome/browser/ui/unload_controller.cc b/chrome/browser/ui/unload_controller.cc
+index fb499c2360..e7d4749388 100644
+--- a/chrome/browser/ui/unload_controller.cc
++++ b/chrome/browser/ui/unload_controller.cc
+@@ -6,6 +6,7 @@
+ 
+ #include <algorithm>
+ 
++#include "base/command_line.h"
+ #include "base/functional/bind.h"
+ #include "base/location.h"
+ #include "base/task/single_thread_task_runner.h"
+@@ -628,6 +629,13 @@ void UnloadController::OnTabStripModelChanged(
+ }
+ 
+ void UnloadController::TabStripEmpty() {
++  // Closing one hosted tab does not start a window-close transaction. Keep the
++  // idle state so Arc can insert a replacement tab into the same Browser.
++  if (state_ == State::kIdle && !force_skip_warning_user_on_close() &&
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    return;
++  }
++
+   // Set state_ here, so that extensions, etc, do not attempt to add tabs to the
+   // browser before it closes.
+   if (state_ == State::kIdle) {
+diff --git a/content/browser/renderer_host/browser_compositor_view_mac.mm b/content/browser/renderer_host/browser_compositor_view_mac.mm
+index 4ab8a9cf16..8df4b4f10e 100644
+--- a/content/browser/renderer_host/browser_compositor_view_mac.mm
++++ b/content/browser/renderer_host/browser_compositor_view_mac.mm
+@@ -4,6 +4,8 @@
+ 
+ #include "content/browser/renderer_host/browser_compositor_view_mac.h"
+ 
++#include "content/public/browser/host_app_hooks.h"
++
+ #import <Cocoa/Cocoa.h>
+ #include <stdint.h>
+ 
+@@ -72,6 +74,14 @@
+   // Ensure that copy callbacks completed or cancelled during further tear-down
+   // do not call back into this.
+   weak_factory_.InvalidateWeakPtrs();
++  // Remove host observation/registry identity before this object is freed,
++  // including destruction after it had already detached its compositor.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto callback = GetHostOwnCompositorCallback();
++    if (callback) {
++      callback.Run(this, nullptr);
++    }
++  }
+ 
+   TransitionToState(HasNoCompositor);
+   delegated_frame_host_.reset();
+@@ -249,6 +259,12 @@
+     root_layer_->parent()->Remove(root_layer_.get());
+   }
+   if (state_ == HasOwnCompositor) {
++    if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++      auto callback = GetHostOwnCompositorCallback();
++      if (callback) {
++        callback.Run(this, nullptr);
++      }
++    }
+     recyclable_compositor_->widget()->ResetNSView();
+     recyclable_compositor_->compositor()->SetRootLayer(nullptr);
+     recyclable_compositor_.reset();
+@@ -283,6 +299,13 @@
+     recyclable_compositor_->compositor()->SetBackgroundColor(background_color_);
+     recyclable_compositor_->widget()->SetNSView(
+         accelerated_widget_mac_ns_view_);
++    // Arc observes ACKs on an owned compositor before it starts drawing.
++    if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++      auto callback = GetHostOwnCompositorCallback();
++      if (callback) {
++        callback.Run(this, recyclable_compositor_->compositor());
++      }
++    }
+     recyclable_compositor_->Unsuspend();
+     state_ = HasOwnCompositor;
+   }
+diff --git a/content/browser/renderer_host/render_widget_host_view_mac.mm b/content/browser/renderer_host/render_widget_host_view_mac.mm
+index f99512647a..797168fa77 100644
+--- a/content/browser/renderer_host/render_widget_host_view_mac.mm
++++ b/content/browser/renderer_host/render_widget_host_view_mac.mm
+@@ -4,6 +4,9 @@
+ 
+ #include "content/browser/renderer_host/render_widget_host_view_mac.h"
+ 
++#include "content/browser/web_contents/web_contents_impl.h"
++#include "content/public/browser/host_app_hooks.h"
++
+ #import <Carbon/Carbon.h>
+ 
+ #include <limits>
+@@ -164,7 +167,19 @@ void SendVisibleTimeRequestToDelegatedFrameHost(
+ void RenderWidgetHostViewMac::OnFrameTokenChanged(
+     uint32_t frame_token,
+     base::TimeTicks activation_time) {
++  // Processing the frame token may run activation observers and destroy us.
++  auto weak_this = weak_factory_.GetWeakPtr();
+   OnFrameTokenChangedForView(frame_token, activation_time);
++  if (!weak_this || !weak_this->host()) {
++    return;
++  }
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto callback = GetHostFrameTokenCallback();
++    auto* contents = WebContentsImpl::FromRenderWidgetHostImpl(weak_this->host());
++    if (callback && contents) {
++      callback.Run(contents, weak_this->host());
++    }
++  }
+ }
+ 
+ void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
+@@ -625,8 +640,29 @@ void SendVisibleTimeRequestToDelegatedFrameHost(
+     return;
+   }
+ 
++  auto weak_this = weak_factory_.GetWeakPtr();
+   host()->WasHidden();
+-  browser_compositor_->SetRenderWidgetHostIsHidden(true);
++  if (!weak_this) {
++    return;
++  }
++  const bool hosted = base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app");
++  // Arc's default disableCompositorRecycling=false retains the compositor
++  // while an occluded view remains attached to a window.
++  const bool unparented = hosted && ![GetInProcessNSView() window];
++  browser_compositor_->SetRenderWidgetHostIsHidden(!hosted || unparented);
++  if (!weak_this) {
++    return;
++  }
++  if (hosted && unparented && host()) {
++    auto callback = GetHostViewUnparentedCallback();
++    auto* contents = WebContentsImpl::FromRenderWidgetHostImpl(host());
++    if (callback && contents) {
++      callback.Run(contents, host());
++    }
++    if (!weak_this) {
++      return;
++    }
++  }
+ 
+   // Headless mode forces focus change propagation inside Focus(), since there
+   // is no NSWindow to deliver the normal focus change notifications. As a
+@@ -1205,11 +1241,20 @@ void CombineTextNodesAndMakeCallback(SpeechCallback callback,
+   }
+   // TODO(crbug.com/40743791): Resolve potential differences between display
+   // info caches in RenderWidgetHostViewMac and BrowserCompositorMac.
++  auto weak_this = weak_factory_.GetWeakPtr();
+   RenderWidgetHostViewBase::CopyMainAndPopupFromSurface(
+       host()->GetWeakPtr(),
+       browser_compositor_->GetDelegatedFrameHost()->GetWeakPtr(), popup_host,
+       popup_frame_host, src_subrect, dst_size, GetDeviceScaleFactor(), timeout,
+       std::move(callback));
++  if (weak_this && weak_this->host() &&
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto host_copy_callback = GetHostSurfaceCopyCallback();
++    auto* contents = WebContentsImpl::FromRenderWidgetHostImpl(weak_this->host());
++    if (host_copy_callback && contents) {
++      host_copy_callback.Run(contents, weak_this->host());
++    }
++  }
+ }
+ 
+ 
+diff --git a/content/browser/web_contents/web_contents_impl.cc b/content/browser/web_contents/web_contents_impl.cc
+index f038e08ea0..6776dd846e 100644
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "content/browser/web_contents/web_contents_impl.h"
+ 
++#include "content/public/browser/host_app_hooks.h"
++
+ #include <stddef.h>
+ 
+ #include <algorithm>
+@@ -289,6 +291,44 @@
+ 
+ namespace content {
+ 
++namespace {
++thread_local int g_host_app_callback_depth = 0;
++class ScopedHostAppCallback {
++ public:
++  ScopedHostAppCallback() { ++g_host_app_callback_depth; }
++  ~ScopedHostAppCallback() { --g_host_app_callback_depth; }
++};
++}  // namespace
++
++HostNavigationStateCallback& GetHostNavigationStateCallback() {
++  static base::NoDestructor<HostNavigationStateCallback> callback;
++  return *callback;
++}
++HostTargetURLCallback& GetHostTargetURLCallback() {
++  static base::NoDestructor<HostTargetURLCallback> callback;
++  return *callback;
++}
++HostFrameTokenCallback& GetHostFrameTokenCallback() {
++  static base::NoDestructor<HostFrameTokenCallback> callback;
++  return *callback;
++}
++HostSurfaceCopyCallback& GetHostSurfaceCopyCallback() {
++  static base::NoDestructor<HostSurfaceCopyCallback> callback;
++  return *callback;
++}
++HostViewUnparentedCallback& GetHostViewUnparentedCallback() {
++  static base::NoDestructor<HostViewUnparentedCallback> callback;
++  return *callback;
++}
++HostOwnCompositorCallback& GetHostOwnCompositorCallback() {
++  static base::NoDestructor<HostOwnCompositorCallback> callback;
++  return *callback;
++}
++HostWebContentsClosedCallback& GetHostWebContentsClosedCallback() {
++  static base::NoDestructor<HostWebContentsClosedCallback> callback;
++  return *callback;
++}
++
+ namespace {
+ 
+ // These values are persisted to logs. Entries should not be renumbered and
+@@ -1615,6 +1655,14 @@ WebContentsImpl::~WebContentsImpl() {
+ 
+   observers_.NotifyObservers(&WebContentsObserver::WebContentsDestroyed);
+ 
++  if (this == outermost &&
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    const auto callback = GetHostWebContentsClosedCallback();
++    if (callback) {
++      callback.Run(this);
++    }
++  }
++
+ #if BUILDFLAG(IS_ANDROID)
+   // Destroy the WebContentsAndroid here, so that its observers still can access
+   // `this`.
+@@ -3077,6 +3125,21 @@ void WebContentsImpl::NotifyNavigationStateChanged(
+     media_web_contents_observer_->MaybeUpdateAudibleState();
+   }
+ 
++  // Arc state is published before forwarding to Chrome's delegate.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto callback = GetHostNavigationStateCallback();
++    if (callback) {
++      base::WeakPtr<WebContentsImpl> weak_this = weak_factory_.GetWeakPtr();
++      {
++        ScopedHostAppCallback scope;
++        callback.Run(this, changed_flags);
++      }
++      if (!weak_this) {
++        return;
++      }
++    }
++  }
++
+   if (delegate_) {
+     delegate_->NavigationStateChanged(this, changed_flags);
+   }
+@@ -10394,9 +10457,21 @@ void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
+ void WebContentsImpl::ClearTargetURL() {
+   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::ClearTargetURL");
+   frame_that_set_last_target_url_ = nullptr;
++  base::WeakPtr<WebContentsImpl> weak_this = weak_factory_.GetWeakPtr();
+   if (delegate_) {
+     delegate_->UpdateTargetURL(this, GURL());
+   }
++  if (!weak_this) {
++    return;
++  }
++  // Arc's target status follows the underlying delegate, including clears.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto callback = GetHostTargetURLCallback();
++    if (callback) {
++      ScopedHostAppCallback scope;
++      callback.Run(this, GURL());
++    }
++  }
+ }
+ 
+ void WebContentsImpl::Close() {
+@@ -11029,9 +11104,21 @@ void WebContentsImpl::UpdateTargetURL(RenderFrameHostImpl* render_frame_host,
+   frame_that_set_last_target_url_ =
+       url.is_valid() ? render_frame_host : nullptr;
+ 
++  base::WeakPtr<WebContentsImpl> weak_this = weak_factory_.GetWeakPtr();
+   if (delegate_) {
+     delegate_->UpdateTargetURL(this, url);
+   }
++  if (!weak_this) {
++    return;
++  }
++  // Arc's target status follows the underlying delegate, including clears.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto callback = GetHostTargetURLCallback();
++    if (callback) {
++      ScopedHostAppCallback scope;
++      callback.Run(this, url);
++    }
++  }
+ }
+ 
+ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
+diff --git a/content/public/browser/host_app_hooks.h b/content/public/browser/host_app_hooks.h
+new file mode 100644
+index 0000000000..98f7d18a71
+--- /dev/null
++++ b/content/public/browser/host_app_hooks.h
+@@ -0,0 +1,46 @@
++// Copyright 2026 ArcMod. Callbacks for an externally hosted app.
++#ifndef CONTENT_PUBLIC_BROWSER_HOST_APP_HOOKS_H_
++#define CONTENT_PUBLIC_BROWSER_HOST_APP_HOOKS_H_
++
++#include "base/functional/callback.h"
++#include "content/common/content_export.h"
++#include "content/public/browser/invalidate_type.h"
++
++class GURL;
++namespace ui { class Compositor; }
++namespace content {
++class WebContents;
++class RenderWidgetHost;
++class BrowserCompositorMac;
++// Synchronous UI-thread callbacks. Arguments are borrowed for the call.
++using HostNavigationStateCallback =
++    base::RepeatingCallback<void(WebContents*, InvalidateTypes)>;
++using HostTargetURLCallback =
++    base::RepeatingCallback<void(WebContents*, const GURL&)>;
++using HostFrameTokenCallback =
++    base::RepeatingCallback<void(WebContents*, RenderWidgetHost*)>;
++using HostSurfaceCopyCallback = HostFrameTokenCallback;
++using HostViewUnparentedCallback = HostFrameTokenCallback;
++using HostOwnCompositorCallback =
++    base::RepeatingCallback<void(BrowserCompositorMac*, ui::Compositor*)>;
++CONTENT_EXPORT HostNavigationStateCallback& GetHostNavigationStateCallback();
++CONTENT_EXPORT HostTargetURLCallback& GetHostTargetURLCallback();
++// Called after a Mac view processes an activated Viz frame token, including
++// frames whose render metadata is unchanged.
++// Frame/copy/unparented consumers must queue app work, never call app/KVO here.
++CONTENT_EXPORT HostFrameTokenCallback& GetHostFrameTokenCallback();
++CONTENT_EXPORT HostSurfaceCopyCallback& GetHostSurfaceCopyCallback();
++CONTENT_EXPORT HostViewUnparentedCallback& GetHostViewUnparentedCallback();
++// Observation changes only; consumers must not call into the app here.
++// Nonnull is sent before own-compositor Unsuspend; null precedes detach and
++// is also sent during destruction after existing weak pointers are invalid.
++CONTENT_EXPORT HostOwnCompositorCallback& GetHostOwnCompositorCallback();
++// Original custom-client phase: synchronous, after ALL WebContentsDestroyed
++// observers and before ResetWebContents/SetDelegate/physical weak invalidation.
++// Only a WC that was outermost before teardown emits this hook. FrameTrees are
++// already shut down. Consumer must find EXISTING ownership; never create a wrapper.
++using HostWebContentsClosedCallback = base::RepeatingCallback<void(WebContents*)>;
++CONTENT_EXPORT HostWebContentsClosedCallback& GetHostWebContentsClosedCallback();
++}  // namespace content
++
++#endif  // CONTENT_PUBLIC_BROWSER_HOST_APP_HOOKS_H_

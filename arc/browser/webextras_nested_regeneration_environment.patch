@@ -1,0 +1,420 @@
+diff --git a/arc/tools/regen-patches.sh b/arc/tools/regen-patches.sh
+--- a/arc/tools/regen-patches.sh
++++ b/arc/tools/regen-patches.sh
+@@ -1,36 +1,16 @@
+ #!/bin/bash
+-# Regenerate patches/*.patch from the Chromium tree using patches/MANIFEST (file -> owning patch).
+-# Fails if a changed Chromium file isn't assigned in the manifest. Run under arc/tools/locked.sh.
+-#
+-# Safety (after the 17:45 UTC incident, where a fixture's private GIT_INDEX_FILE made every patch a
+-# whole-file "new file" diff): inherited git environment is ignored, the real chromium/src index is used,
+-# a patch that marks a file tracked in HEAD as new is refused, and patches are replaced atomically.
++# Regenerate manifest-owned Chromium and the known DevTools frontend gitlink.
++# Run under arc/tools/locked.sh. The helper copies each discovered real index;
++# manifest-only add-N happens privately, never in any caller-selected index.
+ set -euo pipefail
+ unset GIT_INDEX_FILE GIT_DIR GIT_WORK_TREE GIT_OBJECT_DIRECTORY GIT_COMMON_DIR GIT_NAMESPACE GIT_PREFIX
+-E="$(cd "$(dirname "$0")/../.." && pwd)"
++for git_variable in "${!GIT_@}"; do unset "$git_variable"; done
++# Exact trusted App8 for discovery and helper Git: no caller HOME/XDG/config.
++export PATH=/usr/bin:/bin
++trusted_git_environment=(PATH=/usr/bin:/bin LANG=C LC_ALL=C GIT_OPTIONAL_LOCKS=0
++  GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_SYSTEM=/dev/null GIT_CONFIG_GLOBAL=/dev/null
++  GIT_ATTR_NOSYSTEM=1)
++E="$(cd "$(dirname "$0")/../.." && pwd -P)"
+ SRC="$E/chromium/src"
+-[ "$(git -C "$SRC" rev-parse --show-toplevel)" = "$SRC" ] || { echo "not the real chromium/src checkout"; exit 1; }
+-cd "$SRC"
+-changed=$(git status --porcelain | grep -v '^?? arc$' | awk '{print $2}' | grep -v '^arc$' || true)
+-assigned=$(grep -v '^#' "$E/patches/MANIFEST" | awk '{print $2}')
+-missing=$(comm -23 <(echo "$changed" | sort -u) <(echo "$assigned" | sort -u) | grep -v '^$' || true)
+-if [ -n "$missing" ]; then
+-  echo "unassigned changed files (add them to patches/MANIFEST):"; echo "$missing"; exit 1
+-fi
+-tmp="$(mktemp -d)"
+-trap 'rm -rf "$tmp"' EXIT
+-for patch in $(grep -v '^#' "$E/patches/MANIFEST" | awk '{print $1}' | sort -u); do
+-  files=$(grep -v '^#' "$E/patches/MANIFEST" | awk -v p="$patch" '$1==p {print $2}')
+-  for f in $files; do git ls-files --error-unmatch "$f" >/dev/null 2>&1 || git add -N "$f"; done
+-  git diff --no-ext-diff -- $files > "$tmp/$patch"
+-  # A file that exists in HEAD must never appear as a new file.
+-  for f in $(grep -B1 '^+++ b/' "$tmp/$patch" | grep -A1 '^--- /dev/null' | grep '^+++ b/' | sed 's#+++ b/##'); do
+-    if git cat-file -e "HEAD:$f" 2>/dev/null; then
+-      echo "REFUSED: $patch would mark tracked file $f as new (wrong index?); no patch written"; exit 1
+-    fi
+-  done
+-done
+-for p in "$tmp"/*.patch; do
+-  mv "$p" "$E/patches/$(basename "$p")"
+-  echo "$(basename "$p"): $(grep -c '^+++ ' "$E/patches/$(basename "$p")") files"
+-done
++[ "$(/usr/bin/env -i "${trusted_git_environment[@]}" git -C "$SRC" rev-parse --show-toplevel)" = "$SRC" ] || { echo "not the real chromium/src checkout"; exit 1; }
++exec /usr/bin/env -i "${trusted_git_environment[@]}" python3 -B "$E/arc/tools/regen-chromium-patches.py"
+diff --git a/arc/tools/regen-chromium-patches.py b/arc/tools/regen-chromium-patches.py
+new file mode 100644
+--- /dev/null
++++ b/arc/tools/regen-chromium-patches.py
+@@ -0,0 +1,363 @@
++#!/usr/bin/env python3
++"""Regenerate manifest patches with the one known DevTools frontend gitlink.
++
++Run mutations under locked.sh. Discover real indices with no inherited Git
++context, copy them internally, and add manifest-only new leaves privately.
++"""
++import argparse
++import hashlib
++import os
++from pathlib import Path, PurePosixPath
++import re
++import shutil
++import stat
++import subprocess
++import tempfile
++
++FRONTEND = 'third_party/devtools-frontend/src'
++# Exact trusted App8. Only private copied-index commands add GIT_INDEX_FILE.
++ENV = {'PATH': '/usr/bin:/bin', 'LANG': 'C', 'LC_ALL': 'C',
++       'GIT_OPTIONAL_LOCKS': '0', 'GIT_CONFIG_NOSYSTEM': '1',
++       'GIT_CONFIG_SYSTEM': '/dev/null', 'GIT_CONFIG_GLOBAL': '/dev/null',
++       'GIT_ATTR_NOSYSTEM': '1'}
++REPO_ENV = {}
++REAL_INDEX = {}
++REAL_HEAD = {}
++
++def require(value, message):
++    if not value:
++        raise ValueError(message)
++
++def git(repo, *args, check=True, input_bytes=None, real=False):
++    result = subprocess.run(['git', '-c', 'diff.ignoreSubmodules=none', '-c', 'core.splitIndex=false',
++                             '-C', str(repo), *args], env=ENV if real else REPO_ENV.get(str(repo), ENV),
++                            capture_output=True, input=input_bytes)
++    if check:
++        require(result.returncode == 0, result.stderr.decode(errors='replace').strip())
++    return result
++
++def path_name(value):
++    require(isinstance(value, str) and re.fullmatch(r'[A-Za-z0-9_.+/-]+', value), 'invalid manifest path')
++    path = PurePosixPath(value)
++    require(not path.is_absolute() and str(path) == value and
++            all(part not in ('.', '..', '.git') for part in path.parts), 'unsafe manifest path: '+value)
++    return value
++
++def regular(root, relative, missing=False):
++    path_name(relative)
++    current = root
++    for part in PurePosixPath(relative).parts:
++        current = current/part
++        require(not current.is_symlink(), 'symlink input: '+relative)
++        if not current.exists():
++            require(missing, 'missing input: '+relative)
++            return root/relative
++        require(current.is_file() if current == root/relative else current.is_dir(), 'nonregular input: '+relative)
++    return current
++
++def manifest(root):
++    path = regular(root, 'patches/MANIFEST')
++    raw = path.read_bytes()
++    owners = {}
++    for line in raw.decode().splitlines():
++        if not line.strip() or line.lstrip().startswith('#'):
++            continue
++        fields = line.split()
++        require(len(fields) == 2, 'invalid manifest row')
++        patch, relative = fields
++        require(re.fullmatch(r'[0-9]{4}-[A-Za-z0-9_.-]+\.patch', patch), 'invalid patch name')
++        path_name(relative)
++        require(relative not in owners, 'duplicate manifest ownership: '+relative)
++        owners[relative] = patch
++    require(owners, 'empty manifest')
++    return raw, owners
++
++def entries(repo):
++    result = {}
++    for item in git(repo, 'ls-files', '--stage', '-z').stdout.split(b'\0'):
++        if not item:
++            continue
++        head, name = item.decode().split('\t', 1)
++        mode, oid, stage = head.split()
++        require(stage == '0', 'conflicted index: '+name)
++        result[name] = (mode, oid)
++    for item in git(repo, 'ls-files', '-v', '-z').stdout.split(b'\0'):
++        if item:
++            require(item[:2] == b'H ', 'hidden/unsupported index flags: '+item[2:].decode())
++    return result
++
++def index_identity(path):
++    before = path.stat()
++    digest = hashlib.sha256(path.read_bytes()).hexdigest()
++    after = path.stat()
++    fields = ('st_dev', 'st_ino', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
++    require(all(getattr(before, k) == getattr(after, k) for k in fields), 'real index changed while reading')
++    return (str(path.resolve()), digest, *(getattr(after, k) for k in fields))
++
++def real_index_path(repo):
++    path = Path(git(repo, 'rev-parse', '--git-path', 'index', real=True).stdout.decode().strip())
++    return path if path.is_absolute() else repo/path
++
++def discover_index(repo):
++    path = real_index_path(repo)
++    # Even read-only Git split-index probes can freshen real shared-file times.
++    # Refuse before any index-reading Git command. Stale shared files also
++    # conservatively refuse; this tool never removes/restores those files.
++    require(not any(path.parent.glob('sharedindex.*')), 'real shared-index files are unsupported')
++    require(git(repo, 'rev-parse', '--show-toplevel', real=True).stdout.decode().strip() == str(repo),
++            'not the real Chromium checkout: '+str(repo))
++    require(not path.is_symlink() and path.is_file(), 'missing/nonregular real index')
++    REAL_INDEX[str(repo)] = (path, index_identity(path))
++    REAL_HEAD[str(repo)] = git(repo, 'rev-parse', 'HEAD', real=True).stdout
++
++def repositories(source, owners):
++    # Discovery always selects each actual index before any private index exists.
++    REPO_ENV.clear();REAL_INDEX.clear();REAL_HEAD.clear()
++    discover_index(source)
++    outer = entries(source)
++    repos = {'': (source, outer)}
++    if any(path.startswith(FRONTEND+'/') for path in owners):
++        require(outer.get(FRONTEND, ('',))[0] == '160000', 'frontend is not indexed gitlink')
++        head_entry = git(source, 'ls-tree', 'HEAD', '--', FRONTEND).stdout.decode().strip()
++        require(head_entry, 'frontend missing from outer HEAD')
++        mode, kind, oid_and_path = head_entry.split(' ', 2)
++        oid, name = oid_and_path.split('\t')
++        require(mode == '160000' and kind == 'commit' and name == FRONTEND and
++                outer[FRONTEND][1] == oid, 'frontend gitlink index/HEAD differs')
++        nested = regular_directory(source, FRONTEND)
++        discover_index(nested)
++        require(git(nested, 'rev-parse', 'HEAD').stdout.decode().strip() == oid, 'frontend checkout HEAD differs from gitlink')
++        repos[FRONTEND] = (nested, entries(nested))
++    return repos
++
++def private_indexes(repos, owners, directory):
++    for number, (prefix, (repo, index)) in enumerate(sorted(repos.items())):
++        actual, identity = REAL_INDEX[str(repo)]
++        require(index_identity(actual) == identity, 'real index changed before copying')
++        private = directory/('index-'+str(number))
++        shutil.copyfile(actual, private)
++        require(index_identity(actual) == identity and
++                hashlib.sha256(private.read_bytes()).hexdigest() == identity[1], 'real index changed while copying')
++        REPO_ENV[str(repo)] = dict(ENV, GIT_INDEX_FILE=str(private))
++        for relative in owners:
++            owner_prefix, leaf = location(relative, repos)
++            if owner_prefix == prefix and leaf not in index:
++                # Never manufacture a new file from an omitted HEAD-tracked leaf.
++                require(not git(repo, 'ls-tree', '-z', 'HEAD', '--', leaf, real=True).stdout,
++                        'REFUSED: HEAD-tracked manifest file missing from real index: '+relative)
++                git(repo, 'add', '--intent-to-add', '--', leaf)
++        repos[prefix] = (repo, entries(repo))
++
++def regular_directory(root, relative):
++    current = root
++    for part in PurePosixPath(relative).parts:
++        current = current/part
++        require(not current.is_symlink() and current.is_dir(), 'invalid checkout directory: '+relative)
++    return current
++
++def location(relative, repos):
++    if relative.startswith(FRONTEND+'/'):
++        require(FRONTEND in repos, 'unsupported nested checkout')
++        return FRONTEND, relative[len(FRONTEND)+1:]
++    return '', relative
++
++def validate_sources(source, owners, repos):
++    for relative in owners:
++        prefix, leaf = location(relative, repos)
++        repo, index = repos[prefix]
++        require(index.get(leaf, ('',))[0] in ('100644', '100755'), 'untracked/unsupported manifest input: '+relative)
++        require(b'\0' not in regular(source, relative).read_bytes(), 'binary source is unsupported: '+relative)
++    for prefix, (repo, _) in repos.items():
++        # Explicitly inspect the nested worktree; global Git configuration may
++        # hide dirty submodules from outer status.
++        output = git(repo, 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--ignore-submodules=none').stdout
++        for item in output.split(b'\0'):
++            if not item:
++                continue
++            code, leaf = item[:2].decode(), item[3:].decode()
++            if not prefix and leaf == 'arc' and code == '??':
++                require((source/'arc').is_symlink(), 'unexpected arc checkout entry')
++                continue
++            if not prefix and leaf == FRONTEND and FRONTEND in repos:
++                require(code in (' M', '  '), 'frontend gitlink changed')
++                continue
++            require(not any(c in code for c in 'RCUD') and code != '??', 'unsupported/untracked change: '+leaf)
++            path_name(leaf)
++            relative = prefix+'/'+leaf if prefix else leaf
++            require(relative in owners, 'unassigned changed file: '+relative)
++
++def fingerprint(root, source, owners, repos):
++    def digest(path):
++        return hashlib.sha256(path.read_bytes()).hexdigest()
++    result = {'manifest': digest(root/'patches/MANIFEST')}
++    for prefix, (repo, _) in repos.items():
++        head = git(repo, 'rev-parse', 'HEAD', real=True).stdout
++        require(head == REAL_HEAD[str(repo)], 'real repository HEAD changed')
++        result[prefix+':HEAD'] = head
++        index, identity = REAL_INDEX[str(repo)]
++        require(real_index_path(repo) == index and not index.is_symlink(),
++                'real index discovery changed')
++        require(index_identity(index) == identity, 'real index changed during regeneration')
++        result[prefix+':index'] = identity
++        result[prefix+':status'] = git(repo, 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--ignore-submodules=none', real=True).stdout
++    for relative in owners:
++        result['source:'+relative] = file_identity(regular(source, relative))
++    for patch in set(owners.values()):
++        path = root/'patches'/patch
++        require(not path.is_symlink(), 'symlink patch output')
++        result['patch:'+patch] = output_identity(path)
++    return result
++
++def file_identity(path):
++    before = path.lstat()
++    require(stat.S_ISREG(before.st_mode), 'nonregular file changed: '+str(path))
++    digest = hashlib.sha256(path.read_bytes()).hexdigest()
++    after = path.lstat()
++    fields = ('st_dev', 'st_ino', 'st_size', 'st_mode', 'st_mtime_ns', 'st_ctime_ns')
++    require(all(getattr(before, k) == getattr(after, k) for k in fields), 'file changed while hashing: '+str(path))
++    return (digest, *(getattr(after, k) for k in fields))
++
++def output_identity(path):
++    return file_identity(path) if path.exists() or path.is_symlink() else None
++
++def owns_postimage(path, prepared_identity):
++    try:
++        # Rename may change ctime. Bytes, regular mode, device/inode, size and
++        # mtime must still match our PREPARED inode, not a foreign destination.
++        return file_identity(path)[:-1] == prepared_identity[:-1]
++    except (OSError, ValueError):
++        return False
++
++def regenerate(root):
++    root = root.resolve();source = regular_directory(root, 'chromium/src')
++    raw, owners = manifest(root);repos = repositories(source, owners)
++    # Validate exact regular/text leaves before private add-N touches them.
++    for relative in owners:
++        require(b'\0' not in regular(source, relative).read_bytes(), 'binary source is unsupported: '+relative)
++    before = fingerprint(root, source, owners, repos)
++    with tempfile.TemporaryDirectory(prefix='arccore-regen-indices-') as temporary:
++        private_indexes(repos, owners, Path(temporary))
++        validate_sources(source, owners, repos)
++        private_before = {repo: hashlib.sha256(Path(env['GIT_INDEX_FILE']).read_bytes()).hexdigest()
++                          for repo, env in REPO_ENV.items()}
++        require(fingerprint(root, source, owners, repos) == before, 'inputs changed during private index preparation')
++        generate(root, source, raw, owners, repos, before, private_before)
++
++def generate(root, source, raw, owners, repos, before, private_before):
++    outputs = {}
++    for patch in sorted(set(owners.values())):
++        chunks = [];expected = set()
++        for prefix, (repo, _) in sorted(repos.items()):
++            leaves = sorted(location(relative, repos)[1] for relative, owner in owners.items()
++                            if owner == patch and location(relative, repos)[0] == prefix)
++            if leaves:
++                lead = prefix+'/' if prefix else ''
++                names = git(repo, 'diff', '--name-status', '-z', '--no-color', '--no-ext-diff', '--no-textconv', '--no-renames', 'HEAD', '--', *leaves).stdout.split(b'\0')
++                require(names[-1] == b'' and len(names) % 2 == 1, 'invalid Git diff metadata')
++                for index in range(0, len(names)-1, 2):
++                    status, leaf = names[index].decode(), path_name(names[index+1].decode())
++                    require(status in ('A', 'M'), 'unsupported generated source change')
++                    if status == 'A':
++                        require(not git(repo, 'ls-tree', '-z', 'HEAD', '--', leaf, real=True).stdout,
++                                'REFUSED: generated new file exists in HEAD: '+lead+leaf)
++                    expected.add(lead+leaf)
++                chunks.append(git(repo, 'diff', '--no-color', '--no-ext-diff', '--no-textconv', '--no-renames',
++                                  '--src-prefix=a/'+lead, '--dst-prefix=b/'+lead, 'HEAD', '--', *leaves).stdout)
++        outputs[patch] = b''.join(chunks)
++        if outputs[patch]:generated_paths(source, outputs[patch], patch, owners, expected)
++        else:require(not expected, 'missing generated diff paths')
++    validate_sources(source, owners, {prefix: (repo, entries(repo)) for prefix, (repo, _) in repos.items()})
++    require((root/'patches/MANIFEST').read_bytes() == raw and
++            fingerprint(root, source, owners, repos) == before, 'inputs changed during regeneration')
++    require(all(hashlib.sha256(Path(REPO_ENV[repo]['GIT_INDEX_FILE']).read_bytes()).hexdigest() == digest
++                for repo, digest in private_before.items()), 'private index changed during generation')
++    originals = {name: (root/'patches'/name).read_bytes() if (root/'patches'/name).exists() else None for name in outputs}
++    prepared = {}
++    prepared_identities = {}
++    published = []
++    postimages = {}
++    try:
++        for name, data in outputs.items():
++            if originals[name] == data:
++                continue  # Preserve unchanged native patch bytes and metadata.
++            with tempfile.NamedTemporaryFile(dir=root/'patches', prefix='.'+name+'.', delete=False) as handle:
++                handle.write(data);prepared[name] = Path(handle.name)
++            path = root/'patches'/name
++            original_identity = before['patch:'+name]
++            mode = stat.S_IMODE(original_identity[4]) if original_identity else 0o644
++            prepared[name].chmod(mode)
++            prepared_identities[name] = file_identity(prepared[name])
++            require(prepared_identities[name][0] == hashlib.sha256(data).hexdigest() and
++                    stat.S_IMODE(prepared_identities[name][4]) == mode, 'prepared patch differs from generated output')
++        require(fingerprint(root, source, owners, repos) == before, 'inputs changed before publishing patches')
++        for name in prepared:
++            require(file_identity(prepared[name]) == prepared_identities[name], 'prepared patch changed before publication')
++            require(output_identity(root/'patches'/name) == before['patch:'+name],
++                    'HOLD: patch destination changed before publication: '+name)
++            os.replace(prepared[name], root/'patches'/name)
++            published.append(name)
++            postimage = file_identity(root/'patches'/name)
++            require(postimage[:-1] == prepared_identities[name][:-1],
++                    'HOLD: patch postimage changed during publication: '+name)
++            postimages[name] = postimage
++        after = dict(before)
++        for name in published:
++            after['patch:'+name] = postimages[name]
++        require(fingerprint(root, source, owners, repos) == after, 'inputs changed while publishing patches')
++    except (OSError, ValueError) as error:
++        conflicts = []
++        for name in reversed(published):
++            data = originals[name]
++            path = root/'patches'/name
++            if not owns_postimage(path, prepared_identities[name]):
++                conflicts.append(name)
++                continue
++            try:
++                if data is None:
++                    path.unlink()
++                else:
++                    with tempfile.NamedTemporaryFile(dir=root/'patches', prefix='.'+name+'.rollback.', delete=False) as handle:
++                        handle.write(data);restore = Path(handle.name)
++                    try:
++                        restore.chmod(stat.S_IMODE(before['patch:'+name][4]))
++                        # Recheck after preparing restoration, before replacement.
++                        require(owns_postimage(path, prepared_identities[name]), 'rollback postimage changed')
++                        os.replace(restore, path)
++                    finally:
++                        restore.unlink(missing_ok=True)
++            except (OSError, ValueError):
++                conflicts.append(name)
++        if conflicts:
++            raise ValueError('HOLD: rollback conflict preserved: '+', '.join(conflicts)+'; original failure: '+str(error)) from error
++        raise
++    finally:
++        for path in prepared.values():
++            path.unlink(missing_ok=True)
++    for name in outputs:
++        print(name+': '+str(outputs[name].count(b'\n+++ '))+' files')
++
++def generated_paths(source, content, patch, owners, expected):
++    # Only trusted Git-generated diffs enter here. Existing sync remains the
++    # applier; this is a text/path completeness check, not a manual patch API.
++    seen = set()
++    for item in git(source, 'apply', '--numstat', '-z', '-', input_bytes=content).stdout.split(b'\0'):
++        if not item:
++            continue
++        fields = item.decode().split('\t')
++        require(len(fields) == 3 and fields[0].isdigit() and fields[1].isdigit(), 'generated binary/unsupported diff')
++        relative = path_name(fields[2])
++        require(relative not in seen and owners.get(relative) == patch, 'generated diff ownership mismatch')
++        seen.add(relative)
++    require(seen == expected, 'generated diff paths differ from Git source diff')
++
++
++def main():
++    parser = argparse.ArgumentParser(allow_abbrev=False)
++    args = parser.parse_args()
++    try:
++        regenerate(Path(__file__).resolve().parents[2])
++    except (ValueError, OSError) as error:
++        parser.error(str(error))
++
++
++if __name__ == '__main__':main()

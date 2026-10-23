@@ -1,0 +1,195 @@
+// ==== 0x100529a48  _TtC3ADK15ChromiumBrowser::-[ChromiumBrowser_browser:didCreateNewWebContents:isActive:]  (120 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x24 bytes */
+
+void _TtC3ADK15ChromiumBrowser::__ChromiumBrowser_browser_didCreateNewWebContents_isActive__
+               (ID param_1,SEL param_2,ID param_3,ID param_4,bool param_5)
+
+{
+  FUN_10052dfe0(param_4,param_5);
+  return;
+}
+
+
+
+// ==== 0x10052dfe0  FUN_10052dfe0  (444 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+void FUN_10052dfe0(undefined8 param_1)
+
+{
+  long lVar1;
+  undefined8 uVar2;
+  undefined8 uVar3;
+  undefined8 uVar4;
+  undefined8 uVar5;
+  undefined8 *puVar6;
+  undefined8 *puVar7;
+  undefined8 uVar8;
+  undefined8 uVar9;
+  long lVar10;
+  long unaff_x20;
+  undefined8 uVar11;
+  undefined1 auStack_a8 [48];
+  undefined1 auStack_78 [24];
+  
+  puVar7 = (undefined8 *)(unaff_x20 + _TtC3ADK15ChromiumBrowser::browserDelegate);
+  _swift_beginAccess(puVar7,auStack_78,0,0);
+  puVar6 = puVar7;
+  _swift_unknownObjectWeakLoadStrong();
+  if (puVar6 != (undefined8 *)0x0) {
+    lVar10 = puVar7[1];
+    puVar7 = puVar6;
+    _swift_getObjectType();
+    FUN_1008f49bc();
+    _swift_beginAccess();
+    uVar11 = *puVar7;
+    lVar1 = unaff_x20 + _TtC3ADK15ChromiumBrowser::browserContextID;
+    _swift_beginAccess(lVar1,auStack_a8,0,0);
+    uVar2 = *(undefined8 *)(lVar1 + 8);
+    uVar4 = *(undefined8 *)(lVar1 + 0x10);
+    uVar3 = *(undefined8 *)(lVar1 + 0x18);
+    uVar5 = *(undefined8 *)(lVar1 + 0x20);
+    _swift_bridgeObjectRetain(uVar11);
+    FUN_10000822c(uVar2,uVar4,uVar3,uVar5);
+    uVar8 = uVar2;
+    uVar9 = uVar4;
+    FUN_1004dc36c(uVar2,uVar4,uVar3,uVar5);
+    FUN_10000825c(uVar2,uVar4,uVar3,uVar5);
+    FUN_100312860(uVar8,uVar9,uVar11);
+    _swift_bridgeObjectRelease(uVar11);
+    _swift_bridgeObjectRelease(uVar9);
+    FUN_10053b838(0);
+    _objc_allocWithZone();
+    FUN_10054683c(param_1,((uint)uVar8 ^ 0xffffffff) & 1);
+    (**(code **)(lVar10 + 8))();
+    _swift_unknownObjectRelease(puVar6);
+  }
+  return;
+}
+
+
+
+// ==== 0x10054683c  FUN_10054683c  (712 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainAutoreleasedReturnValue replaced with injection:
+   _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+ID FUN_10054683c(undefined8 param_1,undefined1 param_2)
+
+{
+  long lVar1;
+  undefined *puVar2;
+  undefined8 uVar3;
+  PassthroughSubject *this;
+  ID IVar4;
+  ID IVar5;
+  long unaff_x20;
+  
+  lVar1 = unaff_x20 + _TtC3ADK18WebContentChromium::navigationDelegate;
+  *(undefined8 *)(lVar1 + 8) = 0;
+  _swift_unknownObjectWeakInit(lVar1,0);
+  lVar1 = unaff_x20 + _TtC3ADK18WebContentChromium::uiDelegate;
+  *(undefined8 *)(lVar1 + 8) = 0;
+  _swift_unknownObjectWeakInit(lVar1,0);
+  lVar1 = unaff_x20 + _TtC3ADK18WebContentChromium::overscrollDelegate;
+  *(undefined8 *)(lVar1 + 8) = 0;
+  _swift_unknownObjectWeakInit(lVar1,0);
+  lVar1 = unaff_x20 + _TtC3ADK18WebContentChromium::pdfDelegate;
+  *(undefined8 *)(lVar1 + 8) = 0;
+  _swift_unknownObjectWeakInit(lVar1,0);
+  lVar1 = unaff_x20 + _TtC3ADK18WebContentChromium::topBandColorDelegate;
+  *(undefined8 *)(lVar1 + 8) = 0;
+  _swift_unknownObjectWeakInit(lVar1,0);
+  *(undefined **)(unaff_x20 + _TtC3ADK18WebContentChromium::subscriptions) =
+       PTR___swiftEmptySetSingleton_104167660;
+  lVar1 = _TtC3ADK18WebContentChromium::pendingPermissionsRequests;
+  puVar2 = PTR___swiftEmptyArrayStorage_104167650;
+  FUN_1004c2124();
+  *(undefined **)(unaff_x20 + lVar1) = puVar2;
+  lVar1 = _TtC3ADK18WebContentChromium::features;
+  uVar3 = 0;
+  FUN_100578e7c();
+  _swift_allocObject();
+  FUN_100576ac4();
+  *(undefined8 *)(unaff_x20 + lVar1) = uVar3;
+  lVar1 = _TtC3ADK18WebContentChromium::pictureInPictureState;
+  uVar3 = 0;
+  FUN_1005792a0();
+  _swift_allocObject();
+  FUN_100577f80();
+  *(undefined8 *)(unaff_x20 + lVar1) = uVar3;
+  lVar1 = _TtC3ADK18WebContentChromium::thumbnailPassthroughSubject;
+  this = (PassthroughSubject *)&DAT_1044cc2e0;
+  FUN_100005134(&DAT_1044cc2e0,&DAT_103640830);
+  _swift_allocObject();
+  Combine::PassthroughSubject::_init(this);
+  *(PassthroughSubject **)(unaff_x20 + lVar1) = this;
+  lVar1 = _TtC3ADK18WebContentChromium::navigationAnnouncer;
+  puVar2 = &DAT_1044cc468;
+  FUN_100005134(&DAT_1044cc468,&DAT_1036412e0);
+  _swift_allocObject();
+  FUN_10072b39c();
+  *(undefined **)(unaff_x20 + lVar1) = puVar2;
+  Foundation::UUID::init();
+  *(undefined1 *)(unaff_x20 + _TtC3ADK18WebContentChromium::isObservingThumbnails) = 0;
+  *(undefined8 *)(unaff_x20 + _TtC3ADK18WebContentChromium::webView) = param_1;
+  *(undefined1 *)(unaff_x20 + _TtC3ADK18WebContentChromium::allowsHumanInteraction) = param_2;
+  FUN_10053b838();
+  IVar4 = _objc_msgSendSuper2((objc_super *)&stack0xffffffffffffffb0,"init");
+  lVar1 = _TtC3ADK18WebContentChromium::webView;
+  objc_stub::setUIDelegate_(*(ID *)(IVar4 + _TtC3ADK18WebContentChromium::webView),IVar4);
+  IVar5 = objc_stub::devTools(*(ID *)(IVar4 + lVar1));
+  if (IVar5 != 0) {
+    objc_stub::setDelegate_(IVar5,IVar4);
+  }
+  IVar5 = objc_stub::mediaSession(*(ID *)(IVar4 + lVar1));
+  objc_stub::setDelegate_(IVar5,IVar4);
+  objc_stub::FUN_1035d6980(*(ID *)(IVar4 + lVar1),IVar4);
+  IVar5 = objc_stub::navigationController(*(ID *)(IVar4 + lVar1));
+  objc_stub::addObserver_(IVar5,IVar4);
+  IVar5 = objc_stub::boostIDE(*(ID *)(IVar4 + lVar1));
+  objc_stub::setDelegate_(IVar5,IVar4);
+  ADK_WebContentChromium_method_instance(0);
+  return IVar4;
+}
+
+
+
+// ==== 0x10053bbdc  _TtC3ADK18WebContentChromium::-[WebContentChromium_.cxx_destruct]  (252 bytes)
+
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* Function Stack Size: 0x10 bytes */
+
+void _TtC3ADK18WebContentChromium::__WebContentChromium__cxx_destruct_(ID param_1,SEL param_2)
+
+{
+  long lVar1;
+  UUID UVar2;
+  
+  FUN_10004d3dc(param_1 + navigationDelegate);
+  FUN_10004d3dc(param_1 + uiDelegate);
+  FUN_10004d3dc(param_1 + overscrollDelegate);
+  FUN_10004d3dc(param_1 + pdfDelegate);
+  FUN_10004d3dc(param_1 + topBandColorDelegate);
+  _swift_bridgeObjectRelease(*(undefined8 *)(param_1 + subscriptions));
+  _swift_bridgeObjectRelease(*(undefined8 *)(param_1 + pendingPermissionsRequests));
+  _swift_release(*(undefined8 *)(param_1 + features));
+  _swift_release(*(undefined8 *)(param_1 + pictureInPictureState));
+  _swift_release(*(undefined8 *)(param_1 + thumbnailPassthroughSubject));
+  _swift_release(*(undefined8 *)(param_1 + navigationAnnouncer));
+  lVar1 = uuid;
+  UVar2 = Foundation::UUID::typeMetadataAccessor();
+                    /* WARNING: Could not recover jumptable at 0x00010053bcd4. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (**(code **)(*(long *)(UVar2.unknown + -8) + 8))(param_1 + lVar1,UVar2.unknown);
+  return;
+}
+
+

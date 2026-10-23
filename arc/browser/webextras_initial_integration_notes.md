@@ -32,6 +32,9 @@ Required fields are:
   freeze/review receipts, actual native DataPack cc/h/encoding header, official
   Grit `data_pack.py`/`constants.py`, and interpreters are mandatory pins. The
   UNSEALED template seeds the exact reviewed corrected-helper policy hashes.
+  The attributed App444e parser source, bounded validation classification and
+  final runtime-derivative review/freeze are also exact mandatory pins. The
+  executor copies only the pure function; it never imports an App driver.
 - `inventory`: exact BEFORE production file lists for `arc/api`, `arc/browser`
   and `arc/wp` (`.mm/.cc/.h/.gn/.gni`). Every listed member has an immutable pin or
   exact mutable image. Only exact newly owned targets are excluded from the
@@ -52,10 +55,14 @@ Required fields are:
   absence. Full output inventories are checked at phase boundaries. Ownership
   must remain unique; existing assignments are preserved; newly owned native
   files use `0010-webextras.patch`.
-- `gitRepos`: only `path`, independently discovered actual `index` path, raw
-  index `sha256`, and `head`. These are guards, never staging authority. Old
-  environmentKey/ITA fields are rejected. The executor neither copies indices
-  nor invokes add-N, and never restores a real index.
+- `gitRepos`: `path`, independently discovered actual `index`, original raw
+  `sha256`, immutable original `head`, `logicalSeal: [entryCount, logicalSHA256]`,
+  and a pinned raw original `snapshot` path. Snapshot hash and parsed seal must
+  match the config, before any worker exists. Root/outer/nested repositories
+  each have their own original contract. The raw hash is provenance, not a
+  refreshed expectation. No field can be rebound after entry; worker and
+  guardian use the same sealed original inputs. Old environmentKey/ITA fields
+  remain rejected. The executor never stages, repairs flags or restores indices.
 - `regeneration`: exactly argv `./arc/tools/regen-patches.sh`, cwd `.`, empty env
   overrides and `toolModes` for the two already-adopted immutable tools:
   wrapper0755, helper0644. Both source hashes must be pins. No adoption command
@@ -145,11 +152,34 @@ and no caller index is supplied. Local repo config and HEAD/index identity
 remain guarded as part of the reviewed checkout. The generator owns its internal
 private-copy isolation independently.
 
-Raw index byte drift always fails closed. A bounded read-only `ls-files
---stage -v --debug` diagnostic is retained where detected, with optional Git locks
-disabled. Suspected metadata-only refresh is not silently blessed. After source
-publication, index drift blocks rollback and HOLDs; the executor never restores
-the real index or overwrites actual staging.
+Logical validation uses the EXACT attributed pure App444e function, function
+SHA14cf9aa8377da51031990cfb99868a7386c88aa2bbab5196f8bfb0c1a4b90024.
+Source444e2c07, parent bounded-classificationec464fe3 and final review27fa4631 /
+freezeddb03b30 are pinned. Historical validation was72 true cases plus the focused
+split rejection, not a73-PASS whole batch. The function is unchanged; optimized
+Python is rejected before execution so its assert checks remain active.
+
+At a drained boundary, a stable current raw image must retain the ORIGINAL full
+logical tuple and HEAD. The tuple protects every path, mode, OID, stage,
+assume-valid, ITA and skip-worktree bit. Only stat fields, v2/v3/v4 encoding and
+bounded known optional cache frames may differ. Cache payloads remain opaque;
+this is not full Git cache validation. Unknown, checksum/framing-invalid,
+split/sparse layouts and shared-index files refuse before index-reading Git.
+Only non-index-reading rev-parse queries identify actual index path and HEAD.
+There is no ls-files diagnostic probe; failures retain a bounded text reason.
+Original raw snapshot/hash and logical expectations never refresh, and a later
+semantic change rejects even after multiple equivalent refreshes.
+
+Every ENTIRE owned regeneration opens a durable ledger before its command and
+checks exact raw+physical identity/HEAD in finally, including nonzero return and
+exception. Any drift/uncertain check permanently latches the output directory
+before later regeneration, rollback, build, runtime or release can proceed. A
+new logical-equivalent image cannot clear that latch or start a replacement
+lease. The worker keeps an in-memory failure flag too; a separate guardian
+requires absent latch and complete matching CHECKED ledger. If latch storage
+fails, the still-OPEN ledger blocks a new guardian. Failure never restores a real
+index. This is process-survival evidence, not a power-loss or adversarial atomic
+filesystem transaction, and no HOLD-release IPC exists.
 
 On candidate failure, the executor first requires quiet command/app/helper
 processes and confirmed original-profile restoration for every started scenario.
@@ -303,9 +333,44 @@ The generator's separate52-group private evidence remains pinned and was not
 rerun as part of this adapter. Native all-artifact adoption proof remains outside
 this executor increment.
 
-Raw-index byte guards deliberately remain strict. Build/query Git activity may
-refresh index stat metadata while full logical entries and flags remain equal;
-that can still HOLD candidate or recovery and requires explicit parent review.
-This adaptation adds no logical-equivalence parser, metadata refresh acceptance,
-real-index rewrite, or destructive recovery. Guardian and early no-write refusal
-semantics remain unchanged; neither supplies a baseline-validity/parity claim.
+The bbf1 alias-corrected baseline retained strict raw guards and is archived
+unchanged. This separately authorized logical-index increment changes only the
+boundary/owned-regeneration index contract described above. Source, mode, alias,
+process, profile, guardian and early no-write refusal guards remain; neither
+refusal nor logical equivalence supplies a baseline-validity/parity claim.
+
+
+The frozen972f/368dc7b0 adapter is historical HOLD, not current eligibility.
+Fresh review proved that the standard chromium/src/arc symlink can alias a
+canonical immutable regeneration tool: lexical-only target/patch exclusions
+allowed actual private prepare+publish and then pinned rollback refused it.
+The distinct post972f correction preserves that source, tests, notes and patch
+before adding one consistent engine_path guard. Every mutable path component
+(including existing parents of absent future targets) must be nonsymlink, and
+normalized resolved identity cannot name either canonical tool. Patch working
+directories and EVERY Git-derived changed path receive the same check; checking
+only targets would still admit an alias hidden in mixed patch metadata.
+
+The guard is also rechecked by actual phase reads and prepare/publish/rollback
+write boundaries. Canonical nonaliased nested checkout directories remain valid.
+Read-only pin resolution is unchanged. This is not an atomic defense against an
+uncooperative concurrent path replacement; the integration lock and existing
+source/CAS guards remain required. Canonical copied303 candidate/recovery proof,
+raw index strictness and guardian/no-write behavior are unchanged. New disposable
+full prepare/publish negatives cover both wrapper and helper aliases, alongside
+mixed metadata without alias targets, rename refusal, normalized spellings and
+missing targets under aliased parents. No actual production tool/source/index or
+runtime operation was performed, and no current config was refreshed or sealed.
+
+
+The postbbf1 logical increment preserves exact source/test/notes, alias patch,
+a02c freeze and5699517e review before editing. All current configs remain
+UNSEALED/historical; actual source/HEAD/index epochs were neither captured nor
+read. Shared303 adoption authority is still a separate prerequisite. Private
+fixtures cover equivalent stat/cache/version refreshes, all logical fields and
+HEADs, immutable original anchoring, unsupported formats before Git probes,
+raw/physical drift during successful/failed/raising regeneration, durable latch
+across worker/guardian instances and failed latch storage, plus the previous
+mode/alias/guardian/no-write controls. Tests use only generated indices and
+COPIED helpers in disposable repositories. No actual production tool, Git
+index, lock, build, app/runtime or source epoch operation occurred.

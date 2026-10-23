@@ -57,9 +57,9 @@ stores its harness in a subdirectory and the paired diff in its parent, pinned b
 not prove exact build-source attribution. Preserved-profile renderer evidence is separate. `--summary`
 prints one line without starting a comparison. `--run-next` runs one least-recently-attempted scenario.
 The controller refreshes the current reporting source every minute, including lock waits/cooldowns.
-Run journals retain comparator/recorder hashes at start and end. New attempts also retain the three fixed
-comparator-helper hashes (`download_identity.py`, `google_q.py`, `omnibox_receivers.py`), with missing files
-explicitly `null`; older entries lack these pins. These endpoint checks do not prove continuous source
+Run journals retain comparator/recorder hashes at start and end. New attempts also retain the four fixed
+comparator-helper hashes (`download_identity.py`, `google_q.py`, `omnibox_receivers.py`, `pip_episode.py`), with missing files
+explicitly `null`; existing entries remain unchanged and may lack some or all helper pins. These endpoint checks do not prove continuous source
 stability or use of optional normalizers. Compare diff counts only with matching tools and scope.
 
 `bun tests/scenarios/integrator.ts` owns a separate kernel lease, runs one comparison at a time and

@@ -1,0 +1,44 @@
+1004eba88: stp      x24, x23, [sp, #-0x40]!
+1004eba8c: stp      x22, x21, [sp, #0x10]
+1004eba90: stp      x20, x19, [sp, #0x20]
+1004eba94: stp      x29, x30, [sp, #0x30]
+1004eba98: add      x29, sp, #0x30
+1004eba9c: mov      x19, x4
+1004ebaa0: mov      x21, x3
+1004ebaa4: mov      x22, x2
+1004ebaa8: mov      x0, #0
+1004ebaac: bl       #0x1004ed1bc
+1004ebab0: mov      x23, x0
+1004ebab4: ldur     x8, [x0, #-8]
+1004ebab8: ldr      x8, [x8, #0x40]
+1004ebabc: mov      x9, x8
+1004ebac0: adrp     x16, #0x10415f000
+1004ebac4: ldr      x16, [x16, #0x308]
+1004ebac8: blr      x16
+1004ebacc: mov      x9, sp
+1004ebad0: add      x8, x8, #0xf
+1004ebad4: and      x8, x8, #0xfffffffffffffff0
+1004ebad8: sub      x24, x9, x8
+1004ebadc: mov      sp, x24
+1004ebae0: bl       #0x1004eb4f8
+1004ebae4: mov      x20, x0
+1004ebae8: stp      x22, x21, [x24]
+1004ebaec: strb     w19, [x24, #0x10]
+1004ebaf0: mov      x0, x24
+1004ebaf4: mov      x1, x23
+1004ebaf8: mov      w2, #0
+1004ebafc: bl       #0x1035aeac4
+1004ebb00: mov      x0, x22
+1004ebb04: bl       #0x1035aebc0
+1004ebb08: mov      x0, x24
+1004ebb0c: bl       #0x100586f60
+1004ebb10: mov      x0, x20
+1004ebb14: bl       #0x1035aea40
+1004ebb18: mov      x0, x24
+1004ebb1c: bl       #0x1004ed27c
+1004ebb20: sub      sp, x29, #0x30
+1004ebb24: ldp      x29, x30, [sp, #0x30]
+1004ebb28: ldp      x20, x19, [sp, #0x20]
+1004ebb2c: ldp      x22, x21, [sp, #0x10]
+1004ebb30: ldp      x24, x23, [sp], #0x40
+1004ebb34: ret      

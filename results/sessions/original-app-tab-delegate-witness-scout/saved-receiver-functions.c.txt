@@ -1,0 +1,491 @@
+// ==== 0x1004eba88  FUN_1004eba88  (176 bytes)
+
+void FUN_1004eba88(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,
+                  undefined1 param_5)
+
+{
+  long lVar1;
+  long lVar2;
+  long lVar3;
+  long extraout_x8;
+  undefined8 *puVar4;
+  
+  lVar2 = 0;
+  FUN_1004ed1bc();
+  lVar3 = lVar2;
+  (*(code *)PTR____chkstk_darwin_10415f308)(*(undefined8 *)(*(long *)(lVar2 + -8) + 0x40));
+  lVar1 = -(extraout_x8 + 0xfU & 0xfffffffffffffff0);
+  puVar4 = (undefined8 *)(&stack0xffffffffffffffc0 + lVar1);
+  FUN_1004eb4f8();
+  *puVar4 = param_3;
+  *(undefined8 *)(&stack0xffffffffffffffc8 + lVar1) = param_4;
+  (&stack0xffffffffffffffd0)[lVar1] = param_5;
+  _swift_storeEnumTagMultiPayload(puVar4,lVar2,0);
+  _swift_unknownObjectRetain(param_3);
+  FUN_100586f60(puVar4);
+  _swift_release(lVar3);
+  FUN_1004ed27c(puVar4);
+  return;
+}
+
+// ==== 0x10055a3bc  FUN_10055a3bc  (2484 bytes)
+
+void FUN_10055a3bc(undefined8 param_1,undefined8 param_2,undefined8 param_3,void *param_4)
+
+{
+  DefaultStringInterpolation stringInterpolation;
+  DefaultStringInterpolation DVar1;
+  long *plVar2;
+  undefined8 uVar3;
+  ulong uVar4;
+  undefined **ppuVar5;
+  uint uVar6;
+  undefined1 *puVar7;
+  _StringGuts _Var8;
+  void *pvVar9;
+  long *plVar10;
+  undefined *puVar11;
+  DefaultStringInterpolation *pDVar12;
+  char *pcVar13;
+  void *pvVar14;
+  undefined8 *puVar15;
+  ulong uVar16;
+  ulong uVar17;
+  long unaff_x20;
+  long lVar18;
+  long lVar19;
+  code *pcVar20;
+  String SVar21;
+  String SVar22;
+  String SVar23;
+  String SVar24;
+  String SVar25;
+  String SVar26;
+  String SVar27;
+  String SVar28;
+  String SVar29;
+  String SVar30;
+  String SVar31;
+  String SVar32;
+  long local_2d0 [3];
+  undefined8 local_2b8;
+  long lStack_2b0;
+  undefined1 auStack_270 [24];
+  undefined *local_258;
+  long lStack_250;
+  undefined1 auStack_248 [24];
+  undefined1 auStack_230 [24];
+  undefined1 auStack_218 [24];
+  DefaultStringInterpolation local_200;
+  undefined *local_1f8;
+  undefined *puStack_1f0;
+  undefined8 local_1e8;
+  undefined8 uStack_1e0;
+  undefined8 local_1d8;
+  undefined8 uStack_1d0;
+  undefined8 local_1c8;
+  undefined8 uStack_1c0;
+  undefined8 local_1b8;
+  undefined8 uStack_1b0;
+  undefined8 local_1a8;
+  undefined *local_1a0;
+  undefined *local_198;
+  undefined8 local_190;
+  undefined8 uStack_188;
+  undefined8 uStack_180;
+  undefined8 local_178;
+  undefined8 local_170;
+  undefined *local_168;
+  undefined *puStack_160;
+  undefined8 local_158;
+  undefined8 uStack_150;
+  undefined8 local_148;
+  undefined8 uStack_140;
+  undefined8 local_138;
+  undefined *local_130;
+  undefined *puStack_128;
+  undefined *puStack_120;
+  undefined8 local_118;
+  long lStack_110;
+  undefined8 uStack_108;
+  undefined8 uStack_100;
+  String local_f8;
+  String local_e8;
+  undefined8 local_d8;
+  undefined1 local_d0;
+  undefined7 uStack_cf;
+  long *local_c8;
+  undefined *puStack_c0;
+  undefined8 local_b8;
+  long lStack_b0;
+  undefined8 local_a8;
+  undefined8 uStack_a0;
+  String local_98;
+  String local_88;
+  undefined8 local_78;
+  
+  pvVar14 = param_4;
+  _swift_getObjectType();
+  FUN_1004d3aec(&local_1a0);
+  lVar18 = _TtC3ADK33SessionRestorationBrowserDelegate::trackedBrowsers;
+  if (local_198 == (undefined *)0x0) {
+    pcVar13 = &DAT_00000002;
+    SVar21 = Swift::StaticString::get_description((StaticString)0x1039342e0);
+    plVar10 = SVar21.bridgeObject;
+    local_d0 = 0x13;
+    uStack_cf = 0xd0000000000000;
+    local_c8 = (long *)0x8000000103918510;
+    SVar24.bridgeObject = pvVar14;
+    SVar24.str = pcVar13;
+    Swift::String::append(SVar21,SVar24);
+    _swift_bridgeObjectRelease();
+    plVar2 = local_c8;
+    DVar1.unknown._1_7_ = uStack_cf;
+    DVar1.unknown._0_1_ = local_d0;
+    FUN_100734924();
+    lVar19 = *plVar10;
+    SVar21 = Swift::StaticString::get_description((StaticString)0x103934140);
+    puVar11 = SVar21.bridgeObject;
+    SVar24 = Swift::StaticString::get_description((StaticString)0x103934740);
+    pvVar14 = SVar24.bridgeObject;
+    _swift_beginAccess(lVar19 + 0x20,&local_168,0,0);
+    FUN_100012c10(lVar19 + 0x20,&local_d0);
+    lVar18 = lStack_b0;
+    uVar3 = local_b8;
+    FUN_100012c54(&local_d0,local_b8);
+    (**(code **)(lVar18 + 0x70))(uVar3,lVar18);
+    FUN_100012e70(&local_d0);
+    if (((uint)uVar3 & 0xff) < 6) {
+      FUN_100012c10(lVar19 + 0x20,local_2d0);
+      FUN_100012c54(local_2d0,local_2b8);
+      FUN_1004c0f68();
+      _swift_bridgeObjectRetain(plVar2);
+      (extension_Swift)::Swift::ExpressibleByStringInterpolation::_init(DVar1);
+      puStack_128 = (undefined *)CONCAT71(uStack_cf,local_d0);
+      local_d0 = 5;
+      puStack_c0 = (undefined *)local_c8;
+      lStack_b0 = 0;
+      local_b8 = 0;
+      uStack_a0 = 0;
+      local_a8 = 0;
+      local_78 = 0x45;
+      local_130 = (undefined *)CONCAT71(local_130._1_7_,5);
+      puStack_120 = (undefined *)local_c8;
+      lStack_110 = 0;
+      local_118 = 0;
+      uStack_100 = 0;
+      uStack_108 = 0;
+      local_d8 = 0x45;
+      local_f8 = SVar21;
+      local_e8 = SVar24;
+      local_c8 = (long *)puStack_128;
+      local_98 = SVar21;
+      local_88 = SVar24;
+      _swift_bridgeObjectRetain(puVar11);
+      _swift_bridgeObjectRetain(pvVar14);
+      FUN_1004c0fa8(&local_d0,&local_200);
+      FUN_100012cf4(&local_130);
+      (**(code **)(lStack_2b0 + 0x28))(&local_d0,local_2b8,lStack_2b0);
+      _swift_bridgeObjectRelease(pvVar14);
+      _swift_bridgeObjectRelease(puVar11);
+      FUN_100012cf4(&local_d0);
+      FUN_100012e70(local_2d0);
+    }
+    else {
+      _swift_bridgeObjectRelease(plVar2);
+      _swift_bridgeObjectRelease(pvVar14);
+      plVar2 = (long *)puVar11;
+    }
+    _swift_bridgeObjectRelease(plVar2);
+    return;
+  }
+  local_168 = local_1a0;
+  puStack_160 = local_198;
+  uStack_150 = uStack_188;
+  local_158 = local_190;
+  uStack_140 = local_178;
+  local_148 = uStack_180;
+  local_138 = local_170;
+  puVar7 = auStack_218;
+  pvVar14 = (void *)0x0;
+  _swift_beginAccess(unaff_x20 + _TtC3ADK33SessionRestorationBrowserDelegate::trackedBrowsers,puVar7
+                     ,0);
+  lVar18 = *(long *)(unaff_x20 + lVar18);
+  _Var8.unknown = puVar7;
+  if (*(long *)(lVar18 + 0x10) != 0) {
+    _swift_bridgeObjectRetain(lVar18);
+    FUN_1004b9124(&local_168);
+    _Var8.unknown = puVar7;
+    _swift_bridgeObjectRelease(lVar18);
+    if (((ulong)puVar7 & 1) != 0) goto LAB_10055a854;
+  }
+  local_d0 = 0;
+  uStack_cf = 0;
+  local_c8 = (long *)0xe000000000000000;
+  Swift::_StringGuts::grow(0x1b,_Var8);
+  _swift_bridgeObjectRelease(local_c8);
+  local_d0 = 0x49;
+  uStack_cf = 0x20656c6966206e;
+  local_c8 = (long *)0xe800000000000000;
+  pcVar13 = &DAT_00000002;
+  SVar21 = Swift::StaticString::get_description((StaticString)0x103934140);
+  SVar26.bridgeObject = pvVar14;
+  SVar26.str = pcVar13;
+  Swift::String::append(SVar21,SVar26);
+  _swift_bridgeObjectRelease(SVar21.bridgeObject);
+  SVar22.bridgeObject = &DAT_e100000000000000;
+  SVar22.str = (char *)0x3a;
+  SVar27.bridgeObject = pvVar14;
+  SVar27.str = pcVar13;
+  Swift::String::append(SVar22,SVar27);
+  local_130 = (undefined *)0x49;
+  SVar21 = Swift::CustomStringConvertible::get_description();
+  SVar28.bridgeObject = pvVar14;
+  SVar28.str = pcVar13;
+  Swift::String::append(SVar21,SVar28);
+  _swift_bridgeObjectRelease(SVar21.bridgeObject);
+  SVar23.bridgeObject = (void *)0xec000000203a6e6f;
+  SVar23.str = (char *)0x6974636e7566202c;
+  SVar29.bridgeObject = pvVar14;
+  SVar29.str = pcVar13;
+  Swift::String::append(SVar23,SVar29);
+  pcVar13 = &DAT_00000002;
+  SVar21 = Swift::StaticString::get_description((StaticString)0x103934740);
+  SVar30.bridgeObject = pvVar14;
+  SVar30.str = pcVar13;
+  Swift::String::append(SVar21,SVar30);
+  _swift_bridgeObjectRelease(SVar21.bridgeObject);
+  plVar2 = local_c8;
+  SVar21.str._1_7_ = uStack_cf;
+  SVar21.str._0_1_ = local_d0;
+  SVar21.bridgeObject = local_c8;
+  local_d0 = 0x13;
+  uStack_cf = 0xd0000000000000;
+  local_c8 = (long *)0x8000000103918510;
+  SVar31.bridgeObject = pvVar14;
+  SVar31.str = pcVar13;
+  Swift::String::append(SVar21,SVar31);
+  _swift_bridgeObjectRelease();
+  plVar10 = local_c8;
+  stringInterpolation.unknown._1_7_ = uStack_cf;
+  stringInterpolation.unknown._0_1_ = local_d0;
+  FUN_100734924();
+  lVar19 = *plVar2;
+  SVar21 = Swift::StaticString::get_description((StaticString)0x103934140);
+  pvVar14 = SVar21.bridgeObject;
+  SVar24 = Swift::StaticString::get_description((StaticString)0x103934740);
+  pvVar9 = SVar24.bridgeObject;
+  _swift_beginAccess(lVar19 + 0x20,auStack_230,0,0);
+  FUN_100012c10(lVar19 + 0x20,&local_d0);
+  lVar18 = lStack_b0;
+  uVar3 = local_b8;
+  FUN_100012c54(&local_d0,local_b8);
+  (**(code **)(lVar18 + 0x70))(uVar3,lVar18);
+  FUN_100012e70(&local_d0);
+  if (((uint)uVar3 & 0xff) < 6) {
+    FUN_100012c10(lVar19 + 0x20,local_2d0);
+    FUN_100012c54(local_2d0,local_2b8);
+    FUN_1004c0f68();
+    _swift_bridgeObjectRetain(plVar10);
+    (extension_Swift)::Swift::ExpressibleByStringInterpolation::_init(stringInterpolation);
+    puStack_128 = (undefined *)CONCAT71(uStack_cf,local_d0);
+    local_d0 = 5;
+    puStack_c0 = (undefined *)local_c8;
+    lStack_b0 = 0;
+    local_b8 = 0;
+    uStack_a0 = 0;
+    local_a8 = 0;
+    local_78 = 0x49;
+    local_130 = (undefined *)CONCAT71(local_130._1_7_,5);
+    puStack_120 = (undefined *)local_c8;
+    lStack_110 = 0;
+    local_118 = 0;
+    uStack_100 = 0;
+    uStack_108 = 0;
+    local_d8 = 0x49;
+    local_f8 = SVar21;
+    local_e8 = SVar24;
+    local_c8 = (long *)puStack_128;
+    local_98 = SVar21;
+    local_88 = SVar24;
+    _swift_bridgeObjectRetain(pvVar14);
+    _swift_bridgeObjectRetain(pvVar9);
+    FUN_1004c0fa8(&local_d0,&local_200);
+    FUN_100012cf4(&local_130);
+    (**(code **)(lStack_2b0 + 0x28))(&local_d0,local_2b8,lStack_2b0);
+    _swift_bridgeObjectRelease(pvVar9);
+    _swift_bridgeObjectRelease(pvVar14);
+    FUN_100012cf4(&local_d0);
+    FUN_100012e70(local_2d0);
+    _swift_bridgeObjectRelease(plVar10);
+  }
+  else {
+    _swift_bridgeObjectRelease(plVar10);
+    _swift_bridgeObjectRelease(pvVar9);
+    _swift_bridgeObjectRelease(pvVar14);
+  }
+LAB_10055a854:
+  lVar19 = *(long *)(unaff_x20 + _TtC3ADK33SessionRestorationBrowserDelegate::logger);
+  pcVar13 = (char *)0x0;
+  pvVar14 = (void *)0x0;
+  _swift_beginAccess(lVar19 + 0x20,auStack_248);
+  FUN_100012c10(lVar19 + 0x20,&local_130);
+  lVar18 = lStack_110;
+  uVar3 = local_118;
+  FUN_100012c54(&local_130,local_118);
+  pcVar20 = *(code **)(lVar18 + 0x70);
+  _swift_retain(lVar19);
+  (*pcVar20)(uVar3,lVar18);
+  FUN_100012e70(&local_130);
+  if (((uint)uVar3 & 0xff) < 2) {
+    FUN_100012c10(lVar19 + 0x20,auStack_270);
+    _Var8.unknown = local_258;
+    FUN_100012c54();
+    local_130 = (undefined *)0x0;
+    puStack_128 = (undefined *)0xe000000000000000;
+    Swift::_StringGuts::grow(0x3d,_Var8);
+    local_200.unknown = local_130;
+    local_1f8 = puStack_128;
+    SVar25.bridgeObject = (void *)0x8000000103934760;
+    SVar25.str = &DAT_d00000000000003b;
+    SVar32.bridgeObject = pvVar14;
+    SVar32.str = pcVar13;
+    Swift::String::append(SVar25,SVar32);
+    puStack_128 = puStack_160;
+    local_130 = local_168;
+    local_118 = uStack_150;
+    puStack_120 = (undefined *)local_158;
+    uStack_108 = uStack_140;
+    lStack_110 = local_148;
+    uStack_100 = local_138;
+    Swift::__print_unlocked
+              (&local_130,&local_200,&DAT_1041b9600,
+               PTR___type_metadata_for_Swift_DefaultStringInterpolation_104166b60,
+               PTR___protocol_witness_table_for_Swift_DefaultStringInterpolation___Swift_TextOutputStream_in_Swift_104166b70
+              );
+    DVar1.unknown = local_200.unknown;
+    FUN_1004c0f68();
+    (extension_Swift)::Swift::ExpressibleByStringInterpolation::_init(DVar1);
+    puStack_120 = puStack_128;
+    puStack_128 = local_130;
+    local_130 = (undefined *)CONCAT71(local_130._1_7_,1);
+    lStack_110 = 0;
+    local_118 = 0;
+    uStack_100 = 0;
+    uStack_108 = 0;
+    local_f8.bridgeObject = (void *)0x8000000103934120;
+    local_f8.str = (char *)0xd00000000000002b;
+    local_e8.bridgeObject = (void *)0x8000000103934720;
+    local_e8.str = (char *)0xd000000000000032;
+    local_d8 = 0x4b;
+    local_200.unknown._0_1_ = 1;
+    local_1f8 = puStack_128;
+    puStack_1f0 = puStack_120;
+    uStack_1e0 = 0;
+    local_1e8 = 0;
+    uStack_1d0 = 0;
+    local_1d8 = 0;
+    local_1c8 = 0xd00000000000002b;
+    uStack_1c0 = 0x8000000103934120;
+    local_1b8 = 0xd000000000000032;
+    uStack_1b0 = 0x8000000103934720;
+    local_1a8 = 0x4b;
+    FUN_1004c0fa8(&local_130,local_2d0);
+    FUN_100012cf4(&local_200);
+    (**(code **)(lStack_250 + 0x28))(&local_130,local_258,lStack_250);
+    _swift_release(lVar19);
+    FUN_100012cf4(&local_130);
+    FUN_100012e70(auStack_270);
+  }
+  else {
+    _swift_release(lVar19);
+  }
+  lVar19 = _TtC3ADK33SessionRestorationBrowserDelegate::unreceivedRestoredContents;
+  pDVar12 = &local_200;
+  _swift_beginAccess(unaff_x20 +
+                     _TtC3ADK33SessionRestorationBrowserDelegate::unreceivedRestoredContents,pDVar12
+                     ,0x21,0);
+  uVar4 = *(ulong *)(unaff_x20 + lVar19);
+  _swift_isUniquelyReferenced_nonNull_native();
+  uVar6 = (uint)uVar4;
+  lVar18 = *(long *)(unaff_x20 + lVar19);
+  *(undefined8 *)(unaff_x20 + lVar19) = 0x8000000000000000;
+  ppuVar5 = &local_168;
+  local_2d0[0] = lVar18;
+  FUN_1004b9124();
+  uVar16 = (ulong)~(uint)pDVar12 & 1;
+  if (!SCARRY8(*(long *)(lVar18 + 0x10),uVar16)) {
+    if (*(long *)(lVar18 + 0x18) < (long)(*(long *)(lVar18 + 0x10) + uVar16)) {
+      FUN_1004df2d0();
+      lVar18 = local_2d0[0];
+      ppuVar5 = &local_168;
+      FUN_1004b9124();
+      if (((uint)pDVar12 & 1) != (uVar6 & 1)) {
+        Swift::_KEY_TYPE_OF_DICTIONARY_VIOLATES_HASHABLE_REQUIREMENTS();
+                    /* WARNING: Does not return */
+        pcVar20 = (code *)SoftwareBreakpoint(1,0x10055ad70);
+        (*pcVar20)();
+      }
+      *(long *)(unaff_x20 + lVar19) = lVar18;
+    }
+    else if ((uVar4 & 1) == 0) {
+      FUN_1004dd390();
+      *(long *)(unaff_x20 + lVar19) = local_2d0[0];
+      lVar18 = local_2d0[0];
+    }
+    else {
+      *(long *)(unaff_x20 + lVar19) = lVar18;
+    }
+    if (((ulong)pDVar12 & 1) == 0) {
+      lVar19 = lVar18 + ((ulong)ppuVar5 >> 6) * 8;
+      *(ulong *)(lVar19 + 0x40) = *(ulong *)(lVar19 + 0x40) | 1L << ((ulong)ppuVar5 & 0x3f);
+      puVar15 = (undefined8 *)(*(long *)(lVar18 + 0x30) + (long)ppuVar5 * 0x38);
+      puVar15[1] = puStack_160;
+      *puVar15 = local_168;
+      puVar15[3] = uStack_150;
+      puVar15[2] = local_158;
+      puVar15[5] = uStack_140;
+      puVar15[4] = local_148;
+      puVar15[6] = local_138;
+      *(undefined **)(*(long *)(lVar18 + 0x38) + (long)ppuVar5 * 8) =
+           PTR___swiftEmptyArrayStorage_104167650;
+      if (SCARRY8(*(long *)(lVar18 + 0x10),1)) {
+                    /* WARNING: Does not return */
+        pcVar20 = (code *)SoftwareBreakpoint(1,0x10055ad60);
+        (*pcVar20)();
+      }
+      *(long *)(lVar18 + 0x10) = *(long *)(lVar18 + 0x10) + 1;
+      _swift_bridgeObjectRetain(local_198);
+      FUN_10000822c(uStack_188,uStack_180,local_178,local_170);
+    }
+    lVar18 = *(long *)(lVar18 + 0x38);
+    uVar17 = *(ulong *)(lVar18 + (long)ppuVar5 * 8);
+    uVar4 = uVar17;
+    _swift_isUniquelyReferenced_nonNull_native();
+    *(ulong *)(lVar18 + (long)ppuVar5 * 8) = uVar17;
+    uVar16 = uVar17;
+    if ((uVar4 & 1) == 0) {
+      uVar16 = 0;
+      FUN_1004ba2f8(0,*(long *)(uVar17 + 0x10) + 1,1,uVar17);
+      *(ulong *)(lVar18 + (long)ppuVar5 * 8) = uVar16;
+    }
+    uVar4 = *(ulong *)(uVar16 + 0x10);
+    uVar17 = uVar16;
+    if (*(ulong *)(uVar16 + 0x18) >> 1 <= uVar4) {
+      uVar17 = (ulong)(1 < *(ulong *)(uVar16 + 0x18));
+      FUN_1004ba2f8(uVar17,uVar4 + 1,1,uVar16);
+      *(ulong *)(lVar18 + (long)ppuVar5 * 8) = uVar17;
+    }
+    *(ulong *)(uVar17 + 0x10) = uVar4 + 1;
+    lVar18 = uVar17 + uVar4 * 0x10;
+    *(undefined8 *)(lVar18 + 0x20) = param_3;
+    *(void **)(lVar18 + 0x28) = param_4;
+    _swift_endAccess(&local_200);
+    _swift_unknownObjectRetain(param_3);
+    FUN_100559bf0(&local_1a0);
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar20 = (code *)SoftwareBreakpoint(1,0x10055acfc);
+  (*pcVar20)();
+}

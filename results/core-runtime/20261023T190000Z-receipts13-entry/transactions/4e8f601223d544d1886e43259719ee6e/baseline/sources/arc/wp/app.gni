@@ -1,0 +1,33 @@
+# Work package "app": sources and deps (absolute //arc/... paths). Owned by that package.
+wp_app_sources = [
+  "//arc/api/arc_app_cpu.mm",
+  "//arc/api/arc_app_crash.mm",
+  "//arc/api/arc_app_flags.mm",
+  "//arc/api/arc_app_histograms.mm",
+  "//arc/api/arc_app_images.mm",
+  "//arc/api/arc_app_imports.mm",
+  "//arc/api/arc_app_local_state.mm",
+  "//arc/api/arc_app_services.mm",
+  "//arc/api/arc_app_tracing.mm",
+  "//arc/api/arc_app_termination.mm",
+  "//arc/api/arc_app_url.mm",
+  "//arc/api/arc_app_values.mm",
+]
+wp_app_deps = [
+  "//components/url_formatter",
+  "//components/webui/flags",
+  "//net",
+  "//services/network/public/cpp",
+  "//services/data_decoder/public/cpp",
+  "//services/media_session/public/cpp:base_cpp",
+  "//ui/gfx/codec",
+  "//chrome/browser/performance_manager",
+  "//components/performance_manager",
+  "//ui/accessibility",
+  "//third_party/crashpad/crashpad/client",
+  "//components/prefs",
+  "//services/tracing/public/cpp:cpp",
+  "//third_party/perfetto/src/tracing:client_api",
+  "//third_party/perfetto/include/perfetto/tracing",
+  "//third_party/sqlite",
+]

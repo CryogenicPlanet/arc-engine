@@ -1,0 +1,123 @@
+{
+  "createdUTC": "2026-10-23T20:13:07.097323+00:00",
+  "scope": "Static bridge policy and bounded known invokers only; no nil-owner reachability/runtime or Root activation claim.",
+  "sourceBinary": {
+    "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+    "sha256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d",
+    "size": 501736176
+  },
+  "inputs": {
+    "results/sessions/native-evidence/discard-completion-capture.md": {
+      "sha256": "1692bc021e4edd91e4acccc78563c02dc97fc18f9ffcabf5077f50f75dc182da",
+      "size": 9077
+    },
+    "results/sessions/native-evidence/discard-registration-accounting.md": {
+      "sha256": "2058113c86d640fd3a41628d5d6cd352b57610063f4cea9822963e2afa393f13",
+      "size": 6264
+    },
+    "results/sessions/native-evidence/discard-registration-accounting-manifest.json": {
+      "sha256": "a8135110b901215df1fcbd6e0790d512dab8cef7e6a5a5824f1ddc97c793698b",
+      "size": 4138
+    },
+    "results/sessions/native-evidence/discard-registration-accounting-disassembly.txt": {
+      "sha256": "8f3fb4409ed353e4a34c3ed95a05e3522746699325b2adbaca3fafd4ef2dcd49",
+      "size": 11139
+    },
+    "arc/api/arc_sessions_restore.mm": {
+      "sha256": "178091e65d07409a00eeeb86101a7234afd44f00a3597512c2b1be0095118978",
+      "size": 47900
+    },
+    "/tmp/arccore-sessions-persistence.py": {
+      "sha256": "1e10f367311eaff4e8c7f8a012cdf0a32f82268c56cdd5d5ccee17dfd047d3d1",
+      "size": 2643
+    }
+  },
+  "allInputsUnchangedAfterExtraction": true,
+  "ranges": [
+    {
+      "name": "finalizer bridge",
+      "start": "0x4446b10",
+      "endExclusive": "0x4446b74",
+      "sha256": "07cc174fc7d98615a7b76d19e36a15c1cb4274ebf2ca1cd76ee928dc1d49d6b1"
+    },
+    {
+      "name": "member invoker",
+      "start": "0x42c29d0",
+      "endExclusive": "0x42c2a2c",
+      "sha256": "a2b303263e7e829ea7f6271aaf4e31c99ffde93c69f35d9594276273f9206da8"
+    },
+    {
+      "name": "captured-registration delivery",
+      "start": "0x42c0840",
+      "endExclusive": "0x42c0980",
+      "sha256": "e82d7eca33dcbde9a19ca471083c39edc20d7d8bdcbe526be0d6fcbbf2c6c524"
+    },
+    {
+      "name": "outer manager guard",
+      "start": "0x42c1740",
+      "endExclusive": "0x42c17e0",
+      "sha256": "1d942262acda43e9c2f40496d3862979d54506fdc66610fc22046a4dade7e9bb"
+    },
+    {
+      "name": "bridge installation fields",
+      "start": "0x444112c",
+      "endExclusive": "0x44411e4",
+      "sha256": "168931904b9232a0ef014243bf675a331c50e3fc9561c59821e57a519d62f418"
+    },
+    {
+      "name": "weak-load thunk",
+      "start": "0x84edd34",
+      "endExclusive": "0x84edd40",
+      "sha256": "ba40c0cd4c133eb65cfdeabe0509b6c4260725efd1643d26d6408f8ec2220047"
+    },
+    {
+      "name": "weak-load import stub",
+      "start": "0xc4a5b14",
+      "endExclusive": "0xc4a5b20",
+      "sha256": "c208ae4b608fb0a208e057f170428a67f1f751db5ceba053ae70e6b2dd17d9b8"
+    },
+    {
+      "name": "message thunk",
+      "start": "0x80045ec",
+      "endExclusive": "0x80045f8",
+      "sha256": "6bec3114940020ca683a96fb0274e5e20b6094fae11119b7c1afc2165189424f"
+    },
+    {
+      "name": "message import stub",
+      "start": "0xc4a5a90",
+      "endExclusive": "0xc4a5a9c",
+      "sha256": "b90486a032852710886933f08c240e59ca3e3072078fe70556cc92068cc22ad2"
+    },
+    {
+      "name": "release thunk",
+      "start": "0x8003ddc",
+      "endExclusive": "0x8003de8",
+      "sha256": "e3ca9432bd6a9ba8e9a3d212aa9c7c808fe0a5088bfe06f381e1467ecbabe091"
+    },
+    {
+      "name": "release import stub",
+      "start": "0xc4a5a9c",
+      "endExclusive": "0xc4a5aa8",
+      "sha256": "daa01f829f1d393dc5d7159f58f4aa168f4763ed4d7501a779080ae0c40e3264"
+    }
+  ],
+  "outputs": {
+    "original-disassembly.txt": {
+      "sha256": "7091ccae29585016661d27a9ee988790b5b982a6deaa27e4b233b09bb0227a71",
+      "size": 7950
+    },
+    "mapping.json": {
+      "sha256": "1c40b083c626716f35f911509bb994da37db6b7b3dec39b1c72036c7289eafb9",
+      "size": 683
+    },
+    "README.md": {
+      "sha256": "40577fad701bd23b9be1b2948591741b821a6361a8dea3e593093c36f9e08dc4",
+      "size": 5777
+    },
+    "extract.py": {
+      "sha256": "1607efeadbbb48027d4ffe7bd33ef0bac1e5b92fc7706ecb6ae9599e82a90b7f",
+      "size": 3680
+    }
+  },
+  "allInputsUnchangedAfterReport": true
+}

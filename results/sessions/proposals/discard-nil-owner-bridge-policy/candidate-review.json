@@ -1,0 +1,124 @@
+{
+  "review_utc": "2026-10-23T20:15:09.371934+00:00",
+  "result": "PASS_CONDITIONAL_LOCAL_BRIDGE_POLICY_ONLY_PRIVATE_NOT_COMPILED",
+  "findings": [],
+  "base_sha256": "178091e65d07409a00eeeb86101a7234afd44f00a3597512c2b1be0095118978",
+  "target_sha256": "6c793d12c18ecbeb0577d21629cfc8914e8ec0bc3d6b014b87d764c1d6135d55",
+  "patch_sha256": "a0aee98cd69696518835094f8fc94a82d102ff4b17b9e36d86ed115ceda6ec3e",
+  "exact_one_line_change": true,
+  "exact_in_memory_patch_replay": true,
+  "all_other_bytes_unchanged": true,
+  "captures_and_pending_unchanged": true,
+  "original_binary_sha256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d",
+  "raw_manifest_sha256": "f327ccb127dea967598c03d167e5533598bc1adca80e550ab891a05b4d27933d",
+  "raw_output_checks": {
+    "original-disassembly.txt": true,
+    "mapping.json": true,
+    "README.md": true,
+    "extract.py": true
+  },
+  "raw_range_checks": [
+    {
+      "name": "finalizer bridge",
+      "matches_archived": true
+    },
+    {
+      "name": "member invoker",
+      "matches_archived": true
+    },
+    {
+      "name": "captured-registration delivery",
+      "matches_archived": true
+    },
+    {
+      "name": "outer manager guard",
+      "matches_archived": true
+    },
+    {
+      "name": "bridge installation fields",
+      "matches_archived": true
+    },
+    {
+      "name": "weak-load thunk",
+      "matches_archived": true
+    },
+    {
+      "name": "weak-load import stub",
+      "matches_archived": true
+    },
+    {
+      "name": "message thunk",
+      "matches_archived": true
+    },
+    {
+      "name": "message import stub",
+      "matches_archived": true
+    },
+    {
+      "name": "release thunk",
+      "matches_archived": true
+    },
+    {
+      "name": "release import stub",
+      "matches_archived": true
+    }
+  ],
+  "complete_bridge_conditional_branches": [],
+  "complete_bridge_instructions": [
+    "4446b10: stp x22, x21, [sp, #-0x30]!",
+    "4446b14: stp x20, x19, [sp, #0x10]",
+    "4446b18: stp x29, x30, [sp, #0x20]",
+    "4446b1c: add x29, sp, #0x20",
+    "4446b20: mov x19, x2",
+    "4446b24: mov x20, x0",
+    "4446b28: add x0, x0, #0x10",
+    "4446b2c: bl #0x84edd34",
+    "4446b30: mov x21, x0",
+    "4446b34: add x0, x20, #8",
+    "4446b38: bl #0x84edd34",
+    "4446b3c: mov x20, x0",
+    "4446b40: adrp x8, #0xe291000",
+    "4446b44: ldr x1, [x8, #0x310]",
+    "4446b48: mov x0, x21",
+    "4446b4c: mov x2, x20",
+    "4446b50: mov x3, x19",
+    "4446b54: bl #0x80045ec",
+    "4446b58: mov x0, x20",
+    "4446b5c: bl #0x8003ddc",
+    "4446b60: mov x0, x21",
+    "4446b64: ldp x29, x30, [sp, #0x20]",
+    "4446b68: ldp x20, x19, [sp, #0x10]",
+    "4446b6c: ldp x22, x21, [sp], #0x30",
+    "4446b70: b #0x8003ddc"
+  ],
+  "positive_conclusion": "Original selected bridge sends to surviving delegate with nil owner argument; candidate removes only the stronger owned owner-presence predicate",
+  "unproved": [
+    "runtime reachability of selected registration+surviving delegate+expired canonical owner",
+    "logical Root persistent ownership/rebinding",
+    "authoritative shared registration/absent-registration retention",
+    "outer accounting/full discard parity",
+    "save-helper semantics",
+    "compiler/runtime/acceptance"
+  ],
+  "frozen_inputs_sha256": {
+    "results/sessions/proposals/discard-nil-owner-bridge-policy/manifest.json": "fb77d25422881e15fa7676330e84ce6e1284ae39384acb16147554f931681804",
+    "results/sessions/proposals/discard-nil-owner-bridge-policy/README.md": "c81476a3939db5ceb94d902bb748b17d0f896ed519c0c5998fe45ffd24299f67",
+    "results/sessions/proposals/discard-nil-owner-bridge-policy/candidate.patch": "a0aee98cd69696518835094f8fc94a82d102ff4b17b9e36d86ed115ceda6ec3e",
+    "results/sessions/proposals/discard-nil-owner-bridge-policy/target/arc/api/arc_sessions_restore.mm": "6c793d12c18ecbeb0577d21629cfc8914e8ec0bc3d6b014b87d764c1d6135d55",
+    "arc/api/arc_sessions_restore.mm": "178091e65d07409a00eeeb86101a7234afd44f00a3597512c2b1be0095118978",
+    "results/sessions/discard-nil-owner-review/fresh-review.json": "0a834b87d272221b73d62a5d4821cd7c2e2d804d3c9dc3e6724edf392dad0879",
+    "results/sessions/discard-nil-owner-review/README.md": "40577fad701bd23b9be1b2948591741b821a6361a8dea3e593093c36f9e08dc4",
+    "results/sessions/discard-nil-owner-review/mapping.json": "1c40b083c626716f35f911509bb994da37db6b7b3dec39b1c72036c7289eafb9",
+    "results/sessions/discard-nil-owner-review/manifest.json": "f327ccb127dea967598c03d167e5533598bc1adca80e550ab891a05b4d27933d",
+    "results/sessions/discard-nil-owner-review/fresh-review.md": "0b3a44d93344163b0b1d562187a8f5cc5904dc72404f50dc9d699aa5bc8dad29",
+    "results/sessions/discard-nil-owner-review/original-disassembly.txt": "7091ccae29585016661d27a9ee988790b5b982a6deaa27e4b233b09bb0227a71",
+    "results/sessions/discard-nil-owner-review/extract.py": "1607efeadbbb48027d4ffe7bd33ef0bac1e5b92fc7706ecb6ae9599e82a90b7f"
+  },
+  "frozen_inputs_unchanged": true,
+  "production_unchanged": true,
+  "markdown_sha256": "3dd039270a44a75547e635abc924635b0af654e957aa9c69d121d5c040510046",
+  "adoption_status": "HELD_PENDING_FULL_CORE_DISPATCHER_ROOT_LIFETIME_CONTRACT",
+  "current_capture_reachability_limitation": "Posted task strongly captures state; state strongly owns adapter; owner remains weak. This can admit surviving adapter/delegate with nil owner, whose reachability under original intact Root/registration lifetime is unproved.",
+  "raw_independent_review_complete": true,
+  "raw_independent_review_scope": "Conditional local bridge policy only; excludes candidate approval"
+}

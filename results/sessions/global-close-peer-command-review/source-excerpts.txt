@@ -1,0 +1,1067 @@
+## arc/api/arc_app_termination.mm:25-46
+25: namespace {
+26: // Arc's completion is an NSTerminateReply-like integer (0..2), not a BOOL.
+27: // No browser pointers survive a native callback or an iteration of the collection.
+28: class TerminationRequest final {
+29:  public:
+30:   bool active() const { return active_; }
+31:   void Begin(void (^completion)(NSUInteger)) {
+32:     active_ = true;
+33:     browser_shutdown::SetTryingToQuit(true);
+34:     completion_ = [completion copy];
+35:     // CDP initiates AppKit termination from inside a Chromium task. AppKit
+36:     // waits in a native nested loop after tryToTerminate: returns, so its
+37:     // storage replies and timeout must remain runnable until we reply. A
+38:     // stack guard here would end before that native loop starts.
+39:     if (completion_ &&
+40:         !base::CurrentThread::Get().ApplicationTasksAllowedInNativeNestedLoop()) {
+41:       nested_tasks_ = std::make_unique<
+42:           base::CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop>();
+43:     }
+44:     // Native starts preflight before returning NSTerminateLater. A posted
+45:     // Chromium task may be suppressed by Cocoa's nested termination loop.
+46:     Check();
+
+## arc/api/arc_app_termination.mm:50-90
+50:   void BeforeUnloadResult(bool allowed) {
+51:     if (!active_ || approved_) return;
+52:     if (allowed) {
+53:       Check();
+54:       return;
+55:     }
+56:     auto completion = completion_;
+57:     completion_ = nil;
+58:     // Resetting another confirmed browser can synchronously report denial.
+59:     // Retire this transaction's callbacks before resetting those controllers;
+60:     // keep it active until reset finishes so a retry cannot be consumed here.
+61:     weak_factory_.InvalidateWeakPtrs();
+62:     browser_shutdown::SetTryingToQuit(false);
+63:     GlobalBrowserCollection::GetInstance()->ForEach([](BrowserWindowInterface* browser) {
+64:       UnloadController::From(browser)->ResetBeforeUnloadForShutdown();
+65:       return true;
+66:     });
+67:     active_ = false;
+68:     nested_tasks_.reset();
+69:     if (completion) completion(0);
+70:   }
+71:   void Check() {
+72:     if (!active_ || !completion_) return;
+73:     auto* browsers = GlobalBrowserCollection::GetInstance();
+74:     if (!approved_) {
+75:       bool waiting = false;
+76:       browsers->ForEach([&](BrowserWindowInterface* browser) {
+77:         if (UnloadController::From(browser)->RunBeforeUnloadForShutdown(
+78:                 false, base::BindRepeating(&TerminationRequest::BeforeUnloadResult,
+79:                                           weak_factory_.GetWeakPtr()))) {
+80:           waiting = true;
+81:           return false;
+82:         }
+83:         return true;
+84:       });
+85:       if (waiting || !active_) return;
+86:       approved_ = true;
+87:       browsers->ForEach([](BrowserWindowInterface* browser) {
+88:         UnloadController::From(browser)->HandleBeforeClose();
+89:         return true;
+90:       });
+
+## arc/api/arc_app_termination.mm:159-170
+159: ARC_EXPORT @interface ArcBrowserApplication : NSObject
+160: @end
+161: @implementation ArcBrowserApplication (AppTermination)
+162: - (NSUInteger)tryToTerminate:(void (^)(NSUInteger))completion {
+163:   if (!g_browser_process || !g_browser_process->profile_manager()) return 1;
+164:   ApplicationTerminationState* state = objc_getAssociatedObject(self, &kTerminationRequestKey);
+165:   if (!state) {
+166:     state = [[ApplicationTerminationState alloc] init];
+167:     objc_setAssociatedObject(self, &kTerminationRequestKey, state, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+168:   }
+169:   if (!state->request.active()) state->request.Begin(completion);
+170:   return 2;
+
+## chromium/src/chrome/browser/ui/browser_manager_service.cc:42-55
+42: void BrowserManagerService::Shutdown() {
+43:   CHECK(browsers_and_subscriptions_for_testing_.empty());
+44: 
+45:   while (!browsers_and_subscriptions_.empty()) {
+46:     BrowserAndSubscriptions entry =
+47:         std::move(browsers_and_subscriptions_.back());
+48:     browsers_and_subscriptions_.pop_back();
+49:     std::erase(browsers_activation_order_, entry.browser.get());
+50: 
+51:     // `entry` is destroyed here. Member destruction order ensures browser
+52:     // is released before subscriptions are destroyed.
+53:   }
+54: 
+55:   browsers_activation_order_.clear();
+
+## chromium/src/chrome/browser/ui/browser_manager_service.cc:82-103
+82:     std::unique_ptr<BrowserWindowInterface> browser) {
+83:   CHECK(browsers_and_subscriptions_for_testing_.empty());
+84:   BrowserWindowInterface* const browser_ptr = browser.get();
+85:   // Prefer push_back, see totw/112.
+86:   // NOLINTNEXTLINE(modernize-use-emplace)
+87:   browsers_and_subscriptions_.push_back(BrowserAndSubscriptions(
+88:       std::move(browser),
+89:       browser_ptr->RegisterDidBecomeActive(base::BindRepeating(
+90:           &BrowserManagerService::OnBrowserActivated, base::Unretained(this))),
+91:       browser_ptr->RegisterDidBecomeInactive(
+92:           base::BindRepeating(&BrowserManagerService::OnBrowserDeactivated,
+93:                               base::Unretained(this))),
+94:       browser_ptr->RegisterBrowserDidClose(base::BindRepeating(
+95:           &BrowserManagerService::OnBrowserClosed, base::Unretained(this)))));
+96: 
+97:   // Push the browser to the back of the activation order list. It will be moved
+98:   // to the front when the browser is eventually activated (which may or may
+99:   // not happen immediately after creation).
+100:   browsers_activation_order_.push_back(browser_ptr);
+101: 
+102:   base::WeakPtr<BrowserWindowInterface> browser_weak_ptr =
+103:       browser_ptr->GetWeakPtr();
+
+## chromium/src/chrome/browser/ui/browser_manager_service.cc:111-128
+111: void BrowserManagerService::DeleteBrowser(
+112:     BrowserWindowInterface* removed_browser) {
+113:   // Extract the Browser from `browsers_and_subscriptions_` before deleting to
+114:   // avoid UAF risk in the case of re-entrancy.
+115:   std::optional<BrowserAndSubscriptions> target_browser_and_subscriptions;
+116:   auto it = std::ranges::find_if(
+117:       browsers_and_subscriptions_,
+118:       [removed_browser](
+119:           const BrowserAndSubscriptions& browser_and_subscriptions) {
+120:         return browser_and_subscriptions.browser.get() == removed_browser;
+121:       });
+122:   if (it != browsers_and_subscriptions_.end()) {
+123:     std::erase(browsers_activation_order_, it->browser.get());
+124:     target_browser_and_subscriptions = std::move(*it);
+125:     browsers_and_subscriptions_.erase(it);
+126:   } else {
+127:     // `removed_browser` not present in `browsers_and_subscriptions_`.
+128:     return;
+
+## chromium/src/chrome/browser/ui/browser_manager_service.cc:145-145
+145:   target_browser_and_subscriptions->browser.reset();
+
+## chromium/src/chrome/browser/ui/browser_manager_service.cc:268-271
+268: void BrowserManagerService::OnBrowserClosed(BrowserWindowInterface* browser) {
+269:   for (BrowserCollectionObserver& observer : observers()) {
+270:     observer.OnBrowserClosed(browser);
+271:   }
+
+## chromium/src/chrome/browser/ui/browser_window/internal/global_browser_collection.cc:37-63
+37: BrowserCollection::BrowserVector GlobalBrowserCollection::GetBrowsers(
+38:     Order order) {
+39:   CHECK(order == Order::kCreation || order == Order::kActivation);
+40:   return order == Order::kCreation ? browsers_creation_order_
+41:                                    : browsers_activation_order_;
+42: }
+43: 
+44: void GlobalBrowserCollection::OnBrowserCreated(
+45:     BrowserWindowInterface* browser) {
+46:   browsers_creation_order_.push_back(browser);
+47: 
+48:   // Push the browser to the back of the activation order list. It will be moved
+49:   // to the front when the browser is eventually activated (which may or may
+50:   // not happen immediately after creation).
+51:   browsers_activation_order_.push_back(browser);
+52: 
+53:   for (BrowserCollectionObserver& observer : observers()) {
+54:     observer.OnBrowserCreated(browser);
+55:   }
+56: }
+57: 
+58: void GlobalBrowserCollection::OnBrowserClosed(BrowserWindowInterface* browser) {
+59:   std::erase(browsers_activation_order_, browser);
+60:   std::erase(browsers_creation_order_, browser);
+61:   for (BrowserCollectionObserver& observer : observers()) {
+62:     observer.OnBrowserClosed(browser);
+63:   }
+
+## chromium/src/chrome/browser/ui/browser_window/internal/browser_collection.cc:17-55
+17: // Iterates through all browsers in `collection` present at construction time,
+18: // accounting for Browsers that may be destroyed mid-iteration.
+19: class BrowserCollectionEnumerator : public BrowserCollectionObserver {
+20:  public:
+21:   BrowserCollectionEnumerator(BrowserCollection* collection,
+22:                               BrowserCollection::BrowserVector browsers,
+23:                               bool enumerate_new_browsers)
+24:       : enumerate_new_browsers_(enumerate_new_browsers),
+25:         browsers_(std::move(browsers)) {
+26:     browser_collection_observer_.Observe(collection);
+27:   }
+28:   BrowserCollectionEnumerator(const BrowserCollectionEnumerator&) = delete;
+29:   BrowserCollectionEnumerator& operator=(const BrowserCollectionEnumerator&) =
+30:       delete;
+31:   ~BrowserCollectionEnumerator() override = default;
+32: 
+33:   void ForEach(base::FunctionRef<bool(BrowserWindowInterface*)> on_browser) {
+34:     for (size_t index = 0; index < browsers_.size(); index++) {
+35:       if (browsers_[index] && !on_browser(browsers_[index])) {
+36:         return;
+37:       }
+38:     }
+39:   }
+40: 
+41:  private:
+42:   // BrowserCollectionObserver:
+43:   void OnBrowserCreated(BrowserWindowInterface* browser) override {
+44:     if (enumerate_new_browsers_) {
+45:       browsers_.push_back(browser);
+46:     }
+47:   }
+48: 
+49:   void OnBrowserClosed(BrowserWindowInterface* browser) override {
+50:     // Nullify the closed browser to ensure we skip over it during iteration.
+51:     auto it = std::ranges::find(browsers_, browser);
+52:     if (it != browsers_.end()) {
+53:       *it = nullptr;
+54:     }
+55:   }
+
+## chromium/src/chrome/browser/ui/browser_window/internal/browser_collection.cc:69-74
+69: void BrowserCollection::ForEach(
+70:     base::FunctionRef<bool(BrowserWindowInterface*)> on_browser,
+71:     Order order,
+72:     bool enumerate_new_browsers) {
+73:   BrowserCollectionEnumerator(this, GetBrowsers(order), enumerate_new_browsers)
+74:       .ForEach(on_browser);
+
+## chromium/src/chrome/browser/ui/browser.cc:357-371
+357: Browser::~Browser() {
+358:   if (!IsDeleteScheduled()) {
+359:     // Guarantee the Browser has performed the necessary cleanup in the
+360:     // `OnWindowClosing()` lifecycle hook. This may not be invoked during
+361:     // Browser shutdown specifically in cases where clients directly reset
+362:     // the Browser unique_ptr.
+363:     UnloadController::From(this)->set_force_skip_warning_user_on_close(true);
+364:     UnloadController::From(this)->OnWindowClosing();
+365:   }
+366: 
+367:   // Stop observing notifications and destroy the tab monitor before continuing
+368:   // with destruction. Profile destruction will unload extensions and reentrant
+369:   // calls to Browser:: should be avoided while it is being torn down.
+370: 
+371:   window_.reset();
+
+## chromium/src/chrome/browser/ui/unload_controller.cc:500-522
+500: bool UnloadController::RunBeforeUnloadForShutdown(
+501:     bool skip_beforeunload,
+502:     const base::RepeatingCallback<void(bool)>& on_close_confirmed) {
+503:   cancel_download_confirmation_state_ =
+504:       CancelDownloadConfirmationState::kResponseReceived;
+505:   // The devtools browser gets its beforeunload events as the results of
+506:   // intercepting events from the inspected tab, so don't send them here as
+507:   // well.
+508:   if (browser_->GetType() == BrowserWindowInterface::Type::TYPE_DEVTOOLS ||
+509:       HasCompletedUnloadProcessing() || state_ == State::kRunningUnload) {
+510:     return false;
+511:   }
+512: 
+513:   tabs_needing_before_unload_fired_ = GetTabsNeedingBeforeUnloadFired();
+514:   if (tabs_needing_before_unload_fired_.empty()) {
+515:     return false;
+516:   }
+517: 
+518:   on_close_confirmed_ = on_close_confirmed;
+519:   TransitionTo(State::kRunningBeforeUnloadForShutdown);
+520: 
+521:   ProcessPendingTabs(skip_beforeunload);
+522:   return !skip_beforeunload;
+
+## chromium/src/chrome/browser/ui/unload_controller.cc:1123-1130
+1123: void UnloadController::OnWindowCloseComplete() {
+1124:   // If there are no tabs, then a task will be scheduled (by views) to delete
+1125:   // this Browser.
+1126:   is_delete_scheduled_ = true;
+1127: 
+1128:   // At this point the browser has successfully closed and is scheduled for
+1129:   // deletion.
+1130:   browser_did_close_callback_list_.Notify(browser_);
+
+## chromium/src/chrome/browser/ui/unload_controller.cc:1155-1163
+1155:   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+1156:       FROM_HERE,
+1157:       base::BindOnce(
+1158:           [](base::WeakPtr<BrowserWindowInterface> browser) {
+1159:             if (browser) {
+1160:               BrowserManagerService::SynchronouslyDestroyBrowser(browser.get());
+1161:             }
+1162:           },
+1163:           browser_->GetWeakPtr()));
+
+## arc/api/arc_sessions_restore.mm:334-355
+334: - (arcmod::SessionBrowserCreatedCallback)prepareFactory:(Profile*)profile params:(BrowserWindowCreateParams&)params {
+335:   if (!_factoryPending || ArcProfileFrom(_context) != profile || params.window) {
+336:     return {};
+337:   }
+338:   _factoryPending = NO; // Consume before any app callback can reenter.
+339:   params.window = new arc::ArcBrowserWindow();
+340:   params.should_trigger_session_restore = false;
+341:   params.creation_source = BrowserWindowCreateParams::CreationSource::kSessionRestore;
+342:   return base::BindOnce(^(base::WeakPtr<BrowserWindowInterface> native) {
+343:     if (!native || native->IsDeleteScheduled() || ArcProfileFrom(self->_context) != profile) {
+344:       return;
+345:     }
+346:     self->_factoryNative = native;
+347:     ArcBrowser* wrapper = [ArcBrowser wrapperForBrowser:native.get()];
+348:     self->_factoryWrapper = wrapper;
+349:     self->_restoringBrowser = wrapper;
+350:     objc_setAssociatedObject(wrapper, &kFullBrowserRestoring, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+351:     self->_factoryInsertion = std::make_unique<ScopedFullRestoreIDs>(wrapper, self->_factoryIDs);
+352:     if (self->_created) {
+353:       self->_created(wrapper);
+354:     }
+355:   });
+
+## arc/api/arc_sessions_restore.mm:377-387
+377:   ArcBrowser* wrapper = _factoryWrapper;
+378:   auto weakBrowser = _factoryNative;
+379:   const bool succeeded = result.has_value();
+380:   __weak SessionsRestoreIDs* weakState = state;
+381:   state.completion = ^{
+382:     [keepAlive finish:succeeded && !weakState.cancelled && weakBrowser &&
+383:         !weakBrowser->IsDeleteScheduled() ? wrapper : nil];
+384:   };
+385:   state.sealed = YES;
+386:   // Even zero-insertion/cancelled completions run after the API unwinds.
+387:   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{ CompleteFullRestore(state); }));
+
+## arc/api/arc_sessions_restore.mm:487-514
+487:   auto weakBrowser = native->GetWeakPtr();
+488:   ArcBrowser* wrapper = [ArcBrowser wrapperForBrowser:native];
+489:   _restoringBrowser = wrapper;
+490:   objc_setAssociatedObject(wrapper, &kFullBrowserRestoring, self,
+491:                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+492:   if (_created) {
+493:     _created(wrapper);
+494:   }
+495:   native = weakBrowser.get();
+496:   profile = ArcProfileFrom(_context);
+497:   if (!native || native->IsDeleteScheduled() || !profile) {
+498:     [keepAlive finish:nil];
+499:     return;
+500:   }
+501:   service = TabRestoreServiceFactory::GetForProfileIfExisting(profile);
+502:   auto* context = BrowserLiveTabContext::From(native);
+503:   if (!service || !context || service->IsRestoring() ||
+504:       !std::ranges::any_of(service->entries(), [restoreID](const auto& entry) {
+505:         return FindRestoreEntry(*entry, restoreID).has_value();
+506:       })) {
+507:     [keepAlive finish:nil];
+508:     return;
+509:   }
+510:   // Host mode reuses this explicitly supplied Arc context for whole-window
+511:   // entries (ChromeTabRestoreServiceClient host gate, lead-owned patch).
+512:   // Native TabRestoreService retains its complete group/split/history logic.
+513:   ScopedFullRestoreIDs insertionIDs(wrapper, callbackIDs);
+514:   const auto restored = service->RestoreEntryById(context, restoreID, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+
+## arc/api/arc_sessions_restore.mm:763-788
+763: void QueueRestorationCallback(ArcBrowser* browser, content::WebContents* contents,
+764:                               ArcSessionID* identifier, SessionsRestoreIDs* full) {
+765:   __weak ArcBrowser* weakBrowser = browser;
+766:   auto nativeBrowser = [browser browser]->GetWeakPtr();
+767:   ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:contents];
+768:   if (full) {
+769:     full.pending += 1;
+770:   }
+771:   // Native OnTabStripModelChanged posts the dispatcher; it retains the Arc
+772:   // contents peer, but neither the Chrome browser nor Chrome WebContents.
+773:   // Delivery tests that peer's current binding, including a completed rebind.
+774:   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
+775:     ArcBrowser* liveBrowser = weakBrowser;
+776:     if (liveBrowser && nativeBrowser && [wrapper webContents]) {
+777:       id<SessionsBrowserDelegate> delegate = [liveBrowser delegate];
+778:       if ([delegate respondsToSelector:@selector(browser:didRestoreWebContents:withSessionId:)]) {
+779:         [delegate browser:liveBrowser didRestoreWebContents:wrapper withSessionId:identifier];
+780:       }
+781:     } else if (full) {
+782:       full.cancelled = YES;
+783:     }
+784:     if (full) {
+785:       full.pending -= 1;
+786:       CompleteFullRestore(full);
+787:     }
+788:   }));
+
+## arc/api/arc_sessions_restore.mm:949-983
+949:   explicit SessionsServiceObserver(ArcBrowser* browser) : browser_(browser) {
+950:     Profile* profile = [browser browser]->GetProfile();
+951:     if (!profile->IsOffTheRecord()) {
+952:       if (auto* service = TabRestoreServiceFactory::GetForProfile(profile)) {
+953:         for (const auto& entry : service->entries()) {
+954:           RememberRestorationIDs(*entry, seen_entries_);
+955:         }
+956:         service_observation_.Observe(service);
+957:       }
+958:     }
+959:   }
+960:   void TabRestoreServiceChanged(sessions::TabRestoreService* service) override {
+961:     BrowserWindowInterface* browser = [browser_ browser];
+962:     if (!browser) {
+963:       return;
+964:     }
+965:     std::set<SessionID> current;
+966:     for (const auto& entry : service->entries()) {
+967:       RememberRestorationIDs(*entry, current);
+968:       if (!seen_entries_.contains(entry->id)) {
+969:         // AddEntry notifies before native tab removal, so browser_id/index
+970:         // identify the original live tab exactly, including window children.
+971:         PopulateOriginalTabIDs(*entry, browser, seen_entries_);
+972:       }
+973:     }
+974:     seen_entries_ = std::move(current);
+975:   }
+976:   void TabRestoreServiceDestroyed(sessions::TabRestoreService* service) override {
+977:     service_observation_.Reset();
+978:     seen_entries_.clear();
+979:   }
+980:  private:
+981:   __weak ArcBrowser* browser_;
+982:   std::set<SessionID> seen_entries_;
+983:   base::ScopedObservation<sessions::TabRestoreService, sessions::TabRestoreServiceObserver>
+
+## arc/api/arc_sessions_restore.mm:1094-1147
+1094: @implementation ArcBrowser (Sessions)
+1095: - (BOOL)canRestoreWebContentsWithSessionId:(ArcSessionID*)identifier {
+1096:   BrowserWindowInterface* browser = [self browser];
+1097:   if (!browser || browser->GetProfile()->IsOffTheRecord()) {
+1098:     return NO;
+1099:   }
+1100:   if (objc_getAssociatedObject(self, &kFullBrowserRestoring)) {
+1101:     return NO;
+1102:   }
+1103:   auto* service = TabRestoreServiceFactory::GetForProfile(browser->GetProfile());
+1104:   return RestoreID(service, identifier).has_value();
+1105: }
+1106: - (void)restoreWebContentsWithSessionId:(ArcSessionID*)identifier {
+1107:   BrowserWindowInterface* browser = [self browser];
+1108:   if (!browser || browser->GetProfile()->IsOffTheRecord()) {
+1109:     return;
+1110:   }
+1111:   auto* service = TabRestoreServiceFactory::GetForProfile(browser->GetProfile());
+1112:   if (service && (service->IsRestoring() || objc_getAssociatedObject(self, &kFullBrowserRestoring) ||
+1113:       objc_getAssociatedObject([ArcBrowserContext wrapperForProfile:browser->GetProfile()],
+1114:                                &kActiveBrowserRestore))) {
+1115:     __weak ArcBrowser* weakBrowser = self;
+1116:     base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(FROM_HERE, base::BindOnce(^{
+1117:       [weakBrowser restoreWebContentsWithSessionId:identifier];
+1118:     }), base::Milliseconds(10));
+1119:     return;
+1120:   }
+1121:   const auto restore_id = RestoreID(service, identifier);
+1122:   auto* context = BrowserLiveTabContext::From(browser);
+1123:   if (!restore_id || !context) {
+1124:     return;
+1125:   }
+1126:   ScopedSessionInsertion insertion(self, identifier);
+1127:   service->RestoreEntryById(context, *restore_id, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+1128: }
+1129: - (ArcWebContents*)restoreForeignTab:(ArcSessionTab*)tab {
+1130:   BrowserWindowInterface* browser = [self browser];
+1131:   const auto* native = [tab chromeSessionTab];
+1132:   if (!browser || !native || native->navigations.empty()) {
+1133:     return nil;
+1134:   }
+1135:   // Unlike RestoreForeignSessionTab, AddRestoredTab supports an empty browser
+1136:   // and preserves group and last-active metadata rather than discarding it.
+1137:   ScopedSessionInsertion insertion(self, nil);
+1138:   content::WebContents* restored = chrome::AddRestoredTab(
+1139:       browser, native->navigations, browser->GetTabStripModel()->active_index() + 1,
+1140:       native->normalized_navigation_index(), native->extension_app_id, native->group,
+1141:       false, native->pinned, base::TimeTicks(), native->last_active_time, nullptr,
+1142:       native->user_agent_override, native->extra_data, false, std::nullopt);
+1143:   if (restored) {
+1144:     restored->GetController().LoadIfNecessary();
+1145:   }
+1146:   return [ArcWebContents wrapperForWebContents:restored];
+1147: }
+
+## arc/api/arc_browser.mm:148-158
+148:   ArcBrowserTabsObserver(BrowserWindowInterface* browser, ArcBrowser* wrapper) : wrapper_(wrapper) {
+149:     browser->GetTabStripModel()->AddObserver(this);
+150:     __weak ArcBrowser* weak_wrapper = wrapper;
+151:     close_subscription_ = browser->RegisterBrowserDidClose(base::BindRepeating(
+152:         [](ArcBrowser* __weak wrapper, BrowserWindowInterface*) {
+153:           ArcBrowser* retained = wrapper;
+154:           if (retained) {
+155:             [NSNotificationCenter.defaultCenter postNotificationName:kArcBrowserWillCloseNotification
+156:                 object:retained];
+157:           }
+158:         }, weak_wrapper));
+
+## arc/api/arc_browser.mm:215-235
+215:     for (NSArray* entry in closing) {
+216:       ArcSessionID* identifier = entry[1] == NSNull.null ? nil : entry[1];
+217:       [(ArcWebContents*)entry[0] nativeContentsClosingWithRestorationID:identifier];
+218:     }
+219:     for (NSDictionary* entry in changes) {
+220:       ArcWebContents* tab = entry[@"webContents"];
+221:       if ([entry[@"change"] isEqual:@"inserted"]) {
+222:         content::WebContents* native = [tab webContents];
+223:         BrowserWindowInterface* browser = [wrapper browser];
+224:         if (browser && !browser->IsDeleteScheduled() && native) {
+225:           [wrapper didInsertWebContents:native
+226:                                 active:[entry[@"active"] boolValue]
+227:                          notifyCreated:notify_created];
+228:         }
+229:       }
+230:       NotifyTabChange(wrapper, tab, entry[@"change"]);
+231:     }
+232:     if (activated) { NotifyTabChange(wrapper, activated, @"activated"); }
+233:   }
+234:   void OnTabChangedAt(tabs::TabInterface* tab, TabChangeType) override {
+235:     NotifyTabChange(wrapper_, [ArcWebContents wrapperForWebContents:tab->GetContents()], @"updated");
+
+## arc/api/arc_browser.mm:448-455
+448: - (void)tryToCloseSkipBeforeUnloadHandlers:(BOOL)skipBeforeUnloadHandlers
+449:                                  callback:(void (^)(BOOL canceled))callback {
+450:   auto state = _closeState;
+451:   if (state) {
+452:     state->Request(skipBeforeUnloadHandlers, callback);
+453:   } else if (callback) {
+454:     callback(NO);
+455:   }
+
+## arc/api/arc_browser.mm:497-540
+497: - (void)didInsertWebContents:(content::WebContents*)contents active:(BOOL)active
+498:               notifyCreated:(BOOL)notifyCreated {
+499:   ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:contents];
+500:   const auto native = contents->GetWeakPtr();
+501:   const auto browser = _browser;
+502:   if (ArcSessionsDidInsertWebContents(self, contents)) {
+503:     return;  // reported as a restore by the sessions package
+504:   }
+505:   if (!notifyCreated) { return; }
+506:   __weak ArcBrowser* weak_owner = self;
+507:   __weak ArcWebContents* weak_wrapper = wrapper;
+508:   // Native 43065b0 first posts a weak Browser task with copied contents/active
+509:   // state. Its 42fcf40 receiver checks native contents and chooses the CURRENT
+510:   // delegate bridge at delivery, then invokes the ObjC bridge synchronously.
+511:   content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(
+512:       [](void (^work)()) { work(); }, ^{
+513:     if (!browser || !native) { return; }
+514:     ArcBrowser* owner __attribute__((objc_precise_lifetime)) = weak_owner;
+515:     ArcWebContents* current __attribute__((objc_precise_lifetime)) = weak_wrapper;
+516:     if (!owner || [owner browser] != browser.get() || !current ||
+517:         [current webContents] != native.get()) { return; }
+518:     id<ArcCoreBrowserDelegate> delegate = [owner coreDelegate];
+519:     if ([delegate respondsToSelector:@selector(browser:didCreateNewWebContents:isActive:)]) {
+520:       [delegate browser:owner didCreateNewWebContents:current isActive:active];
+521:     }
+522:   }));
+523: }
+524: - (ArcWebContents*)createWebContents:(id)configuration {
+525:   if (!_browser) {
+526:     return nil;
+527:   }
+528:   ArcWebContents* wrapper = [ArcWebContents createWithProfile:_browser->GetProfile() configuration:configuration];
+529:   [self takeOwnershipOfWebContents:wrapper];
+530:   return wrapper;
+531: }
+532: - (void)takeOwnershipOfWebContents:(ArcWebContents*)contents {
+533:   if (!_browser) {
+534:     return;
+535:   }
+536:   auto native = [contents takeOwnedWebContents];
+537:   if (native) {
+538:     _browser->GetTabStripModel()->InsertWebContentsAt(
+539:         -1, std::move(native), [contents foregroundForInsertion] ? ADD_ACTIVE : 0);
+540:   }
+
+## arc/api/arc_extensions_browser.mm:183-206
+183:   BrowserExtensions(ArcBrowser* wrapper, id delegate)
+184:       : browser_([wrapper browser]->GetWeakPtr()), wrapper_(wrapper),
+185:         delegate_(delegate), scoped_data_(std::make_unique<
+186:             ui::ScopedUnownedUserData<ExtensionsContainer>>(
+187:                 browser_->GetUnownedUserDataHost(), *this)) {
+188:     typed_data_ = std::make_unique<ui::ScopedUnownedUserData<BrowserExtensions>>(
+189:         browser_->GetUnownedUserDataHost(), *this);
+190:     model_ = ToolbarActionsModel::Get(browser_->GetProfile());
+191:     if (model_) model_->AddObserver(this);
+192:     tab_list_ = TabListInterface::From(browser_.get());
+193:     if (tab_list_) {
+194:       tab_list_->AddTabListInterfaceObserver(this);
+195:       if (auto* active = tab_list_->GetActiveTab()) Observe(active->GetContents());
+196:     }
+197:     close_ = browser_->RegisterBrowserDidClose(base::BindRepeating(
+198:         [](base::WeakPtr<BrowserExtensions> self, BrowserWindowInterface*) {
+199:           if (self) self->Shutdown();
+200:         }, weak_factory_.GetWeakPtr()));
+201:     // Native defers initialization for an already-ready toolbar model.
+202:     // Otherwise its real initialized observer supplies the first population.
+203:     if (model_ && model_->actions_initialized()) {
+204:       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+205:           base::BindOnce(&BrowserExtensions::OnToolbarModelInitialized,
+206:                          weak_factory_.GetWeakPtr()));
+
+## arc/api/arc_extensions_browser.mm:210-228
+210:   void Shutdown() {
+211:     if (shutting_down_) return;
+212:     shutting_down_ = true;
+213:     weak_factory_.InvalidateWeakPtrs();
+214:     Observe(nullptr);
+215:     if (tab_list_) tab_list_->RemoveTabListInterfaceObserver(this);
+216:     tab_list_ = nullptr;
+217:     scoped_data_.reset();
+218:     typed_data_.reset();
+219:     action_updates_.clear();
+220:     if (model_) model_->RemoveObserver(this);
+221:     model_ = nullptr;
+222:     auto actions = std::move(actions_);
+223:     for (auto& [id, action] : actions) {
+224:       auto* delegate = static_cast<ActionDelegate*>(action->delegate());
+225:       delegate->SuppressDelegate();
+226:       delegate->HidePopup();
+227:     }
+228:     actions.clear();
+
+## arc/api/arc_extensions_browser.mm:239-265
+239:   bool DispatchRequest(void (^request)(id delegate)) {
+240:     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+241:     if (shutting_down_ || !browser_ || !callback_target_present_) return false;
+242:     content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+243:         base::BindOnce([](base::WeakPtr<BrowserExtensions> self,
+244:                           uint64_t epoch, void (^request)(id)) {
+245:           if (!self || self->callback_epoch_ != epoch) return;
+246:           id delegate = self->delegate_;
+247:           if (delegate) request(delegate);
+248:         }, weak_factory_.GetWeakPtr(), callback_epoch_, request));
+249:     return true;
+250:   }
+251:   id GetDelegate() const { return delegate_; }
+252:   ArcBrowser* GetWrapper() const { return wrapper_; }
+253:   base::WeakPtr<BrowserExtensions> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
+254:   uint64_t BeginPopup() { return ++popup_serial_; }
+255:   bool IsPopupRequestCurrent(uint64_t serial) const { return popup_serial_ == serial; }
+256:   ToolbarActionViewModel* GetActionForId(const std::string& id) override {
+257:     if (!browser_ || !model_ || !model_->HasAction(id)) return nullptr;
+258:     auto found = actions_.find(id);
+259:     if (found == actions_.end()) {
+260:       auto action = ExtensionActionViewModel::Create(id, browser_.get(),
+261:           std::make_unique<ActionDelegate>(wrapper_, delegate_, weak_factory_.GetWeakPtr()));
+262:       if (!action) return nullptr;
+263:       found = actions_.emplace(id, std::move(action)).first;
+264:     }
+265:     return found->second.get();
+
+## arc/api/arc_extensions_browser.mm:283-287
+283:   bool ShowToolbarActionPopupForAPICall(const std::string& id,
+284:                                         ShowPopupCallback callback) override {
+285:     auto* action = GetActionForId(id);
+286:     if (!action) { std::move(callback).Run(nullptr); return false; }
+287:     action->TriggerPopupForAPI(std::move(callback)); return true;
+
+## arc/api/arc_extensions_browser.mm:316-347
+316:     throttle->timer.Start(FROM_HERE,
+317:         interval - (now - throttle->last_fired),
+318:         base::BindOnce(&BrowserExtensions::FireActionUpdate,
+319:                        weak_factory_.GetWeakPtr(), action_id));
+320:   }
+321:   void FireActionUpdate(const std::string& action_id) {
+322:     base::AutoReset<bool> updating(&updating_action_, true);
+323:     PublishActionUpdate(action_id);
+324:     auto found = action_updates_.find(action_id);
+325:     if (found != action_updates_.end()) {
+326:       found->second->last_fired = base::TimeTicks::Now();
+327:       found->second->timer.Stop();
+328:     }
+329:   }
+330:   void PublishActionUpdate(const std::string& action_id) {
+331:     if (!callback_target_present_) return;
+332:     ArcExtensionToolbarAction* snapshot = Snapshot(action_id);
+333:     if (snapshot) {
+334:       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+335:           base::BindOnce([](base::WeakPtr<BrowserExtensions> self,
+336:                             uint64_t epoch, ArcExtensionToolbarAction* value) {
+337:             if (!self || self->callback_epoch_ != epoch) return;
+338:             id<ArcExtensionsBrowserDelegate> delegate = self->delegate_;
+339:             if ([delegate respondsToSelector:@selector(browser:didUpdateExtensionToolbarAction:)])
+340:               [delegate browser:self->wrapper_ didUpdateExtensionToolbarAction:value];
+341:           }, weak_factory_.GetWeakPtr(), callback_epoch_, snapshot));
+342:     }
+343:   }
+344:   void OnToolbarModelInitialized() override {
+345:     if (model_)
+346:       for (const auto& identifier : model_->action_ids()) GetActionForId(identifier);
+347:     ScheduleSnapshot();
+
+## arc/api/arc_extensions_browser.mm:370-408
+370:   ArcExtensionToolbarAction* Snapshot(const std::string& id) {
+371:     if (!browser_) return nil;
+372:     auto found = actions_.find(id);
+373:     if (found == actions_.end() || !found->second) return nil;
+374:     auto* action = found->second.get();
+375:     auto* active = tab_list_ ? tab_list_->GetActiveTab() : nullptr;
+376:     auto* contents = active ? active->GetContents() : nullptr;
+377:     if (!contents) return nil;
+378:     ExtensionToolbarAction result;
+379:     result.id = id;
+380:     result.accessible_name = action->GetAccessibleName(contents);
+381:     result.tooltip_text = action->GetTooltip(contents);
+382:     result.enabled = action->IsEnabled(contents);
+383:     ui::ImageModel icon = action->GetIcon(contents, gfx::Size(32,32));
+384:     result.icon = Image(gfx::Image(icon.Rasterize(static_cast<ArcBrowserWindow*>(browser_->GetWindow())->GetColorProvider())));
+385:     const auto& pinned = model_->pinned_action_ids();
+386:     for (size_t index = 0; index < pinned.size(); ++index)
+387:       if (pinned[index] == id) result.pinned_position = static_cast<int>(index);
+388:     return [[ArcExtensionToolbarAction alloc] initWithExtensionToolbarAction:&result];
+389:   }
+390:   void ScheduleSnapshot() {
+391:     if (!callback_target_present_ || !model_ || !model_->actions_initialized()) return;
+392:     // Native full refresh snapshots the cache at the event, before posting the
+393:     // delegate. A model with IDs but no valid active-tab snapshots emits none.
+394:     NSMutableArray* snapshots = [NSMutableArray array];
+395:     for (const auto& id : model_->action_ids()) {
+396:       ArcExtensionToolbarAction* value = Snapshot(id);
+397:       if (value) [snapshots addObject:value];
+398:     }
+399:     if (!snapshots.count && !model_->action_ids().empty()) return;
+400:     NSArray* values = [snapshots copy];
+401:     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+402:         base::BindOnce([](base::WeakPtr<BrowserExtensions> self, uint64_t epoch,
+403:                           NSArray* values) {
+404:           if (!self || self->callback_epoch_ != epoch) return;
+405:           id<ArcExtensionsBrowserDelegate> delegate = self->delegate_;
+406:           if ([delegate respondsToSelector:@selector(browser:didUpdateExtensionToolbarActions:)])
+407:             [delegate browser:self->wrapper_ didUpdateExtensionToolbarActions:values];
+408:         }, weak_factory_.GetWeakPtr(), callback_epoch_, values));
+
+## arc/api/arc_extensions_browser.mm:434-438
+434: BrowserExtensions* Bridge(ArcBrowser* wrapper) {
+435:   auto* browser = [wrapper browser];
+436:   if (!browser) return nullptr;
+437:   auto* window = static_cast<ArcBrowserWindow*>(browser->GetWindow());
+438:   return static_cast<BrowserExtensions*>(window->GetUserData(kExtensionsKey));
+
+## arc/api/arc_extensions_browser.mm:548-569
+548:         KeyEquivalentAndModifierMask* key = ui::GetKeyEquivalentAndModifierMaskFromAccelerator(accelerator);
+549:         item.keyEquivalent = key.keyEquivalent;
+550:         item.keyEquivalentModifierMask = key.modifierMask;
+551:       }
+552:     }
+553:     [menu addItem:item];
+554:   }
+555:   return menu;
+556: }
+557: void ActionDelegate::ShowContextMenu() {
+558:   auto* model = model_->GetContextMenu(extensions::ExtensionContextMenuModel::ContextMenuSource::kToolbarAction);
+559:   if (!model) return;
+560:   auto weak_model = model->AsWeakPtr();
+561:   model->MenuWillShow();
+562:   if (!weak_model) return;
+563:   auto* browser = [browser_ browser];
+564:   const ui::ColorProvider* colors = browser
+565:       ? static_cast<ArcBrowserWindow*>(browser->GetWindow())->GetColorProvider() : nullptr;
+566:   NSMutableArray* __attribute__((objc_precise_lifetime)) targets = [NSMutableArray array];
+567:   NSMenu* menu = MakeMenu(weak_model.get(), targets, colors);
+568:   [menu popUpMenuPositioningItem:nil atLocation:NSEvent.mouseLocation inView:nil];
+569:   if (weak_model) weak_model->MenuWillClose();
+
+## arc/api/arc_extensions_browser.mm:644-676
+644: @implementation ArcBrowser (Extensions)
+645: - (void)executeExtensionAction:(NSString*)identifier {
+646:   if (auto* bridge = arc::Bridge(self))
+647:     if (auto* action = bridge->GetActionForId(ArcUTF8(identifier)))
+648:       action->ExecuteUserAction(ToolbarActionViewModel::InvocationSource::kToolbarButton);
+649: }
+650: - (void)pinExtension:(NSString*)identifier {
+651:   if (auto* browser = [self browser]; browser && !browser->GetProfile()->IsOffTheRecord())
+652:     if (auto* model = ToolbarActionsModel::Get(browser->GetProfile()))
+653:       if (model->HasAction(ArcUTF8(identifier)) && !model->IsActionPinned(ArcUTF8(identifier)) && !model->IsActionForcePinned(ArcUTF8(identifier)))
+654:         model->SetActionVisibility(ArcUTF8(identifier), true);
+655: }
+656: - (void)unpinExtension:(NSString*)identifier {
+657:   if (auto* browser = [self browser]; browser && !browser->GetProfile()->IsOffTheRecord())
+658:     if (auto* model = ToolbarActionsModel::Get(browser->GetProfile()))
+659:       if (model->IsActionPinned(ArcUTF8(identifier)) && !model->IsActionForcePinned(ArcUTF8(identifier)))
+660:         model->SetActionVisibility(ArcUTF8(identifier), false);
+661: }
+662: - (void)moveExtension:(NSString*)identifier targetIndex:(unsigned long long)index {
+663:   if (auto* browser = [self browser]; browser && !browser->GetProfile()->IsOffTheRecord())
+664:     if (auto* model = ToolbarActionsModel::Get(browser->GetProfile()))
+665:       if (model->IsActionPinned(ArcUTF8(identifier)) && index < model->pinned_action_ids().size())
+666:         model->MovePinnedAction(ArcUTF8(identifier), static_cast<size_t>(index));
+667: }
+668: - (void)showExtensionContextMenu:(NSString*)identifier {
+669:   if (auto* bridge = arc::Bridge(self))
+670:     if (auto* action = bridge->GetActionForId(ArcUTF8(identifier)))
+671:       static_cast<arc::ActionDelegate*>(static_cast<ExtensionActionViewModel*>(action)->delegate())->ShowContextMenu();
+672: }
+673: - (void)triggerExtensionOmniboxInput:(NSString*)identifier inputText:(NSString*)input disposition:(long long)disposition {
+674:   // Native compares the public q value as unsigned before browser liveness.
+675:   CHECK_LT(static_cast<unsigned long long>(disposition), 12ULL);
+676:   if (auto* browser = [self browser]) {
+
+## arc/browser/extensions_groups.mm:145-176
+145:     pending_ = this;
+146:   }
+147: 
+148:   bool Allowed(BrowserWindowInterface* browser) const {
+149:     if (!profile_ || !browser || !BrowserForHostedExtensions(browser) ||
+150:         !profile_->IsSameOrParent(browser->GetProfile()) ||
+151:         (!include_incognito_information() &&
+152:          profile_.get() != browser->GetProfile())) {
+153:       return false;
+154:     }
+155:     auto* controller =
+156:         extensions::BrowserExtensionWindowController::From(browser);
+157:     return controller && controller->IsVisibleToTabsAPIForExtension(
+158:                              extension(), /*allow_dev_tools_windows=*/false);
+159:   }
+160: 
+161:   BrowserWindowInterface* Live(ArcBrowser* browser) const {
+162:     BrowserWindowInterface* native = [browser browser];
+163:     return Allowed(native) ? native : nullptr;
+164:   }
+165: 
+166:   ArcBrowser* Window(int window_id, std::string* error) {
+167:     auto* controller = ExtensionTabUtil::GetControllerFromWindowID(
+168:         ChromeExtensionFunctionDetails(this), window_id, error);
+169:     auto* browser =
+170:         controller ? controller->GetBrowserWindowInterface() : nullptr;
+171:     if (!Allowed(browser) || !ExtensionTabUtil::SupportsTabGroups(browser)) {
+172:       if (error->empty())
+173:         *error = kUnavailable;
+174:       return nil;
+175:     }
+176:     return BrowserForHostedExtensions(browser);
+
+## arc/browser/extensions_groups.mm:450-475
+450:         *error = "No tab with id: " + base::NumberToString(tab_id) + ".";
+451:         return false;
+452:       }
+453:       auto* browser = window->GetBrowserWindowInterface();
+454:       if (!Allowed(browser) ||
+455:           (require_group_support &&
+456:            !ExtensionTabUtil::SupportsTabGroups(browser))) {
+457:         *error = kUnavailable;
+458:         return false;
+459:       }
+460:       if (!require_group_support) {
+461:         auto* app = web_app::AppBrowserController::From(browser);
+462:         if (app && app->IsIsolatedWebApp()) {
+463:           *error = "The tab of an Isolated Web App cannot be moved.";
+464:           return false;
+465:         }
+466:       }
+467:       if (!ExtensionTabUtil::IsTabStripEditable(*browser->GetProfile())) {
+468:         *error = ExtensionTabUtil::kTabStripNotEditableError;
+469:         return false;
+470:       }
+471:       if (DevToolsWindow::IsDevToolsWindow(contents)) {
+472:         *error = extensions::tabs_constants::kNotAllowedForDevToolsError;
+473:         return false;
+474:       }
+475:       ArcBrowser* wrapper = BrowserForHostedExtensions(browser);
+
+## arc/browser/arc_browser_window.mm:195-209
+195: ArcBrowserWindow::~ArcBrowserWindow() {
+196:   if (browser_) {
+197:     // BrowserWindow implementations are expected to call
+198:     // TearDownPreBrowserWindowDestruction() before destruction.
+199:     browser_->GetFeatures().TearDownPreBrowserWindowDestruction();
+200:     browser_ = nullptr;
+201:   }
+202: }
+203: 
+204: void ArcBrowserWindow::Close() {
+205:   if (!browser_ || is_closed_) {
+206:     return;
+207:   }
+208:   UnloadController::From(browser_.get())->OnWindowClosing();
+209: }
+
+## arc/browser/arc_browser_window.mm:426-450
+426: void ArcBrowserWindow::SetNativeWindow(gfx::NativeWindow window) {
+427:   auto binding = native_window_;
+428:   const auto weak_self = weak_factory_.GetWeakPtr();
+429:   if (binding->visible_window.GetNativeNSWindow()) {
+430:     return;
+431:   }
+432:   NSWindow* native_window = window.GetNativeNSWindow();
+433:   binding->visible_window = gfx::NativeWindow(native_window);
+434:   binding->window = native_window;
+435:   if (weak_self) {
+436:     binding->tracker = [[CoreWindowBindingTracker alloc]
+437:         initWithWindow:native_window
+438:                onClose:base::BindOnce(&ArcBrowserWindow::ClearNativeWindow,
+439:                                       weak_self)];
+440:   }
+441: }
+442: 
+443: void ArcBrowserWindow::ClearNativeWindow() {
+444:   // Retain binding storage across any release-time reentry. The tracker still
+445:   // retains the window while the adapter releases its hold, then publishes the
+446:   // cleared binding, and finally releases its tracker registration.
+447:   auto binding = native_window_;
+448:   binding->window = nil;
+449:   binding->visible_window = gfx::NativeWindow();
+450:   binding->tracker = nil;
+
+## arc/browser/arc_browser_window.mm:457-468
+457: void ArcBrowserWindow::OnBrowserCreated(BrowserWindowInterface* browser) {
+458:   if (BrowserInitState::From(browser)->create_params().window == this) {
+459:     browser_ = browser->GetWeakPtr();
+460:     browser_collection_observation_.Reset();
+461:     close_subscription_ = browser->RegisterBrowserDidClose(base::BindRepeating(
+462:         [](ArcBrowserWindow* window, BrowserWindowInterface*) {
+463:           window->is_closed_ = true;
+464:           if (window->close_callback_) {
+465:             std::move(window->close_callback_).Run();
+466:           }
+467:         }, base::Unretained(this)));
+468:   }
+
+## arc/browser/arc_browser_window.mm:492-513
+492: Profile* ArcBrowserWindow::GetProfile() {
+493:   return browser_ ? browser_->GetProfile() : nullptr;
+494: }
+495: void ArcBrowserWindow::EnterFullscreen(const url::Origin& origin,
+496:                                        ExclusiveAccessBubbleType bubble_type,
+497:                                        FullscreenTabParams fullscreen_tab_params) {
+498:   if (!IsFullscreen()) {
+499:     [GetNativeWindow().GetNativeNSWindow() toggleFullScreen:nil];
+500:   }
+501: }
+502: void ArcBrowserWindow::ExitFullscreen() {
+503:   if (IsFullscreen()) {
+504:     [GetNativeWindow().GetNativeNSWindow() toggleFullScreen:nil];
+505:   }
+506: }
+507: void ArcBrowserWindow::UpdateExclusiveAccessBubble(
+508:     const ExclusiveAccessBubbleParams& params,
+509:     ExclusiveAccessBubbleHideCallback first_hide_callback) {}
+510: bool ArcBrowserWindow::IsExclusiveAccessBubbleDisplayed() const { return false; }
+511: void ArcBrowserWindow::OnExclusiveAccessUserInput() {}
+512: content::WebContents* ArcBrowserWindow::GetWebContentsForExclusiveAccess() {
+513:   return browser_ ? browser_->GetTabStripModel()->GetActiveWebContents() : nullptr;
+
+## arc/api/arc_omnibox_controller.mm:476-489
+476: @implementation ArcBrowser (Omnibox)
+477: - (BOOL)autocomplete:(NSString*)text cursorPosition:(int)cursor
+478:     preventInlineAutocomplete:(BOOL)preventInline startFresh:(BOOL)startFresh
+479:     keyword:(NSString*)keyword error:(NSError**)error completion:(BrowserCompletion)completion {
+480:   BrowserWindowInterface* browser = [self browser];
+481:   if (!browser) {
+482:     if (error) {
+483:       *error = [NSError errorWithDomain:@"company.thebrowser.Arc" code:6
+484:                               userInfo:@{NSLocalizedDescriptionKey: @"browser deinitialized"}];
+485:     }
+486:     return NO;
+487:   }
+488:   Profile* profile = browser->GetProfile();
+489:   if (keyword.length) {
+
+## arc/api/arc_profile_cookies.mm:50-53
+50: ArcBrowserContext* BrowserCookieContext(ArcBrowser* browser) {
+51:   BrowserWindowInterface* native = [browser browser];
+52:   return native ? [ArcBrowserContext wrapperForProfile:native->GetProfile()] : nil;
+53: }
+
+## arc/api/arc_webextras_ui.mm:72-95
+72: - (id)getEntryInfoForTabWithSessionId:(NSInteger)sessionId {
+73:   id result = [[NSClassFromString(@"ArcBrowserSidePanelEntryInfo") alloc] init];
+74:   auto* browser = [_browser browser];
+75:   auto* tabs = browser ? browser->GetTabStripModel() : nullptr;
+76:   if (!tabs) { return result; }
+77:   for (int index = 0; index < tabs->count(); ++index) {
+78:     auto* contents = tabs->GetWebContentsAt(index);
+79:     if (sessions::SessionTabHelper::IdForTab(contents).id() != sessionId) { continue; }
+80:     auto* registry = SidePanelRegistry::GetDeprecated(contents);
+81:     auto entry = registry ? registry->GetActiveEntry() : std::nullopt;
+82:     [result setHasActiveEntry:entry.has_value()];
+83:     if (entry) {
+84:       auto extension = (*entry)->key().extension_id();
+85:       [result setExtensionId:extension ? ArcNSString(*extension) : nil];
+86:     }
+87:     // Only return a cached WebContents when the native entry has actually been
+88:     // shown through this adapter. A registry entry alone is not a live panel.
+89:     if (entry && sessionId == _sourceSessionId) {
+90:       [result setCachedWebContents:_contents];
+91:     }
+92:     break;
+93:   }
+94:   return result;
+95: }
+
+## results/sessions/proposals/global-close-physical-phase-v2-core-endpoint/after/arc/api/arc_browser.mm:272-289
+272:   // Destructor-entry preparation has no app callout or pending-batch detach.
+273:   // The physical browser can still be allocated, but no continuation may use it.
+274:   void BeginNativeDestruction() {
+275:     CHECK(!native_destruction_prepared_);
+276:     native_destruction_prepared_ = true;
+277:     native_closed_ = true;
+278:     finishing_ = true;
+279:     browser_.reset();
+280:   }
+281: 
+282:   // The caller runs this only after synchronous global close publication.
+283:   // Keep the state alive through callbacks that can release its facade owner.
+284:   void FinishNativeDestruction() {
+285:     auto keep_alive = shared_from_this();
+286:     CHECK(native_destruction_prepared_);
+287:     native_destruction_prepared_ = false;
+288:     NativeDidClose();
+289:   }
+
+## results/sessions/proposals/global-close-physical-phase-v2-core-endpoint/after/arc/api/arc_browser.mm:351-367
+351:   void NativeDidClose() {
+352:     auto keep_alive = shared_from_this();
+353:     native_closed_ = true;
+354:     finishing_ = true;
+355:     if (native_destruction_prepared_) {
+356:       return;
+357:     }
+358:     RunBatch(TakePending(), false);
+359:   }
+360: 
+361:   void Complete(bool confirmed) {
+362:     auto keep_alive = shared_from_this();
+363:     // A nested native confirmation cannot detach/drain the destructor batch
+364:     // while the global app notification is still being published.
+365:     if (native_destruction_prepared_) {
+366:       return;
+367:     }
+
+## results/sessions/proposals/global-close-physical-phase-v2-core-endpoint/after/arc/api/arc_browser.mm:465-485
+465: - (BrowserWindowInterface*)browser { return _browser.get(); }
+466: - (BOOL)deassociateNativeBrowser:(BrowserWindowInterface*)expected
+467:                     completion:(base::OnceClosure*)afterPublication {
+468:   CHECK(afterPublication);
+469:   CHECK(afterPublication->is_null());
+470:   if (!expected || _browser.get() != expected) {
+471:     return NO;
+472:   }
+473:   auto state = _closeState;
+474:   if (state) {
+475:     state->BeginNativeDestruction();
+476:   }
+477:   _browser.reset();
+478:   if (state) {
+479:     *afterPublication = base::BindOnce(
+480:         [](std::shared_ptr<CoreBrowserCloseState> retained) {
+481:           retained->FinishNativeDestruction();
+482:         }, std::move(state));
+483:   }
+484:   return YES;
+485: }
+
+## chromium/src/chrome/browser/ui/browser_window/internal/global_browser_collection_platform_delegate_non_android.cc:15-23
+15: void GlobalBrowserCollectionPlatformDelegate::OnBrowserCreated(
+16:     BrowserWindowInterface* browser) {
+17:   parent_->OnBrowserCreated(browser);
+18: }
+19: 
+20: void GlobalBrowserCollectionPlatformDelegate::OnBrowserClosed(
+21:     BrowserWindowInterface* browser) {
+22:   parent_->OnBrowserClosed(browser);
+23: }
+
+## chromium/src/chrome/browser/ui/browser_manager_service.cc:24-29
+24: BrowserManagerService::BrowserManagerService(Profile* profile)
+25:     : ProfileBrowserCollection(profile) {
+26:   AddObserver(GlobalBrowserCollection::GetInstance()->GetPlatformDelegate());
+27: }
+28: 
+29: BrowserManagerService::~BrowserManagerService() = default;

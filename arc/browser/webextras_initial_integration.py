@@ -12,12 +12,16 @@ from pathlib import Path
 import re
 import signal
 import stat
+import struct
 import subprocess
 import sys
 import tempfile
 import time
 import types
 import uuid
+
+if not __debug__ or sys.flags.optimize:
+    raise RuntimeError('optimized Python is unsupported; index assertions must remain active')
 
 ROOT = Path(__file__).resolve().parents[2]
 NODE = Path('/opt/homebrew/bin/node').resolve()
@@ -44,6 +48,11 @@ RESOURCE_POLICY = {
     'logs/wp/webextras-frontend-resource-native-sanity/freeze.json': '18c51bd6d8832404cb35c34662ddc4baea349951ebd26cf5a95de8e9c082e960',
     'logs/wp/webextras-frontend-resource-sanity-review-worker/review.json': '2d22fc23ea5ed6027dde80f792c6c1be2b8453f472ccf428f9b82807d0f8fef5',
 }
+LOGICAL_INDEX_FUNCTION_SHA256 = '14cf9aa8377da51031990cfb99868a7386c88aa2bbab5196f8bfb0c1a4b90024'
+LOGICAL_INDEX_POLICY = {'logs/wp/app-run6-vnav-integration-driver-v4/transaction.py': '444e2c0738c8d5c8e425cc2eb67c4cf2bdabe6ee7695009ec9935a7c921590cc',
+ 'logs/wp/app-run6-vnav-integration-driver-v4/parent-validation-classification.json': 'ec464fe306831bc2146b6070beffe6b33bbfe11e922b8eadff1c7742fe715417',
+ 'logs/wp/app-run6-vnav-integration-driver-v4-runtime/transaction.review.json': '27fa4631aa530882c02f995bae28db05f08a318848f305eb46cd6670a8ccf354',
+ 'logs/wp/app-run6-vnav-integration-driver-v4-runtime/freeze.json': 'ddb03b308063ac63a267bd48af2fd3200ebc8afaef6ecb5172f2566865d6fb34'}
 CANCELLED = False
 REGEN_TOOLS = {'arc/tools/regen-patches.sh': 0o755, 'arc/tools/regen-chromium-patches.py': 0o644}
 
@@ -59,6 +68,79 @@ def source_module(path, expected):
     require(sha(path) == expected, 'module changed while executing source')
     return module
 
+
+# Exact attributed copy: App444e pure function, lines282–351 (no driver import).
+# Source/function/review pins above; bounded72-case plus focused split rejection.
+def logical_index_seal(data):
+    """Pure SHA-1 DIRC v2/v3/v4 logical entries; cache frames are opaque.
+
+    Format: local Git2.50.1 gitformat-index.5. No helper imports, Git or I/O.
+    Preserve ALL paths/modes/OIDs/stages/valid/ITA/skip bits. Ignore only stat,
+    encoding/version and known optional cache metadata, never staging content.
+    """
+    assert isinstance(data, bytes) and 32 <= len(data) <= 1024 * 1024 * 1024, 'Unsupported index length'
+    end = len(data) - 20
+    assert hashlib.sha1(data[:end]).digest() == data[end:], 'Invalid SHA-1 index checksum'
+    signature, version, count = struct.unpack_from('>4sII', data)
+    assert signature == b'DIRC' and version in (2, 3, 4), 'Unsupported index format'
+    assert count <= (end - 12) // 64, 'Index count exceeds frame'
+    offset, previous_name, previous_key = 12, b'', None
+    logical = hashlib.sha256()
+    for _ in range(count):
+        start = offset
+        assert offset + 62 <= end, 'Truncated index entry'
+        mode = struct.unpack_from('>I', data, offset + 24)[0]
+        oid = data[offset + 40:offset + 60]
+        flags = struct.unpack_from('>H', data, offset + 60)[0]
+        assert mode in (0o100644, 0o100755, 0o120000, 0o160000), 'Unknown/sparse index mode'
+        stage = (flags >> 12) & 3
+        extended = 0
+        offset += 62
+        if flags & 0x4000:
+            assert version >= 3 and offset + 2 <= end, 'Invalid extended index flags'
+            extended = struct.unpack_from('>H', data, offset)[0]
+            assert extended & ~0x6000 == 0, 'Unknown extended index flags'
+            offset += 2
+        remove = 0
+        if version == 4:
+            # OFS_DELTA variable-width number; remove bytes from prior path.
+            assert offset < end, 'Missing v4 path prefix'
+            byte = data[offset]; offset += 1
+            remove = byte & 0x7f
+            width = 1
+            while byte & 0x80:
+                assert offset < end and width < 10, 'Invalid v4 path prefix'
+                byte = data[offset]; offset += 1; width += 1
+                remove = ((remove + 1) << 7) | (byte & 0x7f)
+            assert remove <= len(previous_name), 'v4 path prefix underflow'
+        nul = data.find(b'\0', offset, end)
+        assert nul >= 0, 'Unterminated index pathname'
+        suffix = data[offset:nul]
+        name = previous_name[:len(previous_name) - remove] + suffix if version == 4 else suffix
+        assert name and not name.startswith(b'/') and not any(part in (b'', b'.', b'..', b'.git') for part in name.split(b'/')), 'Invalid index pathname'
+        length = flags & 0x0fff
+        assert length == min(len(name), 0x0fff), 'Index pathname length mismatch'
+        key = (name, stage)
+        assert previous_key is None or previous_key < key, 'Unsorted/duplicate index entry'
+        previous_name, previous_key = name, key
+        if version == 4:
+            offset = nul + 1
+        else:
+            offset = start + ((nul + 1 - start + 7) // 8) * 8
+            assert offset <= end and not any(data[nul:offset]), 'Invalid index entry padding'
+        logical.update(struct.pack('>I', len(name)))
+        logical.update(name); logical.update(struct.pack('>I', mode)); logical.update(oid)
+        logical.update(bytes((stage, bool(flags & 0x8000), bool(extended & 0x2000), bool(extended & 0x4000))))
+    seen = set()
+    while offset < end:
+        assert offset + 8 <= end, 'Truncated index extension'
+        kind, size = struct.unpack_from('>4sI', data, offset)
+        assert kind in (b'TREE', b'UNTR', b'EOIE', b'IEOT') and kind not in seen, 'Unsupported/duplicate index extension (split/sparse rejected)'
+        seen.add(kind)
+        assert size <= end - offset - 8, 'Index extension exceeds frame'
+        offset += 8 + size
+    assert offset == end, 'Invalid index frame end'
+    return (count, logical.hexdigest())
 
 def image_state(path):
     return sha(path), stat.S_IMODE(path.stat().st_mode) if path.exists() else None
@@ -145,6 +227,18 @@ def relative(root, name):
     return result
 
 
+def engine_path(root, name):
+    """Mutable engine paths may not traverse aliases to immutable inputs."""
+    result = relative(root, name)
+    current = root
+    for part in Path(name).parts:
+        current = current / part
+        require(not current.is_symlink(), 'mutable engine path traverses symlink: ' + name)
+    require(result.resolve() not in {(root / tool).resolve() for tool in REGEN_TOOLS},
+            'engine path aliases shared regeneration baseline: ' + name)
+    return result
+
+
 def pin_path(root, name):
     path = Path(name)
     if not path.is_absolute():
@@ -170,7 +264,7 @@ def atomic_bytes(path, data, mode=0o644):
 def template():
     return {'schema': 1, 'status': 'UNSEALED', 'repo': str(ROOT),
             'acknowledgments': {'hostGate': '', 'regenerationInterface': ''},
-            'pins': dict(RESOURCE_POLICY), 'inventory': {}, 'patches': [], 'targets': {},
+            'pins': {**RESOURCE_POLICY, **LOGICAL_INDEX_POLICY}, 'inventory': {}, 'patches': [], 'targets': {},
             'manifest': {}, 'patchOutputs': {}, 'gitRepos': [],
             'regeneration': {'argv': ['./arc/tools/regen-patches.sh'], 'cwd': '.', 'env': {},
                              'toolModes': dict(REGEN_TOOLS)},
@@ -182,6 +276,7 @@ def template():
 
 
 def validate(config, root):
+    require(__debug__ and not sys.flags.optimize, 'optimized Python is unsupported')
     require(config.get('schema') == 1 and config.get('status') == 'SEALED',
             'UNSEALED: no lock, publication, build or app execution permitted')
     require(Path(config.get('repo', '')).resolve() == root.resolve(), 'wrong repository')
@@ -208,7 +303,7 @@ def validate(config, root):
             'persistent tool proposal/images not pinned')
     require(observation_path not in config['pins'], 'persistent tool must use its separate two-phase image')
     for name, image in images.items():
-        relative(root, name)
+        engine_path(root, name)
         require(set(image) == {'before', 'after', 'blob', 'beforeMode', 'afterMode'}, 'invalid image: ' + name)
         require(image['before'] is None or digest.fullmatch(image['before']), 'invalid preimage')
         require(isinstance(image['after'], str) and digest.fullmatch(image['after']), 'invalid postimage')
@@ -229,9 +324,13 @@ def validate(config, root):
     for patch in config['patches']:
         require(set(patch) == {'path', 'sha256', 'cwd'}, 'invalid patch inventory')
         relative(root, patch['path']); relative(root, patch['cwd'])
+        engine_path(root, patch['cwd'])
         require(config['pins'].get(patch['path']) == patch['sha256'], 'patch not pinned')
-        require(not set(REGEN_TOOLS) & patch_changed_paths(relative(root, patch['path']), patch['cwd'], patch['sha256']),
+        changed_paths = patch_changed_paths(relative(root, patch['path']), patch['cwd'], patch['sha256'])
+        require(not set(REGEN_TOOLS) & changed_paths,
                 'engine patch changes shared regeneration baseline')
+        for name in changed_paths:
+            engine_path(root, name)
     require(config.get('inventory'), 'missing production inventory')
     require(set(config['inventory']) == {'arc/api', 'arc/browser', 'arc/wp'}, 'incomplete Arc production inventory')
     for folder, names in config['inventory'].items():
@@ -240,13 +339,24 @@ def validate(config, root):
                 'production content not pinned')
     require(config.get('gitRepos'), 'missing index protection')
     for repo in config['gitRepos']:
-        require(set(repo) == {'path', 'index', 'sha256', 'head'},
+        require(set(repo) == {'path', 'index', 'sha256', 'head', 'logicalSeal', 'snapshot'},
                 'invalid Git repository contract')
         relative(root, repo['path']); relative(root, repo['index'])
         require(isinstance(repo['sha256'], str) and digest.fullmatch(repo['sha256']) and
                 isinstance(repo['head'], str) and repo['head'], 'invalid guard-only Git identity')
+        seal = repo['logicalSeal']
+        require(isinstance(seal, list) and len(seal) == 2 and type(seal[0]) is int and seal[0] >= 0 and
+                isinstance(seal[1], str) and digest.fullmatch(seal[1]), 'invalid original logical index seal')
+        snapshot = relative(root, repo['snapshot'])
+        require(snapshot.resolve() != relative(root, repo['index']).resolve(), 'original snapshot must be separate from live index')
+        raw_snapshot = snapshot.read_bytes()
+        require(config['pins'].get(repo['snapshot']) == repo['sha256'] == hashlib.sha256(raw_snapshot).hexdigest() == sha(snapshot),
+                'original raw index snapshot is not pinned')
+        require(list(logical_index_seal(raw_snapshot)) == seal, 'original snapshot/seal disagree')
     require(len({r['path'] for r in config['gitRepos']}) == len(config['gitRepos']) and
             sum(r['path'] == 'chromium/src' for r in config['gitRepos']) == 1, 'unique outer Chromium guard required')
+    require(all(config['pins'].get(name) == value for name, value in LOGICAL_INDEX_POLICY.items()),
+            'attributed logical index source/review policy is not pinned')
     regeneration = config.get('regeneration', {})
     require(set(regeneration) == {'argv', 'cwd', 'env', 'toolModes'} and
             regeneration['argv'] == ['./arc/tools/regen-patches.sh'] and regeneration['cwd'] == '.' and
@@ -463,6 +573,9 @@ class Transaction:
         self.current = 'before'
         self.lock = None
         self.roots = {}
+        self._lease_active = False
+        self._lease_failed = False
+        self.original_indexes = json.loads(json.dumps(config['gitRepos']))
         receipt = self.output / 'observation-tool.json'
         self.tool_adopted = (receipt.is_file() and json.loads(receipt.read_text()).get('status') == 'PERSISTENT_OBSERVATION_TOOL_ADOPTED')
         require(json.loads((self.output / 'config.json').read_text()) == config, 'config evidence mismatch')
@@ -471,9 +584,82 @@ class Transaction:
     def cancelled(self):
         require(not CANCELLED and not self.cancel.exists(), 'cancellation requested; stop before next candidate phase')
 
+    def regeneration_clear(self):
+        require(not self._lease_failed and not os.path.lexists(self.output / 'regeneration-failure-latch.json'),
+                'failed regeneration lease is latched; parent reconciliation required')
+        if not self._lease_active:
+            for path in self.output.glob('regeneration-lease-*.json'):
+                require(not path.is_symlink() and path.is_file(), 'invalid regeneration ledger')
+                receipt = json.loads(path.read_text())
+                require(isinstance(receipt, dict) and set(receipt) == {'status', 'configSHA256', 'originals', 'before', 'after', 'exit', 'error'} and
+                        receipt.get('status') == 'CHECKED' and
+                        receipt.get('configSHA256') == self.config_digest and
+                        receipt.get('originals') == self.original_indexes and
+                        receipt.get('before') == receipt.get('after') and receipt.get('before'),
+                        'incomplete/foreign regeneration ledger; no new lease or release permitted')
+                before = receipt['before']
+                require(isinstance(before, dict) and set(before) == {r['path'] for r in self.original_indexes},
+                        'regeneration ledger repository coverage mismatch')
+                require((receipt.get('exit') is None or type(receipt.get('exit')) is int) and
+                        (receipt.get('error') is None or isinstance(receipt.get('error'), str)), 'invalid regeneration outcome')
+                require((receipt.get('exit') == 0 and receipt.get('error') is None) or
+                        (isinstance(receipt.get('error'), str) and receipt['error']), 'missing regeneration failure outcome')
+                fields = {'sha256', 'st_dev', 'st_ino', 'st_size', 'st_mtime_ns', 'st_ctime_ns', 'st_mode'}
+                for repo in self.original_indexes:
+                    row = before[repo['path']]
+                    require(isinstance(row, dict) and set(row) == {'identity', 'head', 'logicalSeal'} and
+                            row['head'] == repo['head'] and row['logicalSeal'] == repo['logicalSeal'], 'regeneration original anchor mismatch')
+                    value = row['identity']
+                    require(isinstance(value, dict) and set(value) == fields and
+                            isinstance(value['sha256'], str) and re.fullmatch(r'[0-9a-f]{64}', value['sha256']) and
+                            all(type(value[key]) is int and value[key] >= 0 for key in fields - {'sha256'}) and
+                            stat.S_ISREG(value['st_mode']), 'invalid raw/physical regeneration lease')
+
+    def latch_regeneration_failure(self, error, lease_path):
+        self._lease_failed = True
+        path = self.output / 'regeneration-failure-latch.json'
+        if not os.path.lexists(path):
+            atomic_bytes(path, (json.dumps({'status': 'IRREVERSIBLE_REGENERATION_LEASE_FAILURE',
+                'configSHA256': self.config_digest, 'lease': lease_path.name, 'error': repr(error),
+                'originals': self.original_indexes, 'noAutomaticReleaseOrNewLease': True}, indent=2) + '\n').encode(), 0o600)
+
+    def index_boundary(self):
+        """Fresh raw leases may vary; the configured original logical seal cannot."""
+        self.regeneration_clear(); self.stopped(); self.lock_check()
+        require(sha(self.output / 'config.json') == self.config_digest and
+                self.config['gitRepos'] == self.original_indexes, 'original index contract cannot be rebound')
+        result = {}
+        for repo in self.original_indexes:
+            index = relative(self.root, repo['index'])
+            try:
+                require(not any(index.parent.glob('sharedindex.*')), 'shared index layouts are unsupported')
+                identity = file_identity(index); raw = index.read_bytes()
+                require(file_identity(index) == identity and hashlib.sha256(raw).hexdigest() == identity['sha256'],
+                        'index changed while copying boundary image')
+                # Parse before any index-reading Git. No ls-files probe can refresh it.
+                seal = list(logical_index_seal(raw))
+                require(seal == repo['logicalSeal'], 'original full logical index changed')
+                git_env = git_environment()
+                actual = subprocess.check_output(['git', 'rev-parse', '--git-path', 'index'],
+                    cwd=relative(self.root, repo['path']), env=git_env, text=True).strip()
+                actual = Path(actual) if Path(actual).is_absolute() else relative(self.root, repo['path']) / actual
+                require(actual.resolve() == index.resolve(), 'configured index is not actual repository index')
+                head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=relative(self.root, repo['path']),
+                                               env=git_env, text=True).strip()
+                require(head == repo['head'], 'original Git HEAD drift')
+                require(file_identity(index) == identity, 'index changed during boundary checks')
+                result[repo['path']] = {'identity': identity, 'head': head, 'logicalSeal': seal}
+            except BaseException as error:
+                diagnostic = repr(error)[:4096]
+                write(self.output / 'index-drift.json', {'path': repo['index'], 'originalRawSHA256': repo['sha256'],
+                      'originalLogicalSeal': repo['logicalSeal'], 'error': diagnostic, 'policy': 'HOLD; never restore or rebaseline index'})
+                (self.output / 'index-semantic-diagnostic.txt').write_text(diagnostic + '\nNo index-reading Git probe was performed.\n')
+                raise RuntimeError('index drift/unsupported original logical image: ' + diagnostic) from error
+        return result
+
     def capture_preworker_release_state(self, config_path, config_sha):
         """Guardian-only evidence before the worker can attempt any phase."""
-        self.lock_check(); self.stopped()
+        self.regeneration_clear(); self.lock_check(); self.stopped()
         runner = self.root / 'arc/browser/webextras_scenario_current_run.py'
         own = self.root / 'arc/browser/webextras_initial_integration.py'
         require(sha(own) == self.config['pins']['arc/browser/webextras_initial_integration.py'], 'guardian source is not sealed')
@@ -494,6 +680,7 @@ class Transaction:
 
     def certify_refused_without_writes(self, completion, child):
         """An early refusal releases no claim about the now-foreign baseline."""
+        self.regeneration_clear()
         require(type(child.returncode) is int and child.returncode == 1 and
                 completion.get('status') == 'REFUSED_BEFORE_PUBLICATION' and
                 completion.get('persistentObservationToolRetained') is False, 'not an exact early refusal')
@@ -528,6 +715,7 @@ class Transaction:
 
     def refresh_observation_tool_after_worker(self, completion):
         """Validate the worker's durable handoff without replacing this guardian."""
+        self.regeneration_clear()
         require(sha(self.output / 'config.json') == self.config_digest, 'sealed config evidence drift')
         require(completion.get('status') in ('APPLIED', 'ROLLED_BACK', 'REFUSED_BEFORE_PUBLICATION'),
                 'unknown worker completion')
@@ -595,6 +783,7 @@ class Transaction:
         require(not survivors, 'owned phase/app/helper survivors: ' + repr(survivors))
 
     def pin_check(self):
+        self.regeneration_clear()
         require(sha(self.output / 'config.json') == self.config_digest, 'sealed config evidence drift')
         for name, value in {**self.config['pins'], **self.config['baselineFiles']}.items():
             require(sha(pin_path(self.root, name)) == value, 'immutable input drift: ' + name)
@@ -614,32 +803,14 @@ class Transaction:
     def file_state(self, phase):
         self.lock_check(); self.pin_check()
         paths = {**self.images, **self.config['patchOutputs']}
-        actual = {name: sha(relative(self.root, name)) for name in paths}
+        actual = {name: sha(engine_path(self.root, name)) for name in paths}
         require(all(actual[n] == v[phase] for n, v in paths.items()), 'source/patch phase drift')
         require(all(image_state(relative(self.root, n)) == (v[phase], v[phase + 'Mode'])
                     for n, v in self.images.items()), 'target/MANIFEST mode phase drift')
         require({str(p.relative_to(self.root)) for p in (self.root / 'patches').glob('*.patch')} ==
                 {n for n, image in self.config['patchOutputs'].items() if image[phase] is not None},
                 'all-patch-output inventory drift')
-        for repo in self.config['gitRepos']:
-            index = relative(self.root, repo['index'])
-            git_env = git_environment()
-            actual_index = subprocess.check_output(['git', 'rev-parse', '--git-path', 'index'],
-                cwd=relative(self.root, repo['path']), env=git_env, text=True).strip()
-            actual_index = Path(actual_index) if Path(actual_index).is_absolute() else relative(self.root, repo['path']) / actual_index
-            require(actual_index.resolve() == index.resolve(), 'configured index is not the actual repository index')
-            if sha(index) != repo['sha256']:
-                # Preserve real staging even for suspected metadata-only refresh.
-                write(self.output / 'index-drift.json', {'path': repo['index'], 'before': repo['sha256'],
-                       'actual': sha(index), 'policy': 'HOLD; never restore real index'})
-                diagnostic = subprocess.run(['git', 'ls-files', '--stage', '-v', '--debug'],
-                    cwd=relative(self.root, repo['path']), env=git_environment(),
-                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                (self.output / 'index-semantic-diagnostic.txt').write_bytes(diagnostic.stdout[:65536])
-                raise RuntimeError('real index drift; semantic review required')
-            head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=relative(self.root, repo['path']),
-                                           env=git_environment(), text=True).strip()
-            require(head == repo['head'], 'Git HEAD drift')
+        self.index_boundary()
         return actual
 
     def command(self, argv, label, cwd=None, env=None, rollback=False):
@@ -695,7 +866,7 @@ class Transaction:
                         if self.config['targets'][name]['before'] is None:
                             require(ownership[leaf] == '0010-webextras.patch', 'new native target assigned outside own patch')
         for name, image in self.images.items():
-            path = relative(self.root, name)
+            path = engine_path(self.root, name)
             if image['before'] is not None:
                 destination = self.output / 'before' / name
                 destination.parent.mkdir(parents=True, exist_ok=True)
@@ -731,7 +902,7 @@ class Transaction:
         self.mutated = True
         write(self.output / 'publication.json', {'state': 'PUBLISHING', 'images': self.images})
         for name, image in self.images.items():
-            path = relative(self.root, name)
+            path = engine_path(self.root, name)
             require(image_state(path) == (image['before'], image['beforeMode']), 'foreign bytes/mode before publication')
             atomic_bytes(path, relative(self.root, image['blob']).read_bytes(), image['afterMode'])
             require(image_state(path) == (image['after'], image['afterMode']), 'publication bytes/mode mismatch')
@@ -768,10 +939,33 @@ class Transaction:
             raise
 
     def regenerate(self, rollback=False):
+        self.regeneration_clear()
         command = self.config['regeneration']
         env = git_environment()
-        require(self.command(command['argv'], 'rollback-regen' if rollback else 'regen',
-                             relative(self.root, command['cwd']), env, rollback) == 0, 'regeneration failed')
+        before = self.index_boundary()
+        path = self.output / f'regeneration-lease-{self.phase + 1:04d}.json'
+        require(not os.path.lexists(path), 'regeneration lease name already exists')
+        receipt = {'status': 'OPEN', 'configSHA256': self.config_digest, 'originals': self.original_indexes, 'before': before}
+        write(path, receipt)
+        self._lease_active = True
+        code = None; failure = None
+        try:
+            code = self.command(command['argv'], 'rollback-regen' if rollback else 'regen',
+                                relative(self.root, command['cwd']), env, rollback)
+            require(code == 0, 'regeneration failed')
+        except BaseException as error:
+            failure = repr(error)
+            raise
+        finally:
+            try:
+                after = self.index_boundary()
+                require(after == before, 'raw/physical index lease changed during owned regeneration')
+                write(path, {**receipt, 'status': 'CHECKED', 'after': after, 'exit': code, 'error': failure})
+            except BaseException as error:
+                self.latch_regeneration_failure(error, path)
+                raise
+            finally:
+                self._lease_active = False
 
     def scenario(self, scenario, number, recovery=False):
         self.file_state('before' if recovery else 'after')
@@ -831,10 +1025,9 @@ class Transaction:
     def rollback(self):
         self.stopped(); self.lock_check(); self.pin_check()
         # Unknown bytes, including raw-only index changes, never authorize overwrite.
-        for repo in self.config['gitRepos']:
-            require(sha(relative(self.root, repo['index'])) == repo['sha256'], 'index drift before rollback')
+        self.index_boundary()
         for name, image in self.images.items():
-            require(image_state(relative(self.root, name)) in
+            require(image_state(engine_path(self.root, name)) in
                     ((image['before'], image['beforeMode']), (image['after'], image['afterMode'])),
                     'foreign target bytes/mode at rollback')
         for name, image in self.config['patchOutputs'].items():
@@ -850,7 +1043,7 @@ class Transaction:
                 require(summary.is_file() and json.loads(summary.read_text()).get('profileRestored') is True,
                         'profile restoration unconfirmed; parent recovery required')
         for name, image in self.images.items():
-            path = relative(self.root, name)
+            path = engine_path(self.root, name)
             state = image_state(path)
             require(state in ((image['before'], image['beforeMode']), (image['after'], image['afterMode'])),
                     'foreign target bytes/mode before rollback write')
@@ -865,7 +1058,7 @@ class Transaction:
         self.regenerate(rollback=True)
         # Regen cannot remove an originally absent, now unreferenced own patch.
         for name, image in self.config['patchOutputs'].items():
-            path = relative(self.root, name)
+            path = engine_path(self.root, name)
             if image['before'] is None and path.exists():
                 require(sha(path) == image['after'], 'unexpected orphan patch bytes')
                 path.unlink()
@@ -957,6 +1150,7 @@ def main():
             transaction.backend.groups = {json.loads(p.read_text())['pgid'] for p in output.glob('*.child.json')}
             transaction.backend.groups.add(child.pid)
             transaction.stopped()
+            transaction.regeneration_clear()
             if (state == 'REFUSED_BEFORE_PUBLICATION' and
                     completion.get('persistentObservationToolRetained') is False and
                     not os.path.lexists(output / 'observation-tool.json')):

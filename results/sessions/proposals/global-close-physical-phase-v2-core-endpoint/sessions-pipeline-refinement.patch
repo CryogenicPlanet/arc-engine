@@ -1,0 +1,68 @@
+--- a/arc/api/arc_sessions_restore.mm
++++ b/arc/api/arc_sessions_restore.mm
+@@ -1050,23 +1050,22 @@
+   return self;
+ }
+ - (void)browserDidClose:(BrowserWindowInterface*)browser {
+-  ArcBrowser* wrapper = _browser;
++  // Keep the EXISTING facade through payload capture, publication and finish.
++  ArcBrowser* existing __attribute__((objc_precise_lifetime)) = _browser;
+   Profile* profile = browser->GetProfile();
+-  ArcSessionID* historical = nil;
++  std::optional<int32_t> historicalID;
+   if (!profile->IsOffTheRecord()) {
+     auto* service = TabRestoreServiceFactory::GetForProfileIfExisting(profile);
+     if (service && service->IsLoaded()) {
+-      // Native Arc's close producer matches root original_id, then reports
+-      // that entry's newly allocated historical ID (0x42febc8-0x42fec08).
++      // Preserve root original_id matching and optional numeric presence.
+       for (const auto& entry : service->entries()) {
+         if (entry->original_id == browser->GetSessionID()) {
+-          historical = [[ArcSessionID alloc] initWithID:entry->id.id()];
++          historicalID = entry->id.id();
+           break;
+         }
+       }
+     }
+   }
+-  id<SessionsApplicationDelegate> delegate = ArcBrowserApplicationDelegateObject();
+   NSInteger type = 0;
+   switch (browser->GetType()) {
+     case BrowserWindowInterface::TYPE_POPUP: type = 1; break;
+@@ -1074,11 +1073,31 @@
+     case BrowserWindowInterface::TYPE_APP_POPUP: type = 3; break;
+     default: break;
+   }
+-  if ([delegate respondsToSelector:
+-          @selector(didCloseBrowser:forBrowserContextID:ofType:withRestorationSessionID:)]) {
+-    [delegate didCloseBrowser:wrapper.windowIdentifier
+-        forBrowserContextID:[ArcBrowserContext wrapperForProfile:profile].id
+-        ofType:type withRestorationSessionID:historical];
++  NSString* windowIdentifier = existing.windowIdentifier;
++  ArcBrowserContextID* contextID = [ArcBrowserContext wrapperForProfile:profile].id;
++
++  // Empty output is required: replacing an old closure could drain it early.
++  base::OnceClosure afterPublication;
++  const bool prepared = arc::PrepareBrowserForNativeDestruction(
++      existing, browser, &afterPublication);
++  if (!prepared) {
++    // Private adapter mismatch policy, not original registry eligibility proof.
++    return;
++  }
++  // Only captured payload is used from here; no native/Profile/facade queries.
++  {
++    id<SessionsApplicationDelegate> selected
++        __attribute__((objc_precise_lifetime)) = ArcBrowserApplicationDelegateObject();
++    ArcSessionID* historical = historicalID
++        ? [[ArcSessionID alloc] initWithID:*historicalID] : nil;
++    if ([selected respondsToSelector:
++            @selector(didCloseBrowser:forBrowserContextID:ofType:withRestorationSessionID:)]) {
++      [selected didCloseBrowser:windowIdentifier forBrowserContextID:contextID
++          ofType:type withRestorationSessionID:historical];
++    }
++  }  // Release the selected delegate before close-state completion callbacks.
++  if (afterPublication) {
++    std::move(afterPublication).Run();
+   }
+ }
+ @end

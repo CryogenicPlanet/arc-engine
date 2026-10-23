@@ -1,0 +1,76 @@
+6934: enum ADK.ADKBrowserAction {
+6935:     case onNewWebContentCreated: ADK.WebContent _$s_Sb15shouldSelectTabt
+6936:     case onFullscreenStateChanged: Bool first-element-marker  ADK.FullscreenInitiator initiatort
+6937:     case onReceivedRestoredWebContents: ADKModels.BrowserID  first-element-marker Array -> ADK.RestoredWebContentData _$sGt
+6938:     case onAskAbout: String
+6939:     case onAskAboutImage: nominal type descriptor for URL
+6940:     case onRequestExtensionPermissions: (ArcExtensionInfo, (_:))
+6941:     case onCreateTabGroup: Array -> ADKModels.TabSessionID _$sG_ ADK.ExtensionTabGroupProperties ADK.ExtensionTabGroupResult _$sct ->
+6942:     case onAddTabsToGroup: String first-element-marker Array -> ADKModels.TabSessionID _$sG -> ADK.ExtensionTabGroupResult _$sct
+6943:     case onRemoveTabsFromGroup: Array -> ADKModels.TabSessionID _$sG_ -> ADK.ExtensionTabGroupResult _$sct
+6944:     case onUpdateTabGroup: String first-element-marker  ADK.ExtensionTabGroupProperties ADK.ExtensionTabGroupResult _$sct ->
+6945:     case onMoveTabGroup: String first-element-marker Int -> ADK.ExtensionTabGroupResult _$sct
+6946:     case onGetTabGroup: String first-element-marker  -> ADK.ExtensionTabGroupInfo _$sSgct
+6947:     case onGetAllTabGroups:  empty-list Array -> ADK.ExtensionTabGroupInfo _$sGc
+6948: }
+6949: 
+6950: class ADK.ADKBrowserDelegate: NSObject {
+6951:   /* fields */
+6952:     var lazy actionSubject: ARCFoundation.BufferingSubject ADK.ADKBrowserAction nominal type descriptor for Never ?
+6953:     var onDidRestoreCallback: ADKModels.TabSessionID  first-element-marker  -> ADK.WebContent _$stc
+6954:     var extensionGroupIdLookup: ((_:))?
+6955:   /* methods */
+6956:     static func sub_1004eb740 // init
+6957: }
+
+7593: class ADK.ChromiumBrowser: NSObject {
+7594:   /* fields */
+7595:     let browserType: ADK.BrowserType
+7596:     var browserContextID: ADKModels.BrowserContextID
+7597:     let engine: ADK.Engine
+7598:     let version: String
+7599:     var browserDelegate: ADK.BrowserDelegate ?
+7600:     var extensionsPopUpDelegate: ADK.BrowserExtensionsPopupDelegate ?
+7601:     var sidePanelDelegate: ADK.BrowserSidePanelDelegate ?
+7602:     var contextHistoryDelegateBridge: ADK.BrowserContextHistoryDelegateBridge ?
+
+8441: class ADK.SessionRestorationBrowserDelegate: NSObject {
+8442:   /* fields */
+8443:     var unreceivedRestoredContents: Dictionary -> ADKModels.BrowserID Array -> ADK.WebContent _$sG
+8444:     var trackedBrowsers: Dictionary -> ADKModels.BrowserID ADK.Browser
+8445:     var pendingFullscreenStateChanges: Dictionary -> ADKModels.BrowserID Array empty-list BoolisFullscreen first-element-marker  ADK.FullscreenInitiator initiatedBytG
+8446:     var browsersBeingHandedOff: Set -> ADKModels.BrowserID
+8447:     var logger: Logging.Logger
+8448:   /* methods */
+8449:     static func sub_100554ab8 // init
+
+88400: protocol ADK.BrowserDelegate {
+88401:   /* signature requirements */
+88402:     A: class // key_arg: false, extra_arg: false, kind: layout
+88403:   /* requirements */
+88404:     // <stripped> func method (instance|func_impl)
+88405:     // <stripped> func method (instance|func_impl)
+88406:     // <stripped> func method (instance|func_impl)
+88407:     // <stripped> func method (instance|func_impl)
+88408:     // <stripped> func method (instance|func_impl)
+88409:     // <stripped> func method (instance|func_impl)
+88410:     // <stripped> func method (instance|func_impl)
+88411:     // <stripped> func method (instance|func_impl)
+88412:     // <stripped> func method (instance|func_impl)
+88413:     // <stripped> func method (instance|func_impl)
+88414:     // <stripped> func method (instance|func_impl)
+88415:     // <stripped> func method (instance|func_impl)
+88416:     // <stripped> func method (instance|func_impl)
+88417:     // <stripped> func method (instance|func_impl)
+88418:     // <stripped> func method (instance|func_impl)
+88419: }
+88420: 
+88421: protocol ADK.BrowserContext {
+
+99039: protocol conformance ADK.ADKBrowserDelegate : ADK.BrowserDelegate {
+99040: }
+99041: 
+
+101333: protocol conformance ADK.SessionRestorationBrowserDelegate : ADK.BrowserDelegate {
+101334: }
+101335: 

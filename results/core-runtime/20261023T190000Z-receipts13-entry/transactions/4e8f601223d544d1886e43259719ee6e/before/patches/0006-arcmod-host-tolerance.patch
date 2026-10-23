@@ -1,0 +1,50 @@
+diff --git a/chrome/browser/ui/read_anything/read_anything_side_panel_controller.cc b/chrome/browser/ui/read_anything/read_anything_side_panel_controller.cc
+index d22035c5d8..6d41d15bd7 100644
+--- a/chrome/browser/ui/read_anything/read_anything_side_panel_controller.cc
++++ b/chrome/browser/ui/read_anything/read_anything_side_panel_controller.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "chrome/browser/ui/read_anything/read_anything_side_panel_controller.h"
+ 
++#include "base/command_line.h"
++
+ #include <memory>
+ #include <optional>
+ 
+@@ -243,7 +245,9 @@ void ReadAnythingSidePanelController::TabWillDetach(
+   if (!side_panel_ui) {
+     // TODO(webium): create a SidePanelCoordinator for WebUIBrowser.
+     // This is a temporary solution to avoid a crash.
+-    if (!webui_browser::IsWebUIBrowserEnabled()) {
++    // ArcMod: an Arc-hosted engine has no Chrome side panel UI (Arc draws its own).
++    if (!webui_browser::IsWebUIBrowserEnabled() &&
++        !base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
+       CHECK_IS_TEST();
+     }
+     return;  // IN-TEST
+diff --git a/components/history/core/browser/history_types.cc b/components/history/core/browser/history_types.cc
+index 98b9d2865c..cc4fe35aa1 100644
+--- a/components/history/core/browser/history_types.cc
++++ b/components/history/core/browser/history_types.cc
+@@ -8,6 +8,7 @@
+ #include <limits>
+ 
+ #include "base/check.h"
++#include "base/command_line.h"
+ #include "base/compiler_specific.h"
+ #include "base/notreached.h"
+ #include "base/strings/string_util.h"
+@@ -485,7 +486,12 @@ DeletionInfo::DeletionInfo(const DeletionTimeRange& time_range,
+       favicon_urls_(std::move(favicon_urls)),
+       restrict_urls_(std::move(restrict_urls)) {
+   // If time_range is all time or invalid, restrict_urls should be empty.
+-  DCHECK(!time_range_.IsAllTime() || !restrict_urls_.has_value());
++  // Arc's release engine supports URL-restricted all-time expiration and
++  // exposes its all-time notification unchanged. Keep that contract only for
++  // the Arc host; the backend still applies the supplied URL restriction.
++  DCHECK(!time_range_.IsAllTime() || !restrict_urls_.has_value() ||
++         (base::CommandLine::InitializedForCurrentProcess() &&
++          base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")));
+   DCHECK(time_range_.IsValid() || !restrict_urls_.has_value());
+   // If restrict_urls_ is defined, it should be non-empty.
+   DCHECK(!restrict_urls_.has_value() || !restrict_urls_->empty());

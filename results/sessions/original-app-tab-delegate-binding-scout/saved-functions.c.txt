@@ -1,0 +1,546 @@
+// ==== 0x100524c24  ADK.ChromiumBrowser.browserDelegate.setter  (12 bytes)
+
+void ADK_ChromiumBrowser_browserDelegate_setter(undefined8 param_1,undefined8 param_2)
+
+{
+  FUN_100524dc4(param_1,param_2,&_TtC3ADK15ChromiumBrowser::browserDelegate);
+  return;
+}
+
+
+
+// ==== 0x100524dc4  FUN_100524dc4  (100 bytes)
+
+void FUN_100524dc4(undefined8 param_1,undefined8 param_2,long *param_3)
+
+{
+  long lVar1;
+  long unaff_x20;
+  undefined1 auStack_48 [24];
+  
+  lVar1 = unaff_x20 + *param_3;
+  _swift_beginAccess(lVar1,auStack_48,1,0);
+  *(undefined8 *)(lVar1 + 8) = param_2;
+  _swift_unknownObjectWeakAssign(lVar1,param_1);
+  _swift_unknownObjectRelease(param_1);
+  return;
+}
+
+
+
+// ==== 0x100525930  FUN_100525930  (1172 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+/* WARNING: Function: _objc_retainAutoreleasedReturnValue replaced with injection:
+   _objc_retain_fixup */
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+
+ID FUN_100525930(ID param_1,undefined8 param_2)
+
+{
+  undefined8 *puVar1;
+  undefined1 *puVar2;
+  long lVar3;
+  code *pcVar4;
+  bool bVar5;
+  undefined *puVar6;
+  ID IVar7;
+  ID IVar8;
+  _StringGuts _Var9;
+  long unaff_x20;
+  void *pvVar10;
+  char *pcVar11;
+  long lVar12;
+  undefined8 uVar13;
+  String SVar14;
+  undefined1 auStack_78 [24];
+  
+  puVar1 = (undefined8 *)(unaff_x20 + _TtC3ADK15ChromiumBrowser::version);
+  *puVar1 = 0x312e302e30;
+  puVar1[1] = 0xe500000000000000;
+  lVar12 = unaff_x20 + _TtC3ADK15ChromiumBrowser::browserDelegate;
+  *(undefined8 *)(lVar12 + 8) = 0;
+  _swift_unknownObjectWeakInit(lVar12,0);
+  lVar12 = unaff_x20 + _TtC3ADK15ChromiumBrowser::extensionsPopUpDelegate;
+  *(undefined8 *)(lVar12 + 8) = 0;
+  _swift_unknownObjectWeakInit(lVar12,0);
+  lVar12 = unaff_x20 + _TtC3ADK15ChromiumBrowser::sidePanelDelegate;
+  *(undefined8 *)(lVar12 + 8) = 0;
+  _swift_unknownObjectWeakInit(lVar12,0);
+  lVar12 = _TtC3ADK15ChromiumBrowser::contextHistoryDelegateBridge;
+  _swift_unknownObjectWeakInit
+            (unaff_x20 + _TtC3ADK15ChromiumBrowser::contextHistoryDelegateBridge,0);
+  *(undefined8 *)(unaff_x20 + _TtC3ADK15ChromiumBrowser::___lazy_storage___imageCache) = 0;
+  lVar3 = _TtC3ADK15ChromiumBrowser::downloads;
+  puVar6 = PTR___swiftEmptyArrayStorage_104167650;
+  FUN_1004c0fe4();
+  *(undefined **)(unaff_x20 + lVar3) = puVar6;
+  puVar1 = (undefined8 *)
+           (unaff_x20 + _TtC3ADK15ChromiumBrowser::___lazy_storage___deletableAutocompleteMatches);
+  puVar1[1] = 0;
+  *puVar1 = 0;
+  puVar1[3] = 0;
+  puVar1[2] = 0;
+  *(ID *)(unaff_x20 + _TtC3ADK15ChromiumBrowser::browser) = param_1;
+  _swift_beginAccess(unaff_x20 + lVar12,auStack_78,1,0);
+  _swift_unknownObjectWeakAssign(unaff_x20 + lVar12,param_2);
+  if (DAT_1044c8240 != -1) {
+    _swift_once(&DAT_1044c8240,FUN_1004aa82c);
+  }
+  lVar12 = DAT_1044c8248;
+  IVar7 = objc_stub::context(param_1);
+  IVar7 = objc_stub::id(IVar7);
+  objc_stub::directoryBasename(IVar7);
+  SVar14 = (extension_Foundation)::Swift::String::__unconditionallyBridgeFromObjectiveC();
+  _Var9.unknown = SVar14.bridgeObject;
+  puVar1 = (undefined8 *)(lVar12 + _TtC3ADK14ADKApplication::machineID);
+  lVar12 = puVar1[1];
+  if (lVar12 == 0) {
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x100525d98);
+    (*pcVar4)();
+  }
+  uVar13 = *puVar1;
+  if ((SVar14.str == (undefined *)0x746c7561666544) && (_Var9.unknown == &DAT_e700000000000000)) {
+    _swift_bridgeObjectRelease(&DAT_e700000000000000);
+    SVar14 = (String)ZEXT816(0);
+    uVar13 = 0;
+    lVar12 = 0;
+  }
+  else {
+    bVar5 = Swift::_stringCompareWithSmolCheck
+                      ((_StringGuts)SVar14.str,_Var9,(_StringComparisonResult)0x44);
+    _swift_bridgeObjectRetain(lVar12);
+    if (bVar5) {
+      _swift_bridgeObjectRelease(_Var9.unknown);
+      _swift_bridgeObjectRelease(lVar12);
+      SVar14 = (String)ZEXT816(0);
+      uVar13 = 0;
+      lVar12 = 0;
+    }
+  }
+  pvVar10 = SVar14.bridgeObject;
+  pcVar11 = SVar14.str;
+  ADK_ADKApplication_method_instance(pcVar11,pvVar10,uVar13,lVar12);
+  FUN_10000825c(pcVar11,pvVar10,uVar13,lVar12);
+  *(String *)(unaff_x20 + _TtC3ADK15ChromiumBrowser::nonIncognitoBrowserContext) = SVar14;
+  IVar7 = objc_stub::type(param_1);
+  if (3 < IVar7) {
+    FUN_1004a7cc8(0);
+    Swift::__diagnoseUnexpectedEnumCaseValue();
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x100525dc4);
+    (*pcVar4)();
+  }
+  *(char *)(unaff_x20 + _TtC3ADK15ChromiumBrowser::browserType) =
+       (char)(0x2010100 >> (ulong)(((uint)IVar7 & 3) << 3));
+  IVar7 = objc_stub::context(param_1);
+  IVar7 = objc_stub::id(IVar7);
+  IVar8 = objc_stub::isIncognito(IVar7);
+  objc_stub::directoryBasename(IVar7);
+  SVar14 = (extension_Foundation)::Swift::String::__unconditionallyBridgeFromObjectiveC();
+  _Var9.unknown = SVar14.bridgeObject;
+  lVar12 = puVar1[1];
+  if (lVar12 == 0) {
+                    /* WARNING: Does not return */
+    pcVar4 = (code *)SoftwareBreakpoint(1,0x100525d9c);
+    (*pcVar4)();
+  }
+  uVar13 = *puVar1;
+  if ((SVar14.str == (undefined *)0x746c7561666544) && (_Var9.unknown == &DAT_e700000000000000)) {
+    _swift_bridgeObjectRelease(&DAT_e700000000000000);
+  }
+  else {
+    bVar5 = Swift::_stringCompareWithSmolCheck
+                      ((_StringGuts)SVar14.str,_Var9,(_StringComparisonResult)0x44);
+    _swift_bridgeObjectRetain(lVar12);
+    if (!bVar5) goto LAB_100525cd0;
+    _swift_bridgeObjectRelease(_Var9.unknown);
+    _swift_bridgeObjectRelease();
+  }
+  SVar14 = (String)ZEXT816(0);
+  uVar13 = 0;
+  lVar12 = 0;
+LAB_100525cd0:
+  puVar2 = (undefined1 *)(unaff_x20 + _TtC3ADK15ChromiumBrowser::browserContextID);
+  *puVar2 = (char)IVar8;
+  *(String *)(puVar2 + 8) = SVar14;
+  *(undefined8 *)(puVar2 + 0x18) = uVar13;
+  *(long *)(puVar2 + 0x20) = lVar12;
+  FUN_10052de00();
+  IVar7 = _objc_msgSendSuper2((objc_super *)&stack0xffffffffffffff70,"init");
+  lVar12 = _TtC3ADK15ChromiumBrowser::browser;
+  objc_stub::setDelegate_(*(ID *)(IVar7 + _TtC3ADK15ChromiumBrowser::browser),IVar7);
+  IVar8 = objc_stub::sidePanel(*(ID *)(IVar7 + lVar12));
+  if (IVar8 != 0) {
+    objc_stub::setDelegate_(IVar8,IVar7);
+  }
+  return IVar7;
+}
+
+
+
+// ==== 0x100528c38  FUN_100528c38  (12 bytes)
+
+void FUN_100528c38(void)
+
+{
+  FUN_100528dd4();
+  return;
+}
+
+
+
+// ==== 0x100528dd4  FUN_100528dd4  (100 bytes)
+
+void FUN_100528dd4(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,
+                  long *param_5)
+
+{
+  long lVar1;
+  long unaff_x20;
+  undefined1 auStack_48 [24];
+  
+  lVar1 = unaff_x20 + *param_5;
+  _swift_beginAccess(lVar1,auStack_48,1,0);
+  *(undefined8 *)(lVar1 + 8) = param_2;
+  _swift_unknownObjectWeakAssign(lVar1,param_1);
+  _swift_unknownObjectRelease(param_1);
+  return;
+}
+
+
+
+// ==== 0x10133e674  FUN_10133e674  (412 bytes)
+
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+
+code * FUN_10133e674(undefined8 *param_1)
+
+{
+  undefined8 *puVar1;
+  code *pcVar2;
+  undefined *puVar3;
+  undefined *puVar4;
+  undefined8 uVar5;
+  undefined8 *puVar6;
+  long unaff_x20;
+  long lVar7;
+  undefined8 uVar8;
+  undefined8 uVar9;
+  undefined1 auStack_80 [24];
+  undefined8 local_68 [7];
+  
+  puVar6 = local_68;
+  _swift_beginAccess(unaff_x20 + 0x88,puVar6,0x20,0);
+  lVar7 = *(long *)(unaff_x20 + 0x88);
+  if (*(long *)(lVar7 + 0x10) != 0) {
+    _swift_bridgeObjectRetain(lVar7);
+    puVar1 = param_1;
+    FUN_1004b9124();
+    if (((ulong)puVar6 & 1) != 0) {
+      pcVar2 = *(code **)(*(long *)(lVar7 + 0x38) + (long)puVar1 * 8);
+      _swift_endAccess(local_68);
+      _swift_bridgeObjectRelease(lVar7);
+      return pcVar2;
+    }
+    _swift_bridgeObjectRelease(lVar7);
+  }
+  _swift_endAccess(local_68);
+  puVar3 = &DAT_1042443f8;
+  _swift_allocObject(&DAT_1042443f8,0x18,7);
+  _swift_weakInit(puVar3 + 0x10);
+  puVar4 = &DAT_104244420;
+  _swift_allocObject(&DAT_104244420,0x50,7);
+  *(undefined **)(puVar4 + 0x10) = puVar3;
+  uVar5 = *param_1;
+  uVar9 = param_1[3];
+  uVar8 = param_1[2];
+  *(undefined8 *)(puVar4 + 0x20) = param_1[1];
+  *(undefined8 *)(puVar4 + 0x18) = uVar5;
+  *(undefined8 *)(puVar4 + 0x30) = uVar9;
+  *(undefined8 *)(puVar4 + 0x28) = uVar8;
+  uVar5 = param_1[4];
+  *(undefined8 *)(puVar4 + 0x40) = param_1[5];
+  *(undefined8 *)(puVar4 + 0x38) = uVar5;
+  *(undefined8 *)(puVar4 + 0x48) = param_1[6];
+  FUN_1004ee120(0);
+  _objc_allocWithZone();
+  FUN_1004a3cc0(param_1,local_68);
+  pcVar2 = FUN_101358830;
+  FUN_1004eb7b8(FUN_101358830,puVar4);
+  _swift_beginAccess(unaff_x20 + 0x88,auStack_80,0x21,0);
+  FUN_1004a3cc0(param_1,local_68);
+  uVar5 = *(undefined8 *)(unaff_x20 + 0x88);
+  _swift_isUniquelyReferenced_nonNull_native(uVar5);
+  local_68[0] = *(undefined8 *)(unaff_x20 + 0x88);
+  *(undefined8 *)(unaff_x20 + 0x88) = 0x8000000000000000;
+  FUN_10135af28(pcVar2,param_1,uVar5);
+  FUN_10135872c(param_1);
+  *(undefined8 *)(unaff_x20 + 0x88) = local_68[0];
+  _swift_endAccess(auStack_80);
+  return pcVar2;
+}
+
+
+
+// ==== 0x10133f508  FUN_10133f508  (1472 bytes)
+
+/* WARNING: Function: _objc_release replaced with injection: _objc_release_fixup */
+/* WARNING: Function: _objc_retain replaced with injection: _objc_retain_fixup */
+
+void FUN_10133f508(undefined8 param_1,long param_2,undefined8 *param_3)
+
+{
+  DefaultStringInterpolation stringInterpolation;
+  undefined8 *puVar1;
+  undefined *puVar2;
+  undefined *puVar3;
+  AnyCancellable *pAVar4;
+  DefaultStringInterpolation *pDVar5;
+  long *plVar6;
+  void *pvVar7;
+  char *pcVar8;
+  void *pvVar9;
+  long unaff_x20;
+  long lVar10;
+  undefined8 uVar11;
+  code *pcVar12;
+  long lVar13;
+  undefined8 uVar14;
+  undefined8 uVar15;
+  String SVar16;
+  String SVar17;
+  undefined8 local_1e8;
+  undefined8 local_1e0;
+  undefined8 local_1d8;
+  undefined8 local_1d0;
+  undefined8 local_1c0;
+  char local_1b8;
+  undefined8 local_188 [3];
+  undefined8 local_170;
+  long lStack_168;
+  undefined8 local_160;
+  undefined *local_158;
+  undefined *puStack_150;
+  undefined8 local_148;
+  undefined8 uStack_140;
+  undefined8 local_138;
+  undefined8 uStack_130;
+  String local_128;
+  String local_118;
+  undefined8 local_108;
+  undefined1 auStack_100 [24];
+  undefined8 *local_e8;
+  undefined8 local_e0;
+  undefined8 local_d8;
+  undefined8 local_d0;
+  DefaultStringInterpolation local_c8;
+  undefined *local_c0;
+  undefined *puStack_b8;
+  undefined8 local_b0;
+  long lStack_a8;
+  undefined8 uStack_a0;
+  undefined8 uStack_98;
+  String local_90;
+  String local_80;
+  undefined8 local_70;
+  
+  pDVar5 = &local_c8;
+  pvVar9 = (void *)0x0;
+  _swift_beginAccess(unaff_x20 + 0xa0,pDVar5,0x20);
+  lVar10 = *(long *)(unaff_x20 + 0xa0);
+  if (*(long *)(lVar10 + 0x10) != 0) {
+    _swift_bridgeObjectRetain(lVar10);
+    puVar1 = param_3;
+    FUN_1004b9124();
+    if (((ulong)pDVar5 & 1) != 0) {
+      uVar11 = *(undefined8 *)(*(long *)(lVar10 + 0x38) + (long)puVar1 * 0x10);
+      _swift_unknownObjectRetain(uVar11);
+      _swift_endAccess(&local_c8);
+      _swift_unknownObjectRelease(uVar11);
+      _swift_bridgeObjectRelease(lVar10);
+      pcVar8 = &DAT_00000002;
+      SVar16 = Swift::StaticString::get_description((StaticString)0x10398ab60);
+      plVar6 = SVar16.bridgeObject;
+      local_c8.unknown = &SUB_d000000000000013;
+      local_c0 = (undefined *)0x8000000103918510;
+      SVar17.bridgeObject = pvVar9;
+      SVar17.str = pcVar8;
+      Swift::String::append(SVar16,SVar17);
+      _swift_bridgeObjectRelease();
+      puVar2 = local_c0;
+      stringInterpolation.unknown = local_c8.unknown;
+      FUN_100734924();
+      lVar13 = *plVar6;
+      SVar16 = Swift::StaticString::get_description((StaticString)0x103989ac0);
+      pvVar9 = SVar16.bridgeObject;
+      SVar17 = Swift::StaticString::get_description((StaticString)0x10398abb0);
+      pvVar7 = SVar17.bridgeObject;
+      _swift_beginAccess(lVar13 + 0x20,auStack_100,0,0);
+      FUN_100012c10(lVar13 + 0x20,&local_c8);
+      lVar10 = lStack_a8;
+      uVar11 = local_b0;
+      FUN_100012c54(&local_c8,local_b0);
+      (**(code **)(lVar10 + 0x70))(uVar11,lVar10);
+      FUN_100012e70(&local_c8);
+      if (((uint)uVar11 & 0xff) < 6) {
+        FUN_100012c10(lVar13 + 0x20,local_188);
+        FUN_100012c54();
+        FUN_101358760();
+        _swift_bridgeObjectRetain(puVar2);
+        (extension_Swift)::Swift::ExpressibleByStringInterpolation::_init(stringInterpolation);
+        puStack_b8 = local_c0;
+        local_c0 = local_c8.unknown;
+        local_c8.unknown._0_1_ = 5;
+        lStack_a8 = 0;
+        local_b0 = 0;
+        uStack_98 = 0;
+        uStack_a0 = 0;
+        local_70 = 0x145;
+        local_160 = CONCAT71(local_160._1_7_,5);
+        local_158 = local_c0;
+        puStack_150 = puStack_b8;
+        uStack_140 = 0;
+        local_148 = 0;
+        uStack_130 = 0;
+        local_138 = 0;
+        local_108 = 0x145;
+        local_128 = SVar16;
+        local_118 = SVar17;
+        local_90 = SVar16;
+        local_80 = SVar17;
+        _swift_bridgeObjectRetain(pvVar9);
+        _swift_bridgeObjectRetain(pvVar7);
+        FUN_1005815fc(&local_c8,&local_1e8);
+        FUN_100012cf4(&local_160);
+        (**(code **)(lStack_168 + 0x28))(&local_c8,local_170,lStack_168);
+        _swift_bridgeObjectRelease(pvVar7);
+        _swift_bridgeObjectRelease(pvVar9);
+        FUN_100012cf4(&local_c8);
+        FUN_100012e70(local_188);
+        _swift_bridgeObjectRelease(puVar2);
+      }
+      else {
+        _swift_bridgeObjectRelease(puVar2);
+        _swift_bridgeObjectRelease(pvVar7);
+        _swift_bridgeObjectRelease(pvVar9);
+      }
+      goto LAB_10133f6ac;
+    }
+    _swift_bridgeObjectRelease(lVar10);
+  }
+  _swift_endAccess(&local_c8);
+LAB_10133f6ac:
+  _swift_beginAccess(unaff_x20 + 0xa0,&local_1e8,0x21,0);
+  _swift_unknownObjectRetain(param_1);
+  FUN_1004a3cc0(param_3,&local_160);
+  uVar11 = *(undefined8 *)(unaff_x20 + 0xa0);
+  _swift_isUniquelyReferenced_nonNull_native(uVar11);
+  local_160 = *(undefined8 *)(unaff_x20 + 0xa0);
+  *(undefined8 *)(unaff_x20 + 0xa0) = 0x8000000000000000;
+  FUN_10135b0bc(param_1,param_2,param_3,uVar11);
+  FUN_10135872c(param_3);
+  *(undefined8 *)(unaff_x20 + 0xa0) = local_160;
+  _swift_endAccess(&local_1e8);
+  FUN_10133d268(&local_1e8);
+  local_188[0] = local_1e8;
+  FUN_10000733c(local_188,&DAT_10454a5b0,&DAT_1036fd438);
+  local_d0 = local_1e0;
+  FUN_10000733c(&local_d0,&DAT_10454a5b0,&DAT_1036fd438);
+  local_d8 = local_1d8;
+  FUN_10000733c(&local_d8,&DAT_10454a5b0,&DAT_1036fd438);
+  local_e0 = local_1d0;
+  FUN_10000733c(&local_e0,&DAT_10454a5b0,&DAT_1036fd438);
+  _swift_release(local_1c0);
+  if ((local_1b8 == '\x01') && (*(char *)(param_3 + 2) != '\x01')) {
+    FUN_100554c28(param_1,param_2,param_3);
+  }
+  else {
+    _swift_getObjectType(param_1);
+    FUN_10133e674(param_3);
+    (**(code **)(param_2 + 0x28))();
+    FUN_1004a3cc0(param_3,&local_160);
+    puVar1 = param_3;
+    FUN_10133e674();
+    FUN_1004eb580();
+    puVar2 = &DAT_1042443f8;
+    local_e8 = puVar1;
+    _swift_allocObject(&DAT_1042443f8,0x18,7);
+    _swift_weakInit(puVar2 + 0x10);
+    puVar3 = &DAT_1042448a8;
+    _swift_allocObject(&DAT_1042448a8,0x50,7);
+    *(undefined **)(puVar3 + 0x10) = puVar2;
+    uVar11 = *param_3;
+    uVar15 = param_3[3];
+    uVar14 = param_3[2];
+    *(undefined8 *)(puVar3 + 0x20) = param_3[1];
+    *(undefined8 *)(puVar3 + 0x18) = uVar11;
+    *(undefined8 *)(puVar3 + 0x30) = uVar15;
+    *(undefined8 *)(puVar3 + 0x28) = uVar14;
+    uVar11 = param_3[4];
+    *(undefined8 *)(puVar3 + 0x40) = param_3[5];
+    *(undefined8 *)(puVar3 + 0x38) = uVar11;
+    *(undefined8 *)(puVar3 + 0x48) = param_3[6];
+    FUN_1004a3cc0(param_3,&local_160);
+    FUN_100005134(&DAT_10454a5b8,&DAT_1036fd468);
+    FUN_10000a9c8(&DAT_10454a5c0,&DAT_10454a5b8,&DAT_1036fd468,
+                  PTR_Combine__Combine__AnyPublisher<undefined,undefined>_>Combine__Publisher_1041606c0
+                 );
+    pAVar4 = (extension_Combine)::Combine::Publisher::_sink();
+    _swift_release(puVar1);
+    _swift_release(puVar3);
+    _swift_beginAccess(unaff_x20 + 0x108,&local_160,0x21,0);
+    uVar11 = *(undefined8 *)(unaff_x20 + 0x108);
+    _swift_isUniquelyReferenced_nonNull_native(uVar11);
+    local_e8 = *(undefined8 **)(unaff_x20 + 0x108);
+    *(undefined8 *)(unaff_x20 + 0x108) = 0x8000000000000000;
+    FUN_10135af3c(PTR___swiftEmptyArrayStorage_104167650,pAVar4,param_3,uVar11);
+    FUN_10135872c(param_3);
+    *(undefined8 **)(unaff_x20 + 0x108) = local_e8;
+    _swift_endAccess(&local_160);
+  }
+  _swift_getObjectType(param_1);
+  uVar11 = *param_3;
+  uVar14 = param_3[1];
+  pcVar12 = *(code **)(param_2 + 0x80);
+  _swift_bridgeObjectRetain(uVar14);
+  (*pcVar12)(uVar11,uVar14,param_1,param_2);
+  return;
+}
+
+
+
+// ==== 0x1004ee120  FUN_1004ee120  (32 bytes)
+
+/* WARNING: Function: _objc_opt_self replaced with injection: _objc_retain_fixup */
+
+undefined1  [16] FUN_1004ee120(void)
+
+{
+  return ZEXT816(0x10447dcc0);
+}
+
+
+
+// ==== 0x1004eb7b8  FUN_1004eb7b8  (120 bytes)
+
+void FUN_1004eb7b8(undefined8 param_1,undefined8 param_2)
+
+{
+  undefined8 *puVar1;
+  long unaff_x20;
+  
+  _swift_getObjectType();
+  *(undefined8 *)(unaff_x20 + _TtC3ADK18ADKBrowserDelegate::___lazy_storage___actionSubject) = 0;
+  puVar1 = (undefined8 *)(unaff_x20 + _TtC3ADK18ADKBrowserDelegate::extensionGroupIdLookup);
+  *puVar1 = 0;
+  puVar1[1] = 0;
+  puVar1 = (undefined8 *)(unaff_x20 + _TtC3ADK18ADKBrowserDelegate::onDidRestoreCallback);
+  *puVar1 = param_1;
+  puVar1[1] = param_2;
+  _objc_msgSendSuper2((objc_super *)&stack0xffffffffffffffc0,"init");
+  return;
+}
+
+

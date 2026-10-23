@@ -1,0 +1,342 @@
+--- a/arc/api/arc_browser.mm
++++ b/arc/api/arc_browser.mm
+@@ -118,6 +118,9 @@
+ 
+ @interface ArcBrowser ()
+ - (BOOL)isInitialized;
++- (BOOL)deassociateNativeBrowser:(BrowserWindowInterface*)expected
++                    completion:(base::OnceClosure*)afterPublication
++    __attribute__((objc_direct));
+ - (BOOL)hasCoreDelegateBridge __attribute__((objc_direct));
+ - (id<ArcCoreBrowserDelegate>)coreDelegate __attribute__((objc_direct));
+ - (void)didInsertWebContents:(content::WebContents*)contents active:(BOOL)active
+@@ -266,6 +269,25 @@
+     return state;
+   }
+ 
++  // Destructor-entry preparation has no app callout or pending-batch detach.
++  // The physical browser can still be allocated, but no continuation may use it.
++  void BeginNativeDestruction() {
++    CHECK(!native_destruction_prepared_);
++    native_destruction_prepared_ = true;
++    native_closed_ = true;
++    finishing_ = true;
++    browser_.reset();
++  }
++
++  // The caller runs this only after synchronous global close publication.
++  // Keep the state alive through callbacks that can release its facade owner.
++  void FinishNativeDestruction() {
++    auto keep_alive = shared_from_this();
++    CHECK(native_destruction_prepared_);
++    native_destruction_prepared_ = false;
++    NativeDidClose();
++  }
++
+   ~CoreBrowserCloseState() {
+     native_closed_ = true;
+     finishing_ = true;
+@@ -330,11 +352,19 @@
+     auto keep_alive = shared_from_this();
+     native_closed_ = true;
+     finishing_ = true;
++    if (native_destruction_prepared_) {
++      return;
++    }
+     RunBatch(TakePending(), false);
+   }
+ 
+   void Complete(bool confirmed) {
+     auto keep_alive = shared_from_this();
++    // A nested native confirmation cannot detach/drain the destructor batch
++    // while the global app notification is still being published.
++    if (native_destruction_prepared_) {
++      return;
++    }
+     if (pending_.empty()) {
+       return;
+     }
+@@ -369,6 +399,7 @@
+   Batch pending_;
+   bool native_closed_ = false;
+   bool finishing_ = false;
++  bool native_destruction_prepared_ = false;
+   base::CallbackListSubscription close_subscription_;
+ };
+ 
+@@ -432,6 +463,26 @@
+ - (void)setWindowIdentifier:(NSString*)identifier { _windowIdentifier = [identifier copy]; }
+ - (void)initializeWindowIdentifier:(NSString*)identifier { _windowIdentifier = [identifier copy]; }
+ - (BrowserWindowInterface*)browser { return _browser.get(); }
++- (BOOL)deassociateNativeBrowser:(BrowserWindowInterface*)expected
++                    completion:(base::OnceClosure*)afterPublication {
++  CHECK(afterPublication);
++  CHECK(afterPublication->is_null());
++  if (!expected || _browser.get() != expected) {
++    return NO;
++  }
++  auto state = _closeState;
++  if (state) {
++    state->BeginNativeDestruction();
++  }
++  _browser.reset();
++  if (state) {
++    *afterPublication = base::BindOnce(
++        [](std::shared_ptr<CoreBrowserCloseState> retained) {
++          retained->FinishNativeDestruction();
++        }, std::move(state));
++  }
++  return YES;
++}
+ - (BOOL)isInitialized { return _browser && !_browser->IsDeleteScheduled(); }
+ - (NSInteger)type {
+   if (!_browser) { return 0; }
+@@ -541,6 +592,24 @@
+ }
+ @end
+ 
++namespace arc {
++bool PrepareBrowserForNativeDestruction(
++    ArcBrowser* existing, BrowserWindowInterface* expected,
++    base::OnceClosure* after_publication) {
++  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
++  CHECK(after_publication);
++  // Releasing a previous closure here could drain its retained close state.
++  // Require an empty output rather than replacing an unknown owned callback.
++  CHECK(after_publication->is_null());
++  ArcBrowser* retained __attribute__((objc_precise_lifetime)) = existing;
++  if (!retained) {
++    return false;
++  }
++  return [retained deassociateNativeBrowser:expected
++                                completion:after_publication];
++}
++}  // namespace arc
++
+ @interface ArcBrowserApplication : NSObject
+ @end
+ 
+--- a/arc/api/arc_internal.h
++++ b/arc/api/arc_internal.h
+@@ -8,6 +8,7 @@
+ #include <memory>
+ #include <string>
+ 
++#include "base/functional/callback_forward.h"
+ #include "base/strings/sys_string_conversions.h"
+ #include "base/time/time.h"
+ #include "third_party/skia/include/core/SkColor.h"
+@@ -120,6 +121,20 @@
+ // Called by core; defined by the named package. Packages that can be absent get a weak no-op default in
+ // the caller's file so the framework always links.
+ 
++// core: destructor-entry deassociation of an EXISTING facade. UI sequence only.
++// Caller retains the facade and captures app payload while native is usable,
++// prepares BEFORE synchronous global app publication, then runs the returned
++// closure AFTER publication and before native teardown continues. The output
++// pointer must be nonnull and initially empty. False means no matching binding;
++// true can have an empty completion. No wrapper creation or global publication.
++// The completion retains only close state, not native Browser or ObjC facade.
++// This endpoint has no installed native caller; peer-cache audits remain HOLD.
++namespace arc {
++bool PrepareBrowserForNativeDestruction(
++    ArcBrowser* existing, BrowserWindowInterface* expected,
++    base::OnceClosure* after_publication);
++}
++
+ // sessions: an ArcBrowser was created (end of core's initializer).
+ void ArcSessionsBrowserCreated(ArcBrowser* browser);
+ // sessions: core is about to report a newly inserted tab; YES means sessions already reported it as a
+--- a/arc/api/arc_sessions_restore.mm
++++ b/arc/api/arc_sessions_restore.mm
+@@ -34,6 +34,7 @@
+ #include "components/sessions/core/tab_restore_types.h"
+ #include "content/public/browser/navigation_controller.h"
+ #include "content/public/browser/web_contents.h"
++#include "ui/base/unowned_user_data/scoped_unowned_user_data.h"
+ 
+ @interface SessionsRestoreIDs : NSObject
+ @property(nonatomic) NSUInteger pending;
+@@ -989,39 +990,82 @@
+ - (instancetype)initWithBrowser:(ArcBrowser*)browser;
+ - (void)browserDidClose:(BrowserWindowInterface*)browser;
+ @end
++
++namespace {
++const char kPhysicalCloseObservation = 0;
++
++// Owned by the existing ArcBrowserWindow, not by the ObjC observation: an
++// externally retained facade can outlive Browser's UnownedUserDataHost.
++class SessionsPhysicalCloseData final : public base::SupportsUserData::Data {
++ public:
++  DECLARE_USER_DATA(SessionsPhysicalCloseData);
++
++  SessionsPhysicalCloseData(BrowserWindowInterface* browser,
++                            SessionsBrowserObservation* observation)
++      : observation_(observation),
++        registration_(std::make_unique<
++            ui::ScopedUnownedUserData<SessionsPhysicalCloseData>>(
++            browser->GetUnownedUserDataHost(), *this)) {}
++
++  void Notify(BrowserWindowInterface* browser) {
++    // Consume only this transport registration before a deletion-capable
++    // callout. This is not a substitute for application registry cleanup.
++    __attribute__((objc_precise_lifetime)) SessionsBrowserObservation*
++        observation = observation_;
++    registration_.reset();
++    [observation browserDidClose:browser];
++    // The callout can delete the window and this Data; do not access either.
++  }
++
++ private:
++  __weak SessionsBrowserObservation* observation_;
++  std::unique_ptr<ui::ScopedUnownedUserData<SessionsPhysicalCloseData>>
++      registration_;
++};
++DEFINE_USER_DATA(SessionsPhysicalCloseData);
++
++void NotifySessionsPhysicalClose(BrowserWindowInterface* browser) {
++  if (auto* data =
++          SessionsPhysicalCloseData::Get(browser->GetUnownedUserDataHost())) {
++    data->Notify(browser);
++  }
++}
++}  // namespace
++
+ @implementation SessionsBrowserObservation {
+   std::unique_ptr<SessionsServiceObserver> _observer;
+-  base::CallbackListSubscription _closeSubscription;
+   __weak ArcBrowser* _browser;
+ }
+ - (instancetype)initWithBrowser:(ArcBrowser*)browser {
+   if ((self = [super init])) {
+     _browser = browser;
+     _observer = std::make_unique<SessionsServiceObserver>(browser);
+-    __weak SessionsBrowserObservation* weakSelf = self;
+-    _closeSubscription = [browser browser]->RegisterBrowserDidClose(base::BindRepeating(
+-        ^(BrowserWindowInterface* native) { [weakSelf browserDidClose:native]; }));
++    BrowserWindowInterface* native = [browser browser];
++    // This is the existing canonical ArcBrowser initialization path; the
++    // destructor hook itself never casts a window or creates a facade.
++    auto* window = static_cast<arc::ArcBrowserWindow*>(native->GetWindow());
++    window->SetUserData(&kPhysicalCloseObservation,
++        std::make_unique<SessionsPhysicalCloseData>(native, self));
+   }
+   return self;
+ }
+ - (void)browserDidClose:(BrowserWindowInterface*)browser {
+-  ArcBrowser* wrapper = _browser;
++  // Keep the EXISTING facade through payload capture, publication and finish.
++  ArcBrowser* existing __attribute__((objc_precise_lifetime)) = _browser;
+   Profile* profile = browser->GetProfile();
+-  ArcSessionID* historical = nil;
++  std::optional<int32_t> historicalID;
+   if (!profile->IsOffTheRecord()) {
+     auto* service = TabRestoreServiceFactory::GetForProfileIfExisting(profile);
+     if (service && service->IsLoaded()) {
+-      // Native Arc's close producer matches root original_id, then reports
+-      // that entry's newly allocated historical ID (0x42febc8-0x42fec08).
++      // Preserve root original_id matching and optional numeric presence.
+       for (const auto& entry : service->entries()) {
+         if (entry->original_id == browser->GetSessionID()) {
+-          historical = [[ArcSessionID alloc] initWithID:entry->id.id()];
++          historicalID = entry->id.id();
+           break;
+         }
+       }
+     }
+   }
+-  id<SessionsApplicationDelegate> delegate = ArcBrowserApplicationDelegateObject();
+   NSInteger type = 0;
+   switch (browser->GetType()) {
+     case BrowserWindowInterface::TYPE_POPUP: type = 1; break;
+@@ -1029,11 +1073,31 @@
+     case BrowserWindowInterface::TYPE_APP_POPUP: type = 3; break;
+     default: break;
+   }
+-  if ([delegate respondsToSelector:
+-          @selector(didCloseBrowser:forBrowserContextID:ofType:withRestorationSessionID:)]) {
+-    [delegate didCloseBrowser:wrapper.windowIdentifier
+-        forBrowserContextID:[ArcBrowserContext wrapperForProfile:profile].id
+-        ofType:type withRestorationSessionID:historical];
++  NSString* windowIdentifier = existing.windowIdentifier;
++  ArcBrowserContextID* contextID = [ArcBrowserContext wrapperForProfile:profile].id;
++
++  // Empty output is required: replacing an old closure could drain it early.
++  base::OnceClosure afterPublication;
++  const bool prepared = arc::PrepareBrowserForNativeDestruction(
++      existing, browser, &afterPublication);
++  if (!prepared) {
++    // Private adapter mismatch policy, not original registry eligibility proof.
++    return;
++  }
++  // Only captured payload is used from here; no native/Profile/facade queries.
++  {
++    id<SessionsApplicationDelegate> selected
++        __attribute__((objc_precise_lifetime)) = ArcBrowserApplicationDelegateObject();
++    ArcSessionID* historical = historicalID
++        ? [[ArcSessionID alloc] initWithID:*historicalID] : nil;
++    if ([selected respondsToSelector:
++            @selector(didCloseBrowser:forBrowserContextID:ofType:withRestorationSessionID:)]) {
++      [selected didCloseBrowser:windowIdentifier forBrowserContextID:contextID
++          ofType:type withRestorationSessionID:historical];
++    }
++  }  // Release the selected delegate before close-state completion callbacks.
++  if (afterPublication) {
++    std::move(afterPublication).Run();
+   }
+ }
+ @end
+@@ -1041,6 +1105,8 @@
+ void ArcSessionsBrowserCreated(ArcBrowser* browser) {
+   static const bool sourceHookInstalled = [] {
+     arcmod::GetSessionTabRestoreScopeHook() = base::BindRepeating(&NativeRestorationSourceScope);
++    arcmod::GetSessionBrowserPhysicalDestructionHook() =
++        base::BindRepeating(&NotifySessionsPhysicalClose);
+     return true;
+   }();
+   (void)sourceHookInstalled;
+--- a/chromium/src/chrome/browser/arcmod/arcmod_hooks.h
++++ b/chromium/src/chrome/browser/arcmod/arcmod_hooks.h
+@@ -71,6 +71,17 @@
+   return *hook;
+ }
+ 
++// Runs synchronously at hosted Browser destruction entry, before the fallback
++// close lifecycle and window/member teardown. Empty by default. Receivers must
++// use only an existing registration and must not retain the native pointer.
++using SessionBrowserPhysicalDestructionHook =
++    base::RepeatingCallback<void(BrowserWindowInterface*)>;
++inline SessionBrowserPhysicalDestructionHook&
++GetSessionBrowserPhysicalDestructionHook() {
++  static base::NoDestructor<SessionBrowserPhysicalDestructionHook> hook;
++  return *hook;
++}
++
+ // Adds ArcCore's navigation throttles (synchronous navigation policy from Arc's app) to every navigation.
+ // Called from ChromeContentBrowserClient::CreateThrottlesForNavigation after Chrome's own throttles.
+ using NavigationThrottleHook =
+--- a/chromium/src/chrome/browser/ui/browser.cc
++++ b/chromium/src/chrome/browser/ui/browser.cc
+@@ -37,6 +37,7 @@
+ #include "build/build_config.h"
+ #include "chrome/browser/ai/ai_data_keyed_service.h"          // nogncheck
+ #include "chrome/browser/ai/ai_data_keyed_service_factory.h"  // nogncheck
++#include "chrome/browser/arcmod/arcmod_hooks.h"
+ #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+ #include "chrome/browser/buildflags.h"
+ #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+@@ -355,6 +356,13 @@
+ }
+ 
+ Browser::~Browser() {
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto hook = arcmod::GetSessionBrowserPhysicalDestructionHook();
++    if (hook) {
++      hook.Run(this);
++    }
++  }
++
+   if (!IsDeleteScheduled()) {
+     // Guarantee the Browser has performed the necessary cleanup in the
+     // `OnWindowClosing()` lifecycle hook. This may not be invoked during

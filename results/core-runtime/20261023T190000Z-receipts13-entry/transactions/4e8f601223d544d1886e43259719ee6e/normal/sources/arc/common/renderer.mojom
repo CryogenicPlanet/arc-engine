@@ -1,0 +1,54 @@
+// Copyright 2026 ArcMod.
+module arc.mojom;
+
+import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
+interface RendererHost {
+  // Blink calls ReportDisallowedLoad only for an actually disallowed load.
+  ReportDisallowedLoad();
+};
+
+struct EffectSource {
+  string identifier;
+  string source;
+};
+
+struct HostEffectsConfiguration {
+  string host;
+  array<EffectSource> stylesheets;
+  array<EffectSource> scripts;
+};
+
+// Associated with a RenderFrame so ordering is preserved with navigation IPC.
+// This is our internal transport, not ArcCore's binary-private Mojo protocol.
+interface RenderFrameAgent {
+  InsertStylesheet(string identifier, string stylesheet);
+  RemoveStylesheet(string identifier);
+  // Transitional frame entry points; removed after the process cutover.
+  ConfigureAdBlock(mojo_base.mojom.ReadOnlyFile? indexed_ruleset,
+                   bool enabled,
+                   array<string> excluded_origins,
+                   uint64 ruleset_id,
+                   uint64 config_version,
+                   pending_associated_remote<RendererHost> host);
+  GetAdBlockDebugInfo(string url) => (string info);
+  // The acknowledgement also confirms the first-frame process-agent fallback
+  // has installed its associated-interface binder.
+  SetRendererHost(pending_associated_remote<RendererHost> host) => ();
+  // Receiver swaps the cached config; application is at document start only.
+  ConfigureEffects(array<HostEffectsConfiguration> configuration);
+};
+
+// One agent/cache per renderer process, independent of public WebContents.
+interface RenderProcessAgent {
+  UpdateAdBlockCosmeticRules(mojo_base.mojom.ReadOnlyFile indexed_ruleset);
+  ResetAdBlockCosmeticRules();
+  UpdateAdBlockURLRules(mojo_base.mojom.ReadOnlyFile indexed_ruleset,
+                        mojo_base.mojom.UnguessableToken region_identity);
+  ResetAdBlockURLRules();
+  SetAdBlockExcludedOrigins(array<string> excluded_origins,
+                            uint64 config_version);
+  Ping() => ();
+  GetAdBlockDebugInfo(string url) => (string info);
+};

@@ -31,6 +31,72 @@ SESSION_GROUP_CALLBACK = (
 OBJ = re.compile(r"<([A-Za-z_][A-Za-z0-9_]*)#(\d+)>")
 
 
+# Lead allowlist: class tag only, not a new object-identity namespace.
+NATIVE_VIEW_RETURN = ("->engine", "-", "ArcWebContents", "nativeView", "ret")
+NATIVE_VIEW_OBJECT = re.compile(r"<(WebContentsHostView|WebContentsViewCocoa)#([1-9][0-9]*)>")
+
+
+def native_view_return_class(events, scope=None):
+    """One approved class per admitted return lane; mixed classes fail closed."""
+    classes = set()
+    for event in events:
+        if tuple(event.get(k) for k in ("dir", "kind", "cls", "sel", "ev")) != NATIVE_VIEW_RETURN:
+            continue
+        value = event.get("ret")
+        match = NATIVE_VIEW_OBJECT.fullmatch(value) if type(value) is str else None
+        if match:
+            classes.add(match.group(1))
+    if scope is not None:
+        scope["mixed_approved_classes"] = len(classes) > 1
+    return next(iter(classes)) if len(classes) == 1 else None
+
+
+def normalize_native_view_return(event, value, normalized_value, approved_class):
+    """Alias only the tag; preserve the ordinal already assigned by norm().
+
+    The non-JSON marker cannot be impersonated by a malformed literal string.
+    This establishes neither WebContents-to-view ownership nor physical hosting.
+    """
+    if tuple(event.get(k) for k in ("dir", "kind", "cls", "sel", "ev")) != NATIVE_VIEW_RETURN:
+        return normalized_value
+    match = NATIVE_VIEW_OBJECT.fullmatch(value) if type(value) is str else None
+    if not match or match.group(1) != approved_class:
+        return normalized_value
+    normalized = NATIVE_VIEW_OBJECT.fullmatch(json.loads(normalized_value))
+    if not normalized:
+        return normalized_value
+    return f"@typed:nativeView:anNSView#{normalized.group(2)}@"
+
+
+def favicon_header_args(event, args):
+    # Exact recorded callback identity; other URL clients retain strict comparison.
+    if ((event.get("ev"), event.get("dir"), event.get("kind"),
+         event.get("cls"), event.get("sel")) != (
+            "call", "engine->app", "-",
+            "_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate",
+            "didReceiveHeaders:withFinalURL:withCode:withHeaders:")
+            or not isinstance(args, list) or len(args) != 4
+            or not isinstance(args[1], str) or not isinstance(args[3], dict)
+            or not re.match(r"^https://t[0-9]+\.gstatic\.com/faviconV2\?", args[1])):
+        return args
+    args = list(args)
+    args[1] = re.sub(r"^https://t[0-9]+\.gstatic\.com/",
+                     "https://t0.gstatic.com/", args[1])
+    headers = args[3] = dict(args[3])
+    age = headers.get("age")
+    if isinstance(age, str) and re.fullmatch(r"[0-9]+", age):
+        headers["age"] = "0"
+    location = headers.get("content-location")
+    if isinstance(location, str):
+        headers["content-location"] = re.sub(
+            r"^https://www\.youtube\.com/s/desktop/[0-9a-f]{8}/img/favicon_144x144\.png\Z",
+            "https://www.youtube.com/s/desktop/00000000/img/favicon_144x144.png",
+            location)
+    # Canonical values themselves satisfy the accepted field grammar. Invalid
+    # values cannot impersonate a wildcard marker, and all other fields survive.
+    return args
+
+
 def has_callers(path):
     for line in open(path):
         if '"from":' in line:
@@ -106,7 +172,7 @@ def is_last_visit_epoch(event, identities, phase, selector, value):
             and isinstance(value, str) and POSITIVE_EPOCH_STRING.fullmatch(value))
 
 
-def load(path, by_caller=False, fixture_images=(), fixture_counts=None, object_ids=None, google_q=False, google_q_status=None, require_callers=False):
+def load(path, by_caller=False, fixture_images=(), fixture_counts=None, object_ids=None, google_q=False, google_q_status=None, require_callers=False, native_view_scope=None):
     events = []
     raw_events = []
     boundary_rows = 0
@@ -184,6 +250,9 @@ def load(path, by_caller=False, fixture_images=(), fixture_counts=None, object_i
         raise ValueError(f"{path}: fixture mode requires at least one complete admitted fixture call/return pair and no incomplete admitted calls")
     if fixture_images and not boundary_rows:
         raise ValueError(f"{path}: fixture transcript contains no attributed calls or returns")
+    view_class = native_view_return_class(events, native_view_scope)
+    if native_view_scope is not None and native_view_scope.get("enabled") is False:
+        view_class = None
     aliases = DownloadIdentityAliases(raw_events, events)
     ids = dict(object_ids or {})
     per_class = collections.Counter()
@@ -221,7 +290,7 @@ def load(path, by_caller=False, fixture_images=(), fixture_counts=None, object_i
             continue
         key = (e["dir"], e["kind"], e["cls"], e["sel"])
         if e["ev"] == "call":
-            args = aliases.rewrite_field(e, "args", e.get("args"))
+            args = favicon_header_args(e, aliases.rewrite_field(e, "args", e.get("args")))
             native_session_id = None
             if key == SESSION_GROUP_CALLBACK and isinstance(args, list) and len(args) > 1:
                 args = list(args)
@@ -253,6 +322,7 @@ def load(path, by_caller=False, fixture_images=(), fixture_counts=None, object_i
                         normalized_ret = (LAST_VISIT_MARKER
                                           if is_last_visit_epoch(e, epoch_objects, "ret", "value", value)
                                           else norm(value))
+                        normalized_ret = normalize_native_view_return(e, value, normalized_ret, view_class)
                         c["ret"] = volatile.sub("*", normalized_ret)
                     break
     return calls, callbacks
@@ -299,11 +369,15 @@ def main():
     google_scope = None
     google_status = {name: {} for name in ("golden", "ours")} if args.omnibox_google_query else {}
     effective_google_q = args.omnibox_google_query
+    native_view_scope = {name: {} for name in ("golden", "ours")}
+    effective_native_view_tags = True
     try:
         g, gcb = load(golden, by_caller, fixture_images, fixture_counts["golden"],
-                      google_q=effective_google_q, google_q_status=google_status.get("golden"), require_callers=args.compare_boundary_arguments)
+                      google_q=effective_google_q, google_q_status=google_status.get("golden"), require_callers=args.compare_boundary_arguments,
+                      native_view_scope=native_view_scope["golden"])
         o, ocb = load(ours, by_caller, fixture_images, fixture_counts["ours"],
-                      google_q=effective_google_q, google_q_status=google_status.get("ours"), require_callers=args.compare_boundary_arguments)
+                      google_q=effective_google_q, google_q_status=google_status.get("ours"), require_callers=args.compare_boundary_arguments,
+                      native_view_scope=native_view_scope["ours"])
         if args.omnibox_google_query:
             rejected = any(scope.get("status") == "rejected" for scope in google_status.values())
             if rejected:
@@ -311,12 +385,25 @@ def main():
                 # Google value changes on EITHER side. Retain the baseline.
                 effective_google_q = False
                 fixture_counts = {name: {image: {"call": 0, "ret": 0} for image in sorted(fixture_images)} for name in ("golden", "ours")}
-                g, gcb = load(golden, by_caller, fixture_images, fixture_counts["golden"], require_callers=args.compare_boundary_arguments)
-                o, ocb = load(ours, by_caller, fixture_images, fixture_counts["ours"], require_callers=args.compare_boundary_arguments)
+                g, gcb = load(golden, by_caller, fixture_images, fixture_counts["golden"], require_callers=args.compare_boundary_arguments,
+                              native_view_scope=native_view_scope["golden"])
+                o, ocb = load(ours, by_caller, fixture_images, fixture_counts["ours"], require_callers=args.compare_boundary_arguments,
+                              native_view_scope=native_view_scope["ours"])
                 for scope in google_status.values():
                     scope["valuesChanged"] = 0
             google_scope = {"status": "rejected" if rejected else "applied",
                             "transcripts": google_status, "baselineDiffRetained": rejected}
+        if any(scope.get("mixed_approved_classes") for scope in native_view_scope.values()):
+            # Pair fail-closed: retain BOTH baseline lanes, including any earlier
+            # equal return. Reloading must not create/move its first mismatch.
+            effective_native_view_tags = False
+            fixture_counts = {name: {image: {"call": 0, "ret": 0} for image in sorted(fixture_images)} for name in ("golden", "ours")}
+            g, gcb = load(golden, by_caller, fixture_images, fixture_counts["golden"],
+                          google_q=effective_google_q, google_q_status=google_status.get("golden"),
+                          require_callers=args.compare_boundary_arguments, native_view_scope={"enabled": False})
+            o, ocb = load(ours, by_caller, fixture_images, fixture_counts["ours"],
+                          google_q=effective_google_q, google_q_status=google_status.get("ours"),
+                          require_callers=args.compare_boundary_arguments, native_view_scope={"enabled": False})
     except ValueError as error:
         parser.error(str(error))
     receiver_scope = None
@@ -325,7 +412,8 @@ def main():
         try:
             if not by_caller or fixture_images:
                 raise ValueError("omnibox receiver mode requires v2 app attribution and no fixture-image admission")
-            g, o, receiver_scope = align(golden, ours, g, o, partial(load, google_q=effective_google_q, require_callers=args.compare_boundary_arguments))
+            g, o, receiver_scope = align(golden, ours, g, o, partial(load, google_q=effective_google_q, require_callers=args.compare_boundary_arguments,
+                                                         native_view_scope={"enabled": effective_native_view_tags}))
         except ValueError as error:
             receiver_scope = {"status": "rejected", "reason": str(error), "baselineDiffRetained": True}
     boundary = boundary_methods()

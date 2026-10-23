@@ -1,0 +1,44 @@
+--- a/chrome/browser/arcmod/arcmod_hooks.h
++++ b/chrome/browser/arcmod/arcmod_hooks.h
+@@ -71,6 +71,17 @@
+   return *hook;
+ }
+ 
++// Runs synchronously at hosted Browser destruction entry, before the fallback
++// close lifecycle and window/member teardown. Empty by default. Receivers must
++// use only an existing registration and must not retain the native pointer.
++using SessionBrowserPhysicalDestructionHook =
++    base::RepeatingCallback<void(BrowserWindowInterface*)>;
++inline SessionBrowserPhysicalDestructionHook&
++GetSessionBrowserPhysicalDestructionHook() {
++  static base::NoDestructor<SessionBrowserPhysicalDestructionHook> hook;
++  return *hook;
++}
++
+ // Adds ArcCore's navigation throttles (synchronous navigation policy from Arc's app) to every navigation.
+ // Called from ChromeContentBrowserClient::CreateThrottlesForNavigation after Chrome's own throttles.
+ using NavigationThrottleHook =
+--- a/chrome/browser/ui/browser.cc
++++ b/chrome/browser/ui/browser.cc
+@@ -37,6 +37,7 @@
+ #include "build/build_config.h"
+ #include "chrome/browser/ai/ai_data_keyed_service.h"          // nogncheck
+ #include "chrome/browser/ai/ai_data_keyed_service_factory.h"  // nogncheck
++#include "chrome/browser/arcmod/arcmod_hooks.h"
+ #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+ #include "chrome/browser/buildflags.h"
+ #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+@@ -355,6 +356,13 @@
+ }
+ 
+ Browser::~Browser() {
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    auto hook = arcmod::GetSessionBrowserPhysicalDestructionHook();
++    if (hook) {
++      hook.Run(this);
++    }
++  }
++
+   if (!IsDeleteScheduled()) {
+     // Guarantee the Browser has performed the necessary cleanup in the
+     // `OnWindowClosing()` lifecycle hook. This may not be invoked during

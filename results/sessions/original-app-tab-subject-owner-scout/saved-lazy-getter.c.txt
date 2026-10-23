@@ -1,0 +1,31 @@
+// ==== 0x1004eb4f8  FUN_1004eb4f8  (136 bytes)
+
+undefined * FUN_1004eb4f8(void)
+
+{
+  long lVar1;
+  undefined *puVar2;
+  undefined *puVar3;
+  long unaff_x20;
+  undefined8 uVar4;
+  
+  lVar1 = _TtC3ADK18ADKBrowserDelegate::___lazy_storage___actionSubject;
+  puVar2 = *(undefined **)
+            (unaff_x20 + _TtC3ADK18ADKBrowserDelegate::___lazy_storage___actionSubject);
+  puVar3 = puVar2;
+  if (puVar2 == (undefined *)0x0) {
+    puVar3 = &DAT_1044c98b8;
+    FUN_100005134(&DAT_1044c98b8,&DAT_10363b358);
+    _swift_allocObject();
+    FUN_100586ecc();
+    uVar4 = *(undefined8 *)(unaff_x20 + lVar1);
+    *(undefined **)(unaff_x20 + lVar1) = puVar3;
+    _swift_retain();
+    _swift_release(uVar4);
+    puVar2 = (undefined *)0x0;
+  }
+  _swift_retain(puVar2);
+  return puVar3;
+}
+
+
