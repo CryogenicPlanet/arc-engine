@@ -101,6 +101,19 @@ ARC_EXPORT @interface ArcBrowser : NSObject
 @property(nonatomic, copy) NSString* windowIdentifier;
 @end
 
+// ---- Internal events between packages (lead-owned) ---------------------------------------------------
+// Posted on the main thread to [NSNotificationCenter defaultCenter] by the owning package; any package may
+// observe. Packages add events here through the lead, never by editing another package's files.
+
+// core: an ArcBrowser got its app delegate (-setDelegate:, non-nil). object: the ArcBrowser.
+inline NSString* const kArcBrowserDidSetDelegateNotification = @"ArcBrowserDidSetDelegate";
+// core: a browser's tab strip changed (insert, remove, replace, move, activate) or a tab's URL/title/loading
+// state changed. object: the ArcBrowser. userInfo: @"webContents" (ArcWebContents, if one tab), @"change"
+// (NSString: "inserted", "removed", "replaced", "moved", "activated", "updated").
+inline NSString* const kArcBrowserTabsChangedNotification = @"ArcBrowserTabsChanged";
+// core: an ArcBrowser is about to close (its Browser is going away). object: the ArcBrowser.
+inline NSString* const kArcBrowserWillCloseNotification = @"ArcBrowserWillClose";
+
 // ---- app package: URL loading (implemented in arc/api/arc_app_*.mm) ------------------------------
 
 @class ArcURLLoadConfiguration;
