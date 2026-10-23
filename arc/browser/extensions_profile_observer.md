@@ -223,3 +223,114 @@ suppression and intermediate pin states. None of those engine-runtime tests or
 scenario diffs were run for this proposal. Package acceptance remains
 UNEXECUTED for this change. No new architecture/spec contradiction was found;
 implementation ownership and the explicitly uncovered boundaries remain limits.
+
+
+## Addendum: independent init/network-only profile variant (UNAPPLIED)
+
+Use this route when selecting the app's new **init/network-only** stage. It is
+independent of the held field-trial default. The earlier app.pending/after-app
+composition above is historical for this selection and must not be substituted:
+the old after-app copy retains the held default.
+
+New variant:
+`logs/wp/extensions-profile-observer-proposal/v2-init-network/extensions_profile_observer.after-init-network.patch`
+
+SHA256 `8ecc477e99111637a6d901428110ab21ed3ecc368cb0c8fbe264bd868caea1f3`.
+
+This variant is applied **after**
+`logs/wp/app.run6.init-network.patch`, SHA256
+`a9a8a25b04c93b4fac309c657554ac79354cf178367d8186432f4f3773713dcf`.
+That app stage replaces only the corresponding initialization/network hunks of
+stable208; it is not additive to those same hunks. Apply the new extension variant
+instead of the main profile patch or historical after-app variant on this base.
+Neither app patch was modified by this work. Do not apply the full stable208
+artifact as part of this independent route.
+
+The variant has exactly the same semantic added/deleted lines as main profile
+patch4223. Only overlapping bootstrap insertion context is resolved: import
+arc_internal once, retain one optional-package weak extension installer default,
+and invoke the real installer after binding the app initialization hook and
+immediately before ChromeMainInitializeHostedBrowser. The copied app hook and
+removal of the late synthetic init/network task are preserved. The profile
+observer implementation, hook API and shutdown/weak-target behavior remain
+those of the original main proposal.
+
+The complete argument-building policy source is **byte-identical** to actual
+bootstrap SHA256
+`d6bae43313c72ff2803dbe3037d96b3c4c886d3484c6482a9dd862cb7e85cb55`.
+There is no field-trial switch/default in the resulting bootstrap, and no
+field-trial, feature or argument-policy change in the extension variant.
+The historical after-app bootstrap was never used as a construction input.
+`policy-and-linkage-static.json` and exact copied application record this.
+
+### Optional histogram-startup composition
+
+The independent histogram-startup patch, SHA256
+`a266382ca353eeffbfdfe442f4f660d84f470e0bc5fe5eca2f4bf0f2ab074ff6`, also composes without changing its
+bytes. These three tested orders apply with strict whitespace checks:
+
+1. Init/network, new profile variant, histogram startup.
+2. Histogram startup, init/network, new profile variant.
+3. Init/network, histogram startup, new profile variant.
+
+All seven final files are byte-identical across those orders. There is exactly
+one namespaced extension weak default in the bootstrap, one plain shared
+extension installer declaration, one global Mac histogram declaration and one
+global Mac weak/noinline histogram default. Both hook getters occur once.
+The histogram Mac/host guards and existing app startup phase remain unchanged.
+No weak fallback or non-inline startup-function definition was added to a shared header. Histogram startup
+is optional for the independent init/network plus profile route.
+
+The final hooks header without histogram has SHA256
+`f95bccd5e84c29dcfb3c189ff15991cbc4464eb96362d60372ac81951572777e`;
+with histogram it is
+`0c3b67234cf9dc2dd9cfa2a35dad479a750eaab5fd12de29aefcad4d134d8482`.
+`histogram-composition.json` retains all commands and seven-file hashes.
+
+### New copied-source verification and preserved history
+
+Each copied TU used its own freshly queried current Base command, retaining
+warnings, Werror, optimization and Clang plugin flags. Object/dependency outputs
+were removed, syntax-only and a VFS overlay were added, and both canonical and
+Chromium arc-symlink spellings were mapped with use-external-names:false.
+
+| Variant | TUs | Syntax checks | Negative VFS sentinels |
+|---|---|---|---|
+| Init/network + profile | Context, bootstrap, extension system | all3 exit0, empty diagnostics | all3 expected exit1 |
+| Plus histogram startup | Those3, BrowserProcessImpl, ChromeBrowserMain | all5 exit0, empty diagnostics | all5 expected exit1 |
+
+Exact init/network application followed by the new profile variant yields the
+same bytes as the saved `after-init-network/` copies. This is strict copied
+patch/application and compiler evidence, not a framework build/link or runtime
+acceptance result. Main profile patch remains SHA256
+`4223beeeda7b61d7f15d87a0b0867e5828a15671996d2a113dd7b65fc3060535`. The historical after-app variant remains
+SHA256 `118c8bf32177b8cf1c3adc0011683367af1d5c8f1551d3f6183db32bd061c3f1`. All142 files in v1 evidence
+are unchanged. The earlier bytes of this document are preserved verbatim, with
+their original SHA2565ceda1b5 in the new before-addendum copy; this addendum is
+the only main-document change.
+
+The new evidence is under
+`logs/wp/extensions-profile-observer-proposal/v2-init-network`. Actual source
+content fingerprints include current browser ebc84f16, context475fedd7,
+bootstrapd6bae433 and internal header70495f85. Source mtimes are recorded
+separately. No actual product/shared/helper source, GNI, runtime artifact,
+app/profile, lock or board action occurred. No app/golden promotion, build,
+package, executable linkage probe or runtime scenario ran for this addendum.
+
+| Final copied source without optional histogram | SHA256 |
+|---|---|
+| `arc/api/arc_extensions_context.mm` | `f17b61b06eec5d43fc55511f7f84b7e8c67d5b78394439545cf0f8c632f952b6` |
+| `arc/api/arc_internal.h` | `7a7e50cf663b5f6a63fad3cfc88bb329998368dead5663f7b590cb24bc0f84b9` |
+| `arc/api/arc_browser_application.mm` | `e6b5798b0ab7128c9c31f1a31ab9699f6bfdfb8039a3a1e6cf4673ab7dd95c25` |
+| `chromium/src/chrome/browser/arcmod/arcmod_hooks.h` | `f95bccd5e84c29dcfb3c189ff15991cbc4464eb96362d60372ac81951572777e` |
+| `chromium/src/chrome/browser/extensions/chrome_extension_system.cc` | `ffa54f4ed6fb4a0ce288401b9095855d3dc9bae1dc477d80f7e860b5e98b1c5a` |
+| `chromium/src/chrome/browser/browser_process_impl.cc` | `0a9efbdc8382fcb341124fe627adfcbc9f34acdb6d0cd4517f9a37395f054eaa` |
+| `chromium/src/chrome/browser/chrome_browser_main.cc` | `6386e69814d99b3ca0f3f5d778635f5225c8a4d0810b892f552170add01f0dc3` |
+
+Fresh independent read-only review found no material findings in exact
+application, unchanged argv policy, semantic equality to the main profile delta,
+singleton declarations/defaults or three-order histogram composition. All
+previously documented OTR ownership/fanout, global-ready queue-boundary and
+profile-shutdown runtime verification limits remain open. This selection does
+not establish lifecycle parity or activate either proposal. Shared Chromium
+hunks still require lead-maintained patches and integrated runtime validation.

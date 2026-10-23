@@ -130,8 +130,9 @@ Suggested small surface (names illustrative):
 * PostCloseInvocation(state, channel, block): pending++ BEFORE PostTask; shared
   token survives bridge/native death, task invokes conditionally, then pending--.
   Early return/expired registration must still execute invocation finalization.
-  Destruction of a canceled task does not perform the native decrement. Rejected
-  PostTask policy is unproven; do not invent rollback or forced delivery. UI
+  Destruction of a canceled task does not perform the native decrement. Audited
+  native async and notify producers ignore rejected posts without rollback;
+  do not invent a decrement or forced delivery. UI
   sequence only; off-UI app responses marshal before mutation.
 * BeginObserverBatch(state, WCObserver|NavigationController) + explicit Finish:
   batches++; enqueue ordinary weak-target deliveries; enqueue ONE trailing UI task
@@ -165,8 +166,9 @@ Native routes / required lead decisions
 * tab_strip_model.cc:1261..1275 performs a bulk reentrancy-guarded close with
   historical-tab flag. Preserve this native bulk operation, ordering/restoration
   and unload policy. Shared producer counters alone do not make bulk native close
-  wait: deciding the host-gated busy gate/continuation for that route requires
-  native source evidence and lead coordination, not N calls to Arc close instead.
+  wait. A bulk busy gate is NOT proved by the public Close predicate; do not add
+  one without original producer evidence. Native route/continuation coordination
+  must preserve the bulk transaction rather than replay N calls to Arc close.
 * Current wrapper-owned contents branch uses DeleteSoon (:839). Requested idle
   target is contents->Close; native Close is no-op without delegate. The attached
   native delegate/ownership behavior of unattached wrapper-owned contents needs

@@ -83,7 +83,8 @@ export default async function scenario(c:ScenarioContext) {
       // native snapshot invalidates it. Dispatch errors are never replayed.
       const result=c.action(items[0]!) as {receipt?:{pid?:number;bundle?:string;action?:string;dispatched?:boolean}};
       writeFileSync(join(directory,"new-tab-receipt.json"),JSON.stringify(result.receipt??null,null,2));owner();
-      assert("morning command bar New Tab dispatch has exact receipt",result.receipt?.pid===pid&&result.receipt.bundle===`company.thebrowser.Browser.mod.agent.${c.slug}`&&result.receipt.action==="press"&&result.receipt.dispatched===true);
+      const receipt=result.receipt;
+      assert("morning command bar New Tab dispatch has exact receipt",receipt!==undefined&&receipt.pid===pid&&receipt.bundle===`company.thebrowser.Browser.mod.agent.${c.slug}`&&receipt.action==="press"&&receipt.dispatched===true);
       const exposed=await poll(()=>{const value=native();return value.elements.some(n=>n.identifier==="commandBarTextField")?value:undefined;},5000);
       assert("morning command bar appears after sole New Tab attempt",exposed!==undefined);state=exposed!;
     }

@@ -40,7 +40,7 @@ export function validateCommandBarRaw(input:Uint8Array, cursor:number, url:strin
     const e=row.event;if(e.ev==="hooked")continue;
     require((e.ev==="call"||e.ev==="ret")&&IDENTITY.every(key=>Object.hasOwn(e,key))&&
       typeof e.from==="string"&&e.from.trim().length>0&&typeof e.thread==="string"&&e.thread.length>0&&
-      Number.isSafeInteger(e.depth)&&Number(e.depth)>=0&&typeof e.self==="string"&&typeof e.cls==="string"&&
+      Number.isSafeInteger(e.depth)&&Number(e.depth)>=0&&(typeof e.self==="string"||(e.kind==="+"&&e.self===null))&&typeof e.cls==="string"&&
       typeof e.sel==="string"&&(e.kind==="-"||e.kind==="+")&&(e.dir==="->engine"||e.dir==="engine->app"),"missing/invalid caller-aware recorder metadata");
     if(e.thread!=="main"){backgroundEvents++;continue;}
     require(Number(e.seq)>lastMainSequence,"main recorder sequence order changed");lastMainSequence=Number(e.seq);

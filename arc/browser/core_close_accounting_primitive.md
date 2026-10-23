@@ -58,15 +58,19 @@ Cancellation/rejection boundary
 Resetting/destroying an unrun async wrapper does NOT decrement. Destroying an
 unfinalized batch token, rejecting its finalizer post, or canceling that posted
 finalizer also does NOT decrement. State can remain busy until its own disposal.
-This intentionally declines to invent a cancellation rollback which the native
-sources do not prove. Async callers must observe the result of their own post;
-PostFinalizer returns its post result, marked nodiscard. No failure path silently
-pretends the work ran. Owner integration must choose and document a source-backed
-shutdown/rejection policy BEFORE enabling synchronous idle Close.
+Fresh source audit resolves the posting-result policy for the audited forms:
+InvokeAsync4378120 increments at4378194..819c, posts at4378308, then immediately
+releases captures at437830c..8318 without testing returned w0. Navigation notify
+436bbc0 posts its finalizer at436bdac then immediately restores/returns. WC notify
+4387098 posts at4387304 then immediately cleans up payload/shared references.
+None tests the post result or rolls back its counter. Combined with the previously
+proved unrun-task destructor behavior, retaining busy state until disposal is the
+source-backed policy. PostFinalizer exposes its result; an adapter may explicitly
+ignore it to match these native forms. No decrement or forced delivery is added.
+This does not generalize to unexamined producer types.
 
-The original native cancellation/destructor route is not fully proved. This
-artifact is a primitive proposal, not evidence that permanently busy counters on
-live rejected posts are production-acceptable. The helper also does not implement
+The primitive remains UNAPPLIED pending all producer/native lifecycle integration.
+The helper also does not implement
 arbitrary Objective-C exception recovery or asynchronous cross-thread cancellation
 mutations; normal invocation return and primary-sequence use are the proven scope.
 
@@ -80,3 +84,11 @@ No build lock, build, app or native binary invocation occurred. No standalone
 runtime claim: the workspace has no prebuilt standalone base/test-support archive,
 and a fake task/callback implementation would not verify Chromium cancellation
 behavior. Integration and runtime comparison remain parent/lead work.
+
+The latest header/patch revision changes comments only to document the resolved
+posting policy. Non-comment tokens are identical; the real compile above was
+not repeated for this documentation correction. Strict apply-check still passes.
+Evidence logs/wp/core.close-accounting.post-policy/manifest.json and the reviewed
+core_close_accounting_adapter_plan.md. That plan identifies direct TargetURL UI
+scope, exact focus-hop state capture, retained controller association and the
+native notification grouping required before activation.

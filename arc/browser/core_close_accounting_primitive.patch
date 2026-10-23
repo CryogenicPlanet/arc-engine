@@ -53,10 +53,10 @@
 +// and released after conditional_callback RETURNS, including a no-op/expired
 +// target path. A null callback also consumes one invocation when the task runs.
 +//
-+// Destruction without Run() DOES NOT release pending: original cancellation and
-+// PostTask rejection semantics are unproved. A rejected/canceled task therefore
-+// leaves the state busy while it survives. Callers must observe post failure;
-+// deciding a shutdown/rejection policy is required before production activation.
++// Destruction without Run() DOES NOT release pending. Audited native producers
++// ignore rejected posts without rollback; a rejected/canceled task leaves this
++// exact state busy while it survives. Do not synthesize decrement or delivery.
++// Other producer forms require their own source proof before adoption.
 +base::OnceClosure MakeCoreCloseAsyncInvocation(
 +    CoreCloseStateHandle state,
 +    CoreCloseDelegateChannel channel,
@@ -69,7 +69,7 @@
 +// Do not finish inline or replace this with a per-callback scope.
 +//
 +// Dropping this token, rejecting its finalizer, or canceling the posted finalizer
-+// DOES NOT decrement. It shares the bounded, unproved cancellation policy above.
++// DOES NOT decrement. Audited notify producers ignore rejected finalizer posts.
 +class [[nodiscard]] CoreCloseObserverBatch final {
 + public:
 +  CoreCloseObserverBatch(CoreCloseStateHandle state,

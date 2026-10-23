@@ -1,6 +1,6 @@
 # Scenario scoreboard
 
-Updated 2026-10-23T13:39:51.957Z. Accepted original-engine goldens only; candidates excluded.
+Updated 2026-10-23T13:42:52.634Z. Accepted original-engine goldens only; candidates excluded.
 
 Step passes are the latest completed fresh-profile replacement-engine harness observation, including failed/inconclusive steps in the denominator. Sources are canonical diff-run output and explicitly reviewed peers in scoreboard.ts; each selected source is labeled. Reset provenance: extensions validation7 disposable-data-resets.jsonl; profile batch11 archived batch.sh rename without seed; core run6 frozen runner's per-scenario disposable reset; sessions isolated standard runs (#137813/#138778); UI run4 profile-isolation.json plus empty-directory helper. Standard fields/source/tool hashes and paired captured-run diffs were independently reviewed. Renderer UI run4 stores steps/transcript under harness and its diff in the parent; report.json pins that relationship, with raw SHA independently verified. File dates choose the latest observation, not a claimed exact whole-build source attribution. Recorder labels describe current files; saved diff scope is the historical literal header. Exact first two lines are escaped for Markdown, for every available launch. A newer build failure does not refresh artifacts. Passing steps alone do not establish boundary parity. Missing diffs are explicit. Older preserved-profile renderer evidence remains separate.
 

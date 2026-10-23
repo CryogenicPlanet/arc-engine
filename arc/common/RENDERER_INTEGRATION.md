@@ -10,41 +10,49 @@ Public TopBand flag is31 (36 is Snapshot); startup relay is proved but not integ
 Native live propagation, commit refresh activation and private ABI remain open.
 
 
-## Current handoff, 2026-10-23
+## Current handoff, 2026-10-23 13:36UTC
 
-Production remains unchanged since the checked exclusion/compiler-sequence fixes.
-Published unapplied order is ALL `e07d1b39` → gradient `66179056` → TopBand
-`d106f59e`. TopBand canonical manifest `6a5aefce` pins19real-flags checks and
-38compile-only fixtures, canonical29-file replay and fresh native-contract review.
-Geometry now admits edge/fullbleed directly, while strict interior needs coalescing
-and all three quarter points. Active timer/pending/no-area entersmode3+empty;
-missingView staysquiet. Earlier88 is withdrawn in held-88/.
+Production remains unchanged since the verified exclusion/compiler-sequence fixes.
+Published UNAPPLIED order: ALL `e07d1b39` → gradient `66179056` → corrected
+TopBand `d106f59e` → optional startup `746ac8cc`. TopBand19real-flags checks0/empty,
+38fixtures compiled NOT executed; canonical replay/native-contract reviews clean.
+Geometry admits edge/fullbleed; strict interior needs coalescing+all3quarters.
+Active timer/pending/no-area stops+empty; missingView returnsquiet.88iswithdrawn.
 
-Native public flag31 is TopBand;36 is Snapshot. A reviewed native startup hook reads
-31 and adds enable-blink-features=TopBandColorSampling for renderer children. That
-startup integration is privately preparing; live propagation remains unproved.
-Commit refresh remains unwired. Native attachment proof establishes refresh before
-queued ObjC commit on ordinary NONNESTED UI dispatch; unconditional nested order
-is unproved. Shared adoption/GN/link/runtime and private C++ABI remain pending.
+Startup746 supplies the pre-Chrome installer/shared declaration/weakdefault and
+hosted renderer child callback reading public31. Native name lookup proves31TopBand,
+36Snapshot,43HEIF. No live IPC was invented. Real GN/link/weak-provider resolution,
+replacement runtime and conflicting feature-override behavior remain unverified.
+Commit refresh remains unwired; native receipt order is under a final placement
+review. Ordinary nonnested refresh precedes posted ObjC commit delivery; absolute
+nested/reentrant delivery order remains unproved. Private C++handle ABI is in recon.
 
-Count-only discard `21a83075` is HELD: SAME Impl/backend count survives replacement,
-old count read before teardown, seeded before new publication, wrapper KVO sync last.
-Core must implement canonical ownership/global retirement→attachment phases.
-Full-stack current weak TopBand-holder transfer is privately rebasing onto d106;
-no old document sampler/cache/capture migration, no setter replay/activation.
+HELD count-only discard21a or full-stack723 (ALTERNATIVES, never both): retained
+native peer count read before teardown, seeded before new publication, KVO synclast.
+723transfers CURRENT weak TopBand payload includingnil, clearsoldmetadata, and copies
+no document sampler/cache/token/RFH state. Startup746 and723 compose BOTHorders
+byte-identically across77files. Core canonical mapping/global old-retirement→new-
+attachment phases and target-owner reconciliation still block activation.
 
-Native retry1:4×14stages, integrity/restoration/natural quit pass; callbacks0/9/0/9
-(default/base/index36/both), all18non-nil/main/crossfadefalse. Callbacks precede
-hostobservation by21–31ms and screenshots by1.53s; not a final-painted-color oracle.
-Those index36 controls tested Snapshot, not TopBand relay. Parent inspected actual
-interior/splitgradient/fixedblue screenshots. Next private probe covers31/new renderer,
-same-document geometry and genuine nullable/crossfade opportunities; not queued.
+Native next-controls batch87533/tool22999 completed3×13stages and drained0.125audit
+checks pass; all restorations/natural exits and eight23-input guards pass.
+Public31-only/base/coalesced callbacks11/11/8; actualnil2/2/2; crossfadetrue9/9/6.
+Same-document default inset→fullbleed→inset giveswhite→red→white; coalesced insetred.
+Actual hardgradient/decodedSVG nils have browser surface-copy completion stackproof.
+No injected TopBand switch in public31 mode; fresh switched descendants observed,
+CDPtarget→PID remainsunproved. AllcontrolStatusINCONCLUSIVE/paritynull;2RAFs are
+opportunities, not presentation receipts. Parent viewed original inset/gradient/IMG
+PNGs; those3images byte-identical acrossallnative controls. Audit/provenance:
+logs/wp/renderer-topband-next-native-audit/ and visual-review.run2.json. Nativeonly.
 
-Peer UIrun4 fresh-profile37/37steps/natural quit pass.10strict fixture CSScalls each
-match both preservedv1 and current attributednative. Current-native vs historical
-UI global57 is a diagnostic, old84 remains pinned tooldv1. Twoextra theme calls are
-app-origin invocations; upstream scheduling unproved, no renderer hack. Official
-results/ours/renderer-public-api remains absent. Acceptance is in progress.
+Peer UI37/37 fresh-profile renderer replay/natural quit remains scoped evidence.
+10strict CSScalls each match preservedv1 and current attributednative. Current-native
+vs historical UI global57 is diagnostic; old84 remains pinned tov1. Twoextra theme
+calls are app-origin, upstream schedulingunproved, no renderer workaround. Official
+results/ours/renderer-public-api remains absent. Timestamped census13:35:58UTC:
+24canonical/29launches/12v1archivesexcluded/21shared diff snapshots; all27renderer
+rows remain visible. See run2report/annex for literal first2headers. Acceptance
+is in progress; no own app/build/waiter is active.
 
 ## Current adoption artifact
 
