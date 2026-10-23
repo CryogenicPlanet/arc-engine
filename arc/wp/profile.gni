@@ -1,3 +1,11 @@
 # Work package "profile": sources and deps (absolute //arc/... paths). Owned by that package.
-wp_profile_sources = []
-wp_profile_deps = []
+wp_profile_sources = [
+  "//arc/api/arc_profile_downloads.mm",
+  "//arc/api/arc_profile_history.mm",
+  "//arc/api/arc_profile_preferences.mm",
+]
+wp_profile_deps = [
+  "//components/content_settings/core/browser",
+  "//components/download/public/common:public",
+  "//components/prefs",
+]

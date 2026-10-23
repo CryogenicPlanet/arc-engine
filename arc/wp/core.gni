@@ -1,3 +1,11 @@
 # Work package "core": sources and deps (absolute //arc/... paths). Owned by that package.
-wp_core_sources = []
-wp_core_deps = []
+wp_core_sources = [
+  "//arc/api/arc_browser.mm",
+  "//arc/browser/arc_browser_window.h",
+  "//arc/browser/arc_browser_window.mm",
+]
+wp_core_deps = [
+  "//components/sessions",
+  "//ui/color",
+  "//ui/gfx",
+]
