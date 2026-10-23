@@ -2,9 +2,10 @@
 // ArcColor, ArcBrowserContextAttributes, ArcBrowserContextID, ArcBrowserContext and the profile queries
 // on ArcBrowserApplication. Unimplemented methods fall back to the stubs in arc_api_stubs.mm.
 
-#import <Foundation/Foundation.h>
+#import "arc/api/arc_internal.h"
 
 #include "base/files/file_path.h"
+#include "base/supports_user_data.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -15,17 +16,11 @@
 #include "chrome/browser/ui/profiles/profile_colors_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-#define ARC_EXPORT __attribute__((visibility("default")))
-
 namespace {
 // Arc's context types: 0 is the regular profile, 1 its off-the-record profile.
 constexpr NSUInteger kBrowserContextTypeRegular = 0;
 constexpr NSUInteger kBrowserContextTypeIncognito = 1;
 }  // namespace
-
-ARC_EXPORT @interface ArcColor : NSObject
-- (instancetype)initWithR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
-@end
 
 @implementation ArcColor {
   uint8_t _r, _g, _b, _a;
@@ -51,6 +46,12 @@ ARC_EXPORT @interface ArcColor : NSObject
 - (uint8_t)a {
   return _a;
 }
++ (instancetype)colorWithSkColor:(SkColor)color {
+  return [[self alloc] initWithR:SkColorGetR(color) g:SkColorGetG(color) b:SkColorGetB(color) a:SkColorGetA(color)];
+}
+- (SkColor)skColor {
+  return SkColorSetARGB(_a, _r, _g, _b);
+}
 @end
 
 ARC_EXPORT @interface ArcBrowserContextAttributes : NSObject
@@ -66,11 +67,7 @@ ARC_EXPORT @interface ArcBrowserContextAttributes : NSObject
   if ((self = [super init])) {
     _directoryBasename = base::SysUTF8ToNSString(entry->GetPath().BaseName().value());
     _userVisibleName = base::SysUTF16ToNSString(entry->GetLocalProfileName());
-    SkColor color = entry->GetProfileThemeColors().profile_highlight_color;
-    _userColor = [[ArcColor alloc] initWithR:SkColorGetR(color)
-                                           g:SkColorGetG(color)
-                                           b:SkColorGetB(color)
-                                           a:SkColorGetA(color)];
+    _userColor = [ArcColor colorWithSkColor:entry->GetProfileThemeColors().profile_highlight_color];
   }
   return self;
 }
@@ -83,10 +80,6 @@ ARC_EXPORT @interface ArcBrowserContextAttributes : NSObject
 - (ArcColor*)userColor {
   return _userColor;
 }
-@end
-
-ARC_EXPORT @interface ArcBrowserContextID : NSObject
-- (instancetype)initWithDirectoryBasename:(NSString*)basename isIncognito:(BOOL)isIncognito;
 @end
 
 @implementation ArcBrowserContextID {
@@ -118,7 +111,17 @@ ARC_EXPORT @interface ArcBrowserContextID : NSObject
 }
 @end
 
-ARC_EXPORT @interface ArcBrowserContext : NSObject
+namespace {
+
+// Owns the profile's one ArcBrowserContext wrapper.
+struct ArcBrowserContextHolder : public base::SupportsUserData::Data {
+  ArcBrowserContext* __strong wrapper;
+};
+const char kArcBrowserContextKey[] = "ArcBrowserContext";
+
+}  // namespace
+
+@interface ArcBrowserContext ()
 - (instancetype)initWithProfile:(Profile*)profile;
 @end
 
@@ -162,6 +165,24 @@ ARC_EXPORT @interface ArcBrowserContext : NSObject
 - (id)pageContentExtraction {
   return [self serviceNamed:@"ArcBrowserContextPageContentExtraction"];
 }
++ (instancetype)wrapperForProfile:(Profile*)profile {
+  if (!profile) {
+    return nil;
+  }
+  auto* holder = static_cast<ArcBrowserContextHolder*>(profile->GetUserData(kArcBrowserContextKey));
+  if (!holder) {
+    auto owned = std::make_unique<ArcBrowserContextHolder>();
+    owned->wrapper = [[ArcBrowserContext alloc] initWithProfile:profile];
+    holder = owned.get();
+    profile->SetUserData(kArcBrowserContextKey, std::move(owned));
+  }
+  return holder->wrapper;
+}
+
+- (Profile*)profile {
+  return _profile.get();
+}
+
 - (instancetype)initWithProfile:(Profile*)profile {
   if ((self = [super init])) {
     _profile = profile->GetWeakPtr();
@@ -221,7 +242,7 @@ ARC_EXPORT @interface ArcBrowserContext : NSObject
   if (type == kBrowserContextTypeIncognito) {
     profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   }
-  return [[ArcBrowserContext alloc] initWithProfile:profile];
+  return [ArcBrowserContext wrapperForProfile:profile];
 }
 
 @end

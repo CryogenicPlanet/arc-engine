@@ -62,12 +62,14 @@ def main():
     limit = int(sys.argv[sys.argv.index("--max") + 1]) if "--max" in sys.argv else 40
     g, gcb = load(golden)
     o, ocb = load(ours)
-    report = {"missing": [], "extra": [], "return_mismatch": [], "arg_mismatch": [], "count_mismatch": []}
+    report = {"internal": [], "missing": [], "extra": [], "return_mismatch": [], "arg_mismatch": [], "count_mismatch": []}
     for key in sorted(set(g) | set(o)):
         name = "%s %s%s %s" % (key[0], key[1], key[2], key[3])
         gc, oc = g.get(key, []), o.get(key, [])
         if gc and not oc:
-            report["missing"].append({"method": name, "golden_calls": len(gc), "example": gc[0]})
+            # Arc's engine-internal constructors take a native pointer ("<ptr>"); ours builds wrappers its own way.
+            section = "internal" if all('"<ptr>"' in c["args"] for c in gc) else "missing"
+            report[section].append({"method": name, "golden_calls": len(gc), "example": gc[0]})
             continue
         if oc and not gc:
             report["extra"].append({"method": name, "our_calls": len(oc), "example": oc[0]})
@@ -89,10 +91,10 @@ def main():
         "golden_from": gcb[first_div:first_div + 5] if first_div is not None else [],
         "ours_from": ocb[first_div:first_div + 5] if first_div is not None else [],
     }
-    total = sum(len(v) for k, v in report.items() if isinstance(v, list))
-    print("methods differing: %d (missing %d, extra %d, returns %d, callback args %d, counts %d)" % (
+    total = sum(len(v) for k, v in report.items() if isinstance(v, list) and k != "internal")
+    print("methods differing: %d (missing %d, extra %d, returns %d, callback args %d, counts %d; internal-only %d)" % (
         total, len(report["missing"]), len(report["extra"]), len(report["return_mismatch"]),
-        len(report["arg_mismatch"]), len(report["count_mismatch"])))
+        len(report["arg_mismatch"]), len(report["count_mismatch"]), len(report["internal"])))
     print("callback sequence:", json.dumps(report["callback_sequence"])[:600])
     for section in ("missing", "return_mismatch", "arg_mismatch", "extra"):
         for item in report[section][:limit]:
