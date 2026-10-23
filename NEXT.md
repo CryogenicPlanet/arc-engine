@@ -171,3 +171,23 @@ Sol (Rahul's sub-agents) owns the agent review and spec work from 2026-10-23. Do
       files inside Chromium's own directories; 200 Arc-only strings.
 - [x] Base build: `chromium/src/out/Base/Chromium.app` (156.0.8078.48, unstripped, peak 35 GB RAM, no swap).
 - [x] exe.dev skill (`~/.claude/skills/exe-dev/`) and the VM setup.
+
+### Open: `webContentsRenderViewReady:` (lead, 2026-10-23)
+Arc's engine sends it sparsely (8 of ~60 golden launches: relaunch with a replaced view, auth cancel,
+site settings). Forwarding every Chrome RenderViewReady, or every one after the first, adds many calls
+the goldens don't have, so it's not sent yet. Find the producer of bridge slot 0x4447d6c in ArcCore 1.170
+(lldb backtrace on the trace156 app, as for the field-state setters) before sending it.
+
+### Known gaps after the stub burn-down (lead, 2026-10-23 evening)
+Stub inventory: 31 unimplemented ObjC methods remain (19 app-referenced, almost all `isEqual:`/`hash`
+on canonical service wrappers, where NSObject identity is equivalent). Behavior gaps that remain:
+- Import from other browsers: history, bookmarks and passwords use Chrome's importer; cookies,
+  extensions, cards and sessions report "cannot be imported from this source" (Arc's engine had its own
+  importers). ArcMod's `tools/import-arc-data.ts` covers Arc→ArcMod separately.
+- Boosts color filters are recorded but not drawn (needs the renderer transport, see
+  arc/common/RENDERER_VISUAL_GAPS.md); color schemes use a `color-scheme` stylesheet approximation.
+- Auto-PiP flags (`ignoreDisablePiPAttribute:`/`skipUserActivationForPiP:`) and safe-area insets are
+  stored only; the app sends the default (NO) in every golden.
+- `webContentsRenderViewReady:` not sent (see above); Protected Audience not exposed (Arc exposes it).
+- Native-UI scenarios (command bar, menus, shortcuts, Little Arc, Settings, Spaces, profiles UI, import
+  wizard, autofill dropdown rendering) still need an unlocked screen.

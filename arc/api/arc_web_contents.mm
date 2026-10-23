@@ -215,6 +215,7 @@ struct CoreSecuritySnapshot {
 - (void)webContents:(ArcWebContents*)contents didCloseWithSessionID:(ArcSessionID*)identifier;
 - (void)webContents:(ArcWebContents*)contents didChangeStatusText:(NSString*)text;
 - (void)webContents:(ArcWebContents*)contents didChangeVisibleSecurityState:(ArcSecureContext*)context;
+- (void)webContentsRenderViewReady:(ArcWebContents*)contents;
 @end
 
 // The stored bridge survives nil unregister. Every nonnil delegate assignment

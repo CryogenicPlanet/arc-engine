@@ -32,6 +32,8 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
@@ -259,6 +261,14 @@ BrowserWindowInterface* BrowserFor(content::WebContents* contents) {
   content::WebContents* contents = [self webContents];
   auto* view = contents ? contents->GetRenderWidgetHostView() : nullptr;
   return view ? view->GetDeviceScaleFactor() : 1.0f;
+}
+
+// From the compositor's frame metadata, which the renderer sends whenever it changes.
+- (BOOL)isScrollOffsetAtTop {
+  content::WebContents* contents = [self webContents];
+  content::RenderWidgetHostView* view = contents ? contents->GetRenderWidgetHostView() : nullptr;
+  auto* host = view ? content::RenderWidgetHostImpl::From(view->GetRenderWidgetHost()) : nullptr;
+  return host ? host->render_frame_metadata_provider()->LastRenderFrameMetadata().is_scroll_offset_at_top : YES;
 }
 
 - (NSString*)contentsMimeType {

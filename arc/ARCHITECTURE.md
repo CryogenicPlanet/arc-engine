@@ -68,6 +68,17 @@ This file is binding for everyone writing code under `arc/`. Decisions here are 
   views. `createPaneHostView` returns an NSView container (`WebContentsPaneHostView`, ArcCore-internal class)
   that `attachToPaneHostView:`/`detachFromPaneHostView:` move the web contents view into and out of.
 
+## Chrome UI that expects a BrowserView
+
+Arc's windows aren't views `BrowserView`s, so Chrome code that looks one up gets null. Every such path a page
+or the app can reach must do what Arc's engine does, found with a CDP scenario recorded on Arc's engine first:
+- forward it to the app's callback (save offers: `webContents:didSubmitCredentials:`/`AddressEntry`/
+  `CreditCardInfo`; tab-modal dialogs: `webContents:showsAuxiliaryWindow:` with the dialog's window), or
+- give Chrome a host object from `ArcBrowserWindow` (`GetAutofillBubbleHandler`, `GetWebContentsModalDialogHost*`;
+  `BrowserWindow::FindBrowserWindowWithWebContents` returns our window in host mode), or
+- keep the web feature disabled when Arc's engine had it off (FedCM; see the `web-features` golden).
+Never leave a lookup returning null where Chrome dereferences it: that's a crash on an ordinary page.
+
 ## Host mode (patches)
 
 Chromium changes live only in `patches/*.patch` (applied by `sync-chromium.sh`). Keep them minimal and gated on
