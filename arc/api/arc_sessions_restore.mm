@@ -123,8 +123,9 @@ BOOL ArcSessionsHasPendingDiscard(ArcWebContents* contents) {
   __weak SessionsDiscardAdapter* weakAdapter = state.adapter;
   state.pending += 1;
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
+    __attribute__((objc_precise_lifetime)) SessionsDiscardAdapter* selectedAdapter = weakAdapter;
     ArcWebContents* contents = weakContents;
-    id<SessionsDiscardDelegate> delegate = weakAdapter.delegate;
+    id<SessionsDiscardDelegate> delegate = selectedAdapter.delegate;
     if (contents && delegate &&
         [delegate respondsToSelector:@selector(webContents:finalizeDiscardRequest:)]) {
       [delegate webContents:contents finalizeDiscardRequest:discarded];

@@ -1,5 +1,19 @@
 # Native filter and top-band integration gaps
 
+CURRENT INTEGRATION GATE: current WC475/source reconciliation is complete and
+independently reviewed (4bb5c387). The unchanged nativef67 + Arca044 pair strictly
+applies to fresh owned5475/WC475 source, preserves progress/quit bytes and reverses
+exactly; one fresh composed-WC8c4 syntax check passes with3163 selected dependencies
+pinned. Current94 source guards and Sessions e973 match. Evidence/manifest:
+`logs/wp/renderer-post-progress-current-reconciliation/` (aa60e2ac) and
+`renderer-post-progress-current-review/`. Historical ff957 receipts remain historical.
+Conditional current-core ac1b/b222→frozen16→ac699 compatibility also passes, but
+bec is separately HOLD; no approval to activate that full stage is inferred.
+The minimal document-start hook7732 remains reviewed/published UNAPPLIED on native
+9db baseline, requested from lead in Chirp141838. After it lands, nativef67 must be
+replaced by a reviewed remainder to avoid its duplicate hunk. No shared whole-file
+copy or held lifecycle activation is authorized by these artifact proofs.
+
 QUEUED-RULE OWNED CORRECTION APPLIED (source/interface, not runtime):
 transaction22910 completed/reaped0 under the shared lock. Exact owned5475 changes
 are installed; all14 official generated outputs equal the reviewed bytes. Both
@@ -7,13 +21,21 @@ prescribed checks and all6 actual-source compiler checks pass (six empty logs).
 Build graph and all nonpermitted checked dependencies are unchanged. Receipt:
 `logs/wp/renderer-queued-rules-adoption/transaction.json`, SHA256
 `c27c1833f8356c8d00f8b06df715bd3efa9914c2915812c55587454fb163ef23`.
-Fresh full Base build/package and unchanged official CSS/extraction regression
-completed/reaped0 (tool96238),37/37 steps/coverage/raw fixture pass.225 declared
+Full Base build invocation/package and unchanged official CSS/extraction regression
+completed/reaped0 (tool96238),37/37 steps/coverage/raw fixture pass. The build
+reported no work to do; six owned objects were unchanged, so this phase does not
+prove new compilation of them.225 declared
 source/tool/golden/stock inputs and runtime hashes stay pinned; prior official
 output is preserved. New output `results/renderer-queued-rules-canonical-run2`,
 raw SHA256 `7bbf1095c77d100c9466879c0d60785b5d0d209e35b58747f6ff319edcef8fa6`.
 Status `renderer-canonical-post-queued-rules/run/status.json` SHA8d27f36d... .
 Global57/callback66:105/div1 and app CSS3/5 remain; global parity is false.
+Independent completed-run audit0e9cdc6a verifies all captured boundaries and
+fixture evidence. Ten driver CSS pairs/fourteen observations match; extraction
+has1290 paired returns,1222 literal matches,62 local handles+6 fixture URL-port
+differences preserved. New twoarg initializer1/onearg0. The actual old-runtime
+bundle hash remains historical; later source/package drift is separately captured.
+Evidence: `logs/wp/renderer-queued-rules-canonical-audit/REPORT.md`.
 New accepted Boost lifecycle nativea264 passes58/58; first standard OURS50fc
 fails registered next-document b (black/DOMempty vs purple/DOM1); unregister/c
 unreached. Current shared Chrome renderer document-start hook is absent. A

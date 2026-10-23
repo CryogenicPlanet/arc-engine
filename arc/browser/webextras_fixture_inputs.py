@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Owned fixture-input freezer/contract verifier. Inactive until driver proposal adoption."""
 import argparse
+import ast
 import json
 from pathlib import Path
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -13,6 +15,7 @@ FILES = ('tests/recorder/diff.py', 'arc/tools/arccore-1.170.0-objc.tsv',
          'tests/recorder/app_callbacks.inc', 'arc/browser/webextras_fixture_inputs.py')
 SECTIONS = ('missing', 'extra', 'return_mismatch', 'arg_mismatch', 'count_mismatch')
 FIELDS = ('from', 'thread', 'depth', 'dir', 'kind', 'cls', 'sel', 'self')
+RECORDER = Path('tests/recorder')
 
 
 def require(value, message):
@@ -37,6 +40,101 @@ def identity(path):
                 mtimeNs=after.st_mtime_ns, ctimeNs=after.st_ctime_ns, dev=after.st_dev, ino=after.st_ino)
 
 
+def regular_input(root, relative):
+    """Accept regular inputs below the chosen root, without following local links."""
+    relative = Path(relative)
+    require(not relative.is_absolute() and relative.parts and
+            all(part not in ('.', '..') for part in relative.parts), 'invalid comparison input path')
+    path = root
+    for index, part in enumerate(relative.parts):
+        path = path/part
+        mode = path.lstat().st_mode
+        require(not stat.S_ISLNK(mode), 'symlink comparison input: '+str(path))
+        require(stat.S_ISREG(mode) if index == len(relative.parts)-1 else stat.S_ISDIR(mode),
+                'nonregular comparison input: '+str(path))
+    require(path.resolve(strict=True).is_relative_to(root), 'comparison input escapes root')
+    return path
+
+
+def input_identity(root, relative):
+    path = regular_input(root, relative)
+    result = identity(path)
+    require(regular_input(root, relative).resolve(strict=True) == Path(result['realpath']),
+            'comparison input path changed while hashing')
+    return result
+
+
+def comparator_closure(root):
+    """Discover flat local imports from source ASTs, never by importing or sys.path."""
+    pending = [FILES[0]]
+    discovered = set()
+    while pending:
+        relative = pending.pop()
+        if relative in discovered:
+            continue
+        before = input_identity(root, relative)
+        source = regular_input(root, relative).read_bytes()
+        require(input_identity(root, relative) == before, 'comparison import source changed while reading')
+        try:
+            tree = ast.parse(source, filename=relative)
+        except (SyntaxError, UnicodeError) as error:
+            raise ValueError('invalid comparison import source: '+relative) from error
+        discovered.add(relative)
+        for node in ast.walk(tree):
+            # Dynamic module loading has no statically provable input closure.
+            if (isinstance(node, ast.Name) and node.id in ('__import__', 'exec', 'eval')) or (
+                    isinstance(node, ast.Attribute) and node.attr in
+                    ('import_module', 'spec_from_file_location', 'SourceFileLoader', 'exec_module', 'load_module',
+                     'run_module', 'run_path')):
+                raise ValueError('dynamic comparison import is unsupported: '+relative)
+            names = []
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                require(node.level == 0 and node.module, 'relative comparison imports are unsupported: '+relative)
+                if node.module.split('.')[0] in ('importlib', 'runpy'):
+                    require(not any(alias.name in ('import_module', 'spec_from_file_location', 'SourceFileLoader',
+                                                   'exec_module', 'load_module', 'run_module', 'run_path')
+                                    for alias in node.names), 'dynamic comparison import is unsupported: '+relative)
+                names = [node.module]
+            for name in names:
+                top = name.split('.')[0]
+                require(re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', top), 'invalid comparison import name')
+                local = RECORDER/(top+'.py')
+                sibling = root/local
+                package = root/RECORDER/top
+                if top in sys.stdlib_module_names:
+                    require(not sibling.exists() and not sibling.is_symlink() and
+                            not package.exists() and not package.is_symlink(),
+                            'local comparison input shadows stdlib: '+top)
+                    continue
+                require(name == top, 'local comparison packages are unsupported: '+name)
+                require(not package.exists() and not package.is_symlink(),
+                        'local comparison packages are unsupported: '+name)
+                require(sibling.exists() or sibling.is_symlink(), 'missing or unknown comparison dependency: '+name)
+                regular_input(root, local)
+                pending.append(local.as_posix())
+    return tuple(sorted(discovered))
+
+
+def comparison_files(root):
+    closure = comparator_closure(root)
+    return (*FILES, *(relative for relative in closure if relative not in FILES))
+
+
+def frozen_import_directories(root, files):
+    # -B prevents writes, but Python can still read cached bytecode or prefer a
+    # package/extension over .py. Fresh snapshots contain only recorded inputs.
+    directories = {Path(relative).parent for relative in files if Path(relative).suffix == '.py'}
+    for directory in directories:
+        expected = {Path(relative).name for relative in files if Path(relative).parent == directory}
+        actual = list((root/directory).iterdir())
+        require({path.name for path in actual} == expected,
+                'unexpected frozen import-directory entry: '+directory.as_posix())
+        for path in actual:
+            regular_input(root, path.relative_to(root))
+
+
 def metadata(image, count):
     return {'mode': 'exact-image', 'admitted_images': [image], 'retained_fixture_events': {
         side: {image: {'call': count, 'ret': count}} for side in ('golden', 'ours')}}
@@ -50,6 +148,8 @@ def run_diff(snapshot, image, left, right, report):
 def capability(snapshot, image):
     # The old CLI exits zero for an unknown --fixture-image and drops both calls.
     # Require a real differing known-public result AND the exact fixture metadata.
+    snapshot = Path(snapshot).resolve()
+    frozen_import_directories(snapshot, comparison_files(snapshot))
     with tempfile.TemporaryDirectory(prefix='webextras-fixture-capability-') as temporary:
         root = Path(temporary)
         common = dict(thread='main', depth=0, dir='->engine', kind='-', cls='ArcMediaPosition',
@@ -75,23 +175,28 @@ def capability(snapshot, image):
 
 
 def freeze(source_root, snapshot, image):
+    require(not Path(source_root).is_symlink() and not Path(snapshot).is_symlink(), 'symlink comparison root')
     source_root, snapshot = Path(source_root).resolve(), Path(snapshot).resolve()
     image_name(image)
     snapshot.mkdir(parents=True, exist_ok=True)
     require(not any(snapshot.iterdir()), 'comparison snapshot must be empty')
-    before = {relative: identity(source_root/relative) for relative in FILES}
+    files = comparison_files(source_root)
+    before = {relative: input_identity(source_root, relative) for relative in files}
     copied = {}
-    for relative in FILES:
+    for relative in files:
         target = snapshot/relative
         target.parent.mkdir(parents=True, exist_ok=True)
-        with target.open('xb') as output, Path(before[relative]['realpath']).open('rb') as source:
+        with target.open('xb') as output, regular_input(source_root, relative).open('rb') as source:
             shutil.copyfileobj(source, output)
         target.chmod(0o444)
-        copied[relative] = identity(target)
-    for relative in FILES:
-        require(identity(source_root/relative) == before[relative], 'comparison source changed while freezing')
+        copied[relative] = input_identity(snapshot, relative)
+    require(comparison_files(source_root) == files and comparison_files(snapshot) == files,
+            'comparison import closure changed while freezing')
+    for relative in files:
+        require(input_identity(source_root, relative) == before[relative], 'comparison source changed while freezing')
         require(all(copied[relative][key] == before[relative][key] for key in ('sha256', 'size')), 'frozen comparison bytes differ')
-    state = dict(snapshot=str(snapshot), image=image, files={relative: {'source': before[relative], 'frozen': copied[relative]} for relative in FILES})
+    state = dict(snapshot=str(snapshot), image=image, files={relative: {'source': before[relative], 'frozen': copied[relative]} for relative in files})
+    state['comparator_closure'] = {'entry': FILES[0], 'files': list(comparator_closure(snapshot))}
     state['capability'] = capability(snapshot, image)
     manifest = snapshot/'comparison-inputs.json'
     manifest.write_text(json.dumps(state, indent=2)+'\n')
@@ -101,11 +206,18 @@ def freeze(source_root, snapshot, image):
 
 
 def verify(snapshot):
+    require(not Path(snapshot).is_symlink(), 'symlink comparison root')
     snapshot = Path(snapshot).resolve()
-    state = json.loads((snapshot/'comparison-inputs.json').read_text())
-    require(state['snapshot'] == str(snapshot) and set(state['files']) == set(FILES), 'snapshot manifest mismatch')
-    for relative in FILES:
-        require(identity(snapshot/relative) == state['files'][relative]['frozen'], 'frozen comparison input changed: '+relative)
+    state = json.loads(regular_input(snapshot, 'comparison-inputs.json').read_text())
+    files = comparison_files(snapshot)
+    frozen_import_directories(snapshot, files)
+    require(state['snapshot'] == str(snapshot) and isinstance(state['files'], dict) and
+            set(state['files']) == set(files), 'snapshot manifest mismatch')
+    if 'comparator_closure' in state:
+        require(state['comparator_closure'] == {'entry': FILES[0], 'files': list(comparator_closure(snapshot))},
+                'snapshot comparator closure mismatch')
+    for relative in files:
+        require(input_identity(snapshot, relative) == state['files'][relative]['frozen'], 'frozen comparison input changed: '+relative)
     return state
 
 

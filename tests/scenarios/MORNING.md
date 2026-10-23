@@ -121,6 +121,14 @@ names are saved under outDir for review; stdout remains JSON-RPC only.
    profile isolation, local service policy and ordinary defaults remain. Actual
    external URL delivery, native panel/profile controls and replacement ordering
    still need observation; this proposal does not make the case ready.
+   Further static research pins the native `Change profile:` menu and
+   `changeCurrentProfile:` route (`../arc/ghidra/decomp/0x1003.c:37354`) plus
+   candidate identifier `littleBrowserProfileIndicator`. It does not establish
+   live AX attachment or action availability. None of438 archived native snapshots
+   contains the Little Arc panel/profile markers. Evidence and all19 hashed spans:
+   `logs/wp/scenarios-little-arc-static-controls.json` (parent rehash passed).
+   The tools also lack an implemented exact-PID external-URL delivery wrapper;
+   public platform APIs may support one, but no helper/runtime proof exists.
 3. Key shortcuts now have a tests-owned in-process AppKit driver. It constructs
    public NSEvent keyDown/keyUp objects and calls NSApplication.sendEvent for an
    exact observed agent window, refusing dispatch if that window is no longer key.

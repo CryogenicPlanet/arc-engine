@@ -1,5 +1,19 @@
 # Renderer queued-rule correction and integration route
 
+CURRENT INTEGRATION GATE: current WC475/source reconciliation is complete and
+independently reviewed (4bb5c387). The unchanged nativef67 + Arca044 pair strictly
+applies to fresh owned5475/WC475 source, preserves progress/quit bytes and reverses
+exactly; one fresh composed-WC8c4 syntax check passes with3163 selected dependencies
+pinned. Current94 source guards and Sessions e973 match. Evidence/manifest:
+`logs/wp/renderer-post-progress-current-reconciliation/` (aa60e2ac) and
+`renderer-post-progress-current-review/`. Historical ff957 receipts remain historical.
+Conditional current-core ac1b/b222→frozen16→ac699 compatibility also passes, but
+bec is separately HOLD; no approval to activate that full stage is inferred.
+The minimal document-start hook7732 remains reviewed/published UNAPPLIED on native
+9db baseline, requested from lead in Chirp141838. After it lands, nativef67 must be
+replaced by a reviewed remainder to avoid its duplicate hunk. No shared whole-file
+copy or held lifecycle activation is authorized by these artifact proofs.
+
 Owned correction5475 and its official interface are **applied and syntax-verified**.
 The transaction completed/reaped0 under the shared lock; all14 generated outputs
 match the reviewed private bytes, both prescribed checks pass, and all6 actual
@@ -7,8 +21,10 @@ compiler checks pass with empty diagnostics. Build graph/nonpermitted checked
 inputs are unchanged. Exact receipt:
 `logs/wp/renderer-queued-rules-adoption/transaction.json`, SHA256
 `c27c1833f8356c8d00f8b06df715bd3efa9914c2915812c55587454fb163ef23`.
-A fresh full Base build/package and unchanged37-step CSS/extraction regression
-now pass (tool96238 completed/reaped0), with225 declared source/tool/golden/stock
+The full Base build invocation/package and unchanged37-step CSS/extraction
+regression pass (tool96238 completed/reaped0). The build reported no work to do;
+all six owned object artifacts were unchanged, so this phase does not prove their
+new compilation.225 declared source/tool/golden/stock
 inputs and runtime hashes stable. Output: `results/renderer-queued-rules-canonical-run2`;
 status: `logs/wp/renderer-canonical-post-queued-rules/run/status.json` SHA256
 `8d27f36d55925673c23f958d5175bd8d8191e2e66a65b01cc90459a491402523`.
@@ -44,10 +60,18 @@ coordinated source adoption; no numbered maintained patch slot is reserved.
 The kit proves both forward orders and exact reversal, with all80 current baseline
 paths matching. Its manifest/review are under
 `logs/wp/renderer-post-owned-adoption-kit/` and `renderer-post-owned-kit-review/`.
-The current pair targets bare post-owned production. After the separately ready
-core11 queue, the Arc companion has one strict WebContents context conflict;
-a minimal context-only variant is being prepared. Do not force the bare patch
-through that conflict or replace shared whole files. Optional startup746, activation-refreshf18 and discard723 remain
+The current pair targets bare post-owned/WC475 production. After exact selected
+core2f423→navigationac1b→displaye87→observerb222, use the published conditional
+`renderer_arc_after_selected_core_proposal.patch`, SHA256
+`ac69904bd05ddcf2d5d44c53ba0d577d5a72963ec1a6cbd9efeb99f876f6dfc7`,
+in place of Arca044. Nativef67 is unchanged before minimal7732 adoption. The
+conditional patch changes one WebContents hunk context/header only; payload is
+unchanged. Current core4 composition has24 private Git checks/reversals and one
+new WC495 syntax check with3583 dependencies; fresh review977e7e09 is clean.
+This is source/syntax compatibility, not core adoption. The old conditional
+full11 proof remains separate and includes held bec; do not infer readiness of
+that held stage. Never force the bare Arc patch through the context conflict or
+replace shared whole files. Optional startup746, activation-refreshf18 and discard723 remain
 separate and HELD under their existing lifecycle/runtime conditions.
 
 The rebase preserves current shared WebContents sourceff957 and app flagsECC.

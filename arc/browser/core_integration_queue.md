@@ -6,23 +6,25 @@ The strict11-route reconstruction remains valid evidence of composition ONLY,
 not adoption readiness for that adapter. See core_ui_registration_plan.md and
 logs/wp/core.ui-registration/. Earlier READY11 wording is superseded for order8.
 
-Exact current production bases, ordered patch hashes, reconstructed file hashes,
-and independent compiler evidence: logs/wp/core.integration-current/manifest.json.
+CURRENT production47534304 includes the APPLIED progress-only repair0e8cd518.
+Use logs/wp/core.progress-publication/manifest.json for current bases, route variants
+and exact reconstructed16file target. logs/wp/core.integration-current/manifest.json
+is the historical ff957 composition, not the current production starting point.
 The first TEN patches strictly apply in sequence to current production bases; final
 16-file reconstruction exactly matches reviewed native transport and final
 noncreating state stages. Production bases unchanged. No full-stack link/build/
 runtime is claimed; these patches do not activate public synchronous Close.
-Do not copy an old whole WebContents file: current production includes quit guard
-ff957456 and all4973732 integration, and adapterbec65249 preserves both.
+Do not copy an old whole WebContents file: current production47534304 includes the prior ff957456 quit guard, per-receipt
+queued progress and all4973732 integration. Exact final16 target unchanged.
 
 | Order | Proposal | SHA256 prefix | Purpose / status |
 | --- | --- | --- | --- |
 | 1 | arc/browser/core_navigation_chromium.patch | 2f423c8f1a48 | native host hooks, invalidation/target/readiness transport |
 | 2 | arc/browser/core_close_transport_chromium.patch | 41de166d504e | empty-default close phase and weak native continuation transport |
 | 3 | arc/browser/core_hosted_empty_browser.patch | 95c46cc5e111 | hosted empty strip tolerance with forced-close exclusions |
-| 4 | arc/browser/core_navigation_registration.patch | bb79407accb0 | WC navigation registration and status bridge |
+| 4 | arc/browser/core_navigation_registration.after_progress.patch | ac1b3d7e775a | WC navigation registration and status bridge |
 | 5 | arc/browser/core_display_registration.patch | e87f4d5e9131 | genuine ready/display state registration |
-| 6 | arc/browser/core_observer_registration.patch | 7e1cca4e5a54 | queued WC and observer state semantics |
+| 6 | arc/browser/core_observer_registration.after_progress.patch | b222ff87de87 | queued WC and observer state semantics |
 | 7 | arc/browser/core_close_accounting_primitive.patch | ea5f064aaa6a | typed five-domain accounting primitive |
 | 8 | arc/browser/core_close_accounting_adapters.patch | bec65249a399 | HOLD: same-state producers need selected UI registration correction |
 | 9 | arc/browser/core_zoom_observer.patch | 37637ae2799d | genuine ZoomObserver receipt/delivery |
@@ -41,8 +43,9 @@ separate bounded work. The native close transport is EMPTY by default; it neithe
 fixes logical binding nor invents a bulk Busy gate. Tab traits991106 and attachment
 consumer remain HOLD for their source seams; keyboard weak seam separate.
 
-Current production runtime evidence: core run8 launch9/9+tabs11/11 PASS with source,
-input and binary seals; raw105/46/66, callback first divergence1, acceptance NOT met.
+Current production runtime evidence: core run9 launch9/9+tabs11/11 PASS with source,
+input and separate output/package binary seals; raw106/57/56, core77/20/29, callback
+first divergence1, acceptance NOT met. Frozen review: logs/wp/core.run9-review/.
 Windows replay deferred for unchanged AX exposure/lock evidence; pane candidate
 not accepted. Core has no app job/waiter. App2n, 2o and 2p freezes have ended; consult live board before production changes.
 
@@ -67,3 +70,63 @@ still caches native PDF peer and queues uncounted logical-self-retaining no-op.
 Unconditional PostCoreUIDelegateInvocation is placement/accounting only; PDF adapter
 remains HOLD. Analogous core producers and setter registration lifetime are under
 source audit; this one proof does not establish every producer is wrong.
+
+Progress-only repair0e8cd518 APPLIED toownedWC47534304 after renderer hold141679
+ended; actualflags0/empty, prescribedcheck-filePASS, freshsource/route reviewCLEAN.
+No other production method changed. Genericac1b/observerb222 REPLACE oldbb794/7e1
+for this base; do not apply both versions. Original+variant11 routes each strictly
+reconstruct SAME frozen final16bytes, so existing final-stage companions retain
+their target; this is not UI adapter activation approval. Core run9 results:
+results/core-runtime/20261023T155832Z-progress-publication.
+Run9 completed/reaped0 and sourcehold141691 ended141761. See the current runtime
+evidence above; no own app/build job or lock waiter. It compiled sessions a647,
+before sessions e973 was applied; no runtime proof for that later source fix.
+
+Independent Navigation-policy registration proof adds a separate adapter HOLD
+reason: actual navigation InvokeSync4382d08 locks selected registration BEFORE
+Navigation busy3b8, while composedpolicy256 counts before weakdelegate lookup.
+Moving scope after respondsToSelector is wrong: live native registration with
+expired ObjC delegate remains busy, constructs action and returns Objective-C0.
+Native policy registration differs from navigation OBSERVER registration. Source
+routing/disposition translation and actual logical guard remain unimplemented;
+no blanket UI-on-navigation gate. See core_navigation_registration_eligibility.md
+and logs/wp/core.navigation-registration/. This does not change already-applied
+progress or approve any publicClose timing, native patch or C156 defaultpolicy.
+
+Eligibility-only sync UI correction is now reviewed/compiler checked and proposed
+as core_ui_sync_registration.patch dfe84311 AFTER the exactfull11target (WCb6).
+Final candidateWC3b1c8e89 changes only TargetURL/imminent/nonquitClosed selected
+bridge gating/lease; other15files unchanged. logs/wp/core.ui-sync-scope/.
+This is HOLD, not an entry in the immediate four-part native/navigation/display/
+observer adoption request141956. It leaves async2/Naveligibility, real logical
+self/outerdispatcher/prelock bookkeeping and wrong Closed sourcephase unresolved.
+
+Current C156 construction audit logs/wp/core.current-construction/ confirms
+helper-adopted tag precedes helper completion, facade publication follows its
+initialization, extension setup can synchronously dispatch predicates/actions.
+No complete helper-to-same-WC-Arc-wrapper reentry path is proved. Physical native
+factory invokes embedder observers BEFORE returning (original root also appears
+after physicalfactory); never promise universal preconstructor root availability.
+A real weak native→logical route beforehelpers/eagerobservation is being staged
+separately, no actual construction/facade fallback or root activation.
+
+Real logical route c5dc9cf6 is now a reviewed proposal AFTER bare d4b (thus after
+full11), not a production patch: core_logical_native_route.patch/.md, evidence
+logs/wp/core.logical-route/. Existing-onlyRootFind; initial weak publisher checks
+completedpeers/liveexactbinding+sameCloseState/canonicalcontrol, rejectsdifferent
+route evenexpired. Root-firststate lookup thenexistinglegacyfacade. No global or
+strong userdata, no caller/initializer/ownership/subscription. Initial-only/lead
+privateAPIapproval/constructor/retired mapping remainsHOLD. Independently commutes
+with sync3dfe bothorders exact18 files; combinedWCb2545aec. No combined link/run.
+A separate facade→storedRoot accessor is still needed for physicaldead lazy
+service adoption; do not force native lookup or recreate a facade to obtain it.
+
+Final-owner source qualification (no endpoint activation):
+logs/wp/core.final-logical-phase/ report73151948/raw52485f7c/review1165c4eb.
+Actual last strong Root disposal expires logical weak before raw UI deletion and
+before later dispatcher/member guards poison. Inspected Media PiPDestroyed then
+returns before cacheclear/appinvoke; live retirement can call out while binding
+is intact. Captured rootWCO+c0 gates association cleanup4372d74..3024, so the
+association-disconnect-before-native-delete proof is engaged-branch-only. Zero-c0
+Closed eligibility and other final callbacks remain unclassified; no resurrection
+or blanket callback suppression. BareRoot member-only destructor remains HOLD.

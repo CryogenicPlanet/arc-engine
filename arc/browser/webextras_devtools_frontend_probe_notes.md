@@ -111,16 +111,22 @@ Typed payloads/shape are functional proof only. Nested selected public argument/
 return values require the SAME frozen shared comparator, metadata and callback
 inputs, with its default caller policy and explicit `--compare-boundary-arguments`
 option (NO --fixture-image). The additional owned execution helper is copied once,
-fingerprinted and rechecked for both launches; it verifies the existing frozen
-four inputs before/after every invocation. Typed proof must first establish
+fingerprinted and rechecked for both launches; it verifies the exact frozen
+static local-import closure before/after every invocation (legacy four inputs,
+supported staged comparator seven inputs). Typed proof must first establish
 nonempty actual callbacks, matched returns/identity/caller and ZERO fixture calls.
 The helper independently rejects empty, incomplete, unlabeled and wrong-engine
 callback inputs, then requires the comparator's callback counts to retain them.
 
-Three independent canaries require exactly one nested public getter return
+Four independent canaries require exactly one nested public getter return
 mismatch (nonnull to nil), one nested APP setter argument mismatch, and one nested
-public call count mismatch, with no unrelated mismatch or callback-sequence change.
+public call count mismatch, and one literal-filename callback argument mismatch,
+with no unrelated mismatch or callback-sequence change.
 Each input has a genuine-shaped typed callback with matched null return. The
+fourth uses the real five-argument download filename callback, literal NSString
+`<ptr>`, timeout15 versus16, and a preceding raw ArcDownloadItem.id GUID result.
+It requires the callback and id ABI in the same frozen metadata. This protects
+the existing callback comparison when the argument option is enabled. The
 exact metadata acknowledgment must be boundary_arguments_comparison={mode:
 selected-boundary-methods,caller_attribution:true}. The current legacy parser
 ignores the new flag and ignores app setter arguments, so the honest canary result
@@ -169,3 +175,91 @@ status without dropping that event. The actual Poll-path test clears owner,
 service, canonical entry and the weak map, expires the journal, rejects wrong
 span/nonce/owner identities, then successfully reads/disarms with original
 ownerTag and zero public calls. New arming after weak loss still fails.
+
+
+Final quiet controls also retain a sample whose read starts before5s but returns
+after the deadline: that late sample cannot establish quiet, even if its journal
+is unchanged. Native expired=true likewise prevents quiet completion. The test
+places a first matching receipt at4800ms and the next at5100ms, preserving both
+while requiring inconclusive status. The final-disarm journal check covers an
+event arriving after the last stable read. No timing tolerance was widened.
+The independent callback helper follows proven recorder ordering: unique
+nonnegative IDs, per-thread nesting and callseq<returnseq, preserving original
+row order; atomic IDs may print out of global order across threads. It binds the
+image argument to the same verified snapshot identity. Capability subprocess or
+JSON failure is durably pending and never prevents actual frontend collection.
+
+
+Quiet age and completion elapsed time use the captured sample receipt timestamp
+consistently, including the previous-change timestamp. Time spent saving the
+durable report cannot manufacture a stable200ms sample interval. A control reads
+at4800/4900ms then advances the clock200ms during save and requires inconclusive
+status, rather than accepting the resulting5100ms wall time as quiet evidence.
+The prior14 frozen sources were archived before this final correction at
+logs/wp/webextras-frontend-second-review-inputs/manifest.json.
+
+
+Native10 journal correction (helper-only, after exact26-input archive at
+logs/wp/webextras-native10-journal-inputs/manifest.json): the original recorder
+logged canonical inspect callbacks while its invocation passed the saved helper
+`_cmd` alias. Recorder source SHA256 is
+9ae39687fdebcf4115b8c974af1b799aeee65265185a2c512ff56e5ca287d81e.
+Describe70–81 strips its KVO naming marker for object IDs; AliasFor134–136
+constructs exactly `__arcrec_` plus public selector; RecForwardInvocation161–208
+logs the public selector, invokes the alias, then restores the public selector.
+
+Each installed known wrapper now supplies its fixed canonical selector separately
+from raw incoming `_cmd`. The sidecar preserves rawSelector. It accepts only that
+public selector, or its exact recorder alias whose resolved runtime method IMP is
+that same wrapper and whose encoding equals the public method encoding. No
+arbitrary stripping or caller relabeling is performed. The original app IMP still
+receives the exact incoming selector once. Canonical recorder engine-origin rows,
+ABI, service identity, forwarding offsets and nesting remain independently checked.
+The sidecar preserves raw owner isa, actual superclass chain and reported -class.
+Only exact ArcWebContents, or exact NSKVONotifying_ArcWebContents with immediate
+superclass pointer ArcWebContents and reported class ArcWebContents, is accepted.
+This proves identity shape, not that an object currently has active KVO observers.
+No prefix-only or isKindOfClass acceptance exists. Nil reported class is retained
+as null and rejected safely without preventing original forwarding.
+
+Standalone regression executes the pinned actual AliasFor and RecForwardInvocation
+bodies around the actual helper wrapper, and real Foundation addObserver/removeObserver
+on an ArcWebContents fixture. It verifies canonical raw recorder selector versus
+preserved alias `_cmd`, forwarding once, actual KVO runtime identity, and rejects
+wrong aliases, saved IMPs, type encodings, unrelated/indirect KVO-like subclasses,
+reported-class spoofing and Nil-reporting subclasses. Typed callback tests retain
+canonical raw selectors/callers and cover alias/owner evidence tampering. Observation
+errors now distinguish failed requests, public work, owner identity, invalid selector,
+ABI, no-callback timeout, missing declared mode and missing fixed quiet interval.
+
+The fourth canary is independently exercised against TEMP copies of the sealed
+real bad87be and correctedf2b3 comparator proposals: the first three controls pass
+both, while the fourth rejects bad87be and accepts correctedf2b3. These proposals
+import three helper modules; the test now uses the actual owned freezer static
+local-import discovery to freeze exactly seven inputs automatically, then verifies
+that exact closure after the canaries. There is no manual helper copying. Current
+legacy comparator imports none of these modules and retains its four-input closure.
+No shared comparator/source change or corrected-helper app run is part of this work.
+
+Frontend mode also freezes the actual recorder policy source before operations,
+using the same recorderFileIdentity checks as the binary. It requires exact9ae39687
+before copying an exclusive readonly frontend-recorder-policy.m and saves source,
+frozen identity and policy alongside the binary/run identities. It rechecks both
+source and frozen copy before EACH launch and after measurement/cleanup. Changed
+source bytes or identity fail explicitly; default/video/service modes never freeze
+or check this source. The source pin does not establish source-to-dylib build
+provenance. Actual runtime alias IMP/encoding validation supplies the independent
+behavioral check. Standalone actual-function tests cover correct freezing, changed
+source, mismatched policy source before any copy, and frozen-copy tampering.
+
+
+Frozen freezer code is loaded from source bytes with compile+exec into ModuleType,
+not an importlib cached loader. Python -B prevents cache writes but still reads
+unchecked-hash bytecode. The actual-loader regression injects such a cache: the
+source-only production path never executes its marker (and the stricter freezer
+may reject the cache), while the old importlib control demonstrably does. The
+separate freezer implementation also rejects unmanifested files in both frozen
+import directories before comparator execution, including bytecode caches,
+packages, extensions, stdlib shadows and symlink manifests. Closure security is
+covered by its independent23-case suite and fresh review, not by a clean parity
+claim from this diagnostic.

@@ -270,49 +270,74 @@ static void Closed(id receiver, SEL selector, id tools) {
   else if (!NSThread.isMainThread) BackgroundCallback(tools, NO, 0, entered, offset);
 }
 // This wrapper observes the existing app IMP, including nested callbacks, exactly once.
-static NSMutableDictionary* FrontendCallbackBegin(id receiver, SEL selector, id tools, NSUInteger mode,
-                                                 WebextrasFrontendObservation** captured) {
+// The recorder source is pinned in the owned review archive. It invokes the saved
+// app IMP with exactly __arcrec_ + public selector; retain that incoming _cmd.
+static NSString* const kFrontendRecorderAliasSourceSHA256=@"9ae39687fdebcf4115b8c974af1b799aeee65265185a2c512ff56e5ca287d81e";
+static NSDictionary* FrontendOwnerIdentity(id owner) {
+  Class runtime=object_getClass(owner),expected=NSClassFromString(@"ArcWebContents"),reported=[owner class];
+  NSMutableArray* chain=[NSMutableArray array];
+  for(Class cls=runtime;cls&&chain.count<32;cls=class_getSuperclass(cls))[chain addObject:NSStringFromClass(cls)];
+  BOOL exact=expected&&runtime==expected&&reported==expected;
+  BOOL kvo=expected&&class_getSuperclass(runtime)==expected&&reported==expected&&
+    [NSStringFromClass(runtime) isEqual:@"NSKVONotifying_ArcWebContents"];
+  return @{@"ownerClass":runtime ? NSStringFromClass(runtime) : (id)NSNull.null,@"ownerReportedClass":reported ? NSStringFromClass(reported) : (id)NSNull.null,
+    @"ownerClassChain":chain,@"ownerRecordClass":exact||kvo ? @"ArcWebContents" : (id)NSNull.null,
+    @"ownerIdentityValid":(exact||kvo ? @YES : @NO),@"ownerIdentityKind":exact ? @"exact" : kvo ? @"kvo" : @"invalid"};
+}
+// The known wrapper supplies the public selector. Never derive it by stripping
+// an arbitrary prefix. Alias acceptance also proves its runtime saved IMP/ABI.
+static NSMutableDictionary* FrontendCallbackBegin(id receiver, SEL selector, SEL publicSelector, IMP wrapper,
+                                                 id tools, NSUInteger mode, WebextrasFrontendObservation** captured) {
   @synchronized(gFrontendLock) {
     WebextrasFrontendObservation* observation=gFrontendObservation;
     if (!observation || NSDate.timeIntervalSinceReferenceDate > observation.deadline) return nil;
     WebextrasProbeEntry* entry=observation.entry;id owner=entry.owner;id registeredTools=entry.tools;
     if (!owner || !tools || registeredTools != tools) { ++observation.ignored; return nil; }
     if (observation.callbacks.count >= 128) { observation.overflow=YES; return nil; }
-    NSMutableDictionary* event=[@{ @"selector":NSStringFromSelector(selector), @"mode":@(mode),
-      @"ownerTag":@(entry.identifier), @"ownerClass":NSStringFromClass(object_getClass(owner)),
+    NSString* canonical=NSStringFromSelector(publicSelector),*raw=NSStringFromSelector(selector);
+    Method rawMethod=class_getInstanceMethod(object_getClass(receiver),selector);
+    Method publicMethod=class_getInstanceMethod(object_getClass(receiver),publicSelector);
+    NSString* abi=rawMethod ? @(method_getTypeEncoding(rawMethod)) : @"";
+    BOOL direct=selector==publicSelector;
+    BOOL alias=[raw isEqual:[@"__arcrec_" stringByAppendingString:canonical]]&&rawMethod&&publicMethod&&
+      method_getImplementation(rawMethod)==wrapper&&[abi isEqual:@(method_getTypeEncoding(publicMethod))];
+    NSMutableDictionary* event=[@{ @"selector":canonical,@"rawSelector":raw,@"selectorIdentityValid":(direct||alias ? @YES : @NO),
+      @"selectorIdentityKind":direct ? @"public" : alias ? @"recorder-alias" : @"invalid",
+      @"recorderAliasVerified":(alias ? @YES : @NO),@"recorderAliasSourceSHA256":kFrontendRecorderAliasSourceSHA256,@"mode":@(mode),
+      @"ownerTag":@(entry.identifier),
       @"serviceClass":NSStringFromClass(object_getClass(tools)), @"delegateClass":NSStringFromClass(object_getClass(receiver)),
-      @"abi":@(method_getTypeEncoding(class_getInstanceMethod(object_getClass(receiver),selector))),
-      @"mainThread":@(NSThread.isMainThread), @"ordinal":@(observation.callbacks.count+1),
+      @"abi":abi,@"mainThread":(NSThread.isMainThread ? @YES : @NO), @"ordinal":@(observation.callbacks.count+1),
       @"forwardDepth":@(++observation.forwarding), @"recordOffset":Offset(), @"forwarded":@NO,
       @"nativeBeforeTicks":[NSString stringWithFormat:@"%llu",(unsigned long long)mach_absolute_time()] } mutableCopy];
+    [event addEntriesFromDictionary:FrontendOwnerIdentity(owner)];
     [observation.callbacks addObject:event]; *captured=observation; return event;
   }
 }
 static void FrontendCallbackEnd(WebextrasFrontendObservation* observation, NSMutableDictionary* event, BOOL returned) {
   if (!event) return;
   @synchronized(gFrontendLock) {
-    event[@"recordAfterForwarding"]=Offset();event[@"forwarded"]=@(returned);
+    event[@"recordAfterForwarding"]=Offset();event[@"forwarded"]=(returned ? @YES : @NO);
     event[@"nativeAfterTicks"]=[NSString stringWithFormat:@"%llu",(unsigned long long)mach_absolute_time()];
     --observation.forwarding;
   }
 }
 static void FrontendDisplay(id receiver, SEL selector, id tools, NSUInteger mode) {
-  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,tools,mode,&observation);BOOL returned=NO;
+  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,@selector(webContentsDevTools:displayAs:),(IMP)FrontendDisplay,tools,mode,&observation);BOOL returned=NO;
   @try { Display(receiver,selector,tools,mode);returned=YES; }
   @finally { FrontendCallbackEnd(observation,event,returned); }
 }
 static void FrontendClosed(id receiver, SEL selector, id tools) {
-  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,tools,0,&observation);BOOL returned=NO;
+  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,@selector(webContentsDevToolsDidClose:),(IMP)FrontendClosed,tools,0,&observation);BOOL returned=NO;
   @try { Closed(receiver,selector,tools);returned=YES; }
   @finally { FrontendCallbackEnd(observation,event,returned); }
 }
 static void FrontendInspect(id receiver, SEL selector, id tools, NSUInteger mode) {
-  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,tools,mode,&observation);BOOL returned=NO;
+  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,@selector(webContentsDevTools:inspectModeDidChange:),(IMP)FrontendInspect,tools,mode,&observation);BOOL returned=NO;
   @try { ((void (*)(id,SEL,id,NSUInteger))gInspect)(receiver,selector,tools,mode);returned=YES; }
   @finally { FrontendCallbackEnd(observation,event,returned); }
 }
 static void FrontendFocus(id receiver, SEL selector, id tools) {
-  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,tools,0,&observation);BOOL returned=NO;
+  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,@selector(webContentsDevToolsNeedsFocus:),(IMP)FrontendFocus,tools,0,&observation);BOOL returned=NO;
   @try { ((void (*)(id,SEL,id))gFocus)(receiver,selector,tools);returned=YES; }
   @finally { FrontendCallbackEnd(observation,event,returned); }
 }
@@ -395,7 +420,7 @@ static NSString* FrontendObservationOperation(WebextrasProbeWork* work, Webextra
     if(![operation isEqual:@"frontend-observe-arm"]&&![operation isEqual:@"frontend-observe-read"]&&![operation isEqual:@"frontend-observe-disarm"])return @"unsupported frontend observation operation";
     work.response[@"observation"]=@{@"spanID":observation.spanID,@"ownerTag":@(observation.ownerTag),@"observationNonce":observation.nonce,@"recordBegin":observation.recordBegin,
       @"recordEnd":Offset(),@"callbacks":SafeJSON(observation.callbacks,0),@"forwarding":@(observation.forwarding),
-      @"ignoredServiceCallbacks":@(observation.ignored),@"overflow":@(observation.overflow),@"expired":@(NSDate.timeIntervalSinceReferenceDate>observation.deadline)};
+      @"ignoredServiceCallbacks":@(observation.ignored),@"overflow":(observation.overflow ? @YES : @NO),@"expired":(NSDate.timeIntervalSinceReferenceDate>observation.deadline ? @YES : @NO)};
     if([operation isEqual:@"frontend-observe-disarm"]){
       if(observation.forwarding)return @"frontend callbacks still forwarding";
       gFrontendObservation=nil;

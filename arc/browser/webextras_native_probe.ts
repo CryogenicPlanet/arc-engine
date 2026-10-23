@@ -598,9 +598,45 @@ function validateFrontendStimulusReceipt(span:any):void{
       after.dockSide===(span.kind==="dock-change"?(before.dockSide==="right"?"bottom":"right"):span.initialDockSide),"genuine docking change/restore receipt mismatch");
   }
 }
-function validateFrontendCallbackSpan(span:any,record:Buffer,serviceReceiver:string,ownerTag:number,fixtureImage:string,projection?:PublicTraceProjection):any[]{
+function frontendCallbackMetadata(text:string):Set<string>{
+  const known=new Set<string>();
+  for(const line of text.split("\n")){
+    const entry=line.trim().match(/^\{"([^"\s]+)", "([^"\s]+)"\},?$/);if(!entry)continue;
+    const [,native,selector]=entry;known.add(JSON.stringify([native,selector]));
+    if(!native.startsWith("_TtC"))continue;
+    let rest=native.slice(native.startsWith("_TtCC")?5:4),parts:string[]=[];
+    while(rest.length){const length=rest.match(/^([1-9]\d*)/);if(!length){parts=[];break;}
+      const count=Number(length[1]);rest=rest.slice(length[1].length);
+      if(!Number.isSafeInteger(count)||count>rest.length){parts=[];break;}parts.push(rest.slice(0,count));rest=rest.slice(count);
+    }
+    if(parts.length>=2)known.add(JSON.stringify([parts.join("."),selector]));
+  }
+  assert(known.size>0,"frozen callback metadata is empty");return known;
+}
+function ownedFrontendCallback(event:any):boolean{
+  return event.cls==="ADK.WebContentChromium"&&frontendCallbackSelectors.includes(event.sel);
+}
+const frontendRecorderAliasSourceSHA256="9ae39687fdebcf4115b8c974af1b799aeee65265185a2c512ff56e5ca287d81e";
+function validateFrontendCallbackIdentity(event:any):void{
+  assert(frontendCallbackSelectors.includes(event.selector)&&event.selectorIdentityValid===true,"frontend callback selector identity invalid");
+  const direct=event.rawSelector===event.selector&&event.selectorIdentityKind==="public"&&event.recorderAliasVerified===false;
+  const alias=event.rawSelector==="__arcrec_"+event.selector&&event.selectorIdentityKind==="recorder-alias"&&event.recorderAliasVerified===true&&event.recorderAliasSourceSHA256===frontendRecorderAliasSourceSHA256;
+  assert(direct||alias,"frontend callback raw selector is neither installed public selector nor verified recorder alias");
+  const chain=event.ownerClassChain;
+  assert(event.ownerIdentityValid===true&&event.ownerReportedClass==="ArcWebContents"&&event.ownerRecordClass==="ArcWebContents"&&Array.isArray(chain)&&
+    chain.length>0&&chain.length<32&&chain.every((name:any)=>typeof name==="string"&&name.length>0)&&chain[0]===event.ownerClass&&new Set(chain).size===chain.length,"frontend callback owner identity/base chain invalid");
+  const exact=event.ownerClass==="ArcWebContents"&&event.ownerIdentityKind==="exact";
+  const kvo=event.ownerClass==="NSKVONotifying_ArcWebContents"&&event.ownerIdentityKind==="kvo"&&chain[1]==="ArcWebContents";
+  assert(exact||kvo,"frontend callback owner runtime class is not exact owner or verified direct KVO subclass");
+  assert(event.abi===(frontendCallbackSelectors.slice(0,2).includes(event.selector)?"v32@0:8@16Q24":"v24@0:8@16"),"frontend callback ABI mismatch");
+}
+function validateFrontendCallbackSpan(span:any,record:Buffer,serviceReceiver:string,ownerTag:number,fixtureImage:string,projection?:PublicTraceProjection,knownCallbacks?:Set<string>):any[]{
   validateFrontendStimulusReceipt(span);
-  assert(span?.ok===true&&span.quietComplete===true&&span.ownerTag===ownerTag&&span.publicCalls?.length===0&&span.timeline?.length===0,"callback observation performed public work or changed owner");
+  assert(knownCallbacks instanceof Set,"frozen callback metadata required for callback-only span");
+  assert(span?.ok===true,"frontend callback observation request failed");
+  assert(span.ownerTag===ownerTag,"frontend callback observation owner identity changed");
+  assert(span.publicCalls?.length===0&&span.timeline?.length===0,"frontend callback observation performed public work");
+  assert(span.quietComplete===true,"frontend callback observation did not establish the fixed quiet interval");
   const observation=span.observation;
   assert(observation?.spanID===span.spanID&&observation.ownerTag===ownerTag&&observation.forwarding===0&&observation.overflow===false,"incomplete/overflowed callback observation");
   const rows=parseRecords(validSpan(record,observation.recordBegin,observation.recordEnd),observation.recordBegin);
@@ -608,14 +644,24 @@ function validateFrontendCallbackSpan(span:any,record:Buffer,serviceReceiver:str
   const matched=validateNesting(rows,ambient);
   assert(rows.every(row=>row.event.from&&typeof row.event.from==="string"),"callback caller label missing");
   assert(!rows.some(row=>row.event.dir==="->engine"&&row.event.from===fixtureImage),"callback-only span contains fixture public calls");
-  const delegates=rows.filter(row=>row.event.ev==="call"&&row.event.dir==="engine->app");
+  const allDelegates=rows.filter(row=>row.event.ev==="call"&&row.event.dir==="engine->app");
+  for(const entry of allDelegates){
+    const event=entry.event;
+    assert(event.from==="engine"&&event.kind==="-"&&typeof event.thread==="string"&&event.thread.length>0,"callback has invalid engine origin/thread/kind");
+    assert(knownCallbacks.has(JSON.stringify([event.cls,event.sel])),"callback identity absent from frozen callback metadata");
+    assert(event.args.length===(event.sel.match(/:/g)??[]).length,"callback argument count differs from frozen selector");
+  }
+  const delegates=allDelegates.filter(row=>ownedFrontendCallback(row.event));
+  const ambientDelegates=allDelegates.filter(row=>!ownedFrontendCallback(row.event));
+  span.rawCallbackCounts={total:allDelegates.length,owned:delegates.length,ambient:ambientDelegates.length};
+  span.ambientCallbackIdentities=ambientDelegates.map(row=>({cls:row.event.cls,selector:row.event.sel,thread:row.event.thread}));
   const callbacks=observation.callbacks;
   assert(Array.isArray(callbacks)&&callbacks.length>0&&delegates.length===callbacks.length,"missing/unobserved app callbacks");
   for(let index=0;index<callbacks.length;++index){
     const event=callbacks[index],entry=delegates[index],returned=matched.get(entry.event.seq),modeful=frontendCallbackSelectors.slice(0,2).includes(entry.event.sel);
+    validateFrontendCallbackIdentity(event);
     assert(frontendCallbackSelectors.includes(entry.event.sel)&&entry.event.cls===event.delegateClass&&entry.event.kind==="-"&&entry.event.thread==="main"&&entry.event.from==="engine"&&returned&&returned.event.ret===null,"callback selector/class/thread/caller/return mismatch");
-    assert(event.selector===entry.event.sel&&event.mainThread===true&&event.forwarded===true&&event.ownerTag===ownerTag&&event.ownerClass==="ArcWebContents"&&event.serviceClass==="ArcWebContentsDevTools"&&event.ordinal===index+1,"callback service/owner/forwarding association mismatch");
-    assert(event.abi===(modeful?"v32@0:8@16Q24":"v24@0:8@16"),"callback ABI mismatch");
+    assert(event.selector===entry.event.sel&&event.mainThread===true&&event.forwarded===true&&event.ownerTag===ownerTag&&event.ownerRecordClass==="ArcWebContents"&&event.serviceClass==="ArcWebContentsDevTools"&&event.ordinal===index+1,"callback service/owner/forwarding association mismatch");
     assert(entry.event.args?.length===(modeful?2:1)&&entry.event.args[0]===serviceReceiver&&Number.isSafeInteger(event.mode)&&event.mode>=0&&event.mode<=4&&(modeful?entry.event.args[1]===event.mode:event.mode===0),"callback argument/service/mode mismatch");
     const begin=event.recordOffset,end=event.recordAfterForwarding;
     assert(Number.isSafeInteger(begin)&&Number.isSafeInteger(end)&&begin>=observation.recordBegin&&begin<=end&&end<=observation.recordEnd&&
@@ -628,7 +674,8 @@ function validateFrontendCallbackSpan(span:any,record:Buffer,serviceReceiver:str
   const expected=callbacks.filter((event:any)=>event.selector===span.expectedSelector);
   assert(expected.length>0&&expected.every((event:any)=>event.mode===span.expectedMode),"declared producer missing callback or produced wrong mode");
   if(projection)return projection.project(rows);
-  return delegates.map(row=>({selector:row.event.sel,args:["<canonical-service>",...row.event.args.slice(1)],thread:row.event.thread,from:row.event.from}));
+  return allDelegates.map(row=>({cls:row.event.cls,selector:row.event.sel,args:ownedFrontendCallback(row.event)?["<canonical-service>",...row.event.args.slice(1)]:row.event.args,
+    ret:matched.get(row.event.seq)!.event.ret,thread:row.event.thread,from:row.event.from,scope:ownedFrontendCallback(row.event)?"owned":"ambient"}));
 }
 function frontendJournalSignature(observation:any):string{
   return JSON.stringify(canonical({callbacks:observation?.callbacks,forwarding:observation?.forwarding,ignored:observation?.ignoredServiceCallbacks,overflow:observation?.overflow}));
@@ -656,18 +703,27 @@ async function runGenuineFrontendEvents(io:any,before:any[],fixtureURL:string,ow
       if(kind==="inspect-off"){assert(span.producer.after.actionToggled===false,"inspect restore was a no-op");inspectNeedsRestore=false;}
       if(kind==="dock-change"){dockNeedsRestore=span.producer.after.dockSide!==initialSide;assert(span.producer.after.dockSide===side,"dock action was a no-op");}
       if(kind==="dock-restore"){assert(span.producer.after.dockSide===side,"dock restore was a no-op");dockNeedsRestore=false;}
-      let journalSignature:string|undefined,lastJournalChange=io.now();
+      let journalSignature:string|undefined,lastJournalChange=io.now(),lastObservation:any;
       while(io.now()-started<frontendEventPolicy.waitMilliseconds){
-        const sample=await io.action("frontend-observe-read",identity);span.samples??=[];span.samples.push(sample);io.save(report);
+        const sample=await io.action("frontend-observe-read",identity),sampledAt=io.now();span.samples??=[];span.samples.push({response:sample,hostElapsedMilliseconds:sampledAt-started});io.save(report);
         assert(sample.ok===true,"frontend observation read failed");
-        const observation=sample.observation;
+        const observation=sample.observation;lastObservation=observation;
+        assert(Array.isArray(observation?.callbacks),"frontend callback journal callback array missing");
+        for(const event of observation?.callbacks??[])validateFrontendCallbackIdentity(event);
+        if(sampledAt-started>frontendEventPolicy.waitMilliseconds||observation?.expired){span.waitExpired=true;break;}
         const signature=frontendJournalSignature(observation);
-        if(signature!==journalSignature){journalSignature=signature;lastJournalChange=io.now();}
-        if(observation?.callbacks?.some((event:any)=>event.selector===expectedSelector&&event.mode===expectedMode)&&observation.forwarding===0&&io.now()-lastJournalChange>=frontendEventPolicy.quietMilliseconds){span.quietComplete=true;stableJournalSignature=signature;span.quietElapsedMilliseconds=io.now()-started;break;}
+        if(signature!==journalSignature){journalSignature=signature;lastJournalChange=sampledAt;}
+        if(observation?.callbacks?.some((event:any)=>event.selector===expectedSelector&&event.mode===expectedMode)&&observation.forwarding===0&&sampledAt-lastJournalChange>=frontendEventPolicy.quietMilliseconds){span.quietComplete=true;stableJournalSignature=signature;span.quietElapsedMilliseconds=sampledAt-started;break;}
         if(observation?.expired)break;
         await io.sleep(frontendEventPolicy.pollMilliseconds);
       }
-      if(!span.quietComplete)throw new ClockProbeInconclusive("frontend callback journal did not become quiet within the fixed observation window");
+      if(!span.quietComplete){
+        const callbacks=lastObservation?.callbacks??[];
+        if(!callbacks.length)throw new ClockProbeInconclusive("frontend callback observation timed out: no app callback observed");
+        if(!callbacks.some((event:any)=>event.selector===expectedSelector))throw new ClockProbeInconclusive("frontend callback observation timed out: declared selector absent");
+        if(!callbacks.some((event:any)=>event.selector===expectedSelector&&event.mode===expectedMode))throw new ClockProbeInconclusive("frontend callback observation timed out: declared mode absent");
+        throw new ClockProbeInconclusive("frontend callback observation timed out: fixed quiet interval not established");
+      }
     }catch(error){failure=error;}
     finally{
       span.disarm=await io.action("frontend-observe-disarm",identity);
@@ -768,6 +824,21 @@ function freezeRecorder(sourcePath: string, outputRoot: string): any {
   writeFileSync(join(outputRoot, "recorder-identity.json"), JSON.stringify(identity, null, 2));
   return identity;
 }
+function freezeFrontendRecorderPolicy(sourcePath:string,outputRoot:string):any{
+  const source=recorderFileIdentity(sourcePath);
+  assert(source.sha256===frontendRecorderAliasSourceSHA256,`frontend recorder policy source hash mismatch: expected ${frontendRecorderAliasSourceSHA256}, observed ${source.sha256}`);
+  const path=join(outputRoot,"frontend-recorder-policy.m");copyFileSync(source.realpath,path,constants.COPYFILE_EXCL);chmodSync(path,0o444);
+  const frozen=recorderFileIdentity(path);
+  assert(frozen.sha256===source.sha256&&frozen.size===source.size&&JSON.stringify(recorderFileIdentity(sourcePath))===JSON.stringify(source),"frontend recorder policy source changed while freezing");
+  const identity={capturedAt:new Date().toISOString(),policySourceSHA256:frontendRecorderAliasSourceSHA256,source,frozen,
+    provenance:"Pinned audit source policy only; no source-to-recorder-dylib build provenance claim. Exact alias IMP/ABI is separately verified at callback receipt."};
+  writeFileSync(join(outputRoot,"frontend-recorder-policy.json"),JSON.stringify(identity,null,2),{flag:"wx"});return identity;
+}
+function verifyFrontendRecorderPolicy(identity:any,phase:string):void{
+  assert(identity.policySourceSHA256===frontendRecorderAliasSourceSHA256&&identity.source.sha256===frontendRecorderAliasSourceSHA256&&identity.frozen.sha256===frontendRecorderAliasSourceSHA256,"frontend recorder policy source pin invalid");
+  assert(JSON.stringify(recorderFileIdentity(identity.source.path))===JSON.stringify(identity.source),`frontend recorder policy source changed ${phase}`);
+  assert(JSON.stringify(recorderFileIdentity(identity.frozen.path))===JSON.stringify(identity.frozen),`frozen frontend recorder policy source changed ${phase}`);
+}
 function hasCallerLabels(rows: RecordRow[]): boolean {
   return rows.some(row => Object.hasOwn(row.event, "from"));
 }
@@ -822,6 +893,7 @@ const recorderSource = join(root, "tests/recorder/ArcEngineRecorder.dylib");
 for (const file of [dylib, recorderSource]) if (!existsSync(file)) throw new Error(`missing ${file}`);
 const recorderIdentity = freezeRecorder(recorderSource, out);
 const recorder = recorderIdentity.frozen.path;
+const frontendRecorderPolicy=devToolsFrontendEvents?freezeFrontendRecorderPolicy(join(root,"tests/recorder/ArcEngineRecorder.m"),out):undefined;
 let mediaClockIdentity: any;
 let mediaClockBytes: Buffer | undefined;
 if (mediaClock) {
@@ -850,6 +922,7 @@ const comparisonInputs = JSON.parse(exec(["python3", "-B", join(root, "arc/brows
   "freeze", root, comparisonSnapshot, fixtureImage]));
 const comparisonHelper = join(comparisonSnapshot, "arc/browser/webextras_fixture_inputs.py");
 const comparisonMetadata = readFileSync(join(comparisonSnapshot, "arc/tools/arccore-1.170.0-objc.tsv"), "utf8");
+const frontendKnownCallbacks=devToolsFrontendEvents?frontendCallbackMetadata(readFileSync(join(comparisonSnapshot,"tests/recorder/app_callbacks.inc"),"utf8")):undefined;
 const fixtureVerified = comparisonInputs.capability?.verified === true;
 let frontendComparison:any,frontendComparisonHelper:string|undefined;
 if(devToolsFrontendEvents){
@@ -857,8 +930,11 @@ if(devToolsFrontendEvents){
   frontendComparisonHelper=join(out,"frontend-comparison.py");copyFileSync(source.realpath,frontendComparisonHelper,constants.COPYFILE_EXCL);chmodSync(frontendComparisonHelper,0o444);
   const frozen=recorderFileIdentity(frontendComparisonHelper);
   assert(source.sha256===frozen.sha256&&source.size===frozen.size&&JSON.stringify(recorderFileIdentity(source.path))===JSON.stringify(source),"frontend comparison helper changed while freezing");
-  const capability=JSON.parse(exec(["python3","-B",frontendComparisonHelper,"capability",comparisonSnapshot,fixtureImage]));
-  frontendComparison={source,frozen,capability};writeFileSync(join(out,"frontend-comparison-capability.json"),JSON.stringify(frontendComparison,null,2),{flag:"wx"});
+  const invocation=Bun.spawnSync(["python3","-B",frontendComparisonHelper,"capability",comparisonSnapshot,fixtureImage],{stdout:"pipe",stderr:"pipe"});
+  let capability:any;
+  try{assert(invocation.success,"frontend capability helper failed");capability=JSON.parse(invocation.stdout.toString());}
+  catch(error){capability={verified:false,status:"pending-callback-boundary-comparison-support",error:String(error)};}
+  frontendComparison={source,frozen,capability,invocation:{exitCode:invocation.exitCode,stdout:invocation.stdout.toString(),stderr:invocation.stderr.toString()}};writeFileSync(join(out,"frontend-comparison-capability.json"),JSON.stringify(frontendComparison,null,2),{flag:"wx"});
 }
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -919,14 +995,14 @@ const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
 } });
 const fixtureURL = `http://127.0.0.1:${server.port}${fixturePath}`;
 mkdirSync(out, { recursive: true });
-type Run = { agent: string; probeMode?:string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; comparisonInputs?: any; fixturePublicCounts?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string; runtimeStatus?:any; frontendEvents?:any };
+type Run = { agent: string; probeMode?:string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; comparisonInputs?: any; fixturePublicCounts?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string; runtimeStatus?:any; frontendEvents?:any;frontendRecorderPolicy?:any;frontendRecorderPolicyStatus?:string };
 const runs: Run[] = [];
 const operations = ["console-open", "frontend", "console-close", "panel-closed", "execute-evaluate", "execute-malformed", "execute-unknown", "subscription", "media-types", "pip-request-error", "pip-exit-error"];
 const actionManifest = operations.map(operation => ({ key: operation, operation })).concat(anyClock ? (mediaServiceClock ? mediaServiceClockPhases : mediaClockPhases).flatMap(phase => Array.from({length:5}, (_, index) => ({key:clockActionKey(phase.name,index), operation:index < 3 ? "clock-snapshot" : "clock-held-time"}))) : []);
 const expectedPairCount = actionManifest.reduce((count, entry) => count + expectedSelectors(entry.operation).length, 0);
 try {
   for (const agent of agents) {
-    const run: Run = { agent, ...((anyClock||devToolsFrontendEvents)?{probeMode}:{}), phase: "preflight", recorderIdentity, comparisonInputs, actions: [], errors: [] };
+    const run: Run = { agent, ...((anyClock||devToolsFrontendEvents)?{probeMode}:{}), phase: "preflight", recorderIdentity, comparisonInputs, ...(devToolsFrontendEvents?{frontendRecorderPolicy}:{}), actions: [], errors: [] };
     if(devToolsFrontendEvents&&frontendComparison?.capability?.verified!==true)run.errors.push("pending-callback-boundary-comparison-support: explicit argument option/default policy canaries not verified");
     runs.push(run);
     const dir = join(out, agent);
@@ -986,12 +1062,15 @@ try {
       mkdirSync(chromiumData, { recursive: true, mode: 0o700 });
       for (const key of ["cloudKitSyncEnabled", "firebaseSyncEnabled"]) exec(["defaults", "write", `company.thebrowser.Browser.mod.agent.${agent}`, key, "-bool", "false"]);
       run.phase = "binary-identity";
-      run.binaryIdentity = captureBinaryIdentity(app, agent);
+      run.binaryIdentity = {...captureBinaryIdentity(app, agent),...(devToolsFrontendEvents?{frontendRecorderPolicy}: {})};
       writeFileSync(join(dir, "binary-identity.json"), JSON.stringify(run.binaryIdentity, null, 2));
       run.phase = "recorder-identity";
       assert(JSON.stringify(recorderFileIdentity(recorder)) === JSON.stringify(recorderIdentity.frozen), "frozen recorder changed before launch");
       exec(["python3", "-B", comparisonHelper, "verify", comparisonSnapshot]);
-      if(devToolsFrontendEvents)assert(JSON.stringify(recorderFileIdentity(frontendComparison.frozen.path))===JSON.stringify(frontendComparison.frozen),"frozen frontend comparison helper changed before launch");
+      if(devToolsFrontendEvents){
+        verifyFrontendRecorderPolicy(frontendRecorderPolicy,"before launch");
+        assert(JSON.stringify(recorderFileIdentity(frontendComparison.frozen.path))===JSON.stringify(frontendComparison.frozen),"frozen frontend comparison helper changed before launch");
+      }
       if (mediaClock) {
         assert(JSON.stringify(recorderFileIdentity(mediaClockIdentity.frozen.path)) === JSON.stringify(mediaClockIdentity.frozen), "frozen media clock fixture changed before launch");
         assert(JSON.stringify(recorderFileIdentity(mediaClockIdentity.provenanceIdentity.path)) === JSON.stringify(mediaClockIdentity.provenanceIdentity), "frozen media clock provenance changed before launch");
@@ -1252,7 +1331,7 @@ try {
               try{
                 assert(span.kind===spanKinds[index]&&!spanIDs.has(span.spanID)&&span.observation?.recordBegin>=priorFrontendEnd,"missing/reordered/overlapping frontend callback span");
                 spanIDs.add(span.spanID);priorFrontendEnd=span.observation.recordEnd;
-                span.traceShape=validateFrontendCallbackSpan(span,record,roots[0]!.event.self,open.ownerTag,fixtureImage,projection);
+                span.traceShape=validateFrontendCallbackSpan(span,record,roots[0]!.event.self,open.ownerTag,fixtureImage,projection,frontendKnownCallbacks);
                 const bytes=validSpan(record,span.observation.recordBegin,span.observation.recordEnd);
                 writeFileSync(join(dir,`frontend-${span.kind}.callbacks.record.jsonl`),bytes);span.rawValidated=true;
               }catch(error){span.rawValidated=false;span.rawError=String(error);run.errors.push(`frontend-${span.kind} callback evidence: ${String(error)}`);}
@@ -1268,6 +1347,10 @@ try {
         if (JSON.stringify(run.actions.map(action => ({key:action.actionKey ?? action.operation, operation:action.operation}))) !== JSON.stringify(actionManifest)) run.errors.push("missing/reordered action manifest");
       }
       else run.errors.push("recorder file missing at cleanup");
+      if(devToolsFrontendEvents){
+        try{verifyFrontendRecorderPolicy(frontendRecorderPolicy,"after measurement/cleanup");run.frontendRecorderPolicyStatus="verified-unchanged";}
+        catch(error){run.frontendRecorderPolicyStatus="changed";run.errors.push(`frontend recorder policy: ${String(error)}`);}
+      }
       writeFileSync(join(dir, "observations.json"), JSON.stringify(run, null, 2));
     }
   }
@@ -1339,6 +1422,6 @@ if (golden && ours) for (const {key, operation} of actionManifest) {
 }
 const complete = runs.length === agents.length && runs.every(run => !run.errors.length && (!devToolsFrontendEvents||run.frontendEvents?.rawValidated===true) && !!run.cleanup && run.actions.length === actionManifest.length && run.actions.every(action => action.traceShape?.length > 0));
 const parity = golden && ours ? complete && !differences.length && !boundaryDiffs.length && (!devToolsFrontendEvents||!frontendEventDifferences.length) : null;
-writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, comparisonInputs, fixtureComparison, ...(devToolsFrontendEvents?{probeMode,frontendEventPolicy,frontendComparison,frontendEventDifferences}:{}), ...(anyClock ? {probeMode, ...(mediaClock?{mediaClockIdentity}:{}), mediaClockPolicy, actionManifest, expectedPairCount} : {}), differences, boundaryDiffs, runs }, null, 2));
+writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, comparisonInputs, fixtureComparison, ...(devToolsFrontendEvents?{probeMode,frontendEventPolicy,frontendRecorderPolicy,frontendComparison,frontendEventDifferences}:{}), ...(anyClock ? {probeMode, ...(mediaClock?{mediaClockIdentity}:{}), mediaClockPolicy, actionManifest, expectedPairCount} : {}), differences, boundaryDiffs, runs }, null, 2));
 console.log(JSON.stringify({ complete, parity, fixtureComparison, out }));
 process.exitCode = complete && parity !== false ? 0 : 1;

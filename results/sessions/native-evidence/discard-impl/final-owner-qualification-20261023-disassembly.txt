@@ -1,0 +1,170 @@
+Offline arm64 Capstone; unslid hexadecimal VAs; end addresses exclusive.
+
+python3 /tmp/arccore-sessions-persistence.py dis 43639e8 4363ac4
+043639e8: sub      sp, sp, #0x40
+043639ec: stp      x22, x21, [sp, #0x10]
+043639f0: stp      x20, x19, [sp, #0x20]
+043639f4: stp      x29, x30, [sp, #0x30]
+043639f8: add      x29, sp, #0x30
+043639fc: ldr      x19, [x0, #0x28]
+04363a00: cbz      x19, #0x4363ab0
+04363a04: mov      x20, x0
+04363a08: add      x8, x19, #8
+04363a0c: ldar     x8, [x8]
+04363a10: cmn      x8, #1
+04363a14: b.eq     #0x4363ab0
+04363a18: add      x9, x8, #1
+04363a1c: add      x10, x19, #8
+04363a20: mov      x11, x8
+04363a24: casal    x11, x9, [x10]
+04363a28: cmp      x11, x8
+04363a2c: mov      x8, x11
+04363a30: b.ne     #0x4363a10
+04363a34: ldr      x21, [x20, #0x20]
+04363a38: cbz      x21, #0x4363aa0
+04363a3c: ldr      x22, [x20, #0xa0]
+04363a40: ldr      x0, [x22, #0x10]
+04363a44: and      x8, x0, #0xfffffffc00000000
+04363a48: adrp     x9, #0xe2f2000
+04363a4c: ldr      x9, [x9, #0x208]
+04363a50: cmp      x8, x9
+04363a54: b.ne     #0x4363a5c
+04363a58: bl       #0x1fee4
+04363a5c: str      xzr, [x22, #0x10]
+04363a60: mov      x8, sp
+04363a64: mov      x0, x21
+04363a68: bl       #0x42c8400
+04363a6c: adrp     x1, #0xd381000
+04363a70: add      x1, x1, #0x7b3
+04363a74: add      x0, x20, #0x40
+04363a78: mov      x4, sp
+04363a7c: mov      w2, #0x30
+04363a80: mov      w3, #1
+04363a84: bl       #0x4355b30
+04363a88: ldr      x20, [sp, #8]
+04363a8c: cbz      x20, #0x4363aa0
+04363a90: add      x8, x20, #8
+04363a94: mov      x9, #-1
+04363a98: ldaddal  x9, x8, [x8]
+04363a9c: cbz      x8, #0x4363b5c
+04363aa0: add      x8, x19, #8
+04363aa4: mov      x9, #-1
+04363aa8: ldaddal  x9, x8, [x8]
+04363aac: cbz      x8, #0x4363ad8
+04363ab0: ldp      x29, x30, [sp, #0x30]
+04363ab4: ldp      x20, x19, [sp, #0x20]
+04363ab8: ldp      x22, x21, [sp, #0x10]
+04363abc: add      sp, sp, #0x40
+04363ac0: ret      
+
+python3 /tmp/arccore-sessions-persistence.py dis 4371b84 4371bf4
+04371b84: stp      x28, x27, [sp, #-0x60]!
+04371b88: stp      x26, x25, [sp, #0x10]
+04371b8c: stp      x24, x23, [sp, #0x20]
+04371b90: stp      x22, x21, [sp, #0x30]
+04371b94: stp      x20, x19, [sp, #0x40]
+04371b98: stp      x29, x30, [sp, #0x50]
+04371b9c: add      x29, sp, #0x50
+04371ba0: mov      x19, x0
+04371ba4: ldr      x20, [x0, #0x130]
+04371ba8: cbz      x20, #0x4371bbc
+04371bac: ldr      x21, [x19, #0x128]
+04371bb0: mov      x0, x19
+04371bb4: bl       #0x4372b6c
+04371bb8: cbz      x21, #0x4372928
+04371bbc: str      xzr, [x19, #0x618]
+04371bc0: ldr      x8, [x19, #0x610]
+04371bc4: cbz      x8, #0x4371bf0
+04371bc8: mov      w9, #1
+04371bcc: stlurb   w9, [x8, #4]
+04371bd0: ldr      x0, [x19, #0x610]
+04371bd4: cbz      x0, #0x4371bf0
+04371bd8: mov      w8, #-1
+04371bdc: ldaddal  w8, w8, [x0]
+04371be0: cmp      w8, #1
+04371be4: b.ne     #0x4371bf0
+04371be8: mov      w1, #8
+04371bec: bl       #0x5810
+04371bf0: ldr      x20, [x19, #0x608]
+
+python3 /tmp/arccore-sessions-persistence.py dis 4372060 43720a8
+04372060: cmp      x8, x9
+04372064: b.ne     #0x43728b0
+04372068: mov      w1, #0x20
+0437206c: bl       #0x5810
+04372070: str      xzr, [x19, #0x370]
+04372074: ldr      x8, [x19, #0x368]
+04372078: cbz      x8, #0x43720a4
+0437207c: mov      w9, #1
+04372080: stlurb   w9, [x8, #4]
+04372084: ldr      x0, [x19, #0x368]
+04372088: cbz      x0, #0x43720a4
+0437208c: mov      w8, #-1
+04372090: ldaddal  w8, w8, [x0]
+04372094: cmp      w8, #1
+04372098: b.ne     #0x43720a4
+0437209c: mov      w1, #8
+043720a0: bl       #0x5810
+043720a4: ldr      x0, [x19, #0x350]
+
+python3 /tmp/arccore-sessions-persistence.py dis 43a04dc 43a05cc
+043a04dc: sub      sp, sp, #0x40
+043a04e0: stp      x20, x19, [sp, #0x20]
+043a04e4: stp      x29, x30, [sp, #0x30]
+043a04e8: add      x29, sp, #0x30
+043a04ec: ldr      x20, [x0, #0x18]
+043a04f0: mov      w0, #0
+043a04f4: bl       #0x1559e00
+043a04f8: cbz      w0, #0x43a051c
+043a04fc: cbz      x20, #0x43a059c
+043a0500: mov      x0, x20
+043a0504: bl       #0x4371b84
+043a0508: mov      w1, #0x620
+043a050c: ldp      x29, x30, [sp, #0x30]
+043a0510: ldp      x20, x19, [sp, #0x20]
+043a0514: add      sp, sp, #0x40
+043a0518: b        #0x5810
+043a051c: bl       #0x1a87010
+043a0520: mov      x19, x0
+043a0524: adrp     x0, #0xd034000
+043a0528: add      x0, x0, #0xe5e
+043a052c: adrp     x1, #0xd0ef000
+043a0530: add      x1, x1, #0x569
+043a0534: mov      x8, sp
+043a0538: mov      w2, #0x93
+043a053c: bl       #0x29e40
+043a0540: ldr      x8, [x19]
+043a0544: ldr      x8, [x8, #0x50]
+043a0548: adr      x2, #0x43a05ac
+043a054c: nop      
+043a0550: mov      x1, sp
+043a0554: mov      x0, x19
+043a0558: mov      x3, x20
+043a055c: blr      x8
+043a0560: cbz      x19, #0x43a059c
+043a0564: add      x8, x19, #8
+043a0568: mov      w9, #-1
+043a056c: ldaddal  w9, w8, [x8]
+043a0570: cmp      w8, #1
+043a0574: b.ne     #0x43a059c
+043a0578: ldr      x9, [x19]
+043a057c: ldr      x8, [x9, #0x18]
+043a0580: adr      x10, #0x44511c4
+043a0584: nop      
+043a0588: cmp      x8, x10
+043a058c: b.ne     #0x43a0594
+043a0590: ldr      x8, [x9, #0x10]
+043a0594: mov      x0, x19
+043a0598: blr      x8
+043a059c: ldp      x29, x30, [sp, #0x30]
+043a05a0: ldp      x20, x19, [sp, #0x20]
+043a05a4: add      sp, sp, #0x40
+043a05a8: ret      
+043a05ac: cbz      x0, #0x43a05c8
+043a05b0: stp      x29, x30, [sp, #-0x10]!
+043a05b4: mov      x29, sp
+043a05b8: bl       #0x4371b84
+043a05bc: mov      w1, #0x620
+043a05c0: ldp      x29, x30, [sp], #0x10
+043a05c4: b        #0x5810
+043a05c8: ret      

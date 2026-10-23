@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 """Owned nonempty callback-span comparator capability/runner. No record normalization."""
 import argparse
-import importlib.util
 import json
 from pathlib import Path
 import re
 import subprocess
 import sys
 import tempfile
+import types
 
 SECTIONS=('missing','extra','return_mismatch','arg_mismatch','count_mismatch')
 SELECTORS={'webContentsDevTools:displayAs:','webContentsDevTools:inspectModeDidChange:',
            'webContentsDevToolsDidClose:','webContentsDevToolsNeedsFocus:'}
 IDENTITY=('dir','kind','cls','sel','self','thread','from')
 ARGUMENT_METADATA={'mode':'selected-boundary-methods','caller_attribution':True}
+FILENAME_CALLBACK='browserContext:onDeterminingFilename:defaultFilename:completionTimeout:completion:'
+FILENAME_CLASS='ADK.BrowserContextDownloadDelegateBridge'
+DOWNLOAD_GUID='00000000-0000-4000-8000-000000000001'
 
 
 def require(value,message):
@@ -23,22 +26,47 @@ def require(value,message):
 
 def verify(snapshot):
     path=Path(snapshot)/'arc/browser/webextras_fixture_inputs.py'
-    spec=importlib.util.spec_from_file_location('frozen_fixture_inputs',path)
-    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    # Source-only: -B prevents writes but still reads unchecked-hash .pyc.
+    # Never execute an unmanifested cache before the freezer validates its inputs.
+    module=types.ModuleType('frozen_fixture_inputs');module.__file__=str(path)
+    exec(compile(path.read_bytes(),str(path),'exec'),module.__dict__)
     return module.verify(snapshot)
 
 
-def gate(path,image):
+def callback_metadata(snapshot):
+    known=set()
+    for line in (Path(snapshot)/'tests/recorder/app_callbacks.inc').read_text().splitlines():
+        match=re.fullmatch(r'\{"([^"\s]+)", "([^"\s]+)"\},?',line.strip())
+        if not match:continue
+        native,selector=match.groups();known.add((native,selector))
+        if not native.startswith('_TtC'):continue
+        rest=native[5 if native.startswith('_TtCC') else 4:];parts=[]
+        while rest:
+            length=re.match(r'([1-9]\d*)',rest)
+            if not length:parts=[];break
+            count=int(length[1]);rest=rest[len(length[1]):]
+            if count>len(rest):parts=[];break
+            parts.append(rest[:count]);rest=rest[count:]
+        if len(parts)>=2:known.add(('.'.join(parts),selector))
+    require(known,'empty frozen callback metadata');return known
+
+
+def owned_callback(event):
+    return event.get('cls')=='ADK.WebContentChromium' and event.get('sel') in SELECTORS
+
+
+def gate(path,image,filename_canary=False,known_callbacks=None):
     data=Path(path).read_bytes()
     require(data and data.endswith(b'\n'),'empty/incomplete callback span')
     rows=[json.loads(line) for line in data.splitlines()]
-    seen=set();stacks={};bases={};callbacks=0;service=None
+    seen=set();stacks={};bases={};callbacks=0;owned=0;ambient=[];service=None
+    require(known_callbacks is not None,"frozen callback metadata required")
     for event in rows:
         require(type(event.get('seq')) is int and event['seq']>=0 and event['seq'] not in seen,'duplicate/invalid callback span ID');seen.add(event['seq'])
         require(event.get('ev') in ('call','ret'),'callback span contains non-boundary row')
         caller=event.get('from');require(isinstance(caller,str) and caller and caller.strip()==caller and not any(ord(c)<32 for c in caller),'missing callback caller')
         require(not(event.get('dir')=='->engine' and caller==image),'callback span contains fixture public calls')
-        require(event.get('dir') in ('->engine','engine->app') and event.get('kind') in ('-','+') and isinstance(event.get('thread'),str) and type(event.get('depth')) is int and event['depth']>=0,'invalid callback boundary identity')
+        require(event.get('dir') in ('->engine','engine->app') and event.get('kind') in ('-','+') and isinstance(event.get('thread'),str) and bool(event['thread']) and type(event.get('depth')) is int and event['depth']>=0,'invalid callback boundary identity')
         require(isinstance(event.get('cls'),str) and isinstance(event.get('sel'),str) and (event.get('self') is None if event['kind']=='+' else isinstance(event.get('self'),str) and re.fullmatch(r'<[^<>]+#\d+>',event['self'])),'invalid callback receiver identity')
         stack=stacks.setdefault(event['thread'],[])
         if event['ev']=='call':
@@ -46,17 +74,35 @@ def gate(path,image):
             require(event['depth']==bases[event['thread']]+len(stack) and isinstance(event.get('args'),list),'callback span call nesting invalid')
             stack.append(event)
             if event['dir']=='engine->app':
-                require(event.get('sel') in SELECTORS and event.get('cls')=='ADK.WebContentChromium' and event['thread']=='main' and caller=='engine','unknown/wrong-origin callback')
-                args=event['args'];modeful=event['sel'] in ('webContentsDevTools:displayAs:','webContentsDevTools:inspectModeDidChange:')
-                require(len(args)==(2 if modeful else 1) and isinstance(args[0],str) and re.fullmatch(r'<ArcWebContentsDevTools#\d+>',args[0]),'invalid callback service/payload')
-                require(not modeful or(type(args[1]) is int and 0<=args[1]<=4),'invalid callback mode')
-                service=service or args[0];require(service==args[0],'callback service changed');callbacks+=1
+                require(caller=='engine' and event['kind']=='-' and (event['cls'],event['sel']) in known_callbacks,'unknown/wrong-origin callback')
+                require(len(event['args'])==event['sel'].count(':'),'callback argument count differs from frozen selector')
+                args=event['args']
+                if filename_canary:
+                    require(event.get('sel')==FILENAME_CALLBACK and event.get('cls')==FILENAME_CLASS and
+                            len(args)==5 and args[0]=='<ArcBrowserContext#1>' and args[1]=='<ArcDownloadItem#1>' and
+                            args[2]=='<ptr>' and type(args[3]) is int and args[3] in (15,16) and args[4]=='<block>',
+                            'invalid literal filename callback canary')
+                elif owned_callback(event):
+                    require(event['thread']=='main','owned callback off main thread')
+                    owned+=1
+                    modeful=event['sel'] in ('webContentsDevTools:displayAs:','webContentsDevTools:inspectModeDidChange:')
+                    require(len(args)==(2 if modeful else 1) and isinstance(args[0],str) and re.fullmatch(r'<ArcWebContentsDevTools#\d+>',args[0]),'invalid callback service/payload')
+                    require(not modeful or(type(args[1]) is int and 0<=args[1]<=4),'invalid callback mode')
+                    service=service or args[0];require(service==args[0],'callback service changed')
+                else:
+                    ambient.append({'cls':event['cls'],'selector':event['sel'],'thread':event['thread']})
+                callbacks+=1
         else:
             require(stack and 'ret' in event,'callback span unmatched return')
             call=stack.pop();require(call['seq']<event['seq'] and event['depth']==bases[event['thread']]+len(stack) and all(call.get(key)==event.get(key) for key in IDENTITY),'callback span return identity mismatch')
-            if event['dir']=='engine->app':require(event['ret'] is None,'callback void return is not null')
+            if event['dir']=='engine->app' and (owned_callback(event) or filename_canary):require(event['ret'] is None,'callback void return is not null')
     require(callbacks>0 and not any(stacks.values()),'zero/incomplete callback evidence')
-    return {'callbacks':callbacks,'rows':len(rows),'fixturePublicCalls':0,'service':service}
+    if filename_canary:
+        require(len(rows)==4 and rows[0].get('dir')=='->engine' and rows[0].get('from')=='engine' and rows[0].get('cls')=='ArcDownloadItem' and
+                rows[0].get('sel')=='id' and rows[0].get('self')=='<ArcDownloadItem#1>' and rows[0].get('args')==[] and rows[1].get('ret')==DOWNLOAD_GUID,
+                'filename callback lacks exact raw download GUID proof')
+    require(filename_canary or owned>0,'no owned DevTools callback evidence (ambient callbacks retained)')
+    return {'callbacks':callbacks,'ownedCallbacks':owned,'ambientCallbacks':len(ambient),'ambientIdentities':ambient,'rows':len(rows),'fixturePublicCalls':0,'service':service}
 
 
 def run_diff(snapshot,left,right,report):
@@ -79,17 +125,32 @@ def canary_rows(kind,value=None,count=1):
     return rows
 
 
+def filename_canary_rows(timeout):
+    # Exact real callback signature; literal '<ptr>' is an NSString filename,
+    # not a synthetic opaque DevTools argument. The native internal id read
+    # supplies the raw GUID proof used by the existing download identity policy.
+    common=dict(thread='main',depth=0,kind='-',**{'from':'engine'})
+    item=dict(common,dir='->engine',cls='ArcDownloadItem',sel='id',self='<ArcDownloadItem#1>')
+    callback=dict(common,dir='engine->app',cls=FILENAME_CLASS,sel=FILENAME_CALLBACK,self='<ADK.BrowserContextDownloadDelegateBridge#1>')
+    return [dict(item,seq=1,ev='call',args=[]),dict(item,seq=2,ev='ret',ret=DOWNLOAD_GUID),
+            dict(callback,seq=3,ev='call',args=['<ArcBrowserContext#1>','<ArcDownloadItem#1>','<ptr>',timeout,'<block>']),
+            dict(callback,seq=4,ev='ret',ret=None)]
+
+
 def capability(snapshot,image):
-    state=verify(snapshot);require(state["image"]==image,"callback image differs from frozen snapshot");cases=[]
+    state=verify(snapshot);require(state["image"]==image,"callback image differs from frozen snapshot");cases=[];known=callback_metadata(snapshot)
+    require('M\tArcDownloadItem\t-\tid\t@16@0:8' in (Path(snapshot)/'arc/tools/arccore-1.170.0-objc.tsv').read_text().splitlines(),'filename canary id ABI absent from frozen metadata')
+    require('{"_TtC3ADK36BrowserContextDownloadDelegateBridge", "'+FILENAME_CALLBACK+'"},' in (Path(snapshot)/'tests/recorder/app_callbacks.inc').read_text().splitlines(),'filename canary callback absent from frozen callback metadata')
     with tempfile.TemporaryDirectory(prefix='webextras-callback-capability-') as directory:
         root=Path(directory)
         specs=[('nested-getter-return',canary_rows('getter','<ArcWebContents#118>'),canary_rows('getter',None),'return_mismatch'),
                ('nested-app-setter-argument',canary_rows('setter','alpha'),canary_rows('setter','beta'),'arg_mismatch'),
-               ('nested-public-call-count',canary_rows('getter','<ArcWebContents#118>'),canary_rows('getter','<ArcWebContents#118>',2),'count_mismatch')]
+               ('nested-public-call-count',canary_rows('getter','<ArcWebContents#118>'),canary_rows('getter','<ArcWebContents#118>',2),'count_mismatch'),
+               ('literal-filename-callback-argument',filename_canary_rows(15),filename_canary_rows(16),'arg_mismatch')]
         for name,left,right,expected in specs:
             paths=[root/(name+suffix) for suffix in ('.golden','.ours','.json')]
             for path,rows in zip(paths,[left,right]):path.write_text(''.join(json.dumps(row,separators=(',',':'))+'\n' for row in rows))
-            counts=[gate(path,image) for path in paths[:2]]
+            counts=[gate(path,image,filename_canary=name=='literal-filename-callback-argument',known_callbacks=known) for path in paths[:2]]
             process=run_diff(snapshot,*paths)
             try:report=json.loads(paths[2].read_text())
             except (ValueError,OSError):report=None
@@ -107,7 +168,7 @@ def capability(snapshot,image):
 
 
 def compare(snapshot,image,left,right,report_path):
-    state=verify(snapshot);require(state["image"]==image,"callback image differs from frozen snapshot");counts=[gate(path,image) for path in (left,right)]
+    state=verify(snapshot);require(state["image"]==image,"callback image differs from frozen snapshot");counts=[gate(path,image,known_callbacks=callback_metadata(snapshot)) for path in (left,right)]
     support=capability(snapshot,image)
     result=run_diff(snapshot,left,right,report_path)
     verify(snapshot)

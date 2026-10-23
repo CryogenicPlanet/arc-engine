@@ -31,7 +31,7 @@
    if (projection) return projection.project(rows);
    // Legacy replay only: live fixture comparisons use the frozen-metadata projection.
    // A complete ordered boundary shape closes diff.py's depth/order/object-identity gaps.
-@@ -228,6 +231,488 @@
+@@ -228,6 +231,521 @@
    return normalize(value);
  }
  
@@ -402,9 +402,26 @@
 +      after.dockSide===(span.kind==="dock-change"?(before.dockSide==="right"?"bottom":"right"):span.initialDockSide),"genuine docking change/restore receipt mismatch");
 +  }
 +}
++const frontendRecorderAliasSourceSHA256="9ae39687fdebcf4115b8c974af1b799aeee65265185a2c512ff56e5ca287d81e";
++function validateFrontendCallbackIdentity(event:any):void{
++  assert(frontendCallbackSelectors.includes(event.selector)&&event.selectorIdentityValid===true,"frontend callback selector identity invalid");
++  const direct=event.rawSelector===event.selector&&event.selectorIdentityKind==="public"&&event.recorderAliasVerified===false;
++  const alias=event.rawSelector==="__arcrec_"+event.selector&&event.selectorIdentityKind==="recorder-alias"&&event.recorderAliasVerified===true&&event.recorderAliasSourceSHA256===frontendRecorderAliasSourceSHA256;
++  assert(direct||alias,"frontend callback raw selector is neither installed public selector nor verified recorder alias");
++  const chain=event.ownerClassChain;
++  assert(event.ownerIdentityValid===true&&event.ownerReportedClass==="ArcWebContents"&&event.ownerRecordClass==="ArcWebContents"&&Array.isArray(chain)&&
++    chain.length>0&&chain.length<32&&chain.every((name:any)=>typeof name==="string"&&name.length>0)&&chain[0]===event.ownerClass&&new Set(chain).size===chain.length,"frontend callback owner identity/base chain invalid");
++  const exact=event.ownerClass==="ArcWebContents"&&event.ownerIdentityKind==="exact";
++  const kvo=event.ownerClass==="NSKVONotifying_ArcWebContents"&&event.ownerIdentityKind==="kvo"&&chain[1]==="ArcWebContents";
++  assert(exact||kvo,"frontend callback owner runtime class is not exact owner or verified direct KVO subclass");
++  assert(event.abi===(frontendCallbackSelectors.slice(0,2).includes(event.selector)?"v32@0:8@16Q24":"v24@0:8@16"),"frontend callback ABI mismatch");
++}
 +function validateFrontendCallbackSpan(span:any,record:Buffer,serviceReceiver:string,ownerTag:number,fixtureImage:string,projection?:PublicTraceProjection):any[]{
 +  validateFrontendStimulusReceipt(span);
-+  assert(span?.ok===true&&span.ownerTag===ownerTag&&span.publicCalls?.length===0&&span.timeline?.length===0,"callback observation performed public work or changed owner");
++  assert(span?.ok===true,"frontend callback observation request failed");
++  assert(span.ownerTag===ownerTag,"frontend callback observation owner identity changed");
++  assert(span.publicCalls?.length===0&&span.timeline?.length===0,"frontend callback observation performed public work");
++  assert(span.quietComplete===true,"frontend callback observation did not establish the fixed quiet interval");
 +  const observation=span.observation;
 +  assert(observation?.spanID===span.spanID&&observation.ownerTag===ownerTag&&observation.forwarding===0&&observation.overflow===false,"incomplete/overflowed callback observation");
 +  const rows=parseRecords(validSpan(record,observation.recordBegin,observation.recordEnd),observation.recordBegin);
@@ -417,9 +434,9 @@
 +  assert(Array.isArray(callbacks)&&callbacks.length>0&&delegates.length===callbacks.length,"missing/unobserved app callbacks");
 +  for(let index=0;index<callbacks.length;++index){
 +    const event=callbacks[index],entry=delegates[index],returned=matched.get(entry.event.seq),modeful=frontendCallbackSelectors.slice(0,2).includes(entry.event.sel);
++    validateFrontendCallbackIdentity(event);
 +    assert(frontendCallbackSelectors.includes(entry.event.sel)&&entry.event.cls===event.delegateClass&&entry.event.kind==="-"&&entry.event.thread==="main"&&entry.event.from==="engine"&&returned&&returned.event.ret===null,"callback selector/class/thread/caller/return mismatch");
-+    assert(event.selector===entry.event.sel&&event.mainThread===true&&event.forwarded===true&&event.ownerTag===ownerTag&&event.ownerClass==="ArcWebContents"&&event.serviceClass==="ArcWebContentsDevTools"&&event.ordinal===index+1,"callback service/owner/forwarding association mismatch");
-+    assert(event.abi===(modeful?"v32@0:8@16Q24":"v24@0:8@16"),"callback ABI mismatch");
++    assert(event.selector===entry.event.sel&&event.mainThread===true&&event.forwarded===true&&event.ownerTag===ownerTag&&event.ownerRecordClass==="ArcWebContents"&&event.serviceClass==="ArcWebContentsDevTools"&&event.ordinal===index+1,"callback service/owner/forwarding association mismatch");
 +    assert(entry.event.args?.length===(modeful?2:1)&&entry.event.args[0]===serviceReceiver&&Number.isSafeInteger(event.mode)&&event.mode>=0&&event.mode<=4&&(modeful?entry.event.args[1]===event.mode:event.mode===0),"callback argument/service/mode mismatch");
 +    const begin=event.recordOffset,end=event.recordAfterForwarding;
 +    assert(Number.isSafeInteger(begin)&&Number.isSafeInteger(end)&&begin>=observation.recordBegin&&begin<=end&&end<=observation.recordEnd&&
@@ -434,6 +451,9 @@
 +  if(projection)return projection.project(rows);
 +  return delegates.map(row=>({selector:row.event.sel,args:["<canonical-service>",...row.event.args.slice(1)],thread:row.event.thread,from:row.event.from}));
 +}
++function frontendJournalSignature(observation:any):string{
++  return JSON.stringify(canonical({callbacks:observation?.callbacks,forwarding:observation?.forwarding,ignored:observation?.ignoredServiceCallbacks,overflow:observation?.overflow}));
++}
 +async function runGenuineFrontendEvents(io:any,before:any[],fixtureURL:string,ownerTag:number):Promise<any>{
 +  const report:any={policy:frontendEventPolicy,status:"discovering",spans:[],censusBefore:before};io.save(report);
 +  const sessions=new Map<string,string>();let chosen:any,inspectNeedsRestore=false,dockNeedsRestore=false,initialSide:string|undefined;
@@ -445,10 +465,10 @@
 +    return frontendRuntimeEvaluation(expression=>{io.verify();return io.request("Runtime.evaluate",{expression,returnByValue:true,awaitPromise:true},session);},io.raw,{label:kind,targetID:candidate.targetId,sessionID:session,expression:frontendProducerJS(fixtureURL,kind,side,report.preflight?.after.primaryTargetID)});
 +  };
 +  const observe=async(kind:string,expectedSelector:string,expectedMode:number,side?:string)=>{
-+    const spanID=io.spanID(kind),span:any={spanID,kind,expectedSelector,expectedMode,...(initialSide?{initialDockSide:initialSide}:{}),status:"arming"};report.spans.push(span);io.save(report);
-+    const arm=await io.action("frontend-observe-arm",{spanID});span.arm=arm;
++    const spanID=io.spanID(kind),identity={spanID,ownerTag,observationNonce:new URL(fixtureURL).pathname.split("/")[1]},span:any={spanID,kind,expectedSelector,expectedMode,...(initialSide?{initialDockSide:initialSide}:{}),status:"arming"};report.spans.push(span);io.save(report);
++    const arm=await io.action("frontend-observe-arm",identity);span.arm=arm;
 +    assert(arm.ok===true&&arm.ownerTag===ownerTag,"frontend callback observation did not arm on canonical owner");
-+    const started=io.now();let failure:any;
++    const started=io.now();let failure:any,stableJournalSignature:string|undefined;
 +    try{
 +      span.producer=await evaluate(chosen,kind,side);
 +      assert(span.producer.acknowledged===true,"genuine frontend action did not acknowledge");
@@ -457,19 +477,32 @@
 +      if(kind==="inspect-off"){assert(span.producer.after.actionToggled===false,"inspect restore was a no-op");inspectNeedsRestore=false;}
 +      if(kind==="dock-change"){dockNeedsRestore=span.producer.after.dockSide!==initialSide;assert(span.producer.after.dockSide===side,"dock action was a no-op");}
 +      if(kind==="dock-restore"){assert(span.producer.after.dockSide===side,"dock restore was a no-op");dockNeedsRestore=false;}
-+      let foundAt:number|undefined;
++      let journalSignature:string|undefined,lastJournalChange=io.now(),lastObservation:any;
 +      while(io.now()-started<frontendEventPolicy.waitMilliseconds){
-+        const sample=await io.action("frontend-observe-read",{spanID});span.samples??=[];span.samples.push(sample);io.save(report);
++        const sample=await io.action("frontend-observe-read",identity),sampledAt=io.now();span.samples??=[];span.samples.push({response:sample,hostElapsedMilliseconds:sampledAt-started});io.save(report);
 +        assert(sample.ok===true,"frontend observation read failed");
-+        const observation=sample.observation;
-+        if(observation?.callbacks?.some((event:any)=>event.selector===expectedSelector&&event.mode===expectedMode)&&observation.forwarding===0){foundAt??=io.now();if(io.now()-foundAt>=frontendEventPolicy.quietMilliseconds)break;}
++        const observation=sample.observation;lastObservation=observation;
++        assert(Array.isArray(observation?.callbacks),"frontend callback journal callback array missing");
++        for(const event of observation?.callbacks??[])validateFrontendCallbackIdentity(event);
++        if(sampledAt-started>frontendEventPolicy.waitMilliseconds||observation?.expired){span.waitExpired=true;break;}
++        const signature=frontendJournalSignature(observation);
++        if(signature!==journalSignature){journalSignature=signature;lastJournalChange=sampledAt;}
++        if(observation?.callbacks?.some((event:any)=>event.selector===expectedSelector&&event.mode===expectedMode)&&observation.forwarding===0&&sampledAt-lastJournalChange>=frontendEventPolicy.quietMilliseconds){span.quietComplete=true;stableJournalSignature=signature;span.quietElapsedMilliseconds=sampledAt-started;break;}
 +        if(observation?.expired)break;
 +        await io.sleep(frontendEventPolicy.pollMilliseconds);
 +      }
++      if(!span.quietComplete){
++        const callbacks=lastObservation?.callbacks??[];
++        if(!callbacks.length)throw new ClockProbeInconclusive("frontend callback observation timed out: no app callback observed");
++        if(!callbacks.some((event:any)=>event.selector===expectedSelector))throw new ClockProbeInconclusive("frontend callback observation timed out: declared selector absent");
++        if(!callbacks.some((event:any)=>event.selector===expectedSelector&&event.mode===expectedMode))throw new ClockProbeInconclusive("frontend callback observation timed out: declared mode absent");
++        throw new ClockProbeInconclusive("frontend callback observation timed out: fixed quiet interval not established");
++      }
 +    }catch(error){failure=error;}
 +    finally{
-+      span.disarm=await io.action("frontend-observe-disarm",{spanID});
++      span.disarm=await io.action("frontend-observe-disarm",identity);
 +      Object.assign(span,span.disarm,{spanID,kind,expectedSelector,expectedMode});
++      if(span.quietComplete&&frontendJournalSignature(span.observation)!==stableJournalSignature){span.quietComplete=false;span.quietInvalidatedAtDisarm=true;failure??=new ClockProbeInconclusive("frontend journal changed between stable sample and disarm; extra events preserved");}
 +      io.save(report);
 +    }
 +    if(failure)throw failure;
@@ -520,7 +553,7 @@
  const root = resolve(import.meta.dir, "../..");
  const args = process.argv.slice(2);
  const option = (key: string, fallback?: string): string | undefined => {
-@@ -236,6 +721,9 @@
+@@ -236,6 +754,9 @@
  };
  if (!option("--out")) throw new Error("usage: webextras_native_probe.sh run --out DIR [--agents trace156,ours156] [--port 9458]");
  const out = resolve(option("--out")!);
@@ -530,10 +563,33 @@
  const agents = option("--agents", "trace156,ours156")!.split(",");
  if (!agents.length || new Set(agents).size !== agents.length || agents.some(agent => !["trace156", "ours156"].includes(agent))) {
    throw new Error("only trace156 and ours156, each at most once, are allowed");
-@@ -327,6 +815,28 @@
+@@ -272,6 +793,21 @@
+   const identity = { capturedAt: new Date().toISOString(), originalSourcePath: sourcePath, source, frozen };
+   writeFileSync(join(outputRoot, "recorder-identity.json"), JSON.stringify(identity, null, 2));
+   return identity;
++}
++function freezeFrontendRecorderPolicy(sourcePath:string,outputRoot:string):any{
++  const source=recorderFileIdentity(sourcePath);
++  assert(source.sha256===frontendRecorderAliasSourceSHA256,`frontend recorder policy source hash mismatch: expected ${frontendRecorderAliasSourceSHA256}, observed ${source.sha256}`);
++  const path=join(outputRoot,"frontend-recorder-policy.m");copyFileSync(source.realpath,path,constants.COPYFILE_EXCL);chmodSync(path,0o444);
++  const frozen=recorderFileIdentity(path);
++  assert(frozen.sha256===source.sha256&&frozen.size===source.size&&JSON.stringify(recorderFileIdentity(sourcePath))===JSON.stringify(source),"frontend recorder policy source changed while freezing");
++  const identity={capturedAt:new Date().toISOString(),policySourceSHA256:frontendRecorderAliasSourceSHA256,source,frozen,
++    provenance:"Pinned audit source policy only; no source-to-recorder-dylib build provenance claim. Exact alias IMP/ABI is separately verified at callback receipt."};
++  writeFileSync(join(outputRoot,"frontend-recorder-policy.json"),JSON.stringify(identity,null,2),{flag:"wx"});return identity;
++}
++function verifyFrontendRecorderPolicy(identity:any,phase:string):void{
++  assert(identity.policySourceSHA256===frontendRecorderAliasSourceSHA256&&identity.source.sha256===frontendRecorderAliasSourceSHA256&&identity.frozen.sha256===frontendRecorderAliasSourceSHA256,"frontend recorder policy source pin invalid");
++  assert(JSON.stringify(recorderFileIdentity(identity.source.path))===JSON.stringify(identity.source),`frontend recorder policy source changed ${phase}`);
++  assert(JSON.stringify(recorderFileIdentity(identity.frozen.path))===JSON.stringify(identity.frozen),`frozen frontend recorder policy source changed ${phase}`);
+ }
+ function hasCallerLabels(rows: RecordRow[]): boolean {
+   return rows.some(row => Object.hasOwn(row.event, "from"));
+@@ -327,6 +863,29 @@
  for (const file of [dylib, recorderSource]) if (!existsSync(file)) throw new Error(`missing ${file}`);
  const recorderIdentity = freezeRecorder(recorderSource, out);
  const recorder = recorderIdentity.frozen.path;
++const frontendRecorderPolicy=devToolsFrontendEvents?freezeFrontendRecorderPolicy(join(root,"tests/recorder/ArcEngineRecorder.m"),out):undefined;
 +let mediaClockIdentity: any;
 +let mediaClockBytes: Buffer | undefined;
 +if (mediaClock) {
@@ -559,7 +615,27 @@
  const fixtureImage = "WebextrasNativeProbe.dylib";
  const comparisonSnapshot = join(out, "fixture-comparator");
  const comparisonInputs = JSON.parse(exec(["python3", "-B", join(root, "arc/browser/webextras_fixture_inputs.py"),
-@@ -357,23 +867,53 @@
+@@ -334,6 +893,19 @@
+ const comparisonHelper = join(comparisonSnapshot, "arc/browser/webextras_fixture_inputs.py");
+ const comparisonMetadata = readFileSync(join(comparisonSnapshot, "arc/tools/arccore-1.170.0-objc.tsv"), "utf8");
+ const fixtureVerified = comparisonInputs.capability?.verified === true;
++let frontendComparison:any,frontendComparisonHelper:string|undefined;
++if(devToolsFrontendEvents){
++  const source=recorderFileIdentity(join(root,"arc/browser/webextras_frontend_comparison.py"));
++  frontendComparisonHelper=join(out,"frontend-comparison.py");copyFileSync(source.realpath,frontendComparisonHelper,constants.COPYFILE_EXCL);chmodSync(frontendComparisonHelper,0o444);
++  const frozen=recorderFileIdentity(frontendComparisonHelper);
++  assert(source.sha256===frozen.sha256&&source.size===frozen.size&&JSON.stringify(recorderFileIdentity(source.path))===JSON.stringify(source),"frontend comparison helper changed while freezing");
++  const invocation=Bun.spawnSync(["python3","-B",frontendComparisonHelper,"capability",comparisonSnapshot,fixtureImage],{stdout:"pipe",stderr:"pipe"});
++  let capability:any;
++  try{assert(invocation.success,"frontend capability helper failed");capability=JSON.parse(invocation.stdout.toString());}
++  catch(error){capability={verified:false,status:"pending-callback-boundary-comparison-support",error:String(error)};}
++  frontendComparison={source,frozen,capability,invocation:{exitCode:invocation.exitCode,stdout:invocation.stdout.toString(),stderr:invocation.stderr.toString()}};writeFileSync(join(out,"frontend-comparison-capability.json"),JSON.stringify(frontendComparison,null,2),{flag:"wx"});
++}
++
+ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+ let observeProcesses: (() => void) | undefined;
+ const wait = async <T>(read: () => T | Promise<T>, timeout = 20000): Promise<NonNullable<T>> => {
+@@ -357,23 +929,54 @@
  const sameProcess = (left: ProcessIdentity, right: ProcessIdentity) => left.pid === right.pid && left.born === right.born && left.command === right.command;
  const token = `arc-webextras-probe-${crypto.randomUUID()}`;
  const fixturePath = `/${token}/fixture`;
@@ -602,7 +678,7 @@
  const fixtureURL = `http://127.0.0.1:${server.port}${fixturePath}`;
  mkdirSync(out, { recursive: true });
 -type Run = { agent: string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; comparisonInputs?: any; fixturePublicCounts?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string };
-+type Run = { agent: string; probeMode?:string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; comparisonInputs?: any; fixturePublicCounts?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string; runtimeStatus?:any; frontendEvents?:any };
++type Run = { agent: string; probeMode?:string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; comparisonInputs?: any; fixturePublicCounts?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string; runtimeStatus?:any; frontendEvents?:any;frontendRecorderPolicy?:any;frontendRecorderPolicyStatus?:string };
  const runs: Run[] = [];
  const operations = ["console-open", "frontend", "console-close", "panel-closed", "execute-evaluate", "execute-malformed", "execute-unknown", "subscription", "media-types", "pip-request-error", "pip-exit-error"];
 +const actionManifest = operations.map(operation => ({ key: operation, operation })).concat(anyClock ? (mediaServiceClock ? mediaServiceClockPhases : mediaClockPhases).flatMap(phase => Array.from({length:5}, (_, index) => ({key:clockActionKey(phase.name,index), operation:index < 3 ? "clock-snapshot" : "clock-held-time"}))) : []);
@@ -610,7 +686,8 @@
  try {
    for (const agent of agents) {
 -    const run: Run = { agent, phase: "preflight", recorderIdentity, comparisonInputs, actions: [], errors: [] };
-+    const run: Run = { agent, ...((anyClock||devToolsFrontendEvents)?{probeMode}:{}), phase: "preflight", recorderIdentity, comparisonInputs, actions: [], errors: [] };
++    const run: Run = { agent, ...((anyClock||devToolsFrontendEvents)?{probeMode}:{}), phase: "preflight", recorderIdentity, comparisonInputs, ...(devToolsFrontendEvents?{frontendRecorderPolicy}:{}), actions: [], errors: [] };
++    if(devToolsFrontendEvents&&frontendComparison?.capability?.verified!==true)run.errors.push("pending-callback-boundary-comparison-support: explicit argument option/default policy canaries not verified");
      runs.push(run);
      const dir = join(out, agent);
      mkdirSync(dir, { recursive: true });
@@ -618,10 +695,20 @@
      const app = resolve(root, `../arc/build/ArcModAgent-${agent}.app`);
      const exe = join(app, "Contents/MacOS/Arc");
      const plist = (key: string) => exec(["/usr/libexec/PlistBuddy", "-c", `Print :${key}`, join(app, "Contents/Info.plist")]);
-@@ -433,6 +973,10 @@
+@@ -428,11 +1031,19 @@
+       mkdirSync(chromiumData, { recursive: true, mode: 0o700 });
+       for (const key of ["cloudKitSyncEnabled", "firebaseSyncEnabled"]) exec(["defaults", "write", `company.thebrowser.Browser.mod.agent.${agent}`, key, "-bool", "false"]);
+       run.phase = "binary-identity";
+-      run.binaryIdentity = captureBinaryIdentity(app, agent);
++      run.binaryIdentity = {...captureBinaryIdentity(app, agent),...(devToolsFrontendEvents?{frontendRecorderPolicy}: {})};
+       writeFileSync(join(dir, "binary-identity.json"), JSON.stringify(run.binaryIdentity, null, 2));
        run.phase = "recorder-identity";
        assert(JSON.stringify(recorderFileIdentity(recorder)) === JSON.stringify(recorderIdentity.frozen), "frozen recorder changed before launch");
        exec(["python3", "-B", comparisonHelper, "verify", comparisonSnapshot]);
++      if(devToolsFrontendEvents){
++        verifyFrontendRecorderPolicy(frontendRecorderPolicy,"before launch");
++        assert(JSON.stringify(recorderFileIdentity(frontendComparison.frozen.path))===JSON.stringify(frontendComparison.frozen),"frozen frontend comparison helper changed before launch");
++      }
 +      if (mediaClock) {
 +        assert(JSON.stringify(recorderFileIdentity(mediaClockIdentity.frozen.path)) === JSON.stringify(mediaClockIdentity.frozen), "frozen media clock fixture changed before launch");
 +        assert(JSON.stringify(recorderFileIdentity(mediaClockIdentity.provenanceIdentity.path)) === JSON.stringify(mediaClockIdentity.provenanceIdentity), "frozen media clock provenance changed before launch");
@@ -629,7 +716,7 @@
        run.phase = "launch";
        readiness = { agent, beforeLaunch: readySnapshot(nativeReadyPath), launchStartedMs: Date.now() };
        writeFileSync(join(dir, "readiness.json"), JSON.stringify(readiness, null, 2));
-@@ -441,6 +985,8 @@
+@@ -441,6 +1052,8 @@
          "--env", `ARC_WEBEXTRAS_PROBE_REQUEST=${requestPath}`,
          "--env", `ARC_WEBEXTRAS_PROBE_URL=${fixtureURL}`,
          "--env", `ARC_RECORD_PATH=${recordPath}`,
@@ -638,7 +725,7 @@
          "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args",
          "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking",
          `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${chromiumData}`,
-@@ -495,10 +1041,10 @@
+@@ -495,10 +1108,10 @@
          writeFileSync(join(dir, "fixture-state.json"), JSON.stringify({ cdpError: String(error) }, null, 2));
        }
        let sequence = 0;
@@ -651,7 +738,7 @@
          renameSync(requestPath + ".tmp", requestPath);
          const result = await wait(() => {
            const response = json(requestPath + ".response.json");
-@@ -513,7 +1059,14 @@
+@@ -513,7 +1126,14 @@
          return response.ok === true && response.matches === 1 ? response : undefined;
        });
        writeFileSync(join(dir, "registry.json"), JSON.stringify(registry, null, 2));
@@ -666,7 +753,7 @@
          run.phase = `action:${operation}`;
          const result = await action(operation);
          run.actions.push(result);
-@@ -524,6 +1077,82 @@
+@@ -524,6 +1144,82 @@
          if (operation.startsWith("pip-") && (result.value !== false || result.error?.domain !== "company.thebrowser.Arc" || result.error?.code !== 6)) run.errors.push(`${operation}: expected false/Arc NSError6 on inert fixture`);
          if (result.matches !== 1 || result.ownerTag !== registry.ownerTag) run.errors.push(`${operation}: canonical wrapper changed`);
          console.log(`${agent}: ${operation}: ${result.ok === true ? "acknowledged" : result.probeError}`);
@@ -749,7 +836,7 @@
        }
        run.phase = "cdp-close-fixture";
        await cdp.request("Target.closeTarget", { targetId: target });
-@@ -557,6 +1186,9 @@
+@@ -557,6 +1253,9 @@
        }
        observeProcesses = undefined;
        cdp?.close();
@@ -759,7 +846,7 @@
        if (existsSync(recordPath)) {
          const record = readFileSync(recordPath);
          try {
-@@ -576,22 +1208,45 @@
+@@ -576,30 +1275,60 @@
          } catch (error) { run.errors.push(`recorder: ${String(error)}`); }
          const projection = new PublicTraceProjection(comparisonMetadata, fixtureImage);
          let fixtureCalls = 0, fixtureReturns = 0;
@@ -808,8 +895,12 @@
 +        if (JSON.stringify(run.actions.map(action => ({key:action.actionKey ?? action.operation, operation:action.operation}))) !== JSON.stringify(actionManifest)) run.errors.push("missing/reordered action manifest");
        }
        else run.errors.push("recorder file missing at cleanup");
++      if(devToolsFrontendEvents){
++        try{verifyFrontendRecorderPolicy(frontendRecorderPolicy,"after measurement/cleanup");run.frontendRecorderPolicyStatus="verified-unchanged";}
++        catch(error){run.frontendRecorderPolicyStatus="changed";run.errors.push(`frontend recorder policy: ${String(error)}`);}
++      }
        writeFileSync(join(dir, "observations.json"), JSON.stringify(run, null, 2));
-@@ -599,7 +1254,10 @@
+     }
    }
  } finally { server.stop(true); }
  const semantic = (action: any) => canonical({
@@ -821,7 +912,7 @@
    mainThread: action.mainThread, frontendPresent: action.frontendPresent, frontendClass: action.frontendClass,
    types: action.types, value: action.value, error: action.error,
    unsubscribeReturn: action.unsubscribeReturn,
-@@ -620,27 +1278,34 @@
+@@ -620,27 +1349,48 @@
    const right = ours.actions[index] ? semantic(ours.actions[index]) : null;
    if (JSON.stringify(left) !== JSON.stringify(right)) differences.push({ golden: left, ours: right });
  }
@@ -831,6 +922,20 @@
 +    spans:run.frontendEvents?.spans.map((span:any)=>({kind:span.kind,expectedSelector:span.expectedSelector,expectedMode:span.expectedMode,
 +      callbacks:span.observation?.callbacks.map((event:any)=>({selector:event.selector,mode:event.mode,mainThread:event.mainThread,forwarded:event.forwarded,forwardDepth:event.forwardDepth,abi:event.abi})),traceShape:span.traceShape}))});
 +  if(JSON.stringify(shape(golden))!==JSON.stringify(shape(ours)))frontendEventDifferences.push({golden:shape(golden),ours:shape(ours)});
++}
++if(devToolsFrontendEvents&&golden&&ours){
++  for(const kind of ["inspect-on","inspect-off","dock-change","dock-restore"]){
++    const left=golden.frontendEvents?.spans.find((span:any)=>span.kind===kind),right=ours.frontendEvents?.spans.find((span:any)=>span.kind===kind);
++    if(!left?.rawValidated||!right?.rawValidated){frontendEventDifferences.push({kind,status:"incomplete-typed-callback-evidence"});continue;}
++    try{
++      assert(JSON.stringify(recorderFileIdentity(frontendComparison.frozen.path))===JSON.stringify(frontendComparison.frozen),"frozen frontend comparator helper changed");
++      const result=JSON.parse(exec(["python3","-B",frontendComparisonHelper!,"compare",comparisonSnapshot,fixtureImage,
++        join(out,"trace156",`frontend-${kind}.callbacks.record.jsonl`),join(out,"ours156",`frontend-${kind}.callbacks.record.jsonl`),join(out,`frontend-${kind}.diff.json`)]));
++      writeFileSync(join(out,`frontend-${kind}.diff.txt`),result.stdout);
++      writeFileSync(join(out,`frontend-${kind}.comparison.json`),JSON.stringify(result,null,2));
++      if(result.verified!==true||result.mismatches?.length)frontendEventDifferences.push({kind,status:result.status,mismatches:result.mismatches});
++    }catch(error){frontendEventDifferences.push({kind,status:"pending-callback-boundary-comparison-support",error:String(error)});}
++  }
 +}
  const boundaryDiffs: unknown[] = [];
  const fixtureComparison = { status: fixtureVerified ? "verified-exact-image" : "pending-fixture-comparison-support",
@@ -864,6 +969,6 @@
 +}
 +const complete = runs.length === agents.length && runs.every(run => !run.errors.length && (!devToolsFrontendEvents||run.frontendEvents?.rawValidated===true) && !!run.cleanup && run.actions.length === actionManifest.length && run.actions.every(action => action.traceShape?.length > 0));
 +const parity = golden && ours ? complete && !differences.length && !boundaryDiffs.length && (!devToolsFrontendEvents||!frontendEventDifferences.length) : null;
-+writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, comparisonInputs, fixtureComparison, ...(devToolsFrontendEvents?{probeMode,frontendEventPolicy,frontendEventDifferences}:{}), ...(anyClock ? {probeMode, ...(mediaClock?{mediaClockIdentity}:{}), mediaClockPolicy, actionManifest, expectedPairCount} : {}), differences, boundaryDiffs, runs }, null, 2));
++writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, comparisonInputs, fixtureComparison, ...(devToolsFrontendEvents?{probeMode,frontendEventPolicy,frontendRecorderPolicy,frontendComparison,frontendEventDifferences}:{}), ...(anyClock ? {probeMode, ...(mediaClock?{mediaClockIdentity}:{}), mediaClockPolicy, actionManifest, expectedPairCount} : {}), differences, boundaryDiffs, runs }, null, 2));
  console.log(JSON.stringify({ complete, parity, fixtureComparison, out }));
  process.exitCode = complete && parity !== false ? 0 : 1;

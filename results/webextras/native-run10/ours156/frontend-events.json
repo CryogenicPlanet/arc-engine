@@ -1,0 +1,737 @@
+{
+  "policy": {
+    "waitMilliseconds": 5000,
+    "pollMilliseconds": 100,
+    "quietMilliseconds": 200,
+    "maxCandidates": 8
+  },
+  "status": "inconclusive",
+  "spans": [
+    {
+      "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+      "kind": "inspect-on",
+      "expectedSelector": "webContentsDevTools:inspectModeDidChange:",
+      "expectedMode": 1,
+      "status": "arming",
+      "arm": {
+        "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-3",
+        "observation": {
+          "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+          "expired": 0,
+          "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+          "recordEnd": 828443,
+          "forwarding": 0,
+          "ownerTag": 1,
+          "recordBegin": 828443,
+          "ignoredServiceCallbacks": 0,
+          "overflow": false,
+          "callbacks": []
+        },
+        "timeline": [],
+        "matches": 1,
+        "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+        "operation": "frontend-observe-arm",
+        "callbacks": [],
+        "recordEnd": 828443,
+        "publicCalls": [],
+        "mainThread": true,
+        "pid": 73710,
+        "ok": true,
+        "ownerTag": 1,
+        "recordBegin": 828443
+      },
+      "producer": {
+        "kind": "inspect-on",
+        "before": {
+          "primaryURLMatches": true,
+          "primaryTargetID": "4AA20DD149BBAE3DA0EE6C54F494CCE9",
+          "suspended": false,
+          "actionEnabled": true,
+          "actionToggled": false,
+          "canDock": false,
+          "dockSide": "undocked",
+          "uaShadow": false,
+          "performanceNow": 1228.300000011921
+        },
+        "after": {
+          "primaryURLMatches": true,
+          "primaryTargetID": "4AA20DD149BBAE3DA0EE6C54F494CCE9",
+          "suspended": false,
+          "actionEnabled": true,
+          "actionToggled": true,
+          "canDock": false,
+          "dockSide": "undocked",
+          "uaShadow": false,
+          "performanceNow": 1234
+        },
+        "acknowledged": true
+      },
+      "afterAcknowledgment": {
+        "kind": "read",
+        "before": {
+          "primaryURLMatches": true,
+          "primaryTargetID": "4AA20DD149BBAE3DA0EE6C54F494CCE9",
+          "suspended": false,
+          "actionEnabled": true,
+          "actionToggled": true,
+          "canDock": false,
+          "dockSide": "undocked",
+          "uaShadow": false,
+          "performanceNow": 1343.9000000059605
+        },
+        "after": {
+          "primaryURLMatches": true,
+          "primaryTargetID": "4AA20DD149BBAE3DA0EE6C54F494CCE9",
+          "suspended": false,
+          "actionEnabled": true,
+          "actionToggled": true,
+          "canDock": false,
+          "dockSide": "undocked",
+          "uaShadow": false,
+          "performanceNow": 1344
+        },
+        "acknowledged": null
+      },
+      "samples": [
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-4",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 832329,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 832329,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 832329
+          },
+          "hostElapsedMilliseconds": 573.8757919999989
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-5",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 839500,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 839500,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 839500
+          },
+          "hostElapsedMilliseconds": 792.2638330000009
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-6",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 839500,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 839500,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 839500
+          },
+          "hostElapsedMilliseconds": 1006.747707999999
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-7",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 839500,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 839500,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 839500
+          },
+          "hostElapsedMilliseconds": 1219.692500000001
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-8",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 839500,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 839500,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 839500
+          },
+          "hostElapsedMilliseconds": 1651.0557919999992
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-9",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 841172,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 841172,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 841172
+          },
+          "hostElapsedMilliseconds": 2075.097417000001
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-10",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 842094,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 842094,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 842094
+          },
+          "hostElapsedMilliseconds": 2290.4000000000015
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-11",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 842094,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 842094,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 842094
+          },
+          "hostElapsedMilliseconds": 2490.9007920000004
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-12",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 842094,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 842094,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 842094
+          },
+          "hostElapsedMilliseconds": 2702.1399170000004
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-13",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 842094,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 842094,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 842094
+          },
+          "hostElapsedMilliseconds": 2902.1031250000015
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-14",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 842094,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 842094,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 842094
+          },
+          "hostElapsedMilliseconds": 3112.4692920000016
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-15",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 842094,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 842094,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 842094
+          },
+          "hostElapsedMilliseconds": 3323.0709580000002
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-16",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 842094,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 842094,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 842094
+          },
+          "hostElapsedMilliseconds": 3732.736499999999
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-17",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 842094,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 842094,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 842094
+          },
+          "hostElapsedMilliseconds": 4142.392208000001
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-18",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 842094,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 842094,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 842094
+          },
+          "hostElapsedMilliseconds": 4557.615292000002
+        },
+        {
+          "response": {
+            "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-19",
+            "observation": {
+              "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+              "expired": 0,
+              "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+              "recordEnd": 842094,
+              "forwarding": 0,
+              "ownerTag": 1,
+              "recordBegin": 828443,
+              "ignoredServiceCallbacks": 0,
+              "overflow": false,
+              "callbacks": []
+            },
+            "timeline": [],
+            "matches": 1,
+            "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+            "operation": "frontend-observe-read",
+            "callbacks": [],
+            "recordEnd": 842094,
+            "publicCalls": [],
+            "mainThread": true,
+            "pid": 73710,
+            "ok": true,
+            "ownerTag": 1,
+            "recordBegin": 842094
+          },
+          "hostElapsedMilliseconds": 4967.461750000002
+        }
+      ],
+      "disarm": {
+        "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-20",
+        "observation": {
+          "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+          "expired": 1,
+          "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+          "recordEnd": 842094,
+          "forwarding": 0,
+          "ownerTag": 1,
+          "recordBegin": 828443,
+          "ignoredServiceCallbacks": 0,
+          "overflow": false,
+          "callbacks": []
+        },
+        "timeline": [],
+        "matches": 1,
+        "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+        "operation": "frontend-observe-disarm",
+        "callbacks": [],
+        "recordEnd": 842094,
+        "publicCalls": [],
+        "mainThread": true,
+        "pid": 73710,
+        "ok": true,
+        "ownerTag": 1,
+        "recordBegin": 842094
+      },
+      "id": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-20",
+      "observation": {
+        "spanID": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5-frontend-1-inspect-on",
+        "expired": 1,
+        "observationNonce": "arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5",
+        "recordEnd": 842094,
+        "forwarding": 0,
+        "ownerTag": 1,
+        "recordBegin": 828443,
+        "ignoredServiceCallbacks": 0,
+        "overflow": false,
+        "callbacks": []
+      },
+      "timeline": [],
+      "matches": 1,
+      "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture",
+      "operation": "frontend-observe-disarm",
+      "callbacks": [],
+      "recordEnd": 842094,
+      "publicCalls": [],
+      "mainThread": true,
+      "pid": 73710,
+      "ok": true,
+      "ownerTag": 1,
+      "recordBegin": 842094,
+      "rawValidated": false,
+      "rawError": "Error: callback observation performed public work or changed owner"
+    }
+  ],
+  "censusBefore": [
+    {
+      "targetId": "AFB60320667F1D15F6693013C2CA8E67",
+      "type": "service_worker",
+      "url": "[other owned-app target URL]"
+    },
+    {
+      "targetId": "4AA20DD149BBAE3DA0EE6C54F494CCE9",
+      "type": "page",
+      "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture"
+    }
+  ],
+  "censusAfter": [
+    {
+      "targetId": "AFB60320667F1D15F6693013C2CA8E67",
+      "type": "service_worker",
+      "url": "[other owned-app target URL]"
+    },
+    {
+      "targetId": "4AA20DD149BBAE3DA0EE6C54F494CCE9",
+      "type": "page",
+      "url": "http://127.0.0.1:59664/arc-webextras-probe-c14a0878-9929-4fc5-a7f4-09fc27fffcc5/fixture"
+    },
+    {
+      "targetId": "A713117C17F3E6F6F5D65FA332A79E5D",
+      "type": "other",
+      "url": "devtools://devtools/bundled/devtools_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@0000000000000000000000000000000000000000/&targetType=tab&panel=console"
+    }
+  ],
+  "candidates": [
+    {
+      "targetId": "A713117C17F3E6F6F5D65FA332A79E5D",
+      "type": "other",
+      "url": "devtools://devtools/bundled/devtools_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@0000000000000000000000000000000000000000/&targetType=tab&panel=console"
+    }
+  ],
+  "discoveryErrors": [
+    {
+      "targetID": "A713117C17F3E6F6F5D65FA332A79E5D",
+      "error": "ClockProbeInconclusive: genuine frontend primary target identity changed; raw exception preserved"
+    }
+  ],
+  "preflight": {
+    "kind": "read",
+    "before": {
+      "primaryURLMatches": true,
+      "primaryTargetID": "4AA20DD149BBAE3DA0EE6C54F494CCE9",
+      "suspended": false,
+      "actionEnabled": true,
+      "actionToggled": false,
+      "canDock": false,
+      "dockSide": "undocked",
+      "uaShadow": false,
+      "performanceNow": 999.9000000059605
+    },
+    "after": {
+      "primaryURLMatches": true,
+      "primaryTargetID": "4AA20DD149BBAE3DA0EE6C54F494CCE9",
+      "suspended": false,
+      "actionEnabled": true,
+      "actionToggled": false,
+      "canDock": false,
+      "dockSide": "undocked",
+      "uaShadow": false,
+      "performanceNow": 999.9000000059605
+    },
+    "acknowledged": null
+  },
+  "target": {
+    "targetId": "A713117C17F3E6F6F5D65FA332A79E5D",
+    "type": "other",
+    "url": "devtools://devtools/bundled/devtools_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@0000000000000000000000000000000000000000/&targetType=tab&panel=console"
+  },
+  "error": "ClockProbeInconclusive: frontend callback journal did not become quiet within the fixed observation window",
+  "restoration": [
+    {
+      "kind": "inspect-off",
+      "before": {
+        "primaryURLMatches": true,
+        "primaryTargetID": "4AA20DD149BBAE3DA0EE6C54F494CCE9",
+        "suspended": false,
+        "actionEnabled": true,
+        "actionToggled": true,
+        "canDock": false,
+        "dockSide": "undocked",
+        "uaShadow": false,
+        "performanceNow": 6711.20000000298
+      },
+      "after": {
+        "primaryURLMatches": true,
+        "primaryTargetID": "4AA20DD149BBAE3DA0EE6C54F494CCE9",
+        "suspended": false,
+        "actionEnabled": true,
+        "actionToggled": false,
+        "canDock": false,
+        "dockSide": "undocked",
+        "uaShadow": false,
+        "performanceNow": 6712.300000011921
+      },
+      "acknowledged": true
+    }
+  ],
+  "typedSpanCount": 0,
+  "rawValidated": false
+}

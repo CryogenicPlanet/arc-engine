@@ -1,3 +1,27 @@
+2026-10-23 final-owner qualification
+=====================================
+See logs/wp/core.final-logical-phase/. Final shared-owner release and ordinary
+live-root retirement have different PiP behavior. Actual finaldtor calls common
+DeInitialize BEFORE logical dispatcher/list guard poisoning. PiPDestroyed43639e8
+first weak-locks logical sharedcontrol; genuinefinalstrong0 takes expiredreturn
+4363ab0 BEFORE cacheclear3a5c/appinvoke3a84. Do not artificially retainroot during
+final cleanup to force this callout. Ordinarylive retirement still caninvokePiP
+BEFORE Media receiver/weakbindingclear. No blanket suppression of other later
+PiP/client destructor callbacks is proved. On the engaged path eligible for the
+Media attempt, weak native route survives structurally until later DeInit cleanup,
+but its logicalweaklock alreadyfails.
+No actualrecursive SourceRoot lookup is proved; genericgetorcreate couldtakeits
+missing/expired fallback if someother caller invokedit, notthis PiPappcallback.
+
+Final bound-root order: DevTools retire→Media retirementattempt. The captured
+root WCO engagement+c0 gates the association block (4372d70 cbz→4373028):
+ONLY the engaged branch detaches rootWCO and clears logicalweak userdata/custom
+client before owned128/managed130 clear and physicalowneddelete/profile release.
+Borrowed association-checked TabModeldetach/delete follows when applicable,
+THEN WCOlist/Nav/UI guards arepoisoned, THEN rootdropsMedia andDevTools handles.
+Services cankeeppeers alive; their actualfinaldestructors controlpeer guards.
+Bare member-onlyroot destructor remains incomplete.
+
 2026-10-23 construction-order source correction — HOLD
 =====================================================
 Fresh original public-create proof in logs/wp/core.logical-construction/
@@ -102,7 +126,7 @@ A root local/shared handle keeps its real C++ state alive during synchronous cal
 
 The complete-root candidate should put current `_ownedContents` exclusive physical ownership under LogicalWC, rather than the incidental ObjC facade, while preserving separate weak authoritative binding. The native audit now directly proves the mechanism: actual physical factory result is stored at logical+128; strong logical ownership retains that standalone WC until explicit reset/close or final logical disposal. +120 is a separate ScopedProfileKeepAlive, not the physical owner. Move-to-logical is therefore a justified architecture direction, not a speculative ownership flag. It changes current wrapper-dealloc/DeleteSoon behavior and must be implemented deliberately.
 
-The native audit does NOT establish which original canonical tab-side holder owns the logical root; do not infer one merely because the destructor can remove a borrowed tab. Native common cleanup disconnects associations, clears owner+128/managed+130 BEFORE physical deleting virtual, then releases profile keepalive (which may itself defer its removal). Explicit owned close also clears owner BEFORE deleting so physical Closed reentry cannot double-delete it. Last logical disposal executes on Chromium UI, directly or via a UI deletion task. Use an actual sequence-aware final deleter, not a posted self-retaining alive token: once last strong ownership ends, weak locks may already fail while UI destruction is pending. Final logical release with a previously managed BORROWED attached WC is more than dropping bridges: after cleanup it resolves current browser/index/model, detaches the current TabModel and destroys it if found at4372928–29b8. No extra synthetic app Closed belongs to final release after association disconnection. A design that moves only unique_ptr and leaves all borrowed-final-release behavior unspecified is incomplete.
+The native audit does NOT establish which original canonical tab-side holder owns the logical root; do not infer one merely because the destructor can remove a borrowed tab. On its captured-c0-engaged branch native common cleanup disconnects associations; the tail for either c0 value clears owner+128/managed+130 BEFORE physical deleting virtual, then releases profile keepalive (which may itself defer its removal). Managed130 alone does not establish the association disconnection. Explicit owned close also clears owner BEFORE deleting so physical Closed reentry cannot double-delete it. Last logical disposal executes on Chromium UI, directly or via a UI deletion task. Use an actual sequence-aware final deleter, not a posted self-retaining alive token: once last strong ownership ends, weak locks may already fail while UI destruction is pending. Final logical release with a previously managed BORROWED attached WC is more than dropping bridges: after cleanup it resolves current browser/index/model, detaches the current TabModel and destroys it if found at4372928–29b8. On the engaged-c0 branch the disconnected custom client cannot deliver ordinary Closed to this root during later physical deletion. Zero-c0 record ownership/Closed eligibility remains unproved; neither a synthetic final Closed nor a blanket final drop is authorized. A design that moves only unique_ptr and leaves all borrowed-final-release behavior unspecified is incomplete.
 
 Preserve current adopted-tab strong facade policy as an explicit implementation constraint until lead resolves the native versus ObjC ownership mapping; it is not proof that attached physical ownership can safely outlive every logical holder. The root must not gain an unconditional strong physical/userdata cycle. Document standalone-owned, Chromium/tab-owned borrowed, unbound and retiring modes and their transitions separately from receipt liveness.
 

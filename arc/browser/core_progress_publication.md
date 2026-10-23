@@ -29,3 +29,20 @@ compile.py queries actual Siso obj/arc/arc_core/arc_web_contents.o command under
 Actual existing-golden loadProgress1/.7 differences may persist: raw evidence includes extra intermediate native.7 receipts and source coalescing is timing-dependent. This fixes unsupported sync/policy-dependent receipt loss, not native event equality. No forced terminal1 or count padding. Parent must obtain fresh code/route review and coordinate source freeze before promotion. Parent should promote narrow source and companion alternatives together, archive their hashes, then decide whether any ONE shared runtime is justified. No own waiter/job remains.
 
 Durable evidence: logs/wp/core.progress-publication/. Parent fresh source/route review CLEAN; runner P2 .mojom seal closed and reviewed. Actual production promotion is deferred until renderer owner releases141601 freeze. No own job/waiter.
+
+2026-10-23 15:58UTC actual promotion: parent applied EXACT reviewed patch0e8cd518
+to production WC47534304 after renderer source hold ended141679. Prescribed
+check-file exit0, only checkdone output; actual candidate compiler0/empty and fresh
+review retained. promotion.json archived under durable evidence. Genericac1b and
+observerb222 are the current route alternatives, replacing originals ONLY on new
+base. Other code unchanged. One locked build/package+launch9/tabs11 job active
+(exec5663); no runtime improvement or raw-row result is claimed before completion.
+
+Run9 is COMPLETE/reaped0, source hold ended141761. Fresh build/package, launch9/9
+andtabs11/11 pass with exact persistence/quits/fatal[] and stable build/runtime/
+binary seals. Independent logs/wp/core.run9-review/ reproduces all frozen raw
+comparisons. All per-role progress scalar streams are IDENTICAL to run8; known
+.7-versus-golden1 row remains. This is a source-backed scheduling repair, not a
+measured raw progress-row fix. Core totals77/20/29 remain; global106/57/56 includes
+foreign app/renderer/harness changes. Current source checkpointed by lead07c52e8;
+no native/shared/held adapter activation or WP acceptance follows.

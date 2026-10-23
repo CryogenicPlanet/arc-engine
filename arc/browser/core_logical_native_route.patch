@@ -1,0 +1,131 @@
+--- a/arc/api/arc_web_contents.mm
++++ b/arc/api/arc_web_contents.mm
+@@ -3,6 +3,7 @@
+ #import "arc/api/arc_internal.h"
+ #import "arc/browser/arc_navigation.h"
+ #import "arc/browser/core_render_state.h"
++#include "arc/browser/core_logical_web_contents.h"
+ #import "arc/browser/core_close_adapters.h"
+ 
+ #include "base/memory/weak_ptr.h"
+@@ -573,6 +574,9 @@
+   // The native tab retains its wrapper; an unattached, wrapper-owned contents instead uses weak_wrapper.
+   ArcWebContents* __strong wrapper;
+   ArcWebContents* __weak weak_wrapper;
++  // Initial-only route: weak control identity survives expiration, so a retired
++  // route cannot be silently replaced or resurrected on these physical contents.
++  arc::CoreLogicalWebContentsWeakHandle logical_route;
+  private:
+   explicit ArcContentsData(content::WebContents* contents) : content::WebContentsUserData<ArcContentsData>(*contents) {}
+   friend content::WebContentsUserData<ArcContentsData>;
+@@ -980,8 +984,62 @@
+ }
+ 
+ namespace arc {
++CoreLogicalWebContentsHandle FindCoreLogicalForNativeWebContents(
++    content::WebContents* contents) {
++  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
++  if (!contents) { return {}; }
++  auto* data = ArcContentsData::FromWebContents(contents);
++  if (!data) { return {}; }
++  auto logical = data->logical_route.lock();
++  if (!logical || logical->GetNative() != contents) { return {}; }
++  return logical;
++}
++
++bool TryInstallInitialCoreLogicalForNativeWebContents(
++    content::WebContents* contents,
++    const CoreLogicalWebContentsHandle& logical) {
++  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
++  if (!contents || !logical || logical->GetNative() != contents) { return false; }
++  const auto state = logical->GetCloseState();
++  if (!state) { return false; }
++  auto* data = ArcContentsData::FromWebContents(contents);
++  ArcWebContents* strong_owner __attribute__((objc_precise_lifetime)) = nil;
++  ArcWebContents* weak_owner __attribute__((objc_precise_lifetime)) = nil;
++  if (data) {
++    const CoreLogicalWebContentsWeakHandle empty;
++    const auto& route = data->logical_route;
++    const bool was_published = route.owner_before(empty) || empty.owner_before(route);
++    if (was_published) {
++      // Compare control identity even when the former root has expired.
++      if (route.owner_before(logical) || logical.owner_before(route)) { return false; }
++      const auto installed = route.lock();
++      if (!installed || installed.get() != logical.get()) { return false; }
++    }
++    const auto matches_state = [&](ArcWebContents* owner) {
++      if (!owner) { return true; }
++      const auto facade_state = [owner coreCloseStateForNativeContents:contents];
++      return facade_state && facade_state.get() == state.get() &&
++          !facade_state.owner_before(state) && !state.owner_before(facade_state);
++    };
++    strong_owner = data->wrapper;
++    weak_owner = data->weak_wrapper;
++    if (!matches_state(strong_owner) || !matches_state(weak_owner)) { return false; }
++  }
++  // Factory-time publication violates the bare library's construction contract.
++  // Accessors CHECK their slots; require BOTH actual functional peers completed.
++  CHECK(logical->GetMediaPeer());
++  CHECK(logical->GetDevToolsPeer());
++  if (!data) { data = ArcContentsData::GetOrCreateForWebContents(contents); }
++  data->logical_route = logical;
++  return true;
++}
++
+ CoreCloseStateHandle FindCoreCloseStateForNativeWebContents(
+     content::WebContents* contents) {
++  if (auto logical = FindCoreLogicalForNativeWebContents(contents)) {
++    return logical->GetCloseState();
++  }
++  // Exact existing legacy facade fallback, never a new facade/state/root.
+   if (!contents) { return {}; }
+   auto* data = ArcContentsData::FromWebContents(contents);
+   if (!data) { return {}; }
+--- a/arc/browser/core_close_adapters.h
++++ b/arc/browser/core_close_adapters.h
+@@ -14,10 +14,11 @@
+ // Requires nonnil owner; never creates a wrapper or substitutes a fresh state.
+ CoreCloseStateHandle CoreCloseStateForWebContents(ArcWebContents* owner);
+ 
+-// Noncreating UI-sequence lookup for an existing native association. Empty means
+-// absent/expired/unpublished wrapper or a stale native association; callers must
+-// establish availability before using this for mandatory pending accounting.
+-// Never substitutes state, initializes a wrapper, or changes callback routing.
++// Noncreating UI-sequence lookup: existing matching real logical root FIRST,
++// then the exact existing legacy facade association. Empty means neither route
++// is available; callers must establish availability before mandatory accounting,
++// never silently skip it. Does not create or substitute root/facade/state, follow
++// outer contents, or install/change any consumer or callback routing.
+ CoreCloseStateHandle FindCoreCloseStateForNativeWebContents(
+     content::WebContents* contents);
+ 
+--- a/arc/browser/core_logical_web_contents.h
++++ b/arc/browser/core_logical_web_contents.h
+@@ -110,6 +110,27 @@
+   SEQUENCE_CHECKER(sequence_checker_);
+ };
+ 
++// Proposed private core route APIs; declarations remain subject to lead approval.
++// UI only. Nonnull contents must be a valid UI-local native borrow, never a stale
++// pointer. Lookup uses only existing userdata and returns the existing real root
++// if its weak binding still matches contents. It never creates any object.
++CoreLogicalWebContentsHandle FindCoreLogicalForNativeWebContents(
++    content::WebContents* contents);
++
++// Initial publication only. Caller must strongly hold the completed real root
++// throughout this call and retain an actual owner afterward. Both real peer
++// factories must have returned (construction-time publication CHECKs). Requires
++// a live exact native binding and the SAME close-state object/control identity
++// as every existing facade. No different old route may be replaced, even if its
++// weak root expired; same-root publication is idempotent. Stores only a weak
++// root in native userdata, creating empty userdata only if needed. Does not
++// create/publish a facade, root, state or service, attach peers, assume native
++// ownership, consume a callback, or implement retirement/rebind/resurrection.
++// False/empty lookup is NOT permission for a mandatory consumer to skip work.
++bool TryInstallInitialCoreLogicalForNativeWebContents(
++    content::WebContents* contents,
++    const CoreLogicalWebContentsHandle& logical);
++
+ }  // namespace arc
+ 
+ #endif  // ARC_BROWSER_CORE_LOGICAL_WEB_CONTENTS_H_

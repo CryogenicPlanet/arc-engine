@@ -1,0 +1,210 @@
+{
+  "source": {
+    "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/webextras_frontend_comparison.py",
+    "realpath": "/Users/cryogenicplanet/general/arc-engine/arc/browser/webextras_frontend_comparison.py",
+    "sha256": "4872b940e21831bc965a379d9c327336a8db5ce3258c0100c4376922c9c2493c",
+    "size": 9846,
+    "mtimeMs": 1792771072217.1782,
+    "mtime": "2026-10-23T15:57:52.217Z",
+    "dev": 16777233,
+    "ino": 243966091,
+    "ctimeMs": 1792771072217.1782
+  },
+  "frozen": {
+    "path": "/Users/cryogenicplanet/general/arc-engine/results/webextras/native-run10/frontend-comparison.py",
+    "realpath": "/Users/cryogenicplanet/general/arc-engine/results/webextras/native-run10/frontend-comparison.py",
+    "sha256": "4872b940e21831bc965a379d9c327336a8db5ce3258c0100c4376922c9c2493c",
+    "size": 9846,
+    "mtimeMs": 1792771614838.7,
+    "mtime": "2026-10-23T16:06:54.838Z",
+    "dev": 16777233,
+    "ino": 243996205,
+    "ctimeMs": 1792771614838.7468
+  },
+  "capability": {
+    "verified": false,
+    "status": "pending-callback-boundary-comparison-support",
+    "option": "--compare-boundary-arguments",
+    "expectedMetadata": {
+      "mode": "selected-boundary-methods",
+      "caller_attribution": true
+    },
+    "cases": [
+      {
+        "name": "nested-getter-return",
+        "verified": false,
+        "expected": {
+          "missing": 0,
+          "extra": 0,
+          "return_mismatch": 1,
+          "arg_mismatch": 0,
+          "count_mismatch": 0
+        },
+        "observed": {
+          "missing": 0,
+          "extra": 0,
+          "return_mismatch": 1,
+          "arg_mismatch": 0,
+          "count_mismatch": 0
+        },
+        "metadata": null,
+        "typedCounts": [
+          {
+            "callbacks": 1,
+            "rows": 4,
+            "fixturePublicCalls": 0,
+            "service": "<ArcWebContentsDevTools#9>"
+          },
+          {
+            "callbacks": 1,
+            "rows": 4,
+            "fixturePublicCalls": 0,
+            "service": "<ArcWebContentsDevTools#9>"
+          }
+        ],
+        "exitCode": 0,
+        "stdout": "methods differing: 1 (missing 0, extra 0, returns 1, callback args 0, counts 0; internal-only 0, ours-internal 0)\ncallback sequence: {\"golden\": 1, \"ours\": 1, \"first_divergence\": null, \"golden_from\": [], \"ours_from\": []}\ncaller attribution: on (app calls + engine setters)\nreturn_mismatch {\"method\": \"->engine -ArcWebContentsDevTools webContents\", \"call\": 0, \"args\": \"[]\", \"golden\": \"\\\"<ArcWebContents#1>\\\"\", \"ours\": \"null\"}\n",
+        "stderr": "",
+        "report": {
+          "internal": [],
+          "internal_ours": [],
+          "missing": [],
+          "extra": [],
+          "return_mismatch": [
+            {
+              "method": "->engine -ArcWebContentsDevTools webContents",
+              "call": 0,
+              "args": "[]",
+              "golden": "\"<ArcWebContents#1>\"",
+              "ours": "null"
+            }
+          ],
+          "arg_mismatch": [],
+          "count_mismatch": [],
+          "callback_sequence": {
+            "golden": 1,
+            "ours": 1,
+            "first_divergence": null,
+            "golden_from": [],
+            "ours_from": []
+          }
+        }
+      },
+      {
+        "name": "nested-app-setter-argument",
+        "verified": false,
+        "expected": {
+          "missing": 0,
+          "extra": 0,
+          "return_mismatch": 0,
+          "arg_mismatch": 1,
+          "count_mismatch": 0
+        },
+        "observed": {
+          "missing": 0,
+          "extra": 0,
+          "return_mismatch": 0,
+          "arg_mismatch": 0,
+          "count_mismatch": 0
+        },
+        "metadata": null,
+        "typedCounts": [
+          {
+            "callbacks": 1,
+            "rows": 4,
+            "fixturePublicCalls": 0,
+            "service": "<ArcWebContentsDevTools#9>"
+          },
+          {
+            "callbacks": 1,
+            "rows": 4,
+            "fixturePublicCalls": 0,
+            "service": "<ArcWebContentsDevTools#9>"
+          }
+        ],
+        "exitCode": 0,
+        "stdout": "methods differing: 0 (missing 0, extra 0, returns 0, callback args 0, counts 0; internal-only 0, ours-internal 0)\ncallback sequence: {\"golden\": 1, \"ours\": 1, \"first_divergence\": null, \"golden_from\": [], \"ours_from\": []}\ncaller attribution: on (app calls + engine setters)\n",
+        "stderr": "",
+        "report": {
+          "internal": [],
+          "internal_ours": [],
+          "missing": [],
+          "extra": [],
+          "return_mismatch": [],
+          "arg_mismatch": [],
+          "count_mismatch": [],
+          "callback_sequence": {
+            "golden": 1,
+            "ours": 1,
+            "first_divergence": null,
+            "golden_from": [],
+            "ours_from": []
+          }
+        }
+      },
+      {
+        "name": "nested-public-call-count",
+        "verified": false,
+        "expected": {
+          "missing": 0,
+          "extra": 0,
+          "return_mismatch": 0,
+          "arg_mismatch": 0,
+          "count_mismatch": 1
+        },
+        "observed": {
+          "missing": 0,
+          "extra": 0,
+          "return_mismatch": 0,
+          "arg_mismatch": 0,
+          "count_mismatch": 1
+        },
+        "metadata": null,
+        "typedCounts": [
+          {
+            "callbacks": 1,
+            "rows": 4,
+            "fixturePublicCalls": 0,
+            "service": "<ArcWebContentsDevTools#9>"
+          },
+          {
+            "callbacks": 1,
+            "rows": 6,
+            "fixturePublicCalls": 0,
+            "service": "<ArcWebContentsDevTools#9>"
+          }
+        ],
+        "exitCode": 0,
+        "stdout": "methods differing: 1 (missing 0, extra 0, returns 0, callback args 0, counts 1; internal-only 0, ours-internal 0)\ncallback sequence: {\"golden\": 1, \"ours\": 1, \"first_divergence\": null, \"golden_from\": [], \"ours_from\": []}\ncaller attribution: on (app calls + engine setters)\n",
+        "stderr": "",
+        "report": {
+          "internal": [],
+          "internal_ours": [],
+          "missing": [],
+          "extra": [],
+          "return_mismatch": [],
+          "arg_mismatch": [],
+          "count_mismatch": [
+            {
+              "method": "->engine -ArcWebContentsDevTools webContents",
+              "golden": 1,
+              "ours": 2
+            }
+          ],
+          "callback_sequence": {
+            "golden": 1,
+            "ours": 1,
+            "first_divergence": null,
+            "golden_from": [],
+            "ours_from": []
+          }
+        }
+      }
+    ]
+  },
+  "invocation": {
+    "exitCode": 0,
+    "stdout": "{\"verified\": false, \"status\": \"pending-callback-boundary-comparison-support\", \"option\": \"--compare-boundary-arguments\", \"expectedMetadata\": {\"mode\": \"selected-boundary-methods\", \"caller_attribution\": true}, \"cases\": [{\"name\": \"nested-getter-return\", \"verified\": false, \"expected\": {\"missing\": 0, \"extra\": 0, \"return_mismatch\": 1, \"arg_mismatch\": 0, \"count_mismatch\": 0}, \"observed\": {\"missing\": 0, \"extra\": 0, \"return_mismatch\": 1, \"arg_mismatch\": 0, \"count_mismatch\": 0}, \"metadata\": null, \"typedCounts\": [{\"callbacks\": 1, \"rows\": 4, \"fixturePublicCalls\": 0, \"service\": \"<ArcWebContentsDevTools#9>\"}, {\"callbacks\": 1, \"rows\": 4, \"fixturePublicCalls\": 0, \"service\": \"<ArcWebContentsDevTools#9>\"}], \"exitCode\": 0, \"stdout\": \"methods differing: 1 (missing 0, extra 0, returns 1, callback args 0, counts 0; internal-only 0, ours-internal 0)\\ncallback sequence: {\\\"golden\\\": 1, \\\"ours\\\": 1, \\\"first_divergence\\\": null, \\\"golden_from\\\": [], \\\"ours_from\\\": []}\\ncaller attribution: on (app calls + engine setters)\\nreturn_mismatch {\\\"method\\\": \\\"->engine -ArcWebContentsDevTools webContents\\\", \\\"call\\\": 0, \\\"args\\\": \\\"[]\\\", \\\"golden\\\": \\\"\\\\\\\"<ArcWebContents#1>\\\\\\\"\\\", \\\"ours\\\": \\\"null\\\"}\\n\", \"stderr\": \"\", \"report\": {\"internal\": [], \"internal_ours\": [], \"missing\": [], \"extra\": [], \"return_mismatch\": [{\"method\": \"->engine -ArcWebContentsDevTools webContents\", \"call\": 0, \"args\": \"[]\", \"golden\": \"\\\"<ArcWebContents#1>\\\"\", \"ours\": \"null\"}], \"arg_mismatch\": [], \"count_mismatch\": [], \"callback_sequence\": {\"golden\": 1, \"ours\": 1, \"first_divergence\": null, \"golden_from\": [], \"ours_from\": []}}}, {\"name\": \"nested-app-setter-argument\", \"verified\": false, \"expected\": {\"missing\": 0, \"extra\": 0, \"return_mismatch\": 0, \"arg_mismatch\": 1, \"count_mismatch\": 0}, \"observed\": {\"missing\": 0, \"extra\": 0, \"return_mismatch\": 0, \"arg_mismatch\": 0, \"count_mismatch\": 0}, \"metadata\": null, \"typedCounts\": [{\"callbacks\": 1, \"rows\": 4, \"fixturePublicCalls\": 0, \"service\": \"<ArcWebContentsDevTools#9>\"}, {\"callbacks\": 1, \"rows\": 4, \"fixturePublicCalls\": 0, \"service\": \"<ArcWebContentsDevTools#9>\"}], \"exitCode\": 0, \"stdout\": \"methods differing: 0 (missing 0, extra 0, returns 0, callback args 0, counts 0; internal-only 0, ours-internal 0)\\ncallback sequence: {\\\"golden\\\": 1, \\\"ours\\\": 1, \\\"first_divergence\\\": null, \\\"golden_from\\\": [], \\\"ours_from\\\": []}\\ncaller attribution: on (app calls + engine setters)\\n\", \"stderr\": \"\", \"report\": {\"internal\": [], \"internal_ours\": [], \"missing\": [], \"extra\": [], \"return_mismatch\": [], \"arg_mismatch\": [], \"count_mismatch\": [], \"callback_sequence\": {\"golden\": 1, \"ours\": 1, \"first_divergence\": null, \"golden_from\": [], \"ours_from\": []}}}, {\"name\": \"nested-public-call-count\", \"verified\": false, \"expected\": {\"missing\": 0, \"extra\": 0, \"return_mismatch\": 0, \"arg_mismatch\": 0, \"count_mismatch\": 1}, \"observed\": {\"missing\": 0, \"extra\": 0, \"return_mismatch\": 0, \"arg_mismatch\": 0, \"count_mismatch\": 1}, \"metadata\": null, \"typedCounts\": [{\"callbacks\": 1, \"rows\": 4, \"fixturePublicCalls\": 0, \"service\": \"<ArcWebContentsDevTools#9>\"}, {\"callbacks\": 1, \"rows\": 6, \"fixturePublicCalls\": 0, \"service\": \"<ArcWebContentsDevTools#9>\"}], \"exitCode\": 0, \"stdout\": \"methods differing: 1 (missing 0, extra 0, returns 0, callback args 0, counts 1; internal-only 0, ours-internal 0)\\ncallback sequence: {\\\"golden\\\": 1, \\\"ours\\\": 1, \\\"first_divergence\\\": null, \\\"golden_from\\\": [], \\\"ours_from\\\": []}\\ncaller attribution: on (app calls + engine setters)\\n\", \"stderr\": \"\", \"report\": {\"internal\": [], \"internal_ours\": [], \"missing\": [], \"extra\": [], \"return_mismatch\": [], \"arg_mismatch\": [], \"count_mismatch\": [{\"method\": \"->engine -ArcWebContentsDevTools webContents\", \"golden\": 1, \"ours\": 2}], \"callback_sequence\": {\"golden\": 1, \"ours\": 1, \"first_divergence\": null, \"golden_from\": [], \"ours_from\": []}}}]}\n",
+    "stderr": ""
+  }
+}

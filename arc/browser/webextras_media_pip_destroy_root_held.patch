@@ -1,0 +1,13 @@
+--- a/arc/api/arc_webextras_media.mm
++++ b/arc/api/arc_webextras_media.mm
+@@ -558,6 +558,10 @@
+   });
+ }
+ void WebextrasMediaSource::PiPDestroyed() {
++  // Original43639fc..3a38 acquires logical ownership before any mutation.
++  // Keep this SAME root (and both peers) through synchronous callback return.
++  auto logical = logical_.lock();
++  if (!logical) { return; }
+   if (pip_destroyed_) { return; }
+   pip_destroyed_ = true;
+   [service webextrasCachePiPController:nil];

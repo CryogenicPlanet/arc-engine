@@ -1,0 +1,357 @@
+--- a/arc/api/arc_webextras_media.mm
++++ b/arc/api/arc_webextras_media.mm
+@@ -10,7 +10,8 @@
+ #import <QuartzCore/QuartzCore.h>
+ #import <objc/runtime.h>
+ #include "arc/browser/webextras_media.h"
+-#include "arc/browser/core_close_adapters.h"
++#include "arc/browser/core_logical_web_contents.h"
++#include "base/supports_user_data.h"
+ #include "base/check.h"
+ #include "base/memory/raw_ptr.h"
+ #include "content/public/browser/context_factory.h"
+@@ -169,8 +170,8 @@
+                      Prepare prepare, Callback callback) const {
+     auto acquired = registered_.lock();
+     std::weak_ptr<WebextrasMediaDelegateBridge> selected = acquired;
+-    // Native expired registrations enqueue inert work, without acquiring a
+-    // counted invocation. Accounting is deliberately a separate proposal.
++    // Native expired registrations enqueue uncounted inert work retaining the
++    // already-acquired logical owner, including both real functional peers.
+     if (!acquired) {
+       PostWebextrasMediaTask(base::BindOnce(
+           [](std::shared_ptr<Source> source) { (void)source; }, std::move(source)));
+@@ -180,8 +181,8 @@
+         [](std::shared_ptr<Source> source,
+            std::weak_ptr<WebextrasMediaDelegateBridge> selected, Payload payload,
+            Prepare prepare, Callback callback) {
+-          // This is functional source ownership: observer, caches, dispatch and
+-          // PiP latch survive independently of the ObjC service/physical WC.
++          // The acquired logical root retains BOTH actual peers through return,
++          // independently of ObjC facade/service/physical WebContents lifetime.
+           (void)source;
+           DeliverPrepared(selected, [&] { return prepare(payload); },
+                           std::move(callback));
+@@ -238,54 +239,61 @@
+ // END WEBEXTRAS_MEDIA_DELIVERY_HELPER
+ 
+ 
++// The constructor is nonobserving: the root is still installing its peer slots.
++arc::CoreCloseStateHandle WebextrasLogicalMediaCloseState(
++    const arc::CoreLogicalWebContentsWeakHandle& weak_logical) {
++  auto logical = weak_logical.lock();
++  CHECK(logical);
++  return logical->GetCloseState();
++}
++
+ class WebextrasMediaSource final
+-    : public std::enable_shared_from_this<WebextrasMediaSource> {
++    : public arc::CoreMediaPeer,
++      public std::enable_shared_from_this<WebextrasMediaSource> {
+  public:
+-  explicit WebextrasMediaSource(ArcWebContents* owner)
+-      : delivery(arc::CoreCloseStateForWebContents(owner)), owner_(owner) {}
+-  void AttachInitial(content::WebContents* contents) {
+-    // The core hook publishes this source before subscription. Observer initial
+-    // messages remain asynchronous Mojo receipts, never a synthetic flush.
+-    contents_ = contents->GetWeakPtr();
+-    observer_ = std::make_unique<ArcMediaObserver>(
+-        contents, content::MediaSession::Get(contents), weak_from_this());
+-  }
+-  void RetirePhysical() {
+-    // Native's unchanged-attachment path keeps receiver/binding through PiP.
+-    // No post-call expected-old/generation revalidation was recovered. CORE's
+-    // early hook is still required to preserve the public old binding here.
+-    PiPDestroyed();
+-    if (observer_) { observer_->Detach(); }
+-    contents_.reset();
+-  }
++  explicit WebextrasMediaSource(arc::CoreLogicalWebContentsWeakHandle logical)
++      : delivery(WebextrasLogicalMediaCloseState(logical)),
++        logical_(std::move(logical)) {}
++  void AttachToWebContents(base::WeakPtr<content::WebContents> contents) override;
++  void RetireFromWebContents() override { RetirePhysical(); }
++  void BindFacade(ArcWebContents* owner) { CHECK(!owner_ || owner_ == owner); owner_ = owner; }
++  ArcWebContents* Facade() const { return owner_; }
++  content::WebContents* Native() const {
++    auto logical = logical_.lock();
++    return logical ? logical->GetNative() : nullptr;
++  }
++  void RetirePhysical();
+   void Info(media_session::mojom::MediaSessionInfoPtr info) {
+-    if (!info) { return; }
++    auto logical = logical_.lock();
++    if (!logical || !info) { return; }
+     const auto state = static_cast<uint64_t>(info->state);
+     if (WebextrasMediaInfoCache::Update(cache_.state, state)) {
+-      delivery.Async(shared_from_this(), state, [](id<ArcMediaDelegate> d, ArcWebContents* o, uint64_t v) {
++      delivery.Async(logical, state, [](id<ArcMediaDelegate> d, ArcWebContents* o, uint64_t v) {
+         if ([d respondsToSelector:@selector(webContents:didChangeMediaSessionState:)]) { [d webContents:o didChangeMediaSessionState:v]; }
+       });
+     }
+     const auto camera = static_cast<uint64_t>(info->camera_state);
+     if (WebextrasMediaInfoCache::Update(cache_.camera, camera)) {
+-      delivery.Async(shared_from_this(), camera, [](id<ArcMediaDelegate> d, ArcWebContents* o, uint64_t v) {
++      delivery.Async(logical, camera, [](id<ArcMediaDelegate> d, ArcWebContents* o, uint64_t v) {
+         if ([d respondsToSelector:@selector(webContents:didChangeCameraState:)]) { [d webContents:o didChangeCameraState:v]; }
+       });
+     }
+     const auto microphone = static_cast<uint64_t>(info->microphone_state);
+     if (WebextrasMediaInfoCache::Update(cache_.microphone, microphone)) {
+-      delivery.Async(shared_from_this(), microphone, [](id<ArcMediaDelegate> d, ArcWebContents* o, uint64_t v) {
++      delivery.Async(logical, microphone, [](id<ArcMediaDelegate> d, ArcWebContents* o, uint64_t v) {
+         if ([d respondsToSelector:@selector(webContents:didChangeMicrophoneState:)]) { [d webContents:o didChangeMicrophoneState:v]; }
+       });
+     }
+   }
+   void Actions(const std::vector<media_session::mojom::MediaSessionAction>& actions) {
++    auto logical = logical_.lock();
++    if (!logical) { return; }
+     std::vector<NSUInteger> copied;
+     for (auto action : actions) {
+       const auto index = static_cast<NSUInteger>(action);
+       if (index < 21) { copied.push_back(index); }
+     }
+-    delivery.AsyncPrepared(shared_from_this(), std::move(copied),
++    delivery.AsyncPrepared(logical, std::move(copied),
+         [](const std::vector<NSUInteger>& values) {
+           NSMutableIndexSet* indices = [NSMutableIndexSet indexSet];
+           for (auto value : values) { [indices addIndex:value]; }
+@@ -295,9 +303,11 @@
+         });
+   }
+   void Position(const std::optional<media_session::MediaPosition>& position) {
++    auto logical = logical_.lock();
++    if (!logical) { return; }
+     position_ = position;  // Copy the native timing base with the entire value.
+     if (!position) { return; }
+-    delivery.AsyncPrepared(shared_from_this(), *position,
++    delivery.AsyncPrepared(logical, *position,
+         [](const media_session::MediaPosition& value) {
+           return [[ArcMediaPosition alloc] initWithMediaPosition:&value];
+         }, [](id<ArcMediaDelegate> d, ArcWebContents* o, ArcMediaPosition* wrapper) {
+@@ -307,7 +317,9 @@
+   // The original volume producer is async too. No current Chromium producer
+   // calls this entry: the renderer double-valued IPC is a separate dependency.
+   void VolumeChanged(double volume) {
+-    delivery.Async(shared_from_this(), volume, [](id<ArcMediaDelegate> d, ArcWebContents* o, double value) {
++    auto logical = logical_.lock();
++    if (!logical) { return; }
++    delivery.Async(logical, volume, [](id<ArcMediaDelegate> d, ArcWebContents* o, double value) {
+       if ([d respondsToSelector:@selector(webContents:didChangeVolume:)]) { [d webContents:o didChangeVolume:value]; }
+     });
+   }
+@@ -317,6 +329,7 @@
+   WebextrasMediaDelivery delivery;
+   __weak ArcWebContentsMediaSession* service = nil;  // Cache maintenance only.
+  private:
++  arc::CoreLogicalWebContentsWeakHandle logical_;
+   __weak ArcWebContents* owner_;
+   base::WeakPtr<content::WebContents> contents_;
+   std::unique_ptr<ArcMediaObserver> observer_;
+@@ -330,8 +343,7 @@
+ }
+ }
+ 
+-// The logical owner retains functional source state without eagerly creating
+-// the public ObjC service. Source/queued payloads do not retain this box/owner.
++// Facade association retains only the SAME peer; it never owns a logical root.
+ @interface WebextrasMediaSourceBox : NSObject {
+  @public
+   std::shared_ptr<WebextrasMediaSource> source;
+@@ -342,20 +354,70 @@
+ 
+ namespace {
+ const char kWebextrasMediaSourceKey = 0;
++const char kWebextrasMediaNativeSourceKey = 0;
++class WebextrasMediaNativeSource final : public base::SupportsUserData::Data {
++ public:
++  explicit WebextrasMediaNativeSource(std::weak_ptr<WebextrasMediaSource> value)
++      : source(std::move(value)) {}
++  std::weak_ptr<WebextrasMediaSource> source;
++};
+ std::shared_ptr<WebextrasMediaSource> GetWebextrasMediaSource(ArcWebContents* owner) {
+   WebextrasMediaSourceBox* box = objc_getAssociatedObject(owner, &kWebextrasMediaSourceKey);
+   return box ? box->source : nullptr;
+ }
++std::shared_ptr<WebextrasMediaSource> GetWebextrasMediaSourceForNative(
++    content::WebContents* contents) {
++  if (!contents) { return nullptr; }
++  auto* data = static_cast<WebextrasMediaNativeSource*>(
++      contents->GetUserData(&kWebextrasMediaNativeSourceKey));
++  return data ? data->source.lock() : nullptr;
++}
++void WebextrasMediaSource::AttachToWebContents(
++    base::WeakPtr<content::WebContents> contents) {
++  auto logical = logical_.lock();
++  CHECK(logical && contents && !observer_);
++  // Accessor CHECK requires construction to have installed the actual peer.
++  CHECK(logical->GetMediaPeer().get() == this);
++  CHECK(logical->GetDevToolsPeer());
++  CHECK(logical->GetNative() == contents.get());
++  CHECK(!GetWebextrasMediaSourceForNative(contents.get()));
++  contents_ = contents;
++  contents->SetUserData(&kWebextrasMediaNativeSourceKey,
++      std::make_unique<WebextrasMediaNativeSource>(weak_from_this()));
++  arcmod::GetVideoOverlayWindowHook() = base::BindRepeating(&arc::CreateVideoOverlayWindow);
++  observer_ = std::make_unique<ArcMediaObserver>(
++      contents.get(), content::MediaSession::Get(contents.get()), weak_from_this());
++}
++void WebextrasMediaSource::RetirePhysical() {
++  // Unchanged-attachment normal path only; no invented post-call generation gate.
++  PiPDestroyed();
++  if (contents_) {
++    contents_->RemoveUserData(&kWebextrasMediaNativeSourceKey);
++  }
++  if (observer_) { observer_->Detach(); }
++  contents_.reset();
++}
+ }
+ 
+ namespace arc {
+-void InitializeWebextrasMediaSource(ArcWebContents* owner, content::WebContents* native) {
+-  if (!owner || !native || GetWebextrasMediaSource(owner)) { return; }
++CoreMediaPeerFactory WebextrasMediaPeerFactory() {
++  return base::BindOnce([](CoreLogicalWebContentsWeakHandle logical)
++      -> std::shared_ptr<CoreMediaPeer> {
++    return std::make_shared<WebextrasMediaSource>(std::move(logical));
++  });
++}
++void AssociateWebextrasMediaFacade(
++    ArcWebContents* owner, const CoreLogicalWebContentsHandle& logical) {
++  CHECK(owner && logical);
++  CHECK(logical->GetDevToolsPeer());
++  // Required seam: this completed root was built with WebextrasMediaPeerFactory.
++  // CORE chooses the initial attach/facade transaction; neither step is lazy.
++  auto source = std::static_pointer_cast<WebextrasMediaSource>(logical->GetMediaPeer());
++  CHECK(!GetWebextrasMediaSource(owner));
+   WebextrasMediaSourceBox* box = [[WebextrasMediaSourceBox alloc] init];
+-  box->source = std::make_shared<WebextrasMediaSource>(owner);
++  box->source = source;
++  source->BindFacade(owner);
+   objc_setAssociatedObject(owner, &kWebextrasMediaSourceKey, box, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+-  arcmod::GetVideoOverlayWindowHook() = base::BindRepeating(&arc::CreateVideoOverlayWindow);
+-  box->source->AttachInitial(native);
+ }
+ }
+ 
+@@ -376,19 +438,19 @@
+ - (instancetype)initWithArcWebContents:(ArcWebContents*)owner {
+   if ((self = [super init])) {
+     _owner = owner;
+-    arc::InitializeWebextrasMediaSource(owner, [owner webContents]);
+     _source = GetWebextrasMediaSource(owner);
+-    if (_source) { _source->service = self; }
++    CHECK(_source);  // No lazy Source construction or duplicate peer.
++    _source->service = self;
+     objc_setAssociatedObject(owner, @selector(nativeMediaSession), self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+   }
+   return self;
+ }
+ - (content::MediaSession*)nativeSession __attribute__((objc_direct)) {
+-  auto* contents = [_owner webContents];
++  auto* contents = _source ? _source->Native() : nullptr;
+   return contents ? content::MediaSession::GetIfExists(contents) : nullptr;
+ }
+ - (content::MediaSession*)requireSession:(NSError**)error __attribute__((objc_direct)) {
+-  if (![_owner webContents]) { ArcMediaFailure(error, @"managed webcontents is null"); return nullptr; }
++  if (!_source || !_source->Native()) { ArcMediaFailure(error, @"managed webcontents is null"); return nullptr; }
+   auto* session = [self nativeSession];
+   if (!session) { ArcMediaFailure(error, @"no active media sessions"); }
+   return session;
+@@ -423,7 +485,7 @@
+ }
+ #pragma clang diagnostic pop
+ - (ArcWebContentsMediaSessionPiPController*)pipController {
+-  auto* contents = [_owner webContents];
++  auto* contents = _source ? _source->Native() : nullptr;
+   if (!contents || !objc_getAssociatedObject(_owner, @selector(videoView))) { return nil; }
+   if (!_pipController) {
+     _pipController = [[ArcWebContentsMediaSessionPiPController alloc] initWithPiPController:(__bridge const void*)_owner];
+@@ -443,18 +505,18 @@
+ - (BOOL)scrubTo:(int64_t)time error:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->ScrubTo(base::Seconds(time)); return YES; }
+ - (BOOL)setMute:(BOOL)mute error:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->SetMute(mute); return YES; }
+ - (BOOL)setVolume:(double)volume error:(NSError**)error {
+-  if (![_owner webContents]) { return ArcMediaFailure(error, @"managed webcontents is null"); }
++  if (!_source || !_source->Native()) { return ArcMediaFailure(error, @"managed webcontents is null"); }
+   return ArcMediaFailure(error, @"media volume bridge is unavailable");
+ }
+ - (BOOL)requestPictureInPicture:(NSError**)error {
+   auto* s = [self requireSession:error]; if (!s) return NO;
+-  if ([_owner webContents]->HasPictureInPictureVideo()) { return ArcMediaFailure(error, @"webcontents has active picture in picture video"); }
++  if (_source->Native()->HasPictureInPictureVideo()) { return ArcMediaFailure(error, @"webcontents has active picture in picture video"); }
+   auto actions = s->GetMediaSessionActionsSync();
+   if (std::ranges::find(actions, media_session::mojom::MediaSessionAction::kEnterPictureInPicture) == actions.end()) { return ArcMediaFailure(error, @"media session does not support picture in picture"); }
+   s->EnterPictureInPicture(); return YES;
+ }
+ - (BOOL)exitPictureInPicture:(BOOL)pause error:(NSError**)error {
+-  auto* contents = [_owner webContents];
++  auto* contents = _source ? _source->Native() : nullptr;
+   if (!contents) { return ArcMediaFailure(error, @"managed webcontents is null"); }
+   if (!contents->HasPictureInPictureVideo()) { return ArcMediaFailure(error, @"webcontents has no active picture in picture videos"); }
+   if (![self requireSession:error]) { return NO; }
+@@ -462,7 +524,7 @@
+   return YES;
+ }
+ - (BOOL)notifyAutoPipTabActivationChanged:(BOOL)active error:(NSError**)error {
+-  auto* contents = [_owner webContents];
++  auto* contents = _source ? _source->Native() : nullptr;
+   if (!contents) { return ArcMediaFailure(error, @"managed webcontents is null"); }
+   auto* helper = AutoPictureInPictureTabHelper::FromWebContents(contents);
+   if (!helper) { return ArcMediaFailure(error, @"no auto picture-in-picture tab helper"); }
+@@ -473,6 +535,13 @@
+   _pipController = controller;
+ }
+ @end
++
++namespace arc {
++ArcWebContentsMediaSession* CreateWebextrasMediaService(ArcWebContents* owner) {
++  CHECK(owner && GetWebextrasMediaSource(owner));
++  return [[ArcWebContentsMediaSession alloc] initWithArcWebContents:owner];
++}
++}
+ 
+ namespace {
+ void WebextrasMediaSource::PiPCreated() {
+@@ -546,8 +615,9 @@
+                               public ui::AcceleratedWidgetMacNSView {
+  public:
+   explicit ArcVideoOverlay(content::VideoPictureInPictureWindowController* controller)
+-      : controller_(controller), owner_([ArcWebContents wrapperForWebContents:controller->GetWebContents()]) {
+-    source_ = GetWebextrasMediaSource(owner_);
++      : controller_(controller) {
++    source_ = GetWebextrasMediaSourceForNative(controller->GetWebContents());
++    owner_ = source_ ? source_->Facade() : nil;
+     view_ = [[PiPNSView alloc] initWithFrame:NSMakeRect(0, 0, 320, 180)];
+     view_.wantsLayer = YES;
+     view_.layer = [CALayer layer];
+--- a/arc/browser/webextras_media.h
++++ b/arc/browser/webextras_media.h
+@@ -2,8 +2,10 @@
+ #ifndef ARC_BROWSER_WEBEXTRAS_MEDIA_H_
+ #define ARC_BROWSER_WEBEXTRAS_MEDIA_H_
+ #include <memory>
++#include "arc/browser/core_logical_web_contents.h"
+ #ifdef __OBJC__
+ @class ArcWebContents;
++@class ArcWebContentsMediaSession;
+ #endif
+ namespace content {
+ class WebContents;
+@@ -11,8 +13,15 @@
+ class VideoPictureInPictureWindowController;
+ }
+ namespace arc {
++// Nonobserving once factory for the actual functional Media peer.
++CoreMediaPeerFactory WebextrasMediaPeerFactory();
+ #ifdef __OBJC__
+-void InitializeWebextrasMediaSource(ArcWebContents* owner, content::WebContents* native);
++// Associate only after root completion; requires WebextrasMediaPeerFactory.
++// No Source construction, subscription, service getter or strong root association.
++void AssociateWebextrasMediaFacade(
++    ArcWebContents* owner, const CoreLogicalWebContentsHandle& logical);
++// On CORE service-cache miss, adopt the already-associated SAME peer.
++ArcWebContentsMediaSession* CreateWebextrasMediaService(ArcWebContents* owner);
+ #endif
+ std::unique_ptr<content::VideoOverlayWindow> CreateVideoOverlayWindow(
+     content::VideoPictureInPictureWindowController* controller);

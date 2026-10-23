@@ -1,0 +1,76 @@
+diff --git a/arc/api/arc_web_contents.mm b/arc/api/arc_web_contents.mm
+--- a/arc/api/arc_web_contents.mm
++++ b/arc/api/arc_web_contents.mm
+@@ -395,17 +395,20 @@
+   }
+   void NativeTargetURLChanged(const GURL& url) {
+     ArcWebContents* wrapper __attribute__((objc_precise_lifetime)) = wrapper_;
+-    arc::ScopedCoreCloseInvocation invocation(close_state_,
+-        arc::CoreCloseDelegateChannel::kUI);
+     NSString* text = url.is_empty() ? @"" : ArcNSString(
+         url_formatter::ElideUrl(url, gfx::FontList(), 400));
+     // Native 4388630 uses InvokeSync, after forwarding to Chrome. The normal
+     // renderer and ClearTargetURL sites both reach the hook. Nondefault native
+     // width/font selection remains unaudited; 400/default is the proven fallback.
+-    CoreUIDelegateBridge* bridge = [wrapper coreUIDelegateBridge];
+-    id<CoreContentsDelegate> delegate = bridge.delegate;
+-    if ([delegate respondsToSelector:@selector(webContents:didChangeStatusText:)]) {
+-      [delegate webContents:wrapper didChangeStatusText:text];
++    CoreUIDelegateBridge* bridge __attribute__((objc_precise_lifetime)) =
++        [wrapper coreUIDelegateBridge];
++    if (bridge) {
++      arc::ScopedCoreCloseInvocation invocation(close_state_,
++          arc::CoreCloseDelegateChannel::kUI);
++      id<CoreContentsDelegate> delegate = bridge.delegate;
++      if ([delegate respondsToSelector:@selector(webContents:didChangeStatusText:)]) {
++        [delegate webContents:wrapper didChangeStatusText:text];
++      }
+     }
+   }
+   void NavigationEntryCommitted(const content::LoadCommittedDetails&) override {
+@@ -740,13 +743,17 @@
+ - (void)nativeContentsClosing {
+   if (_closing) { return; }
+   _closing = YES;
+-  arc::ScopedCoreCloseInvocation invocation(_coreCloseState,
+-      arc::CoreCloseDelegateChannel::kUI);
+-  id<CoreContentsDelegate> delegate = _uiDelegate;
+-  if ([delegate respondsToSelector:@selector(webContentsClosingImminent:withSessionID:)]) {
+-    const auto native = SessionID::FromSerializedValue(_sessionIdentifier);
+-    [delegate webContentsClosingImminent:self
+-        withSessionID:[[ArcSessionID alloc] initWithSessionId:&native]];
++  CoreUIDelegateBridge* bridge __attribute__((objc_precise_lifetime)) =
++      [self coreUIDelegateBridge];
++  if (bridge) {
++    arc::ScopedCoreCloseInvocation invocation(_coreCloseState,
++        arc::CoreCloseDelegateChannel::kUI);
++    id<CoreContentsDelegate> delegate = bridge.delegate;
++    if ([delegate respondsToSelector:@selector(webContentsClosingImminent:withSessionID:)]) {
++      const auto native = SessionID::FromSerializedValue(_sessionIdentifier);
++      [delegate webContentsClosingImminent:self
++          withSessionID:[[ArcSessionID alloc] initWithSessionId:&native]];
++    }
+   }
+ }
+ - (void)nativeContentsClosingWithRestorationID:(ArcSessionID*)identifier {
+@@ -763,11 +770,15 @@
+   [self nativeContentsClosing];
+   _contents.reset();
+   if (!trying_to_quit) {
+-    arc::ScopedCoreCloseInvocation invocation(_coreCloseState,
+-        arc::CoreCloseDelegateChannel::kUI);
+-    id<CoreContentsDelegate> delegate = _uiDelegate;
+-    if ([delegate respondsToSelector:@selector(webContents:didCloseWithSessionID:)]) {
+-      [delegate webContents:self didCloseWithSessionID:restoration];
++    CoreUIDelegateBridge* bridge __attribute__((objc_precise_lifetime)) =
++        [self coreUIDelegateBridge];
++    if (bridge) {
++      arc::ScopedCoreCloseInvocation invocation(_coreCloseState,
++          arc::CoreCloseDelegateChannel::kUI);
++      id<CoreContentsDelegate> delegate = bridge.delegate;
++      if ([delegate respondsToSelector:@selector(webContents:didCloseWithSessionID:)]) {
++        [delegate webContents:self didCloseWithSessionID:restoration];
++      }
+     }
+   }
+ }

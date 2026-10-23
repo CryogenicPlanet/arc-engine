@@ -1,0 +1,853 @@
+[
+  {
+    "stage": 0,
+    "name": "baseline",
+    "expected": {
+      "name": "baseline",
+      "outcome": "loaded",
+      "count": 0,
+      "display": "block",
+      "enabled": true
+    },
+    "attempt": {
+      "stage": 0,
+      "outcome": "loaded",
+      "beforeLoads": 0,
+      "afterLoads": 1,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "0"
+    },
+    "network": {
+      "id": "10028.4",
+      "stage": 0,
+      "requests": 1,
+      "type": "Script",
+      "responses": 1,
+      "finished": 1,
+      "failed": 0,
+      "status": 200
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "block",
+      "loads": 1,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "/* Result: NoBlockList */\n/ * CSS: */\n"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-3",
+      "info": "/* Result: NoBlockList */\n/ * CSS: */\n",
+      "insideCall": false,
+      "main": true,
+      "stage": 0,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  },
+  {
+    "stage": 1,
+    "name": "rule-active",
+    "expected": {
+      "name": "rule-active",
+      "outcome": "blocked",
+      "count": 1,
+      "display": "none",
+      "enabled": true
+    },
+    "attempt": {
+      "stage": 1,
+      "outcome": "blocked",
+      "beforeLoads": 1,
+      "afterLoads": 1,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "0"
+    },
+    "network": {
+      "id": "10028.6",
+      "stage": 1,
+      "requests": 1,
+      "type": "Script",
+      "responses": 0,
+      "finished": 0,
+      "failed": 1,
+      "error": "net::ERR_BLOCKED_BY_CONTENT_BLOCKER"
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "none",
+      "loads": 1,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        },
+        {
+          "stage": 1,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "/* Result: Success */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+      "/* Result: Cached: 127.0.0.1 */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-5",
+      "info": "/* Result: Success */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+      "insideCall": false,
+      "main": true,
+      "stage": 1,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  },
+  {
+    "stage": 2,
+    "name": "disabled-exclusion-retains-rules",
+    "expected": {
+      "name": "disabled-exclusion-retains-rules",
+      "outcome": "blocked",
+      "count": 2,
+      "display": "none",
+      "enabled": false
+    },
+    "attempt": {
+      "stage": 2,
+      "outcome": "blocked",
+      "beforeLoads": 1,
+      "afterLoads": 1,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "0"
+    },
+    "network": {
+      "id": "10028.8",
+      "stage": 2,
+      "requests": 1,
+      "type": "Script",
+      "responses": 0,
+      "finished": 0,
+      "failed": 1,
+      "error": "net::ERR_BLOCKED_BY_CONTENT_BLOCKER"
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "none",
+      "loads": 1,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        },
+        {
+          "stage": 1,
+          "settled": true
+        },
+        {
+          "stage": 2,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "Native ad blocker feature disabled"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-7",
+      "info": "Native ad blocker feature disabled",
+      "insideCall": true,
+      "main": true,
+      "stage": 2,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  },
+  {
+    "stage": 3,
+    "name": "disabled-clear-retains-rules",
+    "expected": {
+      "name": "disabled-clear-retains-rules",
+      "outcome": "blocked",
+      "count": 3,
+      "display": "none",
+      "enabled": false
+    },
+    "attempt": {
+      "stage": 3,
+      "outcome": "blocked",
+      "beforeLoads": 1,
+      "afterLoads": 1,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "0"
+    },
+    "network": {
+      "id": "10028.10",
+      "stage": 3,
+      "requests": 1,
+      "type": "Script",
+      "responses": 0,
+      "finished": 0,
+      "failed": 1,
+      "error": "net::ERR_BLOCKED_BY_CONTENT_BLOCKER"
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "none",
+      "loads": 1,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        },
+        {
+          "stage": 1,
+          "settled": true
+        },
+        {
+          "stage": 2,
+          "settled": true
+        },
+        {
+          "stage": 3,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "Native ad blocker feature disabled"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-9",
+      "info": "Native ad blocker feature disabled",
+      "insideCall": true,
+      "main": true,
+      "stage": 3,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  },
+  {
+    "stage": 4,
+    "name": "reenabled-with-empty-exclusions",
+    "expected": {
+      "name": "reenabled-with-empty-exclusions",
+      "outcome": "blocked",
+      "count": 4,
+      "display": "none",
+      "enabled": true
+    },
+    "attempt": {
+      "stage": 4,
+      "outcome": "blocked",
+      "beforeLoads": 1,
+      "afterLoads": 1,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "0"
+    },
+    "network": {
+      "id": "10028.12",
+      "stage": 4,
+      "requests": 1,
+      "type": "Script",
+      "responses": 0,
+      "finished": 0,
+      "failed": 1,
+      "error": "net::ERR_BLOCKED_BY_CONTENT_BLOCKER"
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "none",
+      "loads": 1,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        },
+        {
+          "stage": 1,
+          "settled": true
+        },
+        {
+          "stage": 2,
+          "settled": true
+        },
+        {
+          "stage": 3,
+          "settled": true
+        },
+        {
+          "stage": 4,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "/* Result: Success */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+      "/* Result: Cached: 127.0.0.1 */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-11",
+      "info": "/* Result: Success */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+      "insideCall": false,
+      "main": true,
+      "stage": 4,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  },
+  {
+    "stage": 5,
+    "name": "host-excluded",
+    "expected": {
+      "name": "host-excluded",
+      "outcome": "loaded",
+      "count": 4,
+      "display": "block",
+      "enabled": true
+    },
+    "attempt": {
+      "stage": 5,
+      "outcome": "loaded",
+      "beforeLoads": 1,
+      "afterLoads": 2,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "5"
+    },
+    "network": {
+      "id": "10028.14",
+      "stage": 5,
+      "requests": 1,
+      "type": "Script",
+      "responses": 1,
+      "finished": 1,
+      "failed": 0,
+      "status": 200
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "block",
+      "loads": 2,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        },
+        {
+          "stage": 1,
+          "settled": true
+        },
+        {
+          "stage": 2,
+          "settled": true
+        },
+        {
+          "stage": 3,
+          "settled": true
+        },
+        {
+          "stage": 4,
+          "settled": true
+        },
+        {
+          "stage": 5,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "/* Result: Excluded */\n/ * CSS: */\n"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-13",
+      "info": "/* Result: Excluded */\n/ * CSS: */\n",
+      "insideCall": false,
+      "main": true,
+      "stage": 5,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  },
+  {
+    "stage": 6,
+    "name": "disabled-clear-retains-exclusion",
+    "expected": {
+      "name": "disabled-clear-retains-exclusion",
+      "outcome": "loaded",
+      "count": 4,
+      "display": "block",
+      "enabled": false
+    },
+    "attempt": {
+      "stage": 6,
+      "outcome": "loaded",
+      "beforeLoads": 2,
+      "afterLoads": 3,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "6"
+    },
+    "network": {
+      "id": "10028.16",
+      "stage": 6,
+      "requests": 1,
+      "type": "Script",
+      "responses": 1,
+      "finished": 1,
+      "failed": 0,
+      "status": 200
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "block",
+      "loads": 3,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        },
+        {
+          "stage": 1,
+          "settled": true
+        },
+        {
+          "stage": 2,
+          "settled": true
+        },
+        {
+          "stage": 3,
+          "settled": true
+        },
+        {
+          "stage": 4,
+          "settled": true
+        },
+        {
+          "stage": 5,
+          "settled": true
+        },
+        {
+          "stage": 6,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "Native ad blocker feature disabled"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-15",
+      "info": "Native ad blocker feature disabled",
+      "insideCall": true,
+      "main": true,
+      "stage": 6,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  },
+  {
+    "stage": 7,
+    "name": "reenabled-clears-installed-exclusion",
+    "expected": {
+      "name": "reenabled-clears-installed-exclusion",
+      "outcome": "blocked",
+      "count": 5,
+      "display": "none",
+      "enabled": true
+    },
+    "attempt": {
+      "stage": 7,
+      "outcome": "blocked",
+      "beforeLoads": 3,
+      "afterLoads": 3,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "6"
+    },
+    "network": {
+      "id": "10028.18",
+      "stage": 7,
+      "requests": 1,
+      "type": "Script",
+      "responses": 0,
+      "finished": 0,
+      "failed": 1,
+      "error": "net::ERR_BLOCKED_BY_CONTENT_BLOCKER"
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "none",
+      "loads": 3,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        },
+        {
+          "stage": 1,
+          "settled": true
+        },
+        {
+          "stage": 2,
+          "settled": true
+        },
+        {
+          "stage": 3,
+          "settled": true
+        },
+        {
+          "stage": 4,
+          "settled": true
+        },
+        {
+          "stage": 5,
+          "settled": true
+        },
+        {
+          "stage": 6,
+          "settled": true
+        },
+        {
+          "stage": 7,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "/* Result: Success */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+      "/* Result: Cached: 127.0.0.1 */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-17",
+      "info": "/* Result: Cached: 127.0.0.1 */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+      "insideCall": false,
+      "main": true,
+      "stage": 7,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  },
+  {
+    "stage": 8,
+    "name": "host-port-excluded",
+    "expected": {
+      "name": "host-port-excluded",
+      "outcome": "loaded",
+      "count": 5,
+      "display": "block",
+      "enabled": true
+    },
+    "attempt": {
+      "stage": 8,
+      "outcome": "loaded",
+      "beforeLoads": 3,
+      "afterLoads": 4,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "8"
+    },
+    "network": {
+      "id": "10028.20",
+      "stage": 8,
+      "requests": 1,
+      "type": "Script",
+      "responses": 1,
+      "finished": 1,
+      "failed": 0,
+      "status": 200
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "block",
+      "loads": 4,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        },
+        {
+          "stage": 1,
+          "settled": true
+        },
+        {
+          "stage": 2,
+          "settled": true
+        },
+        {
+          "stage": 3,
+          "settled": true
+        },
+        {
+          "stage": 4,
+          "settled": true
+        },
+        {
+          "stage": 5,
+          "settled": true
+        },
+        {
+          "stage": 6,
+          "settled": true
+        },
+        {
+          "stage": 7,
+          "settled": true
+        },
+        {
+          "stage": 8,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "/* Result: Excluded */\n/ * CSS: */\n"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-19",
+      "info": "/* Result: Excluded */\n/ * CSS: */\n",
+      "insideCall": false,
+      "main": true,
+      "stage": 8,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  },
+  {
+    "stage": 9,
+    "name": "exclusions-cleared",
+    "expected": {
+      "name": "exclusions-cleared",
+      "outcome": "blocked",
+      "count": 6,
+      "display": "none",
+      "enabled": true
+    },
+    "attempt": {
+      "stage": 9,
+      "outcome": "blocked",
+      "beforeLoads": 4,
+      "afterLoads": 4,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "8"
+    },
+    "network": {
+      "id": "10028.22",
+      "stage": 9,
+      "requests": 1,
+      "type": "Script",
+      "responses": 0,
+      "finished": 0,
+      "failed": 1,
+      "error": "net::ERR_BLOCKED_BY_CONTENT_BLOCKER"
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "none",
+      "loads": 4,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        },
+        {
+          "stage": 1,
+          "settled": true
+        },
+        {
+          "stage": 2,
+          "settled": true
+        },
+        {
+          "stage": 3,
+          "settled": true
+        },
+        {
+          "stage": 4,
+          "settled": true
+        },
+        {
+          "stage": 5,
+          "settled": true
+        },
+        {
+          "stage": 6,
+          "settled": true
+        },
+        {
+          "stage": 7,
+          "settled": true
+        },
+        {
+          "stage": 8,
+          "settled": true
+        },
+        {
+          "stage": 9,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "/* Result: Success */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+      "/* Result: Cached: 127.0.0.1 */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-21",
+      "info": "/* Result: Cached: 127.0.0.1 */\n/ * CSS: */\n.arc-probe-ad{display:none!important;}\n",
+      "insideCall": false,
+      "main": true,
+      "stage": 9,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  },
+  {
+    "stage": 10,
+    "name": "lists-cleared",
+    "expected": {
+      "name": "lists-cleared",
+      "outcome": "loaded",
+      "count": 6,
+      "display": "block",
+      "enabled": true
+    },
+    "attempt": {
+      "stage": 10,
+      "outcome": "loaded",
+      "beforeLoads": 4,
+      "afterLoads": 5,
+      "controlStatus": 200,
+      "controlBody": "arccore-adblock-control-7f3a",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "lastStage": "10"
+    },
+    "network": {
+      "id": "10028.24",
+      "stage": 10,
+      "requests": 1,
+      "type": "Script",
+      "responses": 1,
+      "finished": 1,
+      "failed": 0,
+      "status": 200
+    },
+    "dom": {
+      "url": "http://127.0.0.1:49787/renderer-adblock-functional-7f3a/a",
+      "title": "Adblock functional fixture",
+      "documentNonce": "f5d1086e-403d-4fe5-b9ce-9467d466a4c1",
+      "display": "block",
+      "loads": 5,
+      "attempts": [
+        {
+          "stage": 0,
+          "settled": true
+        },
+        {
+          "stage": 1,
+          "settled": true
+        },
+        {
+          "stage": 2,
+          "settled": true
+        },
+        {
+          "stage": 3,
+          "settled": true
+        },
+        {
+          "stage": 4,
+          "settled": true
+        },
+        {
+          "stage": 5,
+          "settled": true
+        },
+        {
+          "stage": 6,
+          "settled": true
+        },
+        {
+          "stage": 7,
+          "settled": true
+        },
+        {
+          "stage": 8,
+          "settled": true
+        },
+        {
+          "stage": 9,
+          "settled": true
+        },
+        {
+          "stage": 10,
+          "settled": true
+        }
+      ]
+    },
+    "debugAllowedLiteralVariants": [
+      "/* Result: NoBlockList */\n/ * CSS: */\n"
+    ],
+    "debugActual": {
+      "count": 1,
+      "id": "0123a784-3333-435d-9b70-9a95b6504279-23",
+      "info": "/* Result: NoBlockList */\n/ * CSS: */\n",
+      "insideCall": false,
+      "main": true,
+      "stage": 10,
+      "thread": "259"
+    },
+    "readyScope": "Passive cosmetic readiness is not an all-renderer network publication ACK; the script is attempted exactly once."
+  }
+]
