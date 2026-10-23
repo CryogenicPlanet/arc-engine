@@ -50,6 +50,9 @@ for attempt in 1 2 3 4 5 6; do
     step "attempt $attempt: memory pressure; resuming with -j $jobs"
   elif grep -q -E "Too many open files" <<<"$tail_text"; then
     step "attempt $attempt: too many open files; raised limit, resuming"
+  elif grep -q -E "error:|FAILED:" <<<"$tail_text" && [ -n "${ARC_BUILD_FAIL_FAST:-}" ]; then
+    # Compile/link errors don't fix themselves; test runs release the shared lock at once.
+    step "BUILD FAILED: compile/link error (see $log)"; exit 1
   elif [ "$unknown_retries" -lt 1 ]; then
     unknown_retries=$(( unknown_retries + 1 ))
     step "attempt $attempt: unrecognized failure; retrying once (see $log)"

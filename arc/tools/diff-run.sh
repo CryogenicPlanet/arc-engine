@@ -11,7 +11,7 @@ exec "$E/arc/tools/locked.sh" bash -c '
   E="'"$E"'"; SC="'"$SC"'"
   cd "$E"
   python3 arc/tools/gen_api_table.py
-  ./build-babysit.sh > logs/build-arccore.log 2>&1 || { tail -3 logs/build-arccore.log; grep -h "error:" logs/build-base.attempt-*.log | sort -u | head -20; exit 1; }
+  ARC_BUILD_FAIL_FAST=1 ./build-babysit.sh > logs/build-arccore.log 2>&1 || { tail -3 logs/build-arccore.log; grep -h "error:" logs/build-base.attempt-*.log | sort -u | head -20; exit 1; }
   ./package-engine.sh ours156 > /dev/null 2>&1 || { echo "package failed"; exit 1; }
   rm -rf "$HOME/Library/Application Support/ArcModAgent-ours156" "results/ours/$SC"
   SCARG=""; [ "$SC" != launch-slice ] && SCARG="--scenario $SC"
