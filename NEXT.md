@@ -23,6 +23,20 @@ Rahul: "just go build it" — an ArcCore built from Chromium so the engine can f
       "ADK.swift:678: Expected a loaded profile '' to be available" right after createBrowser returns nil.
       `loadUrl:withDelegate:` (app's URL loader for remote config) also still a stub.
 - Test loop: `./build-babysit.sh && ./try-engine.sh 30` (prints unimplemented calls in order + newest crash).
+
+### Orchestration (Rahul: "feature complete", "1-1 behavior, programmatic", Sol workers grind, Claude leads)
+- 1-1 check: `tests/recorder/` (boundary recorder dylib + diff.py); golden transcripts from Arc's engine in
+  `results/golden/`; `arc/tools/diff-run.sh [scenario]` builds, runs ours, diffs. Allowed diffs: `arc/DIFF-ALLOWLIST.md`.
+- Contract: `arc/ARCHITECTURE.md`; briefs: `arc/wp/COMMON.md` + `arc/wp/<package>.md`; per-package sources in
+  `arc/wp/<package>.gni`; build/run lock `arc/tools/locked.sh`.
+- Sol workers (codex exec, gpt-6.1-sol high, full access, no commits): logs `logs/wp/<pkg>.log`, report
+  `logs/wp/<pkg>.report.md`. Wave 1 running: core, profile, app, scenarios; wave 2 running: ai, renderer, omnibox.
+  Wave 2 waiting on core: ui, extensions, webextras, sessions. Lead reviews each report, commits, launches next.
+- Lead owns: patches/ (host mode 0003 incl. custom BrowserWindow gate), arc_internal.h (core appends its section),
+  arc_browser_application.mm, arc_browser_context.mm, arc_values.mm, allowlist.
+- ArcMod integration: `bun tools/build-mod.ts --engine <ArcCore.framework>` (arc ebd02f4); package-engine.sh uses it.
+- Remaining lead items: release build (dcheck_always_on=false, is_official_build?), ArcMod docs/README for the
+  engine, no-login branch port of --engine, real-profile test, Chromium version bump procedure.
 - [ ] Browser/WebContents creation, native views (pane host), navigation, delegates — then the launch-slice harness.
 - Loop: `./build-babysit.sh` → `./package-engine.sh ours156` → `../arc/tools/run-mod.sh --agent ours156 --background
   --cdp-port 9334` → read `../arc/build/ArcModAgent-ours156-run.log` ("ArcCore unimplemented:" lines show what's next).
