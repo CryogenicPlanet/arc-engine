@@ -1,0 +1,95 @@
+diff --git a/chrome/browser/arcmod/arcmod_hooks.h b/chrome/browser/arcmod/arcmod_hooks.h
+new file mode 100644
+index 0000000000..2cbf8710d5
+--- /dev/null
++++ b/chrome/browser/arcmod/arcmod_hooks.h
+@@ -0,0 +1,40 @@
++// Copyright 2026 ArcMod. Hooks that ArcCore (Arc's engine interface, //arc, linked into the same framework)
++// fills in when Arc's app hosts this engine (--arcmod-host-app). Chrome code calls them only when set, so
++// Chrome itself does not depend on //arc. Header-only: function-local statics in inline functions are shared
++// across translation units.
++
++#ifndef CHROME_BROWSER_ARCMOD_ARCMOD_HOOKS_H_
++#define CHROME_BROWSER_ARCMOD_ARCMOD_HOOKS_H_
++
++#include "base/functional/callback.h"
++#include "base/no_destructor.h"
++#include "chrome/browser/ui/tab_helpers.h"
++
++namespace content {
++class NavigationThrottleRegistry;
++class WebContents;
++}  // namespace content
++
++namespace arcmod {
++
++// Adds ArcCore's navigation throttles (synchronous navigation policy from Arc's app) to every navigation.
++// Called from ChromeContentBrowserClient::CreateThrottlesForNavigation after Chrome's own throttles.
++using NavigationThrottleHook =
++    base::RepeatingCallback<void(content::NavigationThrottleRegistry&)>;
++inline NavigationThrottleHook& GetNavigationThrottleHook() {
++  static base::NoDestructor<NavigationThrottleHook> hook;
++  return *hook;
++}
++
++// Gives ArcCore's standalone web contents (created by Arc's app outside a browser tab strip) Chrome's full
++// set of tab helpers, as tab strip adoption does.
++class HostedTabHelpers {
++ public:
++  static void Attach(content::WebContents* web_contents) {
++    TabHelpers::AttachTabHelpers(web_contents);
++  }
++};
++
++}  // namespace arcmod
++
++#endif  // CHROME_BROWSER_ARCMOD_ARCMOD_HOOKS_H_
+diff --git a/chrome/browser/chrome_content_browser_client.cc b/chrome/browser/chrome_content_browser_client.cc
+index 2e0f287290..c1a2ef1cba 100644
+--- a/chrome/browser/chrome_content_browser_client.cc
++++ b/chrome/browser/chrome_content_browser_client.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "chrome/browser/chrome_content_browser_client.h"
+ 
++#include "chrome/browser/arcmod/arcmod_hooks.h"
++
+ #include <algorithm>
+ #include <iterator>
+ #include <map>
+@@ -5667,6 +5669,10 @@ void ChromeContentBrowserClient::RemovePresentationObserver(
+ void ChromeContentBrowserClient::CreateThrottlesForNavigation(
+     content::NavigationThrottleRegistry& registry) {
+   CreateAndAddChromeThrottlesForNavigation(registry);
++  // ArcMod: ArcCore's throttles when Arc's app hosts the engine.
++  if (const auto& hook = arcmod::GetNavigationThrottleHook(); !hook.is_null()) {
++    hook.Run(registry);
++  }
+ }
+ 
+ void ChromeContentBrowserClient::CreateThrottlesForCommitWithoutUrlLoader(
+diff --git a/chrome/browser/ui/tab_helpers.h b/chrome/browser/ui/tab_helpers.h
+index c6e05eb620..da0b91d382 100644
+--- a/chrome/browser/ui/tab_helpers.h
++++ b/chrome/browser/ui/tab_helpers.h
+@@ -52,6 +52,10 @@ class TabModel;
+ // See
+ // https://chromium.googlesource.com/chromium/src/+/main/docs/chrome_browser_design_principles.md
+ 
++namespace arcmod {
++class HostedTabHelpers;
++}  // namespace arcmod
++
+ class TabHelpers {
+  private:
+ #if BUILDFLAG(IS_ANDROID)
+@@ -79,6 +83,9 @@ class TabHelpers {
+   // Link Preview shows a preview of a page, then promote it as a new tab.
+   friend class PreviewTab;
+ 
++  // ArcMod: web contents Arc's app creates outside a tab strip (chrome/browser/arcmod/arcmod_hooks.h).
++  friend class arcmod::HostedTabHelpers;
++
+   // FYI: Do NOT add any more friends here. The functions above are the ONLY
+   // ones that need to call AttachTabHelpers; if you think you do, re-read the
+   // design document linked above, especially the section "Reusing tab helpers".
