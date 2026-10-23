@@ -6,7 +6,7 @@ Facts, locations, procedures and the step-by-step runbook are in `ENGINE.md`.
 
 ## Now (running)
 
-- [ ] **VM decompile** (`arcmod-engine.exe.xyz`, `~/work/STATUS`): Ghidra analysis of ArcCore 1.170.0,
+- [x] **VM decompile** (done 2026-10-23 04:46 UTC; 567,959 functions) (`arcmod-engine.exe.xyz`, `~/work/STATUS`): Ghidra analysis of ArcCore 1.170.0,
       then a project save, then export and a parallel decompile. Watched from the Mac. On failure: read
       `logs/ghidra-*.log` and `dmesg`. The analysis is saved, so rerun `scripts/phase-b2-ghidra.sh` to
       redo only the decompile.
@@ -15,10 +15,10 @@ Facts, locations, procedures and the step-by-step runbook are in `ENGINE.md`.
 
 - [ ] Pull back only what's needed: the function list plus the Arc-layer extraction. Leave the full
       decompile on the VM (outbound traffic is metered).
-- [ ] Extract the Arc layer: methods of the 146 `Arc*` classes, functions that reference `../../arc/`
+- [x] (first pass, vm/arc_layer.py: ~5,840 functions / ~2.3 MB upper bound) Extract the Arc layer: methods of the 146 `Arc*` classes, functions that reference `../../arc/`
       paths, the 200 Arc-only strings, and the `arc.mojom.*` agents. Then follow calls into code that
       isn't stock Chromium.
-- [ ] Match functions against our base build. Upload `out/Base/Chromium Framework.framework` (613 MB,
+- [~] (replaced: agents name functions by guess-and-check; see ENGINE.md §5.2) Match functions against our base build. Upload `out/Base/Chromium Framework.framework` (613 MB,
       1.37M named functions) to the VM and match by unique strings, constants and call structure.
       Unmatched code is Arc's own code, or their edits to Chromium.
 - [ ] Measure the rewrite: Arc-layer function count and code size, which Chromium functions they

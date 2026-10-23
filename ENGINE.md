@@ -94,7 +94,13 @@ All releases are at `https://releases.arc.net/release/Arc-<ver>-<build>.zip`. Ve
   `chromium/upstream-156.0.8078.48-files.txt` is the file list; `chromium/DEPS-156.0.8078.48`.
 - `ghidra-projects/ArcCore-1.170.0`: the saved analysis (3.6 GB). Reopen with `-process ArcCore-1.170.0.arm64 -noanalysis`.
 - `decomp/arccore-1.170.0-functions.tsv`: 607,294 functions (`entry  end  size  name`).
-- `decomp/arccore-1.170.0/0x*.c`: pseudo-C, sharded by `addr >> 20` (same format as the app decompile).
+- `decomp/arccore-1.170.0/0x*.c`: pseudo-C, sharded by `addr >> 20` (same format as the app decompile). Finished 2026-10-23 04:46 UTC:
+  567,959 functions decompiled (79 failed), 199 shards, 1.1 GB. 92.9% are anonymous `FUN_<addr>`.
+- `results/arc-layer-functions.tsv` (copy in `results/arc-layer-functions-1.170.0.tsv`) comes from `vm/arc_layer.py`.
+  Seeds are 1,378 Arc ObjC methods (0.08 MB, thin wrappers over C++), 523 functions referencing `arc/`
+  paths (0.48 MB) and 6 exports. Two call levels add 3,938 anonymous callees (1.78 MB). Total ~5,840
+  functions, ~2.3 MB of machine code, as an upper bound (it includes Chromium callees). `FUN_0421f778` is a
+  24 MB Ghidra mis-bounded region; exclude it.
 - `tools/ghidra_12.1.4_PUBLIC`, `scripts/` (copies of `vm/`), `logs/`, `STATUS`.
 - Ghidra names ObjC methods `Class::selector` (e.g. `ArcWebContents::blockedResourceCount`). 142 `Arc*` classes
   have named methods. Other functions are `FUN_<addr>` unless matched.
