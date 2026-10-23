@@ -1,0 +1,24 @@
+diff --git a/chrome/browser/ui/read_anything/read_anything_side_panel_controller.cc b/chrome/browser/ui/read_anything/read_anything_side_panel_controller.cc
+index d22035c5d8..6d41d15bd7 100644
+--- a/chrome/browser/ui/read_anything/read_anything_side_panel_controller.cc
++++ b/chrome/browser/ui/read_anything/read_anything_side_panel_controller.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "chrome/browser/ui/read_anything/read_anything_side_panel_controller.h"
+ 
++#include "base/command_line.h"
++
+ #include <memory>
+ #include <optional>
+ 
+@@ -243,7 +245,9 @@ void ReadAnythingSidePanelController::TabWillDetach(
+   if (!side_panel_ui) {
+     // TODO(webium): create a SidePanelCoordinator for WebUIBrowser.
+     // This is a temporary solution to avoid a crash.
+-    if (!webui_browser::IsWebUIBrowserEnabled()) {
++    // ArcMod: an Arc-hosted engine has no Chrome side panel UI (Arc draws its own).
++    if (!webui_browser::IsWebUIBrowserEnabled() &&
++        !base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
+       CHECK_IS_TEST();
+     }
+     return;  // IN-TEST
