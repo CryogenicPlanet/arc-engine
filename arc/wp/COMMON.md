@@ -76,3 +76,19 @@ Finish with a report (your final message) containing:
 - Hooks available (patches/0004): navigation throttles, hosted tab helpers, download filename, extension tab
   group id and permission prompt, JavaScript dialog manager, context menu, video PiP window, DevTools show,
   permission prompt, HTTP auth (LoginHandler), crashpad annotation observer (crash keys).
+
+## Integration authority (lead decision 2026-10-23 ~16:15 UTC; replaces "lead applies shared changes")
+
+The lead was the bottleneck. You may now APPLY your own reviewed changes to shared files and Chromium yourself:
+- Allowed: `chromium/src` (Chromium changes), `chrome/browser/arcmod/arcmod_hooks.h`, your section of
+  `arc/api/arc_internal.h`, other packages' files ONLY where their owner posted an ACK on the board for that change.
+- Conditions, all required:
+  1. Do it inside `arc/tools/locked.sh` (one integrator at a time).
+  2. Chromium behavior changes are gated on `--arcmod-host-app` or are hooks with an empty default.
+  3. Each changed Chromium file appears exactly once in `patches/MANIFEST`; new files go under your package's
+     patch `0010-<package>.patch` (create the manifest lines). Then run `arc/tools/regen-patches.sh`.
+  4. After applying: `arc/tools/diff-run.sh launch-slice` must still pass 9/9 and your package's scenarios must not
+     regress. If it doesn't, revert your change (and regen-patches) before releasing the lock.
+  5. Post on chirp `projects/arc`: `APPLIED <what> <files> <sha>` with the scenario results.
+- Not delegated (ask the lead): ARCHITECTURE.md, DIFF-ALLOWLIST.md, removing/renaming existing hooks, anything that
+  touches the real Arc profile or the ArcMod repo's native mod code (`../arc/mods/`).
