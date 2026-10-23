@@ -21,6 +21,8 @@ from urllib.parse import quote, unquote
 
 WORK = '/home/exedev/work'
 EVIDENCE = 'research/2026-10-22-sol/evidence'
+CHECKSUMS = EVIDENCE + '/SHA256SUMS'
+BUNDLE_README = EVIDENCE + '/BUNDLE-README.md'
 ROLES = tuple(f'spec-{n}' for n in range(1, 5))
 ENGINE_ROLES = ('abi', 'cef', 'arc-layer', 'matcher', 'quality', 'protocols')
 OMIT = 'agents/cef/initial/sources/cef-build-index.json'
@@ -474,6 +476,32 @@ def write_file(root, name, data):
         stream.write(data)
 
 
+def bundle_name(name):
+    """Task-owned paths only; existing repository files are outside this scope."""
+    return name.startswith(EVIDENCE + '/') or re.fullmatch(r'specs/Arc[^/]*\.md', name) is not None
+
+
+def bundle_files(root):
+    """Inventory only owned namespaces, rejecting links inside either namespace."""
+    evidence = root / EVIDENCE
+    specs = root / 'specs'
+    require(evidence.is_dir() and specs.is_dir(), 'Missing owned evidence/specs directories')
+    for name in (EVIDENCE, 'specs'):
+        current = root
+        for component in PurePosixPath(name).parts:
+            current /= component
+            require(not current.is_symlink(), f'Linked package namespace: {name}')
+    files = []
+    for path in evidence.rglob('*'):
+        require(not path.is_symlink(), f'Package contains symlink: {path}')
+        if path.is_file() and path != root / CHECKSUMS:
+            files.append(path)
+    for path in specs.glob('Arc*.md'):
+        require(path.is_file() and not path.is_symlink(), f'Invalid class document: {path}')
+        files.append(path)
+    return sorted(files)
+
+
 def stage(args):
     store = Local(args.collected)
     require(not args.output.exists(), f'Refusing to overwrite output: {args.output}')
@@ -544,12 +572,12 @@ def stage(args):
         write_file(output, EVIDENCE + '/relocation-manifest.json', json_bytes(manifest))
         write_file(output, EVIDENCE + '/link-issues.json', json_bytes(issues))
         write_file(output, EVIDENCE + '/raw-link-issues.json', json_bytes(raw_issues))
-        write_file(output, 'README.md', readme(manifest).encode())
+        write_file(output, BUNDLE_README, readme(manifest).encode())
         # Retain the verifier beside the package without requiring the checkout.
         write_file(output, EVIDENCE + '/_package_tools/package-evidence.py', Path(__file__).read_bytes())
         sums = ''.join(sha_file(p) + '  ' + p.relative_to(output).as_posix() + '\n'
-                       for p in sorted(output.rglob('*')) if p.is_file())
-        write_file(output, 'SHA256SUMS', sums.encode())
+                       for p in bundle_files(output))
+        write_file(output, CHECKSUMS, sums.encode())
         result = verify(output)
         print(json.dumps({'staged': str(output), **result}, indent=2))
     except Exception:
@@ -575,8 +603,14 @@ presentation copies with relocated links. Address-named bodies retain their
 writer, stage and revision namespaces; equal addresses are never deduplicated.
 
 relocation-manifest.json records original Linux paths/hashes and output hashes,
-including explicit omissions and link issues. SHA256SUMS covers all package files
-except itself. Hash consistency is not an independent authenticity signature.
+including explicit omissions and link issues. BUNDLE-README.md and SHA256SUMS
+live inside research/2026-10-22-sol/evidence/. Checksum paths are relative to the
+repository root. Verification covers exactly specs/Arc*.md and every file under
+that evidence directory except SHA256SUMS itself. It ignores unrelated repository
+files, including the repository README.md and optional specs/README.md index.
+The same verify command works in a new stage or the existing repository after
+the lead publishes these two trees. Hash consistency is not an independent
+authenticity signature.
 
 Offline verification (Python 3.9+):
     python3 research/2026-10-22-sol/evidence/_package_tools/package-evidence.py verify .
@@ -611,19 +645,18 @@ def verify(root):
     root = root.resolve()
     require(root.is_dir(), 'Package directory missing')
     sums = {}
-    for line in (root / 'SHA256SUMS').read_text().splitlines():
+    for line in (root / CHECKSUMS).read_text().splitlines():
         digest, sep, name = line.partition('  ')
         require(sep and re.fullmatch('[0-9a-f]{64}', digest), 'Invalid SHA256SUMS line')
         relative(name)
-        require(name not in sums and name != 'SHA256SUMS', 'Duplicate/self checksum')
+        require(bundle_name(name) and name != CHECKSUMS, f'Checksum path outside owned scope/self: {name}')
+        require(name not in sums, 'Duplicate checksum')
         sums[name] = digest
     actual = set()
-    for p in root.rglob('*'):
-        require(not p.is_symlink(), f'Package contains symlink: {p}')
-        if p.is_file() and p != root / 'SHA256SUMS':
-            name = p.relative_to(root).as_posix()
-            actual.add(name)
-            require(sums.get(name) == sha_file(p), f'Package checksum mismatch/unlisted file: {name}')
+    for p in bundle_files(root):
+        name = p.relative_to(root).as_posix()
+        actual.add(name)
+        require(sums.get(name) == sha_file(p), f'Package checksum mismatch/unlisted file: {name}')
     require(actual == set(sums), 'Missing packaged file')
     manifest = json.loads((root / EVIDENCE / 'relocation-manifest.json').read_text())
     require(manifest['version'] == 1, 'Unknown package format')
@@ -641,6 +674,7 @@ def verify(root):
         transform = record['transform']
         if target:
             relative(target)
+            require(target in sums, f'Relocation target outside verified owned files: {target}')
             require(target not in targets, f'Duplicate output: {target}')
             targets.add(target)
             data = (root / target).read_bytes()
@@ -660,7 +694,7 @@ def verify(root):
     require(sha_bytes(store.read('CLASS-REVISIONS-READY')) == manifest['readiness_sha256'],
             'Readiness identity changed')
     ready = validate_ready(store)
-    specs = {p.stem for p in (root / 'specs').glob('*.md')}
+    specs = {p.stem for p in (root / 'specs').glob('Arc*.md')}
     require(specs == {c for s in ready['selected'] for c in s['classes']}, 'Final class file coverage mismatch')
     presentations = [r for r in manifest['files'] if r['transform'] == 'presentation-markdown']
     expected_presentations = {
@@ -702,7 +736,7 @@ def verify(root):
         if path.startswith('/') or not resolved.resolve().is_relative_to(root) or not resolved.exists():
             broken.append({'source': source, 'destination': value})
         return value
-    for path in (root / 'specs').glob('*.md'):
+    for path in (root / 'specs').glob('Arc*.md'):
         name = path.relative_to(root).as_posix()
         markdown_links(path.read_text(), lambda value: check(value, name))
     require(not broken, f'Unexpected broken presentation links: {broken[:10]}')
@@ -710,7 +744,7 @@ def verify(root):
             'unresolved_links': len(issues), 'raw_unresolved_links': len(raw_issues),
             'omitted_inputs': [r['source_path'] for r in raw_records
                                                                if r['transform'] == 'omit'],
-            'scope': 'offline integrity/coverage; no runtime or self-contained rerun claim'}
+            'scope': 'specs/Arc*.md and task evidence directory only; offline integrity/coverage, no runtime or self-contained rerun claim'}
 
 
 def main():
