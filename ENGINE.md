@@ -175,7 +175,16 @@ builds ArcMod (`--validation`, `--source <abs path>`).
 - Output: `results/arc-layer-functions.tsv` (address, size, name, seed reason) and an aggregate size.
   Copy only these back to the Mac, compressed. Outbound VM traffic is metered.
 
-### 5.2 Function matching against our base build
+### 5.2 Naming the functions Arc's layer reaches (agents, not full matching)
+
+Decision 2026-10-23: no full mechanical matching. Agents identify functions by guess-and-check against
+the Chromium 156.0.8078.48 source on `arcmod-engine` (`~/work/chromium/full/src`), using unique strings,
+file paths, histogram names and call patterns. They only cover functions reachable from Arc's layer (§5.1).
+Optional cheap helper: pre-label functions that reference a string unique to one Chromium source location.
+The Ghidra analysis of our own build was stopped as unnecessary. If mechanical matching is ever wanted,
+use our build's symbol table plus disassembly (string refs, call targets) instead of Ghidra. Notes kept below.
+
+#### Mechanical matching (optional, not planned)
 
 - Needs per-function features for both binaries: referenced strings, constants, callee names and counts.
   ArcCore's come from the saved Ghidra project, via a new script `vm/ghidra/ExportFeatures.java`.
