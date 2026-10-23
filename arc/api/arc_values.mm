@@ -73,3 +73,57 @@ ARC_EXPORT @interface ArcSearchEngine : NSObject
 }
 
 @end
+
+// An RGBA color with float components (Arc's Color4f; same layout as SkColor4f), e.g. a page's root
+// background color. Encodings match Arc's: {Color4f=ffff}.
+struct Color4f {
+  float r;
+  float g;
+  float b;
+  float a;
+};
+
+ARC_EXPORT @interface ArcColor4f : NSObject
+- (instancetype)initWithR:(float)r g:(float)g b:(float)b a:(float)a;
+@end
+
+@implementation ArcColor4f {
+  Color4f _color4f;
+}
+
+- (instancetype)initWithR:(float)r g:(float)g b:(float)b a:(float)a {
+  if ((self = [super init])) {
+    _color4f = {r, g, b, a};
+  }
+  return self;
+}
+
+- (instancetype)initWithColor4f:(const Color4f*)color {
+  if ((self = [super init])) {
+    if (color) {
+      _color4f = *color;
+    }
+  }
+  return self;
+}
+
+- (float)r {
+  return _color4f.r;
+}
+- (float)g {
+  return _color4f.g;
+}
+- (float)b {
+  return _color4f.b;
+}
+- (float)a {
+  return _color4f.a;
+}
+- (Color4f)color4f {
+  return _color4f;
+}
+- (void)setColor4f:(Color4f)color4f {
+  _color4f = color4f;
+}
+
+@end

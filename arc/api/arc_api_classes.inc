@@ -2,7 +2,6 @@
 ARC_CLASS(ArcAddressEntrySaveRequest)
 ARC_CLASS(ArcAnnotatedVisit)
 ARC_CLASS(ArcBreadcrumb)
-ARC_CLASS(ArcColor4f)
 ARC_CLASS(ArcCreditCardInfoSaveRequest)
 ARC_CLASS(ArcDisplayNameOrOrigin)
 ARC_CLASS(ArcFreezingVoteToken)
