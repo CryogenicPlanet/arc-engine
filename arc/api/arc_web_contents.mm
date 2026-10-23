@@ -642,6 +642,20 @@ uint64_t NextDiagnosticID() {
   wrapper->_ownedContents->SetAudioMuted(config.initiallyMuted);
   return wrapper;
 }
+// A new tab with this tab's navigation history (Chrome's duplicate tab), owned by the wrapper until a browser
+// takes it, like +createWithProfile:configuration:.
+- (ArcWebContents*)clone {
+  content::WebContents* native = [self webContents];
+  if (!native) {
+    return nil;
+  }
+  std::unique_ptr<content::WebContents> copy = native->Clone();
+  arcmod::HostedTabHelpers::Attach(copy.get());
+  ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:copy.get()];
+  wrapper->_ownedContents = std::move(copy);
+  ArcContentsData::FromWebContents(wrapper->_ownedContents.get())->wrapper = nil;
+  return wrapper;
+}
 - (instancetype)initWithWebContents:(const void*)contents {
   if ((self = [super init])) {
     auto* native = static_cast<content::WebContents*>(const_cast<void*>(contents));
