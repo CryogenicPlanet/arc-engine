@@ -29,7 +29,7 @@ For your stage, write <stage>/report.md plus the requested reproducible scripts 
 
 Your role is abi.
 
-Second stage for your existing role. Read your own initial/report.md and other initial reports only as needed. Fresh ENGINE pseudocode is now in inputs/decompile/*.c, selected by named Arc method shards plus Arc source/IPC references; this is NOT a complete export. Read inputs/decompile/READY and inventory what's present. You have the same write scope/resource limits.
+Second stage for your existing role. Read your own initial/report.md and other initial reports only as needed. Fresh ENGINE pseudocode is now in inputs/decompile/*.c, selected by named Arc method shards plus Arc source/IPC references; this is NOT a complete export. Read inputs/decompile/READY and inventory what's present. ALSO read all completed immutable batches under inputs/decompile-extra/batch-*/ (each has MANIFEST.json and READY): these contain lead-reviewed initial requests for unnamed callees and matching controls. Search both base and extra batches for requested function VAs. You have the same write scope/resource limits.
 
 For ABI: resolve your high-priority contract/callback/ownership questions from actual function bodies and app callsites. For CEF: refine mappings from observed semantics and close route-choice blockers. For arc-layer: trace bootstrap and essential subsystem call paths, quantify evidenced Arc code and identify unresolved unnamed callees. For matcher: compare high-confidence matches and unmatched Arc candidates to actual pseudocode, rejecting false positives and separating compiler variation from behavioral modifications.
 

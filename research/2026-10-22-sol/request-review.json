@@ -1,0 +1,102 @@
+{
+  "scope": "initial requested engine entry/xref VA buckets; executable section ranges and actual output shard names validated; candidate semantics remain unverified",
+  "sources": [
+    {
+      "role": "abi",
+      "request_rows": 64,
+      "shards": [
+        "0x40.c",
+        "0x43.c",
+        "0x44.c"
+      ],
+      "sha256": "679b0238fbd2f0bf729c73fed2663f94ae3c915291b09e3e207b334e04525757"
+    },
+    {
+      "role": "cef",
+      "request_rows": 49,
+      "shards": [
+        "0x40.c",
+        "0x43.c",
+        "0x44.c",
+        "0x83.c",
+        "0x99.c"
+      ],
+      "sha256": "0886d6bfb21e803b57d58c88acaea35858f24950ffe084fbc22a24ac6600996a"
+    },
+    {
+      "role": "arc-layer",
+      "request_rows": 137,
+      "shards": [
+        "0x16.c",
+        "0x18.c",
+        "0x27.c",
+        "0x29.c",
+        "0x2a.c",
+        "0x2e.c",
+        "0x36.c",
+        "0x40.c",
+        "0x41.c",
+        "0x42.c",
+        "0x43.c",
+        "0x44.c",
+        "0x45.c",
+        "0x47.c",
+        "0x8.c",
+        "0x83.c",
+        "0x8d.c"
+      ],
+      "sha256": "7a324c754e116536a204e91137caa5835d8a87403a56e203a9f849d74660e376"
+    },
+    {
+      "role": "matcher",
+      "request_rows": 40,
+      "shards": [
+        "0x0.c",
+        "0x2.c",
+        "0xc2.c",
+        "0xc3.c",
+        "0xc4.c"
+      ],
+      "sha256": "a39489430b77af527c8e2e6d7f43507c2c63298e6210dce555ec0f14bf1e9660"
+    }
+  ],
+  "excluded_noncode": [
+    {
+      "role": "abi",
+      "address": "0xdf6bb28",
+      "reason": "outside executable sections; retain as metadata/data evidence, not C body"
+    }
+  ],
+  "selected_shards": [
+    "0x0.c",
+    "0x16.c",
+    "0x18.c",
+    "0x2.c",
+    "0x27.c",
+    "0x29.c",
+    "0x2a.c",
+    "0x2e.c",
+    "0x36.c",
+    "0x40.c",
+    "0x41.c",
+    "0x42.c",
+    "0x43.c",
+    "0x44.c",
+    "0x45.c",
+    "0x47.c",
+    "0x8.c",
+    "0x83.c",
+    "0x8d.c",
+    "0x99.c",
+    "0xc2.c",
+    "0xc3.c",
+    "0xc4.c"
+  ],
+  "already_published_shards": 38,
+  "additional_requested_shards": [
+    "0x2.c",
+    "0x99.c",
+    "0xc2.c",
+    "0xc3.c"
+  ]
+}

@@ -48,10 +48,11 @@ def status():
 def collect():
     destination = ROOT / "collected"
     destination.mkdir(exist_ok=True)
-    # Agent working dirs contain reports, scripts and evidence, not the large inputs.
+    # SQLite is a regenerable working cache and may still be changing mid-stage.
     archive = destination / "research-results.tar.gz"
     with archive.open("wb") as output:
-        remote(RESEARCH, "tar czf - -C /home/exedev/work agents out STATUS", stdout=output)
+        remote(RESEARCH, "tar czf - --exclude='*.sqlite*' --exclude='*/__pycache__' "
+               "--exclude='*/.venv' -C /home/exedev/work agents out STATUS", stdout=output)
     with tarfile.open(archive) as bundle:
         bundle.extractall(destination, filter="data")
     print(destination)
