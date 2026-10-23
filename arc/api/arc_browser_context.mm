@@ -256,7 +256,7 @@ bool ArcValidProfileRequest(NSString* name, NSUInteger type, bool has_completion
                      (type == kBrowserContextTypeRegular || type == kBrowserContextTypeIncognito);
   if (!valid && error) {
     *error = [NSError errorWithDomain:@"company.thebrowser.Arc"
-                                 code:1
+                                 code:2
                              userInfo:@{NSLocalizedDescriptionKey : @"Invalid browser context request"}];
   }
   return valid;
@@ -302,8 +302,9 @@ ArcBrowserContext* ArcContextForProfile(Profile* profile, NSUInteger type) {
   return [ArcBrowserContext wrapperForProfile:profile];
 }
 
-// Creates the profile directory |name| in the user data dir if needed, loads it and reports it (or nil) to
-// |completion| on the main thread. Arc's engine rejects an empty name, a missing completion and an unknown type.
+// Creates a new profile whose visible name is |name|; Chrome picks its directory ("Profile N"), as on Arc's
+// engine, and |completion| gets it (or nil) on the main thread. Rejects an empty name (error 2), a missing
+// completion or an unknown type.
 - (BOOL)createBrowserContext:(NSString*)name
                     isHidden:(BOOL)isHidden
                         type:(NSUInteger)type
@@ -312,20 +313,13 @@ ArcBrowserContext* ArcContextForProfile(Profile* profile, NSUInteger type) {
   if (!ArcValidProfileRequest(name, type, completion != nil, error)) {
     return NO;
   }
-  const base::FilePath path = ArcProfilePath(name);
-  g_browser_process->profile_manager()->CreateProfileAsync(
-      path, base::BindOnce(
-                [](void (^done)(ArcBrowserContext*), bool hidden, NSUInteger profile_type, Profile* profile) {
-                  if (profile && hidden) {
-                    if (ProfileAttributesEntry* entry = g_browser_process->profile_manager()
-                                                            ->GetProfileAttributesStorage()
-                                                            .GetProfileAttributesWithPath(profile->GetPath())) {
-                      entry->SetIsOmitted(true);
-                    }
-                  }
-                  done(ArcContextForProfile(profile, profile_type));
-                },
-                completion, isHidden, type));
+  ProfileManager::CreateMultiProfileAsync(
+      base::SysNSStringToUTF16(name),
+      g_browser_process->profile_manager()->GetProfileAttributesStorage().ChooseAvatarIconIndexForNewProfile(),
+      isHidden,
+      base::BindOnce([](void (^done)(ArcBrowserContext*), NSUInteger profile_type,
+                        Profile* profile) { done(ArcContextForProfile(profile, profile_type)); },
+                     completion, type));
   return YES;
 }
 
@@ -334,21 +328,22 @@ ArcBrowserContext* ArcContextForProfile(Profile* profile, NSUInteger type) {
   if (!completion) {
     return;
   }
-  if (!ArcValidProfileRequest(name, type, true, nullptr) ||
-      !g_browser_process->profile_manager()->LoadProfileByPath(
-          ArcProfilePath(name), /*incognito=*/false,
-          base::BindOnce(
-              [](void (^done)(ArcBrowserContext*), NSUInteger profile_type, Profile* profile) {
-                done(ArcContextForProfile(profile, profile_type));
-              },
-              completion, type))) {
+  if (!ArcValidProfileRequest(name, type, true, nullptr)) {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
                                                                completion(nil);
                                                              }));
+    return;
   }
+  // Chrome reports a missing profile through the callback too (with null).
+  g_browser_process->profile_manager()->LoadProfileByPath(
+      ArcProfilePath(name), /*incognito=*/false,
+      base::BindOnce([](void (^done)(ArcBrowserContext*), NSUInteger profile_type,
+                        Profile* profile) { done(ArcContextForProfile(profile, profile_type)); },
+                     completion, type));
 }
 
 // Schedules deletion of profile directory |name| as Chrome's profile settings do (its browsers close first).
+// A name that isn't a profile directory fails with error 3, as on Arc's engine.
 - (BOOL)deleteBrowserContext:(NSString*)name error:(NSError**)error {
   if (!ArcValidProfileRequest(name, kBrowserContextTypeRegular, true, error)) {
     return NO;
@@ -358,7 +353,7 @@ ArcBrowserContext* ArcContextForProfile(Profile* profile, NSUInteger type) {
   if (!manager->GetProfileAttributesStorage().GetProfileAttributesWithPath(path)) {
     if (error) {
       *error = [NSError errorWithDomain:@"company.thebrowser.Arc"
-                                   code:2
+                                   code:3
                                userInfo:@{NSLocalizedDescriptionKey : @"No browser context with that name"}];
     }
     return NO;
