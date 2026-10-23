@@ -99,6 +99,12 @@ All releases are at `https://releases.arc.net/release/Arc-<ver>-<build>.zip`. Ve
 - Ghidra names ObjC methods `Class::selector` (e.g. `ArcWebContents::blockedResourceCount`). 142 `Arc*` classes
   have named methods. Other functions are `FUN_<addr>` unless matched.
 
+**VM** `arcmod-base.exe.xyz` (32 vCPU / 64 GB / 100 GB, standalone, 1.68 USD/h while running), created 2026-10-23
+04:42 UTC for matching. Job: `vm/base-analysis.sh`. It uploads our stock `Chromium Framework` to
+`~/work/upload/ChromiumFramework-156.0.8078.48.arm64` (sha256 `39647a53…`), runs a lite Ghidra analysis
+into `ghidra-projects/ChromiumBase-156` with a 40 GB heap and 32 GB swap, then writes
+`decomp/chromium-base-156-functions.tsv`.
+
 **ArcMod repo** (`~/general/arc`): `ghidra/decomp/` is the Arc 1.168.0 **app-layer** decompile (pseudo-C, LFS).
 `dump/` has class and symbol dumps. `bin/` has the 1.168.0 executable and the full app archive. `tools/build-mod.ts`
 builds ArcMod (`--validation`, `--source <abs path>`).
