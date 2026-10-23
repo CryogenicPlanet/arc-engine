@@ -5,29 +5,29 @@
 
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observation.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/browser_window/public/browser_collection_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window/public/global_browser_collection.h"
 #include "chrome/browser/ui/unload_controller.h"
+#include "components/prefs/pref_service.h"
+#include "content/public/browser/storage_partition.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace {
 // Arc's completion is an NSTerminateReply-like integer (0..2), not a BOOL.
 // No browser pointers survive a native callback or an iteration of the collection.
-class TerminationRequest final : public BrowserCollectionObserver {
+class TerminationRequest final {
  public:
   bool active() const { return active_; }
   void Begin(void (^completion)(NSUInteger)) {
     active_ = true;
     completion_ = [completion copy];
-    observation_.Observe(GlobalBrowserCollection::GetInstance());
     ScheduleCheck();
   }
-  void OnBrowserClosed(BrowserWindowInterface*) override { ScheduleCheck(); }
 
  private:
   void ScheduleCheck() {
@@ -47,7 +47,6 @@ class TerminationRequest final : public BrowserCollectionObserver {
     auto completion = completion_;
     completion_ = nil;
     active_ = false;
-    observation_.Reset();
     weak_factory_.InvalidateWeakPtrs();
     if (completion) completion(0);
   }
@@ -67,26 +66,46 @@ class TerminationRequest final : public BrowserCollectionObserver {
       });
       if (waiting || !active_) return;
       approved_ = true;
-      // Preserve the native session before closing the host-owned windows.
-      ProfileManager::ShutdownSessionServices();
-      chrome::MarkAsCleanShutdown();
       browsers->ForEach([](BrowserWindowInterface* browser) {
-        if (browser->GetWindow()) browser->GetWindow()->Close();
+        UnloadController::From(browser)->HandleBeforeClose();
         return true;
       });
+      // The native Arc transaction completes after storage flushes, without
+      // waiting for the host's NSWindows or Chromium Browser objects to close.
+      ProfileManager::ShutdownSessionServices();
+      chrome::MarkAsCleanShutdown();
+      pending_flushes_ = 1;  // Prevent an inline reply finishing during setup.
+      if (PrefService* local_state = g_browser_process->local_state()) {
+        ++pending_flushes_;
+        local_state->CommitPendingWrite(FlushCompletion());
+      }
+      for (Profile* profile : g_browser_process->profile_manager()->GetLoadedProfiles()) {
+        ++pending_flushes_;
+        profile->GetPrefs()->CommitPendingWrite(FlushCompletion());
+        profile->ForEachLoadedStoragePartition([this](content::StoragePartition* partition) {
+          partition->Flush();
+          ++pending_flushes_;
+          partition->GetCookieManagerForBrowserProcess()->FlushCookieStore(FlushCompletion());
+        });
+      }
+      FlushDone();
     }
-    if (!browsers->IsEmpty()) return;
+  }
+  base::OnceClosure FlushCompletion() {
+    return base::BindOnce(&TerminationRequest::FlushDone, weak_factory_.GetWeakPtr());
+  }
+  void FlushDone() {
+    if (!pending_flushes_ || --pending_flushes_) return;
     auto completion = completion_;
     completion_ = nil;
-    observation_.Reset();
     // Keep active_ set after approval: a repeated request must neither replace
     // the first completion nor start a second close transaction.
     if (completion) completion(1);
   }
   bool active_ = false;
   bool approved_ = false;
+  size_t pending_flushes_ = 0;
   void (^completion_)(NSUInteger) = nil;
-  base::ScopedObservation<GlobalBrowserCollection, BrowserCollectionObserver> observation_{this};
   base::WeakPtrFactory<TerminationRequest> weak_factory_{this};
 };
 const char kTerminationRequestKey = 0;

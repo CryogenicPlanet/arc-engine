@@ -53,6 +53,7 @@ const processes = (): { pid: number; ppid: number; command: string }[] => exec([
 const appPIDs = (exe: string) => processes().filter(p => p.command === exe || p.command.startsWith(exe + " ")).map(p => p.pid);
 const alive = (pid: number) => Bun.spawnSync(["kill", "-0", String(pid)], { stderr: "ignore" }).success;
 const token = `arc-renderer-probe-${crypto.randomUUID()}`;
+const fixtureHost = args.includes("--test-host") ? "renderer-probe.test" : "127.0.0.1";
 const rich = args.includes("--rich-extraction") ? `<main><h1>Heading</h1><p>Paragraph <strong>bold</strong> <em>emphasis</em>
   <a href="https://example.invalid/path">link</a></p><div style="display:none">hidden</div>
   <img alt="fixture image" width="16" height="16" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect width='16' height='16'/%3E%3C/svg%3E">
@@ -72,7 +73,7 @@ const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
     <style>#probe{color:rgb(0,0,0);background-color:rgb(255,255,255)}</style><div id="probe">fixture</div>
     ${frame ? "" : rich + `<iframe id="child" src="/${token}/frame"></iframe>`}`, { headers: { "content-type": "text/html" } });
 } });
-const base = `http://127.0.0.1:${server.port}/${token}`;
+const base = `http://${fixtureHost}:${server.port}/${token}`;
 const expression = `(() => {
   const inspect = d => { const e=d.getElementById('probe'); if(!e || d.readyState!=='complete') return null;
     const s=d.defaultView.getComputedStyle(e); return {color:s.color, background:s.backgroundColor,
@@ -119,7 +120,7 @@ try {
         "--env", `ARC_RECORD_PATH=${join(dir, "record.jsonl")}`,
         "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args",
         "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking",
-        `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${chromiumData}`,
+        `--host-resolver-rules=MAP renderer-probe.test 127.0.0.1, ${plist("ArcModHostResolverRules")}`, `--user-data-dir=${chromiumData}`,
         "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`]);
       pid = await wait(() => appPIDs(exe)[0], 30000);
       run.pid = pid;
@@ -140,10 +141,10 @@ try {
         return (value.result as any)?.value;
       };
       let number = 0;
-      const action = async (operation: string, identifier?: string, stylesheet?: string, values?: string[]) => {
+      const action = async (operation: string, identifier?: string, stylesheet?: string, values?: string[], hostPattern?: string) => {
         if (verifyAgentEndpoint(agent, port) !== pid) throw new Error("endpoint PID changed");
         const id = `${token}-${++number}`;
-        const request = { id, url: currentURL, operation, identifier, stylesheet, values };
+        const request = { id, url: currentURL, operation, identifier, stylesheet, values, hostPattern };
         writeFileSync(requestPath + ".tmp", JSON.stringify(request));
         renameSync(requestPath + ".tmp", requestPath);
         const response = await wait(() => {
@@ -199,6 +200,28 @@ try {
       await wait(async () => (await evaluate("document.getElementById('child').contentWindow.location.href")) === base + "/frame-navigated");
       await snapshot("existing-subframe-navigation");
       await action("remove", "arc-renderer-probe-one"); await snapshot("remove-with-subframes");
+      if (args.includes("--effects")) {
+        const effects: unknown[] = [];
+        const sample = async (step: string) => {
+          effects.push({step, result: await evaluate(`({color:getComputedStyle(document.getElementById('probe')).color,
+            js:window.__arcBoostProbe||0,childJS:document.querySelector('iframe').contentWindow.__arcBoostProbe||0})`)});
+        };
+        await action("register-boost-css", "arc-renderer-probe-boost", "#probe{color:rgb(81,17,141)!important}",undefined,fixtureHost);
+        await action("register-boost-js", "arc-renderer-probe-script", "window.__arcBoostProbe=(window.__arcBoostProbe||0)+1",undefined,fixtureHost);
+        await sleep(700); await sample("registered-existing-document");
+        currentURL = base + "/effects";
+        await cdp.targetCommand(target,"Page.navigate",{url:currentURL});
+        await wait(async()=>await evaluate("location.href=== " + JSON.stringify(currentURL) + " && document.readyState==='complete'"));
+        await sleep(700); await action("inspect"); await sample("registered-new-document");
+        await action("unregister-boost-css", "arc-renderer-probe-boost");
+        await action("unregister-boost-js", "arc-renderer-probe-script");
+        await sleep(700); await sample("removed-existing-document");
+        currentURL = base + "/effects-removed";
+        await cdp.targetCommand(target,"Page.navigate",{url:currentURL});
+        await wait(async()=>await evaluate("location.href=== " + JSON.stringify(currentURL) + " && document.readyState==='complete'"));
+        await sleep(700); await action("inspect"); await sample("removed-new-document");
+        writeFileSync(join(dir,"effects-observations.json"),JSON.stringify(effects,null,2));
+      }
       if (args.includes("--adblock")) {
         const resources: unknown[] = [];
         const load = async (step: string) => {
@@ -212,9 +235,13 @@ try {
         await load("baseline");
         await action("set-block-lists", undefined, undefined, ["/blocked.js$script"]);
         await sleep(1500); await load("rule-active");
-        await action("set-exclusions", undefined, undefined, ["127.0.0.1"]);
+        currentURL = base + "/c";
+        await cdp.targetCommand(target, "Page.navigate", {url:currentURL});
+        await wait(async()=>await evaluate("location.href=== " + JSON.stringify(currentURL) + " && document.readyState==='complete'"));
+        await action("inspect"); await load("rule-active-new-document");
+        await action("set-exclusions", undefined, undefined, [fixtureHost]);
         await sleep(500); await load("exclude-ip-no-port");
-        await action("set-exclusions", undefined, undefined, [`127.0.0.1:${server.port}`]);
+        await action("set-exclusions", undefined, undefined, [`${fixtureHost}:${server.port}`]);
         await sleep(500); await load("exclude-ip-with-port");
         await action("set-exclusions", undefined, undefined, []);
         await sleep(500); await load("exclusions-cleared");

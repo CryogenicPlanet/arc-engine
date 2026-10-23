@@ -29,3 +29,8 @@ export async function run(c: ScenarioContext, body: () => Promise<void>) {
   if (await c.ready(l, "launch")) await c.step("scenario actions", body);
   await c.quit(l, "quit");
 }
+export async function pressWhenReady(c: ScenarioContext, label: RegExp, ms = 8000) {
+  if (!await c.waitFor(() => c.native().elements.some(n => n.enabled && label.test(n.label) && n.actions.includes("AXPress")) ? true : undefined, ms))
+    throw new Error(`native control did not appear: ${label}`);
+  return press(c, label);
+}

@@ -104,7 +104,8 @@ class RenderFrameAgent final : public content::RenderFrameObserver,
       return;
     }
     const url::Origin origin = frame->GetSecurityOrigin();
-    bool excluded = false;
+    // Original 0x47336f0 also exempts extension documents before list matching.
+    bool excluded = origin.scheme() == "chrome-extension";
     for (const auto& excluded_origin : excluded_origins_) {
       // Original renderer 0x47336f0 -> 0x16bce58 -> 0x14f6940.
       if (net::registry_controlled_domains::SameDomainOrHost(

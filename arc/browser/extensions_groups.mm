@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "chrome/browser/ui/browser_window/public/global_browser_collection.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/extensions/api/tab_groups.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -31,7 +32,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_registry.h"
 
-// These values' primary implementations belong to the sessions package.
+// These values' primary implementations belong to the core package.
 @interface ArcTabGroupInfo : NSObject
 @property(nonatomic, copy) NSString* groupId;
 @property(nonatomic) NSInteger extensionGroupId;
@@ -347,7 +348,8 @@ class HostedGroupsFunction : public ExtensionFunction {
   bool Tabs(const std::vector<int>& ids,
             std::vector<TabBatch>* batches,
             std::string* error,
-            NSMutableArray<NSNumber*>* ordered = nil) {
+            NSMutableArray<NSNumber*>* ordered = nil,
+            bool require_group_support = false) {
     for (int tab_id : ids) {
       extensions::WindowController* window = nullptr;
       content::WebContents* contents = nullptr;
@@ -359,9 +361,18 @@ class HostedGroupsFunction : public ExtensionFunction {
         return false;
       }
       auto* browser = window->GetBrowserWindowInterface();
-      if (!Allowed(browser) || !ExtensionTabUtil::SupportsTabGroups(browser)) {
+      if (!Allowed(browser) ||
+          (require_group_support &&
+           !ExtensionTabUtil::SupportsTabGroups(browser))) {
         *error = kUnavailable;
         return false;
+      }
+      if (!require_group_support) {
+        auto* app = web_app::AppBrowserController::From(browser);
+        if (app && app->IsIsolatedWebApp()) {
+          *error = "The tab of an Isolated Web App cannot be moved.";
+          return false;
+        }
       }
       if (!ExtensionTabUtil::IsTabStripEditable(*browser->GetProfile())) {
         *error = ExtensionTabUtil::kTabStripNotEditableError;
@@ -719,7 +730,7 @@ class HostedTabsUngroupFunction : public HostedGroupsFunction {
       ids.push_back(*params->tab_ids.as_integer);
     std::vector<TabBatch> batches;
     std::string error;
-    if (!Tabs(ids, &batches, &error))
+    if (!Tabs(ids, &batches, &error, nil, true))
       return RespondNow(Error(std::move(error)));
     for (const auto& batch : batches) {
       if (![BrowserExtensionDelegate(batch.browser)
@@ -734,6 +745,18 @@ class HostedTabsUngroupFunction : public HostedGroupsFunction {
       ArcBrowser* browser = batch.browser;
       auto called = std::make_shared<bool>(false);
       id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(browser);
+      // An earlier synchronous callback may have closed another source window
+      // or cleared its delegate before this iteration.
+      if (!Live(browser) ||
+          ![delegate
+              respondsToSelector:
+                  @selector(
+                      browser:removeTabsFromGroupWithSessionIds:completion:)]) {
+        OnUI(^{
+          self->FailString(kClosed);
+        });
+        break;
+      }
       [delegate browser:browser
           removeTabsFromGroupWithSessionIds:batch.ids
                                  completion:^(ArcTabGroupResult* result) {

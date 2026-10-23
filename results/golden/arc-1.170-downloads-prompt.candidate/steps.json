@@ -1,0 +1,30 @@
+{
+  "scenario": "downloads-prompt",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app",
+  "slug": "trace156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "native save prompt has fixed filename",
+      "outcome": "fail",
+      "detail": ""
+    },
+    {
+      "step": "save prompt cancelled without output",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 7 helpers exited"
+    }
+  ]
+}

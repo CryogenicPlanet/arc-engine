@@ -16,7 +16,7 @@
 - (void*)mutableExtensionInfo;
 @end
 namespace {
-struct ImageSlot { void* vtable = nullptr; std::shared_ptr<void> impl; };
+struct ImageSlot { uintptr_t vtable = 0; std::shared_ptr<void> impl; };
 struct Info {
   std::string name, id, url, description;
   std::vector<std::u16string> permissions;
@@ -55,9 +55,9 @@ NSDictionary* Methods(NSString* name, NSString* names) {
 }
 int main(int argc,char**argv) {
   @autoreleasepool {
-    if (argc!=2 || !dlopen(argv[1],RTLD_NOW|RTLD_LOCAL)) { fprintf(stderr,"engine load: %s\n",dlerror());return 2; }
+    if (argc!=2 || !dlopen([NSProcessInfo.processInfo.arguments objectAtIndex:1].UTF8String,RTLD_NOW|RTLD_LOCAL)) { NSLog(@"engine load failed");return 2; }
     const char* recorder=getenv("ARC_EXTENSIONS_RECORDER_LIBRARY");
-    if (recorder && !dlopen(recorder,RTLD_NOW|RTLD_LOCAL)) { fprintf(stderr,"recorder: %s\n",dlerror());return 3; }
+    if (recorder && !dlopen(recorder,RTLD_NOW|RTLD_LOCAL)) { NSLog(@"recorder load failed");return 3; }
     NSMutableDictionary* root=[NSMutableDictionary dictionary];
     NSString* infoFields=@"name id description url permissions icon rating numRatings enabled hasAction version omniboxKeyword fromWebstore";
     NSString* commandFields=@"extensionId commandName commandDescription shortcut isGlobal";
@@ -110,7 +110,8 @@ int main(int argc,char**argv) {
     root[@"actions"]=actions;
     NSError* jsonError=nil;
     NSData* json=[NSJSONSerialization dataWithJSONObject:root options:NSJSONWritingPrettyPrinted|NSJSONWritingSortedKeys error:&jsonError];
-    if(!json){fprintf(stderr,"json failure\n");return 4;}
-    fwrite(json.bytes,1,json.length,stdout);fputs("\n",stdout);
+    if(!json){NSLog(@"json failure");return 4;}
+    [NSFileHandle.fileHandleWithStandardOutput writeData:json];
+    [NSFileHandle.fileHandleWithStandardOutput writeData:[@"\n" dataUsingEncoding:NSUTF8StringEncoding]];
   }
 }

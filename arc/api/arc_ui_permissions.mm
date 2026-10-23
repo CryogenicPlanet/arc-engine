@@ -177,7 +177,7 @@ class HostPermissionPrompt : public permissions::PermissionPrompt {
     }
     DisplayOriginData display{url_formatter::FormatOriginForSecurityDisplay(
         url::Origin::Create(delegate_->GetRequestingOrigin()),
-        url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS), true};
+        url_formatter::SchemeDisplay::SHOW), true};
     ArcDisplayNameOrOrigin* origin = [[ArcDisplayNameOrOrigin alloc] initWithDisplayNameOrOrigin:&display];
     const uint64_t quiet = QuietReason(delegate_->ReasonForUsingQuietUi());
     shown_ = true;

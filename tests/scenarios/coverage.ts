@@ -1,8 +1,11 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 // Counts are observed identities for the entire launch, including startup. They are lower bounds,
 // not claims that a scenario exercised every feature of a class or that all calls crossed the boundary.
 export function summarize(out: string) {
+  if (basename(out) === "arc-1.170-launch-slice") throw new Error("original launch-slice golden is immutable");
+  const engineClasses = new Set(readFileSync(join(import.meta.dir, "../../arc/tools/arccore-1.170.0-objc.tsv"), "utf8")
+    .split("\n").filter(line => line.startsWith("C\t")).map(line => line.split("\t")[1]!));
   const steps = JSON.parse(readFileSync(join(out, "steps.json"), "utf8"));
   const launches = readdirSync(out).filter(n => /^launch-\d+$/.test(n)).sort();
   const methods = new Map<string, number>();
@@ -28,7 +31,11 @@ export function summarize(out: string) {
     group.selectors.add(key); group.calls += calls; classes.set(cls, group);
   }
   const accepted = steps.steps.length > 0 && steps.steps.every((s: {outcome:string}) => s.outcome === "pass") && !errors.length;
-  const summary = { scenario: steps.scenario, accepted, errors, launches, classCount: classes.size, selectorCount: methods.size,
+  const engineMethods = [...methods].filter(([key]) => key.startsWith("->engine ") && engineClasses.has(key.match(/\[([^ ]+) /)![1]!));
+  const callbackMethods = [...methods].filter(([key]) => key.startsWith("engine->app "));
+  const summary = { engineClassCount: new Set(engineMethods.map(([key]) => key.match(/\[([^ ]+) /)![1]!)).size,
+    engineSelectorCount: engineMethods.length, callbackSelectorCount: callbackMethods.length,
+    scenario: steps.scenario, accepted, errors, launches, classCount: classes.size, selectorCount: methods.size,
     callCount: [...methods.values()].reduce((a,b)=>a+b,0),
     classes: Object.fromEntries([...classes].sort().map(([cls,g]) => [cls, {calls:g.calls,selectorCount:g.selectors.size,selectors:[...g.selectors].sort()}])),
     methods: Object.fromEntries([...methods].sort()),

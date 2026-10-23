@@ -168,6 +168,11 @@ ARC_EXPORT @interface ArcSiteSettingInfo : NSObject
 @end
 
 @implementation ArcBrowserContext (ProfileServices)
+- (ArcURLLoadCancellationToken*)loadUrl:(ArcURLLoadConfiguration*)configuration withDelegate:(id)delegate {
+  Profile* profile = ArcProfileFrom(self);
+  return profile ? ArcStartURLLoad(profile, configuration, delegate) : nil;
+}
+- (void)cancelUrlLoad:(ArcURLLoadCancellationToken*)token { ArcCancelURLLoad(token); }
 - (ArcSiteSettingInfo*)getContentSettingForOrigin:(NSURL*)origin
                          withContentSettingType:(NSUInteger)type {
   auto native = NativeType(type);

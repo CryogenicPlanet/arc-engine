@@ -28,7 +28,7 @@ while i<len(command):
  args.append(value.replace('../../arc/api/arc_browser.mm','../../arc/browser/extensions_values_probe.mm'));i+=1
 args+=['-o',str(tmp/'probe.o')]
 subprocess.run(args,cwd=cwd,check=True)
-subprocess.run([command[0],'-nostdlib++',str(tmp/'probe.o'),str(cwd/'obj/buildtools/third_party/libc++/libc++.a'),str(cwd/'obj/buildtools/third_party/libc++abi/libc++abi.a'),'-framework','AppKit','-framework','Foundation','-o',str(tmp/'probe')],cwd=cwd,check=True)
+subprocess.run([command[0],'-isysroot','sdk/xcode_links/MacOSX26.0.sdk','-nostdlib++',str(tmp/'probe.o'),str(cwd/'obj/buildtools/third_party/libc++/libc++.a'),str(cwd/'obj/buildtools/third_party/libc++abi/libc++abi.a'),'-framework','AppKit','-framework','Foundation','-o',str(tmp/'probe')],cwd=cwd,check=True)
 BUILD
 original="$E/../arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
 ours="$E/chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"

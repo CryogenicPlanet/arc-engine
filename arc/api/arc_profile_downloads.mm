@@ -1,7 +1,12 @@
 // Copyright 2026 ArcMod. Native downloads and the profile's download snapshot/deltas.
 #import "arc/api/arc_internal.h"
 
+#include <set>
+
+#include "base/auto_reset.h"
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/arcmod/arcmod_hooks.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "base/supports_user_data.h"
@@ -17,6 +22,7 @@ ARC_EXPORT @interface ArcDownloadItem : NSObject
 @end
 
 namespace {
+constinit unsigned gDownloadCallbackDepth = 0;
 struct DownloadHolder final : base::SupportsUserData::Data {
   ArcDownloadItem* __strong wrapper;
 };
@@ -88,12 +94,38 @@ class DownloadLifetime final : public download::DownloadItem::Observer {
 - (BOOL)isPaused { return _lifetime && _lifetime->item() && _lifetime->item()->IsPaused(); }
 - (BOOL)isDone { return _lifetime && _lifetime->item() && _lifetime->item()->IsDone(); }
 - (BOOL)canResume { return _lifetime && _lifetime->item() && _lifetime->item()->CanResume(); }
-- (void)pause { if (_lifetime && _lifetime->item()) { _lifetime->item()->Pause(); } }
+- (void)pause {
+  if (gDownloadCallbackDepth) {
+    __weak ArcDownloadItem* weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{ [weakSelf pause]; });
+    return;
+  }
+  if (_lifetime && _lifetime->item()) _lifetime->item()->Pause();
+}
 - (void)cancel:(BOOL)userCancel {
+  if (gDownloadCallbackDepth) {
+    __weak ArcDownloadItem* weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{ [weakSelf cancel:userCancel]; });
+    return;
+  }
   if (_lifetime && _lifetime->item()) { _lifetime->item()->Cancel(userCancel); }
 }
-- (void)resume { if (_lifetime && _lifetime->item()) { _lifetime->item()->Resume(true); } }
-- (void)remove { if (_lifetime && _lifetime->item()) { _lifetime->item()->Remove(); } }
+- (void)resume {
+  if (gDownloadCallbackDepth) {
+    __weak ArcDownloadItem* weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{ [weakSelf resume]; });
+    return;
+  }
+  if (_lifetime && _lifetime->item()) _lifetime->item()->Resume(true);
+}
+- (void)remove {
+  if (gDownloadCallbackDepth) {
+    __weak ArcDownloadItem* weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{ [weakSelf remove]; });
+    return;
+  }
+  if (_lifetime && _lifetime->item()) _lifetime->item()->Remove();
+}
 @end
 
 @protocol ArcProfileDownloadsDelegate <NSObject>
@@ -102,6 +134,9 @@ class DownloadLifetime final : public download::DownloadItem::Observer {
 - (void)browserContext:(ArcBrowserContext*)context onDownloadCreated:(ArcDownloadItem*)item;
 - (void)browserContext:(ArcBrowserContext*)context onDownloadUpdated:(ArcDownloadItem*)item;
 - (void)browserContext:(ArcBrowserContext*)context onDownloadRemoved:(ArcDownloadItem*)item;
+- (void)browserContext:(ArcBrowserContext*)context onDeterminingFilename:(ArcDownloadItem*)item
+       defaultFilename:(NSString*)filename completionTimeout:(double)timeout
+            completion:(void (^)(NSString*))completion;
 @end
 
 ARC_EXPORT @interface ArcBrowserContextDownloads : NSObject
@@ -110,10 +145,51 @@ ARC_EXPORT @interface ArcBrowserContextDownloads : NSObject
 @end
 
 namespace {
+struct FilenameTarget final : base::SupportsUserData::Data {
+  __weak ArcBrowserContextDownloads* service;
+  __weak ArcBrowserContext* owner;
+  __weak id<ArcProfileDownloadsDelegate> delegate;
+};
+constexpr char kFilenameTargetKey[] = "ArcProfileDownloadFilenameTarget";
+class FilenameDecision {
+ public:
+  explicit FilenameDecision(base::OnceCallback<void(const base::FilePath&)> done)
+      : done_(std::move(done)) {}
+  void Resolve(NSString* filename) {
+    if (done_) std::move(done_).Run(base::FilePath(ArcUTF8(filename)));
+  }
+ private:
+  base::OnceCallback<void(const base::FilePath&)> done_;
+};
+bool DetermineFilename(Profile* profile, download::DownloadItem* item,
+                       const base::FilePath& basename,
+                       base::OnceCallback<void(const base::FilePath&)> done) {
+  auto* target = static_cast<FilenameTarget*>(profile->GetUserData(kFilenameTargetKey));
+  id<ArcProfileDownloadsDelegate> delegate = target ? target->delegate : nil;
+  ArcBrowserContext* owner = target ? target->owner : nil;
+  if (!target || !target->service || !owner ||
+      ![delegate respondsToSelector:@selector(browserContext:onDeterminingFilename:defaultFilename:completionTimeout:completion:)])
+    return false;
+  auto decision = std::make_shared<FilenameDecision>(std::move(done));
+  // Both paths run on the UI queue; the shared decision consumes the callback
+  // once even when the app completes after the native timeout or calls twice.
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 15 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    decision->Resolve(nil);
+  });
+  base::AutoReset<unsigned> in_callback(&gDownloadCallbackDepth, gDownloadCallbackDepth + 1);
+  [delegate browserContext:owner onDeterminingFilename:[ArcDownloadItem wrapperForDownload:item]
+           defaultFilename:ArcNSString(basename.value()) completionTimeout:15.0
+                completion:^(NSString* filename) {
+    if ([NSThread isMainThread]) decision->Resolve(filename);
+    else dispatch_async(dispatch_get_main_queue(), ^{ decision->Resolve(filename); });
+  }];
+  return true;
+}
 // The native observer owns no ObjC delegate or context. Profile shutdown detaches
 // the manager; individual download destruction detaches each item observation.
 class DownloadsObserver final : public content::DownloadManager::Observer,
-                                public download::DownloadItem::Observer {
+                                public download::DownloadItem::Observer,
+                                public std::enable_shared_from_this<DownloadsObserver> {
  public:
   DownloadsObserver(content::DownloadManager* manager, ArcBrowserContext* owner,
                     id<ArcProfileDownloadsDelegate> delegate)
@@ -130,6 +206,8 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
   }
   void SetDelegate(id<ArcProfileDownloadsDelegate> delegate) { delegate_ = delegate; }
   void SendSnapshot() {
+    auto keep_alive = shared_from_this();
+    base::AutoReset<unsigned> in_callback(&gDownloadCallbackDepth, gDownloadCallbackDepth + 1);
     id<ArcProfileDownloadsDelegate> delegate = delegate_;
     ArcBrowserContext* owner = owner_;
     if (!manager_ || !owner || !manager_->IsManagerInitialized() || snapshot_sent_ || !delegate) {
@@ -153,22 +231,35 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
     items_.RemoveAllObservations();
   }
   void OnDownloadCreated(content::DownloadManager* manager, download::DownloadItem* item) override {
+    auto keep_alive = shared_from_this();
+    base::AutoReset<unsigned> in_callback(&gDownloadCallbackDepth, gDownloadCallbackDepth + 1);
     if (!items_.IsObservingSource(item)) { items_.AddObservation(item); }
     // History loading is represented by the initial snapshot.
     if (!snapshot_sent_) { return; }
-    id<ArcProfileDownloadsDelegate> delegate = delegate_;
-    if ([delegate respondsToSelector:@selector(browserContext:onDownloadCreated:)]) {
-      [delegate browserContext:owner_ onDownloadCreated:[ArcDownloadItem wrapperForDownload:item]];
-    }
+    pending_created_.insert(item->GetGuid());
+    OnDownloadUpdated(item);
   }
   void OnDownloadUpdated(download::DownloadItem* item) override {
+    auto keep_alive = shared_from_this();
+    base::AutoReset<unsigned> in_callback(&gDownloadCallbackDepth, gDownloadCallbackDepth + 1);
     if (!snapshot_sent_) { return; }
+    if (pending_created_.contains(item->GetGuid())) {
+      if (item->GetTargetFilePath().empty() && !item->IsDone()) return;
+      pending_created_.erase(item->GetGuid());
+      id<ArcProfileDownloadsDelegate> delegate = delegate_;
+      if ([delegate respondsToSelector:@selector(browserContext:onDownloadCreated:)])
+        [delegate browserContext:owner_ onDownloadCreated:[ArcDownloadItem wrapperForDownload:item]];
+      return;
+    }
     id<ArcProfileDownloadsDelegate> delegate = delegate_;
     if ([delegate respondsToSelector:@selector(browserContext:onDownloadUpdated:)]) {
       [delegate browserContext:owner_ onDownloadUpdated:[ArcDownloadItem wrapperForDownload:item]];
     }
   }
   void OnDownloadRemoved(download::DownloadItem* item) override {
+    auto keep_alive = shared_from_this();
+    base::AutoReset<unsigned> in_callback(&gDownloadCallbackDepth, gDownloadCallbackDepth + 1);
+    pending_created_.erase(item->GetGuid());
     if (!snapshot_sent_) { return; }
     id<ArcProfileDownloadsDelegate> delegate = delegate_;
     if ([delegate respondsToSelector:@selector(browserContext:onDownloadRemoved:)]) {
@@ -176,6 +267,7 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
     }
   }
   void OnDownloadDestroyed(download::DownloadItem* item) override {
+    pending_created_.erase(item->GetGuid());
     items_.RemoveObservation(item);
   }
  private:
@@ -183,6 +275,7 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
   __weak ArcBrowserContext* owner_;
   __weak id<ArcProfileDownloadsDelegate> delegate_;
   bool snapshot_sent_ = false;
+  std::set<std::string> pending_created_;
   base::ScopedMultiSourceObservation<download::DownloadItem, download::DownloadItem::Observer> items_{this};
 };
 }  // namespace
@@ -190,7 +283,7 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
 @implementation ArcBrowserContextDownloads {
   __weak ArcBrowserContext* _owner;
   __weak id<ArcProfileDownloadsDelegate> _delegate;
-  std::unique_ptr<DownloadsObserver> _observer;
+  std::shared_ptr<DownloadsObserver> _observer;
 }
 - (instancetype)initWithArcBrowserContext:(ArcBrowserContext*)context {
   if ((self = [super init])) { _owner = context; }
@@ -213,12 +306,22 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
   if (!delegate) { return; }
   _delegate = delegate;
   if (_observer) {
+    if (Profile* profile = ArcProfileFrom(owner)) {
+      if (auto* target = static_cast<FilenameTarget*>(profile->GetUserData(kFilenameTargetKey)))
+        target->delegate = delegate;
+    }
     _observer->SetDelegate(delegate);
     return;
   }
   Profile* profile = ArcProfileFrom(owner);
   if (!profile) { return; }
-  _observer = std::make_unique<DownloadsObserver>(profile->GetDownloadManager(), owner, delegate);
+  auto target = std::make_unique<FilenameTarget>();
+  target->service = self;
+  target->owner = owner;
+  target->delegate = delegate;
+  profile->SetUserData(kFilenameTargetKey, std::move(target));
+  arcmod::GetDownloadFilenameHook() = base::BindRepeating(&DetermineFilename);
+  _observer = std::make_shared<DownloadsObserver>(profile->GetDownloadManager(), owner, delegate);
   DownloadCoreServiceFactory::GetForBrowserContext(profile)->InitializeHistory(
       DownloadCoreService::DownloadHistoryLoadTrigger::kDownloadsPage);
   // Registration never calls the app synchronously, even if the manager has

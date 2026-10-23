@@ -83,3 +83,4 @@ ARC_EXPORT @interface ArcBrowserSidePanelEntryInfo : NSObject
 @synthesize extensionId = _extensionId;
 @synthesize cachedWebContents = _cachedWebContents;
 @end
+

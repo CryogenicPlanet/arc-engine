@@ -118,7 +118,7 @@ static void Poll(void) {
       ![url isKindOfClass:[NSString class]] || ![operation isKindOfClass:[NSString class]]) return;
   NSURL* parsed = [NSURL URLWithString:url];
   // Even an erroneous request cannot route the probe to an unrelated page.
-  if (![parsed.scheme isEqual:@"http"] || ![parsed.host isEqual:@"127.0.0.1"] ||
+  if (![parsed.scheme isEqual:@"http"] || ![@[@"127.0.0.1", @"renderer-probe.test"] containsObject:parsed.host] ||
       ![parsed.path hasPrefix:@"/arc-renderer-probe-"]) return;
   __weak id match;
   NSUInteger count = 0;
@@ -188,6 +188,25 @@ static void Poll(void) {
         SEL selector = NSSelectorFromString([operation isEqual:@"set-block-lists"] ? @"setBlockLists:" : @"setExcludedDomains:");
         ((void (*)(id, SEL, id))objc_msgSend)(application, selector, request[@"values"]);
         response[@"ok"] = @YES;
+      }
+    } else if ([operation isEqual:@"register-boost-css"] || [operation isEqual:@"unregister-boost-css"] ||
+               [operation isEqual:@"register-boost-js"] || [operation isEqual:@"unregister-boost-js"]) {
+      id context = ProfileContext();
+      NSString* identifier = request[@"identifier"];
+      if (!context || ![identifier isKindOfClass:[NSString class]]) response[@"error"] = @"missing context or identifier";
+      else {
+        id effects = ((id (*)(id, SEL))objc_msgSend)(context, NSSelectorFromString(@"effects"));
+        BOOL script = [operation hasSuffix:@"js"];
+        if ([operation hasPrefix:@"unregister-"]) {
+          ((void (*)(id, SEL, id))objc_msgSend)(effects,
+              NSSelectorFromString(script ? @"unregisterScript:" : @"unregisterStylesheet:"), identifier);
+          response[@"ok"] = @YES;
+        } else if ([request[@"hostPattern"] isKindOfClass:[NSString class]] && [request[@"stylesheet"] isKindOfClass:[NSString class]]) {
+          ((void (*)(id, SEL, id, id, id))objc_msgSend)(effects,
+              NSSelectorFromString(script ? @"registerScript:withIdentifier:forHostPattern:" : @"registerStylesheet:withIdentifier:forHostPattern:"),
+              request[@"stylesheet"], identifier, request[@"hostPattern"]);
+          response[@"ok"] = @YES;
+        } else response[@"error"] = @"missing source or hostPattern";
       }
     } else {
       response[@"error"] = @"invalid operation or arguments";

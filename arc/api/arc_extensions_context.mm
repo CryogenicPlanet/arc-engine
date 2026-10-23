@@ -74,7 +74,7 @@
 @end
 
 @interface ArcBrowserContextExtensions ()
-- (id<ArcExtensionsContextCallbacks>)arc_delegate;
+- (id<ArcExtensionsContextCallbacks>)arc_delegate __attribute__((objc_direct));
 @end
 
 namespace {

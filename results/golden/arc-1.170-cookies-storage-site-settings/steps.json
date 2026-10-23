@@ -1,0 +1,50 @@
+{
+  "scenario": "cookies-storage-site-settings",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app",
+  "slug": "trace156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "cookie/local/session storage roundtrip",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "deny notification prompt",
+      "outcome": "pass",
+      "detail": "denied"
+    },
+    {
+      "step": "cookie deletion",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "second origin starts with undecided permission",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "allow notification prompt",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "site settings reflects insecure HTTP fixture",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 7 helpers exited"
+    }
+  ]
+}

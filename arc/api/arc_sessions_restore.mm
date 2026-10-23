@@ -34,7 +34,7 @@ NSDate* SessionDate(base::Time time) {
 
 ARC_EXPORT @interface ArcSessionNavigation : NSObject
 - (instancetype)initWithSessionNavigation:(const void*)navigation;
-- (const sessions::SerializedNavigationEntry*)chromeNavigation;
+- (const sessions::SerializedNavigationEntry*)chromeNavigation __attribute__((objc_direct));
 @property(nonatomic, readonly) NSURL* faviconURL;
 @property(nonatomic, readonly) NSURL* virtualURL;
 @property(nonatomic, readonly) NSURL* originalRequestURL;
@@ -71,7 +71,7 @@ ARC_EXPORT @interface ArcSessionNavigation : NSObject
 
 ARC_EXPORT @interface ArcSessionTab : NSObject
 - (instancetype)initWithSessionTab:(const void*)tab;
-- (const sessions::SessionTab*)chromeSessionTab;
+- (const sessions::SessionTab*)chromeSessionTab __attribute__((objc_direct));
 @property(nonatomic, readonly) BOOL isPinned;
 @property(nonatomic) int currentNavigationIndex;
 @property(nonatomic, readonly) NSDate* lastActiveTime;
@@ -128,7 +128,8 @@ ARC_EXPORT @interface ArcSessionTab : NSObject
 @end
 
 ARC_EXPORT @interface ArcSessionTabGroup : NSObject
-- (instancetype)initWithChromeSessionTabGroup:(std::shared_ptr<sessions::SessionTabGroup>)group;
+- (instancetype)initWithChromeSessionTabGroup:(std::shared_ptr<sessions::SessionTabGroup>)group
+    __attribute__((objc_direct));
 @property(nonatomic, readonly, copy) NSString* groupId;
 @property(nonatomic, readonly, copy) NSString* title;
 @property(nonatomic, readonly) NSInteger color;
@@ -151,7 +152,8 @@ ARC_EXPORT @interface ArcSessionTabGroup : NSObject
 @end
 
 ARC_EXPORT @interface ArcSessionWindow : NSObject
-- (instancetype)initWithChromeSessionWindow:(std::shared_ptr<sessions::SessionWindow>)window;
+- (instancetype)initWithChromeSessionWindow:(std::shared_ptr<sessions::SessionWindow>)window
+    __attribute__((objc_direct));
 @property(nonatomic, readonly) NSInteger windowType;
 @property(nonatomic, readonly) NSArray<ArcSessionTab*>* tabs;
 @property(nonatomic, readonly) int selectedTabIndex;
@@ -238,7 +240,6 @@ ARC_EXPORT @interface ArcSessionWindow : NSObject
 namespace {
 const char kSessionInsertionState = 0;
 const char kSessionAliases[] = "ArcSessionAliases";
-__weak id<SessionsApplicationDelegate> g_session_application_delegate;
 
 struct SessionAliases : base::SupportsUserData::Data {
   std::map<SessionID, SessionID> historical_ids;
@@ -409,7 +410,7 @@ class SessionsTabsObserver : public TabStripModelObserver {
       }
     }
   }
-  id<SessionsApplicationDelegate> delegate = g_session_application_delegate;
+  id<SessionsApplicationDelegate> delegate = ArcBrowserApplicationDelegateObject();
   if ([delegate respondsToSelector:
           @selector(didCloseBrowser:forBrowserContextID:ofType:withRestorationSessionID:)]) {
     [delegate didCloseBrowser:wrapper.windowIdentifier
@@ -419,17 +420,17 @@ class SessionsTabsObserver : public TabStripModelObserver {
 }
 @end
 
-// Bootstrap supplies the same weak application delegate it already retains.
-// Kept as an explicit hook so session code never overrides app initializers.
-void ArcSessionsSetApplicationDelegate(id delegate) {
-  g_session_application_delegate = delegate;
-}
-
 void ArcSessionsBrowserCreated(ArcBrowser* browser) {
   static const char kObservation = 0;
   if ([browser browser] && !objc_getAssociatedObject(browser, &kObservation)) {
     objc_setAssociatedObject(browser, &kObservation,
         [[SessionsBrowserObservation alloc] initWithBrowser:browser], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    Profile* profile = [browser browser]->GetProfile();
+    if (!profile->IsOffTheRecord()) {
+      if (auto* service = TabRestoreServiceFactory::GetForProfile(profile)) {
+        service->LoadTabsFromLastSession();
+      }
+    }
   }
 }
 

@@ -1,15 +1,18 @@
 import type { ScenarioContext } from "../launch-slice/run";
 import { run, page, press } from "./native";
+const visible = (c: ScenarioContext) => c.native().elements.some(n => n.role === "AXWebArea" && n.label === "DevTools");
 export default async function scenario(c: ScenarioContext) {
   await run(c, async () => {
     await page(c);
     press(c, /^Toggle Console$/);
-    const client = await c.client();
-    c.assert("developer frontend opens", await c.waitFor(() => (c.cdp("list") as { url: string }[])
-      .some(t => /^(devtools|chrome-devtools):/.test(t.url)) ? true : undefined, 8000));
-    // Toggle uses Arc's menu route, rather than detaching the recorder's CDP connection.
+    c.assert("native developer frontend opens", await c.waitFor(() => visible(c) ? true : undefined, 8000));
     press(c, /^Toggle Console$/);
-    const targets = await client.request("Target.getTargets");
-    c.assert("developer frontend closes", !(targets.targetInfos as { url: string }[]).some(t => /^(devtools|chrome-devtools):/.test(t.url)));
+    c.assert("native developer frontend closes", await c.waitFor(() => !visible(c) ? true : undefined, 8000));
+  });
+  await run(c, async () => {
+    const t = await page(c);
+    press(c, /^Inspect Element$/);
+    c.cdp("click", t, "80", "80");
+    c.assert("inspect opens native developer frontend", await c.waitFor(() => visible(c) ? true : undefined, 8000));
   });
 }

@@ -18,7 +18,7 @@ export default async function scenario(c: ScenarioContext) {
     const client = await c.client();
     const tree = await client.targetCommand(t, "DOM.getDocument", {depth:-1, pierce:true});
     writeFileSync(`${c.outDir}/pdf-dom.json`, JSON.stringify(tree, null, 2));
-        const frames: Record<string, unknown>[] = [];
+    const frames: Record<string, unknown>[] = [];
     const walk = (node: Record<string, unknown>) => {
       if (node.nodeName === "IFRAME") frames.push(node);
       for (const key of ["children", "shadowRoots"]) for (const child of (node[key] ?? []) as Record<string, unknown>[]) walk(child);
