@@ -105,8 +105,8 @@ All releases are at `https://releases.arc.net/release/Arc-<ver>-<build>.zip`. Ve
 - Ghidra names ObjC methods `Class::selector` (e.g. `ArcWebContents::blockedResourceCount`). 142 `Arc*` classes
   have named methods. Other functions are `FUN_<addr>` unless matched.
 
-**VM** `arcmod-base.exe.xyz` (32 vCPU / 64 GB / 100 GB, standalone, 1.68 USD/h while running), created 2026-10-23
-04:42 UTC for matching. Job: `vm/base-analysis.sh`. It uploads our stock `Chromium Framework` to
+**VM** `arcmod-base.exe.xyz`: **deleted 2026-10-23** (its Ghidra run on our own build was unnecessary; see §5.2).
+It was 32 vCPU / 64 GB / 100 GB, created 04:42 UTC for matching. Job: `vm/base-analysis.sh`. It uploads our stock `Chromium Framework` to
 `~/work/upload/ChromiumFramework-156.0.8078.48.arm64` (sha256 `39647a53…`), runs a lite Ghidra analysis
 into `ghidra-projects/ChromiumBase-156` with a 40 GB heap and 32 GB swap, then writes
 `decomp/chromium-base-156-functions.tsv`.
@@ -202,6 +202,9 @@ use our build's symbol table plus disassembly (string refs, call targets) instea
 - Alternatives if this is too slow: Ghidra Version Tracking, or matching only the closure from §5.1.
 
 ### 5.3 Agents (Codex on exe.dev, billed to the ChatGPT subscription; see the `exe-dev` skill)
+
+Status 2026-10-23: Rahul's own sub-agents (Sol) are doing the decompile review and spec work, so don't start a
+parallel agent pilot. Coordinate with Rahul first.
 
 - Use a separate pooled VM (no extra compute cost) so agents never pressure the Ghidra or analysis VM.
 - On the VM, configure `~/.codex/config.toml`: `model_provider = "exe-llm"`, base URL

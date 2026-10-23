@@ -13,6 +13,8 @@ Facts, locations, procedures and the step-by-step runbook are in `ENGINE.md`.
 
 ## 1. Map Arc's own code (needs the decompile)
 
+Sol (Rahul's sub-agents) owns the agent review and spec work from 2026-10-23.
+
 - [ ] Pull back only what's needed: the function list plus the Arc-layer extraction. Leave the full
       decompile on the VM (outbound traffic is metered).
 - [x] (first pass, vm/arc_layer.py: ~5,840 functions / ~2.3 MB upper bound) Extract the Arc layer: methods of the 146 `Arc*` classes, functions that reference `../../arc/`
