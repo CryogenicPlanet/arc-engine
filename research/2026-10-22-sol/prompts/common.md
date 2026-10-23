@@ -16,6 +16,9 @@ Inputs:
 - inputs/app168/ghidra/decomp/*.c and functions.tsv: older APP-layer pseudocode and names. inputs/app168/dump/: symbol/stub/Swift type context. This is not the new ENGINE decompile.
 - inputs/context/results/, README.md, NEXT.md: historical context. Check claims against artifacts.
 - inputs/decompile/*.c: second-stage engine shards will arrive ONLY after the main decompile completes. Absent now is expected. No waiting or claiming pseudocode you have not seen.
+- The export is now complete. All 199 unique shards are across inputs/decompile and completed inputs/decompile-extra/batch-*/ batches. inputs/corpus-index.sqlite is a read-only byte-range index; `python3 /home/exedev/work/read-function.py 0xADDRESS` reads exact bodies, capped at 32 KiB by default. INDEX-READY records header/failure counts. Read inputs/context/lead-review.md for independent review gates.
+- inputs/context/ENGINE.md and inputs/claude-handoff/results/arc-layer-functions.tsv describe the latest handoff and bounded Arc call closure. Cross-check its scope and malformed functions.
+- inputs/chromium-156 is a copied primary source subset at d0c02bfad08ec92a6ffcf989e53cd995e6381a4c (156.0.8078.48), with test-data directories omitted. CHROMIUM-READY confirms completed transfer. Fetch other exact-version public primary files into YOUR directory as needed; absence from this subset proves nothing.
 
 Critical traps:
 - '834 methods on 63 imported classes' is a preliminary DECLARED SURFACE count, not a count of app-called methods. Verify counts and show direct-call evidence separately from available methods.

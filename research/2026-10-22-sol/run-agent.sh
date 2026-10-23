@@ -2,8 +2,8 @@
 set -uo pipefail
 name=$1
 stage=${2:-initial}
-case "$name" in abi|cef|arc-layer|matcher|review) ;; *) exit 64 ;; esac
-case "$stage" in initial|decompile|synthesis) ;; *) exit 64 ;; esac
+case "$name" in abi|cef|arc-layer|matcher|review|quality|spec-[1-4]) ;; *) exit 64 ;; esac
+case "$stage" in initial|decompile|synthesis|specs|classreview) ;; *) exit 64 ;; esac
 root=/home/exedev/work
 job="$name-$stage"
 dir="$root/agents/$name"
@@ -17,6 +17,17 @@ if [ "$stage" = decompile ]; then
 elif [ "$stage" = synthesis ]; then
   for role in abi cef arc-layer matcher; do
     test -e "$root/$role-decompile.done" || exit 75
+  done
+  test -e "$root/quality-initial.done" || exit 75
+  for role in spec-1 spec-2 spec-3 spec-4; do
+    test -e "$root/$role-classreview.done" || exit 75
+  done
+elif [ "$stage" = specs ]; then
+  test -e "$root/inputs/FULL-CORPUS-READY" && test -e "$root/inputs/INDEX-READY" || exit 75
+elif [ "$stage" = classreview ]; then
+  test -e "$root/quality-initial.done" || exit 75
+  for role in spec-1 spec-2 spec-3 spec-4; do
+    test -e "$root/$role-specs.done" || exit 75
   done
 fi
 echo $$ > "$root/$job.pid"
