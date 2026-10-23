@@ -1,0 +1,71 @@
+[
+  {
+    "id": "arcmod-services-6fe7f36d-4359-4983-a00b-272b50defaa6-1",
+    "main": true,
+    "nonce": "arcmod-services-6fe7f36d-4359-4983-a00b-272b50defaa6",
+    "ok": true,
+    "operation": "start",
+    "pid": 48690,
+    "state": {
+      "completionCounts": {
+        "blockedHTTP": 0,
+        "controlHTTP": 0
+      },
+      "completions": 0,
+      "dnsDone": false,
+      "protocolInstalled": true,
+      "results": {},
+      "started": true
+    }
+  },
+  {
+    "id": "arcmod-services-6fe7f36d-4359-4983-a00b-272b50defaa6-2",
+    "main": true,
+    "nonce": "arcmod-services-6fe7f36d-4359-4983-a00b-272b50defaa6",
+    "ok": true,
+    "operation": "status",
+    "pid": 48690,
+    "state": {
+      "completionCounts": {
+        "blockedHTTP": 1,
+        "controlHTTP": 1
+      },
+      "completions": 2,
+      "dnsDone": true,
+      "protocolInstalled": true,
+      "results": {
+        "blockedHTTP": {
+          "bytes": 0,
+          "errorCode": -1009,
+          "errorDescription": "This service is disabled in ArcMod's local mode.",
+          "errorDomain": "NSURLErrorDomain",
+          "fixtureControlMatches": false,
+          "hasResponse": false,
+          "mainThread": true,
+          "policyMessageMatches": true,
+          "status": 0
+        },
+        "controlHTTP": {
+          "bytes": 168,
+          "errorCode": 0,
+          "errorDescription": null,
+          "errorDomain": null,
+          "fixtureControlMatches": true,
+          "hasResponse": true,
+          "mainThread": true,
+          "policyMessageMatches": false,
+          "status": 200
+        },
+        "dns": {
+          "blockedCode": 8,
+          "blockedHost": "firestore.googleapis.com",
+          "blockedIsEAINONAME": true,
+          "blockedReturnedNull": true,
+          "numericControlCode": 0,
+          "numericControlIsLoopback": true
+        }
+      },
+      "started": true
+    }
+  }
+]
