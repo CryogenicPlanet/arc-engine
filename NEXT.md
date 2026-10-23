@@ -28,6 +28,23 @@ New scenarios (CDP-only, so they run with the screen locked) and what they found
   default name ("Default", as in every golden); `userColor` still differs (ours #1C1E22, Arc #A8C7FA in dark
   mode): source being identified.
 
+Later the same afternoon:
+- Stub inventory (nm of our ArcCore vs the 1.170 metadata): 238 ObjC methods were still logging stubs, 116 of
+  them with selectors Arc's app references. These included find in page, zoom, print/save, executeJavascript,
+  capture, translate, accessibility tree, color effects, import, favicons, search engines and profile
+  create/load/delete. Five Claude subagents (Sonnet; brief `arc/wp/CLAUDE-SUBAGENTS.md`) each write one new
+  file; the lead integrates, builds and verifies. `gen_api_table.py` now counts only built sources, so an
+  unfinished file can't drop stubs.
+- Profiles: `profiles-public-api` (in-process driver, golden on Arc's engine) passes on ours. Arc's semantics:
+  create takes the visible name and Chrome picks the directory; get/delete take the directory; error 2 for an
+  invalid request, 3 for an unknown profile.
+- `save-offers-accept` (driver answers Save): fixed a dev-build DCHECK in core_render_state (null compositor
+  on hide); address offers now taken at ChromeAutofillClient::ConfirmSaveAddressProfile (0004) because Arc's
+  engine offers them on background tabs too; iOS promo guarded (0003; it crashed on accept).
+- Thumbnails: the generator held a standing ThumbnailImage subscription per tab, which makes Chrome capture
+  after every load and LoadIfNecessary() restored tabs. Now it subscribes only for a request or when a tab
+  is hidden, like Arc's sparse deliveries.
+
 ## Morning status (2026-10-23 ~07:00 PDT)
 
 Our ArcCore (Chromium 156 from source + arc/ layer + patches 0001-0006) runs Arc 1.168's unmodified app.

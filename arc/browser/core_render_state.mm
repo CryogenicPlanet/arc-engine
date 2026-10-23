@@ -166,7 +166,8 @@ class WidgetReadyState final : public content::RenderWidgetHostObserver,
   }
 
   void SetCompositor(ui::Compositor* compositor) {
-    if (compositor_observation_.IsObservingSource(compositor)) {
+    // Null when the view gives its compositor back (hidden); IsObservingSource() requires a source.
+    if (compositor && compositor_observation_.IsObservingSource(compositor)) {
       return;
     }
     compositor_observation_.Reset();

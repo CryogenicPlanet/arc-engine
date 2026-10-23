@@ -84,10 +84,32 @@ ARC_EXPORT @interface ArcWebContentsThumbnailsGenerator : NSObject
 - (BOOL)requestThumbnail:(NSError**)error;
 - (void)thumbnailChanged:(const gfx::ImageSkia&)image __attribute__((objc_direct));
 @end
+// Watches the tab's visibility for the generator: Arc's engine delivers a thumbnail when a tab is hidden.
+class ThumbnailVisibilityWatcher : public content::WebContentsObserver {
+ public:
+  ThumbnailVisibilityWatcher(content::WebContents* contents, base::RepeatingClosure hidden)
+      : content::WebContentsObserver(contents), hidden_(std::move(hidden)), last_(contents->GetVisibility()) {}
+  void OnVisibilityChanged(content::Visibility visibility) override {
+    const bool became_hidden =
+        visibility == content::Visibility::HIDDEN && last_ != content::Visibility::HIDDEN;
+    last_ = visibility;
+    if (became_hidden) hidden_.Run();
+  }
+
+ private:
+  base::RepeatingClosure hidden_;
+  content::Visibility last_;
+};
+
+// No standing ThumbnailImage subscription: a subscribed thumbnail counts as observed, which makes Chrome
+// capture after every load and load restored tabs (ThumbnailImageBeingObservedChanged). Arc's engine
+// delivers only on request and when a tab is hidden, so a subscription lives only until the next image.
 @implementation ArcWebContentsThumbnailsGenerator {
   NSMutableArray<WebextrasThumbnailRegistration*>* _registrations;
   scoped_refptr<ThumbnailImage> _thumbnail;
   std::unique_ptr<ThumbnailImage::Subscription> _subscription;
+  std::unique_ptr<ThumbnailVisibilityWatcher> _visibility;
+  uint64_t _requestGeneration;
 }
 @synthesize owner = _owner;
 - (instancetype)initWithArcWebContents:(ArcWebContents*)owner {
@@ -103,16 +125,38 @@ ARC_EXPORT @interface ArcWebContentsThumbnailsGenerator : NSObject
   auto* tab = contents ? tabs::TabInterface::MaybeGetFromContents(contents) : nullptr;
   return tab ? ThumbnailTabHelper::From(tab) : nullptr;
 }
-- (void)subscribeIfAvailable __attribute__((objc_direct)) {
-  if (_subscription || !_registrations.count) { return; }
+// Subscribes until the next image arrives (or a short timeout).
+- (BOOL)beginImageRequest __attribute__((objc_direct)) {
+  if (!_registrations.count) { return NO; }
+  if (_subscription) { return YES; }
   auto* helper = [self nativeHelper];
-  if (!helper) { return; }
+  if (!helper) { return NO; }
   _thumbnail = helper->thumbnail();
   _subscription = _thumbnail->Subscribe();
   __weak ArcWebContentsThumbnailsGenerator* weakSelf = self;
   _subscription->SetUncompressedImageCallback(base::BindRepeating(^(gfx::ImageSkia image) {
     [weakSelf thumbnailChanged:image];
   }));
+  const uint64_t generation = ++_requestGeneration;
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(FROM_HERE, base::BindOnce(^{
+    ArcWebContentsThumbnailsGenerator* strongSelf = weakSelf;
+    if (strongSelf && strongSelf->_requestGeneration == generation) { [strongSelf endImageRequest]; }
+  }), base::Seconds(5));
+  return YES;
+}
+- (void)endImageRequest __attribute__((objc_direct)) {
+  // Deliveries run in separate UI tasks, outside ThumbnailImage's callback; clear state before the
+  // native unobserved notification can reenter.
+  ++_requestGeneration;
+  auto subscription = std::move(_subscription);
+  _thumbnail.reset();
+  subscription.reset();
+}
+- (void)tabHidden __attribute__((objc_direct)) {
+  auto* helper = [self nativeHelper];
+  if (!helper || ![self beginImageRequest]) { return; }
+  // The tab just left the screen; its last frame is still available for the tab-switch capture.
+  helper->CaptureThumbnailOnTabBackgrounded();
 }
 - (void)addObserver:(id<ArcThumbnailObserver>)observer {
   if (!observer) { return; }
@@ -123,9 +167,13 @@ ARC_EXPORT @interface ArcWebContentsThumbnailsGenerator : NSObject
   registration.observer = observer;
   registration.owner = _owner;
   [_registrations addObject:registration];
-  [self subscribeIfAvailable];
-  // Native observer registration also requests an already available image.
-  if (_thumbnail) { _thumbnail->RequestThumbnailImage(); }
+  auto* contents = [_owner webContents];
+  if (!_visibility && contents) {
+    __weak ArcWebContentsThumbnailsGenerator* weakSelf = self;
+    _visibility = std::make_unique<ThumbnailVisibilityWatcher>(contents, base::BindRepeating(^{
+      [weakSelf tabHidden];
+    }));
+  }
 }
 - (void)removeObserver:(id<ArcThumbnailObserver>)observer {
   if (!observer) { return; }
@@ -136,22 +184,20 @@ ARC_EXPORT @interface ArcWebContentsThumbnailsGenerator : NSObject
     }
   }
   if (!_registrations.count) {
-    // App deliveries run in separate UI tasks, outside ThumbnailImage's callback.
-    // Clear state before the native unobserved notification can reenter.
-    auto subscription = std::move(_subscription);
-    _thumbnail.reset();
-    subscription.reset();
+    [self endImageRequest];
+    _visibility.reset();
   }
 }
 - (BOOL)requestThumbnail:(NSError**)error {
   auto* contents = [_owner webContents];
   if (!contents) { return CaptureFailure(error, @"managed webcontents is null"); }
-  if (!_registrations.count || !_subscription) { return YES; }
+  if (!_registrations.count) { return YES; }
   auto* helper = [self nativeHelper];
   if (!helper) { return CaptureFailure(error, @"thumbnail helper is unavailable"); }
+  [self beginImageRequest];
   if (contents->GetVisibility() == content::Visibility::VISIBLE) {
     helper->CaptureThumbnailOnTabBackgrounded();
-  } else { _thumbnail->RequestThumbnailImage(); }
+  } else if (_thumbnail) { _thumbnail->RequestThumbnailImage(); }
   return YES;
 }
 - (void)thumbnailChanged:(const gfx::ImageSkia&)image {
@@ -162,6 +208,10 @@ ARC_EXPORT @interface ArcWebContentsThumbnailsGenerator : NSObject
       [(id<ArcThumbnailObserver>)observer webContents:owner thumbnailReady:converted];
     }
   });
+  __weak ArcWebContentsThumbnailsGenerator* weakSelf = self;
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(^{
+    [weakSelf endImageRequest];
+  }));
 }
 @end
 

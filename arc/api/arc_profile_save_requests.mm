@@ -7,7 +7,9 @@
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "base/task/sequenced_task_runner.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 @interface ArcWebContents (SaveRequestsInternal)
 - (id)uiDelegate;
@@ -151,6 +153,50 @@ void DeliverAutofillSaveOffer(content::WebContents* contents, base::WeakPtr<Auto
 
 namespace {
 
+// The tab's pending address offer: Chrome's answer callback, until the app answers or a newer offer or the
+// tab's end replaces it.
+class PendingAddressOffer : public arc::AutofillSaveOffer,
+                            public content::WebContentsUserData<PendingAddressOffer> {
+ public:
+  ~PendingAddressOffer() override = default;
+
+  static base::WeakPtr<arc::AutofillSaveOffer> Replace(content::WebContents* contents,
+                                                       base::OnceCallback<void(bool)> answer) {
+    contents->RemoveUserData(UserDataKey());
+    CreateForWebContents(contents, std::move(answer));
+    return FromWebContents(contents)->weak_factory_.GetWeakPtr();
+  }
+
+  void Accept() override { Answer(true); }
+  void Decline() override { Answer(false); }
+
+ private:
+  friend class content::WebContentsUserData<PendingAddressOffer>;
+  PendingAddressOffer(content::WebContents* contents, base::OnceCallback<void(bool)> answer)
+      : content::WebContentsUserData<PendingAddressOffer>(*contents), answer_(std::move(answer)) {}
+
+  void Answer(bool accepted) {
+    weak_factory_.InvalidateWeakPtrs();
+    if (answer_) std::move(answer_).Run(accepted);
+  }
+
+  base::OnceCallback<void(bool)> answer_;
+  base::WeakPtrFactory<arc::AutofillSaveOffer> weak_factory_{this};
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+};
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PendingAddressOffer);
+
+void OfferAddressSave(content::WebContents* contents, base::OnceCallback<void(bool)> answer) {
+  // Delivered from a task, like the bubble path, so an immediate answer can't reenter Chrome's caller.
+  base::WeakPtr<arc::AutofillSaveOffer> offer = PendingAddressOffer::Replace(contents, std::move(answer));
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](base::WeakPtr<content::WebContents> contents, base::WeakPtr<arc::AutofillSaveOffer> offer) {
+                       if (contents && offer) arc::DeliverAutofillSaveOffer(contents.get(), offer, /*is_card=*/false);
+                     },
+                     contents->GetWeakPtr(), offer));
+}
+
 void OfferPasswordSave(content::WebContents* contents, bool is_update) {
   ArcWebContents* owner = [ArcWebContents wrapperForWebContents:contents];
   id<ArcSaveOfferUI> ui = [owner respondsToSelector:@selector(uiDelegate)] ? [owner uiDelegate] : nil;
@@ -164,4 +210,5 @@ void OfferPasswordSave(content::WebContents* contents, bool is_update) {
 
 __attribute__((constructor)) static void InstallArcSaveOfferHooks() {
   arcmod::GetPasswordSaveOfferHook() = base::BindRepeating(&OfferPasswordSave);
+  arcmod::GetAddressSaveOfferHook() = base::BindRepeating(&OfferAddressSave);
 }

@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/arcmod/arcmod_hooks.h b/chrome/browser/arcmod/arcmod_hooks.h
 new file mode 100644
-index 0000000000..c3a79db92c
+index 0000000000..f46533b367
 --- /dev/null
 +++ b/chrome/browser/arcmod/arcmod_hooks.h
-@@ -0,0 +1,246 @@
+@@ -0,0 +1,257 @@
 +// Copyright 2026 ArcMod. Hooks that ArcCore (Arc's engine interface, //arc, linked into the same framework)
 +// fills in when Arc's app hosts this engine (--arcmod-host-app). Chrome code calls them only when set, so
 +// Chrome itself does not depend on //arc. Header-only: function-local statics in inline functions are shared
@@ -151,6 +151,17 @@ index 0000000000..c3a79db92c
 +    base::RepeatingCallback<void(content::WebContents*, bool is_update)>;
 +inline PasswordSaveOfferHook& GetPasswordSaveOfferHook() {
 +  static base::NoDestructor<PasswordSaveOfferHook> hook;
++  return *hook;
++}
++
++// Address save/update offers shown by Arc's app (ArcAddressEntrySaveRequest) instead of Chrome's bubble,
++// taken where ChromeAutofillClient::ConfirmSaveAddressProfile is asked, before Chrome's bubble queue (as
++// Arc's engine: offers also reach background tabs). The hook runs |answer| at most once: true saves.
++using AddressSaveOfferHook =
++    base::RepeatingCallback<void(content::WebContents*,
++                                 base::OnceCallback<void(bool accepted)> answer)>;
++inline AddressSaveOfferHook& GetAddressSaveOfferHook() {
++  static base::NoDestructor<AddressSaveOfferHook> hook;
 +  return *hook;
 +}
 +
@@ -486,6 +497,43 @@ index 18110dccfe..c19244a5e6 100644
    return CreatePermissionPrompt(web_contents, delegate);
  }
  
+diff --git a/chrome/browser/ui/autofill/chrome_autofill_client.cc b/chrome/browser/ui/autofill/chrome_autofill_client.cc
+index 5220b34d64..a0be238448 100644
+--- a/chrome/browser/ui/autofill/chrome_autofill_client.cc
++++ b/chrome/browser/ui/autofill/chrome_autofill_client.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
+ 
++#include "chrome/browser/arcmod/arcmod_hooks.h"
++
+ #include <utility>
+ 
+ #include "base/check.h"
+@@ -857,6 +859,23 @@ void ChromeAutofillClient::ConfirmSaveAddressProfile(
+           : SaveUpdateAddressProfilePromptMode::kSaveNewProfile,
+       std::move(callback));
+ #else
++  if (arcmod::GetAddressSaveOfferHook()) {
++    arcmod::GetAddressSaveOfferHook().Run(
++        web_contents(),
++        base::BindOnce(
++            [](AutofillProfile profile, AddressProfileSavePromptCallback callback,
++               bool accepted) {
++              if (accepted) {
++                std::move(callback).Run(
++                    AddressPromptUserDecision::kAccepted, profile);
++              } else {
++                std::move(callback).Run(
++                    AddressPromptUserDecision::kDeclined, std::nullopt);
++              }
++            },
++            profile, std::move(callback)));
++    return;
++  }
+   AddressBubblesController::SetUpAndShowSaveOrUpdateAddressBubble(
+       web_contents(), profile, original_profile, save_address_bubble_type,
+       !GetPersonalDataManager().address_data_manager().GetProfiles().empty(),
 diff --git a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc b/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
 index 3bc40bcc91..f0b847319a 100644
 --- a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc

@@ -180,6 +180,28 @@ index b269f1610a..712a1eb4d3 100644
 +  }
    [AppController.sharedController didEndMainMessageLoop];
  }
+diff --git a/chrome/browser/ui/autofill/address_bubbles_controller.cc b/chrome/browser/ui/autofill/address_bubbles_controller.cc
+index 86828b91de..559fe26725 100644
+--- a/chrome/browser/ui/autofill/address_bubbles_controller.cc
++++ b/chrome/browser/ui/autofill/address_bubbles_controller.cc
+@@ -312,10 +312,13 @@ void AddressBubblesController::SetUpBubble(
+ }
+ 
+ void AddressBubblesController::MaybeShowIOSDektopAddressPromo() {
+-  BrowserWindowInterface* browser =
+-      BrowserWindow::FindBrowserWindowWithWebContents(web_contents())
+-          ->AsBrowserView()
+-          ->browser();
++  BrowserWindow* window =
++      BrowserWindow::FindBrowserWindowWithWebContents(web_contents());
++  // ArcMod host: Arc's windows aren't BrowserViews and show no iOS promo.
++  if (!window || !window->AsBrowserView()) {
++    return;
++  }
++  BrowserWindowInterface* browser = window->AsBrowserView()->browser();
+ 
+   // Verify if user is eligible for iOS promo, and attempt showing if they are.
+   ios_promos_utils::VerifyIOSPromoEligibility(
 diff --git a/chrome/browser/ui/browser.cc b/chrome/browser/ui/browser.cc
 index 07de580deb..57d61b0646 100644
 --- a/chrome/browser/ui/browser.cc

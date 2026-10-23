@@ -33,11 +33,18 @@ def return_kind(enc):
 
 rows = [l.rstrip("\n").split("\t") for l in open(os.path.join(HERE, "arccore-1.170.0-objc.tsv"))]
 # Classes with a hand-written primary @implementation (not a category) are declared there, not in the shell.
+# Only sources that are in the build count (arc/BUILD.gn and the work packages' .gni lists): a new file that
+# isn't built yet must not remove its classes' stubs.
+ARC = os.path.dirname(HERE)
+built = set()
+for gn in [os.path.join(ARC, "BUILD.gn")] + [os.path.join(ARC, "wp", n) for n in os.listdir(os.path.join(ARC, "wp")) if n.endswith(".gni")]:
+    built |= set(re.findall(r'"//arc/([^"]+\.mm)"', open(gn).read()))
+    built |= set(re.findall(r'^\s*"([^"/]+/[^"]+\.mm)"', open(gn).read(), re.M))
 hand_written = set()
-for d, _, files in os.walk(os.path.dirname(HERE)):
-    for name in files:
-        if name.endswith(".mm") and name != "arc_api_stubs.mm":
-            hand_written |= set(re.findall(r"^@implementation\s+(Arc\w+)\s*(?:\{|$)", open(os.path.join(d, name)).read(), re.M))
+for rel in sorted(built):
+    path = os.path.join(ARC, rel)
+    if os.path.basename(rel) != "arc_api_stubs.mm" and os.path.exists(path):
+        hand_written |= set(re.findall(r"^@implementation\s+(Arc\w+)\s*(?:\{|$)", open(path).read(), re.M))
 classes = sorted(r[1] for r in rows if r[0] == "C" and r[1] not in hand_written)
 # Property getter -> declared class (T@"NSString", ...), so a getter stub can return a typed placeholder.
 getter_class = {}
