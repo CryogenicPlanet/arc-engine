@@ -14,6 +14,11 @@ const app = resolve(opt("--app") ?? "");
 const outDir = resolve(opt("--out") ?? "");
 const port = opt("--port") ?? "9333";
 const traced = argv.includes("--trace");
+// --record: inject tests/recorder/ArcEngineRecorder.dylib and write each launch's app<->engine calls to
+// launch-N/record.jsonl (for diffing our engine against Arc's).
+const recorded = argv.includes("--record");
+const recorderDylib = resolve(import.meta.dir, "../recorder/ArcEngineRecorder.dylib");
+if (recorded && !existsSync(recorderDylib)) throw new Error(`build ${recorderDylib} first (see its header)`);
 if (!existsSync(app) || !opt("--out")) throw new Error("usage: bun run.ts --app <ArcModAgent-x.app> --out <dir> [--trace] [--port N]");
 mkdirSync(outDir, { recursive: true });
 
@@ -89,7 +94,10 @@ const launch = (): Launch => {
   const exe = join(app, "Contents/MacOS/Arc");
   const before = new Set(pgrepExe(exe));
   const log = join(dir, "app.log");
-  const proc = spawn(["open", "-n", "-g", "-a", app, "--stdout", log, "--stderr", log, "--args", ...chromiumArgs]);
+  const env = recorded
+    ? ["--env", `DYLD_INSERT_LIBRARIES=${recorderDylib}`, "--env", `ARC_RECORD_PATH=${join(dir, "record.jsonl")}`]
+    : [];
+  const proc = spawn(["open", "-n", "-g", "-a", app, ...env, "--stdout", log, "--stderr", log, "--args", ...chromiumArgs]);
   let pid: number | undefined;
   return { proc, pid: () => (pid ??= pgrepExe(exe).find((p) => !before.has(p))) };
 };
@@ -209,6 +217,6 @@ if (await ready(l2, "S7 relaunch")) {
 await quit(l2, "S8 quit");
 
 server.stop(true);
-writeFileSync(join(outDir, "steps.json"), JSON.stringify({ app, slug, traced, port, steps }, null, 2));
+writeFileSync(join(outDir, "steps.json"), JSON.stringify({ app, slug, traced, recorded, port, steps }, null, 2));
 const failed = steps.filter((s) => s.outcome !== "pass");
 console.log(failed.length ? `${failed.length} step(s) not passing` : "all steps pass");
