@@ -1,0 +1,69 @@
+{
+  "scope": "Original static public eligibility/restore conversion; ordinary initialized ArcSessionID only; no runtime/private ABI fixture/source edits.",
+  "createdUTC": "2026-10-23T14:43:49.165979+00:00",
+  "binary": {
+    "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+    "sha256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d"
+  },
+  "ranges": [
+    [
+      "public eligibility and restore ObjC bridges",
+      "43e2b20",
+      "43e2c10"
+    ],
+    [
+      "public native eligibility and restore backends",
+      "42fae00",
+      "42fb09c"
+    ],
+    [
+      "ArcSessionID initializer getter setter",
+      "440ab88",
+      "440ad10"
+    ],
+    [
+      "native optional sessionId aggregate getter",
+      "2d0fb40",
+      "2d0fb48"
+    ]
+  ],
+  "inputs": {
+    "/tmp/arccore-sessions-persistence.py": {
+      "sha256": "1e10f367311eaff4e8c7f8a012cdf0a32f82268c56cdd5d5ccee17dfd047d3d1",
+      "size": 2643
+    },
+    "arc/api/arc_sessions_restore.mm": {
+      "sha256": "a6475f82e58de755fbf87578cc0dcb4144c0aeb685ce0073e707af442a7e37f0",
+      "size": 45571
+    },
+    "arc/api/arc_browser.mm": {
+      "sha256": "cf20d597283ad0b817a47ab97021e9d30ce0a6f76b0442a1ec2c8ea68500c79c",
+      "size": 24125
+    },
+    "arc/api/arc_internal.h": {
+      "sha256": "70495f85414c996dc97262cc9670a9464451e9e215600c934cc71e46269a62a1",
+      "size": 6935
+    },
+    "specs/ArcBrowser.md": {
+      "sha256": "24b2e6be512a78d2533673ab97e8da43de89b20b42d496dae9ba53435daffe1f",
+      "size": 24350
+    },
+    "specs/ArcSessionID.md": {
+      "sha256": "26d147c16aa11f352b51dde450a456fafab056f7dffb87400d8e01e094034311",
+      "size": 6251
+    },
+    "arc/tools/arccore-1.170.0-objc.tsv": {
+      "sha256": "9ba3d4750f15e80ca6836966af5ec50523ccfe5e0ed3c22faa31f8b347492cf5",
+      "size": 313666
+    },
+    "chromium/src/components/sessions/core/session_id.h": {
+      "sha256": "2a91f6aa2861d59c732ad834fe20194f4afb0f32d7c9ad2ede81a4a574572b40",
+      "size": 1949
+    }
+  },
+  "outputs": {
+    "README.md": "ec68842cf453367f92f9bafecbc016a2920f02a72fa647acb8ff95b4127c4ec1",
+    "original-disassembly.txt": "76b0b39269192f40c056d5b6bd4ac5521a546d701b1c57c3202fa706a1d2815d"
+  },
+  "result": "No concrete owned bounds bug; upper-bound check redundant after ordinary ArcSessionID signed32 narrowing."
+}

@@ -1,5 +1,6 @@
-// Test-only local native permission controls. No engine/delegate/block hooks,
-// global input, activation, remote AX calls, credential reads or synthetic results.
+// Test-only local native permission controls. No engine/delegate/block hooks.
+// Default modes use no activation API; explicit opt-in permits one public self
+// NSApp.activate call. No global input, remote AX calls, credential reads or synthetic results.
 #import <AppKit/AppKit.h>
 #import <objc/runtime.h>
 
@@ -297,7 +298,7 @@ static BOOL LiveButton(UIPermissionNode* node, NSString* label) {
 }
 static BOOL ValidStage(NSString* stage) { return [stage isEqual:@"deny"] || (FullScenario() && [@[@"allow", @"site-settings"] containsObject:stage]); }
 static BOOL ValidOperation(NSString* operation) {
-  return [@[@"inventory", @"press-deny", @"press-prompt-site-center"] containsObject:operation] ||
+  return [@[@"inventory", @"press-deny", @"press-prompt-site-center", @"inventory-native-window", @"activate-native-app", @"prepare-native-window", @"inspect-native-window"] containsObject:operation] ||
       (FullScenario() && [@[@"press-allow", @"press-site-settings", @"inspect-site-settings"] containsObject:operation]);
 }
 // Diagnostic-only public local AX graph. Never used by action qualification.
@@ -681,6 +682,16 @@ static void HandleDiagnosticRequest(NSDictionary* request) {
 
 // Separately opted-in public UI reveal attempt. This does not participate in
 // permission AXGroup qualification and never uses the diagnostic graph.
+static BOOL gKeyWindowBudgetConsumed;
+static BOOL gNativeAppActivationEnabled;
+static NSUInteger gNativeAppActivationInvocations;
+static BOOL gNativeAppActivationBudgetConsumed;
+static BOOL gNativeAppActivationIntentPersisted;
+static BOOL gNativeAppActivationReturned;
+static BOOL gKeyWindowPreparationEnabled;
+static NSUInteger gKeyWindowPreparationInvocations;
+static BOOL gKeyWindowIntentPersisted;
+static BOOL gSiteCenterAXPressEnabled;
 static BOOL gRevealEnabled;
 static NSUInteger gRevealAttempts;
 static BOOL gRevealBudgetConsumed;
@@ -705,6 +716,18 @@ static NSDictionary* RevealAccounting(NSDictionary* source) {
   result[@"normalActionAttemptCount"] = @(gAttempts);
   result[@"revealAttemptCount"] = @(gRevealAttempts);
   result[@"revealAttemptBudgetConsumed"] = @((BOOL)gRevealBudgetConsumed);
+  if (gKeyWindowPreparationEnabled) {
+    result[@"preparationInvocationCount"] = @(gKeyWindowPreparationInvocations);
+    result[@"totalPhysicalActions"] = @(gAttempts + gRevealAttempts + gKeyWindowPreparationInvocations + gNativeAppActivationInvocations);
+    result[@"preparationBudgetConsumed"] = @((BOOL)gKeyWindowBudgetConsumed);
+    result[@"preparationIntentPersisted"] = @((BOOL)gKeyWindowIntentPersisted);
+    if (gNativeAppActivationEnabled) {
+      result[@"activationInvocationCount"] = @(gNativeAppActivationInvocations);
+      result[@"activationBudgetConsumed"] = @((BOOL)gNativeAppActivationBudgetConsumed);
+      result[@"activationIntentPersisted"] = @((BOOL)gNativeAppActivationIntentPersisted);
+      result[@"activationMethodReturned"] = @((BOOL)gNativeAppActivationReturned);
+    }
+  }
   return result;
 }
 static NSDictionary* RevealInventory(UIPermissionTree* tree, NSArray<UIPermissionScope*>* scopes, NSDictionary* request) {
@@ -779,9 +802,10 @@ static void HandleRevealRequest(NSDictionary* request) {
   else if (gRevealBudgetConsumed || gRevealAttempts != 0) refusal = @"the one reveal attempt is already consumed; replay is forbidden";
   else if (tree.truncated || scopes.count != 0 || centers.count != 1) refusal = @"live tree must remain complete with zero qualified permission groups and one Site Control Center button";
   UIPermissionNode* button = centers.count == 1 ? centers.firstObject : nil;
-  const BOOL nativeButton = button && [button.object isKindOfClass:NSButton.class];
+  const BOOL nativeButton = !gSiteCenterAXPressEnabled && button && [button.object isKindOfClass:NSButton.class];
   NSString* method = nativeButton ? @"performClick" : @"accessibilityPerformPress";
   if (!refusal && (!button || !RevealLiveSiteCenter(button) || !ProfileIsolated() || !CausalRequest(request))) refusal = @"the same live Site Control Center control or causal scope changed";
+  if (!refusal && gSiteCenterAXPressEnabled && ![button.object respondsToSelector:@selector(accessibilityPerformPress)]) refusal = @"explicit Site Control Center AX press is unavailable; no method fallback";
   if (!refusal) {
     // Consume the separate budget even if intent persistence fails. The method
     // was chosen before this point; neither false return nor exception retries.
@@ -792,6 +816,7 @@ static void HandleRevealRequest(NSDictionary* request) {
     intent[@"normalActionAttemptCount"] = @(gAttempts);
     intent[@"actionAttemptCount"] = @(gAttempts + gRevealAttempts + 1);
     intent[@"nativeActionsPerformed"] = @(gAttempts + gRevealAttempts + 1);
+    if (gKeyWindowPreparationEnabled) intent[@"totalPhysicalActions"] = @(gAttempts + gRevealAttempts + gKeyWindowPreparationInvocations + gNativeAppActivationInvocations + 1);
     intent[@"intentBeforeInvocation"] = @YES;
     if (!PersistRevealIntent(intent)) {
       response[@"refusalReason"] = @"intent could not be persisted privately; budget consumed without native invocation";
@@ -849,8 +874,383 @@ static void AddPostRevealDiagnostics(NSDictionary* request, NSMutableDictionary*
   }
 }
 
+// Explicit test setup: one public makeKeyWindow on the frozen local candidate.
+// Read-only setup inventories bypass RevealInventory and normal qualification.
+static BOOL gKeyWindowInventoryCaptured;
+static NSString* gKeyWindowInventoryID;
+static __weak id gKeyWindowSiteCenter;
+static __weak NSWindow* gKeyWindowCandidate;
+static NSDictionary* KeyWindowState(void) {
+  UIPermissionTree* tree = Tree(NO, NO);
+  NSArray<UIPermissionNode*>* centers = RevealSiteCenters(tree);
+  UIPermissionNode* center = centers.count == 1 ? centers.firstObject : nil;
+  NSWindow* window = gKeyWindowCandidate;
+  BOOL known = window && [tree.windows containsObject:window];
+  BOOL sameControl = center && center.object == gKeyWindowSiteCenter;
+  BOOL sameWindow = center && window && center.window == window;
+  BOOL visible = known && window.visible;
+  BOOL key = known && window.isKeyWindow, main = known && window.isMainWindow;
+  BOOL keyIdentity = window && NSApp.keyWindow == window, mainIdentity = window && NSApp.mainWindow == window;
+  BOOL scope = !tree.truncated && centers.count == 1 && known && sameControl && sameWindow && visible;
+  return @{@"candidateWindowKnown":@((BOOL)known), @"sameCandidateControl":@((BOOL)sameControl),
+      @"sameCandidateWindow":@((BOOL)sameWindow), @"windowVisible":@((BOOL)visible),
+      @"canBecomeKeyWindow":@((BOOL)(known && window.canBecomeKeyWindow)),
+      @"canBecomeMainWindow":@((BOOL)(known && window.canBecomeMainWindow)),
+      @"windowIsKey":@((BOOL)key), @"windowIsMain":@((BOOL)main),
+      @"appKeyWindowMatches":@((BOOL)keyIdentity), @"appMainWindowMatches":@((BOOL)mainIdentity),
+      @"keyOrMainReady":@((BOOL)(scope && ((key && keyIdentity) || (main && mainIdentity)))),
+      @"candidateScopeValid":@((BOOL)scope), @"applicationActive":@((BOOL)NSApp.isActive),
+      @"applicationHidden":@((BOOL)NSApp.isHidden), @"truncated":@((BOOL)tree.truncated),
+      @"uniqueSiteCenterCount":@(centers.count), @"foregroundPID":@(NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier)};
+}
+static BOOL PersistKeyWindowIntent(NSDictionary* response) {
+  NSString* path = [gRequest stringByAppendingString:@".key-window.attempt.json"];
+  NSData* bytes = [NSJSONSerialization dataWithJSONObject:response options:NSJSONWritingPrettyPrinted error:NULL];
+  if (!bytes || ![bytes writeToFile:path options:NSDataWritingAtomic error:NULL]) return NO;
+  if (![NSFileManager.defaultManager setAttributes:@{NSFilePosixPermissions:@0600} ofItemAtPath:path error:NULL]) return NO;
+  return [[NSData dataWithContentsOfFile:path] isEqualToData:bytes];
+}
+static BOOL PersistNativeAppActivationIntent(NSDictionary* response) {
+  NSString* path = [gRequest stringByAppendingString:@".self-activation.attempt.json"];
+  NSData* bytes = [NSJSONSerialization dataWithJSONObject:response options:NSJSONWritingPrettyPrinted error:NULL];
+  if (!bytes || ![bytes writeToFile:path options:NSDataWritingAtomic error:NULL]) return NO;
+  if (![NSFileManager.defaultManager setAttributes:@{NSFilePosixPermissions:@0600} ofItemAtPath:path error:NULL]) return NO;
+  return [[NSData dataWithContentsOfFile:path] isEqualToData:bytes];
+}
+static void HandleKeyWindowRequest(NSDictionary* request) {
+  gBusy = YES;
+  NSString* operation = request[@"operation"];
+  BOOL inventory = [operation isEqual:@"inventory-native-window"];
+  BOOL prepare = [operation isEqual:@"prepare-native-window"];
+  BOOL activate = [operation isEqual:@"activate-native-app"];
+  NSMutableDictionary* response = [@{@"id":request[@"id"], @"nonce":gNonce,
+      @"pid":@(NSProcessInfo.processInfo.processIdentifier), @"mainThread":@((BOOL)NSThread.isMainThread),
+      @"scenario":gScenario, @"stage":request[@"stage"], @"operation":operation, @"phase":Phase(),
+      @"diagnosticOnly":@NO, @"functionalAcceptance":@NO, @"actionAttempted":@NO,
+      @"nativeMethodReturned":@NO, @"nativeActionKind":NSNull.null,
+      @"preparationIntentPersisted":@NO, @"causalProfileIsolated":@((BOOL)ProfileIsolated()),
+      @"causalFixtureVerified":@((BOOL)CausalRequest(request)),
+      @"preparationNotificationPendingVerified":@((BOOL)RevealTrue(request[@"preparationNotificationPendingVerified"])),
+      @"foregroundBefore":@(NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier),
+      @"ownershipBasis":@"Unique fixed-label Site Control Center and the same weak visible local NSWindow in a fresh isolated process with exact driver fixture proof; no page-to-window mapping is claimed.",
+      @"interpretation":@"makeKeyWindow is one experimental public invocation; a void return proves no window state or permission outcome. Same-window key/main observations and canonical prompt/denial/page proof remain required."} mutableCopy];
+  NSString* refusal = nil;
+  if (!gKeyWindowPreparationEnabled || gDiagnosticOnly || !gEnabled || !gRevealEnabled) refusal = @"explicit normal key-window preparation and permission/reveal opt-ins are required";
+  else if (!ProfileIsolated() || !CausalRequest(request) || !RevealTrue(request[@"preparationNotificationPendingVerified"])) refusal = @"fresh causal isolation and exact pending Notification fixture proof are required";
+  else if (![request[@"stage"] isEqual:@"deny"] || gPhase != 0 || gAttempts != 0 || gRevealAttempts != 0) refusal = @"window preparation is restricted to initial deny setup before normal/reveal actions";
+  if (!refusal && inventory) {
+    if (gKeyWindowInventoryCaptured) refusal = @"the first preparation inventory cannot be replaced";
+    else {
+      UIPermissionTree* tree = Tree(NO, NO);
+      NSArray<UIPermissionNode*>* centers = RevealSiteCenters(tree);
+      UIPermissionNode* center = centers.count == 1 ? centers.firstObject : nil;
+      if (tree.truncated || !center || ![tree.windows containsObject:center.window] || !center.window.visible) refusal = @"one complete unique visible enabled local Site Control Center/window is required";
+      else {
+        gKeyWindowInventoryCaptured = YES; gKeyWindowInventoryID = [request[@"id"] copy];
+        gKeyWindowSiteCenter = center.object; gKeyWindowCandidate = center.window;
+      }
+    }
+  } else if (!refusal && (!gKeyWindowInventoryCaptured || ![request[@"preparationInventoryID"] isEqual:gKeyWindowInventoryID])) refusal = @"the frozen first preparation inventory identity is required";
+  NSDictionary* before = KeyWindowState();
+  response[@"before"] = before;
+  if (!refusal && !RevealTrue(before[@"candidateScopeValid"])) refusal = @"the frozen candidate control/window is no longer uniquely visible and local";
+  if (!refusal && activate) {
+    response[@"activationAlreadyActiveBefore"] = @((BOOL)RevealTrue(before[@"applicationActive"]));
+    response[@"interpretation"] = @"One public self NSApplication.activate request; void return proves no effective activation, key/main state or permission outcome. No other app is targeted, and canonical prompt/denial/page proof remains required.";
+    if (!gNativeAppActivationEnabled) refusal = @"explicit canonical-self-activate-v1 opt-in is required";
+    else if (gKeyWindowPreparationInvocations != 0) refusal = @"self activation is restricted to before the key-window invocation";
+    else if (gNativeAppActivationBudgetConsumed) refusal = @"the single public self-activation budget is consumed; no replay";
+    else {
+      gNativeAppActivationBudgetConsumed = YES;
+      if (@available(macOS 14.0, *)) {
+        NSMutableDictionary* intent = [RevealAccounting(response) mutableCopy];
+        intent[@"activationBudgetConsumed"] = @YES;
+        intent[@"activationInvocationCount"] = @(gNativeAppActivationInvocations + 1);
+        intent[@"totalPhysicalActions"] = @(gAttempts + gRevealAttempts + gKeyWindowPreparationInvocations + gNativeAppActivationInvocations + 1);
+        intent[@"nativeActionKind"] = @"NSApplication.activate"; intent[@"actionAttempted"] = @YES;
+        intent[@"preparationInventoryID"] = gKeyWindowInventoryID; intent[@"intentBeforeInvocation"] = @YES;
+        BOOL persisted = PersistNativeAppActivationIntent(intent);
+        gNativeAppActivationIntentPersisted = persisted;
+        NSDictionary* fresh = KeyWindowState();
+        if (!persisted) refusal = @"private self-activation intent persistence failed; budget consumed without invocation";
+        else if (!RevealTrue(fresh[@"candidateScopeValid"]) || !ProfileIsolated() || !CausalRequest(request)) refusal = @"frozen window/profile changed after activation intent; budget consumed without invocation";
+        else {
+          ++gNativeAppActivationInvocations;
+          response[@"actionAttempted"] = @YES; response[@"nativeActionKind"] = @"NSApplication.activate";
+          @try {
+            [NSApp activate];
+            gNativeAppActivationReturned = YES; response[@"nativeMethodReturned"] = @YES;
+          } @catch (NSException* exception) {
+            (void)exception; refusal = @"the one public self-activation invocation raised an exception; no fallback";
+          }
+        }
+      } else refusal = @"public NSApplication.activate requires macOS14 or later; no fallback";
+    }
+  }
+  if (!refusal && prepare && gNativeAppActivationEnabled &&
+      (gNativeAppActivationInvocations != 1 || !gNativeAppActivationReturned || !gNativeAppActivationIntentPersisted)) {
+    refusal = @"key preparation requires the one persisted and returned self-activation invocation in this opt-in mode";
+  }
+  if (!refusal && prepare) {
+    if (gKeyWindowBudgetConsumed) refusal = @"the single key-window preparation budget is consumed; replay is forbidden";
+    else {
+      gKeyWindowBudgetConsumed = YES;
+      NSMutableDictionary* intent = [RevealAccounting(response) mutableCopy];
+      intent[@"preparationBudgetConsumed"] = @YES; intent[@"preparationInvocationCount"] = @(gKeyWindowPreparationInvocations + 1);
+      intent[@"totalPhysicalActions"] = @(gAttempts + gRevealAttempts + gKeyWindowPreparationInvocations + gNativeAppActivationInvocations + 1);
+      intent[@"nativeActionKind"] = @"NSWindow.makeKeyWindow"; intent[@"actionAttempted"] = @YES;
+      intent[@"preparationInventoryID"] = gKeyWindowInventoryID;
+      intent[@"intentBeforeInvocation"] = @YES;
+      BOOL persisted = PersistKeyWindowIntent(intent);
+      gKeyWindowIntentPersisted = persisted;
+      response[@"preparationIntentPersisted"] = @((BOOL)persisted);
+      NSDictionary* fresh = KeyWindowState();
+      if (!persisted) refusal = @"private intent persistence failed; budget consumed without invocation";
+      else if (!RevealTrue(fresh[@"candidateScopeValid"]) || !ProfileIsolated() || !CausalRequest(request)) refusal = @"candidate/profile changed after intent persistence; budget consumed without invocation";
+      else {
+        NSWindow* window = gKeyWindowCandidate;
+        ++gKeyWindowPreparationInvocations;
+        response[@"actionAttempted"] = @YES; response[@"nativeActionKind"] = @"NSWindow.makeKeyWindow";
+        @try { [window makeKeyWindow]; response[@"nativeMethodReturned"] = @YES; }
+        @catch (NSException* exception) { (void)exception; refusal = @"the one public makeKeyWindow invocation raised an exception; no fallback"; }
+      }
+    }
+  }
+  response[@"preparationCandidateCaptured"] = @((BOOL)gKeyWindowInventoryCaptured);
+  response[@"preparationInventoryID"] = gKeyWindowInventoryID ?: NSNull.null;
+  response[@"preparationBudgetConsumed"] = @((BOOL)gKeyWindowBudgetConsumed);
+  response[@"preparationAlreadyReadyBefore"] = @((BOOL)RevealTrue(before[@"keyOrMainReady"]));
+  NSDictionary* after = KeyWindowState(); response[@"after"] = after; response[@"windowState"] = after;
+  response[@"preparationReady"] = @((BOOL)RevealTrue(after[@"keyOrMainReady"]));
+  if (refusal) response[@"refusalReason"] = refusal;
+  [response addEntriesFromDictionary:RevealAccounting(@{})];
+  response[@"foregroundAfter"] = @(NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier);
+  WriteJSON(response, [gRequest stringByAppendingString:@".response.json"]); gBusy = NO;
+}
+
+// Supplemental read-only fixture observations never participate in qualification.
+static BOOL gFixtureSelectionScanConsumed;
+static NSString* gFixtureSelectionFirstID;
+@interface UIPermissionSelectionScan : NSObject
+@property(nonatomic,strong) NSHashTable* seen;
+@property(nonatomic,strong) NSHashTable<NSWindow*>* windows;
+@property(nonatomic,strong) NSHashTable<NSWindow*>* fieldWindows;
+@property(nonatomic,strong) NSMutableDictionary<NSString*,NSNumber*>* counts;
+@property(nonatomic) NSUInteger visits;
+@property(nonatomic) BOOL truncated;
+@property(nonatomic) NSTimeInterval deadline;
+@end
+@implementation UIPermissionSelectionScan
+@synthesize seen=_seen, windows=_windows, fieldWindows=_fieldWindows, counts=_counts, visits=_visits, truncated=_truncated, deadline=_deadline;
+@end
+static void SCount(UIPermissionSelectionScan* scan, NSString* key) { scan.counts[key]=@([scan.counts[key] unsignedIntegerValue]+1); }
+static BOOL STime(UIPermissionSelectionScan* scan) {
+  if (NSProcessInfo.processInfo.systemUptime<=scan.deadline) return YES;
+  scan.truncated=YES; return NO;
+}
+static NSString* SString(id object, SEL selector, UIPermissionSelectionScan* scan) {
+  if (!STime(scan)) return nil;
+  NSString* result=ReadString(object,selector);
+  return STime(scan) ? result : nil;
+}
+static BOOL SProtectionClear(id object, UIPermissionSelectionScan* scan) {
+  if (!STime(scan)) return NO;
+  if (ExcludedClass(NSStringFromClass(object_getClass(object))) || SecureField(object)) { SCount(scan,@"secureOrRemoteOrRendererExcluded"); return NO; }
+  NSArray* names=DAdvertisedAttributes(object);
+  if (!STime(scan)) return NO;
+  if (names.count>128) { scan.truncated=YES; SCount(scan,@"attributeLimit"); return NO; }
+  BOOL ta=NO,la=NO; id typed=DTyped(object,@"protectedContent",&ta);
+  if (!STime(scan)) return NO;
+  id legacy=DLegacy(object,@"protectedContent",names,&la);
+  if (!STime(scan)) return NO;
+  BOOL malformed=(ta && ![typed isKindOfClass:NSNumber.class]) || (la && ![legacy isKindOfClass:NSNumber.class]);
+  if ((ta && [typed isKindOfClass:NSNumber.class] && !([typed isEqual:@YES] || [typed isEqual:@NO])) ||
+      (la && [legacy isKindOfClass:NSNumber.class] && !([legacy isEqual:@YES] || [legacy isEqual:@NO]))) malformed=YES;
+  BOOL conflict=!malformed && ta && la && [typed boolValue]!=[legacy boolValue];
+  if (malformed || conflict) { scan.truncated=YES; SCount(scan,@"protectionMalformedOrConflict"); return NO; }
+  if ((ta && [typed boolValue]) || (la && [legacy boolValue])) { SCount(scan,@"protectedExcluded"); return NO; }
+  return YES;
+}
+static BOOL SVisibleOwnedView(NSView* view, NSWindow* owner, UIPermissionSelectionScan* scan) {
+  if (!STime(scan)) return NO;
+  if (!view || view.window!=owner || !owner.visible || ![scan.windows containsObject:owner] || view.isHiddenOrHasHiddenAncestor) return NO;
+  NSUInteger depth=0;
+  for (NSView* current=view;current;current=current.superview) {
+    if (!STime(scan)) return NO;
+    if (++depth>kDepthLimit) { scan.truncated=YES; return NO; }
+    if (!SProtectionClear(current,scan) || [SString(current,@selector(accessibilityRole),scan) isEqual:NSAccessibilityWebAreaRole]) return NO;
+  }
+  return YES;
+}
+static BOOL SLimit(UIPermissionSelectionScan* scan) {
+  if (!STime(scan)) return YES;
+  if (scan.visits<20000 && scan.seen.count<kNodeLimit) return NO;
+  scan.truncated=YES; return YES;
+}
+static void SVisit(id object, NSWindow* owner, NSUInteger depth, UIPermissionSelectionScan* scan) {
+  if (!object || SLimit(scan)) return;
+  ++scan.visits;
+  if ([scan.seen containsObject:object]) return;
+  if (depth>kDepthLimit) { scan.truncated=YES; return; }
+  [scan.seen addObject:object];
+  @try {
+    if (!SProtectionClear(object,scan)) return;
+    if ([object isKindOfClass:NSWindow.class]) {
+      if (![scan.windows containsObject:object] || ![(NSWindow*)object isVisible]) return;
+      owner=object;
+    } else if ([object isKindOfClass:NSView.class]) {
+      if (!SVisibleOwnedView(object,owner,scan)) return;
+    } else if ([object respondsToSelector:@selector(accessibilityWindow)]) {
+      id reported=[(id<NSAccessibility>)object accessibilityWindow];
+      if (reported && reported!=owner) { SCount(scan,@"foreignWindowExcluded"); return; }
+    }
+    if (!owner || !owner.visible || ![scan.windows containsObject:owner]) return;
+    if ([object respondsToSelector:@selector(isAccessibilityHidden)] && [(id<NSAccessibility>)object isAccessibilityHidden]) return;
+    NSString* role=SString(object,@selector(accessibilityRole),scan);
+    if ([role isEqual:NSAccessibilityWebAreaRole]) { SCount(scan,@"webAreaExcluded"); return; }
+    NSString* identifier=SString(object,@selector(accessibilityIdentifier),scan);
+    BOOL address=[identifier isEqual:@"contentPanelTextField"];
+    if (address) {
+      SCount(scan,@"addressIdentifierCount");
+      [scan.fieldWindows addObject:owner];
+      if ([object isKindOfClass:NSTextField.class] && [role isEqual:NSAccessibilityTextFieldRole] &&
+          !SecureField(object) && SVisibleOwnedView(object,owner,scan)) {
+        // This is the ONLY editable-value exception: real native, fixed ID/role,
+        // verified own visible window and nonsecure/protection-clear ancestry.
+        if (!STime(scan)) return;
+        NSArray* liveWindows=[NSApp.windows copy];
+        if (liveWindows.count>64) { scan.truncated=YES; return; }
+        if ([(NSTextField*)object window]!=owner || !owner.visible || [liveWindows indexOfObjectIdenticalTo:owner]==NSNotFound || !STime(scan)) return;
+        NSString* value=[(NSTextField*)object stringValue];
+        if (!STime(scan)) return;
+        if ([value isKindOfClass:NSString.class]) {
+          SCount(scan,@"supportedNativeAddressCount");
+          if ([value isEqual:[NSString stringWithFormat:@"http://%@/a",gAuthority]]) SCount(scan,@"fixedFixtureURLMatchCount");
+        } else { scan.truncated=YES; SCount(scan,@"unsupportedAddressCount"); }
+      } else SCount(scan,@"unsupportedAddressCount");
+    }
+    // No other editable/virtual text value or descendants are inspected.
+    if ([object isKindOfClass:NSTextField.class] || [object isKindOfClass:NSTextView.class] ||
+        [role isEqual:NSAccessibilityTextFieldRole] || [role isEqual:NSAccessibilityTextAreaRole]) return;
+    if ([object respondsToSelector:@selector(accessibilityChildren)]) {
+      id children=[(id<NSAccessibility>)object accessibilityChildren];
+      if (!STime(scan)) return;
+      if (children && ![children isKindOfClass:NSArray.class]) { scan.truncated=YES; return; }
+      if ([children count]>kNodeLimit) { scan.truncated=YES; return; }
+      for (id child in children) { if (SLimit(scan)) break; SVisit(child,owner,depth+1,scan); }
+    }
+    if ([object isKindOfClass:NSWindow.class]) SVisit([(NSWindow*)object contentView],owner,depth+1,scan);
+    else if ([object isKindOfClass:NSView.class]) {
+      NSArray* children=[[(NSView*)object subviews] copy];
+      if (!STime(scan)) return;
+      if (children.count>kNodeLimit) { scan.truncated=YES; return; }
+      for (id child in children) { if (SLimit(scan)) break; SVisit(child,owner,depth+1,scan); }
+    }
+  } @catch (NSException* exception) { (void)exception; scan.truncated=YES; SCount(scan,@"exceptionCount"); }
+}
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+static void SActionFamilies(id object, UIPermissionSelectionScan* scan) {
+  if (![object respondsToSelector:@selector(accessibilityActionNames)]) { SCount(scan,@"actionNamesUnavailableCount"); return; }
+  if (!STime(scan)) return;
+  id names=[object accessibilityActionNames];
+  if (!STime(scan)) return;
+  if (![names isKindOfClass:NSArray.class] || [names count]>64) { scan.truncated=YES; SCount(scan,@"actionNamesMalformedOrLimit"); return; }
+  for (id name in names) {
+    if (!STime(scan)) break;
+    if (![name isKindOfClass:NSString.class] || [name length]>256) { scan.truncated=YES; SCount(scan,@"actionNameMalformedOrLengthLimit"); continue; }
+    if ([name isEqual:NSAccessibilityPressAction]) SCount(scan,@"fixtureButtonAXPressAdvertisementCount");
+    if ([name hasPrefix:@"Name:press"]) SCount(scan,@"fixtureButtonNamedPressAdvertisementCount");
+  }
+}
+#pragma clang diagnostic pop
+static NSDictionary* SWindowCounts(NSHashTable<NSWindow*>* windows, UIPermissionSelectionScan* scan) {
+  NSUInteger key=0,main=0,keyIdentity=0,mainIdentity=0;
+  for (NSWindow* window in windows) {
+    if (!STime(scan)) break;
+    @try {
+      key+=window.isKeyWindow; main+=window.isMainWindow;
+      keyIdentity+=(window.isKeyWindow && NSApp.keyWindow==window);
+      mainIdentity+=(window.isMainWindow && NSApp.mainWindow==window);
+    } @catch (NSException* exception) { (void)exception; scan.truncated=YES; SCount(scan,@"exceptionCount"); break; }
+  }
+  return @{@"windowCount":@(windows.count),@"keyCount":@(key),@"mainCount":@(main),@"sameAppKeyIdentityCount":@(keyIdentity),@"sameAppMainIdentityCount":@(mainIdentity)};
+}
+static NSDictionary* FixtureSelectionSummary(UIPermissionTree* normalTree) {
+  UIPermissionSelectionScan* scan=[UIPermissionSelectionScan new];
+  scan.seen=[NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory|NSPointerFunctionsObjectPointerPersonality];
+  scan.windows=[NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory|NSPointerFunctionsObjectPointerPersonality];
+  scan.fieldWindows=[NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory|NSPointerFunctionsObjectPointerPersonality];
+  scan.counts=[NSMutableDictionary dictionary]; scan.deadline=NSProcessInfo.processInfo.systemUptime+0.750;
+  NSHashTable<NSWindow*>* buttonWindows=[NSHashTable hashTableWithOptions:NSPointerFunctionsStrongMemory|NSPointerFunctionsObjectPointerPersonality];
+  NSUInteger buttonCount=0,enabledButtonCount=0;
+  @try {
+    NSArray<NSWindow*>* roots=[NSApp.windows copy];
+    if (roots.count>64) scan.truncated=YES;
+    else for (NSWindow* window in roots) if (window.visible) [scan.windows addObject:window];
+    for (UIPermissionNode* node in normalTree.nodes) {
+      if (!STime(scan)) break;
+      id object=node.object;
+      if (![node.role isEqual:NSAccessibilityButtonRole] || !node.visible || !node.window.visible || ![scan.windows containsObject:node.window]) continue;
+      if (!SProtectionClear(object,scan)) continue;
+      if ([object isKindOfClass:NSView.class] && !SVisibleOwnedView(object,node.window,scan)) continue;
+      if ([object respondsToSelector:@selector(isAccessibilityHidden)] && [(id<NSAccessibility>)object isAccessibilityHidden]) continue;
+      BOOL fixture=[SString(object,@selector(accessibilityLabel),scan) isEqual:@"launch-slice A"] || [SString(object,@selector(accessibilityTitle),scan) isEqual:@"launch-slice A"];
+      if (STime(scan) && [object isKindOfClass:NSButton.class]) fixture|=[[(NSButton*)object title] isEqual:@"launch-slice A"];
+      if (!fixture) continue;
+      ++buttonCount; enabledButtonCount+=node.enabled; [buttonWindows addObject:node.window];
+      SActionFamilies(object,scan);
+    }
+    for (NSWindow* window in scan.windows) { if (SLimit(scan)) break; SVisit(window,window,0,scan); }
+  } @catch (NSException* exception) { (void)exception; scan.truncated=YES; SCount(scan,@"exceptionCount"); }
+  NSDictionary* allWindows=SWindowCounts(scan.windows,scan);
+  NSDictionary* fixtureWindows=SWindowCounts(buttonWindows,scan);
+  NSDictionary* fieldWindows=SWindowCounts(scan.fieldWindows,scan);
+  BOOL active=NSApp.isActive,hidden=NSApp.isHidden;
+  BOOL complete=!normalTree.truncated && !scan.truncated && STime(scan);
+  BOOL uniqueSupported=complete && [scan.counts[@"addressIdentifierCount"] unsignedIntegerValue]==1 &&
+      [scan.counts[@"supportedNativeAddressCount"] unsignedIntegerValue]==1 && [scan.counts[@"unsupportedAddressCount"] unsignedIntegerValue]==0;
+  id fixedMatch=uniqueSupported ? @((BOOL)([scan.counts[@"fixedFixtureURLMatchCount"] unsignedIntegerValue]==1)) : NSNull.null;
+  return @{@"readOnly":@YES,@"complete":@((BOOL)complete),@"truncated":@((BOOL)!complete),
+      @"nodeCount":@(scan.seen.count),@"visitCount":@(scan.visits),@"counts":scan.counts,
+      @"fixtureTitleButtonCount":@(buttonCount),@"enabledFixtureTitleButtonCount":@(enabledButtonCount),
+      @"nativeAddressExactStringMatch":fixedMatch,@"addressObservation":uniqueSupported ? ([fixedMatch boolValue] ? @"fixed-match" : @"fixed-mismatch") : @"unknown",
+      @"allKnownVisibleWindows":allWindows,@"fixtureTitleButtonWindows":fixtureWindows,@"addressIdentifierWindows":fieldWindows,
+      @"applicationActive":@((BOOL)active),@"applicationHidden":@((BOOL)hidden),
+      @"interpretation":@"Fixed native DISPLAY string observations only; address absence, unsupported representation or incomplete scope is unknown. No selected-page mapping or permission prerequisite is claimed."};
+}
+static void HandleFixtureSelectionInventory(NSDictionary* request) {
+  gBusy=YES;
+  NSMutableDictionary* response=[@{@"id":request[@"id"],@"nonce":gNonce,@"pid":@(NSProcessInfo.processInfo.processIdentifier),
+      @"mainThread":@((BOOL)NSThread.isMainThread),@"scenario":gScenario,@"stage":request[@"stage"],@"operation":request[@"operation"],
+      @"functionalAcceptance":@NO,@"actionAttempted":@NO,@"nativeMethodReturned":@NO,@"nativeActionKind":NSNull.null,
+      @"actionAttemptCount":@(gAttempts),@"nativeActionsPerformed":@(gAttempts),@"phase":Phase(),
+      @"causalProfileIsolated":@((BOOL)ProfileIsolated()),@"causalFixtureVerified":@((BOOL)CausalRequest(request)),
+      @"notificationNotStartedVerified":@((BOOL)RevealTrue(request[@"notificationNotStartedVerified"])),
+      @"readOnlyFixtureSelection":@NO,@"fixtureSelectionScanCount":@(gFixtureSelectionScanConsumed ? 1 : 0)} mutableCopy];
+  NSString* refusal=nil;
+  if (!RevealTrue(request[@"includeFixtureSelection"]) || !RevealTrue(request[@"notificationNotStartedVerified"])) refusal=@"strict fixture selection opt-in and pre-Notification proof required";
+  else if (gDiagnosticOnly || !gEnabled || gRevealEnabled || gKeyWindowPreparationEnabled || gNativeAppActivationEnabled || gSiteCenterAXPressEnabled) refusal=@"fixture selection observation requires normal canonical actions without reveal/window/activation strategies";
+  else if (![request[@"operation"] isEqual:@"inventory"] || ![request[@"stage"] isEqual:@"deny"] || gPhase!=0 || gAttempts!=0 || gRevealAttempts!=0) refusal=@"fixture selection observation is inventory-only before the first permission action";
+  else if (!ProfileIsolated() || !CausalRequest(request)) refusal=@"fresh causal isolated fixture proof required";
+  else if (gFixtureSelectionScanConsumed) refusal=@"fixture selection observation is one-shot; no rescan";
+  if (!refusal) {
+    gFixtureSelectionScanConsumed=YES; gFixtureSelectionFirstID=[request[@"id"] copy];
+    UIPermissionTree* tree=nil; NSArray<UIPermissionScope*>* scopes=nil;
+    NSDictionary* summary=Summary(@"deny",NO,&tree,&scopes); (void)scopes;
+    [response addEntriesFromDictionary:summary]; response[@"before"]=summary;
+    response[@"fixtureSelectionDiagnostic"]=FixtureSelectionSummary(tree);
+    response[@"readOnlyFixtureSelection"]=@YES;
+  } else response[@"refusalReason"]=refusal;
+  response[@"fixtureSelectionScanCount"]=@(gFixtureSelectionScanConsumed ? 1 : 0);
+  response[@"fixtureSelectionFirstID"]=gFixtureSelectionFirstID ?: NSNull.null;
+  WriteJSON(response,[gRequest stringByAppendingString:@".response.json"]); gBusy=NO;
+}
+
 static void HandleRequest(NSDictionary* request) {
+  if (request[@"includeFixtureSelection"]) { HandleFixtureSelectionInventory(request); return; }
   if (gDiagnosticOnly) { HandleDiagnosticRequest(request); return; }
+  if ([@[@"inventory-native-window", @"activate-native-app", @"prepare-native-window", @"inspect-native-window"] containsObject:request[@"operation"]]) { HandleKeyWindowRequest(request); return; }
   if ([request[@"operation"] isEqual:@"press-prompt-site-center"]) { HandleRevealRequest(request); return; }
   gBusy = YES;
   NSString* stage = request[@"stage"], *operation = request[@"operation"], *identifier = request[@"id"];
@@ -967,6 +1367,16 @@ __attribute__((constructor)) static void StartUIPermissionControlsProbe(void) {
     const char* reveal = getenv("ARC_UI_PERMISSION_REVEAL_ENABLE");
     if (reveal && ![@(reveal) isEqual:@"canonical-site-center-v1"]) return;
     gRevealEnabled = !gDiagnosticOnly && reveal && [@(reveal) isEqual:@"canonical-site-center-v1"];
+    const char* keyWindow = getenv("ARC_UI_PERMISSION_KEY_WINDOW_ENABLE");
+    if (keyWindow && ![@(keyWindow) isEqual:@"canonical-key-window-v1"]) return;
+    gKeyWindowPreparationEnabled = !gDiagnosticOnly && gEnabled && gRevealEnabled && keyWindow && [@(keyWindow) isEqual:@"canonical-key-window-v1"];
+    const char* activation = getenv("ARC_UI_PERMISSION_ACTIVATE_ENABLE");
+    if (activation && ![@(activation) isEqual:@"canonical-self-activate-v1"]) return;
+    gNativeAppActivationEnabled = !gDiagnosticOnly && gKeyWindowPreparationEnabled && activation && [@(activation) isEqual:@"canonical-self-activate-v1"];
+    const char* siteCenterAXPress = getenv("ARC_UI_PERMISSION_SITE_CENTER_AX_PRESS");
+    if (siteCenterAXPress && ![@(siteCenterAXPress) isEqual:@"canonical-site-center-ax-press-v1"]) return;
+    if (siteCenterAXPress && (!gEnabled || !gRevealEnabled || gDiagnosticOnly || gKeyWindowPreparationEnabled || gNativeAppActivationEnabled)) return;
+    gSiteCenterAXPressEnabled = siteCenterAXPress && [@(siteCenterAXPress) isEqual:@"canonical-site-center-ax-press-v1"];
     if (isolation && @(isolation).length && @(isolation).length <= 160) gIsolationNonce = @(isolation);
     gIsolationPath = [[NSHomeDirectory() stringByAppendingPathComponent:@"Library/Application Support"]
         stringByAppendingPathComponent:[NSString stringWithFormat:@"ArcModAgent-%@/.arc-ui-probe-profile.json", slug]];
@@ -975,7 +1385,7 @@ __attribute__((constructor)) static void StartUIPermissionControlsProbe(void) {
       WriteJSON(@{@"installed":@YES, @"pid":@(NSProcessInfo.processInfo.processIdentifier), @"nonce":gNonce,
           @"mainThread":@(NSThread.isMainThread), @"scenario":gScenario, @"phase":Phase(),
           @"diagnosticOnly":@(gDiagnosticOnly), @"actionCapabilityEnabled":@(gEnabled),
-          @"revealCapabilityEnabled":@((BOOL)gRevealEnabled), @"revealAttemptBudget":@(gRevealEnabled ? 1 : 0), @"actionAttemptBudget":@(gDiagnosticOnly ? 0 : Budget()), @"actionAttemptCount":@0,
+          @"siteCenterAXPressEnabled":@((BOOL)gSiteCenterAXPressEnabled), @"nativeAppActivationEnabled":@((BOOL)gNativeAppActivationEnabled), @"keyWindowPreparationEnabled":@((BOOL)gKeyWindowPreparationEnabled), @"revealCapabilityEnabled":@((BOOL)gRevealEnabled), @"revealAttemptBudget":@(gRevealEnabled ? 1 : 0), @"actionAttemptBudget":@(gDiagnosticOnly ? 0 : Budget()), @"actionAttemptCount":@0,
           @"nativeActionsPerformed":@0, @"causalProfileIsolated":@(ProfileIsolated()), @"functionalAcceptance":@NO},
           [gRequest stringByAppendingString:@".ready.json"]);
       dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());

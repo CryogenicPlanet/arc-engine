@@ -9,13 +9,23 @@ if [ "${1:-}" = --locked ]; then
   shift
 fi
 run_number=4
-if [ "${1:-}" = --run-number ] && [ "$#" -eq 2 ] && [[ "$2" =~ ^[1-9][0-9]*$ ]]; then
-  run_number="$2"
-  shift 2
-fi
-[ "$#" -eq 0 ] || { echo "usage: $0 [--run-number N]" >&2; exit 2; }
+media_clock=0
+seen_run_number=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --run-number)
+      [ "$seen_run_number" -eq 0 ] && [ "$#" -ge 2 ] && [[ "$2" =~ ^[1-9][0-9]*$ ]] || { echo "invalid or repeated --run-number" >&2; exit 2; }
+      run_number="$2"; seen_run_number=1; shift 2 ;;
+    --media-clock)
+      [ "$media_clock" -eq 0 ] || { echo "repeated --media-clock" >&2; exit 2; }
+      media_clock=1; shift ;;
+    *) echo "usage: $0 [--run-number N] [--media-clock]" >&2; exit 2 ;;
+  esac
+done
+clock_args=()
+[ "$media_clock" -eq 0 ] || clock_args=(--media-clock)
 if [ "$locked" -ne 1 ]; then
-  exec "$ROOT/arc/tools/locked.sh" bash "$0" --locked --run-number "$run_number"
+  exec "$ROOT/arc/tools/locked.sh" bash "$0" --locked --run-number "$run_number" ${clock_args[@]+"${clock_args[@]}"}
 fi
 python3 - "$ROOT" <<'PY_LOCK'
 import os, pathlib, subprocess, sys
@@ -32,15 +42,19 @@ stem="$ROOT/logs/wp/webextras.native.run$run_number"
 output="$ROOT/results/webextras/native-run$run_number"
 [ ! -e "$output" ] && [ ! -e "$stem.source-before.json" ] || { echo "Refusing prior native-run$run_number artifacts" >&2; exit 2; }
 source_snapshot() {
-  python3 - "$ROOT" "$stem" "$1" <<'PY'
+  python3 - "$ROOT" "$stem" "$1" "$media_clock" <<'PY'
 import datetime, hashlib, json, pathlib, sys
 root, stem, phase = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+mode = 'media-clock' if sys.argv[4] == '1' else 'default'
 paths = sorted(root.glob('arc/api/arc_webextras_*.mm')) + [root/path for path in (
     'arc/browser/webextras_media.h', 'arc/browser/webextras_values.h',
     'arc/wp/webextras.gni', 'arc/browser/webextras_native_probe.m',
     'arc/browser/webextras_native_probe.ts', 'arc/browser/webextras_native_probe.sh',
     'arc/browser/webextras_fixture_inputs.py', 'arc/browser/webextras_fixture_projection.ts',
     'arc/browser/webextras_native_current_run.sh')]
+if mode == 'media-clock':
+    paths += [root/path for path in ('arc/browser/webextras_media_clock_fixture.webm',
+                                    'arc/browser/webextras_media_clock_fixture.json')]
 files = {}
 for path in paths:
     before = path.stat()
@@ -51,11 +65,11 @@ for path in paths:
     files[str(path.relative_to(root))] = {'sha256': digest, 'size': after.st_size,
                                         'mtimeNs': after.st_mtime_ns}
 state = {'capturedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-         'phase': phase, 'scope': 'owned production and native probe source only', 'files': files}
+         'phase': phase, 'probeMode': mode, 'scope': 'owned production and native probe source only', 'files': files}
 pathlib.Path(stem+'.source-'+phase+'.json').write_text(json.dumps(state, indent=2)+'\n')
 if phase != 'before':
     original = json.loads(pathlib.Path(stem+'.source-before.json').read_text())
-    assert original['files'] == files, 'owned production/probe source drifted during build/package/run'
+    assert original['probeMode'] == mode and original['files'] == files, 'owned production/probe source drifted during build/package/run'
 PY
 }
 source_snapshot before
@@ -65,7 +79,7 @@ ARC_BUILD_FAIL_FAST=1 ./build-babysit.sh > "$stem.engine-build.log" 2>&1
 bash arc/browser/webextras_native_probe.sh build > "$stem.probe-build.log" 2>&1
 source_snapshot after-build
 set +e
-bash arc/browser/webextras_native_probe.sh run --out "$output" > "$stem.log" 2>&1
+bash arc/browser/webextras_native_probe.sh run --out "$output" ${clock_args[@]+"${clock_args[@]}"} > "$stem.log" 2>&1
 probe_status=$?
 set -e
 source_snapshot after-run

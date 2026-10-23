@@ -1,0 +1,53 @@
+{
+  "scenario": "cookies-storage-site-settings",
+  "diagnosticOnly": false,
+  "functionalAcceptance": false,
+  "backend": "local AppKit controls",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "PID-bound app/helper/CDP ready"
+    },
+    {
+      "step": "fixture /a",
+      "outcome": "pass",
+      "detail": "canonical URL/title/marker"
+    },
+    {
+      "step": "cookie/local/session storage roundtrip",
+      "outcome": "pass",
+      "detail": "actual native controls followed by page assertion"
+    },
+    {
+      "step": "deny notification prompt",
+      "outcome": "pass",
+      "detail": "actual native controls followed by page assertion"
+    },
+    {
+      "step": "cookie deletion",
+      "outcome": "pass",
+      "detail": "actual native controls followed by page assertion"
+    },
+    {
+      "step": "second origin starts with undecided permission",
+      "outcome": "pass",
+      "detail": "actual native controls followed by page assertion"
+    },
+    {
+      "step": "allow notification prompt",
+      "outcome": "pass",
+      "detail": "actual native controls followed by page assertion"
+    },
+    {
+      "step": "canonical site settings",
+      "outcome": "inconclusive",
+      "detail": "Error: bounded wait expired"
+    },
+    {
+      "step": "quit",
+      "outcome": "inconclusive",
+      "detail": "SIGTERM of exact captured identities; owned browser/helpers exited"
+    }
+  ]
+}

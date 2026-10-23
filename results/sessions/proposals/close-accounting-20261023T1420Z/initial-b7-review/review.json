@@ -1,0 +1,68 @@
+{
+  "reviewedAt": "2026-10-23T14:18:56.415458+00:00",
+  "result": "PASS; no new P1/P2 in the owned-only companion against the exact staged core prerequisites",
+  "findings": [],
+  "scope": "Read-only review of unapplied owned sessions companion plus staged core typed headers/implementation and original discard-completion evidence. No build/app/probe/source/shared-file/Chirp actions. Only these review artifacts written.",
+  "productionUnchanged": true,
+  "productionSHA256": "b7c5c201a2395ecf9cd1bd736958432ed42076f2b970cdbaf627fd18e45e5206",
+  "stagedSHA256": "594b1dca2d070ec8354d420d79832b2deb9a7e7b6048c686f875bdf97446ae48",
+  "patchExactlyMatchesProductionToStagedDiff": true,
+  "checks": [
+    {
+      "item": "Capture order",
+      "evidence": "Staged sessions109 completes PM discard;113 checks current wrapper binding;116\u2013124 select current active registration and capture its weak adapter;125 increments compatibility pending;130 captures exact CoreCloseStateForWebContents(self). No pre-PM accounting/state lookup introduced."
+    },
+    {
+      "item": "Exact logical state",
+      "evidence": "Staged core getter955\u2013959 directly returns owner coreCloseState, CHECKing nonnil; field577 is initialized once at655 before initializer setters. No wrapper creation/native-pointer lookup/fresh-state substitution at enqueue."
+    },
+    {
+      "item": "Runner/task preservation",
+      "evidence": "Original current-default SequencedTaskRunner, FROM_HERE and single ordinary PostTask remain at sessions129. MakeCoreCloseAsyncInvocation synchronously AddPending then returns a closure; it does not post a second task or change delay/nesting policy."
+    },
+    {
+      "item": "Weak capture and registration",
+      "evidence": "Original weakContents and weakAdapter survive at123\u2013124; delivery132\u2013136 reads captured adapter delegate, not current registration. Strong compatibility state retains no ArcWebContents owner; core state owns no wrapper/native/delegate/runner. No new wrapper-retaining cycle introduced."
+    },
+    {
+      "item": "Accounting return paths",
+      "evidence": "Core Make helper131\u2013142 retains captured shared state, invokes conditional callback, then decrements UI pending after callback returns. Expired wrapper/adapter/delegate skip still executes local pending decrement138 and returns to core decrement. Reentrant app close sees core pending through selector return."
+    },
+    {
+      "item": "Compatibility counter",
+      "evidence": "SessionsDiscardState.pending remains its existing package-local predicate for ArcSessionsHasPendingDiscard; it is neither consulted as a second core native count nor reset. Companion adds exactly one core UI increment/decrement per invocation."
+    },
+    {
+      "item": "Cancellation and rebind",
+      "evidence": "Companion adds no retargeting, rebind reset, decrement-on-destruction or cancellation hook. Captured shared state is retained by returned closure. Per staged core contract, rejected/dropped tasks do not decrement pending; local compatibility counter likewise remains pending when its existing block never runs."
+    },
+    {
+      "item": "Original consistency",
+      "evidence": "Native evidence4374d20\u21924374d88/4378148\u21924378194..9c selects registration and counts after PM; captured registration delivery42c0890 and callback42c08d0 precede count decrement42c08f4..fc, with expired-registration decrement42c0968..70. Companion preserves that ordering."
+    }
+  ],
+  "recordedValidation": {
+    "compilerLog": "results/sessions/proposals/close-accounting-20261023T1420Z/compiler.log",
+    "contents": "compiler_exit 0\n\n",
+    "interpretation": "Recorded parent compiler_exit0 with Siso-derived command and VFS staged typed headers; reviewer read but did not rerun compiler. This is not linked/runtime acceptance."
+  },
+  "limits": [
+    "Unapplied sessions companion requires the exact staged core headers/implementation and linkage. No claim those prerequisites or live close selector integration are adopted.",
+    "Core close decision wiring, UI-delegate registration setter wiring, native discard canonical rebind and cross-service migration remain separate prerequisites; this accounting patch does not fix missing-finalize runtime results by itself.",
+    "Normal explicit-restore enqueue-then-rebind delivery, registration replacement/nil reentry, canceled/rejected-task behavior, arbitrary ObjC exceptions/nested run loops and full cancellation semantics were not dynamically tested here.",
+    "ObjC exception unwinding can bypass both normal after-return decrement statements; original exception behavior is not established and no exception-handling policy is invented.",
+    "Compatibility pending is intentionally retained; no inference that the original native UI pending count is discard-only.",
+    "Production source remains b7 and no source/shared patch was applied by reviewer."
+  ],
+  "inputSHA256": {
+    "arc/api/arc_sessions_restore.mm": "b7c5c201a2395ecf9cd1bd736958432ed42076f2b970cdbaf627fd18e45e5206",
+    "results/sessions/proposals/close-accounting-20261023T1420Z/arc_sessions_restore.mm": "594b1dca2d070ec8354d420d79832b2deb9a7e7b6048c686f875bdf97446ae48",
+    "results/sessions/proposals/close-accounting-20261023T1420Z/sessions-close-accounting.patch": "287333403865d6b30222bd7af99da7c8f5c56e1e50a88c6cfd37942a0b8ddc0b",
+    "results/sessions/proposals/close-accounting-20261023T1420Z/compiler.log": "f1e465e5de8290c94ccc7c87185090c067d81bf8179ae0a3c4ca4c81f1ff4ada",
+    "logs/wp/core.accounting-adapters/stage/arc/browser/core_close_adapters.h": "a4f884eb10c6bb261735f3c633f51bc35c8f80315223480ed727d7a106dd2eec",
+    "logs/wp/core.accounting-adapters/stage/arc/browser/core_close_state.h": "1f0fa0fecfdaa8bd8933ca88115e5b4fa34235c14248bfa36aba6ca1fa19ac1f",
+    "logs/wp/core.accounting-adapters/stage/arc/browser/core_close_state.mm": "d922b3a38d5c07c13f0d4615620f10b02fb87b9e455215a627cc0a01cbdcdbeb",
+    "logs/wp/core.accounting-adapters/stage/arc/api/arc_web_contents.mm": "28dfe7b5031228dafac6d2801890485766d98a33c4a86a6e26275d1636637007",
+    "results/sessions/native-evidence/discard-completion-capture.md": "1692bc021e4edd91e4acccc78563c02dc97fc18f9ffcabf5077f50f75dc182da"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "source": {
+    "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/webextras_media_clock_fixture.webm",
+    "realpath": "/Users/cryogenicplanet/general/arc-engine/arc/browser/webextras_media_clock_fixture.webm",
+    "sha256": "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54",
+    "size": 201593,
+    "mtimeMs": 1792764245441.1367,
+    "mtime": "2026-10-23T14:04:05.441Z",
+    "dev": 16777233,
+    "ino": 243719955,
+    "ctimeMs": 1792764245441.1367
+  },
+  "frozen": {
+    "path": "/Users/cryogenicplanet/general/arc-engine/results/webextras/native-run8/webextras-media-clock.webm",
+    "realpath": "/Users/cryogenicplanet/general/arc-engine/results/webextras/native-run8/webextras-media-clock.webm",
+    "sha256": "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54",
+    "size": 201593,
+    "mtimeMs": 1792764245441.1367,
+    "mtime": "2026-10-23T14:04:05.441Z",
+    "dev": 16777233,
+    "ino": 243869848,
+    "ctimeMs": 1792767532120.786
+  },
+  "provenanceIdentity": {
+    "path": "/Users/cryogenicplanet/general/arc-engine/results/webextras/native-run8/webextras-media-clock-provenance.json",
+    "realpath": "/Users/cryogenicplanet/general/arc-engine/results/webextras/native-run8/webextras-media-clock-provenance.json",
+    "sha256": "e9eca86aceab4151e74a8f2ff4a4b7e9e10285f2c8049d6a530eb1e01db23a49",
+    "size": 817,
+    "mtimeMs": 1792767532141.2178,
+    "mtime": "2026-10-23T14:58:52.141Z",
+    "dev": 16777233,
+    "ino": 243869849,
+    "ctimeMs": 1792767532141.2178
+  },
+  "provenance": {
+    "source": "chromium/src/media/test/data/bear-vp9.webm",
+    "sourceSha256": "7cd68c55f4bb47a2df22a85fac9e8b942cbbba24286c037048131944eb0a09eb",
+    "sha256": "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54",
+    "bytes": 201593,
+    "ffprobe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "vp9",
+          "codec_type": "video"
+        }
+      ],
+      "format": {
+        "duration": "8.208000"
+      }
+    },
+    "command": [
+      "ffmpeg",
+      "-v",
+      "error",
+      "-n",
+      "-stream_loop",
+      "2",
+      "-i",
+      "chromium/src/media/test/data/bear-vp9.webm",
+      "-map",
+      "0:v:0",
+      "-an",
+      "-c",
+      "copy",
+      "arc/browser/webextras_media_clock_fixture.webm"
+    ],
+    "ffmpegVersion": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
+  },
+  "policy": {
+    "quantizationSeconds": 0.000004,
+    "maxGetterSeconds": 0.025,
+    "minHeldSpacingSeconds": 0.2,
+    "warmupMilliseconds": 250,
+    "heldMilliseconds": 400,
+    "fixtureSHA256": "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54"
+  }
+}

@@ -10,16 +10,75 @@ import { summarize } from "../../tests/scenarios/coverage";
 type Identity = { pid: number; ppid: number; born: string; command: string };
 type Receipt = Record<string, unknown>;
 type Step = {step: string; outcome: "pass" | "fail" | "inconclusive"; detail: string};
-type Run = {revealAttemptCount?: number; revealUncertain?: boolean; revealPromptObserved?: boolean; revealOutcomeConfirmed?: boolean; revealBaselineInventoryID?: string; diagnosticInventories?: number; agent: string; pid?: number; errors: string[]; receipts: Receipt[]; steps: Step[];
+// BEGIN canonical opt-in read-only wait
+// Clock injection supports semantic checks without launching the app or fixture.
+type CanonicalPromptWaitObservation = {stage: string; purpose: "stage" | "before-reveal"; pollCount: number; elapsedMs: number; readyObserved: boolean};
+async function waitCanonicalPromptInventory(poll: () => Promise<Receipt>, workDeadline: number,
+    clock: {now: () => number; sleep: (ms: number) => Promise<unknown>}, first?: {row: Receipt; started: number}) {
+  const started = first?.started ?? clock.now(), deadline = Math.min(started + 8000, workDeadline);
+  let pollCount = 0, nextPollAt = started, readyObserved = false;
+  for (let attempt = 0; attempt < 9; ++attempt) {
+    let row: Receipt;
+    if (attempt === 0 && first) { row = first.row; nextPollAt = started + 1000; }
+    else {
+      if (clock.now() >= workDeadline || clock.now() > deadline) break;
+      if (nextPollAt > deadline) {
+        await clock.sleep(Math.max(0, deadline - clock.now()));
+        break;
+      }
+      await clock.sleep(Math.max(0, nextPollAt - clock.now()));
+      if (clock.now() >= workDeadline || clock.now() > deadline) break;
+      nextPollAt = clock.now() + 1000;
+      row = await poll();
+    }
+    ++pollCount;
+    if (clock.now() >= workDeadline || clock.now() > deadline) break;
+    if (row.matchingGroupCount === 1 && row.exactMessageCount === 1 && row.notificationsIconCount === 1 && row.truncated === false) { readyObserved = true; break; }
+  }
+  // Exhausted global work authority cannot authorize a subsequent reveal/action.
+  if (clock.now() >= workDeadline) throw new Error("canonical prompt observation exhausted work deadline; no subsequent native action");
+  return {pollCount, elapsedMs: clock.now() - started, readyObserved};
+}
+// END canonical opt-in read-only wait
+
+// Optional subset policy permits only stopped, already trusted baseline components.
+type IdleGuardTarget = {targetId: string; type: string; url: string; browserContextId?: string};
+function idleComponentSubset(targets: IdleGuardTarget[], baselineComponents: Map<string, IdleGuardTarget>,
+    tombstones: Set<string>, fixtureTarget: string, fixtureURLs: Set<string>, baselinePages: Set<string>, blankURLs: Set<string>) {
+  let fixtureMatchCount=0,unexpectedTargetCount=0,missingKnownServiceWorkerCount=0,missingKnownIdleEventPageCount=0,missingBackgroundPageCount=0;
+  const newlyStopped: string[]=[];
+  const sameComponent=(row: IdleGuardTarget, initial: IdleGuardTarget) => row.targetId===initial.targetId && row.type===initial.type && row.url===initial.url && row.browserContextId===initial.browserContextId;
+  for (const row of targets) {
+    // Tombstones precede every generic match, including browser and blank page.
+    if (tombstones.has(row.targetId)) { ++unexpectedTargetCount; continue; }
+    const initial=baselineComponents.get(row.targetId);
+    if (initial) { if (sameComponent(row,initial)) continue; ++unexpectedTargetCount; continue; }
+    if (row.targetId===fixtureTarget && row.type==="page" && fixtureURLs.has(row.url)) { ++fixtureMatchCount; continue; }
+    if (row.type==="browser" && row.url==="") continue;
+    if (row.type==="page" && baselinePages.has(row.targetId) && blankURLs.has(row.url)) continue;
+    ++unexpectedTargetCount;
+  }
+  for (const [id,initial] of baselineComponents) {
+    if (targets.some(row=>sameComponent(row,initial))) continue;
+    if (initial.type==="service_worker") { ++missingKnownServiceWorkerCount; if (!tombstones.has(id)) newlyStopped.push(id); }
+    else if (initial.type==="background_page" && initial.url==="chrome-extension://nkeimhogjdpnpccoofpliimaahmaaome/background.html") { ++missingKnownIdleEventPageCount; if (!tombstones.has(id)) newlyStopped.push(id); }
+    else ++missingBackgroundPageCount;
+  }
+  const duplicateTargetIDs=new Set(targets.map(row=>row.targetId)).size!==targets.length;
+  return {classification:{duplicateTargetIDs,missingKnownServiceWorkerCount,missingKnownIdleEventPageCount,missingBackgroundPageCount,unexpectedTargetCount,fixtureMatchCount},newlyStopped,
+    valid:!duplicateTargetIDs && missingBackgroundPageCount===0 && unexpectedTargetCount===0 && fixtureMatchCount===1};
+}
+
+type Run = {fixtureSelectionDiagnostic?: Receipt; idleComponentStopCount?: number; targetGuardFailureClassifications?: Receipt[]; canonicalPromptWaitObservations?: CanonicalPromptWaitObservation[]; activationInvocationCount?: number; preparationInventoryID?: string; preparationInvocationCount?: number; preparationUncertain?: boolean; preparationReadyObserved?: boolean; preparationObservationElapsedMs?: number; preparationOutcomeConfirmed?: boolean; totalPhysicalActions?: number; revealAttemptCount?: number; revealUncertain?: boolean; revealPromptObserved?: boolean; revealOutcomeConfirmed?: boolean; revealBaselineInventoryID?: string; diagnosticInventories?: number; agent: string; pid?: number; errors: string[]; receipts: Receipt[]; steps: Step[];
   cleanup?: string; elapsedMs?: number; phase?: string; browserAliveOnFailure?: boolean;
   closeAcknowledged?: boolean; artifactBefore?: Record<string, string>; artifactAfter?: Record<string, string>; artifactsStable?: boolean; completedStages: string[]; uncertainMutation?: string; coverage?: unknown; profileIsolation?: {nonce: string; device: number; inode: number}};
 const root = resolve(import.meta.dir, "../..");
 const args = process.argv.slice(2);
-const allowed = new Set(["--out", "--dylib", "--agents", "--port", "--record", "--scenario", "--diagnostic-only", "--reveal-prompt"]);
+const allowed = new Set(["--out", "--dylib", "--agents", "--port", "--record", "--scenario", "--diagnostic-only", "--reveal-prompt", "--foreground-launch", "--prepare-native-window", "--activate-native-app", "--site-center-ax-press", "--canonical-prompt-wait", "--fixture-selection-diagnostic", "--allow-idle-component-stop"]);
 const options = new Map<string, string>();
 for (let i = 0; i < args.length;) {
   const key = args[i]!;
-  if (key === "--diagnostic-only" || key === "--reveal-prompt") {
+  if (key === "--diagnostic-only" || key === "--reveal-prompt" || key === "--foreground-launch" || key === "--prepare-native-window" || key === "--activate-native-app" || key === "--site-center-ax-press" || key === "--canonical-prompt-wait" || key === "--fixture-selection-diagnostic" || key === "--allow-idle-component-stop") {
     if (options.has(key)) throw new Error(`duplicate ${key}`);
     options.set(key, "1"); ++i; continue;
   }
@@ -29,9 +88,23 @@ for (let i = 0; i < args.length;) {
 }
 const diagnosticOnly = options.has("--diagnostic-only");
 const revealPrompt = options.has("--reveal-prompt");
+const foregroundLaunch = options.has("--foreground-launch");
+const prepareNativeWindow = options.has("--prepare-native-window");
+const activateNativeApp = options.has("--activate-native-app");
+const siteCenterAXPress = options.has("--site-center-ax-press");
+const canonicalPromptWait = options.has("--canonical-prompt-wait");
+const fixtureSelectionDiagnostic = options.has("--fixture-selection-diagnostic");
+const allowIdleComponentStop = options.has("--allow-idle-component-stop");
+if (allowIdleComponentStop && diagnosticOnly) throw new Error("--allow-idle-component-stop requires normal mode");
+if (fixtureSelectionDiagnostic && (diagnosticOnly || !canonicalPromptWait || revealPrompt || prepareNativeWindow || activateNativeApp || siteCenterAXPress)) throw new Error("--fixture-selection-diagnostic requires normal --canonical-prompt-wait without reveal/window/activation/modern strategies");
+if (canonicalPromptWait && (diagnosticOnly || prepareNativeWindow || activateNativeApp)) throw new Error("--canonical-prompt-wait requires normal mode and excludes window preparation/activation");
+if (siteCenterAXPress && (diagnosticOnly || !revealPrompt || prepareNativeWindow || activateNativeApp)) throw new Error("--site-center-ax-press requires normal --reveal-prompt and excludes window preparation/activation");
+if (activateNativeApp && (diagnosticOnly || !prepareNativeWindow || !revealPrompt)) throw new Error("--activate-native-app requires normal --prepare-native-window and --reveal-prompt");
+if (prepareNativeWindow && (diagnosticOnly || !revealPrompt)) throw new Error("--prepare-native-window requires --reveal-prompt and normal mode");
+if (foregroundLaunch && (diagnosticOnly || !revealPrompt)) throw new Error("--foreground-launch requires --reveal-prompt and normal mode");
 if (diagnosticOnly && revealPrompt) throw new Error("--diagnostic-only and --reveal-prompt are mutually exclusive");
 if (!options.has("--out") || !options.has("--dylib")) {
-  throw new Error("usage: bun arc/browser/ui_permission_controls_probe.ts --out NEW_DIR --dylib PATH [--agents trace156,ours156] [--port 9464] [--record 0|1] [--diagnostic-only] [--reveal-prompt]");
+  throw new Error("usage: bun arc/browser/ui_permission_controls_probe.ts --out NEW_DIR --dylib PATH [--agents trace156,ours156] [--port 9464] [--record 0|1] [--diagnostic-only] [--reveal-prompt] [--foreground-launch] [--prepare-native-window] [--activate-native-app] [--site-center-ax-press] [--canonical-prompt-wait] [--fixture-selection-diagnostic] [--allow-idle-component-stop]");
 }
 const out = resolve(options.get("--out")!);
 const dylib = resolve(options.get("--dylib")!);
@@ -189,7 +262,7 @@ try {
       exec(["defaults", "write", `company.thebrowser.Browser.mod.agent.${agent}`, "firebaseSyncEnabled", "-bool", "false"]);
       run.phase = "launch";
       launchRequested = true;
-      exec(["open", "-n", "-g", "-a", app,
+      exec(["open", "-n", ...(foregroundLaunch ? [] : ["-g"]), "-a", app,
         "--env", `DYLD_INSERT_LIBRARIES=${recorded ? recorder + ":" : ""}${dylib}`,
         ...(recorded ? ["--env", `ARC_RECORD_PATH=${join(dir, "record.jsonl")}`] : []),
         "--env", `ARC_UI_PERMISSION_REQUEST=${requestPath}`, "--env", `ARC_UI_PERMISSION_NONCE=${nonce}`,
@@ -197,6 +270,9 @@ try {
         ...(run.profileIsolation ? ["--env", `ARC_UI_PROFILE_ISOLATION_NONCE=${run.profileIsolation.nonce}`] : []),
         ...(diagnosticOnly ? ["--env", "ARC_UI_PERMISSION_DIAGNOSTIC_ONLY=1"] : ["--env", "ARC_UI_PERMISSION_ACTION_ENABLE=canonical-permissions-v1"]),
         ...(revealPrompt ? ["--env", "ARC_UI_PERMISSION_REVEAL_ENABLE=canonical-site-center-v1"] : []),
+        ...(prepareNativeWindow ? ["--env", "ARC_UI_PERMISSION_KEY_WINDOW_ENABLE=canonical-key-window-v1"] : []),
+        ...(activateNativeApp ? ["--env", "ARC_UI_PERMISSION_ACTIVATE_ENABLE=canonical-self-activate-v1"] : []),
+        ...(siteCenterAXPress ? ["--env", "ARC_UI_PERMISSION_SITE_CENTER_AX_PRESS=canonical-site-center-ax-press-v1"] : []),
         "--env", `ARC_UI_PERMISSION_SCENARIO=${scenario}`, "--stdout", join(dir, "app.stdout.log"), "--stderr", join(dir, "app.stderr.log"), "--args",
         "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking",
         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${data}`,
@@ -206,10 +282,10 @@ try {
         return matches.length === 1 ? matches[0] : undefined;
       }, 20000); run.pid = browser.pid;
       await wait(() => {
-        const ready = json<{installed: boolean; pid: number; nonce: string; mainThread: boolean; actionCapabilityEnabled?: boolean; causalProfileIsolated?: boolean; diagnosticOnly?: boolean; revealCapabilityEnabled?: boolean}>(requestPath + ".ready.json");
+        const ready = json<{installed: boolean; pid: number; nonce: string; mainThread: boolean; actionCapabilityEnabled?: boolean; causalProfileIsolated?: boolean; diagnosticOnly?: boolean; revealCapabilityEnabled?: boolean; keyWindowPreparationEnabled?: boolean; nativeAppActivationEnabled?: boolean; siteCenterAXPressEnabled?: boolean}>(requestPath + ".ready.json");
         return ready.installed && ready.pid === browser!.pid && ready.nonce === nonce && ready.mainThread &&
           ready.actionCapabilityEnabled === !diagnosticOnly && (!diagnosticOnly || ready.diagnosticOnly === true) &&
-          (!revealPrompt || ready.revealCapabilityEnabled === true) && ready.causalProfileIsolated === true;
+          (!revealPrompt || ready.revealCapabilityEnabled === true) && (!prepareNativeWindow || ready.keyWindowPreparationEnabled === true) && (!activateNativeApp || ready.nativeAppActivationEnabled === true) && (!siteCenterAXPress || ready.siteCenterAXPressEnabled === true) && ready.causalProfileIsolated === true;
       }, 20000);
       await wait(() => {
         const ready = json<{ready: boolean; pid: number}>(join(applicationData, "ArcModAgentReady.json"));
@@ -253,6 +329,7 @@ try {
         return initial !== undefined && row.type === initial.type && row.url === initial.url &&
             row.browserContextId === initial.browserContextId;
       };
+      const stoppedBaselineComponents = new Set<string>();
       const created = await client.request("Target.createTarget", {url: fixtureURL, background: true});
       if (typeof created.targetId !== "string") throw new Error("no owned canonical fixture target");
       const target = created.targetId;
@@ -260,16 +337,27 @@ try {
         const targets = await inventoryTargets();
         let exact = 0;
         const allowedFixtureURLs = new Set([fixtureURL, ...(scenario === "cookies-storage-site-settings" ? [`${freshBase}/a`] : [])]);
+        const subset = idleComponentSubset(targets, baselineComponents, stoppedBaselineComponents, target, allowedFixtureURLs, baselinePages, blankURLs);
+        const recordTargetGuardFailure = () => {
+          (run.targetGuardFailureClassifications ??= []).push(subset.classification);
+          writeFileSync(join(dir, "target-guard-failure.json"), JSON.stringify(subset.classification, null, 2), {mode: 0o600});
+        };
+        if (allowIdleComponentStop) {
+          if (!subset.valid) { recordTargetGuardFailure(); throw new Error("trusted target subset guard refused; fixed classification saved"); }
+          for (const id of subset.newlyStopped) stoppedBaselineComponents.add(id);
+          run.idleComponentStopCount = stoppedBaselineComponents.size;
+          return targets;
+        }
         for (const row of targets) {
           if (row.targetId === target && row.type === "page" && allowedFixtureURLs.has(row.url)) { ++exact; continue; }
           if (row.type === "browser" && row.url === "") continue;
           if (row.type === "page" && baselinePages.has(row.targetId) && blankURLs.has(row.url)) continue;
           if (matchesBaselineComponent(row)) continue;
-          throw new Error("foreign page, popup or unexpected executable target; no modal action allowed");
+          recordTargetGuardFailure(); throw new Error("foreign page, popup or unexpected executable target; no modal action allowed");
         }
         if (new Set(targets.map(row => row.targetId)).size !== targets.length ||
-            [...baselineComponents.keys()].some(id => !targets.some(row => row.targetId === id && matchesBaselineComponent(row)))) throw new Error("baseline component target changed; no native action allowed");
-        if (exact !== 1) throw new Error("exact created fixture target is absent or ambiguous");
+            [...baselineComponents.keys()].some(id => !targets.some(row => row.targetId === id && matchesBaselineComponent(row)))) { recordTargetGuardFailure(); throw new Error("baseline component target changed; no native action allowed"); }
+        if (exact !== 1) { recordTargetGuardFailure(); throw new Error("exact created fixture target is absent or ambiguous"); }
         return targets;
       };
       const evaluate = async (expression: string): Promise<unknown> => {
@@ -281,7 +369,10 @@ try {
       await wait(pageIdentity, 15000);
       run.steps.push({step: "fixture /a", outcome: "pass", detail: "canonical URL/title/marker"});
       let requestCount = 0;
+      let activationSetupDeadline: number | undefined;
       let postRevealDiagnosticRequested = false;
+      let fixtureSelectionRequested = false;
+      let fixtureSelectionAcknowledged = false;
       const mutationIntents = new Set<string>();
       const verifyRevealProfileAndPID = () => {
         if (!browser || verifyAgentEndpoint(agent, port) !== browser.pid || !snapshot().some(row => same(row, browser!))) throw new Error("reveal captured process identity changed");
@@ -298,7 +389,14 @@ try {
         if (!browser || verifyAgentEndpoint(agent, port) !== browser.pid || !snapshot().some(row => same(row, browser!))) throw new Error("native request captured-process identity changed");
         const id = `${nonce}-${requestCount}`;
         if (diagnosticOnly && operation !== "inventory") throw new Error("diagnostic-only driver refuses every native non-inventory operation");
-        const causalFixtureVerified = diagnosticOnly || revealPrompt || !["inventory", "inspect-site-settings"].includes(operation);
+        const includeFixtureSelection = fixtureSelectionDiagnostic && !fixtureSelectionRequested && stage === "deny" && operation === "inventory";
+        let notificationNotStartedVerified = false;
+        if (includeFixtureSelection) {
+          verifyRevealProfileAndPID();
+          notificationNotStartedVerified = await evaluate(`location.href===${JSON.stringify(fixtureURL)}&&document.title==='launch-slice A'&&!!document.getElementById('ls-marker-7f3a')&&typeof window.permissionResult==='undefined'&&Notification.permission==='default'`) === true;
+          if (!notificationNotStartedVerified) throw new Error("selection diagnostic requires exact fixture/default permission before first Notification");
+        }
+        const causalFixtureVerified = includeFixtureSelection || diagnosticOnly || revealPrompt || !["inventory", "inspect-site-settings"].includes(operation);
         if (causalFixtureVerified) {
           const targets = await verifyExclusiveFixtureTargets();
           writeFileSync(join(dir, `${id}.targets.json`), JSON.stringify(targets, null, 2), {mode: 0o600});
@@ -310,18 +408,37 @@ try {
           if (!notificationPendingVerified) throw new Error("reveal fixture is no longer the exact pending Notification request");
           verifyRevealProfileAndPID();
         }
+        const keyWindowOperation = ["inventory-native-window", "activate-native-app", "prepare-native-window", "inspect-native-window"].includes(operation);
+        let preparationNotificationPendingVerified = false;
+        if (keyWindowOperation) {
+          if (!prepareNativeWindow || diagnosticOnly) throw new Error("key-window setup requires explicit normal opt-in");
+          preparationNotificationPendingVerified = await pendingRevealFixture();
+          if (!preparationNotificationPendingVerified) throw new Error("key-window setup fixture changed or Notification is not pending/default");
+          verifyRevealProfileAndPID();
+        }
         const includeRevealDiagnostics = !diagnosticOnly && revealPrompt && operation === "inventory" && stage === "deny" &&
           run.revealAttemptCount === 1 && run.completedStages.length === 0 && run.receipts.at(-1)?.normalActionAttemptCount === 0 && !postRevealDiagnosticRequested;
         if (includeRevealDiagnostics) postRevealDiagnosticRequested = true;
         const request = {id, nonce, pid: browser.pid, stage, operation,
           causalFixtureVerified, isolatedProfileNonce: run.profileIsolation?.nonce,
           ...(includeRevealDiagnostics ? {includeRevealDiagnostics: true} : {}),
+          ...(includeFixtureSelection ? {includeFixtureSelection: true, notificationNotStartedVerified} : {}),
+          ...(keyWindowOperation ? {preparationNotificationPendingVerified, preparationInventoryID: run.preparationInventoryID} : {}),
           ...(operation === "press-prompt-site-center" ? {notificationPendingVerified, revealBaselineInventoryID: run.revealBaselineInventoryID} : {})};
-        if (!["inventory", "inspect-site-settings"].includes(operation)) {
+        if (activateNativeApp && operation === "prepare-native-window" && (activationSetupDeadline === undefined || Date.now() >= activationSetupDeadline)) throw new Error("shared setup deadline expired after causal verification; refusing key mutation intent/request");
+        if (!["inventory", "inspect-site-settings", "inventory-native-window", "inspect-native-window"].includes(operation)) {
+          if (canonicalPromptWait && Date.now() >= workDeadline) throw new Error("canonical prompt wait exhausted work deadline after causal verification; refusing mutation intent");
           if (mutationIntents.has(operation)) throw new Error("mutation replay refused");
           mutationIntents.add(operation);
-          run.uncertainMutation = run.revealUncertain ? "press-prompt-site-center" : operation;
+          run.uncertainMutation = run.preparationUncertain ? "prepare-native-window" : run.revealUncertain ? "press-prompt-site-center" : operation;
           writeFileSync(join(dir, `${id}.intent.json`), JSON.stringify({...request, retriesAllowed: false}), {mode: 0o600});
+        }
+        if (activateNativeApp && operation === "prepare-native-window" && (activationSetupDeadline === undefined || Date.now() >= activationSetupDeadline)) throw new Error("shared setup deadline expired before helper dispatch; refusing key request");
+        if (canonicalPromptWait && Date.now() >= workDeadline) throw new Error("canonical prompt wait exhausted work deadline before helper dispatch");
+        if (includeFixtureSelection) {
+          verifyRevealProfileAndPID();
+          if (await evaluate(`location.href===${JSON.stringify(fixtureURL)}&&document.title==='launch-slice A'&&!!document.getElementById('ls-marker-7f3a')&&typeof window.permissionResult==='undefined'&&Notification.permission==='default'`) !== true) throw new Error("pre-Notification selection scope changed before helper dispatch");
+          verifyRevealProfileAndPID(); fixtureSelectionRequested = true;
         }
         writeFileSync(requestPath + ".tmp", JSON.stringify(request), {mode: 0o600});
         renameSync(requestPath + ".tmp", requestPath);
@@ -334,15 +451,38 @@ try {
         if (response.nonce !== nonce || response.pid !== browser.pid || response.mainThread !== true || response.functionalAcceptance !== false) throw new Error("native response identity/semantics mismatch");
         if (causalFixtureVerified && (response.causalProfileIsolated !== true || response.causalFixtureVerified !== true)) throw new Error("helper causal ownership verification missing");
         if (diagnosticOnly && (response.diagnosticOnly !== true || response.actionAttempted !== false || response.actionAttemptCount !== 0 || response.nativeActionsPerformed !== 0 || response.refusalReason)) throw new Error("diagnostic-only helper semantics/refusal mismatch");
+        if (includeFixtureSelection) {
+          const diagnostic = response.fixtureSelectionDiagnostic;
+          if (response.readOnlyFixtureSelection !== true || response.fixtureSelectionScanCount !== 1 || response.fixtureSelectionFirstID !== id || response.actionAttempted !== false || response.actionAttemptCount !== 0 || response.nativeActionsPerformed !== 0 || response.refusalReason ||
+              !diagnostic || typeof diagnostic !== "object" || Array.isArray(diagnostic) || (diagnostic as Receipt).readOnly !== true) throw new Error("one-shot pre-Notification selection diagnostic acknowledgment refused");
+          run.fixtureSelectionDiagnostic = diagnostic as Receipt; fixtureSelectionAcknowledged = true;
+        }
         if (includeRevealDiagnostics) {
           const diagnostic = response.revealDiagnostic;
           if (response.readOnlyRevealDiagnostics !== true || response.diagnosticOnly !== false || response.revealDiagnosticScanCount !== 1 || response.refusalReason ||
               !diagnostic || typeof diagnostic !== "object" || Array.isArray(diagnostic) ||
               (diagnostic as Receipt).diagnosticOnly !== true || (diagnostic as Receipt).functionalAcceptance !== false) throw new Error("single read-only post-reveal diagnostic acknowledgment missing or refused; no rescan");
         }
+        if (prepareNativeWindow) {
+          const prep = response.preparationInvocationCount, normal = response.normalActionAttemptCount, reveal = response.revealAttemptCount;
+          const activation = activateNativeApp ? response.activationInvocationCount : 0;
+          if (!Number.isInteger(activation) || (activation !== 0 && activation !== 1)) throw new Error("activation counter is invalid");
+          if (activateNativeApp) run.activationInvocationCount = activation;
+          if (!Number.isInteger(prep) || (prep !== 0 && prep !== 1) || !Number.isInteger(normal) || !Number.isInteger(reveal) ||
+              response.totalPhysicalActions !== Number(activation) + Number(prep) + Number(normal) + Number(reveal) || response.totalPhysicalActions !== Number(activation) + Number(prep) + Number(response.actionAttemptCount)) throw new Error("preparation/physical counters disagree");
+          run.preparationInvocationCount = prep;
+          run.totalPhysicalActions = Number(response.totalPhysicalActions);
+          if (keyWindowOperation && response.refusalReason) throw new Error("key-window preparation scope/refusal: " + String(response.refusalReason));
+        }
         return response;
       };
       const readyStage = async (stage: string) => {
+        if (canonicalPromptWait) {
+          const observed = await waitCanonicalPromptInventory(() => rpc(stage, "inventory"), workDeadline, {now: Date.now, sleep});
+          (run.canonicalPromptWaitObservations ??= []).push({stage, purpose: "stage", ...observed});
+          if (observed.readyObserved) return;
+          throw new Error(`canonical ${stage} native sheet not uniquely proven within bounded eight-second wait`);
+        }
         for (let attempt = 0; attempt < 6; ++attempt) {
           const row = await rpc(stage, "inventory");
           if (row.matchingGroupCount === 1 && row.exactMessageCount === 1 && row.notificationsIconCount === 1 && row.truncated === false) return;
@@ -354,7 +494,7 @@ try {
         const row = await rpc(stage, operation);
         if (row.actionAttempted !== true || row.actionAttemptCount !== count + (run.revealAttemptCount ?? 0) || row.nativeActionsPerformed !== count + (run.revealAttemptCount ?? 0) || !["performClick", "accessibilityPerformPress"].includes(String(row.nativeActionKind)) || row.refusalReason) throw new Error(`native ${operation} refused or unconfirmed`);
         if (revealPrompt && (row.normalActionAttemptCount !== count || row.revealAttemptCount !== (run.revealAttemptCount ?? 0))) throw new Error("normal/reveal native counters disagree");
-        if (!run.revealUncertain) delete run.uncertainMutation;
+        if (!run.revealUncertain && !run.preparationUncertain) delete run.uncertainMutation;
       };
       const assertPage = async (name: string, expression: string, identity = pageIdentity) => {
         await wait(async () => await evaluate(expression) === true, 5000);
@@ -362,10 +502,17 @@ try {
         run.steps.push({step: name, outcome: "pass", detail: diagnosticOnly ? "canonical page storage assertion; diagnostic only, no native control action" : "actual native controls followed by page assertion"});
       };
       const maybeRevealPrompt = async () => {
+        const canonicalWaitStarted = canonicalPromptWait ? Date.now() : 0;
         const first = await rpc("deny", "inventory");
         if (first.truncated !== false) throw new Error("initial reveal inventory is incomplete");
+        if (canonicalPromptWait && (Date.now() > Math.min(canonicalWaitStarted + 8000, workDeadline) || Date.now() >= workDeadline)) throw new Error("initial canonical inventory arrived after observation deadline; no reveal");
         if (first.matchingGroupCount === 1 && first.exactMessageCount === 1 && first.notificationsIconCount === 1) return;
         if (first.matchingGroupCount !== 0) throw new Error("initial permission scope is ambiguous; reveal forbidden");
+        if (canonicalPromptWait) {
+          const observed = await waitCanonicalPromptInventory(() => rpc("deny", "inventory"), workDeadline, {now: Date.now, sleep}, {row: first, started: canonicalWaitStarted});
+          (run.canonicalPromptWaitObservations ??= []).push({stage: "deny", purpose: "before-reveal", ...observed});
+          if (observed.readyObserved) return;
+        }
         if (first.promptSiteCenterButtonCount !== 1 || first.revealFirstInventoryEligible !== true || typeof first.id !== "string" || first.revealFirstInventoryID !== first.id) throw new Error("first inventory has no unique eligible Site Control Center");
         run.revealBaselineInventoryID = first.id;
         run.revealUncertain = true;
@@ -373,7 +520,16 @@ try {
         if (row.actionAttempted !== true || row.intentPersisted !== true || row.revealAttemptBudgetConsumed !== true || row.revealAttemptCount !== 1 || row.normalActionAttemptCount !== 0 || row.actionAttemptCount !== 1 || row.nativeActionsPerformed !== 1 || row.nativeMethodReturned !== true ||
             !["performClick", "accessibilityPerformPress"].includes(String(row.nativeActionKind)) || row.refusalReason ||
             (row.nativeActionKind === "accessibilityPerformPress" && typeof row.accessibilityPressReturn !== "boolean")) throw new Error("one reveal attempt refused or unconfirmed; no retry or fallback allowed");
+        if (siteCenterAXPress && (row.nativeActionKind !== "accessibilityPerformPress" || typeof row.accessibilityPressReturn !== "boolean")) throw new Error("requested Site Control Center AX press strategy was not the actual attempted method");
         run.revealAttemptCount = 1;
+      };
+      const windowReady = (row: Receipt) => {
+        const value = row.windowState;
+        if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+        const state = value as Receipt;
+        return state.truncated === false && state.uniqueSiteCenterCount === 1 && state.candidateWindowKnown === true && state.sameCandidateControl === true &&
+          state.sameCandidateWindow === true && state.windowVisible === true && state.candidateScopeValid === true && state.keyOrMainReady === true &&
+          ((state.windowIsKey === true && state.appKeyWindowMatches === true) || (state.windowIsMain === true && state.appMainWindowMatches === true));
       };
       run.phase = diagnosticOnly ? "canonical storage before read-only permission diagnostics" : "canonical storage and notification denial";
       if (diagnosticOnly) await verifyExclusiveFixtureTargets();
@@ -382,6 +538,10 @@ try {
         return document.cookie.includes('scenario_cookie=c0ffee') && localStorage.getItem('scenario')==='41' && sessionStorage.getItem('scenario')==='93';
       })()`);
       if (diagnosticOnly) await verifyExclusiveFixtureTargets();
+      if (fixtureSelectionDiagnostic) {
+        await rpc("deny", "inventory");
+        if (!fixtureSelectionAcknowledged) throw new Error("selection diagnostic did not complete before Notification request");
+      }
       await evaluate("window.permissionResult='pending'; Notification.requestPermission().then(r=>window.permissionResult=r); 1");
       if (diagnosticOnly) {
         run.phase = "read-only local permission graph diagnostics";
@@ -392,11 +552,47 @@ try {
         }
         run.steps.push({step: "read-only permission diagnostics", outcome: "pass", detail: "Six bounded inventories; zero native control actions; no permission decision or functional acceptance claimed"});
       } else {
+      if (prepareNativeWindow) {
+        run.phase = "public same-window key preparation while Notification is pending";
+        const initial = await rpc("deny", "inventory-native-window");
+        if (initial.preparationCandidateCaptured !== true || typeof initial.preparationInventoryID !== "string" || initial.preparationInventoryID !== initial.id || initial.preparationInvocationCount !== 0) throw new Error("initial preparation inventory did not freeze one candidate");
+        run.preparationInventoryID = initial.preparationInventoryID;
+        run.preparationUncertain = true;
+        const started = Date.now(), deadline = Math.min(started + 5000, workDeadline);
+        if (activateNativeApp) activationSetupDeadline = deadline;
+        try {
+          if (activateNativeApp) {
+            const activated = await rpc("deny", "activate-native-app");
+            if (activated.preparationInventoryID !== run.preparationInventoryID || activated.activationInvocationCount !== 1 || activated.preparationInvocationCount !== 0 || activated.totalPhysicalActions !== 1 ||
+                activated.actionAttempted !== true || activated.nativeActionKind !== "NSApplication.activate" || activated.nativeMethodReturned !== true ||
+                activated.activationBudgetConsumed !== true || activated.activationIntentPersisted !== true) throw new Error("one public self-activation invocation is refused or unconfirmed");
+            if (Date.now() >= deadline) throw new Error("shared five-second setup window expired after activation; no key invocation or fallback");
+          }
+          const prepared = await rpc("deny", "prepare-native-window");
+          if (prepared.preparationInventoryID !== run.preparationInventoryID || prepared.preparationInvocationCount !== 1 || prepared.totalPhysicalActions !== 1 + (activateNativeApp ? 1 : 0) || prepared.actionAttempted !== true ||
+              prepared.nativeActionKind !== "NSWindow.makeKeyWindow" || prepared.nativeMethodReturned !== true || prepared.preparationIntentPersisted !== true || prepared.preparationBudgetConsumed !== true) throw new Error("one public key-window invocation is refused or unconfirmed");
+          let ready = false;
+          while (Date.now() < deadline) {
+            const inspected = await rpc("deny", "inspect-native-window");
+            if (inspected.preparationInventoryID !== run.preparationInventoryID || inspected.actionAttempted !== false || inspected.preparationInvocationCount !== 1) throw new Error("read-only key-window observation identity/counter changed");
+            if (Date.now() > deadline) break;
+            if (windowReady(inspected)) { ready = true; break; }
+            await sleep(Math.min(150, Math.max(0, deadline - Date.now())));
+          }
+          if (!ready) throw new Error("same known visible window did not become key or main within the five-second observation window; no fallback or further native actions");
+          run.preparationReadyObserved = true;
+        } finally { run.preparationObservationElapsedMs = Date.now() - started; }
+      }
       if (revealPrompt) await maybeRevealPrompt();
       await readyStage("deny");
       if (run.revealAttemptCount === 1) run.revealPromptObserved = true;
       await press("deny", "press-deny", 1);
       await assertPage("deny notification prompt", "window.permissionResult==='denied'"); run.completedStages.push("deny");
+      if (prepareNativeWindow) {
+        if (run.preparationReadyObserved !== true) throw new Error("canonical denial lacks prior same-window readiness proof");
+        run.preparationOutcomeConfirmed = true; run.preparationUncertain = false;
+        if (!run.revealUncertain) delete run.uncertainMutation;
+      }
       if (run.revealAttemptCount === 1 && run.revealPromptObserved === true) {
         run.revealOutcomeConfirmed = true; run.revealUncertain = false; delete run.uncertainMutation;
         run.steps.push({step: "optional prompt reveal", outcome: "pass", detail: "One public Site Control Center press, then newly qualified fixed-origin prompt and canonical denial page outcome"});
@@ -502,15 +698,18 @@ try {
   try { await stopFixture(); } catch (error) { runs.at(-1)?.errors.push(String(error)); }
 }
 const report = {nonce, scenario, backend: diagnosticOnly ? "read-only local public AX diagnostics" : "actual local AppKit controls", recorded,
-  diagnosticOnly, revealPromptOptIn: revealPrompt, functionalAcceptance: false, acceptanceClaimed: false,
+  diagnosticOnly, revealPromptOptIn: revealPrompt, foregroundLaunch, prepareNativeWindow, activateNativeApp, siteCenterAXPress, canonicalPromptWait, fixtureSelectionDiagnostic, allowIdleComponentStop, functionalAcceptance: false, acceptanceClaimed: false,
   acceptedGoldenModified: false, visualAcceptance: false,
   runs: runs.map(run => ({agent: run.agent, pid: run.pid, errors: run.errors, steps: run.steps,
-    phase: run.phase, revealAttemptCount: run.revealAttemptCount ?? 0, revealUncertain: run.revealUncertain ?? false,
+    phase: run.phase, ...(fixtureSelectionDiagnostic ? {fixtureSelectionDiagnostic: run.fixtureSelectionDiagnostic ?? null} : {}), ...(allowIdleComponentStop ? {idleComponentStopCount: run.idleComponentStopCount ?? 0} : {}), targetGuardFailureClassifications: run.targetGuardFailureClassifications ?? [], ...(canonicalPromptWait ? {canonicalPromptWaitObservations: run.canonicalPromptWaitObservations ?? []} : {}), activationInvocationCount: run.activationInvocationCount ?? 0, preparationInvocationCount: run.preparationInvocationCount ?? 0,
+    totalPhysicalActions: run.totalPhysicalActions ?? null, preparationUncertain: run.preparationUncertain ?? false,
+    preparationReadyObserved: run.preparationReadyObserved ?? false, preparationOutcomeConfirmed: run.preparationOutcomeConfirmed ?? false,
+    preparationObservationElapsedMs: run.preparationObservationElapsedMs ?? null, revealAttemptCount: run.revealAttemptCount ?? 0, revealUncertain: run.revealUncertain ?? false,
     revealPromptObserved: run.revealPromptObserved ?? false, revealOutcomeConfirmed: run.revealOutcomeConfirmed ?? false, diagnosticInventories: run.diagnosticInventories ?? 0, completedStages: run.completedStages, uncertainMutation: run.uncertainMutation ?? null,
     coverage: run.coverage ?? null, profileIsolation: run.profileIsolation ?? null, browserAliveOnFailure: run.browserAliveOnFailure, artifactsStable: run.artifactsStable ?? false, cleanup: run.cleanup, elapsedMs: run.elapsedMs})),
   limitation: diagnosticOnly ? "Diagnostic collection only: canonical storage and first Notification.requestPermission are followed by six local inventories. No denial, grant, site settings, legacy action, engine completion or functional acceptance. Recorder coverage is observational and intentionally partial. Existing PID/profile/target guards, artifact hashing and cleanup still apply." : "Only the selected canonical permission sequence is exercised. The real fixture frontend uses its accepted fixed port; no output values are rewritten. Boundary diff and recorder noninterference are separate required checks; local controls do not establish external AX or visual acceptance."};
 writeFileSync(join(out, "report.json"), JSON.stringify(report, null, 2), {mode: 0o600});
 console.log(JSON.stringify(report, null, 2));
-process.exitCode = runs.some(run => run.errors.length > 0 || run.revealUncertain === true ||
+process.exitCode = runs.some(run => run.errors.length > 0 || run.revealUncertain === true || run.preparationUncertain === true ||
   (diagnosticOnly ? run.diagnosticInventories !== 6 || run.completedStages.length !== 0 : JSON.stringify(run.completedStages) !== JSON.stringify(expectedStages)) ||
   run.steps.some(step => step.outcome !== "pass")) ? 1 : 0;

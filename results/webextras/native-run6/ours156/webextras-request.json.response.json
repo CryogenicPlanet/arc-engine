@@ -1,0 +1,42 @@
+{
+  "id" : "arc-webextras-probe-ec02ed7a-5c04-401e-96d6-5867c4355063-12",
+  "matches" : 1,
+  "error" : {
+    "code" : 6,
+    "domain" : "company.thebrowser.Arc",
+    "description" : "webcontents has no active picture in picture videos",
+    "userInfo" : {
+      "NSLocalizedDescription" : "webcontents has no active picture in picture videos"
+    }
+  },
+  "url" : "http:\/\/127.0.0.1:62479\/arc-webextras-probe-ec02ed7a-5c04-401e-96d6-5867c4355063\/fixture",
+  "operation" : "pip-exit-error",
+  "timeline" : [
+    {
+      "event" : "publicCall",
+      "selector" : "exitPictureInPicture:error:"
+    },
+    {
+      "event" : "publicReturn",
+      "selector" : "exitPictureInPicture:error:"
+    }
+  ],
+  "value" : false,
+  "recordAfterReturn" : 860645,
+  "callbacks" : [
+
+  ],
+  "recordEnd" : 860645,
+  "publicCalls" : [
+    {
+      "recordBegin" : 859800,
+      "recordEnd" : 860645,
+      "selector" : "exitPictureInPicture:error:"
+    }
+  ],
+  "mainThread" : true,
+  "pid" : 14303,
+  "ok" : true,
+  "ownerTag" : 1,
+  "recordBegin" : 859800
+}

@@ -1,5 +1,15 @@
 # Native close-source token audit (2026-10-23, read-only)
 
+Current corrections (15:00UTC): 4353534 clears the delegate proxy weak target,
+not WCO observation. Real WCO Observe is23db2f4 at Impl+A8. Closed438a18c is a
+custom userdata client atImpl+70, reached post-ALL-WCO during physical destruction
+and separately on RECEIVED transfer reason1. Arc-controlled transfer suppresses
+its own listener. No native/bulk five-domain Busy gate is inferred from bypass.
+The global Closed suppression condition is EXACT browser_shutdown::IsTryingToQuit,
+independently identified by setter/getter and exact restart preference strings.
+See logs/wp/core.close-native-interface/ and core.close-suppression-flag/.
+Public Close stays deferred pending coordinated accounting/native integration.
+
 No production/native/shared source, build, app execution, or board action.
 Original arm64 binary: ../arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore.
 All addresses unslid.
@@ -130,11 +140,12 @@ close patches remain HOLD; no synchronous close/timing0 activation.
 
 Original native WebContentsDestroyed438a18c (named by its own trace string):
 - Selects restorationID from optional338/33c, or -1 when absent.
-- Unless a global condition byte suppresses it (meaning not decoded here),
+- Unless browser_shutdown::IsTryingToQuit() suppresses it (global e49cf50),
   InvokeSync UI delegate Closed at438a224-23c, slot20 ->4445cf0 ->
   webContents:didCloseWithSessionID:4445d54.
-- Only AFTER app callback return calls Observe(nullptr)4353534 and full cleanup
-  4372b6c (438a278-288).
+- Only AFTER app callback return clears the delegate proxy's weak target through
+  4353534 and runs cleanup4372b6c (438a278-288). The prior identification of
+  4353534 as Observe(nullptr) was wrong; actual WCO Observe is23db2f4 atImpl+A8.
 - Cleanup clears token early, resets subservices, and zeros native binding128/130
   together at4373054-3058.
 - Original isInitialized4440d78 reads nativeImpl130!=nullptr. Hence original
@@ -144,10 +155,13 @@ Original native WebContentsDestroyed438a18c (named by its own trace string):
   accepted sessions probe currently checks after public close, not inside callback.
   Do not retain a dangling native pointer to reproduce a boolean query.
 
-Closed is tied to actual native destruction, not simply model removal/imminent.
-Current Chrome detach transaction retains WC while emitting model-removal, then
-resets it afterward. Public synchronous close can therefore deliver Closed inline
-if its native operation synchronously runs the whole transaction.
+The prior destruction-only Closed conclusion is WITHDRAWN. Handler438a18c has
+both custom physical-dtor and direct tabstrip callers. Received transfer reason1
+invokes Closed with surviving physical WC; controlled Arc transfer suppresses its
+own listener. Cleanup clears userdata client callbacks and native binding to
+prevent later duplicate normal delivery. Current Chrome detach retains physical
+WC through removal notifications and resets it afterward; this alone does not
+choose the original logical Closed phase or authorize current WCO substitution.
 
 Current source route evidence (helper audit):
 - WC::Close web_contents_impl.cc:10402 applies Mac eventtracking check10413 then
@@ -177,7 +191,14 @@ transaction:3995. It bypasses both WC::Close and delegate CloseContents. It
 captures reverse-order tabs and preserves bulk unload/history/notification state.
 The original whole-browser bulk producer was not independently fully mapped in
 this audit; no claim that every bulk tab installs the individual source token.
-Original per-WC destruction callback still invokes Closed above. Its observed thunk438a43c subtracts Impl-interface offset0x70; this audit does not relabel that view-owner interface as the separate Impl+0xa8 WebContentsObserver vtable or claim the exact current-Chromium destructor callback phase is already equivalent.
+Original custom destructor client thunk438a43c subtracts Impl+70; this is neither
+HostViewClient+68 nor content WCO+A8. Physical dtor36926b0 first fans out all WCO
+WebContentsDestroyed calls (original A8 slot258 is no-op), then36926b4 checks dying
+WC==captured OUTERMOST WC and3693010 calls existing-userdata custom client+70.
+Only afterward does it clear observers/delegate and invalidate physical weak
+pointers. FrameTrees are already shut down: weak validity does not imply every
+physical API is safe. This proves the custom post-WCO phase, distinct from the
+separate received-transfer reason1 tabstrip caller4397fac.
 
 Coordinated design requirements justified by this evidence:
 1. Preserve ordinary close default timing1; only busy accounting causes its
@@ -190,14 +211,45 @@ Coordinated design requirements justified by this evidence:
 3. The special timing0 two-phase branch has its predicate/controller key resolved
    above; expose only that narrow source token. Completion clear-before-
    resume and 15a state prevent duplicate imminent notifications.
-4. Single/model-native and whole-browser bulk transaction entries require their
-   OWN busy/retry coordination, because they bypass public Close. Preserve flags,
-   reverse/bulk order, and unload continuation; do not replay bulk as N singles.
-5. Keep actual destruction as Closed producer and preserve optional historical
-   ID rules. Callback delivery and native cleanup ordering need an explicit
-   destroying-state design; do not equate imminent/removal with disposal.
-6. Do not remove existing public deferral or land held ClosePage-only patch from
-   this read-only evidence alone. Timing1 is proven, but native reentrant/bulk
-   closure and five-domain accounting must be integrated/reviewed together.
+4. Current single/model-native and whole-browser bulk entries can bypass the
+   public Close accounting decision. This is a separate native-route coverage
+   boundary, NOT an independent Busy/retry requirement. NativeCloseContents
+   preserves its proven source token/timing/forwarding behavior; original bulk
+   gating remains untraced. Preserve flags, reverse order and unload continuation;
+   do not invent a Busy gate or replay bulk as N public closes.
+5. Preserve historical ID rules and callback-before-logical-cleanup ordering at
+   the source-proven Closed phase. The prior actual-destruction-only claim is
+   withdrawn: direct received-transfer reason1 caller4397fac and the custom
+   outermost post-WCO destructor interface are separately proved. Do not substitute an
+   arbitrary removal/imminent/WCO callback or a dangling native pointer.
+6. Do not remove public deferral or land the held ClosePage-only patch from this
+   audit alone. Timing1 activation requires exact five-domain producer coverage,
+   ordinary native forwarding/conditional imminent and safe callback/query phase,
+   with composed validation. Timing0 continuation and original whole-browser bulk
+   semantics remain separate bounded scopes; neither proves a new bulk Busy gate.
 
 No runtime/test success is claimed for a proposed implementation.
+
+## Quit-state Closed suppression — exact named API recovered
+
+Original438a1d4/1d8 reads direct common bytee49cf50 and skips only UI Closed when
+bit0 is set; proxy/target cleanup still runs. Native setter41f25d8 writes that
+byte, returns immediately for true, and for false clears exact prefs
+was.restarted and restart.last.session.on.shutdown before resetting background
+restart. Adjacent getter41f2640 reads the same byte. This distinctive sequence
+matches current browser_shutdown::SetTryingToQuit/IsTryingToQuit, not merely
+HasShutdownStarted. Original Arc TryToTerminate42b24d0 sets true before storing
+completion or starting browser callbacks; cancellation42b9248 clears it before
+reporting denial. Full raw proof: logs/wp/core.close-suppression-flag/.
+
+Separate webextras results/webextras/native-run7/ours156/app.log22 FATAL shows
+current early Closed -> app create/takeOwnership/InsertDetachedTabAt during
+CloseAllTabs ReentrancyCheck. Post-WCO publication ALONE still lies within that
+transaction. Restore real quit-state suppression and app flag transition; do not
+bypass the native reentrancy guard, drop nonquit Closed, or invent bulk Busy.
+This source explanation is bounded: runtime flag was not measured in that run.
+Current app owner has added true at first accepted Begin (board140563); denial
+still resets false and unavailable-process path never enters Begin. Core stages
+a receipt-time snapshot before app callouts and suppresses only didClose delegate
+work, preserving existing cleanup/imminent. This does not repair the separate
+early-WCO/clear-order/transfer gaps or activate synchronous public Close.

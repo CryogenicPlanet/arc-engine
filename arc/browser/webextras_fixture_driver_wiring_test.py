@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Owned driver wiring tests: temporary copies only; no engine/app/lock use."""
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -38,6 +39,33 @@ def adopt_patch(directory, patch):
     return 'already-applied'
 
 
+def adopt_current_driver(directory):
+    """Recognize the exact clock-v1 delta, preserving strict historical adoption checks.
+
+    Reverse only the owned explicit extension in TEMP, demand the full prior
+    adopted driver's frozen SHA, verify historical wiring, then restore current
+    bytes. Arbitrary/partial/future source drift is not an accepted extension.
+    """
+    patch = ROOT/'arc/browser/webextras_fixture_driver_wiring.patch'
+    try:
+        return adopt_patch(directory, patch)
+    except ValueError:
+        extension = ROOT/'arc/browser/webextras_media_clock_driver_extension.patch'
+        subprocess.run(['git', 'apply', '--reverse', '--check', '--whitespace=error', str(extension)],
+                       cwd=directory, check=True, capture_output=True)
+        subprocess.run(['git', 'apply', '--reverse', '--whitespace=error', str(extension)],
+                       cwd=directory, check=True, capture_output=True)
+        try:
+            original = directory/'arc/browser/webextras_native_probe.ts'
+            if hashlib.sha256(original.read_bytes()).hexdigest() != '1a31eb68758d66f50e608479b164ac7ff9f825555af300c0d39512f2c10d929f':
+                raise ValueError('clock-v1 reversal did not recover the exact adopted driver')
+            if adopt_patch(directory, patch) != 'already-applied':
+                raise ValueError('clock-v1 baseline did not have complete historical wiring')
+        finally:
+            subprocess.run(['git', 'apply', '--whitespace=error', str(extension)], cwd=directory, check=True, capture_output=True)
+        return 'already-applied-with-media-clock-v1'
+
+
 class WiringTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -50,7 +78,7 @@ class WiringTests(unittest.TestCase):
             shutil.copyfile(ROOT/relative, target)
         # Comparator adoption remains confined to this temporary repository tree.
         adopt_patch(cls.source, ROOT/'arc/browser/webextras_fixture_comparator.patch')
-        adopt_patch(cls.source, ROOT/'arc/browser/webextras_fixture_driver_wiring.patch')
+        adopt_current_driver(cls.source)
         cls.counter = 0
 
     @classmethod
@@ -149,6 +177,11 @@ class WiringTests(unittest.TestCase):
             target = directory/relative; target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(self.source/relative, target)
         patch = ROOT/'arc/browser/webextras_fixture_driver_wiring.patch'
+        self.assertEqual(adopt_current_driver(directory), 'already-applied-with-media-clock-v1')
+        # The historical adoption state matrix uses the exactly recovered prior
+        # driver; every behavioral/projection/negative test uses CURRENT bytes.
+        extension = ROOT/'arc/browser/webextras_media_clock_driver_extension.patch'
+        subprocess.run(['git', 'apply', '--reverse', '--whitespace=error', str(extension)], cwd=directory, check=True, capture_output=True)
         self.assertEqual(adopt_patch(directory, patch), 'already-applied')
         subprocess.run(['git', 'apply', '--reverse', '--whitespace=error', str(patch)], cwd=directory, check=True, capture_output=True)
         baseline = {relative: (directory/relative).read_bytes() for relative in relatives}
@@ -174,9 +207,11 @@ class WiringTests(unittest.TestCase):
         acceptance = driver[comparison_start:driver.index('writeFileSync(join(out, "summary.json")', comparison_start)]
         harness = self.directory/'unsupported-measurement.ts'
         harness.write_text(r'''
+const mediaClock=false;
 const fixtureVerified=false, fixtureImage='WebextrasNativeProbe.dylib';
 const fixtureComparisonPending='pending-fixture-comparison-support';
 const operations=['console-open','frontend','console-close','panel-closed','execute-evaluate','execute-malformed','execute-unknown','subscription','media-types','pip-request-error','pip-exit-error'];
+const actionManifest=operations.map(operation=>({key:operation,operation}));
 const agents=['trace156','ours156'], runs:any[]=[], differences:any[]=[];
 const outcomeErrors=()=>[];
 const require=(value:any,message:string)=>{if(!value)throw new Error(message);};

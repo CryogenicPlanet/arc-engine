@@ -1,0 +1,33 @@
+--- a/arc/api/arc_sessions_restore.mm
++++ b/arc/api/arc_sessions_restore.mm
+@@ -15,6 +15,7 @@
+ #include "base/task/sequenced_task_runner.h"
+ #include "chrome/browser/apps/app_service/web_contents_app_id_utils.h"
+ #include "arc/browser/arc_browser_window.h"
++#include "arc/browser/core_close_adapters.h"
+ #include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/sessions/tab_restore_service_factory.h"
+@@ -122,7 +123,12 @@
+   __weak ArcWebContents* weakContents = self;
+   __weak SessionsDiscardAdapter* weakAdapter = state.adapter;
+   state.pending += 1;
+-  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
++  // Capture this wrapper's logical state at enqueue, after native discard and
++  // registration selection. Retain the package predicate for existing callers;
++  // core's UI counter covers the same invocation through its delivery return.
++  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
++      arc::MakeCoreCloseAsyncInvocation(arc::CoreCloseStateForWebContents(self),
++          arc::CoreCloseDelegateChannel::kUI, base::BindOnce(^{
+     ArcWebContents* contents = weakContents;
+     id<SessionsDiscardDelegate> delegate = weakAdapter.delegate;
+     if (contents && delegate &&
+@@ -130,7 +136,7 @@
+       [delegate webContents:contents finalizeDiscardRequest:discarded];
+     }
+     state.pending -= 1;
+-  }));
++  })));
+ }
+ @end
+ @implementation SessionsRestoreIDs

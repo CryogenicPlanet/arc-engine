@@ -1,0 +1,112 @@
+{
+  "golden": {
+    "record": "results/webextras/media-pip-current-run1/inputs/arc-engine/results/golden/arc-1.170-media-pip/launch-1/record.jsonl",
+    "sha256": "672f405866b7904b0ae0b996de12ef6496c0121b495450fede4a92acdb1d954f",
+    "firstAppearances": [
+      {
+        "projectedOrdinal": 1,
+        "rawObject": "<NSMutableIndexSet#123>",
+        "event": {
+          "seq": 3011,
+          "ev": "call",
+          "thread": "main",
+          "depth": 2,
+          "from": "engine",
+          "dir": "->engine",
+          "cls": "ArcWebContents",
+          "kind": "-",
+          "sel": "setTabTraits:",
+          "self": "<ArcWebContents#118>",
+          "args": [
+            "<NSMutableIndexSet#123>"
+          ]
+        }
+      },
+      {
+        "projectedOrdinal": 2,
+        "rawObject": "<NSMutableIndexSet#137>",
+        "event": {
+          "seq": 3630,
+          "ev": "call",
+          "thread": "main",
+          "depth": 1,
+          "from": "engine",
+          "dir": "engine->app",
+          "cls": "ADK.WebContentChromium",
+          "kind": "-",
+          "sel": "webContents:didChangeAvailableMediaActions:",
+          "self": "<ADK.WebContentChromium#126>",
+          "args": [
+            "<ArcWebContents#118>",
+            "<NSMutableIndexSet#137>"
+          ]
+        }
+      }
+    ]
+  },
+  "ours": {
+    "record": "results/webextras/media-pip-current-run1/launch-1/record.jsonl",
+    "sha256": "5760c41eef96ce0bfd05477cc86477fda80f687fc20a66e3952c207472696ff1",
+    "firstAppearances": [
+      {
+        "projectedOrdinal": 1,
+        "rawObject": "<NSMutableIndexSet#107>",
+        "event": {
+          "seq": 3172,
+          "ev": "call",
+          "thread": "main",
+          "depth": 3,
+          "from": "engine",
+          "dir": "->engine",
+          "cls": "ArcWebContents",
+          "kind": "-",
+          "sel": "setTabTraits:",
+          "self": "<ArcWebContents#102>",
+          "args": [
+            "<NSMutableIndexSet#107>"
+          ]
+        }
+      },
+      {
+        "projectedOrdinal": 2,
+        "rawObject": "<NSMutableIndexSet#127>",
+        "event": {
+          "seq": 3986,
+          "ev": "call",
+          "thread": "main",
+          "depth": 1,
+          "from": "engine",
+          "dir": "->engine",
+          "cls": "ArcWebContents",
+          "kind": "-",
+          "sel": "setTabTraits:",
+          "self": "<ArcWebContents#102>",
+          "args": [
+            "<NSMutableIndexSet#127>"
+          ]
+        }
+      },
+      {
+        "projectedOrdinal": 3,
+        "rawObject": "<NSMutableIndexSet#128>",
+        "event": {
+          "seq": 4178,
+          "ev": "call",
+          "thread": "main",
+          "depth": 1,
+          "from": "engine",
+          "dir": "engine->app",
+          "cls": "ADK.WebContentChromium",
+          "kind": "-",
+          "sel": "webContents:didChangeAvailableMediaActions:",
+          "self": "<ADK.WebContentChromium#110>",
+          "args": [
+            "<ArcWebContents#102>",
+            "<NSMutableIndexSet#128>"
+          ]
+        }
+      }
+    ]
+  },
+  "conclusion": "Opaque IndexSet ordinal divergence is introduced by earlier second Core setTabTraits object, not evidence of unequal media-action set contents. No renumber/normalization applied."
+}

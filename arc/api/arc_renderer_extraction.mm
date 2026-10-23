@@ -278,7 +278,15 @@ void CompleteExtraction(
 }
 - (instancetype)initWithBrowserContextPageContentExtraction:(const void*)service
                                          forBrowserContext:(ArcBrowserContext*)context {
-  if ((self = [self initWithBrowserContextPageContentExtraction:service])) {
+  if ((self = [super init])) {
+    if (service) {
+      const auto& native = *static_cast<const arc::PageContentExtractionData*>(service);
+      _profile = native.profile;
+      _serviceIdentity = native.identity;
+    }
+    if (!_serviceIdentity) {
+      _serviceIdentity = base::MakeRefCounted<arc::PageContentExtractionIdentity>(uint8_t{0});
+    }
     _owner = context;
   }
   return self;

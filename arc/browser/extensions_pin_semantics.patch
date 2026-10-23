@@ -88,7 +88,7 @@ diff --git a/arc/api/arc_extensions_context.mm b/arc/api/arc_extensions_context.
 diff --git a/arc/api/arc_extensions_browser.mm b/arc/api/arc_extensions_browser.mm
 --- a/arc/api/arc_extensions_browser.mm
 +++ b/arc/api/arc_extensions_browser.mm
-@@ -258,6 +258,10 @@
+@@ -253,6 +253,10 @@
    base::WeakPtr<BrowserExtensions> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
    uint64_t BeginPopup() { return ++popup_serial_; }
    bool IsPopupRequestCurrent(uint64_t serial) const { return popup_serial_ == serial; }
@@ -99,7 +99,7 @@ diff --git a/arc/api/arc_extensions_browser.mm b/arc/api/arc_extensions_browser.
    ToolbarActionViewModel* GetActionForId(const std::string& id) override {
      if (!browser_ || !model_ || !model_->HasAction(id)) return nullptr;
      auto found = actions_.find(id);
-@@ -654,22 +658,26 @@
+@@ -648,22 +652,26 @@
        action->ExecuteUserAction(ToolbarActionViewModel::InvocationSource::kToolbarButton);
  }
  - (void)pinExtension:(NSString*)identifier {

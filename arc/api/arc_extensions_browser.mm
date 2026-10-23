@@ -147,6 +147,7 @@ class ActionDelegate : public ExtensionActionDelegate,
   }
   void ShowContextMenu();
   base::WeakPtr<ActionDelegate> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
+  void SetDelegate(id delegate) { delegate_ = delegate; }
   void SuppressDelegate() { delegate_ = nil; }
  private:
   void QueuePopupCallback(
@@ -197,13 +198,18 @@ class BrowserExtensions : public base::SupportsUserData::Data,
         [](base::WeakPtr<BrowserExtensions> self, BrowserWindowInterface*) {
           if (self) self->Shutdown();
         }, weak_factory_.GetWeakPtr()));
-    OnToolbarModelInitialized();
+    // Native defers initialization for an already-ready toolbar model.
+    // Otherwise its real initialized observer supplies the first population.
+    if (model_ && model_->actions_initialized()) {
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+          base::BindOnce(&BrowserExtensions::OnToolbarModelInitialized,
+                         weak_factory_.GetWeakPtr()));
+    }
   }
   ~BrowserExtensions() override { Shutdown(); }
   void Shutdown() {
     if (shutting_down_) return;
     shutting_down_ = true;
-    ++delegate_generation_;
     weak_factory_.InvalidateWeakPtrs();
     Observe(nullptr);
     if (tab_list_) tab_list_->RemoveTabListInterfaceObserver(this);
@@ -223,23 +229,12 @@ class BrowserExtensions : public base::SupportsUserData::Data,
   }
   void SetDelegate(id delegate) {
     if (shutting_down_) return;
-    // Existing action delegates are weak, so rebuild them on delegate replacement.
     delegate_ = delegate;
     callback_target_present_ = delegate != nil;
     if (!delegate) ++callback_epoch_;
-    const uint64_t generation = ++delegate_generation_;
-    ++popup_serial_;
-    auto weak = weak_factory_.GetWeakPtr();
-    action_updates_.clear();
-    auto actions = std::move(actions_);
-    for (auto& [id, action] : actions) {
-      auto* previous = static_cast<ActionDelegate*>(action->delegate());
-      previous->SuppressDelegate();
-      previous->HidePopup();
-    }
-    actions.clear();
-    if (weak && weak->delegate_generation_ == generation)
-      weak->OnToolbarModelInitialized();
+    // Delegate transport changes preserve Chrome's action, popup and timer state.
+    for (auto& [id, action] : actions_)
+      static_cast<ActionDelegate*>(action->delegate())->SetDelegate(delegate);
   }
   bool DispatchRequest(void (^request)(id delegate)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -430,7 +425,6 @@ class BrowserExtensions : public base::SupportsUserData::Data,
   bool shutting_down_ = false;
   bool callback_target_present_ = true;
   uint64_t callback_epoch_ = 0;
-  uint64_t delegate_generation_ = 0;
   uint64_t popup_serial_ = 0;
   base::CallbackListSubscription close_;
   base::WeakPtrFactory<BrowserExtensions> weak_factory_{this};

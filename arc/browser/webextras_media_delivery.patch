@@ -1,0 +1,550 @@
+diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
+--- a/arc/api/arc_webextras_media.mm
++++ b/arc/api/arc_webextras_media.mm
+@@ -2,6 +2,10 @@
+ #import "arc/api/arc_internal.h"
+ 
+ #include <optional>
++#include <memory>
++#include "base/functional/callback.h"
++#include "content/public/browser/browser_task_traits.h"
++#include "content/public/browser/browser_thread.h"
+ #include <algorithm>
+ #import <QuartzCore/QuartzCore.h>
+ #import <objc/runtime.h>
+@@ -50,6 +54,7 @@
+ - (void)webContents:(id)owner didChangeMediaPosition:(id)position;
+ - (void)webContents:(id)owner didChangeCameraState:(uint64_t)state;
+ - (void)webContents:(id)owner didChangeMicrophoneState:(uint64_t)state;
++- (void)webContents:(id)owner didChangeVolume:(double)volume;
+ @end
+ 
+ ARC_EXPORT @interface ArcMediaPosition : NSObject {
+@@ -102,10 +107,13 @@
+ 
+ @class ArcWebContentsMediaSession;
+ namespace {
++class WebextrasMediaSource;
+ class ArcMediaObserver final : public media_session::mojom::MediaSessionObserver,
+                                public content::WebContentsObserver {
+  public:
+-  ArcMediaObserver(content::WebContents* contents, content::MediaSession* session, ArcWebContentsMediaSession* owner);
++  ArcMediaObserver(content::WebContents* contents, content::MediaSession* session,
++                   std::weak_ptr<WebextrasMediaSource> source);
++  void Detach() { receiver_.reset(); Observe(nullptr); }
+   void WebContentsDestroyed() override;
+   void MediaSessionInfoChanged(media_session::mojom::MediaSessionInfoPtr info) override;
+   void MediaSessionMetadataChanged(const std::optional<media_session::MediaMetadata>&) override {}
+@@ -113,12 +121,217 @@
+   void MediaSessionImagesChanged(const base::flat_map<media_session::mojom::MediaSessionImageType, std::vector<media_session::MediaImage>>&) override {}
+   void MediaSessionPositionChanged(const std::optional<media_session::MediaPosition>& position) override;
+  private:
+-  __weak ArcWebContentsMediaSession* owner_;
++  std::weak_ptr<WebextrasMediaSource> source_;
+   mojo::Receiver<media_session::mojom::MediaSessionObserver> receiver_{this};
++};
++
++void PostWebextrasMediaTask(base::OnceClosure task) {
++  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
++}
++// BEGIN WEBEXTRAS_MEDIA_DELIVERY_HELPER -- compiled by the owned regression test.
++struct WebextrasMediaDelegateBridge {
++  __weak id<ArcMediaDelegate> delegate;
++  __weak ArcWebContents* owner;
++};
++
++// Only the ObjC service owns its current bridge. Registration and accepted tasks
++// refer weakly to the bridge selected at receipt, rather than to the service.
++class WebextrasMediaDelivery {
++ public:
++  void Register(const std::shared_ptr<WebextrasMediaDelegateBridge>& bridge) {
++    registered_ = bridge;
++  }
++
++  template <typename Callback>
++  void Sync(Callback callback) const {
++    Deliver(registered_, std::move(callback));
++  }
++
++  template <typename Source, typename Payload, typename Callback>
++  void Async(std::shared_ptr<Source> source, Payload payload,
++             Callback callback) const {
++    AsyncPrepared(std::move(source), std::move(payload),
++                  [](const Payload& value) { return value; }, std::move(callback));
++  }
++
++  template <typename Source, typename Payload, typename Prepare, typename Callback>
++  void AsyncPrepared(std::shared_ptr<Source> source, Payload payload,
++                     Prepare prepare, Callback callback) const {
++    auto selected = registered_;
++    // Native expired registrations enqueue inert work, without acquiring a
++    // counted invocation. Accounting is deliberately a separate proposal.
++    if (selected.expired()) {
++      PostWebextrasMediaTask(base::BindOnce([] {}));
++      return;
++    }
++    PostWebextrasMediaTask(base::BindOnce(
++        [](std::shared_ptr<Source> source,
++           std::weak_ptr<WebextrasMediaDelegateBridge> selected, Payload payload,
++           Prepare prepare, Callback callback) {
++          // This is functional source ownership: observer, caches, dispatch and
++          // PiP latch survive independently of the ObjC service/physical WC.
++          (void)source;
++          DeliverPrepared(selected, [&] { return prepare(payload); },
++                          std::move(callback));
++        }, std::move(source), selected, std::move(payload), std::move(prepare),
++        std::move(callback)));
++  }
++
++ private:
++  template <typename Callback>
++  static void Deliver(std::weak_ptr<WebextrasMediaDelegateBridge> selected,
++                      Callback callback) {
++    DeliverPrepared(selected, [] { return 0; },
++                    [&](id<ArcMediaDelegate> d, ArcWebContents* o, int) {
++                      callback(d, o);
++                    });
++  }
++  template <typename Prepare, typename Callback>
++  static void DeliverPrepared(std::weak_ptr<WebextrasMediaDelegateBridge> selected,
++                              Prepare prepare, Callback callback) {
++    auto bridge = selected.lock();
++    if (!bridge) { return; }
++    auto prepared = prepare();  // DTO allocation precedes weak ObjC loads.
++    // Keep the selected registration alive THROUGH app return. A nested run
++    // loop may drain more work for this same bridge after nil/re-add.
++    // C++ automatic storage has scope lifetime; the ObjC loads need explicit
++    // precise lifetime because ARC may otherwise release at their last use.
++    id<ArcMediaDelegate> __attribute__((objc_precise_lifetime)) delegate = bridge->delegate;
++    ArcWebContents* __attribute__((objc_precise_lifetime)) owner = bridge->owner;
++    callback(delegate, owner, prepared);  // nil owner is allowed.
++  }
++  std::weak_ptr<WebextrasMediaDelegateBridge> registered_;
++};
++
++struct WebextrasMediaInfoCache {
++  std::optional<uint64_t> state;
++  std::optional<uint64_t> camera;
++  std::optional<uint64_t> microphone;
++  static bool Update(std::optional<uint64_t>& cached, uint64_t value) {
++    const bool changed = !cached || *cached != value;
++    cached = value;
++    return changed;
++  }
++};
++// END WEBEXTRAS_MEDIA_DELIVERY_HELPER
++
++
++class WebextrasMediaSource final
++    : public std::enable_shared_from_this<WebextrasMediaSource> {
++ public:
++  explicit WebextrasMediaSource(ArcWebContents* owner) : owner_(owner) {}
++  void AttachInitial(content::WebContents* contents) {
++    // The core hook publishes this source before subscription. Observer initial
++    // messages remain asynchronous Mojo receipts, never a synthetic flush.
++    contents_ = contents->GetWeakPtr();
++    observer_ = std::make_unique<ArcMediaObserver>(
++        contents, content::MediaSession::Get(contents), weak_from_this());
++  }
++  void RetirePhysical() {
++    // Keep the old logical binding during the synchronous destruction callback.
++    // No accepted task checks physical attachment or service liveness.
++    if (observer_) { observer_->Detach(); }
++    PiPDestroyed();
++    contents_.reset();
++  }
++  void Info(media_session::mojom::MediaSessionInfoPtr info) {
++    if (!info) { return; }
++    const auto state = static_cast<uint64_t>(info->state);
++    if (WebextrasMediaInfoCache::Update(cache_.state, state)) {
++      delivery.Async(shared_from_this(), state, [](id<ArcMediaDelegate> d, ArcWebContents* o, uint64_t v) {
++        if ([d respondsToSelector:@selector(webContents:didChangeMediaSessionState:)]) { [d webContents:o didChangeMediaSessionState:v]; }
++      });
++    }
++    const auto camera = static_cast<uint64_t>(info->camera_state);
++    if (WebextrasMediaInfoCache::Update(cache_.camera, camera)) {
++      delivery.Async(shared_from_this(), camera, [](id<ArcMediaDelegate> d, ArcWebContents* o, uint64_t v) {
++        if ([d respondsToSelector:@selector(webContents:didChangeCameraState:)]) { [d webContents:o didChangeCameraState:v]; }
++      });
++    }
++    const auto microphone = static_cast<uint64_t>(info->microphone_state);
++    if (WebextrasMediaInfoCache::Update(cache_.microphone, microphone)) {
++      delivery.Async(shared_from_this(), microphone, [](id<ArcMediaDelegate> d, ArcWebContents* o, uint64_t v) {
++        if ([d respondsToSelector:@selector(webContents:didChangeMicrophoneState:)]) { [d webContents:o didChangeMicrophoneState:v]; }
++      });
++    }
++  }
++  void Actions(const std::vector<media_session::mojom::MediaSessionAction>& actions) {
++    std::vector<NSUInteger> copied;
++    for (auto action : actions) {
++      const auto index = static_cast<NSUInteger>(action);
++      if (index < 21) { copied.push_back(index); }
++    }
++    delivery.AsyncPrepared(shared_from_this(), std::move(copied),
++        [](const std::vector<NSUInteger>& values) {
++          NSMutableIndexSet* indices = [NSMutableIndexSet indexSet];
++          for (auto value : values) { [indices addIndex:value]; }
++          return indices;
++        }, [](id<ArcMediaDelegate> d, ArcWebContents* o, NSIndexSet* indices) {
++          if ([d respondsToSelector:@selector(webContents:didChangeAvailableMediaActions:)]) { [d webContents:o didChangeAvailableMediaActions:indices]; }
++        });
++  }
++  void Position(const std::optional<media_session::MediaPosition>& position) {
++    position_ = position;  // Copy the native timing base with the entire value.
++    if (!position) { return; }
++    delivery.AsyncPrepared(shared_from_this(), *position,
++        [](const media_session::MediaPosition& value) {
++          return [[ArcMediaPosition alloc] initWithMediaPosition:&value];
++        }, [](id<ArcMediaDelegate> d, ArcWebContents* o, ArcMediaPosition* wrapper) {
++          if ([d respondsToSelector:@selector(webContents:didChangeMediaPosition:)]) { [d webContents:o didChangeMediaPosition:wrapper]; }
++        });
++  }
++  // The original volume producer is async too. No current Chromium producer
++  // calls this entry: the renderer double-valued IPC is a separate dependency.
++  void VolumeChanged(double volume) {
++    delivery.Async(shared_from_this(), volume, [](id<ArcMediaDelegate> d, ArcWebContents* o, double value) {
++      if ([d respondsToSelector:@selector(webContents:didChangeVolume:)]) { [d webContents:o didChangeVolume:value]; }
++    });
++  }
++  std::optional<media_session::MediaPosition> PositionSnapshot() const { return position_; }
++  void PiPCreated();
++  void PiPDestroyed();
++  WebextrasMediaDelivery delivery;
++  __weak ArcWebContentsMediaSession* service = nil;  // Cache maintenance only.
++ private:
++  __weak ArcWebContents* owner_;
++  base::WeakPtr<content::WebContents> contents_;
++  std::unique_ptr<ArcMediaObserver> observer_;
++  WebextrasMediaInfoCache cache_;
++  std::optional<media_session::MediaPosition> position_;
++  bool pip_destroyed_ = false;
+ };
+ BOOL ArcMediaFailure(NSError** error, NSString* message) {
+   if (error) { *error = [NSError errorWithDomain:@"company.thebrowser.Arc" code:6 userInfo:@{NSLocalizedDescriptionKey:message}]; }
+   return NO;
++}
++}
++
++// The logical owner retains functional source state without eagerly creating
++// the public ObjC service. Source/queued payloads do not retain this box/owner.
++@interface WebextrasMediaSourceBox : NSObject {
++ @public
++  std::shared_ptr<WebextrasMediaSource> source;
++}
++@end
++@implementation WebextrasMediaSourceBox
++@end
++
++namespace {
++const char kWebextrasMediaSourceKey = 0;
++std::shared_ptr<WebextrasMediaSource> GetWebextrasMediaSource(ArcWebContents* owner) {
++  WebextrasMediaSourceBox* box = objc_getAssociatedObject(owner, &kWebextrasMediaSourceKey);
++  return box ? box->source : nullptr;
++}
++}
++
++namespace arc {
++void InitializeWebextrasMediaSource(ArcWebContents* owner, content::WebContents* native) {
++  if (!owner || !native || GetWebextrasMediaSource(owner)) { return; }
++  WebextrasMediaSourceBox* box = [[WebextrasMediaSourceBox alloc] init];
++  box->source = std::make_shared<WebextrasMediaSource>(owner);
++  objc_setAssociatedObject(owner, &kWebextrasMediaSourceKey, box, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++  arcmod::GetVideoOverlayWindowHook() = base::BindRepeating(&arc::CreateVideoOverlayWindow);
++  box->source->AttachInitial(native);
+ }
+ }
+ 
+@@ -128,29 +341,21 @@
+ @property(nonatomic, strong) ArcWebContentsMediaSessionPiPController* pipController;
+ - (instancetype)initWithArcWebContents:(ArcWebContents*)owner;
+ - (void)setDelegate:(id<ArcMediaDelegate>)delegate;
+-- (void)nativeInfoChanged:(media_session::mojom::MediaSessionInfoPtr)info __attribute__((objc_direct));
+-- (void)nativeActionsChanged:(const std::vector<media_session::mojom::MediaSessionAction>&)actions __attribute__((objc_direct));
+-- (void)nativePositionChanged:(const std::optional<media_session::MediaPosition>&)position __attribute__((objc_direct));
+-- (id<ArcMediaDelegate>)nativeDelegate __attribute__((objc_direct));
+-- (void)nativePiPCreated __attribute__((objc_direct));
+-- (void)nativePiPDestroyed __attribute__((objc_direct));
++- (void)webextrasCachePiPController:(ArcWebContentsMediaSessionPiPController*)controller __attribute__((objc_direct));
+ @end
+ 
+ @implementation ArcWebContentsMediaSession {
+-  __weak id<ArcMediaDelegate> _delegate;
+-  std::unique_ptr<ArcMediaObserver> _observer;
+-  uint64_t _sessionState;
+-  uint64_t _cameraState;
+-  uint64_t _microphoneState;
+-  BOOL _pipDestroyed;
++  std::shared_ptr<WebextrasMediaDelegateBridge> _bridge;
++  std::shared_ptr<WebextrasMediaSource> _source;
+ }
+ @synthesize owner = _owner, position = _position, pipController = _pipController;
+ - (instancetype)initWithArcWebContents:(ArcWebContents*)owner {
+   if ((self = [super init])) {
+     _owner = owner;
+-    _sessionState = 3;
++    arc::InitializeWebextrasMediaSource(owner, [owner webContents]);
++    _source = GetWebextrasMediaSource(owner);
++    if (_source) { _source->service = self; }
+     objc_setAssociatedObject(owner, @selector(nativeMediaSession), self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+-    arcmod::GetVideoOverlayWindowHook() = base::BindRepeating(&arc::CreateVideoOverlayWindow);
+   }
+   return self;
+ }
+@@ -165,12 +370,12 @@
+   return session;
+ }
+ - (void)setDelegate:(id<ArcMediaDelegate>)delegate {
+-  _delegate = delegate;
+-  if (!delegate) { _observer.reset(); return; }
+-  if (!_observer) {
+-    auto* contents = [_owner webContents];
+-    if (contents) { _observer = std::make_unique<ArcMediaObserver>(contents, content::MediaSession::Get(contents), self); }
+-  }
++  if (!delegate) { _bridge.reset(); return; }
++  if (_bridge) { _bridge->delegate = delegate; return; }
++  _bridge = std::make_shared<WebextrasMediaDelegateBridge>();
++  _bridge->delegate = delegate;
++  _bridge->owner = _owner;
++  if (_source) { _source->delivery.Register(_bridge); }
+ }
+ - (NSIndexSet*)getMediaContentTypes:(NSError**)error {
+   auto* session = [self requireSession:error];
+@@ -186,10 +391,8 @@
+   return [values copy];
+ }
+ - (ArcMediaPosition*)position {
+-  auto* session = [self nativeSession];
+-  auto position = session ? session->GetMediaSessionPosition() : std::nullopt;
+-  _position = position ? [[ArcMediaPosition alloc] initWithMediaPosition:&*position] : nil;
+-  return _position;
++  auto position = _source ? _source->PositionSnapshot() : std::nullopt;
++  return position ? [[ArcMediaPosition alloc] initWithMediaPosition:&*position] : nil;
+ }
+ - (ArcWebContentsMediaSessionPiPController*)pipController {
+   auto* contents = [_owner webContents];
+@@ -238,65 +441,49 @@
+   helper->OnTabActivatedChanged(active);
+   return YES;
+ }
+-- (id<ArcMediaDelegate>)nativeDelegate { return _delegate; }
+-- (void)nativePiPCreated {
+-  _pipDestroyed = NO;
+-  _pipController = [[ArcWebContentsMediaSessionPiPController alloc] initWithPiPController:(__bridge const void*)_owner];
+-  id<ArcMediaDelegate> delegate = _delegate;
+-  if ([delegate respondsToSelector:@selector(webContents:pipControllerCreated:)]) { [delegate webContents:_owner pipControllerCreated:_pipController]; }
+-}
+-- (void)nativePiPDestroyed {
+-  if (_pipDestroyed) { return; }
+-  _pipDestroyed = YES;
+-  _pipController = nil;
+-  id<ArcMediaDelegate> delegate = _delegate;
+-  if ([delegate respondsToSelector:@selector(webContentsPiPControllerDestroyed:)]) { [delegate webContentsPiPControllerDestroyed:_owner]; }
+-}
+-- (void)nativeInfoChanged:(media_session::mojom::MediaSessionInfoPtr)info {
+-  if (!info) return;
+-  id<ArcMediaDelegate> delegate = _delegate;
+-  const uint64_t state = static_cast<uint64_t>(info->state);
+-  if (state != _sessionState) {
+-    _sessionState = state;
+-    if ([delegate respondsToSelector:@selector(webContents:didChangeMediaSessionState:)]) { [delegate webContents:_owner didChangeMediaSessionState:state]; }
+-  }
+-  const uint64_t camera = static_cast<uint64_t>(info->camera_state);
+-  if (camera != _cameraState) {
+-    _cameraState = camera;
+-    if ([delegate respondsToSelector:@selector(webContents:didChangeCameraState:)]) { [delegate webContents:_owner didChangeCameraState:camera]; }
+-  }
+-  const uint64_t microphone = static_cast<uint64_t>(info->microphone_state);
+-  if (microphone != _microphoneState) {
+-    _microphoneState = microphone;
+-    if ([delegate respondsToSelector:@selector(webContents:didChangeMicrophoneState:)]) { [delegate webContents:_owner didChangeMicrophoneState:microphone]; }
+-  }
+-}
+-- (void)nativeActionsChanged:(const std::vector<media_session::mojom::MediaSessionAction>&)actions {
+-  NSMutableIndexSet* values = [NSMutableIndexSet indexSet];
+-  for (auto action : actions) {
+-    const auto index = static_cast<NSUInteger>(action);
+-    if (index < 21) { [values addIndex:index]; }
+-  }
+-  id<ArcMediaDelegate> delegate = _delegate;
+-  if ([delegate respondsToSelector:@selector(webContents:didChangeAvailableMediaActions:)]) { [delegate webContents:_owner didChangeAvailableMediaActions:values]; }
+-}
+-- (void)nativePositionChanged:(const std::optional<media_session::MediaPosition>&)position {
+-  id<ArcMediaDelegate> delegate = _delegate;
+-  if (position && [delegate respondsToSelector:@selector(webContents:didChangeMediaPosition:)]) {
+-    [delegate webContents:_owner didChangeMediaPosition:[[ArcMediaPosition alloc] initWithMediaPosition:&*position]];
+-  }
++- (void)webextrasCachePiPController:(ArcWebContentsMediaSessionPiPController*)controller {
++  _pipController = controller;
+ }
+ @end
+ 
+ namespace {
+-ArcMediaObserver::ArcMediaObserver(content::WebContents* contents, content::MediaSession* session, ArcWebContentsMediaSession* owner)
+-    : content::WebContentsObserver(contents), owner_(owner) {
++void WebextrasMediaSource::PiPCreated() {
++  pip_destroyed_ = false;
++  ArcWebContentsMediaSessionPiPController* controller =
++      [[ArcWebContentsMediaSessionPiPController alloc] initWithArcWebContents:owner_];
++  [service webextrasCachePiPController:controller];
++  delivery.Sync([&](id<ArcMediaDelegate> d, ArcWebContents* o) {
++    if ([d respondsToSelector:@selector(webContents:pipControllerCreated:)]) { [d webContents:o pipControllerCreated:controller]; }
++  });
++}
++void WebextrasMediaSource::PiPDestroyed() {
++  if (pip_destroyed_) { return; }
++  pip_destroyed_ = true;
++  [service webextrasCachePiPController:nil];
++  delivery.Sync([](id<ArcMediaDelegate> d, ArcWebContents* o) {
++    if ([d respondsToSelector:@selector(webContentsPiPControllerDestroyed:)]) { [d webContentsPiPControllerDestroyed:o]; }
++  });
++}
++ArcMediaObserver::ArcMediaObserver(content::WebContents* contents,
++    content::MediaSession* session, std::weak_ptr<WebextrasMediaSource> source)
++    : content::WebContentsObserver(contents), source_(std::move(source)) {
+   session->AddObserver(receiver_.BindNewPipeAndPassRemote());
+ }
+-void ArcMediaObserver::WebContentsDestroyed() { Observe(nullptr); [owner_ nativePiPDestroyed]; }
+-void ArcMediaObserver::MediaSessionInfoChanged(media_session::mojom::MediaSessionInfoPtr info) { [owner_ nativeInfoChanged:std::move(info)]; }
+-void ArcMediaObserver::MediaSessionActionsChanged(const std::vector<media_session::mojom::MediaSessionAction>& actions) { [owner_ nativeActionsChanged:actions]; }
+-void ArcMediaObserver::MediaSessionPositionChanged(const std::optional<media_session::MediaPosition>& position) { [owner_ nativePositionChanged:position]; }
++void ArcMediaObserver::WebContentsDestroyed() {
++  // Lock functional state before detaching; never destroy this observer while
++  // its own notification is on the stack.
++  if (auto source = source_.lock()) { source->RetirePhysical(); }
++  else { Detach(); }
++}
++void ArcMediaObserver::MediaSessionInfoChanged(media_session::mojom::MediaSessionInfoPtr info) {
++  if (auto source = source_.lock()) { source->Info(std::move(info)); }
++}
++void ArcMediaObserver::MediaSessionActionsChanged(const std::vector<media_session::mojom::MediaSessionAction>& actions) {
++  if (auto source = source_.lock()) { source->Actions(actions); }
++}
++void ArcMediaObserver::MediaSessionPositionChanged(const std::optional<media_session::MediaPosition>& position) {
++  if (auto source = source_.lock()) { source->Position(position); }
++}
+ }
+ 
+ @interface ArcWebContents (ArcMediaAccess)
+@@ -325,7 +512,7 @@
+  public:
+   explicit ArcVideoOverlay(content::VideoPictureInPictureWindowController* controller)
+       : controller_(controller), owner_([ArcWebContents wrapperForWebContents:controller->GetWebContents()]) {
+-    session_ = objc_getAssociatedObject(owner_, @selector(nativeMediaSession));
++    source_ = GetWebextrasMediaSource(owner_);
+     view_ = [[PiPNSView alloc] initWithFrame:NSMakeRect(0, 0, 320, 180)];
+     view_.wantsLayer = YES;
+     view_.layer = [CALayer layer];
+@@ -347,24 +534,27 @@
+     compositor_->widget()->ResetNSView();
+     compositor_->compositor()->SetRootLayer(nullptr);
+     objc_setAssociatedObject(owner_, @selector(videoView), nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+-    [session_ nativePiPDestroyed];
++    if (auto source = source_) { source->PiPDestroyed(); }
+   }
+   bool IsActive() const override { return view_.window.isKeyWindow; }
+   void Close() override {
+     visible_ = false;
+-    auto* delegate = Delegate();
+-    if ([delegate respondsToSelector:@selector(webContentsClosePiP:)]) { [delegate webContentsClosePiP:owner_]; }
++    if (auto source = source_) { source->delivery.Sync([](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      if ([d respondsToSelector:@selector(webContentsClosePiP:)]) { [d webContentsClosePiP:o]; }
++    }); }
+   }
+   void ShowInactive() override {
+     visible_ = true;
+     compositor_->Unsuspend();
+-    auto* delegate = Delegate();
+-    if ([delegate respondsToSelector:@selector(webContentsShowPiP:)]) { [delegate webContentsShowPiP:owner_]; }
++    if (auto source = source_) { source->delivery.Sync([](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      if ([d respondsToSelector:@selector(webContentsShowPiP:)]) { [d webContentsShowPiP:o]; }
++    }); }
+   }
+   void Hide() override {
+     visible_ = false;
+-    auto* delegate = Delegate();
+-    if ([delegate respondsToSelector:@selector(webContentsHidePiP:)]) { [delegate webContentsHidePiP:owner_]; }
++    if (auto source = source_) { source->delivery.Sync([](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      if ([d respondsToSelector:@selector(webContentsHidePiP:)]) { [d webContentsHidePiP:o]; }
++    }); }
+   }
+   bool IsVisible() const override { return visible_; }
+   gfx::Rect GetBounds() override {
+@@ -372,15 +562,18 @@
+     return gfx::Rect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+   }
+   void UpdateNaturalSize(const gfx::Size& size) override {
+-    auto* delegate = Delegate();
+-    if ([delegate respondsToSelector:@selector(webContents:pipVideoResolutionChanged:)]) { [delegate webContents:owner_ pipVideoResolutionChanged:CGSizeMake(size.width(), size.height())]; }
++    const CGSize value = CGSizeMake(size.width(), size.height());
++    if (auto source = source_) { source->delivery.Sync([value](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      if ([d respondsToSelector:@selector(webContents:pipVideoResolutionChanged:)]) { [d webContents:o pipVideoResolutionChanged:value]; }
++    }); }
+   }
+   void SetPlaybackState(PlaybackState state) override {
+     auto weak = weak_factory_.GetWeakPtr();
+-    if (!created_) { created_ = true; [session_ nativePiPCreated]; }
++    if (!created_) { created_ = true; if (auto source = source_) { source->PiPCreated(); } }
+     if (!weak) { return; }
+-    auto* delegate = Delegate();
+-    if ([delegate respondsToSelector:@selector(webContents:pipPlaybackStateChanged:)]) { [delegate webContents:owner_ pipPlaybackStateChanged:state]; }
++    if (auto source = source_) { source->delivery.Sync([state](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      if ([d respondsToSelector:@selector(webContents:pipPlaybackStateChanged:)]) { [d webContents:o pipPlaybackStateChanged:state]; }
++    }); }
+   }
+   void SetPlayPauseButtonVisibility(bool value) override { Feature(4, value); }
+   void SetSkipAdButtonVisibility(bool value) override { Feature(6, value); }
+@@ -396,20 +589,23 @@
+   void SetNextSlideButtonVisibility(bool value) override { Feature(9, value); }
+   void SetPreviousSlideButtonVisibility(bool value) override { Feature(10, value); }
+   void SetMediaPosition(const media_session::MediaPosition& position) override {
+-    auto* delegate = Delegate();
+-    if ([delegate respondsToSelector:@selector(webContents:pipMediaPositionChanged:)]) {
+-      [delegate webContents:owner_ pipMediaPositionChanged:[[ArcMediaPosition alloc] initWithMediaPosition:&position]];
+-    }
++    if (auto source = source_) { source->delivery.Sync([&](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      if ([d respondsToSelector:@selector(webContents:pipMediaPositionChanged:)]) {
++        [d webContents:o pipMediaPositionChanged:[[ArcMediaPosition alloc] initWithMediaPosition:&position]];
++      }
++    }); }
+   }
+   void SetSourceTitle(const std::u16string& title) override {
+-    auto* delegate = Delegate();
+-    if ([delegate respondsToSelector:@selector(webContents:pipSourceTitleChanged:)]) { [delegate webContents:owner_ pipSourceTitleChanged:ArcNSString(title)]; }
++    if (auto source = source_) { source->delivery.Sync([&](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      if ([d respondsToSelector:@selector(webContents:pipSourceTitleChanged:)]) { [d webContents:o pipSourceTitleChanged:ArcNSString(title)]; }
++    }); }
+   }
+   void SetFaviconImages(const std::vector<media_session::MediaImage>& images) override {
+     NSMutableArray* values = [NSMutableArray arrayWithCapacity:images.size()];
+     for (const auto& image : images) { [values addObject:[[ArcMediaImage alloc] initWithChromiumMediaImage:image]]; }
+-    auto* delegate = Delegate();
+-    if ([delegate respondsToSelector:@selector(webContents:pipFaviconImagesChanged:)]) { [delegate webContents:owner_ pipFaviconImagesChanged:values]; }
++    if (auto source = source_) { source->delivery.Sync([&](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      if ([d respondsToSelector:@selector(webContents:pipFaviconImagesChanged:)]) { [d webContents:o pipFaviconImagesChanged:values]; }
++    }); }
+   }
+   void SetSurfaceId(const viz::SurfaceId& surface_id) override {
+     if (surface_id_.is_valid()) { compositor_->compositor()->RemoveChildFrameSink(surface_id_.frame_sink_id()); }
+@@ -422,10 +618,10 @@
+   void SetImmersiveVideoOptions(const content::ImmersiveOptions&) override {}
+   void AcceleratedWidgetCALayerParamsUpdated(gfx::CALayerParams params) override { display_tree_->UpdateCALayerTree(std::move(params)); }
+  private:
+-  id<ArcMediaDelegate> Delegate() { return [session_ nativeDelegate]; }
+   void Feature(uint64_t feature, bool value) {
+-    auto* delegate = Delegate();
+-    if ([delegate respondsToSelector:@selector(webContents:pipFeatureStateChanged:turnedOn:)]) { [delegate webContents:owner_ pipFeatureStateChanged:feature turnedOn:value]; }
++    if (auto source = source_) { source->delivery.Sync([feature, value](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      if ([d respondsToSelector:@selector(webContents:pipFeatureStateChanged:turnedOn:)]) { [d webContents:o pipFeatureStateChanged:feature turnedOn:value]; }
++    }); }
+   }
+   void Resize(CGSize size) {
+     gfx::Size dimensions(std::max(1, static_cast<int>(size.width)), std::max(1, static_cast<int>(size.height)));
+@@ -439,7 +635,7 @@
+   }
+   raw_ptr<content::VideoPictureInPictureWindowController> controller_;
+   __weak ArcWebContents* owner_;
+-  __weak ArcWebContentsMediaSession* session_;
++  std::shared_ptr<WebextrasMediaSource> source_;
+   PiPNSView* __strong view_;
+   std::unique_ptr<ui::DisplayCALayerTree> display_tree_;
+   std::unique_ptr<ui::RecyclableCompositorMac> compositor_;

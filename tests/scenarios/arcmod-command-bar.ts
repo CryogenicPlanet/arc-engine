@@ -47,7 +47,7 @@ export default async function scenario(c:ScenarioContext) {
   assert("morning command bar driver compiles with strict warnings",compile.success,compile.stderr.toString().slice(-1500));
   writeFileSync(join(directory,"provenance.json"),JSON.stringify({source:"/tmp/omnibox-commandbar-action-probe/probe.m",sourceSHA256:SOURCE_SHA,archivedPair:"logs/wp/omnibox.real-ui-pair2",adaptation:"Current-editor public NSAccessibility setter only, request directory confined below this outDir, ARC_SCENARIO launch options, exact-once mutation, complete live main raw proof. The original pair's runtime reports remain false and unchanged; its derived causal proof is not acceptance. No block-callback, navigation, parity or successful-quit inference."},null,2));
   const launch=c.launch({libraries:[library],environment:{ARC_SCENARIO_COMMAND_BAR_BUNDLE:bundle,ARC_SCENARIO_COMMAND_BAR_ROOT:realpathSync(c.outDir),ARC_SCENARIO_COMMAND_BAR_URL:url,ARC_SCENARIO_COMMAND_BAR_NONCE:nonce,ARC_SCENARIO_COMMAND_BAR_REQUEST:request}});
-  const observations:Receipt[]=[];let proofBytes:Buffer|undefined;
+  const observations:Receipt[]=[];let proofBytes:Buffer|undefined,proofIdentity:Cursor|undefined;
   const rawPath=join(c.outDir,"launch-1","record.jsonl");
   try {
     if(!await c.ready(launch,"morning command bar agent launch"))return;
@@ -116,7 +116,7 @@ export default async function scenario(c:ScenarioContext) {
     const exact=(v:SafeValue|undefined)=>v?.valueAllowed===true&&v.equalsFixture===true&&v.value===url;
     assert("morning command bar performs sole owned current-editor public setter",ownedField(setter,window)&&setter.status==="public-setter-returned-unverified"&&setter.route==="current-editor"&&setter.routeOwnershipVerified===true&&setter.setterReturned===true&&once(setter)&&setter.before?.valueAllowed===true&&setter.before.value===""&&exact(setter.after));
     const intent=readJSON<Receipt>(request+".intent.json");
-    assert("morning command bar persisted consumed intent before sole setter",intent?.id===setter.id&&intent.pid===pid&&intent.nonce===nonce&&intent.bundle===bundle&&intent.fixtureURL===url&&intent.status==="intent-before-public-setter"&&intent.route==="current-editor"&&intent.actionConsumed===true&&intent.actualSetterCalls===0);
+    assert("morning command bar persisted consumed intent before sole setter",intent?.id===setter.id&&intent.pid===pid&&intent.nonce===nonce&&intent.bundle===bundle&&intent.fixtureURL===url&&intent.operation==="setFixtureURL"&&intent.mainThread===true&&intent.functionalAcceptance===false&&intent.engineCallsPerformed===0&&intent.status==="intent-before-public-setter"&&intent.route==="current-editor"&&intent.routeOwnershipVerified===true&&intent.setterReturned===false&&intent.actionConsumed===true&&intent.actualSetterCalls===0&&intent.textSetterAttempts===0&&intent.nativeActionsPerformed===0&&intent.selectedWindowNumber===window);
     const cursor=setter.recorderCursorBeforeSetter;
     const cursorValid=(v:Cursor|undefined):v is Cursor=>v?.available===true&&Number.isSafeInteger(v.byteOffset)&&v.byteOffset>=0&&Number.isSafeInteger(v.device)&&Number.isSafeInteger(v.inode);
     const beforeIntent=setter.recorderCursorBeforeIntent,afterSetter=setter.recorderCursorAfterSetter;
@@ -135,8 +135,9 @@ export default async function scenario(c:ScenarioContext) {
     while(Date.now()<end){
       owner();const stat=statSync(rawPath);
       if(stat.dev!==cursor!.device||stat.ino!==cursor!.inode)throw new Error("command bar recorder file identity changed");
-      const bytes=readFileSync(rawPath);
-      try{gate=validateCommandBarRaw(bytes,cursor!.byteOffset,url);proofBytes=bytes;break;}
+      const bytes=readFileSync(rawPath),afterRead=statSync(rawPath);
+      if(afterRead.dev!==cursor!.device||afterRead.ino!==cursor!.inode||afterRead.size<bytes.length)throw new Error("command bar recorder file identity/size changed while reading");
+      try{gate=validateCommandBarRaw(bytes,cursor!.byteOffset,url);proofBytes=bytes;proofIdentity=cursor;break;}
       catch(error){if(!(error instanceof CommandBarSnapshotPending))throw error;lastPending=error.message;}
       await c.sleep(250);
     }
@@ -149,5 +150,8 @@ export default async function scenario(c:ScenarioContext) {
     // Standard harness failures, including required SIGTERM, remain failures.
     await c.quit(launch,"morning command bar standard graceful quit");
   }
-  if(proofBytes)assert("morning command bar proof remains exact prefix of unchanged recorder",readFileSync(rawPath).subarray(0,proofBytes.length).equals(proofBytes));
+  if(proofBytes){
+    const stat=statSync(rawPath);
+    assert("morning command bar proof remains exact prefix of unchanged recorder",stat.dev===proofIdentity?.device&&stat.ino===proofIdentity?.inode&&readFileSync(rawPath).subarray(0,proofBytes.length).equals(proofBytes));
+  }
 }

@@ -1,0 +1,90 @@
+{
+  "scope": "Read-only bounded global browser close shutdown/type/caller audit; not universal upstream or runtime proof.",
+  "createdUTC": "2026-10-23T14:58:52.064841+00:00",
+  "binary": {
+    "path": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore",
+    "sha256": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d"
+  },
+  "ranges": [
+    [
+      "direct caller prefix",
+      "36a8920",
+      "36a8a08"
+    ],
+    [
+      "global BrowserImpl close producer",
+      "42feb24",
+      "42ff04c"
+    ],
+    [
+      "application observer/registry global close receiver",
+      "42babd0",
+      "42bb3cc"
+    ],
+    [
+      "application ObjC bridge installation",
+      "43e663c",
+      "43e66bc"
+    ],
+    [
+      "global callback ObjC bridge",
+      "43eb200",
+      "43eb340"
+    ],
+    [
+      "WC Closed suppression contrast only",
+      "438a1c0",
+      "438a1e8"
+    ],
+    [
+      "quit state setter/getter",
+      "41f25d8",
+      "41f264c"
+    ]
+  ],
+  "inputs": {
+    "/tmp/arccore-sessions-persistence.py": {
+      "sha256": "1e10f367311eaff4e8c7f8a012cdf0a32f82268c56cdd5d5ccee17dfd047d3d1",
+      "size": 2643
+    },
+    "arc/api/arc_sessions_restore.mm": {
+      "sha256": "a6475f82e58de755fbf87578cc0dcb4144c0aeb685ce0073e707af442a7e37f0",
+      "size": 45571
+    },
+    "arc/browser/core_close_source_notes.md": {
+      "sha256": "6453e5ecccfdb6d9bae89cc349bc641e493e624d4dfe951a8acb78acfd4259ad",
+      "size": 16412
+    },
+    "/tmp/core-close-suppression-flag-audit.md": {
+      "sha256": "95b3c957304bd74e13ff28c1c5aa7a41ff51440457506a62485a31d4a7db697b",
+      "size": 9608
+    },
+    "/tmp/core-close-suppression-api-identity.txt": {
+      "sha256": "c333f70cd246cbb5f617c62e4eff37b3787961b1da64aef528a80ec3971055e3",
+      "size": 3239
+    },
+    "chromium/src/chrome/browser/ui/browser_window/public/browser_window_interface.h": {
+      "sha256": "97dc7e368b29bd43bb0ce24bcbc2b9795b842bbdeb68aa58a2cfc85e20024c4a",
+      "size": 14599
+    },
+    "chromium/src/chrome/browser/lifetime/browser_shutdown.cc": {
+      "sha256": "798b0669fd8c3bd88686a87309a69fa49e5c90ee64448ac46b47ec0883a4907e",
+      "size": 12161
+    },
+    "results/core-runtime/20261023T142843Z-window-binding/launch-slice/launch-1/record.jsonl": {
+      "sha256": "c225c63b54c98bd4774290236ed5bad13887abaa4c6b1258a0a9a2b23228a712",
+      "size": 1320317
+    },
+    "results/core-runtime/20261023T142843Z-window-binding/goldens/launch-slice/launch-1/record.jsonl": {
+      "sha256": "3cdfe7c8b597f3c497016fb82a3fc3bb71de10e9f365c224785c801ec270fa8d",
+      "size": 1416791
+    }
+  },
+  "outputs": {
+    "README.md": "10747c2f6503357c3cadc3b14f5e24a314b005a3759d2953577eee59dcf2d1b0",
+    "original-disassembly.txt": "f301bc53101c9876d48dc18cee59caeb156fbb66b1d6e2fde4b0b1c27c09f969",
+    "direct-edges-and-types.json": "6b9722a3c138960f3b32516258ad10922c8129a8dbdb1c9e4c7d0a33b2050dc8",
+    "run7-selected-events.json": "8fdd9ad353dce5a0443ede1c650ae04dbd3e66c4dff3cc331d18e1251369a8c6"
+  },
+  "result": "No supported own missing IsTryingToQuit gate. Out-of-mask native type traps; current fallback remains an uncovered structural difference."
+}

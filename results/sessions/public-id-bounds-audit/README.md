@@ -1,0 +1,19 @@
+# Public restore ID bounds: bounded static audit
+
+**No concrete sessions-owned bounds bug found for ordinary initialized ArcSessionID objects.** Native and current core narrow the public NSInteger input to signed 32 bits before the public eligibility/restore lookup sees it. Current RestoreID's upper-bound check is redundant for those objects; its positive-only top-level-entry matching agrees with both original native backends.
+
+## Exact conversion and matching
+
+- Original metadata gives `initWithID:` argument encoding `q` and `identifier` return `q`, while the ivar is an optional native signed32 SessionID (`specs/ArcSessionID.md`, metadata rows1134/1136/1140 in `arc/tools/arccore-1.170.0-objc.tsv`). Public width alone does not mean 64 bits survive storage.
+- Original initializer440ab88 stores **w2** at440ab94, passes that four-byte value to initWithSessionId at440aba4. Initializer440abb4 loads/stores **w8** at440abf4/440abf8 and marks engagement at440ac00. Identifier440acd8 checks engagement then **ldrsw x0,[x0,#8]** at440ace0: signed32 is sign-extended to NSInteger. Native optional getter2d0fb40 loads the eight aggregate bytes from self+8.
+- Original public canRestore bridge43e2b20 and restore bridge43e2b9c send **sessionId**, not identifier. They store the aggregate's low32 at43e2b58/43e2bd4, copy engagement from bit32, and check that bit at43e2b64/43e2be0. Engaged values are passed by pointer to42fae00/42faed0. There is no original 64-bit numeric value left to apply an independent upper-bound policy to at that point.
+- Native canRestore42fae7c loads **w9**;42fae88 compares signed value with1;42fae8c rejects less than1. Native restore42faf50/42faf60/42faf64 does the same. For positive values, the root list is traversed by next pointers42fae94..98 /42faf70..74; each root entry's adjacent signed32 fields at **+8/+0xc** are compared at42faeac..b8 /42faf84..90. There is no child navigation/recursive lookup in these scans. Restore forwards its requested signed32 value to the native helper at42fb05c..74 after matching a root; this audit does not extend the application-level recursive/invalid-ID semantics.
+- Current `arc/api/arc_browser.mm:34–51` stores `optional<int32_t>`, explicitly casts the NSInteger in initWithID at39, and returns that signed32 value through NSInteger. `arc/api/arc_sessions_restore.mm:820–835` reads this value, rejects <=0 or >INT32_MAX, converts to SessionID, and scans only root id/original_id. Hence the >INT32_MAX branch cannot be reached using this ordinary class's initialized value. Both public selectors use RestoreID (`:1054–1096`).
+
+As arithmetic illustrations only, an initWithID input4294967297 is already1 before lookup on both implementations;2147483648 is already-2147483648 and rejected on both. These are deductions from explicit storage instructions/current casts, not fabricated DTOs, runtime tests or claims that a matching historical entry exists.
+
+## Limits
+
+This conclusion concerns initialized, engaged IDs supplied through the real public ArcSessionID class. It does not establish equivalence for subclasses overriding selectors, altered storage, disengaged optional values, nil identifiers, detached browsers, or arbitrary foreign objects. Original bridges explicitly route disengaged optional extraction to bad-optional helper4b08a00 and require engaged browser state; these are separate object/lifetime policies, not evidence of a 64-bit bounds bug. No new edge policy, implementation fix, native/private ABI fixture, or runtime acceptance is proposed.
+
+The return/lookup conclusion is independent of held factory/source hooks, restore callback ordering, app-level recursive matching and cancellation. Independent read-only second review by `/root/sessions_recon/full_probe_review` agrees. All work was static/file read-only except these new evidence files; no source/shared changes, app/probe/build, board or credential actions.

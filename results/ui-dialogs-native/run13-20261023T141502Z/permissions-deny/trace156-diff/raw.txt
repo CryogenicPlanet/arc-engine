@@ -1,0 +1,11 @@
+methods differing: 31 (missing 3, extra 0, returns 3, callback args 2, counts 23; internal-only 0, ours-internal 0)
+callback sequence: {"golden": 48, "ours": 46, "first_divergence": 13, "golden_from": ["ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:", "ADK.ADKApplication didConnectToNetworkProcess", "ADK.ADKApplication didReceiveGPUInfoUpdate:", "ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"], "ours_from": ["_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:", "ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:", "ADK.ADKApplication 
+caller attribution: off (a transcript predates it)
+missing {"method": "->engine -ArcBrowserApplication ensureBasicAccessibilityEnabled", "golden_calls": 5, "example": {"args": "[]", "ret": "null"}}
+missing {"method": "engine->app -ADK.AccessibilityObserver accessibilityModeChanged:", "golden_calls": 1, "example": {"args": "[\"kNativeAPIs | kWebContents\"]", "ret": "null"}}
+missing {"method": "engine->app -ADK.WebContentChromium webContentsClosePermission:", "golden_calls": 1, "example": {"args": "[\"<ArcWebContents#1>\"]", "ret": "null"}}
+return_mismatch {"method": "->engine -ArcBrowserContext loadUrl:withDelegate:", "call": 0, "args": "[\"<ArcURLLoadConfiguration#4>\", \"<_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate#4>\"]", "golden": "\"<ArcURLLoadCancellationToken#4>\"", "ours": "\"<ArcURLLoadCancellationToken#5>\""}
+return_mismatch {"method": "->engine -ArcSearchEngine url", "call": 534, "args": "[]", "golden": "\"chrome://history/?q=%7BsearchTerms%7D\"", "ours": "\"https://drive.google.com/drive/search?q=%s\""}
+return_mismatch {"method": "->engine -ArcSessionID identifier", "call": 0, "args": "[]", "golden": "954478093", "ours": "1016916940"}
+arg_mismatch {"method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:", "call": 0, "golden": "[\"<ArcBrowser#1>\", 954478093]", "ours": "[\"<ArcBrowser#1>\", 1016916940]"}
+arg_mismatch {"method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "call": 15, "golden": "[\"ProfileKeepAlive-origin\", \"kExtensionUpdater\"]", "ours": "[\"nav_reentrancy_caller1-LoadIf_pending\", \"true\"]"}

@@ -4,7 +4,8 @@ Close accounting integration plan — source audit only
 Recommendation: land accounting, all proven producers, and the native-close-source
 route as one coordinated change before making public idle close synchronous.
 Changing only -close or wrapping only direct Objective-C delegate calls leaves
-queued callbacks and native bulk-close paths uncovered. No implementation patch,
+queued callbacks uncovered. Original bulk is a separate untraced producer scope;
+no native/bulk Busy predicate is inferred. No implementation patch,
 production edits, compiler/build, app run, or board action was made for this plan.
 
 Evidence and exact domains
@@ -92,9 +93,10 @@ UI package (arc/api/arc_ui_*.mm): use shared UI channel
 
 WEBEXTRAS: proven media and UI callback domains
 * arc/api/arc_webextras_media.mm:246/253 PiP create/destroy, :261/:266/:271 info,
-  :281 actions, :286 position — Media sync invocation scopes in current producer
-  timing. :296..299 are native source adapters; shared state must be captured before
-  app callout and stay valid if media observer/session is reset during callback.
+  :281 actions, :286 position — current synchronous sites need exact original
+  delivery mapping first: audited ordinary media callbacks use native InvokeAsync.
+  Capture SAME state at genuine producer enqueue; a delivery-only sync scope
+  does not restore the native pending interval. :296..299 are native adapters.
 * Same file :350 destructor notification; :356/:362/:367 show/hide/close;
   :376 resolution; :380/:383 creation+playback; :401 position; :406 title;
   :412 favicons; :428 feature — Media scopes. If webextras restores native async
@@ -102,9 +104,10 @@ WEBEXTRAS: proven media and UI callback domains
   rather than just guarding its later selector. Destructor-origin callback cannot
   derive its accounting from a native object already being torn down.
 * arc/api/arc_webextras_capture.mm:269 -> :281/:283 PDF-ready setter/UI callback:
-  acquire at producer, with property publication in WCObserver batch domain and
-  didFinishPDFRendering in UI domain. Exact original combined/split enqueue and
-  resulting domain timing needs webextras/source confirmation before conversion.
+  original PDFReady uses ONE UI pending invocation, acquired at enqueue. That
+  SAME delivery directly stores pdfController then calls didFinishPDFRendering
+  through return; no extra WCObserver batch. Board140257 and webextras
+  core PDF audit correct the earlier proposed split-domain treatment.
 * capture.mm:65..75/:159..162 thumbnail registrations; devtools.mm:75/:83 protocol
   notifications, :253/:265 DevTools UI; webextras_ui.mm:173 Boost; :63/:107..112
   Browser side-panel callbacks: these EXIST, but the five Close predicates do not
@@ -147,8 +150,9 @@ Public Close then checks native identity, native-close-source, then Busy; busy p
 same weak retry with original close arguments, idle calls contents->Close(). Do not
 invoke Close from a counter guard destructor on a native callback stack. Do not
 silently coalesce retries or replace native weak retry scheduling with inline drain
-unless original scheduling is separately proved. Existing foreground timing argument
-and flags still need original mapping; do not discard them in the shared helper.
+unless original scheduling is separately proved. Default timing1 and low32
+zero/nonzero classification are now proved; preserve those flags and exact source
+continuation rather than discarding timing in a shared helper.
 
 Native routes / required lead decisions
 --------------------------------------
@@ -176,13 +180,16 @@ Native routes / required lead decisions
 
 Suggested coordinated landing and verification
 ---------------------------------------------
-1. Lead fixes shared contract and native source/continuation/bulk-close design.
+1. Settle shared accounting and exact public/single-native callback/lifecycle
+   contract before public timing1 activation. Independently map original bulk
+   semantics while preserving current bulk behavior; no new Busy gate is inferred.
 2. Core wires accounting into finalized queued WC/display/nav companions; UI and
    webextras wire only proven channels. Keep current public Close deferred meanwhile.
 3. Compile affected owned TUs, then inspect coverage of all five domains, registration
    removal/re-add, nil/replaced bridges, nested sync, native/wrapper teardown and
    native association replacement. Counts must drain on inert delivery branches.
-4. Switch public idle Close only after integrated paths are complete. Targeted
+4. Switch public idle timing1 only after its proven integrated prerequisites are
+   complete. Timing0/bulk/unattached scopes remain separately bounded. Targeted
    runtime comparisons: close from nested UI/Nav/media callback; close between an
    observer callback and its trailing task; pending removed registration; native
    close-source continuation; JS beforeunload; whole-window CloseAllTabs; event
@@ -196,13 +203,17 @@ route, enqueue-to-return accounting, separate observer finalization and narrow
 source-token semantics agree with cited evidence. Current/staged callsites match
 ownership. Package-specific producer enqueue timing still requires confirmation;
 generic wrapper evidence does not prove every individual producer. Native source/
-continuation/bulk-close, discard counter lifetime, unproven callback domains, PDF
-enqueue grouping and unattached owned contents remain gated. No runtime validation.
+continuation implementation and discard lifetime remain gated; original bulk
+producer remains separately untraced. Unproved domains/PDF grouping and unattached
+ownership remain bounded. No native/bulk Busy gate is proved. No runtime validation.
 
 Parent contract correction after review: removed the earlier overbroad guarantee
 for failed posting. Original invocation completion decrements after return, but
-task destruction does not. Rejected-post behavior remains unproven. This matches
-the staged primitive and the correction requested of UI notes in message137863.
+task destruction does not. Follow-on native audit RESOLVED producer policy:
+audited InvokeAsync/NotifyObserversImpl ignore rejection without rollback. The
+staged primitive matches it; see core_close_accounting_adapter_plan.md and
+logs/wp/core.close-accounting.post-policy/. This does not generalize unexamined
+producer forms.
 
 Native-source follow-on (see core_close_source_notes.md)
 ------------------------------------------------------
@@ -210,8 +221,22 @@ The separate source token is now proven to belong to the timing-zero foreground
 continuation; ordinary public close forwards timing1 (4410bac and accepted
 sessions golden6137), bypassing that special predicate. Do not place this token
 around all native closures. Exact clear-before-match-current/reentry and the
-imminent-notification flag are documented in the follow-on. The remaining
-timing-zero keyed controller/mode identity and whole-browser native transaction
-coordination remain bounded; no synchronous public activation is claimed.
+imminent-notification flag are documented in the follow-on. The keyed controller
+identity is RESOLVED as UnloadController/force_skip_warning_user_on_close_. Timing0
+transport/continuation still needs implementation; original bulk producer remains
+separately untraced, without an inferred Busy gate. No public activation claimed.
 The default forwarding correction has independently landed while preserving the
 existing deferred native operation (core_close_forwarding.patch ALREADY APPLIED).
+
+Current implementation addenda (15:00UTC): accounting adapter patch bec65249
+rebases prior c63b against production quit suppression ff957456. Closed UI sync
+scope is inside !trying_to_quit; cleanup/imminent remain unchanged. Real zoom
+source is now a separately compiled/reviewed UNAPPLIED ZoomObserver companion
+37637ae, not an unresolved event-source design. New native close transport
+41de166d is empty-default UNAPPLIED; no Close consumer/activation follows from it.
+Noncreating native-state lookup is separately staged for UI140509. State exists
+before initializer setters but userdata wrapper publication occurs only after
+init returns; availability is not proved for every global permission-hook input.
+Missing state remains an integration blocker, never a reason for silent nullskip
+or constructing another wrapper/state. Exact current evidence is under
+logs/wp/core.quit-suppression/ and core.noncreating-state/.

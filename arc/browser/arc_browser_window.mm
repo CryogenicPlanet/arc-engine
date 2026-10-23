@@ -31,7 +31,56 @@
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "base/functional/bind.h"
 
+// The native adapter and its notification tracker each retain the bound window.
+// The tracker keeps it alive while the synchronous WillClose callback clears
+// the adapter's reference and its own registration.
+@interface CoreWindowBindingTracker : NSObject {
+ @private
+  NSWindow* __strong _window;
+  base::OnceClosure _onClose;
+}
+- (instancetype)initWithWindow:(NSWindow*)window
+                      onClose:(base::OnceClosure)onClose;
+@end
+
+@implementation CoreWindowBindingTracker
+- (instancetype)initWithWindow:(NSWindow*)window
+                      onClose:(base::OnceClosure)onClose {
+  if ((self = [super init])) {
+    _window = window;
+    _onClose = std::move(onClose);
+    [NSNotificationCenter.defaultCenter
+        addObserver:self
+           selector:@selector(onWindowWillClose:)
+               name:NSWindowWillCloseNotification
+             object:window];
+  }
+  return self;
+}
+- (void)dealloc {
+  [NSNotificationCenter.defaultCenter removeObserver:self];
+}
+- (void)onWindowWillClose:(NSNotification*)notification {
+  // Clearing the adapter also releases its tracker. Keep this notification
+  // receiver alive until after its separate window reference is released.
+  __attribute__((objc_precise_lifetime)) CoreWindowBindingTracker* keep_alive = self;
+  [NSNotificationCenter.defaultCenter removeObserver:self];
+  base::OnceClosure on_close = std::move(_onClose);
+  if (on_close) {
+    std::move(on_close).Run();
+  }
+  _window = nil;
+}
+@end
+
 namespace arc {
+
+struct ArcBrowserWindow::NativeWindowBinding {
+  // Member destruction releases the tracker before the adapter-held window.
+  gfx::NativeWindow visible_window;
+  NSWindow* __strong window = nil;
+  CoreWindowBindingTracker* __strong tracker = nil;
+};
 
 // ArcBrowserWindow::ArcLocationBar -----------------------------------------
 
@@ -136,7 +185,8 @@ bool ArcBrowserWindow::ArcLocationBar::HasSecurityStateChanged() {
 
 // ArcBrowserWindow ----------------------------------------------------------
 
-ArcBrowserWindow::ArcBrowserWindow() {
+ArcBrowserWindow::ArcBrowserWindow()
+    : native_window_(std::make_shared<NativeWindowBinding>()) {
   // The adapter is supplied before Browser construction; bind it once Chrome publishes the browser.
   browser_collection_observation_.Observe(
       GlobalBrowserCollection::GetInstance());
@@ -159,7 +209,7 @@ void ArcBrowserWindow::Close() {
 }
 
 bool ArcBrowserWindow::IsActive() const {
-  return [native_window_.GetNativeNSWindow() isKeyWindow];
+  return [GetNativeWindow().GetNativeNSWindow() isKeyWindow];
 }
 
 ui::ZOrderLevel ArcBrowserWindow::GetZOrderLevel() const {
@@ -167,7 +217,7 @@ ui::ZOrderLevel ArcBrowserWindow::GetZOrderLevel() const {
 }
 
 gfx::NativeWindow ArcBrowserWindow::GetNativeWindow() const {
-  return native_window_;
+  return native_window_->visible_window;
 }
 
 bool ArcBrowserWindow::IsOnCurrentWorkspace() const {
@@ -220,29 +270,29 @@ ui::mojom::WindowShowState ArcBrowserWindow::GetRestoredState() const {
 }
 
 gfx::Rect ArcBrowserWindow::GetBounds() const {
-  NSWindow* window = native_window_.GetNativeNSWindow();
+  NSWindow* window = GetNativeWindow().GetNativeNSWindow();
   return window ? gfx::ScreenRectFromNSRect(window.frame) : gfx::Rect();
 }
 
 gfx::Size ArcBrowserWindow::GetContentsSize() const {
-  NSSize size = [native_window_.GetNativeNSWindow().contentView frame].size;
+  NSSize size = [GetNativeWindow().GetNativeNSWindow().contentView frame].size;
   return gfx::Size(size.width, size.height);
 }
 
 void ArcBrowserWindow::SetContentsSize(const gfx::Size& size) {
-  [native_window_.GetNativeNSWindow() setContentSize:NSMakeSize(size.width(), size.height())];
+  [GetNativeWindow().GetNativeNSWindow() setContentSize:NSMakeSize(size.width(), size.height())];
 }
 
 bool ArcBrowserWindow::IsMaximized() const {
-  return [native_window_.GetNativeNSWindow() isZoomed];
+  return [GetNativeWindow().GetNativeNSWindow() isZoomed];
 }
 
 bool ArcBrowserWindow::IsMinimized() const {
-  return [native_window_.GetNativeNSWindow() isMiniaturized];
+  return [GetNativeWindow().GetNativeNSWindow() isMiniaturized];
 }
 
 bool ArcBrowserWindow::GetCanResize() {
-  return (native_window_.GetNativeNSWindow().styleMask & NSWindowStyleMaskResizable) != 0;
+  return (GetNativeWindow().GetNativeNSWindow().styleMask & NSWindowStyleMaskResizable) != 0;
 }
 
 ui::mojom::WindowShowState ArcBrowserWindow::GetWindowShowState() const {
@@ -250,7 +300,7 @@ ui::mojom::WindowShowState ArcBrowserWindow::GetWindowShowState() const {
 }
 
 bool ArcBrowserWindow::IsFullscreen() const {
-  return (native_window_.GetNativeNSWindow().styleMask & NSWindowStyleMaskFullScreen) != 0;
+  return (GetNativeWindow().GetNativeNSWindow().styleMask & NSWindowStyleMaskFullScreen) != 0;
 }
 
 bool ArcBrowserWindow::UpdateToolbarSecurityState() {
@@ -258,7 +308,7 @@ bool ArcBrowserWindow::UpdateToolbarSecurityState() {
 }
 
 bool ArcBrowserWindow::IsVisible() const {
-  return [native_window_.GetNativeNSWindow() isVisible];
+  return [GetNativeWindow().GetNativeNSWindow() isVisible];
 }
 
 LocationBar* ArcBrowserWindow::GetLocationBar() const {
@@ -374,7 +424,30 @@ std::unique_ptr<content::EyeDropper> ArcBrowserWindow::OpenEyeDropper(
 }
 
 void ArcBrowserWindow::SetNativeWindow(gfx::NativeWindow window) {
-  native_window_ = window;
+  auto binding = native_window_;
+  const auto weak_self = weak_factory_.GetWeakPtr();
+  if (binding->visible_window.GetNativeNSWindow()) {
+    return;
+  }
+  NSWindow* native_window = window.GetNativeNSWindow();
+  binding->visible_window = gfx::NativeWindow(native_window);
+  binding->window = native_window;
+  if (weak_self) {
+    binding->tracker = [[CoreWindowBindingTracker alloc]
+        initWithWindow:native_window
+               onClose:base::BindOnce(&ArcBrowserWindow::ClearNativeWindow,
+                                      weak_self)];
+  }
+}
+
+void ArcBrowserWindow::ClearNativeWindow() {
+  // Retain binding storage across any release-time reentry. The tracker still
+  // retains the window while the adapter releases its hold, then publishes the
+  // cleared binding, and finally releases its tracker registration.
+  auto binding = native_window_;
+  binding->window = nil;
+  binding->visible_window = gfx::NativeWindow();
+  binding->tracker = nil;
 }
 
 void ArcBrowserWindow::SetCloseCallback(base::OnceClosure close_callback) {
@@ -396,22 +469,22 @@ void ArcBrowserWindow::OnBrowserCreated(BrowserWindowInterface* browser) {
 }
 
 void ArcBrowserWindow::Show() {
-  [native_window_.GetNativeNSWindow() orderFront:nil];
+  [GetNativeWindow().GetNativeNSWindow() orderFront:nil];
 }
 void ArcBrowserWindow::ShowInactive() {
-  [native_window_.GetNativeNSWindow() orderFront:nil];
+  [GetNativeWindow().GetNativeNSWindow() orderFront:nil];
 }
 void ArcBrowserWindow::Hide() {
-  [native_window_.GetNativeNSWindow() orderOut:nil];
+  [GetNativeWindow().GetNativeNSWindow() orderOut:nil];
 }
 void ArcBrowserWindow::Activate() {
-  [native_window_.GetNativeNSWindow() makeKeyWindow];
+  [GetNativeWindow().GetNativeNSWindow() makeKeyWindow];
 }
 void ArcBrowserWindow::Deactivate() {
-  [native_window_.GetNativeNSWindow() resignKeyWindow];
+  [GetNativeWindow().GetNativeNSWindow() resignKeyWindow];
 }
 void ArcBrowserWindow::SetBounds(const gfx::Rect& bounds) {
-  [native_window_.GetNativeNSWindow()
+  [GetNativeWindow().GetNativeNSWindow()
       setFrame:gfx::ScreenRectToNSRect(bounds)
        display:YES];
 }
@@ -423,12 +496,12 @@ void ArcBrowserWindow::EnterFullscreen(const url::Origin& origin,
                                        ExclusiveAccessBubbleType bubble_type,
                                        FullscreenTabParams fullscreen_tab_params) {
   if (!IsFullscreen()) {
-    [native_window_.GetNativeNSWindow() toggleFullScreen:nil];
+    [GetNativeWindow().GetNativeNSWindow() toggleFullScreen:nil];
   }
 }
 void ArcBrowserWindow::ExitFullscreen() {
   if (IsFullscreen()) {
-    [native_window_.GetNativeNSWindow() toggleFullScreen:nil];
+    [GetNativeWindow().GetNativeNSWindow() toggleFullScreen:nil];
   }
 }
 void ArcBrowserWindow::UpdateExclusiveAccessBubble(

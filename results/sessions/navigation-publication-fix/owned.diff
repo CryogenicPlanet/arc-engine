@@ -1,0 +1,32 @@
+arc/api/arc_sessions_restore.mm --- Text
+529 }                                    529 }
+530 - (void)setNavigations:(NSArray<Arc  530 - (void)setNavigations:(NSArray<Arc
+... SessionNavigation*>*)navigations {   ... SessionNavigation*>*)navigations {
+531   CHECK(_tab);                       531   CHECK(_tab);
+532   // Native SetNavigations rejects   532   // Native publishes the retained 
+... an empty history before replacing i  ... array before enumerating it, then r
+... ts vector.                           ... ejects an
+...                                      533   // empty collected history before
+...                                      ...  replacing its native vector.
+533   CHECK_GT(navigations.count, 0u);   534   _navigations = navigations;
+534   std::vector<sessions::SerializedN  535   std::vector<sessions::SerializedN
+... avigationEntry> entries;             ... avigationEntry> entries;
+535   entries.reserve(navigations.count  ... 
+... );                                   ... 
+536   for (ArcSessionNavigation* naviga  536   for (ArcSessionNavigation* naviga
+... tion in navigations) {               ... tion in navigations) {
+537     CHECK([navigation isKindOfClass  537     CHECK([navigation isKindOfClass
+... :[ArcSessionNavigation class]]);     ... :[ArcSessionNavigation class]]);
+538     CHECK([navigation chromeNavigat  538     CHECK([navigation chromeNavigat
+... ion]);                               ... ion]);
+539     entries.push_back(*[navigation   539     entries.push_back(*[navigation 
+... chromeNavigation]);                  ... chromeNavigation]);
+540   }                                  540   }
+541   _navigations = navigations;        541   CHECK_GT(entries.size(), 0u);
+542   _tab->navigations = std::move(ent  542   _tab->navigations = std::move(ent
+... ries);                               ... ries);
+543 }                                    543 }
+544 - (NSString*)groupId { return _tab   544 - (NSString*)groupId { return _tab 
+... && _tab->group ? ArcNSString(_tab->  ... && _tab->group ? ArcNSString(_tab->
+... group->ToString()) : nil; }          ... group->ToString()) : nil; }
+

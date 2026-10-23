@@ -24,11 +24,12 @@ Required additions/clarifications
    or otherwise establish its receipt-time association before weak owner loss.
    deliverSelector must not obtain state from a registration or a weak owner
    inside each task. A controller/queued task may retain the STATE, never the WC.
-4. Keep initial synchronous setters and per-commit synchronous zoom as explicit
-   remaining coverage/timing questions. State creation before those setters is
-   necessary association setup, but does not itself account their KVO callouts.
-   Do not invent observer batches around every setter without producer proof.
-   Observer-stage WC306–310 and727–733 retain the zoom callout intentionally.
+4. Follow-on source resolves initial setters as direct/uncounted before bridge
+   registration. Preserve that timing without synthetic accounting. Subsequent
+   zoom requires a genuine queued WCObserver batch+trailer: implemented in the
+   separate UNAPPLIED core_zoom_observer.patch after this composition. State
+   association alone does not repair that producer; no per-commit setter remains
+   in the composed zoom stage.
 
 State association / shared interface
 ------------------------------------
@@ -170,12 +171,16 @@ its owner must use the SAME state and kMedia, including destructor-origin
 notifications captured before native teardown. Any restored native async timing
 must acquire at producer enqueue, not just guard the later selector. Do not
 relabel unrelated thumbnails/DevTools/Boost/browser callbacks as one of the five
-proven domains. PDF setter plus UI callback grouping remains source-gated.
+proven domains. Original PDFReady is now proved ONE UI pending invocation with
+direct pdfController store and didFinishPDFRendering in that same delivery; no
+extra WCObserver batch (board140257).
 
-This composition alone is incomplete: UI/media integration, initial/zoom source
-coverage, native single/bulk close entry coordination, timing-zero continuation,
-unattached-owned close semantics and destruction-query ordering remain gated.
-The now-proved UnloadController force-skip predicate does not remove these gates.
+Public timing1 still requires same-state UI/media/realzoom producer integration,
+exact ordinary forwarding/conditional imminent, source-proven Closed/query phase,
+relevant native identity/lifetime handling and validation. Initial setters are
+uncounted. Timing0 continuation, unattached ownership and original bulk semantics
+are separate bounded scopes, not evidence for a native/bulk five-domain Busy gate.
+The resolved UnloadController predicate does not remove these real prerequisites.
 No guard destructor may run Close, drain retries inline, reset counts on native
 replacement, or hold wrappers/delegates to keep callbacks deliverable.
 

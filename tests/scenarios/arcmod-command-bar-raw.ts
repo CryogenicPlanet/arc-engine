@@ -20,11 +20,12 @@ export function validateCommandBarRaw(input:Uint8Array, cursor:number, url:strin
   require(raw.length>0&&raw.length<=16*1024*1024,"command-bar raw size outside bound");
   if(raw.at(-1)!==10)pending("command-bar live snapshot ends within a recorder line");
   const rows:Row[]=[];let offset=0;
-  for(const line of new TextDecoder("utf-8",{fatal:true}).decode(raw).split("\n").slice(0,-1)) {
+  for(const line of new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(raw).split("\n").slice(0,-1)) {
     const event:unknown=JSON.parse(line),length=Buffer.byteLength(line)+1;
     require(event!==null&&typeof event==="object"&&!Array.isArray(event),"nonobject recorder row");
     rows.push({line:rows.length+1,offset,endOffset:offset+length,event:event as Event});offset+=length;
   }
+  require(offset===raw.length,"raw byte accounting changed");
   require(Number.isSafeInteger(cursor)&&cursor>=0&&(cursor===raw.length||rows.some(row=>row.offset===cursor)),"pre-setter cursor is not an exact raw byte boundary");
   const hooks=rows.filter(row=>row.event.ev==="hooked");
   require(hooks.length===1&&hooks[0]!.event.seq===0&&Number.isSafeInteger(hooks[0]!.event.engine_classes)&&Number(hooks[0]!.event.engine_classes)>0,"expected one positive engine hook marker");
@@ -78,6 +79,6 @@ export function validateCommandBarRaw(input:Uint8Array, cursor:number, url:strin
     preSetterCursor:cursor,sequenceGaps:0,mainIdentityDepthOrderMismatches:0,backgroundEvents,
     pairedMainInvocations:pairs.size,preexistingRun:root,targetCall:query,targetReturn:returned,
     genuineAppResultReads:consumed.length,prefixEqualsFinalExactInvocation:true,allPostCursorMainCallsPaired:true,
-    blockInvocationObserved:false,completionDoneObserved:false,
+    blockInvocation:"uninstrumented-unknown",completionDone:"uninstrumented-unknown",
     scope:"New exact app autocomplete/true return, complete main pairing and genuine app result consumption. No block-callback, navigation, parity or shutdown inference."};
 }

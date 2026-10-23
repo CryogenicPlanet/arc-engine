@@ -10,6 +10,7 @@
 #include "base/task/current_thread.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -29,6 +30,7 @@ class TerminationRequest final {
   bool active() const { return active_; }
   void Begin(void (^completion)(NSUInteger)) {
     active_ = true;
+    browser_shutdown::SetTryingToQuit(true);
     completion_ = [completion copy];
     // CDP initiates AppKit termination from inside a Chromium task. AppKit
     // waits in a native nested loop after tryToTerminate: returns, so its
@@ -51,14 +53,18 @@ class TerminationRequest final {
       Check();
       return;
     }
+    auto completion = completion_;
+    completion_ = nil;
+    // Resetting another confirmed browser can synchronously report denial.
+    // Retire this transaction's callbacks before resetting those controllers;
+    // keep it active until reset finishes so a retry cannot be consumed here.
+    weak_factory_.InvalidateWeakPtrs();
+    browser_shutdown::SetTryingToQuit(false);
     GlobalBrowserCollection::GetInstance()->ForEach([](BrowserWindowInterface* browser) {
       UnloadController::From(browser)->ResetBeforeUnloadForShutdown();
       return true;
     });
-    auto completion = completion_;
-    completion_ = nil;
     active_ = false;
-    weak_factory_.InvalidateWeakPtrs();
     nested_tasks_.reset();
     if (completion) completion(0);
   }

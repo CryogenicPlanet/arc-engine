@@ -86,7 +86,11 @@ any SIGTERM fallback remains a failing step.
 
 `bookmarks-public-api` has an accepted40/40 original-engine golden (36engineclasses/231selectors/19callbackselectors), adapted from the separately reviewed frozen profile.batch11 fixture. It retains23 snapshot/mutation facts and raw measured date windows. `bookmarks-public-api-raw.ts` independently pairs exact driver-image calls/returns and enforces74bookmark calls/16selectors, DTO receivers, Unicode arguments and membership order. The default v2 comparison excludes these direct driver calls; acceptance comes from its own standard original run, not the archived combined-fixture passes.
 
-See [MORNING.md](MORNING.md) for six ready-to-record-after-unlock scripts and four incomplete plans/probes.
+The morning `arcmod-command-bar` uses a tests-owned public current-editor AX setter and independently requires a NEW app-origin autocomplete query/paired true return plus actual same-window suggestions. It is written/reviewed and unrecorded, with runtime unverified. Existing navigation coverage remains separate; neither navigation nor block completion follows from the archived autocomplete proof.
+
+See [MORNING.md](MORNING.md) for seven ready-to-record-after-unlock scripts and three incomplete plans/probes.
 All `arcmod-*` scripts remain unrecorded overnight. The new in-process key driver tests seven whitelisted
 app-event routes, not hardware/WindowServer delivery; Foundation/DNS service results are explicit
 sidecars, not engine-selector coverage. No human profile or discovered import source may be used.
+
+An additional app-owner morning case, `application-termination-denial`, is written and reviewed separately: native Quit with a trusted live beforeunload handler, Cancel/same-document responsiveness, retry/OK and bounded browser/helper disappearance. It is unrecorded and runtime unverified; archived single-phase/raw corruption checks do not prove the two-Quit flow. See MORNING.md and logs/wp/scenarios-termination-freeze.json.

@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <map>
+#include <utility>
 #include <variant>
 
 namespace {
@@ -82,14 +83,26 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
   current = enabled;
 }
 - (void)setStringFeatureValue:(NSUInteger)identifier value:(NSString*)value {
+  // Native converts NSString (including nil to empty) before table validation.
+  std::string converted = ArcUTF8(value);
   auto& features = Features();
   base::AutoLock hold(features.lock);
-  features.values[static_cast<uint32_t>(identifier)] = ArcUTF8(value);
+  auto entry = features.values.find(static_cast<uint32_t>(identifier));
+  if (entry == features.values.end()) TrapMissingRuntimeFeature();
+  std::string& current = std::get<std::string>(entry->second);
+  if (current == converted) return;
+  current = std::move(converted);
 }
 - (void)setIntFeatureValue:(NSUInteger)identifier value:(NSInteger)value {
   auto& features = Features();
   base::AutoLock hold(features.lock);
-  features.values[static_cast<uint32_t>(identifier)] = int64_t{value};
+  auto entry = features.values.find(static_cast<uint32_t>(identifier));
+  if (entry == features.values.end()) TrapMissingRuntimeFeature();
+  int64_t& current = std::get<int64_t>(entry->second);
+  const uint32_t converted = static_cast<uint32_t>(value);
+  if (static_cast<uint32_t>(current) == converted) return;
+  // Preserve the native raw low32 pattern in the existing private alternative.
+  current = converted;
 }
 - (void)getNonDefaultFlags:(void (^)(NSArray<NSString*>*))completion {
   if (!completion) return;

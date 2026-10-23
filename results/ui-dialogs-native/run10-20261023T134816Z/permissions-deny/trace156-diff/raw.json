@@ -1,0 +1,131 @@
+{
+ "internal": [],
+ "internal_ours": [],
+ "missing": [
+  {
+   "method": "engine->app -ADK.WebContentChromium webContentsClosePermission:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "extra": [],
+ "return_mismatch": [
+  {
+   "method": "->engine -ArcSessionID identifier",
+   "call": 0,
+   "args": "[]",
+   "golden": "954478093",
+   "ours": "1749833940"
+  },
+  {
+   "method": "->engine -ArcWebContents loadProgress",
+   "call": 2,
+   "args": "[]",
+   "golden": "0.7",
+   "ours": "1"
+  }
+ ],
+ "arg_mismatch": [
+  {
+   "method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+   "call": 0,
+   "golden": "[\"<ArcBrowser#1>\", 954478093]",
+   "ours": "[\"<ArcBrowser#1>\", 1749833940]"
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "call": 15,
+   "golden": "[\"ProfileKeepAlive-origin\", \"kExtensionUpdater\"]",
+   "ours": "[\"nav_reentrancy_caller1-LoadIf_pending\", \"true\"]"
+  }
+ ],
+ "count_mismatch": [
+  {
+   "method": "->engine -ArcBrowserApplication ensureBasicAccessibilityEnabled",
+   "golden": 5,
+   "ours": 1
+  },
+  {
+   "method": "->engine -ArcBrowserContext extensions",
+   "golden": 6,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcBrowserContextExtensions listExtensions",
+   "golden": 5,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "golden": 1750,
+   "ours": 1693
+  },
+  {
+   "method": "->engine -ArcWebContents insertStylesheet:stylesheet:",
+   "golden": 3,
+   "ours": 1
+  },
+  {
+   "method": "->engine -ArcWebContents loadProgress",
+   "golden": 8,
+   "ours": 6
+  },
+  {
+   "method": "->engine -ArcWebContents navigationID",
+   "golden": 4,
+   "ours": 6
+  },
+  {
+   "method": "->engine -ArcWebContents setLoadProgress:",
+   "golden": 4,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents setNavigationID:",
+   "golden": 2,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents setUrl:",
+   "golden": 2,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents setVisibility:",
+   "golden": 2,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcWebContents url",
+   "golden": 4,
+   "ours": 6
+  },
+  {
+   "method": "->engine -ArcWebContents visibility",
+   "golden": 4,
+   "ours": 6
+  }
+ ],
+ "callback_sequence": {
+  "golden": 48,
+  "ours": 47,
+  "first_divergence": 27,
+  "golden_from": [
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.WebContentChromium webContents:didChangeAvailableMediaActions:",
+   "ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:"
+  ],
+  "ours_from": [
+   "ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.WebContentChromium webContents:didChangeAvailableMediaActions:",
+   "ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ]
+ }
+}

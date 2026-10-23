@@ -1,0 +1,382 @@
+diff --git a/chrome/browser/ui/thumbnails/BUILD.gn b/chrome/browser/ui/thumbnails/BUILD.gn
+--- a/chrome/browser/ui/thumbnails/BUILD.gn
++++ b/chrome/browser/ui/thumbnails/BUILD.gn
+@@ -43,6 +43,7 @@
+       "//ui/gfx/codec",
+       "//ui/gfx/geometry:geometry_skia",
+       "//ui/native_theme",
++      "//url",
+     ]
+   }
+ 
+@@ -54,6 +55,7 @@
+       "thumbnail_scheduler_impl_unittest.cc",
+       "thumbnail_tracker_unittest.cc",
+     ]
++    sources += [ "thumbnail_readiness_tracker_unittest.cc" ]
+ 
+     deps = [
+       ":thumbnails",
+@@ -67,6 +69,7 @@
+       "//testing/gtest",
+       "//ui/gfx",
+       "//ui/gfx:test_support",
++      "//url",
+     ]
+   }
+ 
+diff --git a/chrome/browser/ui/thumbnails/thumbnail_readiness_tracker.cc b/chrome/browser/ui/thumbnails/thumbnail_readiness_tracker.cc
+--- a/chrome/browser/ui/thumbnails/thumbnail_readiness_tracker.cc
++++ b/chrome/browser/ui/thumbnails/thumbnail_readiness_tracker.cc
+@@ -6,15 +6,33 @@
+ 
+ #include <utility>
+ 
++#include "base/command_line.h"
+ #include "content/public/browser/navigation_handle.h"
++#include "url/gurl.h"
+ 
+ namespace {
++
++bool IsArcHost() {
++  return base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app");
++}
++
++// Original Arc does not capture these app-owned internal pages. DomainIs is
++// intentional: its hostname-boundary semantics also apply to subdomains.
++bool IsArcInternalPage(const GURL& url) {
++  return url.SchemeIs("chrome") &&
++         (url.DomainIs("start-page") || url.DomainIs("assistant") ||
++          url.DomainIs("native-bookmarks") || url.DomainIs("skills-manager"));
++}
+ 
+ bool NavigationShouldInvalidateThumbnail(
+     content::NavigationHandle* navigation) {
+   // Ignore subframe navigations.
+   if (!navigation->IsInPrimaryMainFrame()) {
+     return false;
++  }
++
++  if (IsArcHost()) {
++    return !IsArcInternalPage(navigation->GetURL());
+   }
+ 
+   // Some navigations change the tab URL but don't create a new
+@@ -60,6 +78,18 @@
+   }
+ 
+   pending_navigation_ = nullptr;
++  if (IsArcHost()) {
++    // Clear the tracked handle even if it redirected into an excluded page.
++    // Ordinary navigations become capturable at onload, not at commit. A
++    // same-document navigation has no new onload event, so finalize it here.
++    if (IsArcInternalPage(navigation_handle->GetURL()) ||
++        last_readiness_ > Readiness::kReadyForInitialCapture ||
++        !navigation_handle->IsSameDocument()) {
++      return;
++    }
++    UpdateReadiness(Readiness::kReadyForFinalCapture);
++    return;
++  }
+   UpdateReadiness(Readiness::kReadyForInitialCapture);
+ 
+   if (last_readiness_ > Readiness::kReadyForInitialCapture) {
+@@ -69,6 +99,11 @@
+ }
+ 
+ void ThumbnailReadinessTracker::DocumentOnLoadCompletedInPrimaryMainFrame() {
++  // Native Arc checks the visible virtual URL, which can differ from the last
++  // committed URL while another navigation is pending.
++  if (IsArcHost() && IsArcInternalPage(web_contents()->GetVisibleURL())) {
++    return;
++  }
+   UpdateReadiness(Readiness::kReadyForFinalCapture);
+ }
+ 
+diff --git a/chrome/browser/ui/thumbnails/thumbnail_readiness_tracker_unittest.cc b/chrome/browser/ui/thumbnails/thumbnail_readiness_tracker_unittest.cc
+new file mode 100644
+--- /dev/null
++++ b/chrome/browser/ui/thumbnails/thumbnail_readiness_tracker_unittest.cc
+@@ -0,0 +1,282 @@
++// Copyright 2026 The Chromium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "chrome/browser/ui/thumbnails/thumbnail_readiness_tracker.h"
++
++#include <initializer_list>
++#include <memory>
++#include <vector>
++
++#include "base/functional/bind.h"
++#include "base/test/scoped_command_line.h"
++#include "content/public/test/mock_navigation_handle.h"
++#include "content/public/test/test_renderer_host.h"
++#include "content/test/test_web_contents.h"
++#include "testing/gmock/include/gmock/gmock.h"
++#include "testing/gtest/include/gtest/gtest.h"
++#include "third_party/blink/public/common/frame/frame_policy.h"
++#include "url/gurl.h"
++
++namespace {
++
++using Readiness = ThumbnailReadinessTracker::Readiness;
++constexpr Readiness kNotReady = Readiness::kNotReady;
++constexpr Readiness kInitial = Readiness::kReadyForInitialCapture;
++constexpr Readiness kFinal = Readiness::kReadyForFinalCapture;
++
++// Control the public inputs consulted by the production tracker without a
++// renderer, window, network request, or private tracker testing accessor.
++class ReadinessWebContents : public content::TestWebContents {
++ public:
++  explicit ReadinessWebContents(content::BrowserContext* context)
++      : TestWebContents(context) {
++    Init(content::WebContents::CreateParams(context), blink::FramePolicy());
++  }
++
++  const GURL& GetVisibleURL() override { return visible_url_; }
++  bool IsBeingDestroyed() override {
++    return destroying_ || TestWebContents::IsBeingDestroyed();
++  }
++  void SetVisibleURL(const GURL& url) { visible_url_ = url; }
++  void SetDestroying(bool destroying) { destroying_ = destroying; }
++
++ private:
++  GURL visible_url_{"https://fixture.test/page"};
++  bool destroying_ = false;
++};
++
++class ThumbnailReadinessTrackerTest : public content::RenderViewHostTestHarness {
++ protected:
++  void SetUp() override {
++    content::RenderViewHostTestHarness::SetUp();
++    command_line_.GetProcessCommandLine()->AppendSwitch("arcmod-host-app");
++    SetContents(std::make_unique<ReadinessWebContents>(browser_context()));
++    tracker_ = std::make_unique<ThumbnailReadinessTracker>(
++        contents(), base::BindRepeating(&ThumbnailReadinessTrackerTest::Changed,
++                                       base::Unretained(this)));
++  }
++  void TearDown() override {
++    tracker_.reset();
++    content::RenderViewHostTestHarness::TearDown();
++  }
++
++  ReadinessWebContents* contents() {
++    return static_cast<ReadinessWebContents*>(web_contents());
++  }
++  std::unique_ptr<content::MockNavigationHandle> Navigation(
++      const char* url = "https://fixture.test/page", bool same_document = false) {
++    auto navigation = std::make_unique<content::MockNavigationHandle>();
++    navigation->set_url(GURL(url));
++    navigation->set_is_in_primary_main_frame(true);
++    navigation->set_is_same_document(same_document);
++    return navigation;
++  }
++  void ExpectStates(std::initializer_list<Readiness> expected) {
++    EXPECT_THAT(states_, testing::ElementsAreArray(expected));
++    states_.clear();
++  }
++  void Changed(Readiness readiness) { states_.push_back(readiness); }
++  void NonHost() {
++    command_line_.GetProcessCommandLine()->RemoveSwitch("arcmod-host-app");
++  }
++
++  base::test::ScopedCommandLine command_line_;
++  std::unique_ptr<ThumbnailReadinessTracker> tracker_;
++  std::vector<Readiness> states_;
++};
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcOrdinaryCommitWaitsForOnload) {
++  auto navigation = Navigation();
++  tracker_->DidStartNavigation(navigation.get());
++  tracker_->DidFinishNavigation(navigation.get());
++  ExpectStates({});
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  ExpectStates({kFinal});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcSameDocumentInvalidatesThenFinalizes) {
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  ExpectStates({kFinal});
++  auto navigation = Navigation("https://fixture.test/page#fragment", true);
++  tracker_->DidStartNavigation(navigation.get());
++  ExpectStates({kNotReady});
++  tracker_->DidFinishNavigation(navigation.get());
++  ExpectStates({kFinal});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcExcludedStartPreservesPreviousPending) {
++  auto first = Navigation("https://fixture.test/page#fragment", true);
++  auto excluded = Navigation("chrome://start-page/");
++  tracker_->DidStartNavigation(first.get());
++  tracker_->DidStartNavigation(excluded.get());
++  tracker_->DidFinishNavigation(first.get());
++  ExpectStates({kFinal});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcExcludedStartDoesNotClearReadyImage) {
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  ExpectStates({kFinal});
++  auto excluded = Navigation("chrome://assistant/");
++  tracker_->DidStartNavigation(excluded.get());
++  tracker_->DidFinishNavigation(excluded.get());
++  ExpectStates({});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcExcludedFinishClearsMatchingPending) {
++  auto navigation = Navigation("https://fixture.test/page#fragment", true);
++  tracker_->DidStartNavigation(navigation.get());
++  navigation->set_url(GURL("chrome://native-bookmarks/"));
++  tracker_->DidFinishNavigation(navigation.get());
++  // Reusing the same handle must not revive a finish that was already consumed.
++  navigation->set_url(GURL("https://fixture.test/page#fragment"));
++  tracker_->DidFinishNavigation(navigation.get());
++  ExpectStates({});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcOnlyMostRecentTrackedHandleFinishes) {
++  auto first = Navigation("https://fixture.test/page#first", true);
++  auto second = Navigation("https://fixture.test/page#second", true);
++  tracker_->DidStartNavigation(first.get());
++  tracker_->DidStartNavigation(second.get());
++  tracker_->DidFinishNavigation(first.get());
++  ExpectStates({});
++  tracker_->DidFinishNavigation(second.get());
++  ExpectStates({kFinal});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcAllFourInternalHostsAreExcluded) {
++  for (const char* url : {"chrome://start-page/", "chrome://assistant/",
++                          "chrome://native-bookmarks/",
++                          "chrome://skills-manager/",
++                          "chrome://child.start-page./"}) {
++    SCOPED_TRACE(url);
++    contents()->SetVisibleURL(GURL(url));
++    auto navigation = Navigation(url, true);
++    tracker_->DidStartNavigation(navigation.get());
++    tracker_->DidFinishNavigation(navigation.get());
++    tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++    ExpectStates({});
++  }
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcExclusionRequiresSchemeAndDomainBoundary) {
++  for (const char* url : {"https://start-page/", "chrome://start-page.evil/",
++                          "chrome://not-start-page/", "chrome://other/"}) {
++    SCOPED_TRACE(url);
++    contents()->SetVisibleURL(GURL(url));
++    auto navigation = Navigation(url, true);
++    tracker_->DidStartNavigation(navigation.get());
++    tracker_->DidFinishNavigation(navigation.get());
++    ExpectStates({kFinal});
++    tracker_->WasDiscarded();
++    ExpectStates({kNotReady});
++    tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++    ExpectStates({kFinal});
++    tracker_->WasDiscarded();
++    ExpectStates({kNotReady});
++  }
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcOnloadChecksVisibleNotCommittedURL) {
++  contents()->SetLastCommittedURL(GURL("chrome://start-page/"));
++  contents()->SetVisibleURL(GURL("https://fixture.test/page"));
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  ExpectStates({kFinal});
++  tracker_->WasDiscarded();
++  ExpectStates({kNotReady});
++  contents()->SetLastCommittedURL(GURL("https://fixture.test/page"));
++  contents()->SetVisibleURL(GURL("chrome://start-page/"));
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  ExpectStates({});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcSubframeNeverBecomesPending) {
++  auto navigation = Navigation("https://fixture.test/frame#fragment", true);
++  navigation->set_is_in_primary_main_frame(false);
++  tracker_->DidStartNavigation(navigation.get());
++  tracker_->DidFinishNavigation(navigation.get());
++  ExpectStates({});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcDoesNotInventCommitOrErrorPageGates) {
++  auto navigation = Navigation("https://fixture.test/page#fragment", true);
++  navigation->set_has_committed(false);
++  navigation->set_is_error_page(true);
++  tracker_->DidStartNavigation(navigation.get());
++  tracker_->DidFinishNavigation(navigation.get());
++  ExpectStates({kFinal});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcDestroyingContentsCannotBecomeFinal) {
++  contents()->SetDestroying(true);
++  auto navigation = Navigation("https://fixture.test/page#fragment", true);
++  tracker_->DidStartNavigation(navigation.get());
++  tracker_->DidFinishNavigation(navigation.get());
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  ExpectStates({kNotReady, kNotReady});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ArcDiscardResetsButPreservesPendingHandle) {
++  auto navigation = Navigation("https://fixture.test/page#fragment", true);
++  tracker_->DidStartNavigation(navigation.get());
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  ExpectStates({kFinal});
++  tracker_->WasDiscarded();
++  ExpectStates({kNotReady});
++  tracker_->DidFinishNavigation(navigation.get());
++  ExpectStates({kFinal});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, ActualContentsDestructionResetsReadiness) {
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  ExpectStates({kFinal});
++  DeleteContents();
++  ExpectStates({kNotReady});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, DestructionCallbackClearsPendingHandle) {
++  auto navigation = Navigation("https://fixture.test/page#fragment", true);
++  tracker_->DidStartNavigation(navigation.get());
++  tracker_->WebContentsDestroyed();
++  tracker_->DidFinishNavigation(navigation.get());
++  ExpectStates({});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, NonHostKeepsInitialThenFinalCapture) {
++  NonHost();
++  auto navigation = Navigation();
++  tracker_->DidStartNavigation(navigation.get());
++  tracker_->DidFinishNavigation(navigation.get());
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  ExpectStates({kInitial, kFinal});
++  auto same = Navigation("https://fixture.test/page#fragment", true);
++  tracker_->DidStartNavigation(same.get());
++  tracker_->DidFinishNavigation(same.get());
++  ExpectStates({});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest, NonHostKeepsInternalPageCapture) {
++  NonHost();
++  auto navigation = Navigation("chrome://start-page/");
++  contents()->SetVisibleURL(GURL("chrome://start-page/"));
++  tracker_->DidStartNavigation(navigation.get());
++  tracker_->DidFinishNavigation(navigation.get());
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  ExpectStates({kInitial, kFinal});
++}
++
++TEST_F(ThumbnailReadinessTrackerTest,
++       NonHostKeepsExistingFinishAfterOnloadTransition) {
++  NonHost();
++  auto navigation = Navigation();
++  tracker_->DidStartNavigation(navigation.get());
++  tracker_->DocumentOnLoadCompletedInPrimaryMainFrame();
++  tracker_->DidFinishNavigation(navigation.get());
++  // Preserve the current unconditional initial-state update at finish, even
++  // when an onload already ran. This proposal does not repair non-host policy.
++  ExpectStates({kFinal, kInitial});
++}
++
++}  // namespace

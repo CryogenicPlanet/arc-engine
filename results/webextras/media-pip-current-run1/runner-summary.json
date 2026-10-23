@@ -1,0 +1,29 @@
+{
+  "scenario": "media-pip",
+  "runNumber": "1",
+  "startedAt": "2026-10-23T13:52:25.302353+00:00",
+  "scope": "canonical app-record scenario; default frozen comparator; no fixture override",
+  "errors": [],
+  "comparisons": [
+    {
+      "launch": "launch-1",
+      "clean": false,
+      "mismatches": {
+        "missing": 8,
+        "extra": 1,
+        "return_mismatch": 12,
+        "arg_mismatch": 4,
+        "count_mismatch": 25
+      },
+      "firstTwoLines": [
+        "methods differing: 50 (missing 8, extra 1, returns 12, callback args 4, counts 25; internal-only 0, ours-internal 1)",
+        "callback sequence: {\"golden\": 172, \"ours\": 170, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObser"
+      ]
+    }
+  ],
+  "harnessExit": 0,
+  "runtimeAccepted": true,
+  "profileRestored": true,
+  "finishedAt": "2026-10-23T13:53:32.122207+00:00",
+  "accepted": false
+}

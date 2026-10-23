@@ -384,3 +384,231 @@ Inventory correction after exact source recheck: the current
 `is_first_surface_activation`. Use these exact source fields; the earlier table
 sentence above should not be used as a schema claim. No producer-source claim
 or proposed collection action changes.
+
+## Current required-scenario follow-up: concrete readiness policy difference
+
+This follow-up read immutable `media-current-run1`, `media-pip-current-run1`,
+and `pdf-current-run1`, including each run's frozen original golden. No apps,
+locks, builds, production files, or proposals were changed. Only these notes
+were appended. Current shared readiness source pins:
+
+- thumbnail_readiness_tracker.cc SHA256
+  `4e7bcf0bca5f30221b868bca5b2760c5b0481127764786e652cb3488afb1f622`.
+- thumbnail_readiness_tracker.h SHA256
+  `9ce063cc0c471bf06dd607bc705fb2a815b2e6376afa4c61a787a068ca464acb`.
+
+A REAL native/C156 readiness difference is now recovered. This supersedes the
+older broad statement that nothing specific before producer tracing was known.
+It is a credible source of additional captures, but does not prove which page
+pixels produced the recorded501x341 image or establish count causality.
+
+### Raw placement in current immutable runs
+
+Each first observed WC URL is already the scenario fixture URL; no earlier
+public NewTab URL is recorded for that WC. Native internal history before
+wrapper registration is not exposed by this fact.
+
+| Run/side | WC/service/observer | addObserver call/return | App provisional/commit/finish callbacks | Thumbnail callback | Removal/close |
+|---|---|---|---|---|---|
+| media original |115/132/123|3335/3338|3634/3636/3688|none|no recorded removal|
+| media ours |102/119/110|3601/3606|4046/4048/4088|4174/4175 image501x341|no recorded removal|
+| media-pip original |118/135/126|3409/3412|3824/3826/3878|none|no recorded removal|
+| media-pip ours |102/119/110|3607/3612|4180/4182/4222|4226/4227 image501x341|no recorded removal|
+| pdf original |115/132/123|3385/3388|3772/3774/3822|none|closing-imminent4154; remove4588/4589|
+| pdf ours |102/119/110|3651/3656|4040/4042/4196|4320/4321 image501x341|closing-imminent4354; remove4878/4879|
+
+No public requestThumbnail or duplicate same-service/same-observer registration
+appears in these paths. Ours thumbnail is after the recorded app finish callback
+in all three and before PDF close/removal. Media loading=false is3902 before
+app finish4088; PiP4032 before4222; PDF4216/4244 before image4320, with another
+loading=false4326 after it. These are public recorder orderings only. The app
+navigation callbacks are posted; core's successful finish is driven from
+DidFinishLoad (`arc_web_contents.mm:362` and `arc_navigation.mm:569` onward),
+not an inline timestamp for Chromium's DidFinishNavigation or DocumentOnLoad.
+Thus the recorder does not show when thumbnail readiness became final, or when
+the image was captured/accepted/enqueued. Identical image dimensions across
+scenarios are not pixel/content evidence.
+
+### Native tracker identification and exact event paths
+
+The native TabStateTracker destructor `0x2e542a8` restores its embedded readiness
+tracker vptr at `this+0xe8` to `0xd968520` (`0x2e542dc-2e542e4`). That vtable has
+these five nontrivial observer entries (other observer entries are inherited
+no-ops): DidStartNavigation+0x90 ->`0x3adb588`, DidFinishNavigation+0xa8 ->
+`0x41c5b80`, DocumentOnLoadCompletedInPrimaryMainFrame+0xe8 ->`0x41c5d40`,
+WebContentsDestroyed+0x258 ->`0x731d158`, WasDiscarded+0x3d0 ->`0x731d198`.
+The destructor is`0x3adb510`. Names are assigned from matching observer slots,
+state transitions, and source signatures, not from nearby function ordering.
+
+Native DidStartNavigation (`0x3adb588-0x3adb758`):
+
+1. Checks primary main frame using the same inline frame-type predicate as
+   native public IsInPrimaryMainFrame `0x34f2b38`. Both compare the navigating
+   frame type with1, with known GetNavigatingFrameType implementation
+   `0x414f32c`. Subframes/nonprimary main frames return before URL/pending work.
+2. Reads the navigation GURL at `navigation+0xa0` (`0x3adb5f8`). Native
+   NavigationHandle GetURL body `0x414f3e0` returns exactly that address. This
+   is the request URL, not WebContents visible or last-committed URL.
+3. If scheme is chrome AND DomainIs any of start-page, assistant,
+   native-bookmarks, skills-manager, RETURN BEFORE touching pending navigation
+   or readiness (`0x3adb5fc-0x3adb670`). The previous pending navigation is left
+   intact on this ignored-start path. Do not reset it in a faithful adaptation.
+4. Otherwise replaces pending navigation at tracker+0x30 (`0x3adb674-0x3adb6a4`)
+   and, only if readiness tracker+0x28 is nonzero, stores0 and invokes its
+   callback with0 (`0x3adb6a8-0x3adb6e8`). There is no same-document exclusion,
+   HasCommitted check, or IsErrorPage check in the complete bounded function.
+
+Native DidFinishNavigation (`0x41c5b80-0x41c5d04`):
+
+1. Requires exact identity with stored pending navigation (`0x41c5b90-598`).
+   Otherwise returns without modifying it.
+2. Clears the matching pending pointer FIRST (`0x41c5bd0`), before every URL
+   gate. This also applies when the navigation redirected into an excluded URL.
+3. Applies the SAME chrome/DomainIs exclusion to current navigation GetURL
+   (`0x41c5bd4-0x41c5c4c`). Excluded finish leaves readiness unchanged.
+4. If readiness is already greater than1, returns (`0x41c5c50-658`). Otherwise
+   checks navigation type and returns unless it is same-document
+   (`0x41c5c5c-66c`, exact type proof below).
+5. For same-document only, selects final2 or not-ready0 using WebContents'
+   being-destroyed byte at+0x19b, stores it, then synchronously invokes the
+   readiness callback (`0x41c5c70-0x41c5cbc`). No additional committed/error
+   check occurs. Ordinary cross-document finish NEVER assigns initial1 here.
+
+Native DocumentOnLoad (`0x41c5d40-0x41c5e78`):
+
+1. Obtains WebContents **GetVisibleURL/GetURL**, through `0x10071c8` at
+   `0x41c5d54`. This is NOT GetLastCommittedURL.
+2. Applies the SAME four chrome/DomainIs exclusions to that URL
+   (`0x41c5d5c-0x41c5d6c`, other hosts`0x41c5de0-0x41c5e3c`).
+3. If readiness already equals2, returns (`0x41c5d70-578`). Otherwise chooses
+   final2 unless WebContents being-destroyed byte+0x19b is set, then chooses0;
+   stores the selected state BEFORE synchronous readiness callback
+   (`0x41c5d7c-0x41c5dc0`). No HasCommitted/IsErrorPage/pending check appears.
+
+URL-source proof: original WebContents vtable adjacent slots `0xdd311c8` and
+`0xdd311d0` both point to`0x10071c8`, consistent with GetURL forwarding to
+GetVisibleURL. Next slot`0xdd311d8` points to distinct GetLastCommittedURL body
+`0x2e7e39c`. The former explicitly considers a pending entry (`this+0x290`) and
+visible-entry selection; the latter only indexes committed entry`this+0x2b4`.
+Both return the selected entry's virtual URL or underlying URL fallback. This
+matches the public API ordering/semantics in web_contents.h and current bodies
+web_contents_impl.cc:1824-1837. Calling GetLastCommittedURL for the proposed
+OnLoad host gate would therefore be a behavioral mistake.
+
+Native URL predicates are bounded helper`0x786b34` (exact scheme-component
+comparison) and`0x10a19a0` (GURL DomainIs semantics, including matching dot-boundary
+subdomains and ignoring an optional final dot, NOT arbitrary string prefix).
+Literal VAs: chrome`0xcf1e198`, start-page`0xcf1e19f`, assistant`0xcf1e1aa`,
+native-bookmarks`0xcf1e1b4`, skills-manager`0xcf1e1c5`. These exclusions require
+BOTH chrome scheme and one of those DomainIs matches. Other chrome hosts and
+HTTP URLs using those names are not excluded by these guards.
+
+The being-destroyed field has a standalone native getter`0x415d01c`:
+`ldrb w0,[x0,#0x19b]; ret`, referenced by WebContents vtable slot`0xdd31438`.
+The native event functions above inline that identical field load. A C156
+adaptation should use existing public IsBeingDestroyed(), not a numeric offset.
+WebContentsDestroyed`0x731d158` resets pending then routes to not-ready helper
+`0x41c5a90`; WasDiscarded`0x731d198` also routes to that helper. It checks prior
+readiness, stores0 and invokes the same callback with0; no synthetic image.
+
+### Navigation-type values: direct binary proof
+
+Native ToString routine`0x1f11b14-0x1f11b30` checks input<=7, then indexes an
+8-byte pointer table with the unchanged unsigned input at`0x1f11b24`. Table
+base`0xde1f630` contains these exact chained-pointer targets/cstrings:
+
+| Value | Table slot | Literal VA / name |
+|---:|---|---|
+|0|0xde1f630|0xd0df8f4 RELOAD|
+|1|0xde1f638|0xd0df8fb RELOAD_BYPASSING_CACHE|
+|2|0xde1f640|0xd0df912 RESTORE|
+|3|0xde1f648|0xd0df91a RESTORE_WITH_POST|
+|4|0xde1f650|0xd0df92c HISTORY_SAME_DOCUMENT|
+|5|0xde1f658|0xd0df942 HISTORY_DIFFERENT_DOCUMENT|
+|6|0xde1f660|0xd0df95d SAME_DOCUMENT|
+|7|0xde1f668|0xd0df96b DIFFERENT_DOCUMENT|
+
+This establishes original4/6 names directly, independently of current enum
+ordering. DidFinish uses `(navigation->common_params.navigation_type & ~2)==4`
+at`0x41c5c5c-66c`. The original boolean native vtable body`0x414f06c-080` loads
+exactly the same common-params field at nav+0xa0+0x15c and returns that same
+predicate. It appears at NavigationRequest vtable slot`0xd8e1270`; named symbol
+metadata for that original boolean method is absent, so its IsSameDocument
+identity is supported by this exact field/predicate and enum table, rather than
+an assumed current-header vtable ordinal. Current blink NavigationType and
+content/common/navigation_params_utils.h::IsSameDocument independently agree.
+
+### ClearData/token/accepted-task behavior is not a newly found mismatch
+
+Native TabStateTracker PageReadinessChanged`0x1af1080` returns if unchanged;
+for not-ready0 it calls ClearData`0x1af1580` unless WasDiscarded flag is set,
+THEN stores helper readiness at+0x120 and updates capture driver
+(`0x1af10bc-0x1af10d4`, then`0x1af10a4-0x1af10b8`). C156
+thumbnail_tab_helper.cc:208-223 has this same clear-before-state/driver order.
+
+Native ClearData`0x1af1580-0x1af163c` checks both compressed data and the two
+random-token words. When either exists, it clears compressed data (`0x1af15c4`)
+and token words (`0x1af15d4`). If there was NO previous compressed data, it
+returns without a blank notification (`0x1af15d8`), while still invalidating
+in-flight compression. If previous data existed, it notifies compressed
+observers with empty data and uncompressed observers with zero token/empty
+ImageSkia (`0x1af1600-0x1af1624`). C156 ClearData has the same observable policy.
+
+As established above, native JPEG assignment checks current random token before
+accepting JPEG data; native decoded-image delivery also checks current token
+before subscription callbacks. A later navigation clearing the image before
+these checks suppresses old work in BOTH native and current Chromium. These
+checks cannot be bypassed by the owned generator, which subscribes through
+ThumbnailImage rather than decoding independently.
+
+After an image HAS passed native image validation and reached the native
+ThumbnailsGenerator callback, the native observer emitter posts copied closure
+state at`0x436e6d8-0x436e734`, wraps it with weak-registration gating
+`0x436e7cc-0x436e7f4`, and posts at`0x436e80c`. Generic delivery
+`0x42db6b8` weak-locks registration and invokes the stored copied callback at
+`0x42db708-710`. It does not reload ThumbnailImage token/readiness/navigation
+state. Current owned PostThumbnailNotifications similarly preserves an accepted
+image across later navigation while cancelling removal/expired registration.
+Adding a navigation-generation filter to these already accepted public tasks
+would diverge from this proven receipt/delivery boundary. Native retained task
+state and captured registration are separate from the image's pre-receipt token.
+
+### Read-only adaptation plan and smallest useful next diagnostic
+
+The precise candidate is shared ThumbnailReadinessTracker behavior, not owned
+registration or NSImage conversion. A future lead-approved, host-gated proposal
+should preserve the complete existing C156 behavior outside arcmod-host-app,
+including the currently tracked unconditional UpdateInitial before its readiness
+comparison and its second UpdateInitial call. No cleanup of that baseline is
+part of this package's proposed change.
+
+For host mode only: reproduce the native primary/URL start guards; include
+same-document starts; preserve old pending on excluded start; clear a matching
+pending before finish URL exclusion; perform final readiness on same-document
+finish only; leave ordinary finish at its existing readiness until OnLoad;
+apply OnLoad exclusions using GetVisibleURL; retain IsBeingDestroyed and discard
+handling. Use GURL SchemeIs/DomainIs and public IsSameDocument APIs, not magic
+enum offsets. Do not add HasCommitted or IsErrorPage gates absent from native.
+No patch was written or activated during this audit. Existing pixel/cooldown
+proposals remain separate changes.
+
+Focused validation should first check native policy transitions directly:
+ordinary HTTP start/commit before onload must remain0; final load becomes2;
+same-document start becomes0 and finish2 without waiting for another onload;
+chrome/start-page and its three peer hosts do not alter state/pending on start;
+a previously tracked navigation redirecting to an excluded host clears pending
+on finish; OnLoad tests visible-vs-committed URL distinction; destruction/discard
+produces0; nonhost C156 behavior stays unchanged. Only afterward can an isolated
+paired existing scenario establish whether the policy correction removes the
+real extra callback. This is a native fidelity change, not a callback count rule.
+
+The smallest added diagnostic needed to resolve IMAGE CONTENT is captured
+thumbnail pixels or a per-image pixel fingerprint alongside the owned callback,
+joined with a known fixture image/content marker at capture time. Size501x341
+alone cannot distinguish an older start-page image, an early current-page image,
+or a completed current-page frame. To resolve count causality with less image
+work, trace the already available capture->compression->accepted-JPEG stages
+and callback monotonic sidecar around the frozen canonical scenario, before and
+after the faithful readiness adaptation. Neither public finish ordering nor a
+successful build proves this policy caused the observed image. Production stays
+frozen until parent explicitly assigns the separate proposal writer.

@@ -1,0 +1,556 @@
+diff --git a/arc/browser/webextras_native_probe.ts b/arc/browser/webextras_native_probe.ts
+index a2008e5..3484e52 100644
+--- a/arc/browser/webextras_native_probe.ts
++++ b/arc/browser/webextras_native_probe.ts
+@@ -71,10 +71,12 @@ function expectedSelectors(operation: string): string[] {
+     "console-open":"openConsoleView", frontend:"webContents", "console-close":"close", "panel-closed":"currentPanel:error:",
+     "media-types":"getMediaContentTypes:", "pip-request-error":"requestPictureInPicture:", "pip-exit-error":"exitPictureInPicture:error:",
+   };
++  if (operation === "clock-snapshot") return ["position", "playbackRate", "duration", "currentTime", "endOfMedia"];
++  if (operation === "clock-held-time") return ["currentTime"];
+   if (operation === "subscription") return ["subscribe:autoEnable:notification:", "execute:completion:error:", "unsubscribe:"];
+   return [one[operation] ?? "execute:completion:error:"];
+ }
+-function validateActionTrace(action: any, rows: RecordRow[], record: Buffer, projection?: PublicTraceProjection): any[] {
++function validateActionTrace(action: any, rows: RecordRow[], record: Buffer, projection?: PublicTraceProjection, held = new Map<string, string>()): any[] {
+   // ArcBrowserApplication.run is recorded around the lifetime of the native run loop.
+   // Derive ambient stacks from the prefix; actions must restore those exact stacks.
+   const ambient = action.recordBegin > 0 ? scanRecords(parseRecords(record.subarray(0, action.recordBegin))).stacks : new Map<string, RecordRow[]>();
+@@ -88,7 +90,7 @@ function validateActionTrace(action: any, rows: RecordRow[], record: Buffer, pro
+     validSpan(record, call.recordBegin, call.recordEnd);
+     assert(call.recordBegin >= priorEnd && call.recordEnd <= action.recordEnd, "public invocation range/order invalid");
+     priorEnd = call.recordEnd;
+-    const cls = action.operation === "media-types" || action.operation.startsWith("pip-") ? "ArcWebContentsMediaSession" : "ArcWebContentsDevTools";
++    const cls = action.operation.startsWith("clock-") ? (call.selector === "position" ? "ArcWebContentsMediaSession" : "ArcMediaPosition") : action.operation === "media-types" || action.operation.startsWith("pip-") ? "ArcWebContentsMediaSession" : "ArcWebContentsDevTools";
+     const candidates = rows.filter(row => row.begin >= call.recordBegin && row.end <= call.recordEnd && row.event.ev === "call" &&
+       row.event.dir === "->engine" && row.event.cls === cls && row.event.sel === call.selector && row.event.depth === mainDepth && row.event.thread === "main");
+     assert(candidates.length === 1, `expected exactly one recorded ${cls}.${call.selector} invocation`);
+@@ -134,6 +136,7 @@ function validateActionTrace(action: any, rows: RecordRow[], record: Buffer, pro
+       validCallbackDepth &&
+       entry.event.args?.[0] === publicRows[0]!.event.self, "incomplete or mismatched app callback forwarding");
+   } else assert(!delegates.length, "unexpected display/close callback");
++  if (action.operation.startsWith("clock-")) validateClockReceivers(action, rows, matched, publicRows, held);
+   if (projection) return projection.project(rows);
+   // Legacy replay only: live fixture comparisons use the frozen-metadata projection.
+   // A complete ordered boundary shape closes diff.py's depth/order/object-identity gaps.
+@@ -228,6 +231,239 @@ function normalizedPayload(value: any, action: any): any {
+   return normalize(value);
+ }
+ 
++// Fixed before any runtime measurement. Both MediaPosition and TimeTicks use integer
++// microseconds (media_position.cc; base/time/time_apple.mm). Four endpoint roundings
++// allow 4 us * (1 + |rate|); no measured jitter is used to widen this bound.
++const mediaClockPolicy = Object.freeze({ quantizationSeconds: 0.000004, maxGetterSeconds: 0.025,
++  minHeldSpacingSeconds: 0.2, warmupMilliseconds: 250, heldMilliseconds: 400,
++  fixtureSHA256: "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54" });
++class ClockProbeInconclusive extends Error {
++  constructor(message:string){super(message);this.name="ClockProbeInconclusive";}
++}
++function isClockInconclusive(error:unknown):boolean{return error instanceof ClockProbeInconclusive;}
++const clockVisibilityLimitMilliseconds=5000;
++async function clockBounded<T>(pending:Promise<T>,milliseconds:number):Promise<T>{
++  let timer:ReturnType<typeof setTimeout>|undefined;
++  try{return await Promise.race([pending,new Promise<T>((_resolve,reject)=>{timer=setTimeout(()=>reject(new ClockProbeInconclusive("actual visibility wait exceeded 5000ms")),milliseconds);})]);}
++  finally{if(timer!==undefined)clearTimeout(timer);}
++}
++async function activateMediaClockTarget(target:string,io:{verify:()=>void;read:(label:string)=>Promise<any>;bring:()=>Promise<any>;save:(report:any)=>void;now:()=>number;sleep:(ms:number)=>Promise<void>}):Promise<any>{
++  const report:any={target,method:"Page.bringToFront",status:"checking-identity",visibilityLimitMilliseconds:clockVisibilityLimitMilliseconds,samples:[]};io.save(report);
++  const identity=(value:any)=>value?.urlMatches===true&&value?.nonceMatches===true;
++  try{
++    io.verify();report.before=await io.read("activation-identity");io.save(report);
++    if(!identity(report.before))throw new ClockProbeInconclusive("owned fixture URL/nonce identity changed before activation");
++    io.verify();report.status="activating";report.request={method:"Page.bringToFront",target,hostBeforeNanos:process.hrtime.bigint().toString()};io.save(report);
++    report.ack=await io.bring();report.hostAfterAckNanos=process.hrtime.bigint().toString();io.save(report);
++    const started=io.now(),deadline=started+clockVisibilityLimitMilliseconds;
++    report.status="waiting-for-actual-visibility";io.save(report);
++    for(let index=0;index<35;++index){
++      if(io.now()>=deadline)break;
++      io.verify();const remaining=deadline-io.now();if(remaining<=0)break;
++      const sample=await clockBounded(io.read(`activation-visibility-${index}`),remaining);
++      report.samples.push({...sample,hostElapsedMilliseconds:io.now()-started});io.save(report);
++      if(io.now()>deadline)throw new ClockProbeInconclusive("actual visibility sample arrived after 5000ms");
++      if(!identity(sample))throw new ClockProbeInconclusive("owned fixture URL/nonce identity changed during activation");
++      if(sample.visibilityState==="visible"&&sample.hidden===false){report.status="visible";io.save(report);return report;}
++      const delay=Math.min(150,deadline-io.now());if(delay>0)await io.sleep(delay);
++    }
++    throw new ClockProbeInconclusive("owned fixture did not become actually visible within 5000ms");
++  }catch(error){report.status="inconclusive";report.error=String(error);report.errorDetail={name:error instanceof Error?error.name:"Error",message:String(error instanceof Error?error.message:error),stack:error instanceof Error?error.stack:null};io.save(report);throw new ClockProbeInconclusive(`clock setup inconclusive: ${String(error)}`);}
++}
++function clockIdentityJS(fixtureURL:string,nonce:string):string{
++  return `({urlMatches:location.href===${JSON.stringify(fixtureURL)},nonceMatches:document.querySelector('#webextras-probe')?.dataset.nonce===${JSON.stringify(nonce)},visibilityState:document.visibilityState,hidden:document.hidden,performanceNow:performance.now()})`;
++}
++// Process disappearance alone does not prove natural termination. Inspect the
++// actual owned log after cleanup, including the Browser.close path.
++function runtimeLogOutcome(log:string|null,cleanup:string|undefined,launched:boolean):any{
++  const matches:any[]=[];let count=0;
++  if(log!==null)for(const [index,line]of log.split(/\r?\n/).entries()){
++    if(/^\[[^\]\r\n]*:(?:FATAL|DFATAL)(?::|\])/.test(line)||/^(?:\[[^\]\r\n]*\]\s*)?Check failed:\s*\S/.test(line)||/^FATAL(?::|\s)/.test(line)){
++      ++count;if(matches.length<20)matches.push({line:index+1,text:line.slice(0,4096),truncated:line.length>4096});
++    }
++  }
++  const forced=cleanup?.startsWith("SIGTERM")===true;
++  const errors:string[]=[];
++  if(count)errors.push(`runtime: ${count} fatal/check failure log line(s); first at app.log:${matches[0].line}`);
++  if(forced)errors.push("runtime: forced SIGTERM cleanup is not natural termination");
++  if(launched&&log===null)errors.push("runtime: owned app.log missing after launch");
++  if(launched&&!cleanup)errors.push("runtime: launched process cleanup unverified");
++  return {status:count?"fatal":forced?"forced-cleanup":!launched?"not-launched":log===null?"log-missing":!cleanup?"cleanup-unverified":"no-fatal-observed",
++    naturalCleanup:launched&&log!==null&&cleanup?.startsWith("Browser.close")===true&&!count,forcedCleanup:forced,logStatus:log===null?"missing":"scanned",fatalCount:count,fatals:matches,errors};
++}
++const mediaClockPhases = [
++  { name: "service-video-paused-one", rate: 0, seek: 1.25, declared: false },
++  { name: "service-video-playing-one", rate: 1, seek: 0.5, declared: false },
++  { name: "service-video-playing-two", rate: 2, seek: 0.5, declared: false },
++  { name: "service-video-paused-two", rate: 0, seek: 2.25, declared: false },
++  { name: "service-independent-paused", rate: 0, seek: 2.25, declared: true },
++  { name: "service-independent-playing", rate: 1.5, seek: 2.25, declared: true },
++] as const;
++function clockActionKey(phase: string, index: number): string { return `clock-${phase}-${index}`; }
++function clockValue(action: any, selector: string): any { return action.publicCalls?.find((call: any) => call.selector === selector)?.value; }
++function clockBracket(action: any): { begin: number; end: number; value: number } {
++  const call = action.publicCalls?.find((entry: any) => entry.selector === "currentTime");
++  const info = action.clock;
++  assert(info && Number.isSafeInteger(info.timebaseNumer) && info.timebaseNumer > 0 && Number.isSafeInteger(info.timebaseDenom) && info.timebaseDenom > 0, "missing mach timebase");
++  assert(/^\d+$/.test(call?.clockBeforeTicks) && /^\d+$/.test(call?.clockAfterTicks), "missing exact mach ticks");
++  const begin = BigInt(call.clockBeforeTicks), end = BigInt(call.clockAfterTicks);
++  assert(end >= begin && Number.isFinite(call.value), "invalid native clock bracket/value");
++  // Convert only relative ticks to Number. Absolute uint64 timestamps remain strings.
++  const factor = info.timebaseNumer / info.timebaseDenom / 1e9;
++  assert(Number(end - begin) * factor <= mediaClockPolicy.maxGetterSeconds, "native clock getter bracket too wide");
++  return { begin: 0, end: Number(end - begin) * factor, value: call.value };
++}
++function clockDelta(first: any, second: any, rate: number): void {
++  clockBracket(first); clockBracket(second);
++  assert(first.clock.heldToken === second.clock.heldToken && first.clock.dtoTag === second.clock.dtoTag &&
++    first.ownerTag === second.ownerTag && first.clock.timebaseNumer === second.clock.timebaseNumer && first.clock.timebaseDenom === second.clock.timebaseDenom,
++    "held DTO/token/owner/timebase changed");
++  const left = first.publicCalls.find((call: any) => call.selector === "currentTime");
++  const right = second.publicCalls.find((call: any) => call.selector === "currentTime");
++  const factor = first.clock.timebaseNumer / first.clock.timebaseDenom / 1e9;
++  const low = Number(BigInt(right.clockBeforeTicks) - BigInt(left.clockAfterTicks)) * factor;
++  const high = Number(BigInt(right.clockAfterTicks) - BigInt(left.clockBeforeTicks)) * factor;
++  assert(low >= mediaClockPolicy.minHeldSpacingSeconds, "held samples insufficiently separated");
++  const difference = right.value - left.value;
++  const epsilon = mediaClockPolicy.quantizationSeconds * (1 + Math.abs(rate));
++  assert(difference >= rate * low - epsilon && difference <= rate * high + epsilon, `held DTO slope does not match ${rate}: delta=${difference}, bracket=[${low},${high}]`);
++}
++function validateClockPhase(phase: typeof mediaClockPhases[number], actions: any[]): void {
++  assert(actions.length === 5 && actions.every((action, index) => action.actionKey === clockActionKey(phase.name, index) && action.clockPhase === phase.name && action.clockAttempt === index && action.ok === true), "missing/reordered clock phase attempts");
++  const measurement = actions[2];
++  const receipt = measurement.positionReceipt;
++  assert(receipt && receipt.phase === phase.name && receipt.source === (phase.declared ? "independent" : "DOM-video") &&
++    Number.isFinite(receipt.beforeReadPerformanceNow) && Number.isFinite(receipt.observed?.performanceNow) && Number.isFinite(receipt.beforeSetPerformanceNow) && Number.isFinite(receipt.afterSetPerformanceNow) && receipt.beforeReadPerformanceNow <= receipt.observed.performanceNow &&
++    receipt.observed.performanceNow <= receipt.beforeSetPerformanceNow && receipt.beforeSetPerformanceNow <= receipt.afterSetPerformanceNow,
++    "missing/reordered exact public position-state receipt");
++  const input = receipt.input;
++  assert(input && Number.isFinite(input.position) && Number.isFinite(input.duration) && input.position > 0 && input.position < input.duration &&
++    input.playbackRate === (phase.declared ? 1.5 : phase.rate || 1), "invalid issued public position input");
++  assert(actions.every(action => JSON.stringify(canonical(action.positionReceipt)) === JSON.stringify(canonical(receipt))), "position receipt changed between attempts");
++  assert(actions.slice(0, 3).every(action => action.operation === "clock-snapshot") && actions.slice(3).every(action => action.operation === "clock-held-time"), "wrong clock phase operation sequence");
++  const rate = clockValue(measurement, "playbackRate"), duration = clockValue(measurement, "duration");
++  assert(rate === phase.rate && Number.isFinite(duration) && duration > 0 && clockValue(measurement, "endOfMedia") === false, "rate/duration/end state did not converge on final fixed attempt");
++  const epsilon = mediaClockPolicy.quantizationSeconds;
++  for (const action of actions) {
++    for (const dom of [action.domBefore, action.domAfter]) {
++      if(dom?.visibilityState!=="visible"||dom?.hidden!==false)throw new ClockProbeInconclusive("clock fixture lost actual visible state");
++      assert(dom && dom.phase === phase.name && dom.readyState >= 2 && dom.seeking === false && dom.ended === false && dom.loop === false && Number.isFinite(dom.currentTime) &&
++        Number.isFinite(dom.duration) && dom.duration > 6 && typeof dom.performanceNow === "number", "unready/ended/looping or wrong-phase DOM fixture");
++      assert(dom.paused === (phase.declared || phase.rate === 0) && dom.playbackRate === (phase.declared || phase.rate === 0 ? 1 : phase.rate), "DOM stimulus is not the declared paused/playing phase");
++      assert(dom.playbackState === (phase.rate === 0 ? "paused" : "playing") && JSON.stringify(canonical(dom.positionReceipt)) === JSON.stringify(canonical(receipt)) && dom.performanceNow >= receipt.afterSetPerformanceNow, "DOM mediaSession stimulus changed");
++      if (phase.declared || phase.rate === 0) assert(Math.abs(dom.currentTime - phase.seek) <= epsilon, "DOM paused seek changed");
++      else assert(dom.currentTime > 0.25 && dom.currentTime < dom.duration - 0.25, "playing fixture reached a clamp boundary");
++    }
++    clockBracket(action);
++  }
++  assert(Math.abs(duration - input.duration) <= epsilon, "public duration differs from issued position state");
++  if (phase.declared) assert(input.duration === 20 && input.position === 7.25 && receipt.observed.paused === true &&
++    Math.abs(receipt.observed.currentTime - phase.seek) <= epsilon, "independent position state did not override the paused real video");
++  else {
++    assert(input.duration === receipt.observed.duration && input.position === receipt.observed.currentTime && input.playbackRate === receipt.observed.playbackRate &&
++      receipt.observed.paused === (phase.rate === 0) && Math.abs(duration - measurement.domAfter.duration) <= epsilon,
++      "position input was not read from the actual DOM video");
++    if (phase.rate === 0) assert(Math.abs(input.position - phase.seek) <= epsilon, "DOM input did not use the distinct paused seek");
++    else assert(actions.at(-1).domAfter.currentTime > measurement.domBefore.currentTime + 0.2, "actual video clock did not advance");
++  }
++  if (phase.rate === 0) for (const action of actions.slice(2)) assert(Math.abs(clockValue(action, "currentTime") - input.position) <= epsilon, "paused public clock does not match issued base input");
++  for (const action of actions.slice(2)) {
++    const position = clockValue(action, "currentTime");
++    assert(Number.isFinite(position) && position >= input.position - epsilon && position > 0 && position < duration, "measured/held public clock is outside its issued base/unclamped interior");
++  }
++  clockDelta(measurement, actions[3], phase.rate);
++  clockDelta(actions[3], actions[4], phase.rate);
++  clockDelta(measurement, actions[4], phase.rate);
++}
++function validateClockReceivers(action: any, _rows: RecordRow[], matches: Map<number, RecordRow>, publicRows: RecordRow[], held: Map<string, string>): void {
++  assert(action.clock && typeof action.clock.heldToken === "string" && Number.isSafeInteger(action.clock.dtoTag) && action.clock.dtoTag > 0 && !action.callbacks.length, "missing held clock identity or unexpected callback");
++  if (action.operation === "clock-snapshot") {
++    assert(action.clock.heldToken === action.id, "fresh position token is not its request ID");
++    const result = matches.get(publicRows[0]!.event.seq)?.event.ret;
++    assert(typeof result === "string" && /^<ArcMediaPosition#\d+>$/.test(result), "position return is not a recorded ArcMediaPosition");
++    held.clear(); held.set(action.clock.heldToken, result);
++    held.set("<dto-tag>", String(action.clock.dtoTag));
++  }
++  assert(held.get("<dto-tag>") === String(action.clock.dtoTag), "held DTO tag changed");
++  const receiver = held.get(action.clock.heldToken);
++  assert(receiver && action.publicCalls.every((call: any) => call.receiverClass === (call.selector === "position" ? "ArcWebContentsMediaSession" : "ArcMediaPosition")), "unrecognized DTO token or receiver class");
++  for (let index = 0; index < publicRows.length; ++index) {
++    const call = action.publicCalls[index], entry = publicRows[index]!.event;
++    assert(entry.args.length === 0, "clock getter has arguments");
++    if (call.selector === "position") { assert(call.abi === "@16@0:8" && call.resultClass === "ArcMediaPosition", "position ABI/result mismatch"); continue; }
++    assert(entry.self === receiver, "clock getter did not use the same retained public DTO");
++    assert(call.abi === (call.selector === "endOfMedia" ? "B16@0:8" : "d16@0:8"), "clock getter ABI mismatch");
++    const value = matches.get(entry.seq)?.event.ret;
++    if (call.selector === "endOfMedia") assert(typeof call.value === "boolean" && value === call.value, "recorded BOOL differs from sidecar");
++    else {
++      const rounding = call.value === 0 ? 0 : 0.500001 * 10 ** (Math.floor(Math.log10(Math.abs(call.value))) - 5);
++      assert(Number.isFinite(call.value) && typeof call.recordValue === "string" && Number.isFinite(Number(call.recordValue)) &&
++        Math.abs(Number(call.recordValue) - call.value) <= rounding && value === Number(call.recordValue), "recorded double differs from source-formatted sidecar");
++    }
++  }
++  // Each call bracket is independently ordered, even for getters not used in slope tests.
++  for (const call of action.publicCalls) assert(/^\d+$/.test(call.clockBeforeTicks) && /^\d+$/.test(call.clockAfterTicks) && BigInt(call.clockAfterTicks) >= BigInt(call.clockBeforeTicks), "invalid getter clock ticks");
++}
++function mediaClockPrepareJS(phase: typeof mediaClockPhases[number], videoURL: string): string {
++  return `(async()=>{
++    const phase=${JSON.stringify(phase)}, events=[],progress=[];
++    const mark=stage=>{progress.push({stage,performanceNow:performance.now()});window.__webextrasClockProgress={phase:phase.name,stage,progress};};
++    window.__webextrasClockFailure=null;
++    try{
++      mark('initial-query');let v=document.querySelector('#webextras-clock-video');
++      if(!v){mark('initial-create-before');v=document.createElement('video');v.id='webextras-clock-video';v.muted=true;v.playsInline=true;v.loop=false;v.src=${JSON.stringify(videoURL)};document.body.append(v);mark('initial-create-after');
++        mark('initial-metadata-before');await new Promise((resolve,reject)=>{const t=setTimeout(()=>reject(Error('metadata timeout')),5000);v.onloadedmetadata=()=>{clearTimeout(t);resolve()};v.onerror=()=>reject(Error('video load error'))});mark('initial-metadata-after');
++        mark('initial-play-before');await v.play();mark('initial-play-after');v.pause();events.push('initial-real-play-pause'); }
++      mark('phase-pause-before');v.pause();v.playbackRate=1;mark('phase-pause-after');
++      mark('clear-before');navigator.mediaSession.setPositionState({});mark('clear-after');
++      mark('seek-before');v.currentTime=phase.seek;
++      if(v.seeking)await new Promise((resolve,reject)=>{const t=setTimeout(()=>reject(Error('seek timeout')),5000);v.addEventListener('seeked',()=>{clearTimeout(t);resolve()},{once:true})});mark('seek-after');
++      if(!phase.declared&&phase.rate){mark('phase-play-before');v.playbackRate=phase.rate;await v.play();mark('phase-play-after');}
++      mark('playback-state-before');navigator.mediaSession.playbackState=phase.rate===0?'paused':'playing';mark('playback-state-after');
++      const beforeReadPerformanceNow=performance.now();
++      const observed={performanceNow:performance.now(),currentTime:v.currentTime,duration:v.duration,playbackRate:v.playbackRate,paused:v.paused,ended:v.ended,seeking:v.seeking};
++      const input=phase.declared?{duration:20,position:7.25,playbackRate:1.5}:{duration:observed.duration,position:observed.currentTime,playbackRate:observed.playbackRate};
++      mark('input-setter-before');const beforeSetPerformanceNow=performance.now();navigator.mediaSession.setPositionState(input);const afterSetPerformanceNow=performance.now();mark('input-setter-after');
++      const receipt={phase:phase.name,source:phase.declared?'independent':'DOM-video',beforeReadPerformanceNow,observed,input,beforeSetPerformanceNow,afterSetPerformanceNow};
++      window.__webextrasClockPhase=phase.name;window.__webextrasClockReceipt=receipt;mark('complete');
++      return {phase:phase.name,events,progress,at:performance.now(),videoDuration:v.duration,receipt};
++    }catch(error){const stage=window.__webextrasClockProgress?.stage;
++      window.__webextrasClockFailure={name:typeof error?.name==='string'?error.name:'Error',message:String(error?.message??error),stack:typeof error?.stack==='string'?error.stack:null,stage};mark('failed');throw error;}
++  })()`;
++}
++// Persist the complete Runtime.evaluate response before accepting/rejecting it.
++// The caller owns the exact fixture expression and an append-only local sink.
++async function evaluateMediaClock(send: (expression:string)=>Promise<any>, save:(record:any)=>void, context:{phase:string;label:string;expression:string}): Promise<any> {
++  const hostBeforeNanos=process.hrtime.bigint().toString();
++  let result:any;
++  try { result=await send(context.expression); }
++  catch(error) {
++    save({...context,hostBeforeNanos,hostAfterNanos:process.hrtime.bigint().toString(),status:"transport-error",
++      error:{name:error instanceof Error?error.name:"Error",message:String(error instanceof Error?error.message:error),stack:error instanceof Error?error.stack:null}});
++    throw error;
++  }
++  save({...context,hostBeforeNanos,hostAfterNanos:process.hrtime.bigint().toString(),status:"response",resultPresent:result!==undefined,rawResult:result??null});
++  assert(result && !result.exceptionDetails && result.result?.value!==undefined, `clock DOM evaluation failed (${context.label}); raw CDP response preserved`);
++  return result.result.value;
++}
++function mediaClockFailureDOMJS(fixtureURL:string,videoURL:string):string {
++  return `(()=>{
++    if(location.href!==${JSON.stringify(fixtureURL)})return {wrongFixture:true};
++    const safe=fn=>{try{return fn()}catch(e){return {readError:{name:String(e?.name??'Error'),message:String(e?.message??e)}}}};
++    const v=safe(()=>document.querySelector('#webextras-clock-video'));
++    const ownURL=value=>value===${JSON.stringify(videoURL)}?value:(value?'[off-fixture URL]':value);
++    return {performanceNow:performance.now(),bodyPresent:!!document.body,navigatorPresent:typeof navigator!=='undefined',mediaSessionPresent:safe(()=>!!navigator.mediaSession),
++      playbackState:safe(()=>navigator.mediaSession?.playbackState),visibilityState:document.visibilityState,hidden:document.hidden,secureContext:isSecureContext,
++      progress:window.__webextrasClockProgress??null,failure:window.__webextrasClockFailure??null,
++      video:v&&typeof v==='object'&&!v.readError?{src:ownURL(v.src),currentSrc:ownURL(v.currentSrc),error:safe(()=>v.error?{code:v.error.code,message:v.error.message}:null),
++        readyState:v.readyState,networkState:v.networkState,duration:Number.isFinite(v.duration)?v.duration:String(v.duration),currentTime:v.currentTime,muted:v.muted,defaultMuted:v.defaultMuted,
++        paused:v.paused,seeking:v.seeking,ended:v.ended,loop:v.loop,videoWidth:v.videoWidth,videoHeight:v.videoHeight,canPlayVP9:safe(()=>v.canPlayType('video/webm;codecs="vp9"'))}:v,
++      resourceEntries:safe(()=>performance.getEntriesByName(${JSON.stringify(videoURL)}).slice(-16).map(e=>({name:ownURL(e.name),initiatorType:e.initiatorType,startTime:e.startTime,responseStart:e.responseStart,responseEnd:e.responseEnd,duration:e.duration,transferSize:e.transferSize,encodedBodySize:e.encodedBodySize,decodedBodySize:e.decodedBodySize,responseStatus:e.responseStatus}))) };
++  })()`;
++}
++
++const mediaClockDOMJS = `(()=>{const v=document.querySelector('#webextras-clock-video');return v&&({phase:window.__webextrasClockPhase,performanceNow:performance.now(),visibilityState:document.visibilityState,hidden:document.hidden,currentTime:v.currentTime,duration:v.duration,paused:v.paused,ended:v.ended,loop:v.loop,playbackRate:v.playbackRate,readyState:v.readyState,seeking:v.seeking,playbackState:navigator.mediaSession.playbackState,positionReceipt:window.__webextrasClockReceipt})})()`;
++
+ const root = resolve(import.meta.dir, "../..");
+ const args = process.argv.slice(2);
+ const option = (key: string, fallback?: string): string | undefined => {
+@@ -236,6 +472,7 @@ const option = (key: string, fallback?: string): string | undefined => {
+ };
+ if (!option("--out")) throw new Error("usage: webextras_native_probe.sh run --out DIR [--agents trace156,ours156] [--port 9458]");
+ const out = resolve(option("--out")!);
++const mediaClock = args.includes("--media-clock");
+ const agents = option("--agents", "trace156,ours156")!.split(",");
+ if (!agents.length || new Set(agents).size !== agents.length || agents.some(agent => !["trace156", "ours156"].includes(agent))) {
+   throw new Error("only trace156 and ours156, each at most once, are allowed");
+@@ -327,6 +564,28 @@ const recorderSource = join(root, "tests/recorder/ArcEngineRecorder.dylib");
+ for (const file of [dylib, recorderSource]) if (!existsSync(file)) throw new Error(`missing ${file}`);
+ const recorderIdentity = freezeRecorder(recorderSource, out);
+ const recorder = recorderIdentity.frozen.path;
++let mediaClockIdentity: any;
++let mediaClockBytes: Buffer | undefined;
++if (mediaClock) {
++  const fixtureSource = join(root, "arc/browser/webextras_media_clock_fixture.webm");
++  const provenanceSource = join(root, "arc/browser/webextras_media_clock_fixture.json");
++  const source = recorderFileIdentity(fixtureSource);
++  assert(source.sha256 === mediaClockPolicy.fixtureSHA256, "media clock fixture hash differs from fixed policy");
++  const destination = join(out, "webextras-media-clock.webm");
++  copyFileSync(source.realpath, destination, constants.COPYFILE_EXCL); chmodSync(destination, 0o444);
++  const frozen = recorderFileIdentity(destination);
++  assert(frozen.sha256 === source.sha256 && frozen.size === source.size && JSON.stringify(recorderFileIdentity(fixtureSource)) === JSON.stringify(source), "media clock fixture changed while freezing");
++  const provenance = readFileSync(provenanceSource);
++  writeFileSync(join(out, "webextras-media-clock-provenance.json"), provenance, { flag: "wx", mode: 0o444 });
++  const provenanceFrozen = recorderFileIdentity(join(out, "webextras-media-clock-provenance.json"));
++  const details = JSON.parse(provenance.toString());
++  assert(details.sha256 === frozen.sha256 && details.bytes === frozen.size && details.ffprobe?.streams?.length === 1 &&
++    details.ffprobe.streams[0].codec_type === "video" && Number(details.ffprobe.format.duration) > 6, "media clock provenance does not describe the fixed finite video-only asset");
++  mediaClockIdentity = { source, frozen, provenanceIdentity:provenanceFrozen, provenance:details, policy: mediaClockPolicy };
++  mediaClockBytes = readFileSync(destination);
++  assert(new Bun.CryptoHasher("sha256").update(mediaClockBytes).digest("hex") === mediaClockPolicy.fixtureSHA256, "served media clock bytes differ from frozen fixture");
++  writeFileSync(join(out, "media-clock-identity.json"), JSON.stringify(mediaClockIdentity, null, 2), { flag: "wx" });
++}
+ const fixtureImage = "WebextrasNativeProbe.dylib";
+ const comparisonSnapshot = join(out, "fixture-comparator");
+ const comparisonInputs = JSON.parse(exec(["python3", "-B", join(root, "arc/browser/webextras_fixture_inputs.py"),
+@@ -357,23 +616,53 @@ const appPIDs = (exe: string): number[] => processSnapshot().filter(row => isExe
+ const sameProcess = (left: ProcessIdentity, right: ProcessIdentity) => left.pid === right.pid && left.born === right.born && left.command === right.command;
+ const token = `arc-webextras-probe-${crypto.randomUUID()}`;
+ const fixturePath = `/${token}/fixture`;
++let mediaClockHTTPAgent:string|undefined;
++const mediaClockHTTP:any[]=[];
++let mediaClockHTTPTruncated=false;
++function clockHTTP(request:Request,resource:string,response:Response,bytes:number):Response {
++  if(mediaClock){
++    if(mediaClockHTTP.length<256)mediaClockHTTP.push({agent:mediaClockHTTPAgent??null,hostNanos:process.hrtime.bigint().toString(),resource,
++      method:["GET","HEAD"].includes(request.method)?request.method:"[other]",range:/^bytes=\d+-\d*$/.test(request.headers.get("range")??"")?request.headers.get("range"):request.headers.has("range")?"[invalid]":null,status:response.status,bytes});
++    else mediaClockHTTPTruncated=true;
++    writeFileSync(join(out,"media-clock-http.json"),JSON.stringify({limit:256,truncated:mediaClockHTTPTruncated,requests:mediaClockHTTP},null,2));
++  }
++  return response;
++}
+ const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
++  if (mediaClockBytes && new URL(request.url).pathname === `/${token}/clock.webm`) {
++    if (!["GET", "HEAD"].includes(request.method)) return clockHTTP(request,"video",new Response(null, { status: 405 }),0);
++    const bytes = mediaClockBytes, range = request.headers.get("range");
++    let begin = 0, end = bytes.length - 1;
++    if (range) {
++      const match = /^bytes=(\d+)-(\d*)$/.exec(range);
++      if (!match) return clockHTTP(request,"video",new Response(null, { status: 416, headers: { "content-range": `bytes */${bytes.length}` } }),0);
++      begin = Number(match[1]); end = match[2] ? Math.min(Number(match[2]), end) : end;
++      if (!Number.isSafeInteger(begin) || !Number.isSafeInteger(end) || begin < 0 || begin > end || begin >= bytes.length) return clockHTTP(request,"video",new Response(null, { status: 416, headers: { "content-range": `bytes */${bytes.length}` } }),0);
++    }
++    const headers: Record<string,string> = { "content-type":"video/webm", "accept-ranges":"bytes", "cache-control":"no-store", "content-length":String(end - begin + 1) };
++    if (range) headers["content-range"] = `bytes ${begin}-${end}/${bytes.length}`;
++    return clockHTTP(request,"video",new Response(request.method === "HEAD" ? null : bytes.subarray(begin, end + 1), { status:range ? 206 : 200, headers }),request.method === "HEAD" ? 0 : end-begin+1);
++  }
+   if (new URL(request.url).pathname !== fixturePath) return new Response("not found", { status: 404 });
+-  return new Response(`<!doctype html><meta charset="utf-8"><title>Webextras native boundary fixture</title>
+-    <main id="webextras-probe" data-nonce="${token}">Local inert boundary fixture</main>`,
+-    { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
++  const fixtureBody=`<!doctype html><meta charset="utf-8"><title>Webextras native boundary fixture</title>
++    <main id="webextras-probe" data-nonce="${token}">Local inert boundary fixture</main>`;
++  const response=new Response(fixtureBody,{ headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
++  return clockHTTP(request,"fixture",response,request.method==="HEAD"?0:Buffer.byteLength(fixtureBody));
+ } });
+ const fixtureURL = `http://127.0.0.1:${server.port}${fixturePath}`;
+ mkdirSync(out, { recursive: true });
+-type Run = { agent: string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; comparisonInputs?: any; fixturePublicCounts?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string };
++type Run = { agent: string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; comparisonInputs?: any; fixturePublicCounts?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string; runtimeStatus?:any };
+ const runs: Run[] = [];
+ const operations = ["console-open", "frontend", "console-close", "panel-closed", "execute-evaluate", "execute-malformed", "execute-unknown", "subscription", "media-types", "pip-request-error", "pip-exit-error"];
++const actionManifest = operations.map(operation => ({ key: operation, operation })).concat(mediaClock ? mediaClockPhases.flatMap(phase => Array.from({length:5}, (_, index) => ({key:clockActionKey(phase.name,index), operation:index < 3 ? "clock-snapshot" : "clock-held-time"}))) : []);
++const expectedPairCount = actionManifest.reduce((count, entry) => count + expectedSelectors(entry.operation).length, 0);
+ try {
+   for (const agent of agents) {
+     const run: Run = { agent, phase: "preflight", recorderIdentity, comparisonInputs, actions: [], errors: [] };
+     runs.push(run);
+     const dir = join(out, agent);
+     mkdirSync(dir, { recursive: true });
++    if(mediaClock)mediaClockHTTPAgent=agent;
+     const app = resolve(root, `../arc/build/ArcModAgent-${agent}.app`);
+     const exe = join(app, "Contents/MacOS/Arc");
+     const plist = (key: string) => exec(["/usr/libexec/PlistBuddy", "-c", `Print :${key}`, join(app, "Contents/Info.plist")]);
+@@ -433,6 +722,10 @@ try {
+       run.phase = "recorder-identity";
+       assert(JSON.stringify(recorderFileIdentity(recorder)) === JSON.stringify(recorderIdentity.frozen), "frozen recorder changed before launch");
+       exec(["python3", "-B", comparisonHelper, "verify", comparisonSnapshot]);
++      if (mediaClock) {
++        assert(JSON.stringify(recorderFileIdentity(mediaClockIdentity.frozen.path)) === JSON.stringify(mediaClockIdentity.frozen), "frozen media clock fixture changed before launch");
++        assert(JSON.stringify(recorderFileIdentity(mediaClockIdentity.provenanceIdentity.path)) === JSON.stringify(mediaClockIdentity.provenanceIdentity), "frozen media clock provenance changed before launch");
++      }
+       run.phase = "launch";
+       readiness = { agent, beforeLaunch: readySnapshot(nativeReadyPath), launchStartedMs: Date.now() };
+       writeFileSync(join(dir, "readiness.json"), JSON.stringify(readiness, null, 2));
+@@ -441,6 +734,7 @@ try {
+         "--env", `ARC_WEBEXTRAS_PROBE_REQUEST=${requestPath}`,
+         "--env", `ARC_WEBEXTRAS_PROBE_URL=${fixtureURL}`,
+         "--env", `ARC_RECORD_PATH=${recordPath}`,
++        ...(mediaClock ? ["--env", "ARC_WEBEXTRAS_MEDIA_CLOCK=1"] : []),
+         "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args",
+         "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking",
+         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${chromiumData}`,
+@@ -495,10 +789,10 @@ try {
+         writeFileSync(join(dir, "fixture-state.json"), JSON.stringify({ cdpError: String(error) }, null, 2));
+       }
+       let sequence = 0;
+-      const action = async (operation: string) => {
++      const action = async (operation: string, extra: Record<string,any> = {}) => {
+         if (verifyAgentEndpoint(agent, port) !== pid) throw new Error("owned endpoint PID changed");
+         const id = `${token}-${++sequence}`;
+-        writeFileSync(requestPath + ".tmp", JSON.stringify({ id, url: fixtureURL, operation, nonce: `${token}-${operation}` }));
++        writeFileSync(requestPath + ".tmp", JSON.stringify({ id, url: fixtureURL, operation, nonce: `${token}-${operation}`, ...extra }));
+         renameSync(requestPath + ".tmp", requestPath);
+         const result = await wait(() => {
+           const response = json(requestPath + ".response.json");
+@@ -525,6 +819,69 @@ try {
+         if (result.matches !== 1 || result.ownerTag !== registry.ownerTag) run.errors.push(`${operation}: canonical wrapper changed`);
+         console.log(`${agent}: ${operation}: ${result.ok === true ? "acknowledged" : result.probeError}`);
+       }
++      if (mediaClock) {
++        let evaluationSequence=0;
++        const evaluate = async (expression: string,label:string) => evaluateMediaClock(async text=>{
++          if (verifyAgentEndpoint(agent, port) !== pid) throw new Error("owned endpoint PID changed before clock stimulus");
++          return cdp!.targetCommand(target!, "Runtime.evaluate", { expression:text, returnByValue:true, awaitPromise:true });
++        }, record=>writeFileSync(join(dir,"clock-evaluations.jsonl"),JSON.stringify({sequence:++evaluationSequence,...record})+"\n",{flag:"a"}),{phase:run.phase!,label,expression});
++        run.phase="clock-activation";
++        await activateMediaClockTarget(target!,{
++          verify:()=>{if(verifyAgentEndpoint(agent,port)!==pid)throw new Error("owned endpoint PID changed before clock activation");},
++          read:label=>evaluate(clockIdentityJS(fixtureURL,token),label),
++          bring:async()=>{if(verifyAgentEndpoint(agent,port)!==pid)throw new Error("owned endpoint PID changed before Page.bringToFront");return cdp!.targetCommand(target!,"Page.bringToFront",{});},
++          save:report=>writeFileSync(join(dir,"clock-activation.json"),JSON.stringify(report,null,2)),now:()=>performance.now(),sleep,
++        });
++        const clockReport: any = { policy:mediaClockPolicy, fixture:mediaClockIdentity, lane:"public service-position clock; implicit player fallback uncovered", laneB:"provisional original behavior until measured; no timing normalization", phases:[] };
++        for (const phase of mediaClockPhases) {
++          run.phase = `clock-prepare:${phase.name}`;
++          const videoURL=`http://127.0.0.1:${server.port}/${token}/clock.webm`;
++          const phaseReport: any = { phase:phase.name,status:"preparing",attempts:[] };
++          clockReport.phases.push(phaseReport);
++          const savePhase=()=>writeFileSync(join(dir,"media-clock.json"),JSON.stringify(clockReport,null,2));
++          savePhase(); // A failed initial preparation must leave a durable phase record.
++          const failureDOM=async()=>{
++            if(phaseReport.failureDiagnosticAttempted)return;
++            phaseReport.failureDiagnosticAttempted=true;savePhase();
++            try{phaseReport.failureDOM=await evaluate(mediaClockFailureDOMJS(fixtureURL,videoURL),"failure-DOM");}
++            catch(error){phaseReport.failureDOMError=String(error);}
++            savePhase();
++          };
++          try{
++          phaseReport.preparation=await evaluate(mediaClockPrepareJS(phase,videoURL),"prepare");
++          phaseReport.status="prepared";savePhase();
++          const measured: any[] = [];
++          let heldToken: string | undefined;
++          for (let index = 0; index < 5; ++index) {
++            if (index) await sleep(index < 3 ? mediaClockPolicy.warmupMilliseconds : mediaClockPolicy.heldMilliseconds);
++            const operation = index < 3 ? "clock-snapshot" : "clock-held-time";
++            run.phase = `action:${clockActionKey(phase.name,index)}`;
++            const hostBeforeDOM = process.hrtime.bigint().toString();
++            const domBefore = await evaluate(mediaClockDOMJS,`attempt-${index}-before`);
++            const hostBeforeRequest = process.hrtime.bigint().toString();
++            const result = await action(operation, heldToken ? {heldToken} : {});
++            const hostAfterResponse = process.hrtime.bigint().toString();
++            result.domBefore = domBefore; result.domAfter = await evaluate(mediaClockDOMJS,`attempt-${index}-after`);
++            result.hostMonotonicNanos = { beforeDOM:hostBeforeDOM, beforeRequest:hostBeforeRequest,
++              afterResponse:hostAfterResponse, afterDOM:process.hrtime.bigint().toString() };
++            result.actionKey = clockActionKey(phase.name,index); result.clockPhase = phase.name; result.clockAttempt = index;
++            result.positionReceipt = phaseReport.preparation.receipt;
++            run.actions.push(result); measured.push(result); phaseReport.attempts.push(result);
++            if (index < 3) heldToken = result.clock?.heldToken;
++            if (result.ok !== true || result.matches !== 1 || result.ownerTag !== registry.ownerTag) run.errors.push(`${result.actionKey}: failed clock receipt or canonical owner changed`);
++            for (const issue of outcomeErrors(result)) run.errors.push(`${result.actionKey}: ${issue}`);
++            writeFileSync(join(dir, "media-clock.json"), JSON.stringify(clockReport, null, 2));
++          }
++          try { validateClockPhase(phase, measured); phaseReport.functional = "pass"; }
++          catch (error) { phaseReport.functional = isClockInconclusive(error)?"inconclusive":"fail"; phaseReport.error = String(error); run.errors.push(`${phase.name}: ${String(error)}`); await failureDOM(); }
++          const release = await action("clock-release", {heldToken});
++          phaseReport.release = release;
++          writeFileSync(join(dir, "media-clock.json"), JSON.stringify(clockReport, null, 2));
++          assert(release.ok === true && release.publicCalls?.length === 0 && release.timeline?.length === 0, "held clock DTO release failed");
++          phaseReport.status=phaseReport.functional==="inconclusive"?"inconclusive":"complete";savePhase();
++          }catch(error){phaseReport.status=isClockInconclusive(error)?"inconclusive":"failed";phaseReport.error=String(error);savePhase();await failureDOM();throw error;}
++        }
++      }
+       run.phase = "cdp-close-fixture";
+       await cdp.request("Target.closeTarget", { targetId: target });
+       target = undefined;
+@@ -557,6 +914,9 @@ try {
+       }
+       observeProcesses = undefined;
+       cdp?.close();
++      const ownedLog=join(dir,"app.log");
++      run.runtimeStatus=runtimeLogOutcome(existsSync(ownedLog)?readFileSync(ownedLog,"utf8"):null,run.cleanup,pid!==undefined);
++      run.errors.push(...run.runtimeStatus.errors);
+       if (existsSync(recordPath)) {
+         const record = readFileSync(recordPath);
+         try {
+@@ -576,22 +936,24 @@ try {
+         } catch (error) { run.errors.push(`recorder: ${String(error)}`); }
+         const projection = new PublicTraceProjection(comparisonMetadata, fixtureImage);
+         let fixtureCalls = 0, fixtureReturns = 0;
++        const heldClockReceivers = new Map<string,string>();
+         for (const action of run.actions) {
+           try {
+             const span = validSpan(record, action.recordBegin, action.recordEnd);
+             const rows = parseRecords(span, action.recordBegin);
+-            action.traceShape = validateActionTrace(action, rows, record, projection);
++            action.traceShape = validateActionTrace(action, rows, record, projection, heldClockReceivers);
+             const fixtureRows = rows.filter(row => row.event.dir === "->engine" && row.event.from === fixtureImage);
+             const calls = fixtureRows.filter(row => row.event.ev === "call").length;
+             const returns = fixtureRows.filter(row => row.event.ev === "ret").length;
+             const expected = expectedSelectors(action.operation).length;
+             assert(calls === expected && returns === expected, "fixture public invocation coverage mismatch");
+             fixtureCalls += calls; fixtureReturns += returns;
+-            writeFileSync(join(dir, `${action.operation}.record.jsonl`), span);
+-          } catch (error) { run.errors.push(`${action.operation}: ${String(error)}`); }
++            writeFileSync(join(dir, `${action.actionKey ?? action.operation}.record.jsonl`), span);
++          } catch (error) { run.errors.push(`${action.actionKey ?? action.operation}: ${String(error)}`); }
+         }
+         run.fixturePublicCounts = { call: fixtureCalls, ret: fixtureReturns };
+-        if (run.actions.length === operations.length && (fixtureCalls !== 13 || fixtureReturns !== 13)) run.errors.push("expected exactly 13 admitted fixture calls and returns");
++        if (run.actions.length === actionManifest.length && (fixtureCalls !== expectedPairCount || fixtureReturns !== expectedPairCount)) run.errors.push(`expected exactly ${expectedPairCount} admitted fixture calls and returns`);
++        if (JSON.stringify(run.actions.map(action => ({key:action.actionKey ?? action.operation, operation:action.operation}))) !== JSON.stringify(actionManifest)) run.errors.push("missing/reordered action manifest");
+       }
+       else run.errors.push("recorder file missing at cleanup");
+       writeFileSync(join(dir, "observations.json"), JSON.stringify(run, null, 2));
+@@ -599,7 +961,10 @@ try {
+   }
+ } finally { server.stop(true); }
+ const semantic = (action: any) => canonical({
+-  operation: action.operation, ok: action.ok, probeError: action.probeError, matches: action.matches,
++  operation: action.operation,
++  ...(action.operation.startsWith("clock-") ? { actionKey:action.actionKey, clockPhase:action.clockPhase, clockAttempt:action.clockAttempt,
++    clockValues:action.publicCalls?.map((call:any)=>({selector:call.selector,value:call.value,abi:call.abi})) } : {}),
++  ok: action.ok, probeError: action.probeError, matches: action.matches,
+   mainThread: action.mainThread, frontendPresent: action.frontendPresent, frontendClass: action.frontendClass,
+   types: action.types, value: action.value, error: action.error,
+   unsubscribeReturn: action.unsubscribeReturn,
+@@ -624,23 +989,23 @@ const boundaryDiffs: unknown[] = [];
+ const fixtureComparison = { status: fixtureVerified ? "verified-exact-image" : "pending-fixture-comparison-support",
+   fixtureImageOption: fixtureVerified ? fixtureImage : null, reason: fixtureVerified ? null : fixtureComparisonPending };
+ if (fixtureComparison.reason) boundaryDiffs.push({ status: fixtureComparison.status, error: fixtureComparison.reason });
+-if (golden && ours) for (const operation of operations) {
+-  const left = join(out, "trace156", `${operation}.record.jsonl`);
+-  const right = join(out, "ours156", `${operation}.record.jsonl`);
++if (golden && ours) for (const {key, operation} of actionManifest) {
++  const left = join(out, "trace156", `${key}.record.jsonl`);
++  const right = join(out, "ours156", `${key}.record.jsonl`);
+   if (!existsSync(left) || !existsSync(right)) continue;
+-  const diffPath = join(out, `${operation}.diff.json`);
++  const diffPath = join(out, `${key}.diff.json`);
+   if (!fixtureVerified) continue; // A default app-only zero diff is not fixture evidence.
+   const result = Bun.spawnSync(["python3", "-B", comparisonHelper, "compare", comparisonSnapshot, fixtureImage,
+     left, right, String(expectedSelectors(operation).length), diffPath], { stdout: "pipe", stderr: "pipe" });
+-  writeFileSync(join(out, `${operation}.diff.txt`), result.stdout);
+-  if (!result.success) { boundaryDiffs.push({ operation, error: result.stderr.toString() }); continue; }
++  writeFileSync(join(out, `${key}.diff.txt`), result.stdout);
++  if (!result.success) { boundaryDiffs.push({ operation, ...(mediaClock ? {actionKey:key} : {}), error: result.stderr.toString() }); continue; }
+   const diff = json(diffPath);
+   const mismatches = ["missing", "extra", "return_mismatch", "arg_mismatch", "count_mismatch"].filter(key => diff[key]?.length);
+   if (diff.callback_sequence?.first_divergence !== null) mismatches.push("callback_sequence");
+-  if (mismatches.length) boundaryDiffs.push({ operation, mismatches });
++  if (mismatches.length) boundaryDiffs.push({ operation, ...(mediaClock ? {actionKey:key} : {}), mismatches });
+ }
+-const complete = runs.length === agents.length && runs.every(run => !run.errors.length && !!run.cleanup && run.actions.length === operations.length && run.actions.every(action => action.traceShape?.length > 0));
++const complete = runs.length === agents.length && runs.every(run => !run.errors.length && !!run.cleanup && run.actions.length === actionManifest.length && run.actions.every(action => action.traceShape?.length > 0));
+ const parity = golden && ours ? complete && !differences.length && !boundaryDiffs.length : null;
+-writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, comparisonInputs, fixtureComparison, differences, boundaryDiffs, runs }, null, 2));
++writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, comparisonInputs, fixtureComparison, ...(mediaClock ? {mediaClockIdentity, mediaClockPolicy, actionManifest, expectedPairCount} : {}), differences, boundaryDiffs, runs }, null, 2));
+ console.log(JSON.stringify({ complete, parity, fixtureComparison, out }));
+ process.exitCode = complete && parity !== false ? 0 : 1;

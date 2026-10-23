@@ -1,0 +1,161 @@
+{
+  "policy": {
+    "quantizationSeconds": 0.000004,
+    "maxGetterSeconds": 0.025,
+    "minHeldSpacingSeconds": 0.2,
+    "warmupMilliseconds": 250,
+    "heldMilliseconds": 400,
+    "fixtureSHA256": "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54"
+  },
+  "fixture": {
+    "source": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/arc/browser/webextras_media_clock_fixture.webm",
+      "realpath": "/Users/cryogenicplanet/general/arc-engine/arc/browser/webextras_media_clock_fixture.webm",
+      "sha256": "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54",
+      "size": 201593,
+      "mtimeMs": 1792764245441.1367,
+      "mtime": "2026-10-23T14:04:05.441Z",
+      "dev": 16777233,
+      "ino": 243719955,
+      "ctimeMs": 1792764245441.1367
+    },
+    "frozen": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/results/webextras/native-run7/webextras-media-clock.webm",
+      "realpath": "/Users/cryogenicplanet/general/arc-engine/results/webextras/native-run7/webextras-media-clock.webm",
+      "sha256": "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54",
+      "size": 201593,
+      "mtimeMs": 1792764245441.1367,
+      "mtime": "2026-10-23T14:04:05.441Z",
+      "dev": 16777233,
+      "ino": 243834138,
+      "ctimeMs": 1792766474664.0422
+    },
+    "provenanceIdentity": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/results/webextras/native-run7/webextras-media-clock-provenance.json",
+      "realpath": "/Users/cryogenicplanet/general/arc-engine/results/webextras/native-run7/webextras-media-clock-provenance.json",
+      "sha256": "e9eca86aceab4151e74a8f2ff4a4b7e9e10285f2c8049d6a530eb1e01db23a49",
+      "size": 817,
+      "mtimeMs": 1792766474682.5637,
+      "mtime": "2026-10-23T14:41:14.682Z",
+      "dev": 16777233,
+      "ino": 243834139,
+      "ctimeMs": 1792766474682.5637
+    },
+    "provenance": {
+      "source": "chromium/src/media/test/data/bear-vp9.webm",
+      "sourceSha256": "7cd68c55f4bb47a2df22a85fac9e8b942cbbba24286c037048131944eb0a09eb",
+      "sha256": "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54",
+      "bytes": 201593,
+      "ffprobe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "vp9",
+            "codec_type": "video"
+          }
+        ],
+        "format": {
+          "duration": "8.208000"
+        }
+      },
+      "command": [
+        "ffmpeg",
+        "-v",
+        "error",
+        "-n",
+        "-stream_loop",
+        "2",
+        "-i",
+        "chromium/src/media/test/data/bear-vp9.webm",
+        "-map",
+        "0:v:0",
+        "-an",
+        "-c",
+        "copy",
+        "arc/browser/webextras_media_clock_fixture.webm"
+      ],
+      "ffmpegVersion": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
+    },
+    "policy": {
+      "quantizationSeconds": 0.000004,
+      "maxGetterSeconds": 0.025,
+      "minHeldSpacingSeconds": 0.2,
+      "warmupMilliseconds": 250,
+      "heldMilliseconds": 400,
+      "fixtureSHA256": "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54"
+    }
+  },
+  "lane": "public service-position clock; implicit player fallback uncovered",
+  "laneB": "provisional original behavior until measured; no timing normalization",
+  "phases": [
+    {
+      "phase": "service-video-paused-one",
+      "status": "failed",
+      "attempts": [],
+      "error": "Error: clock DOM evaluation failed (prepare); raw CDP response preserved",
+      "failureDiagnosticAttempted": true,
+      "failureDOM": {
+        "performanceNow": 9806.60000000149,
+        "bodyPresent": true,
+        "navigatorPresent": true,
+        "mediaSessionPresent": true,
+        "playbackState": "none",
+        "visibilityState": "hidden",
+        "hidden": true,
+        "secureContext": true,
+        "progress": {
+          "phase": "service-video-paused-one",
+          "stage": "failed",
+          "progress": [
+            {
+              "stage": "initial-query",
+              "performanceNow": 4365.10000000149
+            },
+            {
+              "stage": "initial-create-before",
+              "performanceNow": 4365.20000000298
+            },
+            {
+              "stage": "initial-create-after",
+              "performanceNow": 4368.80000000447
+            },
+            {
+              "stage": "initial-metadata-before",
+              "performanceNow": 4368.80000000447
+            },
+            {
+              "stage": "failed",
+              "performanceNow": 9724.30000000447
+            }
+          ]
+        },
+        "failure": {
+          "name": "Error",
+          "message": "metadata timeout",
+          "stack": "Error: metadata timeout\n    at <anonymous>:8:108",
+          "stage": "initial-metadata-before"
+        },
+        "video": {
+          "src": "http://127.0.0.1:51085/arc-webextras-probe-1e2a58bd-eb0c-4545-b4e6-79bb50e71037/clock.webm",
+          "currentSrc": "http://127.0.0.1:51085/arc-webextras-probe-1e2a58bd-eb0c-4545-b4e6-79bb50e71037/clock.webm",
+          "error": null,
+          "readyState": 0,
+          "networkState": 2,
+          "duration": "NaN",
+          "currentTime": 0,
+          "muted": true,
+          "defaultMuted": false,
+          "paused": true,
+          "seeking": false,
+          "ended": false,
+          "loop": false,
+          "videoWidth": 0,
+          "videoHeight": 0,
+          "canPlayVP9": "probably"
+        },
+        "resourceEntries": []
+      }
+    }
+  ]
+}

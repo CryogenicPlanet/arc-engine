@@ -280,8 +280,11 @@ class ArcBrowserWindow : public BrowserWindow,
   // BrowserCollectionObserver:
   void OnBrowserCreated(BrowserWindowInterface* browser) override;
 
+  void ClearNativeWindow();
+  struct NativeWindowBinding;
+
   ArcLocationBar location_bar_;
-  gfx::NativeWindow native_window_ = gfx::NativeWindow();
+  std::shared_ptr<NativeWindowBinding> native_window_;
 
   std::string workspace_;
   bool visible_on_all_workspaces_ = false;
@@ -293,6 +296,7 @@ class ArcBrowserWindow : public BrowserWindow,
   base::WeakPtr<BrowserWindowInterface> browser_;
   base::OnceClosure close_callback_;
   base::CallbackListSubscription close_subscription_;
+  base::WeakPtrFactory<ArcBrowserWindow> weak_factory_{this};
 };
 
 }  // namespace arc

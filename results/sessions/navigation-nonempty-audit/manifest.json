@@ -1,0 +1,37 @@
+{
+  "atUTC": "2026-10-23T14:18:35.206275+00:00",
+  "runtimeExecuted": false,
+  "buildExecuted": false,
+  "implementationChanged": false,
+  "scope": "NONEMPTY setNavigations static semantics only.",
+  "findings": [
+    {
+      "priority": "P2",
+      "kind": "Conditional cache-publication ordering",
+      "ownedLine": 541,
+      "native": "443d110 storeStrong before443d148 enumeration",
+      "runtimeDemonstrated": false
+    }
+  ],
+  "matches": [
+    "Selected index unchanged; no clamp",
+    "Exact array retained strongly/no array copy",
+    "Separate value-copy native navigation snapshot"
+  ],
+  "freshReview": "PASS: corroborates bounded ordering finding and index/retain/value-copy matches.",
+  "inputs": {
+    "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_sessions_restore.mm": "b7c5c201a2395ecf9cd1bd736958432ed42076f2b970cdbaf627fd18e45e5206",
+    "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore": "b70bb16c1d10890c5f5913a58bdfcb8fc34f4147b05480c2b359b6fc0bd9050d",
+    "/Users/cryogenicplanet/general/arc-engine/research/2026-10-22-sol/evidence/agents/spec-2/classreview/backend/04340c10.c": "e8756c42abd0d0b53852add661947442e73b8983c6629c06986d35471d950336",
+    "/Users/cryogenicplanet/general/arc-engine/research/2026-10-22-sol/evidence/agents/spec-3/revisions/v1/bodies/0443d0c8.txt": "b7d5da4b02fbe8df2f81bc5849cf88e54e26c2485558520f4874474927c6773e",
+    "/Users/cryogenicplanet/general/arc-engine/results/sessions/navigation-empty-guard/review.md": "3b8764fe2ed3afe2ba6c64d8d693540ece370f17bce571f7f37e13f772a876c6"
+  },
+  "artifacts": {
+    "README.md": "34ab098e8cba6b3eba6bb22696ac16a3fb84bc285bbaefac83c7370c2a0839f9",
+    "count-callouts.md": "299c411f6ae787dd4c1080b68ae9739c7566bca40e8d24471eed64d97d28b1f2",
+    "original-disassembly.txt": "133c43ae51121386c5aa7939b526a3aee9812f55defa43a834a6c32fd32ec678"
+  },
+  "minimalRecommendation": "Publish strong input first; enumerate/convert without incoming count/reserve; CHECK_GT(entries.size(),0u) after conversion; commit native vector; do not adjust selected index.",
+  "incomingNSArrayCountCallsInOriginal": 0,
+  "extraIncomingCountCallsCurrent": 2
+}

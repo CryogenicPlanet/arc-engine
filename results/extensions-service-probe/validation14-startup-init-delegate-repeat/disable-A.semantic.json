@@ -1,0 +1,504 @@
+{
+  "golden": {
+    "step": "disable-A",
+    "operation": "disable",
+    "ok": true,
+    "matches": 1,
+    "mainThread": true,
+    "browserMatches": 1,
+    "completions": [],
+    "outstandingInstalls": [],
+    "fixtureMode": "command-line",
+    "startupPending": [],
+    "infosAfter": {
+      "A": {
+        "description": "Local fixture A π 東京",
+        "enabled": false,
+        "fromWebstore": false,
+        "hasAction": false,
+        "icon": null,
+        "id": "klciaflepodejiecmcbnknobafghdbbd",
+        "name": "ArcCore service probe arc-extensions-service-probe-bb812ce1-e516-4c4d-a951-4e54b084fbbb A",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobea",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://klciaflepodejiecmcbnknobafghdbbd/",
+        "version": "1.2.3"
+      },
+      "B": {
+        "description": "Local fixture B π 東京",
+        "enabled": true,
+        "fromWebstore": false,
+        "hasAction": true,
+        "icon": {
+          "present": true,
+          "representations": [
+            {
+              "height": 32,
+              "width": 32
+            },
+            {
+              "height": 64,
+              "width": 64
+            }
+          ],
+          "size": [
+            32,
+            32
+          ]
+        },
+        "id": "jicokapbffaomoafagjhmljkjabpgakm",
+        "name": "ArcCore service probe arc-extensions-service-probe-bb812ce1-e516-4c4d-a951-4e54b084fbbb B",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobeb",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://jicokapbffaomoafagjhmljkjabpgakm/",
+        "version": "1.2.3"
+      }
+    },
+    "owned": {
+      "A": "klciaflepodejiecmcbnknobafghdbbd",
+      "B": "jicokapbffaomoafagjhmljkjabpgakm"
+    },
+    "callbacks": [
+      {
+        "selector": "browserContext:didDisableExtension:",
+        "payload": [
+          "klciaflepodejiecmcbnknobafghdbbd"
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browser:didUpdateExtensionToolbarActions:",
+        "payload": [
+          [
+            {
+              "accessibleName": "Service fixture B\nHas access to this site",
+              "enabled": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "jicokapbffaomoafagjhmljkjabpgakm",
+              "pinnedPosition": null,
+              "tooltipText": "Service fixture B\nHas access to this site"
+            }
+          ]
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browserContext:didChangePinnedExtensionOrder:",
+        "payload": [
+          []
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browser:didUpdateExtensionToolbarActions:",
+        "payload": [
+          [
+            {
+              "accessibleName": "Service fixture B\nHas access to this site",
+              "enabled": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "jicokapbffaomoafagjhmljkjabpgakm",
+              "pinnedPosition": null,
+              "tooltipText": "Service fixture B\nHas access to this site"
+            }
+          ]
+        ],
+        "mainThread": true,
+        "synchronous": false
+      }
+    ],
+    "eventOrder": [
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browserContext:didDisableExtension:",
+          "payload": [
+            "klciaflepodejiecmcbnknobafghdbbd"
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didUpdateExtensionToolbarActions:",
+          "payload": [
+            [
+              {
+                "accessibleName": "Service fixture B\nHas access to this site",
+                "enabled": true,
+                "icon": {
+                  "present": true,
+                  "representations": [
+                    {
+                      "height": 32,
+                      "width": 32
+                    },
+                    {
+                      "height": 64,
+                      "width": 64
+                    }
+                  ],
+                  "size": [
+                    32,
+                    32
+                  ]
+                },
+                "id": "jicokapbffaomoafagjhmljkjabpgakm",
+                "pinnedPosition": null,
+                "tooltipText": "Service fixture B\nHas access to this site"
+              }
+            ]
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browserContext:didChangePinnedExtensionOrder:",
+          "payload": [
+            []
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didUpdateExtensionToolbarActions:",
+          "payload": [
+            [
+              {
+                "accessibleName": "Service fixture B\nHas access to this site",
+                "enabled": true,
+                "icon": {
+                  "present": true,
+                  "representations": [
+                    {
+                      "height": 32,
+                      "width": 32
+                    },
+                    {
+                      "height": 64,
+                      "width": 64
+                    }
+                  ],
+                  "size": [
+                    32,
+                    32
+                  ]
+                },
+                "id": "jicokapbffaomoafagjhmljkjabpgakm",
+                "pinnedPosition": null,
+                "tooltipText": "Service fixture B\nHas access to this site"
+              }
+            ]
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      }
+    ],
+    "fixturePinsAfter": []
+  },
+  "ours": {
+    "step": "disable-A",
+    "operation": "disable",
+    "ok": true,
+    "matches": 1,
+    "mainThread": true,
+    "browserMatches": 1,
+    "completions": [],
+    "outstandingInstalls": [],
+    "fixtureMode": "command-line",
+    "startupPending": [],
+    "infosAfter": {
+      "A": {
+        "description": "Local fixture A π 東京",
+        "enabled": false,
+        "fromWebstore": false,
+        "hasAction": false,
+        "icon": null,
+        "id": "klciaflepodejiecmcbnknobafghdbbd",
+        "name": "ArcCore service probe arc-extensions-service-probe-bb812ce1-e516-4c4d-a951-4e54b084fbbb A",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobea",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://klciaflepodejiecmcbnknobafghdbbd/",
+        "version": "1.2.3"
+      },
+      "B": {
+        "description": "Local fixture B π 東京",
+        "enabled": true,
+        "fromWebstore": false,
+        "hasAction": true,
+        "icon": {
+          "present": true,
+          "representations": [
+            {
+              "height": 32,
+              "width": 32
+            },
+            {
+              "height": 64,
+              "width": 64
+            }
+          ],
+          "size": [
+            32,
+            32
+          ]
+        },
+        "id": "jicokapbffaomoafagjhmljkjabpgakm",
+        "name": "ArcCore service probe arc-extensions-service-probe-bb812ce1-e516-4c4d-a951-4e54b084fbbb B",
+        "numRatings": 0,
+        "omniboxKeyword": "arcserviceprobeb",
+        "permissions": [
+          "Read and change your data on 127.0.0.1",
+          "Read your browsing history"
+        ],
+        "rating": 0,
+        "url": "chrome-extension://jicokapbffaomoafagjhmljkjabpgakm/",
+        "version": "1.2.3"
+      }
+    },
+    "owned": {
+      "A": "klciaflepodejiecmcbnknobafghdbbd",
+      "B": "jicokapbffaomoafagjhmljkjabpgakm"
+    },
+    "callbacks": [
+      {
+        "selector": "browser:didUpdateExtensionToolbarActions:",
+        "payload": [
+          [
+            {
+              "accessibleName": "Service fixture B\nHas access to this site",
+              "enabled": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "jicokapbffaomoafagjhmljkjabpgakm",
+              "pinnedPosition": null,
+              "tooltipText": "Service fixture B\nHas access to this site"
+            }
+          ]
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browser:didUpdateExtensionToolbarActions:",
+        "payload": [
+          [
+            {
+              "accessibleName": "Service fixture B\nHas access to this site",
+              "enabled": true,
+              "icon": {
+                "present": true,
+                "representations": [
+                  {
+                    "height": 32,
+                    "width": 32
+                  },
+                  {
+                    "height": 64,
+                    "width": 64
+                  }
+                ],
+                "size": [
+                  32,
+                  32
+                ]
+              },
+              "id": "jicokapbffaomoafagjhmljkjabpgakm",
+              "pinnedPosition": null,
+              "tooltipText": "Service fixture B\nHas access to this site"
+            }
+          ]
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browserContext:didChangePinnedExtensionOrder:",
+        "payload": [
+          []
+        ],
+        "mainThread": true,
+        "synchronous": false
+      },
+      {
+        "selector": "browserContext:didDisableExtension:",
+        "payload": [
+          "klciaflepodejiecmcbnknobafghdbbd"
+        ],
+        "mainThread": true,
+        "synchronous": false
+      }
+    ],
+    "eventOrder": [
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didUpdateExtensionToolbarActions:",
+          "payload": [
+            [
+              {
+                "accessibleName": "Service fixture B\nHas access to this site",
+                "enabled": true,
+                "icon": {
+                  "present": true,
+                  "representations": [
+                    {
+                      "height": 32,
+                      "width": 32
+                    },
+                    {
+                      "height": 64,
+                      "width": 64
+                    }
+                  ],
+                  "size": [
+                    32,
+                    32
+                  ]
+                },
+                "id": "jicokapbffaomoafagjhmljkjabpgakm",
+                "pinnedPosition": null,
+                "tooltipText": "Service fixture B\nHas access to this site"
+              }
+            ]
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browser:didUpdateExtensionToolbarActions:",
+          "payload": [
+            [
+              {
+                "accessibleName": "Service fixture B\nHas access to this site",
+                "enabled": true,
+                "icon": {
+                  "present": true,
+                  "representations": [
+                    {
+                      "height": 32,
+                      "width": 32
+                    },
+                    {
+                      "height": 64,
+                      "width": 64
+                    }
+                  ],
+                  "size": [
+                    32,
+                    32
+                  ]
+                },
+                "id": "jicokapbffaomoafagjhmljkjabpgakm",
+                "pinnedPosition": null,
+                "tooltipText": "Service fixture B\nHas access to this site"
+              }
+            ]
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browserContext:didChangePinnedExtensionOrder:",
+          "payload": [
+            []
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      },
+      {
+        "type": "delegate",
+        "value": {
+          "selector": "browserContext:didDisableExtension:",
+          "payload": [
+            "klciaflepodejiecmcbnknobafghdbbd"
+          ],
+          "mainThread": true,
+          "synchronous": false
+        }
+      }
+    ],
+    "fixturePinsAfter": []
+  }
+}

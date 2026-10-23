@@ -23,6 +23,8 @@
 @property(nonatomic) BOOL returned;
 @property(nonatomic) BOOL pending;
 @property(nonatomic) BOOL cleanupRequested;
+@property(nonatomic, strong) id repeatedBrowserDelegate;
+@property(nonatomic) BOOL repeatSetterActive;
 @property(nonatomic, copy) NSString* operationID;
 @property(nonatomic, weak) id context;
 @property(nonatomic, weak) id browser;
@@ -34,11 +36,14 @@
 @synthesize pending = _pending, settleAt = _settleAt, deadline = _deadline;
 @synthesize cleanupRequested = _cleanupRequested, operationID = _operationID;
 @synthesize context = _context, browser = _browser;
+@synthesize repeatedBrowserDelegate = _repeatedBrowserDelegate, repeatSetterActive = _repeatSetterActive;
 @end
 
 static NSMapTable* gEntries;
 // Independent of transient ArcBrowserContext wrappers. Never retain app objects.
 static NSMapTable* gBrowserDelegates;
+static NSMapTable* gBrowserDelegateCaptures;
+static BOOL gBrowserDelegateRepeatEnabled;
 static NSMutableSet* gHooks;
 static NSMutableDictionary* gOwned;
 static NSMutableArray* gBaseline;
@@ -48,6 +53,8 @@ static NSString* gToken;
 static NSString* gFixtureMode;
 static BOOL gBrowserPinsEnabled;
 static BOOL gBrowserOmniboxEnabled;
+static BOOL gWebstoreNegativeEnabled;
+static BOOL gWebstoreNegativeUncertainState;
 static NSString* gFixtureURL;
 static NSMutableSet* gStartupPending;
 static NSString* gRecord;
@@ -249,6 +256,20 @@ static void Delegate(id service, SEL selector, id delegate) {
 }
 static void BrowserDelegate(id browser, SEL selector, id delegate) {
   if (NSThread.isMainThread) {
+    if (gBrowserDelegateRepeatEnabled) {
+      ExtensionsProbeWork* work = gWork;
+      if (work.repeatSetterActive) {
+        NSUInteger count = [work.response[@"browserDelegateRepeatSetterCalls"] unsignedIntegerValue] + 1;
+        work.response[@"browserDelegateRepeatSetterCalls"] = @(count);
+        BOOL same = browser == work.browser && delegate && delegate == work.repeatedBrowserDelegate;
+        work.response[@"browserDelegateRepeatSameObjectAtSetter"] = JSONBool(same);
+      } else {
+        NSDictionary* previous = [gBrowserDelegateCaptures objectForKey:browser];
+        [gBrowserDelegateCaptures setObject:@{@"nonProbeSetCount":@([previous[@"nonProbeSetCount"] unsignedIntegerValue]+1),
+            @"lastCaptureOffset":Offset(),@"nonnull":JSONBool(delegate != nil),
+            @"delegateClass":delegate ? NSStringFromClass([delegate class]) : (id)NSNull.null} forKey:browser];
+      }
+    }
     if (delegate) [gBrowserDelegates setObject:delegate forKey:browser];
     else [gBrowserDelegates removeObjectForKey:browser];
     HookDelegate(delegate, YES);
@@ -301,8 +322,8 @@ static NSArray* MatchingBrowsers(id service, id targetContext, NSMutableArray* i
 }
 static NSDictionary* Metadata(id service, id browser) {
   NSMutableDictionary* result = [NSMutableDictionary dictionary];
-  NSDictionary* classes = @{@"ArcBrowserContextExtensions":@[@"owner",@"isEqual:",@"hash",@"setDelegate:",@"isExtensionSystemReady",@"listExtensions",@"getExtensionInfo:",@"enableExtension:",@"disableExtension:",@"reloadExtension:",@"uninstallExtension:",@"installExtensionFromUnpackedPath:completion:",@"runJSInExtensionBackgroundPage:js_code:",@"getAllExtensionCommands",@"executeExtensionCommand:commandName:",@"getPinnedExtensionOrder",@"setPinnedExtensionOrder:"],
-      @"ArcBrowser":@[@"executeExtensionAction:",@"pinExtension:",@"unpinExtension:",@"moveExtension:targetIndex:",@"triggerExtensionOmniboxInput:inputText:disposition:"]};
+  NSDictionary* classes = @{@"ArcBrowserContextExtensions":@[@"owner",@"isEqual:",@"hash",@"setDelegate:",@"isExtensionSystemReady",@"listExtensions",@"getExtensionInfo:",@"enableExtension:",@"disableExtension:",@"reloadExtension:",@"uninstallExtension:",@"installExtensionFromUnpackedPath:completion:",@"installExtensionFromWebstore:unattended:completion:",@"runJSInExtensionBackgroundPage:js_code:",@"getAllExtensionCommands",@"executeExtensionCommand:commandName:",@"getPinnedExtensionOrder",@"setPinnedExtensionOrder:"],
+      @"ArcBrowser":@[@"setDelegate:",@"executeExtensionAction:",@"pinExtension:",@"unpinExtension:",@"moveExtension:targetIndex:",@"triggerExtensionOmniboxInput:inputText:disposition:"]};
   for (NSString* className in classes) {
     NSMutableDictionary* methods = [NSMutableDictionary dictionary];
     Class cls = [className isEqual:@"ArcBrowser"] ? (browser ? [browser class] : NSClassFromString(@"ArcBrowser")) : [service class];
@@ -444,8 +465,170 @@ static NSString* BrowserOmniboxRequest(id service, id browser, NSDictionary* req
   ((void (*)(id,SEL,id,id,long long))objc_msgSend)(browser,NSSelectorFromString(selector),gOwned[@"A"],input,disposition);
   return nil;
 }
+// Reuse only the actual app delegate previously seen at the public setter.
+// Hold it through this operation; never create, replace, clear, or invoke a
+// delegate callback directly. Native existing nonnil setter only stores weak.
+static NSString* BrowserDelegateRepeatRequest(id service, id browser, NSDictionary* request,
+                                               ExtensionsProbeWork* work) {
+  if (!gBrowserDelegateRepeatEnabled || ![gFixtureMode isEqual:@"command-line"])
+    return @"browser delegate repeat not explicitly enabled in command-line mode";
+  id target = browser ? [gBrowserDelegates objectForKey:browser] : nil;
+  NSDictionary* capture = browser ? [gBrowserDelegateCaptures objectForKey:browser] : nil;
+  if (!service || !browser || !target || work.entry.service != service || work.browser != browser ||
+      ![capture[@"nonnull"] isEqual:@YES] || ![capture[@"nonProbeSetCount"] unsignedIntegerValue] ||
+      [capture[@"lastCaptureOffset"] longLongValue] < 0)
+    return @"browser delegate repeat lacks a prior actual nonnil delegate capture";
+  NSMutableArray* inventory = [NSMutableArray array];
+  NSArray* matches = MatchingBrowsers(service,work.entry.context,inventory);
+  work.response[@"browserDelegateRepeatIdentityCandidates"] = inventory;
+  if (matches.count != 1 || matches.firstObject != browser || gOutstandingInstalls.count ||
+      gStartupPending.count || !gBaseline || gOwned.count != 2 || [gOwned[@"A"] isEqual:gOwned[@"B"]] ||
+      gWebstoreNegativeUncertainState) return @"browser delegate repeat identity/ownership unresolved";
+  for (NSString* label in @[@"A",@"B"]) {
+    if (!Proven(service,label,gOwned[label])) return @"browser delegate repeat lacks both nonce fixtures";
+    id info = Get1(service,@"getExtensionInfo:",gOwned[label]);
+    if (![PropertyValue(info,@"enabled") isEqual:@YES] || ![PropertyValue(info,@"hasAction") isEqual:@YES])
+      return @"browser delegate repeat requires both enabled action fixtures";
+  }
+  if (![request[@"label"] isEqual:@"A"] || request[@"delegate"] || request[@"extensionID"] ||
+      !gFixtureURL || ![request[@"fixtureURL"] isEqual:gFixtureURL])
+    return @"browser delegate repeat accepts only owned A and this nonce fixture URL";
+  Method setter = class_getInstanceMethod([browser class],NSSelectorFromString(@"setDelegate:"));
+  Method action = class_getInstanceMethod([browser class],NSSelectorFromString(@"executeExtensionAction:"));
+  Method initialized = class_getInstanceMethod([browser class],NSSelectorFromString(@"isInitialized"));
+  if (!ABI(initialized,2,@"B") || !((BOOL (*)(id,SEL))objc_msgSend)(browser,NSSelectorFromString(@"isInitialized")))
+    return @"browser delegate repeat requires a live initialized browser";
+  if (!ABI(setter,3,@"v") || !ABI(action,3,@"v") || !gBrowserDelegate)
+    return @"browser delegate repeat public setter/action ABI changed";
+  IMP publicSetter = method_getImplementation(setter);
+  Method alias = class_getInstanceMethod([browser class],NSSelectorFromString(@"__arcrec_setDelegate:"));
+  BOOL directCapture = publicSetter == (IMP)BrowserDelegate;
+  BOOL recorderCapture = publicSetter == (IMP)_objc_msgForward && ABI(alias,3,@"v") &&
+      method_getImplementation(alias) == (IMP)BrowserDelegate;
+  if (recorderCapture) {
+    NSMethodSignature* aliasSignature = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(alias)];
+    recorderCapture = !strcmp([aliasSignature getArgumentTypeAtIndex:2],"@");
+  }
+  if (!directCapture && !recorderCapture) return @"browser delegate repeat capture/recorder topology changed";
+  NSMethodSignature* setterSignature = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(setter)];
+  NSMethodSignature* actionSignature = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(action)];
+  if (strcmp([setterSignature getArgumentTypeAtIndex:2],"@") || strcmp([actionSignature getArgumentTypeAtIndex:2],"@"))
+    return @"browser delegate repeat setter/action argument ABI mismatch";
+  work.repeatedBrowserDelegate = target;
+  work.response[@"browserDelegateRepeatHookTopology"] = directCapture ? @"direct-capture" : @"recorder-forwarder-to-capture";
+  work.response[@"browserDelegateRepeatIdentityVerified"] = @YES;
+  work.response[@"browserDelegateRepeatPriorCapture"] = capture;
+  work.response[@"browserDelegateRepeatDelegateClass"] = NSStringFromClass([target class]);
+  work.response[@"browserDelegateRepeatSetterABI"] = [NSString stringWithUTF8String:method_getTypeEncoding(setter)];
+  work.response[@"browserDelegateRepeatActionABI"] = [NSString stringWithUTF8String:method_getTypeEncoding(action)];
+  work.response[@"browserDelegateRepeatFixtureURL"] = gFixtureURL;
+  work.response[@"browserDelegateRepeatActionID"] = gOwned[@"A"];
+  work.response[@"browserDelegateRepeatSetterCalls"] = @0;
+  work.response[@"pinsBefore"] = Value(Get(service,@"getPinnedExtensionOrder"));
+  work.pending = YES;
+  Put(browser,@"executeExtensionAction:",gOwned[@"A"]);
+  work.response[@"browserDelegateRepeatAfterActionOffset"] = Offset();
+  NSDictionary* afterActionCapture = [gBrowserDelegateCaptures objectForKey:browser];
+  if (gWork != work || work.browser != browser || work.entry.service != service ||
+      [afterActionCapture[@"nonProbeSetCount"] unsignedIntegerValue] != [capture[@"nonProbeSetCount"] unsignedIntegerValue] ||
+      !((BOOL (*)(id,SEL))objc_msgSend)(browser,NSSelectorFromString(@"isInitialized")) ||
+      [gBrowserDelegates objectForKey:browser] != target)
+    return @"browser delegate changed reentrantly during real action; setter not invoked";
+  work.repeatSetterActive = YES;
+  @try { Put(browser,@"setDelegate:",work.repeatedBrowserDelegate); }
+  @finally { work.repeatSetterActive = NO; }
+  work.response[@"browserDelegateRepeatAfterSetterOffset"] = Offset();
+  if ([work.response[@"browserDelegateRepeatSetterCalls"] unsignedIntegerValue] != 1 ||
+      ![work.response[@"browserDelegateRepeatSameObjectAtSetter"] isEqual:@YES] ||
+      [gBrowserDelegates objectForKey:browser] != target)
+    return @"browser delegate repeat did not observe exactly the captured genuine target";
+  work.pending = NO;
+  work.settleAt = NSDate.timeIntervalSinceReferenceDate + 3;
+  return nil;
+}
+static void OwnershipJournal(void);
+static NSArray* InstalledExtensionIDs(id service) {
+  id infos = Get(service,@"listExtensions");
+  if (![infos isKindOfClass:NSArray.class]) return nil;
+  NSMutableArray* ids = [NSMutableArray array];
+  for (id info in infos) {
+    id identifier = Get(info,@"id");
+    if (![identifier isKindOfClass:NSString.class] || ![identifier length] || [ids containsObject:identifier]) return nil;
+    [ids addObject:identifier];
+  }
+  return [ids copy];
+}
+// Only fixed length-invalid IDs enter this phase. Native and current validation
+// reject them before Web Store fetch/download/install prompt work. Constructors
+// may create a dummy WebContents/observe the profile; global networklessness is
+// not asserted. Both real completion and every outstanding attempt are retained.
+static NSString* WebstoreNegativeRequest(id service, NSDictionary* request, ExtensionsProbeWork* work) {
+  if (!gWebstoreNegativeEnabled || ![gFixtureMode isEqual:@"command-line"])
+    return @"negative WebStore phase not explicitly enabled in command-line mode";
+  if (!service || !work.entry || work.entry.service != service || !work.entry.delegate ||
+      work.context != work.entry.context || !work.context ||
+      Get(work.context,@"extensions") != service || Get(service,@"owner") != work.context)
+    return @"negative WebStore service/context identity changed";
+  NSDictionary* contextID = ContextIDFields(work.context);
+  if (![contextID[@"directoryBasename"] isEqual:@"Default"] || ![contextID[@"isIncognito"] isEqual:@NO])
+    return @"negative WebStore requires the owned Default non-incognito context";
+  if (gOutstandingInstalls.count || gStartupPending.count || !gBaseline || gOwned.count != 2 ||
+      [gOwned[@"A"] isEqual:gOwned[@"B"]] || gWebstoreNegativeUncertainState)
+    return @"negative WebStore ownership/state unresolved";
+  for (NSString* label in @[@"A",@"B"])
+    if (!Proven(service,label,gOwned[label])) return @"negative WebStore context lacks both nonce-proven fixtures";
+  NSString* kind = request[@"case"];
+  NSString* input = [@{@"empty":@"",@"malformed":@"arc-invalid-webstore-id"} objectForKey:kind ?: @""];
+  if (!input || request[@"extensionID"] || request[@"storeID"] || request[@"url"])
+    return @"negative WebStore accepts only fixed empty/malformed cases, never raw IDs/URLs";
+  NSNumber* raw = request[@"unattended"];
+  if (![raw isKindOfClass:NSNumber.class] || CFGetTypeID((__bridge CFTypeRef)raw) != CFBooleanGetTypeID())
+    return @"negative WebStore unattended requires an actual JSON Boolean";
+  BOOL unattended = raw.boolValue;
+  NSString* selector = @"installExtensionFromWebstore:unattended:completion:";
+  Method method = class_getInstanceMethod([service class],NSSelectorFromString(selector));
+  if (!ABI(method,5,@"v")) return @"negative WebStore selector return/count ABI mismatch";
+  NSMethodSignature* signature = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(method)];
+  if (strcmp([signature getArgumentTypeAtIndex:2],"@") || strcmp([signature getArgumentTypeAtIndex:3],"B") ||
+      strcmp([signature getArgumentTypeAtIndex:4],"@?") || sizeof(BOOL) != 1)
+    return @"negative WebStore selector requires native object/B/block ABI";
+  NSArray* before = InstalledExtensionIDs(service);
+  NSArray* pins = [Get(service,@"getPinnedExtensionOrder") copy];
+  if (!before || ![pins isKindOfClass:NSArray.class]) return @"negative WebStore baseline snapshot unavailable";
+  work.response[@"webstoreNegativeSelector"] = selector;
+  work.response[@"webstoreNegativeABI"] = [NSString stringWithUTF8String:method_getTypeEncoding(method)];
+  work.response[@"webstoreNegativeCase"] = kind;
+  work.response[@"webstoreNegativeArguments"] = @[input,JSONBool(unattended)];
+  work.response[@"webstoreNegativeServiceIdentityVerified"] = @YES;
+  work.response[@"webstoreInstalledIDsBefore"] = before;
+  work.response[@"pinsBefore"] = Value(pins);
+  work.response[@"webstoreNegativeAttemptIssued"] = @YES;
+  work.pending = YES;
+  [gOutstandingInstalls addObject:work.operationID];
+  [gInstallAttempts addObject:@{@"operationID":work.operationID,@"kind":@"webstore-invalid",@"case":kind,@"requestedID":input,@"unattended":JSONBool(unattended)}];
+  OwnershipJournal();
+  void (^completion)(NSString*,NSInteger) = ^(NSString* identifier, NSInteger result) {
+    const BOOL callbackMainThread = NSThread.isMainThread;
+    id synchronous;
+    @synchronized(gCaptureLock) { synchronous = JSONBool(!work.returned); }
+    void (^save)(void) = ^{
+      NSDictionary* value = @{@"id":Value(identifier),@"result":@(result),@"mainThread":JSONBool(callbackMainThread),@"synchronous":synchronous};
+      if (work.response[@"completion"] || result != 3 || ![identifier isEqual:input]) gWebstoreNegativeUncertainState = YES;
+      [gOutstandingInstalls removeObject:work.operationID];
+      if (!work.response[@"completion"]) work.response[@"completion"] = value;
+      [work.response[@"completions"] addObject:value];
+      [work.response[@"events"] addObject:@{@"type":@"completion",@"value":value}];
+      work.pending = NO; work.settleAt = NSDate.timeIntervalSinceReferenceDate + 0.8;
+      OwnershipJournal();
+      if (gWork != work) Diagnostic(@"late-webstore-negative-completion",work,value);
+    };
+    if (callbackMainThread) save(); else dispatch_async(dispatch_get_main_queue(),save);
+  };
+  ((void (*)(id,SEL,id,BOOL,id))objc_msgSend)(service,NSSelectorFromString(selector),input,unattended,completion);
+  return nil;
+}
 static void OwnershipJournal(void) {
-  WriteJSON(@{@"fixtureMode":gFixtureMode,@"startupPending":[gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)],@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy]},[gRequest stringByAppendingString:@".owned.json"]);
+  WriteJSON(@{@"fixtureMode":gFixtureMode,@"startupPending":[gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)],@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy],@"webstoreNegativeUncertainState":JSONBool(gWebstoreNegativeUncertainState)},[gRequest stringByAppendingString:@".owned.json"]);
 }
 static NSString* ReconcileOwned(id service) {
   // An installation may have completed after its request timed out. Discover
@@ -467,6 +650,7 @@ static NSString* ReconcileOwned(id service) {
   return nil;
 }
 static NSString* Cleanup(ExtensionsProbeWork* work) {
+  if (gWebstoreNegativeUncertainState) return @"negative WebStore unexpected completion/state; API cleanup cannot be certified";
   if ([gFixtureMode isEqual:@"command-line"]) {
     if (gOutstandingInstalls.count) return @"cleanup cannot certify while installs remain outstanding";
     NSString* error = ReconcileOwned(work.entry.service);
@@ -513,10 +697,24 @@ static void Finish(NSString* error) {
       work.response[@"browserPinBaselineAfterPreserved"] = JSONBool(preserved);
       if (!preserved && !error) error = @"browser pin baseline changed after mutation";
     }
+    if ([work.response[@"operation"] isEqual:@"webstore-invalid"]) {
+      if ([work.response[@"webstoreNegativeAttemptIssued"] isEqual:@YES]) {
+        NSArray* ids = InstalledExtensionIDs(work.entry.service);
+        work.response[@"webstoreInstalledIDsAfter"] = Value(ids);
+        if (!ids || ![ids isEqual:work.response[@"webstoreInstalledIDsBefore"]] ||
+            ![work.response[@"pinsAfter"] isEqual:work.response[@"pinsBefore"]]) {
+          gWebstoreNegativeUncertainState = YES;
+          if (!error) error = @"negative WebStore changed installed IDs/pin order; API cleanup cannot be certified";
+        }
+      }
+      work.response[@"webstoreNegativeUncertainState"] = JSONBool(gWebstoreNegativeUncertainState);
+      if (gWebstoreNegativeUncertainState && !error) error = @"negative WebStore unexpected completion/state";
+      OwnershipJournal();
+    }
     if ([work.response[@"operation"] isEqual:@"cleanup"]) {
       BOOL absent = YES;
       for (id value in infos.allValues) if (value != NSNull.null) absent = NO;
-      work.response[@"cleanupCertified"] = JSONBool(!error && absent && !gOutstandingInstalls.count && !gStartupPending.count && [work.response[@"pinsAfter"] isEqual:gBaseline]);
+      work.response[@"cleanupCertified"] = JSONBool(!error && absent && !gWebstoreNegativeUncertainState && !gOutstandingInstalls.count && !gStartupPending.count && [work.response[@"pinsAfter"] isEqual:gBaseline]);
     }
   } @catch (NSException* exception) { error = exception.reason ?: exception.name; }
   work.response[@"ok"] = JSONBool(!error);
@@ -524,6 +722,8 @@ static void Finish(NSString* error) {
   work.response[@"recordEnd"] = Offset();
   WriteJSON(work.response,[gRequest stringByAppendingString:@".response.json"]);
   @synchronized(gCaptureLock) { if (gCaptureWork == work) gCaptureWork = nil; }
+  work.repeatSetterActive = NO;
+  work.repeatedBrowserDelegate = nil;
   gWork = nil;
 }
 static void Poll(void) {
@@ -659,6 +859,12 @@ static void Poll(void) {
     } else if ([@[@"browser-pin",@"browser-unpin",@"browser-move"] containsObject:operation]) {
       NSString* error = BrowserPinRequest(service,browser,operation,request,gWork);
       if (error) { Finish(error); return; }
+    } else if ([operation isEqual:@"browser-delegate-repeat"]) {
+      NSString* error = BrowserDelegateRepeatRequest(service,browser,request,gWork);
+      if (error) { Finish(error); return; }
+    } else if ([operation isEqual:@"webstore-invalid"]) {
+      NSString* error = WebstoreNegativeRequest(service,request,gWork);
+      if (error) { Finish(error); return; }
     } else if ([operation isEqual:@"browser-omnibox"]) {
       NSString* error = BrowserOmniboxRequest(service,browser,request,gWork);
       if (error) { Finish(error); return; }
@@ -706,9 +912,15 @@ __attribute__((constructor)) static void StartExtensionsServiceProbe(void) {
     const char* browserOmnibox = getenv("ARC_EXTENSIONS_PROBE_BROWSER_OMNIBOX");
     gBrowserOmniboxEnabled = browserOmnibox && !strcmp(browserOmnibox,"1");
     if (gBrowserOmniboxEnabled && ![gFixtureMode isEqual:@"command-line"]) return;
+    const char* webstoreNegative = getenv("ARC_EXTENSIONS_PROBE_WEBSTORE_NEGATIVE");
+    gWebstoreNegativeEnabled = webstoreNegative && !strcmp(webstoreNegative,"1");
+    if (gWebstoreNegativeEnabled && ![gFixtureMode isEqual:@"command-line"]) return;
+    const char* delegateRepeat = getenv("ARC_EXTENSIONS_PROBE_BROWSER_DELEGATE_REPEAT");
+    gBrowserDelegateRepeatEnabled = delegateRepeat && !strcmp(delegateRepeat,"1");
+    if (gBrowserDelegateRepeatEnabled && ![gFixtureMode isEqual:@"command-line"]) return;
     const char* fixtureURL = getenv("ARC_EXTENSIONS_PROBE_FIXTURE_URL");
     gFixtureURL = fixtureURL ? @(fixtureURL) : nil;
-    if (gBrowserOmniboxEnabled) {
+    if (gBrowserOmniboxEnabled || gBrowserDelegateRepeatEnabled) {
       if (!gFixtureURL) return;
       NSURL* url = [NSURL URLWithString:gFixtureURL];
       NSString* expectedPath = [NSString stringWithFormat:@"/%@/page",@(token)];
@@ -724,6 +936,7 @@ __attribute__((constructor)) static void StartExtensionsServiceProbe(void) {
     unsetenv("DYLD_INSERT_LIBRARIES");
     gEntries = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsStrongMemory];
     gBrowserDelegates = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsWeakMemory];
+    if (gBrowserDelegateRepeatEnabled) gBrowserDelegateCaptures = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsStrongMemory];
     gHooks = [NSMutableSet set]; gOwned = [NSMutableDictionary dictionary];
     gCaptureLock = [NSObject new]; gDiagnostics = [NSMutableArray array];
     gOutstandingInstalls = [NSMutableSet set]; gInstallAttempts = [NSMutableArray array];

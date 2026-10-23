@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 #include "base/check.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "base/functional/bind.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -701,14 +702,19 @@ uint64_t NextDiagnosticID() {
   [self nativeContentsClosing];
 }
 - (void)nativeContentsDestroyed {
+  // Match the original Closed producer: quit suppresses its app delivery while
+  // cleanup still runs. Snapshot before any app callout can change quit state.
+  const bool trying_to_quit = browser_shutdown::IsTryingToQuit();
   // Native removal records carry an optional historical ID. Absence (including
   // a whole-window close) is exposed as an engaged ArcSessionID(-1), not nil.
   ArcSessionID* restoration = _restorationSessionID ?: [[ArcSessionID alloc] initWithID:-1];
   [self nativeContentsClosing];
   _contents.reset();
-  id<CoreContentsDelegate> delegate = _uiDelegate;
-  if ([delegate respondsToSelector:@selector(webContents:didCloseWithSessionID:)]) {
-    [delegate webContents:self didCloseWithSessionID:restoration];
+  if (!trying_to_quit) {
+    id<CoreContentsDelegate> delegate = _uiDelegate;
+    if ([delegate respondsToSelector:@selector(webContents:didCloseWithSessionID:)]) {
+      [delegate webContents:self didCloseWithSessionID:restoration];
+    }
   }
 }
 - (BOOL)foregroundForInsertion { return _foreground; }

@@ -1,0 +1,117 @@
+{
+  "ours": {
+    "path": "results/core-runtime/20261023T142843Z-window-binding/launch-slice/launch-1/record.jsonl",
+    "events": [
+      {
+        "line": 6033,
+        "event": {
+          "seq": 6032,
+          "ev": "call",
+          "thread": "main",
+          "depth": 1,
+          "from": "engine",
+          "dir": "engine->app",
+          "cls": "ADK.ADKApplication",
+          "kind": "-",
+          "sel": "didCloseBrowser:forBrowserContextID:ofType:withRestorationSessionID:",
+          "self": "<ADK.ADKApplication#2>",
+          "args": [
+            "F1676741-7766-4A6B-9056-1874E689529C",
+            "<ArcBrowserContextID#33>",
+            0,
+            null
+          ]
+        }
+      },
+      {
+        "line": 6078,
+        "event": {
+          "seq": 6077,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 1,
+          "from": "engine",
+          "dir": "engine->app",
+          "cls": "ADK.ADKApplication",
+          "kind": "-",
+          "sel": "didCloseBrowser:forBrowserContextID:ofType:withRestorationSessionID:",
+          "self": "<ADK.ADKApplication#2>",
+          "ret": null
+        }
+      },
+      {
+        "line": 6135,
+        "event": {
+          "seq": 6134,
+          "ev": "call",
+          "thread": "main",
+          "depth": 1,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcBrowserApplication",
+          "kind": "-",
+          "sel": "tryToTerminate:",
+          "self": "<ArcBrowserApplication#3>",
+          "args": [
+            "<block>"
+          ]
+        }
+      },
+      {
+        "line": 6136,
+        "event": {
+          "seq": 6135,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 1,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcBrowserApplication",
+          "kind": "-",
+          "sel": "tryToTerminate:",
+          "self": "<ArcBrowserApplication#3>",
+          "ret": 2
+        }
+      }
+    ]
+  },
+  "golden": {
+    "path": "results/core-runtime/20261023T142843Z-window-binding/goldens/launch-slice/launch-1/record.jsonl",
+    "events": [
+      {
+        "line": 6667,
+        "event": {
+          "seq": 6666,
+          "ev": "call",
+          "thread": "main",
+          "depth": 1,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcBrowserApplication",
+          "kind": "-",
+          "sel": "tryToTerminate:",
+          "self": "<ArcBrowserApplication#3>",
+          "args": [
+            "<block>"
+          ]
+        }
+      },
+      {
+        "line": 6668,
+        "event": {
+          "seq": 6667,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 1,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcBrowserApplication",
+          "kind": "-",
+          "sel": "tryToTerminate:",
+          "self": "<ArcBrowserApplication#3>",
+          "ret": 2
+        }
+      }
+    ]
+  }
+}

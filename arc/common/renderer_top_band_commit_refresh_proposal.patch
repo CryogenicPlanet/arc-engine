@@ -1,0 +1,111 @@
+--- a/arc/api/arc_internal.h
++++ b/arc/api/arc_internal.h
+@@ -17,6 +17,7 @@
+ 
+ class Profile;
+ namespace content {
++class RenderFrameHost;
+ class WebContents;
+ }
+ 
+@@ -134,6 +135,8 @@
+ @class ArcWebContents;
+ namespace arc {
+ void SetRendererTopBandColorDelegate(content::WebContents*, ArcWebContents*, id);
++// Refresh an existing sampler after committed-primary page activation receipt enqueue.
++void RefreshRendererTopBandColor(content::RenderFrameHost*);
+ }
+ 
+ @class ArcURLLoadConfiguration;
+--- a/arc/api/arc_web_contents.mm
++++ b/arc/api/arc_web_contents.mm
+@@ -36,6 +36,7 @@
+ #include "content/public/browser/web_contents.h"
+ #include "content/public/browser/web_contents_observer.h"
+ #include "content/public/browser/web_contents_user_data.h"
++#include "content/public/browser/weak_document_ptr.h"
+ #include "content/public/browser/visibility.h"
+ #include "ui/base/page_transition_types.h"
+ 
+@@ -79,6 +80,7 @@
+ namespace arc {
+ __attribute__((weak)) void SetRendererTopBandColorDelegate(
+     content::WebContents*, ArcWebContents*, id) {}
++__attribute__((weak)) void RefreshRendererTopBandColor(content::RenderFrameHost*) {}
+ }
+ 
+ @implementation ArcWebContentsConfiguration {
+@@ -340,6 +342,7 @@
+     const bool in_page = handle->IsSameDocument();
+     const bool committed = handle->HasCommitted();
+     const bool restored = handle->IsServedFromBackForwardCache();
++    const bool page_activation = committed && handle->IsPageActivation();
+     const int error = handle->GetNetErrorCode();
+     if (awaiting_policy_ && pending_navigation_identifier_ == handle->GetNavigationId()) {
+       ResetPendingNavigation();
+@@ -348,22 +351,52 @@
+     const uint64_t generation = ++navigation_generation_;
+     ArcNavigation* navigation = primary ? [ArcNavigation snapshotForNavigationHandle:handle] : nil;
+     NSURL* destination = ArcNSURL(handle->GetURL());
++    auto observer = weak_factory_.GetWeakPtr();
++    auto native = web_contents() ? web_contents()->GetWeakPtr()
++                                 : base::WeakPtr<content::WebContents>();
++    content::WeakDocumentPtr committed_document;
+     if (committed) {
+-      // A contents first observed after its navigation started still receives
+-      // the start/commit URL state transitions before the app's commit callback.
+-      if (!saw_navigation_start_) { UpdateURLForStart(wrapper); }
+-      if (!web_contents() || generation != navigation_generation_) { return; }
+-      saw_navigation_start_ = true;
++      if (auto* frame = handle->GetRenderFrameHost()) {
++        committed_document = frame->GetWeakDocumentPtr();
++      }
++    }
++    // All NavigationHandle reads precede callbacks. Guard both observer lifetime
++    // and attachment/generation after KVO and receipt-time enqueue boundaries.
++    auto still_current = [observer, native, generation, wrapper] {
++      return observer && native && observer->web_contents() == native.get() &&
++             observer->navigation_generation_ == generation &&
++             [wrapper webContents] == native.get();
++    };
++    if (!still_current()) { return; }
++    if (committed) {
++      // Preserve the exact missing-start URL/ID sequence locally. The shared
++      // helper accesses raw this after its URL setter, which can destroy us.
++      if (!saw_navigation_start_) {
++        saw_navigation_start_ = true;
++        const GURL& initial_committed = native->GetLastCommittedURL();
++        NSURL* initial_url = ArcNSURL(initial_committed.is_empty()
++                                         ? native->GetVisibleURL() : initial_committed);
++        wrapper.url = initial_url;
++        if (!still_current()) { return; }
++        wrapper.navigationID = ++observer->visible_navigation_id_;
++        if (!still_current()) { return; }
++      }
++      observer->saw_navigation_start_ = true;
+       wrapper.url = destination;
+-      if (!web_contents() || generation != navigation_generation_) { return; }
+-      wrapper.navigationID = ++visible_navigation_id_;
+-      if (!web_contents() || generation != navigation_generation_) { return; }
++      if (!still_current()) { return; }
++      wrapper.navigationID = ++observer->visible_navigation_id_;
++      if (!still_current()) { return; }
+       [wrapper refreshNativeState];
+-    }
+-    if (web_contents() && generation == navigation_generation_ && primary) {
+-      [[wrapper coreNavigationController] didFinishNavigationSnapshot:navigation inPage:in_page
+-          committed:committed error:error restored:restored];
+-    }
++      if (!still_current()) { return; }
++    }
++    [[wrapper coreNavigationController] didFinishNavigationSnapshot:navigation inPage:in_page
++        committed:committed error:error restored:restored];
++    if (!page_activation || !still_current()) { return; }
++    auto* frame = committed_document.AsRenderFrameHostIfValid();
++    if (!frame || native->GetPrimaryMainFrame() != frame) { return; }
++    // Existing-document refresh can synchronously call app code and destroy or
++    // rebind native state. It is deliberately the terminal operation.
++    arc::RefreshRendererTopBandColor(frame);
+   }
+   void DidFinishLoad(content::RenderFrameHost* frame, const GURL&) override {
+     if (web_contents() && frame == web_contents()->GetPrimaryMainFrame()) {

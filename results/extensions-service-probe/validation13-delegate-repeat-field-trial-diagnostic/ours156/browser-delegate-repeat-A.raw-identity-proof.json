@@ -1,0 +1,191 @@
+{
+  "action": {
+    "call": {
+      "seq": 9080,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "ExtensionsServiceProbe.dylib",
+      "dir": "->engine",
+      "cls": "ArcBrowser",
+      "kind": "-",
+      "sel": "executeExtensionAction:",
+      "self": "<ArcBrowser#78>",
+      "args": [
+        "kmcgdknonlhnknhhcgnpjenopldednpf"
+      ]
+    },
+    "ret": {
+      "seq": 9143,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "ExtensionsServiceProbe.dylib",
+      "dir": "->engine",
+      "cls": "ArcBrowser",
+      "kind": "-",
+      "sel": "executeExtensionAction:",
+      "self": "<ArcBrowser#78>",
+      "ret": null
+    }
+  },
+  "setter": {
+    "call": {
+      "seq": 9146,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "ExtensionsServiceProbe.dylib",
+      "dir": "->engine",
+      "cls": "ArcBrowser",
+      "kind": "-",
+      "sel": "setDelegate:",
+      "self": "<ArcBrowser#78>",
+      "args": [
+        "<ADK.ChromiumBrowser#80>"
+      ]
+    },
+    "ret": {
+      "seq": 9147,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "ExtensionsServiceProbe.dylib",
+      "dir": "->engine",
+      "cls": "ArcBrowser",
+      "kind": "-",
+      "sel": "setDelegate:",
+      "self": "<ArcBrowser#78>",
+      "ret": null
+    }
+  },
+  "priorAppSetter": {
+    "call": {
+      "seq": 2372,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "app",
+      "dir": "->engine",
+      "cls": "ArcBrowser",
+      "kind": "-",
+      "sel": "setDelegate:",
+      "self": "<ArcBrowser#78>",
+      "args": [
+        "<ADK.ChromiumBrowser#80>"
+      ]
+    },
+    "ret": {
+      "seq": 2373,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "app",
+      "dir": "->engine",
+      "cls": "ArcBrowser",
+      "kind": "-",
+      "sel": "setDelegate:",
+      "self": "<ArcBrowser#78>",
+      "ret": null
+    }
+  },
+  "popupCallbacks": [
+    {
+      "seq": 9150,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "ExtensionsServiceProbe.dylib",
+      "dir": "engine->app",
+      "cls": "ADK.ChromiumBrowser",
+      "kind": "-",
+      "sel": "browser:didOpenExtensionPopup:webContents:",
+      "self": "<ADK.ChromiumBrowser#80>",
+      "args": [
+        "<ArcBrowser#78>",
+        "kmcgdknonlhnknhhcgnpjenopldednpf",
+        "<ArcWebContents#298>"
+      ]
+    },
+    {
+      "seq": 9244,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "ExtensionsServiceProbe.dylib",
+      "dir": "engine->app",
+      "cls": "ADK.ChromiumBrowser",
+      "kind": "-",
+      "sel": "browser:didResizeExtensionPopup:size:",
+      "self": "<ADK.ChromiumBrowser#80>",
+      "args": [
+        "<ArcBrowser#78>",
+        "kmcgdknonlhnknhhcgnpjenopldednpf",
+        "{320, 160}"
+      ]
+    },
+    {
+      "seq": 9302,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "ExtensionsServiceProbe.dylib",
+      "dir": "engine->app",
+      "cls": "ADK.ChromiumBrowser",
+      "kind": "-",
+      "sel": "browser:didResizeExtensionPopup:size:",
+      "self": "<ADK.ChromiumBrowser#80>",
+      "args": [
+        "<ArcBrowser#78>",
+        "kmcgdknonlhnknhhcgnpjenopldednpf",
+        "{400, 220}"
+      ]
+    },
+    {
+      "seq": 9348,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "ExtensionsServiceProbe.dylib",
+      "dir": "engine->app",
+      "cls": "ADK.ChromiumBrowser",
+      "kind": "-",
+      "sel": "browser:didCloseExtensionPopup:",
+      "self": "<ADK.ChromiumBrowser#80>",
+      "args": [
+        "<ArcBrowser#78>",
+        "kmcgdknonlhnknhhcgnpjenopldednpf"
+      ]
+    }
+  ],
+  "popupWebContents": {
+    "identity": "<ArcWebContents#298>",
+    "urlCall": {
+      "seq": 9148,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "ExtensionsServiceProbe.dylib",
+      "dir": "->engine",
+      "cls": "ArcWebContents",
+      "kind": "-",
+      "sel": "url",
+      "self": "<ArcWebContents#298>",
+      "args": []
+    },
+    "urlReturn": {
+      "seq": 9149,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "ExtensionsServiceProbe.dylib",
+      "dir": "->engine",
+      "cls": "ArcWebContents",
+      "kind": "-",
+      "sel": "url",
+      "self": "<ArcWebContents#298>",
+      "ret": "url:chrome-extension://kmcgdknonlhnknhhcgnpjenopldednpf/popup.html"
+    }
+  },
+  "scope": "Actual raw rows with within-run object identity only; no global fixture inventory or cross-engine identity normalization"
+}

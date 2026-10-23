@@ -15,6 +15,22 @@ The current companion stages WebContents; navigation async registration already 
 
 Explicit remaining gaps: AUDIO trait producer mapping; dynamic nonempty target text font/width; exact cancellation lifetime of native DelegateWrapper versus weak ObjC owner. Runtime validation remains necessary after native patch + companion are applied together.
 
+Latest source/proposal corrections supersede the older trait-gap statement:
+core_traits_publication_notes.md resolves cached alert/ICE mapping and native
+first-audio/PiP ordering. Current generic/observer drafts publish traits once for
+TAB|AUDIO after favicon, retain a native vector at receipt, and materialize a
+fresh IndexSet per delivery before weak ObjC owner load. Nonempty provider remains
+unconnected; core_tab_traits_proposal.patch is compiled/reviewed but HOLD for
+creation lifetime/rebind/caller integration. Current four-part apply/compile
+manifest is logs/wp/core.bundle-current.20261023T133616Z/manifest.json; current
+generic hashbb79407a and observer7e1cca4e. Earlier hashes are superseded.
+
+Hosted-empty proposal135062 is also superseded: current95c46cc5 adds explicit
+force-skip exceptions in both idle guards, fixing a reviewed forced-close P1 in
+the old unapplied draft. Native Browser/Unload compilers0/apply0/fresh review
+clean; core_hosted_empty_browser.md and logs/wp/core.hosted-empty.latest.json.
+Ready UNAPPLIED139280; source/compile success is not runtime replacement parity.
+
 ## Independent requests
 
 - `core_hosted_empty_browser.patch` (135062): Browser::TabStripEmpty/UnloadController idle transition must keep an empty hosted browser for replacement tab; explicit close remains normal. This fixes missing second wrapper/navigation path in launch-slice. Applycheck passes; runtime unapplied.

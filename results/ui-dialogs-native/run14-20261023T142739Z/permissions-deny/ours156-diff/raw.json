@@ -1,0 +1,683 @@
+{
+ "internal": [
+  {
+   "method": "->engine -ArcBrowserContext initWithBrowserContext:",
+   "golden_calls": 3,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcBrowserContext#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes initWithBrowserContextAttributes:",
+   "golden_calls": 8,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcBrowserContextAttributes#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextDownloads initWithBrowserContextDownloads:forBrowserContext:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ptr>\", \"<ArcBrowserContext#1>\"]",
+    "ret": "\"<ArcBrowserContextDownloads#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextHistory initWithBrowserContextHistory:forBrowserContext:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ptr>\", \"<ArcBrowserContext#1>\"]",
+    "ret": "\"<ArcBrowserContextHistory#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextID initWithBrowserContextID:",
+   "golden_calls": 4,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcBrowserContextID#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextPreferences initWithBrowserContextPreferences:forBrowserContext:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ptr>\", \"<ArcBrowserContext#1>\"]",
+    "ret": "\"<ArcBrowserContextPreferences#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcExtensionInfo initWithExtensionInfo:",
+   "golden_calls": 12,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcExtensionInfo#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcLocalState initWithLocalState:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcLocalState#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcSearchEngine initWithSearchEngineTemplateURL:",
+   "golden_calls": 25,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcSearchEngine#20>\""
+   }
+  }
+ ],
+ "internal_ours": [
+  {
+   "method": "->engine +ArcBrowserContext wrapperForProfile:",
+   "our_calls": 2,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcBrowserContext#1>\""
+   }
+  },
+  {
+   "method": "->engine +ArcColor colorWithSkColor:",
+   "our_calls": 9,
+   "example": {
+    "args": "[4280032802]",
+    "ret": "\"<ArcColor#1>\""
+   }
+  },
+  {
+   "method": "->engine +ArcWebContents wrapperForWebContents:",
+   "our_calls": 9,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcWebContents#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContext initWithProfile:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcBrowserContext#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContext profile",
+   "our_calls": 18,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ptr>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContext serviceNamed:",
+   "our_calls": 18,
+   "example": {
+    "args": "[\"ArcBrowserContextPreferences\"]",
+    "ret": "\"<ArcBrowserContextPreferences#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes initWithEntry:",
+   "our_calls": 9,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcBrowserContextAttributes#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextDownloads initWithArcBrowserContext:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcBrowserContext#1>\"]",
+    "ret": "\"<ArcBrowserContextDownloads#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextExtensions initWithArcBrowserContext:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcBrowserContext#1>\"]",
+    "ret": "\"<ArcBrowserContextExtensions#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextHistory initWithArcBrowserContext:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcBrowserContext#1>\"]",
+    "ret": "\"<ArcBrowserContextHistory#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextID initWithDirectoryBasename:isIncognito:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"Default\", false]",
+    "ret": "\"<ArcBrowserContextID#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserContextPreferences initWithArcBrowserContext:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcBrowserContext#1>\"]",
+    "ret": "\"<ArcBrowserContextPreferences#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserSidePanel initWithArcBrowser:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcBrowser#1>\"]",
+    "ret": "\"<ArcBrowserSidePanel#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcSearchEngine initWithTemplateURLData:",
+   "our_calls": 25,
+   "example": {
+    "args": "[\"<ptr>\"]",
+    "ret": "\"<ArcSearchEngine#20>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents uiDelegate",
+   "our_calls": 4,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ADK.WebContentChromium#110>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents webContents",
+   "our_calls": 14,
+   "example": {
+    "args": "[]",
+    "ret": "\"<ptr>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsBoostIDE initWithArcWebContents:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\"]",
+    "ret": "\"<ArcWebContentsBoostIDE#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsDevTools initWithArcWebContents:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\"]",
+    "ret": "\"<ArcWebContentsDevTools#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsMediaSession initWithArcWebContents:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\"]",
+    "ret": "\"<ArcWebContentsMediaSession#1>\""
+   }
+  },
+  {
+   "method": "->engine -ArcWebContentsThumbnailsGenerator initWithArcWebContents:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\"]",
+    "ret": "\"<ArcWebContentsThumbnailsGenerator#1>\""
+   }
+  }
+ ],
+ "missing": [
+  {
+   "method": "->engine -ArcBrowserApplicationConfiguration applicationID",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserApplicationConfiguration argc",
+   "golden_calls": 2,
+   "example": {
+    "args": "[]",
+    "ret": "9"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserApplicationConfiguration isProduction",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserApplicationConfiguration profilePath",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "\"/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156\""
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserApplicationConfiguration quitRunLoopOnTermination",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserApplicationConfiguration sessionRestorationPolicy",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "0"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserApplicationConfiguration shouldLoadAllProfilesAtStartup",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "true"
+   }
+  },
+  {
+   "method": "->engine -ArcBrowserApplicationConfiguration userDefaultsSuiteName",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "null"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f a",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f b",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f g",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcColor4f r",
+   "golden_calls": 1,
+   "example": {
+    "args": "[]",
+    "ret": "1"
+   }
+  },
+  {
+   "method": "->engine -ArcWebContents ignoreDisablePiPAttribute:",
+   "golden_calls": 1,
+   "example": {
+    "args": "[false]",
+    "ret": "null"
+   }
+  }
+ ],
+ "extra": [
+  {
+   "method": "->engine -ArcBrowserApplication isFeatureEnabled:",
+   "our_calls": 1,
+   "example": {
+    "args": "[11]",
+    "ret": "false"
+   }
+  },
+  {
+   "method": "->engine -ArcColor initWithR:g:b:a:",
+   "our_calls": 9,
+   "example": {
+    "args": "[28, 30, 34, 255]",
+    "ret": "\"<ArcColor#1>\""
+   }
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:thumbnailReady:",
+   "our_calls": 1,
+   "example": {
+    "args": "[\"<ArcWebContents#1>\", \"image(501x341)\"]",
+    "ret": "null"
+   }
+  }
+ ],
+ "return_mismatch": [
+  {
+   "method": "->engine -ArcBrowser context",
+   "call": 0,
+   "args": "[]",
+   "golden": "\"<ArcBrowserContext#2>\"",
+   "ours": "\"<ArcBrowserContext#1>\""
+  },
+  {
+   "method": "->engine -ArcBrowserApplicationConfiguration argv",
+   "call": 0,
+   "args": "[]",
+   "golden": "[\"/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/MacOS/Arc\", \"--use-mock-keychain\", \"--no-default-browser-check\", \"--disable-sync\", \"--disable-background-networking\", \"--host-resolver-rules=MAP arc.net ~NOTFOUND, MAP *.arc.net ~NOTFOUND, MAP diabrowser.engineering ~NOTFOUND, MAP *.diabrowser.engineering ~NOTFOUND, MAP thebrowser.company ~NOTFOUND, MAP *.thebrowser.company ~NOTFOUND, MAP browser.company ~NOTFOUND, MAP *.browser.company ~NOTFOUND, MAP releases.arc.n\\u2026\", \"--user-data-dir=/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156/Agent Chromium Data\", \"--remote-debugging-address=127.0.0.1\", \"\\u2026\"]",
+   "ours": "[\"/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app/Contents/MacOS/Arc\", \"--use-mock-keychain\", \"--no-default-browser-check\", \"--disable-sync\", \"--disable-background-networking\", \"--host-resolver-rules=MAP arc.net ~NOTFOUND, MAP *.arc.net ~NOTFOUND, MAP diabrowser.engineering ~NOTFOUND, MAP *.diabrowser.engineering ~NOTFOUND, MAP thebrowser.company ~NOTFOUND, MAP *.thebrowser.company ~NOTFOUND, MAP browser.company ~NOTFOUND, MAP *.browser.company ~NOTFOUND, MAP releases.arc.n\\u2026\", \"--user-data-dir=/Users/cryogenicplanet/Library/Application Support/ArcModAgent-ours156/Agent Chromium Data\", \"--remote-debugging-address=127.0.0.1\", \"\\u2026\"]"
+  },
+  {
+   "method": "->engine -ArcBrowserContext id",
+   "call": 1,
+   "args": "[]",
+   "golden": "\"<ArcBrowserContextID#2>\"",
+   "ours": "\"<ArcBrowserContextID#1>\""
+  },
+  {
+   "method": "->engine -ArcBrowserContext loadUrl:withDelegate:",
+   "call": 0,
+   "args": "[\"<ArcURLLoadConfiguration#4>\", \"<_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate#4>\"]",
+   "golden": "\"<ArcURLLoadCancellationToken#4>\"",
+   "ours": "\"<ArcURLLoadCancellationToken#5>\""
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userVisibleName",
+   "call": 0,
+   "args": "[]",
+   "golden": "\"Default\"",
+   "ours": "\"Your Chromium\""
+  },
+  {
+   "method": "->engine -ArcColor b",
+   "call": 0,
+   "args": "[]",
+   "golden": "250",
+   "ours": "34"
+  },
+  {
+   "method": "->engine -ArcColor g",
+   "call": 0,
+   "args": "[]",
+   "golden": "199",
+   "ours": "30"
+  },
+  {
+   "method": "->engine -ArcColor r",
+   "call": 0,
+   "args": "[]",
+   "golden": "168",
+   "ours": "28"
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "call": 513,
+   "args": "[]",
+   "golden": "\"https://www.google.com/search?q=%7BsearchTerms%7D&sourceid=chrome&ie=UTF-8\"",
+   "ours": "\"https://drive.google.com/drive/search?q=%s\""
+  },
+  {
+   "method": "->engine -ArcSessionID identifier",
+   "call": 0,
+   "args": "[]",
+   "golden": "954478093",
+   "ours": "1829836375"
+  },
+  {
+   "method": "->engine -ArcWebContents nativeView",
+   "call": 0,
+   "args": "[]",
+   "golden": "\"<WebContentsHostView#1>\"",
+   "ours": "\"<WebContentsViewCocoa#1>\""
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "call": 4,
+   "args": "[]",
+   "golden": "\"<NSMutableIndexSet#3>\"",
+   "ours": "\"<NSMutableIndexSet#2>\""
+  }
+ ],
+ "arg_mismatch": [
+  {
+   "method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:",
+   "call": 0,
+   "golden": "[\"<ArcBrowser#1>\", 954478093]",
+   "ours": "[\"<ArcBrowser#1>\", 1829836375]"
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "call": 0,
+   "golden": "[\"keep_alive_registry\", \"{registered_count_=1, restart_allowed_count_=0, KeepAlives=[APP_CONTROLLER (1)]}\"]",
+   "ours": "[\"keep_alive_registry\", \"{registered_count_=4, restart_allowed_count_=0, KeepAlives=[APP_CONTROLLER (1), REMOTE_DEBUGGING (1), BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS (1), BACKGROUND_MODE_MANAGER_STARTUP (1)]}\"]"
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didChangeAvailableMediaActions:",
+   "call": 0,
+   "golden": "[\"<ArcWebContents#1>\", \"<NSMutableIndexSet#2>\"]",
+   "ours": "[\"<ArcWebContents#1>\", \"<NSMutableIndexSet#3>\"]"
+  },
+  {
+   "method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:",
+   "call": 0,
+   "golden": "[\"*\", \"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany&size=24\", 200, {\"accept-ranges\": \"bytes\", \"age\": \"536927\", \"alt-svc\": \"h3=\\\":443\\\"; ma=2592000,h3-29=\\\":443\\\"; ma=2592000\", \"cache-control\": \"public, max-age=604800\", \"content-length\": \"346\", \"content-location\": \"https://www.youtube.com/s/desktop/d57c41d2/img/favicon_144x144.png\", \"content-security-policy-report-only\": \"require-trusted-types-for 'script'; report-uri https://csp.withgoogle.com/csp/media-favicon\", \"content-type\": \"image/png\"}]",
+   "ours": "[\"*\", \"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c/thebrowsercompany&size=24\", 200, {\"accept-ranges\": \"bytes\", \"age\": \"557311\", \"alt-svc\": \"h3=\\\":443\\\"; ma=2592000,h3-29=\\\":443\\\"; ma=2592000\", \"cache-control\": \"public, max-age=604800\", \"content-length\": \"346\", \"content-location\": \"https://www.youtube.com/s/desktop/d57c41d2/img/favicon_144x144.png\", \"content-security-policy-report-only\": \"require-trusted-types-for 'script'; report-uri https://csp.withgoogle.com/csp/media-favicon\", \"content-type\": \"image/png\"}]"
+  }
+ ],
+ "count_mismatch": [
+  {
+   "method": "->engine -ArcBrowserApplication availableBrowserContextAttributes",
+   "golden": 8,
+   "ours": 9
+  },
+  {
+   "method": "->engine -ArcBrowserApplication ensureBasicAccessibilityEnabled",
+   "golden": 5,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcBrowserApplication loadUrl:withDelegate:",
+   "golden": 3,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcBrowserContext extensions",
+   "golden": 6,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes directoryBasename",
+   "golden": 8,
+   "ours": 9
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userColor",
+   "golden": 8,
+   "ours": 9
+  },
+  {
+   "method": "->engine -ArcBrowserContextAttributes userVisibleName",
+   "golden": 15,
+   "ours": 17
+  },
+  {
+   "method": "->engine -ArcBrowserContextExtensions listExtensions",
+   "golden": 5,
+   "ours": 3
+  },
+  {
+   "method": "->engine -ArcColor a",
+   "golden": 8,
+   "ours": 9
+  },
+  {
+   "method": "->engine -ArcColor b",
+   "golden": 8,
+   "ours": 9
+  },
+  {
+   "method": "->engine -ArcColor g",
+   "golden": 8,
+   "ours": 9
+  },
+  {
+   "method": "->engine -ArcColor r",
+   "golden": 8,
+   "ours": 9
+  },
+  {
+   "method": "->engine -ArcSearchEngine url",
+   "golden": 1750,
+   "ours": 1772
+  },
+  {
+   "method": "->engine -ArcURLLoadCancellationToken initWithToken:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setBlockLocalRequest:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setCachePolicy:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setFollowRedirects:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setHeaders:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setMethod:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setStreamResponseData:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setTimeout:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcURLLoadConfiguration setUrl:",
+   "golden": 4,
+   "ours": 5
+  },
+  {
+   "method": "->engine -ArcWebContents favicon",
+   "golden": 6,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcWebContents isReadyToDisplay",
+   "golden": 6,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcWebContents navigationID",
+   "golden": 4,
+   "ours": 8
+  },
+  {
+   "method": "->engine -ArcWebContents setFavicon:",
+   "golden": 3,
+   "ours": 2
+  },
+  {
+   "method": "->engine -ArcWebContents setIsReadyToDisplay:",
+   "golden": 3,
+   "ours": 2
+  },
+  {
+   "method": "->engine -ArcWebContents setNavigationID:",
+   "golden": 2,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcWebContents setTabTraits:",
+   "golden": 3,
+   "ours": 2
+  },
+  {
+   "method": "->engine -ArcWebContents setUrl:",
+   "golden": 2,
+   "ours": 4
+  },
+  {
+   "method": "->engine -ArcWebContents tabTraits",
+   "golden": 8,
+   "ours": 6
+  },
+  {
+   "method": "->engine -ArcWebContents url",
+   "golden": 4,
+   "ours": 8
+  },
+  {
+   "method": "engine->app -ADK.ADKApplication didConnectToNetworkProcess",
+   "golden": 1,
+   "ours": 2
+  },
+  {
+   "method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "golden": 21,
+   "ours": 40
+  },
+  {
+   "method": "engine->app -ADK.WebContentChromium webContents:didChangeStatusText:",
+   "golden": 3,
+   "ours": 2
+  },
+  {
+   "method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:",
+   "golden": 3,
+   "ours": 4
+  }
+ ],
+ "callback_sequence": {
+  "golden": 48,
+  "ours": 69,
+  "first_divergence": 1,
+  "golden_from": [
+   "ADK.ADKApplication didInitializeBrowserProcess",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ],
+  "ours_from": [
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:",
+   "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"
+  ]
+ }
+}

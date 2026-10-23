@@ -1,0 +1,472 @@
+{
+  "scope": "Compatibility and owned syntax only. No object/build/app/runtime/lock/shared source changes; frozen inputs unchanged.",
+  "startedAtUTC": "2026-10-23T14:20:56.478180+00:00",
+  "baseline": {
+    "arc/api/arc_internal.h": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_internal.h",
+      "sha256": "70495f85414c996dc97262cc9670a9464451e9e215600c934cc71e46269a62a1",
+      "size": 6935
+    },
+    "arc/api/arc_sessions_restore.mm": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/arc/api/arc_sessions_restore.mm",
+      "sha256": "a6475f82e58de755fbf87578cc0dcb4144c0aeb685ce0073e707af442a7e37f0",
+      "size": 45571
+    },
+    "chrome/browser/arcmod/arcmod_hooks.h": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/chrome/browser/arcmod/arcmod_hooks.h",
+      "sha256": "a6bb3a03f67ee0e66394ccad379916cce571cfddcfa0e880d76ac8a6ff6b14d2",
+      "size": 6600
+    },
+    "chrome/browser/prefs/session_startup_pref.cc": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/chrome/browser/prefs/session_startup_pref.cc",
+      "sha256": "ef4de33d52dc32f2037a5a714fd8ac1ded80fe0f0d61f6166e3e4caf82d3f9e4",
+      "size": 6296
+    },
+    "chrome/browser/ui/browser_live_tab_context.cc": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/chrome/browser/ui/browser_live_tab_context.cc",
+      "sha256": "c25e97365cedd01e7b1bd10d2ced36c5b164adaf73135de676f46d83e9d91b1f",
+      "size": 23502
+    },
+    "chrome/browser/ui/browser_tabrestore.cc": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/chrome/browser/ui/browser_tabrestore.cc",
+      "sha256": "a8c1b1d9c9293d1e311c48d63734a74aa71ee7960050817b3f16362ab62fff0f",
+      "size": 14699
+    },
+    "chrome/browser/ui/browser_tabrestore.h": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/chrome/browser/ui/browser_tabrestore.h",
+      "sha256": "aa5f652884657941ba56bf20d50539ea6fa1cc2babb75f609da5aba105dc242a",
+      "size": 3211
+    },
+    "components/sessions/core/tab_restore_service_helper.cc": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/components/sessions/core/tab_restore_service_helper.cc",
+      "sha256": "e59b5d010ae61300756f43694d1267f3d480bff4654e4dbe4974c973943193d3",
+      "size": 62232
+    },
+    "components/sessions/core/tab_restore_service_helper.h": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/chromium/src/components/sessions/core/tab_restore_service_helper.h",
+      "sha256": "f8ebfaad13b3da68cfa0de064aed08e5437cddb387f20fa588d3b54f6ab65e4a",
+      "size": 13272
+    }
+  },
+  "frozenPatches": {
+    "native-source-hooks": {
+      "path": "/tmp/arccore-sessions-native-source-hooks.patch",
+      "sha256": "dcb48f82b42facc8fddc01666b70b213d1f861138f90f9313876e3739e2ac097"
+    },
+    "source-registration": {
+      "path": "/tmp/arccore-sessions-source-registration.patch",
+      "sha256": "892a567604f061e892a5bc830eab1b5437063ed5b4f48c5338898f865a52d81b"
+    },
+    "factory-native": {
+      "path": "/tmp/arccore-sessions-factory-native.patch",
+      "sha256": "744bd36595cae2ff6fc9a6bbc0f87e79246c52332f1b99c092b212a307a9cdde"
+    },
+    "factory-owned": {
+      "path": "/tmp/arccore-sessions-factory-owned.patch",
+      "sha256": "7a5ec92d3a44f91e599a8363d171b6bfa0a4cf89a1f4fe7908b8698eededeb83"
+    },
+    "tab-factory-native": {
+      "path": "/tmp/arccore-sessions-tab-factory-native.patch",
+      "sha256": "bb5b703b2b0d2512ee7980fcd8e29cf55145586b1f9733328941a83365c537cf"
+    },
+    "tab-factory-owned": {
+      "path": "/tmp/arccore-sessions-tab-factory-owned.patch",
+      "sha256": "030627ffec322a0fa32016601394aee79f279b9d6aacbebe1c58fcf26d81be73"
+    },
+    "close-accounting": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/close-accounting-20261023T1420Z/sessions-close-accounting.patch",
+      "sha256": "287333403865d6b30222bd7af99da7c8f5c56e1e50a88c6cfd37942a0b8ddc0b"
+    },
+    "native-source-policy": {
+      "path": "/tmp/arccore-sessions-native-source-policy.patch",
+      "sha256": "69c52f50825e845862c8889b34bb43f88e52522d0d03f2f16f75da38e090ce24"
+    },
+    "source-policy-registration": {
+      "path": "/tmp/arccore-sessions-source-policy-registration.patch",
+      "sha256": "401416749cf58b0575cb166ce26311a969480dc1dbb884ed9a842fd0e965e744"
+    },
+    "factory-native-after-source-policy": {
+      "path": "/tmp/arccore-sessions-factory-native-after-source-policy.patch",
+      "sha256": "c1d43028f77263a667d3664e1dd09cf6292fd76aa4bdfc6c8fb2e2dba3f7e292"
+    },
+    "factory-owned-after-source-policy": {
+      "path": "/tmp/arccore-sessions-factory-owned-after-source-policy.patch",
+      "sha256": "10f162c107b254c24a21360a0c94d4611d754d21200203b08058ef3b41e66466"
+    }
+  },
+  "alternatives": {
+    "source-only": {
+      "stage": "/tmp/arccore-sessions-current-composition-1421-source-only-stage",
+      "steps": [
+        {
+          "patch": "native-source-hooks",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-only-1-native-source-hooks.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "afterOwnedSHA256": "a6475f82e58de755fbf87578cc0dcb4144c0aeb685ce0073e707af442a7e37f0"
+        },
+        {
+          "patch": "source-registration",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-only-2-source-registration.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "afterOwnedSHA256": "49efcf0aa228e5218cef64068322ee12eda191fcc053761bc913a8caf21eaa68"
+        },
+        {
+          "patch": "factory-native",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-only-3-factory-native.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "afterOwnedSHA256": "49efcf0aa228e5218cef64068322ee12eda191fcc053761bc913a8caf21eaa68"
+        },
+        {
+          "patch": "factory-owned",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-only-4-factory-owned.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "afterOwnedSHA256": "fba35412742b30ac7a1df9399714b40f82cf4f4dc4742d5dca0f6508741337f4"
+        },
+        {
+          "patch": "tab-factory-native",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-only-5-tab-factory-native.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "afterOwnedSHA256": "fba35412742b30ac7a1df9399714b40f82cf4f4dc4742d5dca0f6508741337f4"
+        },
+        {
+          "patch": "tab-factory-owned",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-only-6-tab-factory-owned.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "afterOwnedSHA256": "08fdb9c4f7021298d9870897de5107f24c1f5d283f5db6b4970b3478f8e15c34"
+        },
+        {
+          "patch": "close-accounting",
+          "applyCheckExit": 1,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-only-7-close-accounting.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          }
+        }
+      ],
+      "complete": false,
+      "stagedFiles": {
+        "arc/api/arc_internal.h": "70495f85414c996dc97262cc9670a9464451e9e215600c934cc71e46269a62a1",
+        "arc/api/arc_sessions_restore.mm": "08fdb9c4f7021298d9870897de5107f24c1f5d283f5db6b4970b3478f8e15c34",
+        "chrome/browser/arcmod/arcmod_hooks.h": "8d528a44114eb7306b2bc7f8b83fb0e25d57ebcb3ecacf0620cfb5ca77b2e725",
+        "chrome/browser/prefs/session_startup_pref.cc": "ef4de33d52dc32f2037a5a714fd8ac1ded80fe0f0d61f6166e3e4caf82d3f9e4",
+        "chrome/browser/ui/browser_live_tab_context.cc": "934d1d49e2f04d2790ecfd4ad05c65f4195e31455aab6aedcd957d75068ee35f",
+        "chrome/browser/ui/browser_tabrestore.cc": "f37fe417662955ca13ddbbe51ef88479b6843a90184a30752a75e23b3d74f827",
+        "chrome/browser/ui/browser_tabrestore.h": "1e7d4f5d3f3435cf4ee2a7893c632d1f64e0c75092c6e624a0abf6e3445039b4",
+        "components/sessions/core/tab_restore_service_helper.cc": "729aec7ea67bff101409efe70cff1e69ef61178e9198445275328c6dfbec31cb",
+        "components/sessions/core/tab_restore_service_helper.h": "5dd2e512e6b18e6015ff59b53b87dd6b1f11ab1c54dbc17ab549691714a8ed15"
+      }
+    },
+    "source-policy": {
+      "stage": "/tmp/arccore-sessions-current-composition-1421-source-policy-stage",
+      "steps": [
+        {
+          "patch": "native-source-policy",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-policy-1-native-source-policy.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "afterOwnedSHA256": "a6475f82e58de755fbf87578cc0dcb4144c0aeb685ce0073e707af442a7e37f0"
+        },
+        {
+          "patch": "source-policy-registration",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-policy-2-source-policy-registration.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": false
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": true
+          },
+          "afterOwnedSHA256": "614db3f1b04b02adb38363c87dba9f9f8973ea4a1aa111e9aa8dc1aa18bb30d8"
+        },
+        {
+          "patch": "factory-native-after-source-policy",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-policy-3-factory-native-after-source-policy.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": true
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": true
+          },
+          "afterOwnedSHA256": "614db3f1b04b02adb38363c87dba9f9f8973ea4a1aa111e9aa8dc1aa18bb30d8"
+        },
+        {
+          "patch": "factory-owned-after-source-policy",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-policy-4-factory-owned-after-source-policy.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": true
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": true
+          },
+          "afterOwnedSHA256": "5a8a8cdb6124b4b91fe99ce8ba51f4e35970969a6f661c4b416408753864de27"
+        },
+        {
+          "patch": "tab-factory-native",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-policy-5-tab-factory-native.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": true
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": true
+          },
+          "afterOwnedSHA256": "5a8a8cdb6124b4b91fe99ce8ba51f4e35970969a6f661c4b416408753864de27"
+        },
+        {
+          "patch": "tab-factory-owned",
+          "applyCheckExit": 0,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-policy-6-tab-factory-owned.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": true
+          },
+          "applyExit": 0,
+          "afterGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": true
+          },
+          "afterOwnedSHA256": "426d1a560e82ed30c3c23d4708719b67e893769014b365c0c109ca75b2386e2e"
+        },
+        {
+          "patch": "close-accounting",
+          "applyCheckExit": 1,
+          "log": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/current-composition-20261023T1421Z/source-policy-7-close-accounting.apply.log",
+          "beforeGuards": {
+            "navigationNonemptyGuard": true,
+            "arrayPublicationBeforeEnumeration": true,
+            "noIncomingCountCallout": true,
+            "currentBindingGuard": true,
+            "noOldWebContentsWeakCapture": true,
+            "policyDeclaration": true
+          }
+        }
+      ],
+      "complete": false,
+      "stagedFiles": {
+        "arc/api/arc_internal.h": "4d765dd0dae6c9bebbd1697bf869027d436d956f1e1ec07606ef08d6aa3bf84e",
+        "arc/api/arc_sessions_restore.mm": "426d1a560e82ed30c3c23d4708719b67e893769014b365c0c109ca75b2386e2e",
+        "chrome/browser/arcmod/arcmod_hooks.h": "10d92a6d263bb50de857d66c668c9981b0e0a3801f9c117c04728c5558bba077",
+        "chrome/browser/prefs/session_startup_pref.cc": "029e6c93e661c3aae03d50dbb2174d251055fc57c0c62fe2c553172e1e04a114",
+        "chrome/browser/ui/browser_live_tab_context.cc": "934d1d49e2f04d2790ecfd4ad05c65f4195e31455aab6aedcd957d75068ee35f",
+        "chrome/browser/ui/browser_tabrestore.cc": "f37fe417662955ca13ddbbe51ef88479b6843a90184a30752a75e23b3d74f827",
+        "chrome/browser/ui/browser_tabrestore.h": "1e7d4f5d3f3435cf4ee2a7893c632d1f64e0c75092c6e624a0abf6e3445039b4",
+        "components/sessions/core/tab_restore_service_helper.cc": "729aec7ea67bff101409efe70cff1e69ef61178e9198445275328c6dfbec31cb",
+        "components/sessions/core/tab_restore_service_helper.h": "5dd2e512e6b18e6015ff59b53b87dd6b1f11ab1c54dbc17ab549691714a8ed15"
+      }
+    }
+  },
+  "sisoQueryExit": 0,
+  "baselineUnchanged": {
+    "arc/api/arc_internal.h": true,
+    "arc/api/arc_sessions_restore.mm": true,
+    "chrome/browser/arcmod/arcmod_hooks.h": true,
+    "chrome/browser/prefs/session_startup_pref.cc": true,
+    "chrome/browser/ui/browser_live_tab_context.cc": true,
+    "chrome/browser/ui/browser_tabrestore.cc": true,
+    "chrome/browser/ui/browser_tabrestore.h": true,
+    "components/sessions/core/tab_restore_service_helper.cc": true,
+    "components/sessions/core/tab_restore_service_helper.h": true
+  },
+  "frozenPatchesUnchanged": {
+    "native-source-hooks": true,
+    "source-registration": true,
+    "factory-native": true,
+    "factory-owned": true,
+    "tab-factory-native": true,
+    "tab-factory-owned": true,
+    "close-accounting": true,
+    "native-source-policy": true,
+    "source-policy-registration": true,
+    "factory-native-after-source-policy": true,
+    "factory-owned-after-source-policy": true
+  },
+  "coreTypedHeadersPrerequisites": {
+    "core_close_adapters.h": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/logs/wp/core.accounting-adapters/stage/arc/browser/core_close_adapters.h",
+      "sha256": "a4f884eb10c6bb261735f3c633f51bc35c8f80315223480ed727d7a106dd2eec"
+    },
+    "core_close_state.h": {
+      "path": "/Users/cryogenicplanet/general/arc-engine/logs/wp/core.accounting-adapters/stage/arc/browser/core_close_state.h",
+      "sha256": "1f0fa0fecfdaa8bd8933ca88115e5b4fa34235c14248bfa36aba6ca1fa19ac1f"
+    }
+  },
+  "finishedAtUTC": "2026-10-23T14:20:58.238073+00:00",
+  "pass": false
+}

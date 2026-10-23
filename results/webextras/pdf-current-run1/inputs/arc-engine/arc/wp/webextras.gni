@@ -1,0 +1,18 @@
+# Work package "webextras": sources and deps (absolute //arc/... paths). Owned by that package.
+wp_webextras_sources = [
+  "//arc/api/arc_webextras_ui.mm",
+  "//arc/api/arc_webextras_devtools.mm",
+  "//arc/api/arc_webextras_media.mm",
+  "//arc/api/arc_webextras_capture.mm",
+  "//arc/browser/webextras_media.h",
+  "//arc/api/arc_webextras_values.mm",
+  "//arc/browser/webextras_values.h",
+]
+wp_webextras_deps = [
+  "//components/pdf/browser",
+  "//components/tabs:public",
+  "//services/media_session/public/cpp",
+  "//services/media_session/public/mojom",
+  "//ui/accelerated_widget_mac",
+  "//ui/compositor",
+]

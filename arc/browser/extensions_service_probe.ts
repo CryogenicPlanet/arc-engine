@@ -25,6 +25,10 @@ const browserPins = args.includes("--browser-pins");
 if (browserPins && fixtureMode !== "command-line") throw Error("--browser-pins requires explicit --fixture-mode command-line");
 const browserOmnibox = args.includes("--browser-omnibox");
 if (browserOmnibox && fixtureMode !== "command-line") throw Error("--browser-omnibox requires explicit --fixture-mode command-line");
+const webstoreNegative = args.includes("--webstore-negative");
+if (webstoreNegative && fixtureMode !== "command-line") throw Error("--webstore-negative requires explicit --fixture-mode command-line");
+const browserDelegateRepeat = args.includes("--browser-delegate-repeat");
+if (browserDelegateRepeat && fixtureMode !== "command-line") throw Error("--browser-delegate-repeat requires explicit --fixture-mode command-line");
 const diagnosticDisableFieldTrialConfig = args.includes("--diagnostic-disable-field-trial-config");
 const fixtureEnvironmentArguments = ["--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking", "--noerrdialogs",
   ...(diagnosticDisableFieldTrialConfig ? ["--disable-field-trial-config"] : [])];
@@ -112,7 +116,7 @@ const unchanged = (file: { path: string; size: number; mtimeMs: number }) => {
   const current = statSync(file.path); return current.size === file.size && current.mtimeMs === file.mtimeMs;
 };
 const provenance = {
-  capturedAt: new Date().toISOString(), fixtureMode, browserPins, browserOmnibox, diagnosticDisableFieldTrialConfig, fixtureEnvironmentArguments, builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
+  capturedAt: new Date().toISOString(), fixtureMode, browserPins, browserOmnibox, webstoreNegative, browserDelegateRepeat, diagnosticDisableFieldTrialConfig, fixtureEnvironmentArguments, builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
   expectedStockSHA256, independentStockSibling,
   traceMatchesVerifiedStock: packagedEngines.trace156.sha256 === expectedStockSHA256,
   siblingMatchesVerifiedStock: independentStockSibling ? independentStockSibling.sha256 === expectedStockSHA256 : null,
@@ -186,7 +190,7 @@ const waitForNativeReadiness = async (agent: string, pid: number, exe: string, a
   writeFileSync(join(dir, "readiness.json"), JSON.stringify({ pid, agent, timeoutMs, satisfied: false, events }, null, 2));
   throw Error(`native readiness precondition timed out after ${timeoutMs}ms; current stages: ${JSON.stringify(last)}`);
 };
-const booleanFields = new Set(["ok", "mainThread", "synchronous", "ready", "identity", "hashStable", "browserPresent", "cleanupCertified", "enabled", "hasAction", "fromWebstore", "isGlobal", "fromIncognito", "present", "adoptionComplete"]);
+const booleanFields = new Set(["ok", "mainThread", "synchronous", "ready", "identity", "hashStable", "browserPresent", "cleanupCertified", "enabled", "hasAction", "fromWebstore", "isGlobal", "fromIncognito", "present", "adoptionComplete", "webstoreNegativeUncertainState", "webstoreNegativeAttemptIssued", "webstoreNegativeServiceIdentityVerified", "browserDelegateRepeatIdentityVerified", "browserDelegateRepeatSameObjectAtSetter", "browserDelegateRepeatFunctionalVerified", "browserDelegateRepeatRawVerified"]);
 const requireNativeBooleanTypes = (value: any, path = "response") => {
   if (!value || typeof value !== "object") return;
   if (Array.isArray(value)) { value.forEach((item, index) => requireNativeBooleanTypes(item, `${path}[${index}]`)); return; }
@@ -263,6 +267,8 @@ const requiredPaths: Record<string,string[]> = {
   "browser-unpin":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
   "browser-move":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinAnchorLabel","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
   "browser-omnibox":["browserOmniboxSelector","browserOmniboxABI","browserOmniboxArguments","browserOmniboxIdentityVerified","browserOmniboxFixtureURL","effects","omniboxPreflight","omniboxCDPBefore","omniboxCDPAfter"],
+  "webstore-invalid":["completion","completions","outstandingInstalls","pinsBefore","webstoreInstalledIDsBefore","webstoreInstalledIDsAfter","webstoreNegativeSelector","webstoreNegativeABI","webstoreNegativeCase","webstoreNegativeArguments","webstoreNegativeAttemptIssued", "webstoreNegativeServiceIdentityVerified","webstoreNegativeUncertainState"],
+  "browser-delegate-repeat":["pinsBefore","effects","browserDelegateRepeatIdentityVerified","browserDelegateRepeatPriorCapture","browserDelegateRepeatDelegateClass","browserDelegateRepeatSetterABI","browserDelegateRepeatActionABI","browserDelegateRepeatFixtureURL","browserDelegateRepeatActionID","browserDelegateRepeatHookTopology","browserDelegateRepeatSetterCalls","browserDelegateRepeatSameObjectAtSetter","browserDelegateRepeatFunctionalVerified","browserDelegateRepeatRawVerified","browserDelegateRepeatCDPBefore","browserDelegateRepeatCDPAfter"],
   command:["effects"], action:["callbacks"],
   "background-js":["value"], disable:[], enable:[], reload:[], uninstall:[], cleanup:["cleanupCertified","outstandingInstalls","startupPending"],
 };
@@ -270,8 +276,12 @@ function validRequiredValue(path: string, value: any): boolean {
   const dictionary = (item: any): boolean => !!item && typeof item === "object" && !Array.isArray(item);
   const completion = (item: any): boolean => dictionary(item) && typeof item.id === "string" && Number.isInteger(item.result) && typeof item.mainThread === "boolean" && typeof item.synchronous === "boolean";
   const callback = (item: any): boolean => dictionary(item) && typeof item.selector === "string" && Array.isArray(item.payload) && typeof item.mainThread === "boolean" && (item.synchronous === null || typeof item.synchronous === "boolean");
-  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved","browserOmniboxIdentityVerified"].includes(path)) return typeof value === "boolean";
-  if (["browserPinSelector","browserPinABI","browserPinLabel","browserPinAnchorLabel","browserOmniboxSelector","browserOmniboxABI","browserOmniboxFixtureURL"].includes(path)) return typeof value === "string" && value.length > 0;
+  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved","browserOmniboxIdentityVerified","webstoreNegativeAttemptIssued", "webstoreNegativeServiceIdentityVerified","webstoreNegativeUncertainState","browserDelegateRepeatIdentityVerified","browserDelegateRepeatSameObjectAtSetter","browserDelegateRepeatFunctionalVerified","browserDelegateRepeatRawVerified"].includes(path)) return typeof value === "boolean";
+  if (["browserPinSelector","browserPinABI","browserPinLabel","browserPinAnchorLabel","browserOmniboxSelector","browserOmniboxABI","browserOmniboxFixtureURL","webstoreNegativeSelector","webstoreNegativeABI","webstoreNegativeCase","browserDelegateRepeatDelegateClass","browserDelegateRepeatSetterABI","browserDelegateRepeatActionABI","browserDelegateRepeatFixtureURL","browserDelegateRepeatActionID","browserDelegateRepeatHookTopology"].includes(path)) return typeof value === "string" && value.length > 0;
+  if (path === "browserDelegateRepeatSetterCalls") return Number.isSafeInteger(value) && value >= 0;
+  if (["browserDelegateRepeatPriorCapture","browserDelegateRepeatCDPBefore","browserDelegateRepeatCDPAfter"].includes(path)) return dictionary(value);
+  if (path === "webstoreNegativeArguments") return Array.isArray(value) && value.length === 2 && ["","arc-invalid-webstore-id"].includes(value[0]) && typeof value[1] === "boolean";
+  if (["webstoreInstalledIDsBefore","webstoreInstalledIDsAfter"].includes(path)) return Array.isArray(value) && value.every(item=>typeof item === "string");
   if (path === "browserOmniboxArguments") return Array.isArray(value) && value.length === 3 && typeof value[0] === "string" && typeof value[1] === "string" && Number.isSafeInteger(value[2]) && value[2] >= 0 && value[2] <= 11;
   if (["omniboxPreflight","omniboxCDPBefore","omniboxCDPAfter"].includes(path)) return dictionary(value);
   if (path === "browserPinArguments") return Array.isArray(value) && (value.length === 1 || value.length === 2) && typeof value[0] === "string" && (value.length === 1 || (Number.isSafeInteger(value[1]) && value[1] >= 0));
@@ -299,17 +309,54 @@ function requiredRows(action: Action) {
   });
   return {step:action.step, operation:action.operation, basis:"actual helper-returned observations, not ArcEngineRecorder rows", complete:rows.every(row=>row.present && row.valid), rows};
 }
+function delegateRepeatRawProof(all: any[], rows: any[], value: Action) {
+  const ensure=(condition:unknown,message:string)=>{if(!condition)throw Error(`delegate repeat raw proof: ${message}`);};
+  const select=(selector:string)=>rows.filter(row=>row.cls==="ArcBrowser" && row.sel===selector);
+  const pair=(selector:string)=>{
+    const selected=select(selector);ensure(selected.length===2,"expected one call/return for "+selector);
+    const [call,ret]=selected;
+    ensure(call.ev==="call" && ret.ev==="ret" && ret.ret===null && call.thread==="main" && ret.thread==="main" &&
+      call.from==="ExtensionsServiceProbe.dylib" && ret.from===call.from && call.self===ret.self && call.depth===ret.depth && call.seq<ret.seq,
+      "unbalanced/foreign public call "+selector);
+    return {call,ret};
+  };
+  const action=pair("executeExtensionAction:"),setter=pair("setDelegate:");
+  ensure(action.call.self===setter.call.self && action.ret.seq<setter.call.seq &&
+    JSON.stringify(action.call.args)===JSON.stringify([value.owned.A]) && Array.isArray(setter.call.args) && setter.call.args.length===1 &&
+    typeof setter.call.args[0]==="string" && setter.call.args[0].startsWith("<"+value.browserDelegateRepeatDelegateClass+"#"),"browser/action/delegate identity mismatch");
+  const target=setter.call.args[0];
+  const prior=all.filter(row=>row.ev==="call" && row.cls==="ArcBrowser" && row.sel==="setDelegate:" && row.self===setter.call.self && row.seq<action.call.seq).at(-1);
+  ensure(prior && prior.from==="app" && prior.thread==="main" && JSON.stringify(prior.args)===JSON.stringify([target]),"no latest actual app-origin nonnil setter with same target");
+  const priorReturn=all.find(row=>row.seq>prior.seq && row.ev==="ret" && row.cls===prior.cls && row.sel===prior.sel && row.self===prior.self && row.depth===prior.depth && row.thread===prior.thread);
+  ensure(priorReturn && priorReturn.ret===null && priorReturn.from===prior.from && priorReturn.seq<action.call.seq,"prior app setter did not return before operation");
+  const callbacks=rows.filter(row=>row.ev==="call" && ["browser:didOpenExtensionPopup:webContents:","browser:didResizeExtensionPopup:size:","browser:didCloseExtensionPopup:"].includes(row.sel));
+  ensure(callbacks.length>=4 && callbacks.every(row=>row.thread==="main" && row.self===target && row.args[0]===setter.call.self && row.args[1]===value.owned.A),"popup callback recipient/browser differs from genuine setter target");
+  const opens=callbacks.filter(row=>row.sel==="browser:didOpenExtensionPopup:webContents:");
+  const closes=callbacks.filter(row=>row.sel==="browser:didCloseExtensionPopup:");
+  ensure(opens.length===1 && closes.length===1 && typeof opens[0].args[2]==="string" && /^<ArcWebContents#\d+>$/.test(opens[0].args[2]),"missing actual popup contents identity");
+  const identity=opens[0].args[2],expectedURL=`url:chrome-extension://${value.owned.A}/popup.html`;
+  const urlCall=rows.find(row=>row.ev==="call" && row.cls==="ArcWebContents" && row.sel==="url" && row.self===identity && row.from==="ExtensionsServiceProbe.dylib");
+  const urlReturn=urlCall && rows.find(row=>row.seq>urlCall.seq && row.ev==="ret" && row.cls==="ArcWebContents" && row.sel==="url" && row.self===identity && row.depth===urlCall.depth && row.thread===urlCall.thread);
+  ensure(urlReturn?.ret===expectedURL,"popup raw identity lacks matching actual URL getter/return");
+  ensure(!all.some(row=>row.seq<action.call.seq && row.ev==="call" && row.sel==="browser:didOpenExtensionPopup:webContents:" && row.args?.[2]===identity),"popup contents identity reused from earlier popup");
+  ensure(opens[0].seq>action.call.seq && closes[0].seq>setter.ret.seq && opens[0].seq<closes[0].seq,
+    "popup raw lifecycle does not span the real action/repeated setter");
+  ensure(!rows.some(row=>row.ev==="call" && row.sel==="browser:didUpdateExtensionToolbarActions:" && row.args?.[0]===setter.call.self),
+    "full toolbar callback observed for this browser during bounded repeat phase");
+  return {action,setter,priorAppSetter:{call:prior,ret:priorReturn},popupCallbacks:callbacks,popupWebContents:{identity,urlCall,urlReturn},scope:"Actual raw rows with within-run object identity only; no global fixture inventory or cross-engine identity normalization"};
+}
 const boundaryClasses = new Set(["ArcBrowserContextExtensions", "ArcExtensionInfo", "ArcExtensionCommand", "ArcExtensionRuntimeError", "ArcExtensionRuntimeErrorStackFrame", "ArcExtensionToolbarAction"]);
 try {
   for (const agent of agents) {
     currentAgent = agent;
-    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: [browserPins ? "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only", browserOmnibox ? "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: metadata only; executable behavior uncovered"] }; runs.push(run);
+    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: [browserPins ? "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only", browserOmnibox ? "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: metadata only; executable behavior uncovered", webstoreNegative ? "WebStore malformed-ID negative phase selected but not completed; inspect actual per-operation evidence" : "WebStore installation API executable behavior uncovered", browserDelegateRepeat ? "Same genuine browser delegate repetition selected but not completed; raw identity/lifecycle proof pending" : "Same genuine browser delegate repetition executable behavior uncovered"] }; runs.push(run);
     const dir = join(out, agent); mkdirSync(dir);
     const app = resolve(root, `../arc/build/ArcModAgent-${agent}.app`), exe = join(app, "Contents/MacOS/Arc");
     const plist = (key: string) => exec(["/usr/libexec/PlistBuddy", "-c", `Print :${key}`, join(app, "Contents/Info.plist")]);
     const request = join(dir, "extensions-service-request.json"), recordPath = join(dir, "record.jsonl");
     let pid: number | undefined, cdp: AgentCDP | undefined, target: string | undefined;
     let requestSequence = 0;
+    let delegateRepeatEffectBoundary: number | undefined;
     let nativeReadinessSatisfied = false, installRequestsIssued = false, startupLoadIssued = false;
     const sampleFailedInstall = async (step: string, operation: string, error: unknown) => {
       const metadataPath = join(dir,`${step}.failed-install-sample.json`);
@@ -367,7 +414,7 @@ try {
       startupLoadIssued = fixtureMode === "command-line";
       exec(["open", "-n", "-g", "-a", app,
         "--env", `DYLD_INSERT_LIBRARIES=${dylib}:${recorder}`, "--env", `ARC_RECORD_PATH=${recordPath}`,
-        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_PINS=${browserPins ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_OMNIBOX=${browserOmnibox ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_URL=${fixtureURL}`,
+        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_PINS=${browserPins ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_OMNIBOX=${browserOmnibox ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_URL=${fixtureURL}`, "--env", `ARC_EXTENSIONS_PROBE_WEBSTORE_NEGATIVE=${webstoreNegative ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_DELEGATE_REPEAT=${browserDelegateRepeat ? "1" : "0"}`,
         "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args", ...fixtureEnvironmentArguments,
         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${data}`, "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`, ...startupArguments]);
       pid = await wait(() => pids(exe)[0], 30000); run.pid = pid;
@@ -395,6 +442,22 @@ try {
         }
         run.startupIntent.state = "adopted-from-public-native-info"; run.startupIntent.actualIDs = registry.owned;
         writeFileSync(join(dir,"launch-intents.json"),JSON.stringify(run.startupIntent,null,2));
+      }
+      if (webstoreNegative) {
+        for (const kind of ["empty","malformed"]) for (const unattended of [false,true]) {
+          const value = await action(`webstore-invalid-${kind}-${unattended ? "unattended" : "attended"}`,"webstore-invalid",{case:kind,unattended});
+          const input = kind === "empty" ? "" : "arc-invalid-webstore-id";
+          assert(value.webstoreNegativeAttemptIssued === true && value.webstoreNegativeServiceIdentityVerified === true && value.webstoreNegativeUncertainState === false &&
+            JSON.stringify(value.webstoreNegativeArguments) === JSON.stringify([input,unattended]),"WebStore negative identity/actual arguments unverified");
+          assert(value.completions?.length===1 && value.completion?.id===input && value.completion?.result===3 &&
+            value.completion?.mainThread===true && value.completion?.synchronous===true,
+            "WebStore malformed-ID completion differs from native requested-ID/result3/synchronous contract");
+          assert(value.outstandingInstalls?.length===0 && Array.isArray(value.webstoreInstalledIDsBefore) &&
+            JSON.stringify(value.webstoreInstalledIDsAfter)===JSON.stringify(value.webstoreInstalledIDsBefore) &&
+            JSON.stringify(value.pinsAfter)===JSON.stringify(value.pinsBefore),"WebStore negative changed installed IDs/pins or left unresolved installation");
+        }
+        run.uncovered=run.uncovered.filter(value=>!value.startsWith("WebStore malformed-ID") && value!=="WebStore installation API executable behavior uncovered");
+        run.uncovered.push("WebStore invalid empty/short IDs exercised with both unattended Booleans only; valid-store fetch/download/install success and unattended prompt suppression remain uncovered. Constructors create dummy WebContents/observe profile before validation; unrelated process network activity is outside the no-store-work guarantee.");
       }
       if (fixtureMode === "public-install") for (const label of ["A", "B"]) {
         const installed = await action(`install-${label}`, "install", { label });
@@ -596,6 +659,62 @@ try {
         if (!popup.callbacks.some((event: any) => event.selector === "browser:didResizeExtensionPopup:size:")) run.uncovered.push("popup: resize callback not observed");
         if (!popup.callbacks.some((event: any) => event.selector === "browser:didCloseExtensionPopup:")) run.uncovered.push("popup: close callback not observed");
       }
+      if (browserDelegateRepeat) {
+        const expectedURL = `chrome-extension://${popup.owned.A}/popup.html`;
+        const effectKinds = ["popup-loaded","popup-resized","popup-close-requested"];
+        assert(opened && JSON.stringify(popup.effects.map((event:any)=>event.value.kind))===JSON.stringify(effectKinds) &&
+          popup.effects.every((event:any)=>event.value.id===popup.owned.A) &&
+          popup.effects[0].value.url===expectedURL &&
+          popup.callbacks.filter((event:any)=>event.selector==="browser:didCloseExtensionPopup:").length===1,
+          "delegate repeat requires prior genuine popup effects and close; no activation attempted");
+        const nonceTarget = async () => {
+          assert(pid && verifyAgentEndpoint(agent,port)===pid,"delegate repeat PID changed");
+          const result=await cdp!.targetCommand(target!,"Runtime.evaluate",{expression:`({url:location.href,token:document.querySelector('#fixture')?.dataset.token})`,returnByValue:true});
+          const page=(result.result as any)?.value;
+          assert(page?.url===fixtureURL && page?.token===token,"delegate repeat target lost nonce fixture");
+          const inventory=await cdp!.request("Target.getTargets");
+          const pages=(inventory.targetInfos as any[]).filter(value=>value.type==="page");
+          assert(pages.length===1 && pages[0].targetId===target && pages[0].url===fixtureURL,
+            "delegate repeat requires sole actual nonce page; no tab removal/activation attempted");
+          return {targetId:target!,url:page.url,nonce:page.token};
+        };
+        const before=await nonceTarget(), boundary=effects.length;
+        delegateRepeatEffectBoundary=boundary;
+        const repeated=await action("browser-delegate-repeat-A","browser-delegate-repeat",{label:"A",fixtureURL});
+        repeated.browserDelegateRepeatCDPBefore=before;
+        repeated.effects=await wait(()=>{
+          const values=effects.slice(boundary).filter(event=>event.agent===agent && event.label==="A" && event.value.kind.startsWith("popup-"));
+          return values.length>=3 ? values : undefined;
+        },8000);
+        assert(repeated.browserMatches===1 && repeated.browserDelegateRepeatIdentityVerified===true &&
+          repeated.browserDelegateRepeatSameObjectAtSetter===true && repeated.browserDelegateRepeatSetterCalls===1 &&
+          repeated.browserDelegateRepeatActionID===repeated.owned.A && repeated.browserDelegateRepeatFixtureURL===fixtureURL &&
+          repeated.browserDelegateRepeatPriorCapture?.nonnull===true && repeated.browserDelegateRepeatPriorCapture.nonProbeSetCount>=1,
+          "delegate repeat did not use exactly the captured real app target once");
+        assert(JSON.stringify(repeated.effects.map((event:any)=>event.value.kind))===JSON.stringify(effectKinds) &&
+          repeated.effects.every((event:any)=>event.value.id===repeated.owned.A) && repeated.effects[0].value.url===expectedURL,
+          "delegate repeat popup reports missing, duplicate, stale or unordered");
+        const calls=repeated.callbacks;
+        const opens=calls.filter((event:any)=>event.selector==="browser:didOpenExtensionPopup:webContents:");
+        const closes=calls.filter((event:any)=>event.selector==="browser:didCloseExtensionPopup:");
+        assert(opens.length===1 && closes.length===1 && opens[0].payload[0]===repeated.owned.A &&
+          opens[0].payload[1]?.class==="ArcWebContents" && opens[0].payload[1]?.url===expectedURL &&
+          closes[0].payload[0]===repeated.owned.A,"delegate repeat genuine popup contents/open/close missing");
+        const openedAt=calls.indexOf(opens[0]),closedAt=calls.indexOf(closes[0]);
+        const resized=(width:number,height:number)=>calls.findIndex((event:any)=>event.selector==="browser:didResizeExtensionPopup:size:" &&
+          event.payload[0]===repeated.owned.A && JSON.stringify(event.payload[1])===JSON.stringify([width,height]));
+        assert(openedAt>=0 && resized(320,160)>openedAt && resized(400,220)>resized(320,160) && closedAt>resized(400,220),
+          "delegate repeat popup did not complete genuine size lifecycle");
+        assert(!calls.some((event:any)=>event.selector==="browser:didUpdateExtensionToolbarActions:"),
+          "delegate repeat observed a full toolbar callback in this bounded phase");
+        assert(JSON.stringify(repeated.pinsAfter)===JSON.stringify(repeated.pinsBefore),"delegate repeat changed full pin order");
+        repeated.browserDelegateRepeatCDPAfter=await nonceTarget();
+        assert(JSON.stringify(repeated.browserDelegateRepeatCDPAfter)===JSON.stringify(before),"delegate repeat changed nonce target identity");
+        repeated.browserDelegateRepeatFunctionalVerified=true;
+        // Coverage remains incomplete until genuine raw identity/paired-call
+        // proof is verified after exit; arrival-associated HTTP reports alone
+        // do not identify a particular popup WebContents.
+      }
       if (fixtureMode === "command-line") {
         const reloaded = await action("reload-A", "reload", { label: "A" });
         assert(typeof reloaded.infosAfter.A?.enabled === "boolean", "command-line reload returned no typed enabled observation");
@@ -637,6 +756,7 @@ try {
       if (!run.readiness && existsSync(join(dir, "readiness.json"))) run.readiness = json(join(dir, "readiness.json"));
       if (existsSync(request + ".owned.json")) run.ownership = json(request + ".owned.json");
       if (startupLoadIssued && (!run.ownership || run.ownership.startupPending?.length !== 0)) run.errors.push("command-line startup ownership unresolved; fixture cleanup cannot be certified even after process exit");
+      if (run.ownership?.webstoreNegativeUncertainState === true) run.errors.push("negative WebStore unexpected callback/state; API cleanup cannot be certified");
       if (run.ownership?.outstandingInstalls?.length) run.errors.push("outstanding installation callbacks remained at process termination; cleanup cannot be certified");
       run.diagnostics = existsSync(request + ".diagnostics.json") ? json(request + ".diagnostics.json") : [];
       const fixtureIDs = Object.values(run.ownership?.owned ?? {});
@@ -650,6 +770,7 @@ try {
       if (!sources.every(unchanged) || !unchanged(builtEngine) || !unchanged(selectedEngine(agent)) || !unchanged(probeBinary) || !unchanged(recorderBinary) || !unchanged(imageFingerprintTool)) run.errors.push("provenance changed during run; snapshot cannot establish current-source parity");
       if (existsSync(recordPath)) {
         const raw = readFileSync(recordPath);
+        const allRawRows=browserDelegateRepeat ? raw.toString().split("\n").filter(Boolean).map(line=>JSON.parse(line)) : [];
         for (const value of run.actions) {
           const begin = value.recordBegin, end = value.recordEnd;
           if (!Number.isInteger(begin) || !Number.isInteger(end) || begin < 0 || end < begin || end > raw.length ||
@@ -659,7 +780,22 @@ try {
           // comparator exclude some probe calls; raw v2 inputs retain them.
           // Retained app/engine events are supplementary. Fixture coverage
           // additionally requires a verified paired public-call inventory.
-          const selected = slice.toString().split("\n").filter(Boolean).map(line => JSON.parse(line)).filter(event =>
+          const parsedRows=slice.toString().split("\n").filter(Boolean).map(line=>JSON.parse(line));
+          if (value.operation==="browser-delegate-repeat") {
+            try {
+              const proof=delegateRepeatRawProof(allRawRows,parsedRows,value);
+              writeFileSync(join(dir,`${value.step}.raw-identity-proof.json`),JSON.stringify(proof,null,2));
+              value.browserDelegateRepeatRawVerified=true;
+              if (value.browserDelegateRepeatFunctionalVerified===true) {
+                run.uncovered=run.uncovered.filter(item=>!item.startsWith("Same genuine browser delegate repetition selected"));
+                run.uncovered.push("Same genuine nonnil browser delegate repetition exercised with a fresh real popup; nil/replacement/expiry semantics remain uncovered. HTTP reports are arrival-associated; raw ArcWebContents identity/lifecycle is the authority.");
+              }
+            } catch(error) {
+              run.errors.push(String(error));
+              writeFileSync(join(dir,`${value.step}.raw-identity-proof.json`),JSON.stringify({error:String(error),scope:"No identity proof inferred or synthesized"},null,2));
+            }
+          }
+          const selected = parsedRows.filter(event =>
             boundaryClasses.has(event.cls) || callbackSelectors.has(event.sel) ||
             (event.cls === "ArcBrowser" && event.sel === "executeExtensionAction:"));
           writeFileSync(join(dir, `${value.step}.record.jsonl`), selected.map(event => JSON.stringify(event)).join("\n") + (selected.length ? "\n" : ""));
@@ -670,6 +806,13 @@ try {
         }
       }
       for (const observed of run.actions) writeFileSync(join(dir,`${observed.step}.required-rows.json`),JSON.stringify(requiredRows(observed),null,2));
+      if (delegateRepeatEffectBoundary !== undefined) {
+        const actual=effects.slice(delegateRepeatEffectBoundary).filter(event=>event.agent===agent && event.label==="A" && event.value.kind.startsWith("popup-"));
+        const identifier=run.ownership?.owned?.A;
+        if (JSON.stringify(actual.map(event=>event.value.kind))!==JSON.stringify(["popup-loaded","popup-resized","popup-close-requested"]) ||
+            actual.some(event=>event.value.id!==identifier) || actual[0]?.value.url!==`chrome-extension://${identifier}/popup.html`)
+          run.errors.push("delegate repeat late/duplicate/missing/foreign popup reports; arrival-associated evidence retained");
+      }
       if (browserOmnibox) {
         const attempts = run.actions.filter(value=>value.operation === "browser-omnibox");
         const preflights = effects.filter(event=>event.agent===agent && event.value.kind==="omnibox-preflight");
@@ -706,8 +849,18 @@ function semantic(action: Action) {
     return { selector: event.selector, payload, mainThread: event.mainThread, synchronous: event.synchronous };
   };
   const callbacks = (action.callbacks ?? []).map(scopeCallback).filter(Boolean);
-  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value", "browserPinSelector", "browserPinABI", "browserPinLabel", "browserPinArguments", "browserPinAnchorLabel", "browserPinIdentityVerified", "browserPinBaselineBeforePreserved", "browserPinBaselineAfterPreserved", "browserOmniboxSelector", "browserOmniboxABI", "browserOmniboxArguments", "browserOmniboxIdentityVerified", "browserOmniboxFixtureURL", "omniboxPreflight", "omniboxCDPBefore", "omniboxCDPAfter"];
+  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value", "browserPinSelector", "browserPinABI", "browserPinLabel", "browserPinArguments", "browserPinAnchorLabel", "browserPinIdentityVerified", "browserPinBaselineBeforePreserved", "browserPinBaselineAfterPreserved", "browserOmniboxSelector", "browserOmniboxABI", "browserOmniboxArguments", "browserOmniboxIdentityVerified", "browserOmniboxFixtureURL", "omniboxPreflight", "omniboxCDPBefore", "omniboxCDPAfter", "webstoreNegativeSelector", "webstoreNegativeABI", "webstoreNegativeCase", "webstoreNegativeArguments", "webstoreNegativeAttemptIssued", "webstoreNegativeServiceIdentityVerified", "webstoreNegativeUncertainState", "webstoreInstalledIDsBefore", "webstoreInstalledIDsAfter", "browserDelegateRepeatIdentityVerified", "browserDelegateRepeatPriorCapture", "browserDelegateRepeatDelegateClass", "browserDelegateRepeatSetterABI", "browserDelegateRepeatActionABI", "browserDelegateRepeatFixtureURL", "browserDelegateRepeatActionID", "browserDelegateRepeatHookTopology", "browserDelegateRepeatSetterCalls", "browserDelegateRepeatSameObjectAtSetter", "browserDelegateRepeatFunctionalVerified", "browserDelegateRepeatRawVerified", "browserDelegateRepeatCDPBefore", "browserDelegateRepeatCDPAfter"];
   const result: Record<string, any> = Object.fromEntries(keep.filter(key => key in action).map(key => [key, action[key]]));
+  if (action.browserDelegateRepeatPriorCapture) {
+    const capture=action.browserDelegateRepeatPriorCapture;
+    result.browserDelegateRepeatPriorCapture={priorNonProbeSetterObserved:capture.nonProbeSetCount>=1,nonnull:capture.nonnull,delegateClass:capture.delegateClass};
+  }
+  if (action.browserDelegateRepeatCDPBefore && action.browserDelegateRepeatCDPAfter) {
+    const before=action.browserDelegateRepeatCDPBefore,after=action.browserDelegateRepeatCDPAfter;
+    const sameTarget=before.targetId===after.targetId;
+    result.browserDelegateRepeatCDPBefore={url:before.url,nonce:before.nonce,sameTarget};
+    result.browserDelegateRepeatCDPAfter={url:after.url,nonce:after.nonce,sameTarget};
+  }
   result.callbacks = callbacks;
   result.eventOrder = (action.events ?? []).flatMap((event: any) => {
     if (event.type === "completion") return [{ type: "completion", value: event.value }];
@@ -788,6 +941,8 @@ const notes = [
   "Existing diff.py renumbers recording object identities and masks loopback ports, temporary folders and UUID strings. The exact supplemental semantic comparison applies none of those string masks.",
   browserPins ? "Explicit --browser-pins CLI phase calls real browser pin/unpin/move selectors only on enabled nonce-owned A/B, with exact service/browser identity, Q target ABI, actual before/after ordered snapshots, untouched baseline assertions, and no synthetic callbacks; default sequence and original cleanup remain. Invalid/disabled/OTR/force-pinned paths remain uncovered." : "ArcBrowser pinExtension:, unpinExtension:, moveExtension:targetIndex: are metadata-only here; their executable behavior is uncovered. Context setPinnedExtensionOrder: is exercised separately when the native enable precondition permits it.",
   browserOmnibox ? "Explicit --browser-omnibox CLI phase uses real B-action preflight inventories then actual A omnibox calls for ordinals0..11. Both fixtures and exact browser/service are reverified each call; the sole actual nonce tab/window must retain identity. Input/nonce/listener strings and raw actual tab/window/CDP IDs remain in evidence/semantic comparison, so native SessionID differences can remain mismatches. Three event strings do not prove internal disposition casts/window behavior or an independent permission grant; v2 method inventory remains unknown." : "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: is metadata-only; executable behavior remains uncovered.",
+  webstoreNegative ? "Explicit --webstore-negative CLI-only phase sends only hardcoded empty/short malformed IDs with both actual unattended Booleans. Native and current validation reject before Web Store fetch/download/install prompt work; earlier dummy WebContents/profile observation and unrelated process activity are explicitly outside that guarantee. Actual two-argument completions, timing, attempt ledger and full before/after installed-ID/pin observations are preserved. This does not cover valid-store installation or unattended prompt suppression." : "WebStore installation API executable behavior remains uncovered; no store request is issued without explicit opt-in.",
+  browserDelegateRepeat ? "Explicit --browser-delegate-repeat CLI phase reuses only the captured genuine app delegate, held strong for one popup operation. It calls real A action then public same-object setter once on the same UI stack. Existing popup fixture body is unchanged; prior normal popup must have completed before new effects. Raw paired action/setter calls, original app setter and fresh popup ArcWebContents identity/URL validate within-run identity independently of arrival-associated HTTP reports. No nil/replacement/expiry/global fixture-inventory parity is claimed." : "Same genuine browser delegate repetition remains uncovered.",
   "MV3 background-page JavaScript negative path only; positive legacy background-page execution is uncovered and no legacy fixture is enabled.",
   "Browser captures retain all weak live browser/delegate entries per context; ambiguous selection fails a probe precondition. Action-B onClicked effects must prove a real numeric tab ID and the exact nonce fixture URL; no activation is attempted.",
   "Context command dispatch targets an enabled extension, supplies only its command string, sets user gesture, and has no target-tab or independent activeTab permission-grant coverage. Listener argumentCount/types and noTab are retained exactly; optional undefined binding padding is observed rather than invented or normalized.",

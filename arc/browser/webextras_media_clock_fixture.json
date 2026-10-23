@@ -1,0 +1,36 @@
+{
+  "source": "chromium/src/media/test/data/bear-vp9.webm",
+  "sourceSha256": "7cd68c55f4bb47a2df22a85fac9e8b942cbbba24286c037048131944eb0a09eb",
+  "sha256": "fa0a68bc0d09eadfa7d1b199673cd865cc075d813b79cb1866f90af75916ee54",
+  "bytes": 201593,
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "vp9",
+        "codec_type": "video"
+      }
+    ],
+    "format": {
+      "duration": "8.208000"
+    }
+  },
+  "command": [
+    "ffmpeg",
+    "-v",
+    "error",
+    "-n",
+    "-stream_loop",
+    "2",
+    "-i",
+    "chromium/src/media/test/data/bear-vp9.webm",
+    "-map",
+    "0:v:0",
+    "-an",
+    "-c",
+    "copy",
+    "arc/browser/webextras_media_clock_fixture.webm"
+  ],
+  "ffmpegVersion": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
+}

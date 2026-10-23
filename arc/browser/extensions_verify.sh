@@ -17,8 +17,8 @@ for _ in range(24):
 else:
     raise SystemExit('shared build/run lock owner not in ancestry')
 PY
-OUT="results/extensions-validation11"
-SERVICE_CLI_OUT="results/extensions-service-probe/validation11-omnibox-field-trial-diagnostic"
+OUT="results/extensions-validation14"
+SERVICE_CLI_OUT="results/extensions-service-probe/validation14-startup-init-delegate-repeat"
 if [ -e "$OUT" ]; then
   echo "refusing to overwrite $OUT" >&2
   exit 2
@@ -40,6 +40,7 @@ paths += [Path(p) for p in (
     'arc/wp/extensions.gni', 'arc/browser/extensions_groups.mm',
     'arc/browser/extensions_values.h', 'arc/browser/extensions_context.h',
     'arc/browser/extensions_bridge.h', 'arc/browser/extensions_verify.sh',
+    'arc/browser/extensions_startup_init.patch',
     'arc/browser/extensions_service_probe.ts', 'arc/browser/extensions_service_probe.m',
     'arc/browser/extensions_service_probe.sh',
     'arc/browser/extensions_macho_fingerprint.py',
@@ -70,6 +71,42 @@ if stage != 'before' and changed:
     raise SystemExit(1)
 PY
 }
+# Require the reviewed product/helper pair before compilation or app work.
+python3 - <<'GATE' || exit $?
+from pathlib import Path
+import hashlib
+expected={'arc/api/arc_extensions_browser.mm': '03024142806d33fee96cfcf03b7ab1876556c2cdef9ac48c9acc98e81335e46e', 'arc/api/arc_extensions_context.mm': '475fedd79f2433006fd6d173ff18cdb411eb8247ac38a4832abc0e2fdc0dc30d', 'arc/api/arc_extensions_internal.mm': 'cf61b5c5baeb28691229b5f4c61ed60a0f2993d3a9c383be1952e2d305793db3', 'arc/api/arc_extensions_values.mm': '1a3994ea1ff0a38b7cf696a3d467b14da948479eb9ae418fcbb06db0dee33845', 'arc/browser/extensions_bridge.h': 'b541fadc210b57d9fdfc18205181904ce4344051182ac32fad5fd89811fba39f', 'arc/browser/extensions_context.h': '9a77800fb0751b6322b982df5a6f5a215a82c1f2e9c347b19a786fe14b3d5894', 'arc/browser/extensions_groups.mm': '4779348d2122a9f811f42474de2df1c8a60ad3ec0ea1689c44c6ab3f586812ab', 'arc/browser/extensions_internal/BUILD.gn': '3846d4debc646efd0d543c1ca7172624eaec3d8d2f1c90cf845f492f3fdf2988', 'arc/browser/extensions_internal/background.js': 'eef3ebab7af63e3a72df06882a8185732d3c6bf71c9575bd7a4ea9785baf01fd', 'arc/browser/extensions_internal/manifest.json': '0badd5b743eaf75d894b8abf1a8ac29ba4233123bd48217bf9ebf6b2ed6f6bd9', 'arc/browser/extensions_internal_manifest.h': '5044b52a016b9b47ea2fab9b74ec9105c0dfed811d47c1b6cf4aba40360cb7e6', 'arc/browser/extensions_values.h': '0626fc241700feebf62592b86e1659c644e7cf2a6a90f8d28e19187a484d2d74', 'arc/wp/extensions.gni': '9b7531a27300061d5b67aa9cc35371f078ef2e7ad8578a18fc2338f7d5368a8a', 'arc/browser/extensions_service_probe.m': 'bc3adca6b91dd92ac65046e63956109c0b2faff75db7f82be0685a30bb9c519c', 'arc/browser/extensions_service_probe.ts': 'ac5e55c85b27758222e69e25866340c6eae53f965408cb4f42a47a174d4f6eb9'}
+for path, pinned in expected.items():
+    assert hashlib.sha256(Path(path).read_bytes()).hexdigest()==pinned, f"reviewed validation13 input required: {path}"
+GATE
+# Apply this reviewed owned-file change only after the shared lock is held.
+python3 - "$OUT" <<'APPLY_STARTUP' || exit $?
+from pathlib import Path
+from datetime import datetime, timezone
+import hashlib, json, subprocess, sys
+out=Path(sys.argv[1]); browser=Path('arc/api/arc_extensions_browser.mm')
+patch=Path('arc/browser/extensions_startup_init.patch')
+pre='03024142806d33fee96cfcf03b7ab1876556c2cdef9ac48c9acc98e81335e46e'
+post='99496aeb55684aac98f6b83bed1a8505a9e89ac06dbb107bac7fc50ccc2dd728'
+digest=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+assert digest(patch)=='421323820a53dbb167a69519d00fbdc2bda51730bcbf8d8e6c52254cbdc5d0ec', 'reviewed startup patch changed'
+original=browser.read_bytes(); assert hashlib.sha256(original).hexdigest()==pre, 'startup preimage changed'
+(out/'startup-browser-before.mm').write_bytes(original)
+subprocess.run(['git','apply','--check','--whitespace=error',str(patch)],check=True)
+subprocess.run(['git','apply',str(patch)],check=True)
+assert digest(browser)==post, 'startup postimage differs from reviewed source; no unrelated bytes overwritten'
+with (out/'startup-official-check.log').open('w') as log:
+    result=subprocess.run(['arc/tools/check-file.sh',str(browser)],stdout=log,stderr=subprocess.STDOUT)
+receipt={'at':datetime.now(timezone.utc).isoformat(),'before':pre,'after':post,'patch':digest(patch),
+         'officialCheckExit':result.returncode,'appliedUnderSharedLock':True,'rolledBack':False}
+if result.returncode:
+    assert digest(browser)==post, 'source changed during check; refusing to overwrite another writer'
+    browser.write_bytes(original); assert digest(browser)==pre
+    receipt['rolledBack']=True
+(out/'startup-application.json').write_text(json.dumps(receipt,indent=2))
+if result.returncode: raise SystemExit(result.returncode)
+print('startup patch applied under shared lock; official check0; browser '+post)
+APPLY_STARTUP
 arc/browser/extensions_service_probe.sh build > "$OUT/helper-build.log" 2>&1 || exit $?
 snapshot before || exit $?
 reset_disposable_data() {
@@ -107,11 +144,11 @@ touch arc/api/arc_extensions_*.mm arc/browser/extensions_groups.mm || exit $?
 ARC_BUILD_FAIL_FAST=1 ./build-babysit.sh > "$OUT/build.log" 2>&1 || exit $?
 ./package-engine.sh ours156 > "$OUT/package.log" 2>&1 || exit $?
 # No public-install operation changed; batch9 already retains its matching
-# enable-policy restriction. This batch targets the new valid omnibox range.
+# enable-policy restriction. This batch targets same genuine app-delegate repetition during a real popup.
 service_status=0
 reset_disposable_data trace156 before-command-line-phase || exit $?
 reset_disposable_data ours156 before-command-line-phase || exit $?
-arc/browser/extensions_service_probe.sh run --out "$SERVICE_CLI_OUT" --diagnostic-disable-field-trial-config --fixture-mode=command-line --browser-omnibox --agents trace156,ours156 --port 9458 > "$OUT/service-cli.log" 2>&1
+arc/browser/extensions_service_probe.sh run --out "$SERVICE_CLI_OUT" --diagnostic-disable-field-trial-config --fixture-mode=command-line --browser-delegate-repeat --agents trace156,ours156 --port 9458 > "$OUT/service-cli.log" 2>&1
 cli_status=$?
 echo "command-line service exit $cli_status"
 scenario_status=0

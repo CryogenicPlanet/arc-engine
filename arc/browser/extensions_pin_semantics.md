@@ -1,6 +1,76 @@
 **Proposal only: native release pin semantics. Product sources are not changed by this refresh.**
 
-## V7 current omnibox range-guard browser refresh
+## V9 current startup-init browser refresh
+
+This is the authoritative **unapplied** pin proposal for actual browser `99496aeb55684aac98f6b83bed1a8505a9e89ac06dbb107bac7fc50ccc2dd728`. The parent applied startup patch `421323820a53dbb167a69519d00fbdc2bda51730bcbf8d8e6c52254cbdc5d0ec` under the shared lock and verified its official real-file check exits0. Receipt `results/extensions-validation14/startup-application.json`, timestamp `2026-10-23T14:33:14.867964Z`, records appliedUnderSharedLock=true and rolledBack=false. The receipt is copied into this evidence directory; actual browser994 was independently rehashed. This worker activates no product/pin changes.
+
+Private preparation started while actual browser was030 and derived994 only in copied sources. The parent later confirmed the actual030→994 transition and successful official check, satisfying the publication gate. Pre-confirmation metadata/document/freeze snapshots are retained under `private-*`. No product/shared/helper/GNI/runtime/API/board/lock writes occur here; Core8/14 source seals remain respected. Authoritative V8 patch/document and all its evidence are preserved as historical inputs.
+
+V9 pin patch SHA256: `52bec56c45cbe33447f699eeffbfa75a323baf94fb2d79218957cc3589454dcd`.
+
+| Source | Actual at preparation | Current proposal base | Pin-proposed SHA256 |
+|---|---|---|---|
+| `chromium/src/chrome/browser/ui/toolbar/toolbar_actions_model.cc` | `af43ceaf3dca0ea0639a257ee18091e4a43759f0be732326eb9b171d16f14d5a` | `af43ceaf3dca0ea0639a257ee18091e4a43759f0be732326eb9b171d16f14d5a` | `91cf63c767fcbf4421875701c23d623bd1637deade57eea0ab4b9c5093d8d6c5` |
+| `arc/api/arc_extensions_context.mm` | `475fedd79f2433006fd6d173ff18cdb411eb8247ac38a4832abc0e2fdc0dc30d` | `475fedd79f2433006fd6d173ff18cdb411eb8247ac38a4832abc0e2fdc0dc30d` | `63e3c06b24b905a637087ac515883d50d1eff582802dfb2e3966c5b93efc7769` |
+| `arc/api/arc_extensions_browser.mm` | `03024142806d33fee96cfcf03b7ab1876556c2cdef9ac48c9acc98e81335e46e` | `99496aeb55684aac98f6b83bed1a8505a9e89ac06dbb107bac7fc50ccc2dd728` | `090dc7b8a34bad6d663e202f836d5916546810925b4cb7211a175029a58a6b4a` |
+
+Evidence: `logs/wp/extensions-pin-semantics-proposal/v9-startup-init-refresh/`. The V8 patch/document and all files in its historical evidence tree are preserved and pinned. Historical sections below retain their original scopes; V9 is the current application/compile record.
+
+### Semantic preservation
+
+Only two browser hunk headers change from V8. Every other patch line is identical, including all native and Context hunks. Native/Context actual and pin-proposed bytes match V8 literally. The native-first assertion companion remains a prerequisite for the owned pin companions, with unchanged semantics and integration order.
+
+Applying only startup421323 to the V8 actual browser produces the exact planned994 base. Applying only that startup patch to the V8 pin browser independently produces the exact V9 pin browser (`startup-on-v8-before.json`, `startup-on-v8-pin.json`). The weak posted ready initialization, real not-ready observer path, deferred snapshot point, existing cache-preserving SetDelegate, popup/keyboard routes and omnibox guard are retained. Full lifecycle, callback transport and action-registration limits remain those documented by the earlier proposals; this rebase adds none of those behaviors.
+
+### Compiler and composition evidence
+
+The current browser TU command is queried read-only through siso, retaining its original source spelling and every non-output flag, including warning/error/plugins, optimization, SDK/modules, ARC, defines and sanitizers. Only dependency/object output options are stripped; overlay, syntax-only and `-Wno-unused-command-line-argument` are added. Canonical and Chromium arc-symlink mappings point to the same copied proposed source. A positive compile and an independent `ARC_PIN_V9_STARTUP_INIT_REFRESH_NEGATIVE_BROWSER` sentinel verify the actual compiler invocation selects that overlay. The positive compiler exits0 with empty diagnostics; the independent sentinel compiler exits1 and finds its exact token. Per-TU records retain exact argv/output/results. No build is executed; the query only retrieves the command.
+
+The fresh browser compile reads current real headers. Native and Context candidates remain exact V8 bytes, so their earlier compiler/sentinel evidence is retained as historical reuse, without claiming fresh current transitive-header/build-flag closure for those TUs.
+
+The native-info-icon patch is unchanged at `2c3e180885f559c0532b366e99b6a46b0f985b7372e4a36216c06c1d603ca2f9`. Pin then icon and icon then pin both apply to exact current994-base copies and produce identical bytes across all five files. Combined Context remains `73ba0b1d7bd9d78e7a60963570e01d6214d2c9c3a6cc3dd23def3418fa05218f`. Icon Context/native candidates and all profile-observer proposal artifacts remain unchanged; no new profile composition or profile compile is claimed for this browser-only rebase.
+
+Final review, current-source/proposal snapshots, historical V8/profile preservation checks and actual-source transitions are recorded separately. Helpers/derived runtime artifacts are outside this proposal freeze claim; parent runtime work can progress independently. The observed parent030→994 transition is recorded explicitly rather than labeled unchanged. Nine other scoped actual inputs remained hash/size-identical during preparation.
+
+This is strict source composition and bounded compiler evidence. Runtime pin behavior, prefs, callback order/suppression, OTR persistence and canonical/package acceptance remain **UNEXECUTED** for this pin proposal. No batch13/14 runtime result is attributed to this pin candidate. Authoritative publication remains an unapplied pin proposal, not activation of its shared/owned changes.
+
+## Historical V8 delegate-cache browser refresh
+
+This is the authoritative **unapplied** pin proposal. Its actual browser base is the parent's applied delegate-cache preservation fix, SHA256 `03024142806d33fee96cfcf03b7ab1876556c2cdef9ac48c9acc98e81335e46e`. The applied cache patch is `4a136a266065a5cd7b905a89a9f61cca893ffdfb4c6492dd52226142ed01aa44`; the parent reported the official real-file check completed successfully. This refresh does not activate pin or native companion changes.
+
+Pin V8 patch SHA256: `53537bc27d6267cb35fe3927c5752af95c50b2042e4eea1a723f1dfb755206ae`.
+
+| Source | Actual SHA256 | Pin-proposed SHA256 |
+|---|---|---|
+| `chromium/src/chrome/browser/ui/toolbar/toolbar_actions_model.cc` | `af43ceaf3dca0ea0639a257ee18091e4a43759f0be732326eb9b171d16f14d5a` | `91cf63c767fcbf4421875701c23d623bd1637deade57eea0ab4b9c5093d8d6c5` |
+| `arc/api/arc_extensions_context.mm` | `475fedd79f2433006fd6d173ff18cdb411eb8247ac38a4832abc0e2fdc0dc30d` | `63e3c06b24b905a637087ac515883d50d1eff582802dfb2e3966c5b93efc7769` |
+| `arc/api/arc_extensions_browser.mm` | `03024142806d33fee96cfcf03b7ab1876556c2cdef9ac48c9acc98e81335e46e` | `74f41a8038da2da4db07eca5bb82b58595bf6af125b882754a61aebe71d918c3` |
+
+Evidence: `logs/wp/extensions-pin-semantics-proposal/v8-delegate-cache-refresh/`. The V7 patch/document were copied before refresh, and every file in the historical V7 evidence tree is pinned and remains unchanged. All historical sections below retain their earlier scope/bases; V8 is the current application/compile record.
+
+### Exact preserved semantics
+
+Only two browser hunk headers change from V7: `258→247`, and `654/658→642/646`. Every other patch line is identical. Native and Context patch sections are literally unchanged, and their actual/proposed source bytes match V7 exactly. The shared native assertion relaxation remains a prerequisite for the owned pin companions; its semantics and native-first integration requirement are unchanged.
+
+Applying only the parent's cache patch to the V7 actual browser produces the exact V8 base. Applying only that same cache patch to the V7 pin browser independently produces the exact V8 pin browser (`cache-on-v7-before.json`, `cache-on-v7-pin.json`). Thus cache-preserving SetDelegate bodies, existing callback epoch/weak semantics, and removal of dead delegate_generation_ are retained. The refresh introduces no new callback/lifetime behavior.
+
+The popup keyboard route, HidePopup/TriggerPopup/OnLoaded bodies, and complete omnibox entry method are byte-identical to the new actual browser. The unsigned `<12` guard and base/check_op include remain, and the removed extra icon observer route remains absent. `cache-guard-popup-icon-preservation.json` records these checks. Pending native weak-expiry/queued-retention and popup readiness limitations are not resolved by this refresh.
+
+### Validation and composition
+
+Strict whitespace/application checks pass on exact copied current sources; V8 application produces the exact candidate used for syntax validation. The current browser plus pin companion is freshly compiled with its own current Base TU command, preserving the original source argument, warning/error, optimization, SDK/modules, Objective-C ARC, and Clang plugin flags. Only object/dependency outputs are stripped; VFS overlay, syntax-only, and `-Wno-unused-command-line-argument` are added. Canonical and Chromium arc-symlink spellings select the same source. The independent negative overlay uses `ARC_PIN_V8_DELEGATE_CACHE_REFRESH_NEGATIVE_BROWSER`. Exact argv/results are retained: positive exit0 with empty diagnostics and negative exit1 with the sentinel were observed.
+
+Native/Context actual and pin-proposed bytes match V7 exactly, so their prior compiler/sentinel evidence is retained as historical byte reuse. Those TUs are not freshly compiled in this browser-only refresh; byte reuse does not prove a current transitive-header/build-flag closure for them.
+
+The native-info-icon proposal remains unchanged, SHA256 `2c3e180885f559c0532b366e99b6a46b0f985b7372e4a36216c06c1d603ca2f9`. Pin then icon, and icon then pin, apply to exact copied current sources and yield identical bytes across all five files. Combined Context remains `73ba0b1d7bd9d78e7a60963570e01d6214d2c9c3a6cc3dd23def3418fa05218f`. Icon native/Context candidates remain byte-identical to V7; no independent icon refresh is performed.
+
+All profile-observer proposal artifacts are hash-pinned and untouched. This browser-only rebase changes neither pin Context/native candidate bytes nor any profile proposal; no new profile composition or profile-TU compile is claimed. The existing regular-profile/OTR, readiness, and linkage bounds remain as documented by that proposal.
+
+A fresh independent reviewer checks the candidate, compiler/negative records, unchanged native/Context sections, cache/guard/popup/icon preservation, and five-file composition before publication. Final source/proposal and historical V7/profile input checks are recorded separately. Helpers and derived runtime artifacts are not included in this refresh's freeze claim: the parent's independent helper/runtime work may progress concurrently. No actual product, Context/shared source, helper, GNI, runtime, profile, app, board, or lock is modified by this worker.
+
+This is source composition and bounded compiler evidence only. No new standard scenario or service probe is run; prefs, callback ordering/suppression, OTR persistence, keyboard behavior, and package/canonical acceptance remain **UNEXECUTED** for the pin proposal. The lead must integrate shared native prerequisites before their owned companions and run fresh paired validation. No historical popup or pin result is attributed to this unapplied refresh.
+
+## Historical V7 omnibox range-guard browser refresh
 
 This is the current **unapplied** pin proposal, based on the parent's confirmed
 guard-applied actual browser SHA256

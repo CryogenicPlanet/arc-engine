@@ -1,0 +1,561 @@
+2026-10-23 14:41:34 +0000 [ArcMod pid 44136] loaded into /Users/cryogenicplanet/general/arc-engine/logs/wp/webextras-native-probe-build/WebextrasNativeProbe.dylib (main image slide 0x107c3c000)
+
+DevTools listening on ws://127.0.0.1:9458/devtools/browser/211497df-9615-47d2-bc1a-344413606c5e
+[ArcMod] blocked service: o298668.ingest.sentry.io
+[ArcMod] blocked service: cdn-settings.segment.com
+2026-10-23 14:41:34 +0000 [ArcMod pid 44136] didFinishLaunching, NSApp class = Arc.BrowserApp
+2026-10-23 14:41:34 +0000 [ArcMod pid 44136] local browser command validation installed on Arc.AppDelegate
+2026-10-23 14:41:34 +0000 [ArcMod pid 44136] local browser command validation installed on Arc.MainWindowController
+2026-10-23 14:41:34 +0000 [ArcMod pid 44136] local browser command validation installed on Arc.BrowserWindow
+2026-10-23 14:41:34 +0000 [ArcMod pid 44136] local browser command validation installed on Arc.LittleBrowserWindow
+2026-10-23 14:41:36 +0000 [ArcMod pid 44136] creating local browser window (no account session)
+2026-10-23 14:41:37 +0000 [ArcMod pid 44136] menu installed
+2026-10-23 14:41:37 +0000 [ArcMod pid 44136] ARC MOD sidebar badge installed
+[44136:7731157:1023/074137.630990:ERROR:arc/api/arc_api_stubs.mm:47] ArcCore unimplemented: -[NSKVONotifying_ArcWebContents ignoreDisablePiPAttribute:]
+[44136:7731157:1023/074137.737784:ERROR:arc/api/arc_api_stubs.mm:47] ArcCore unimplemented: -[ArcColor4f initWithR:g:b:a:]
+[44136:7731157:1023/074137.743178:ERROR:arc/api/arc_api_stubs.mm:47] ArcCore unimplemented: -[ArcColor4f r]
+[44136:7731157:1023/074137.743189:ERROR:arc/api/arc_api_stubs.mm:47] ArcCore unimplemented: -[ArcColor4f g]
+[44136:7731157:1023/074137.743193:ERROR:arc/api/arc_api_stubs.mm:47] ArcCore unimplemented: -[ArcColor4f b]
+[44136:7731157:1023/074137.743196:ERROR:arc/api/arc_api_stubs.mm:47] ArcCore unimplemented: -[ArcColor4f a]
+[44269:7732652:1023/074139.069029:ERROR:services/on_device_model/ml/gpu_blocklist.cc:120] Unable to get gpu adapter
+[44269:7732665:1023/074139.069696:ERROR:services/on_device_model/ml/gpu_blocklist.cc:120] Unable to get gpu adapter
+[44136:7731157:1023/074147.558043:FATAL:chrome/browser/ui/tabs/tab_strip_model.cc:142] Check failed: !*guard_flag. 
+0   ArcCore                             0x0000000137c9d318 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x0000000137c84e30 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x0000000137b66374 logging::LogMessage::Flush() + 180
+3   ArcCore                             0x0000000137b6621c logging::LogMessage::~LogMessage() + 36
+4   ArcCore                             0x0000000137b471ec logging::(anonymous namespace)::CheckLogMessage::~CheckLogMessage() + 196
+5   ArcCore                             0x0000000137b47260 logging::(anonymous namespace)::CheckLogMessage::~CheckLogMessage() + 12
+6   ArcCore                             0x0000000141ea0d88 logging::CheckNoreturnError::~CheckNoreturnError() + 16
+7   ArcCore                             0x0000000141ea0d98 base::debug::AsanHeapOverflow() + 0
+8   ArcCore                             0x0000000136af95ec (anonymous namespace)::ReentrancyCheck::ReentrancyCheck(bool*) + 380
+9   ArcCore                             0x0000000136af93b8 TabStripModel::InsertDetachedTabAt(int, std::__Cr::unique_ptr<tabs::TabModel, std::__Cr::default_delete<tabs::TabModel>>, int, std::__Cr::optional<tab_groups::TabGroupId>) + 56
+10  ArcCore                             0x0000000136af9330 TabStripModel::InsertWebContentsAt(int, std::__Cr::unique_ptr<content::WebContents, std::__Cr::default_delete<content::WebContents>>, int, std::__Cr::optional<tab_groups::TabGroupId>) + 108
+11  ArcCore                             0x0000000137ac1ab4 -[ArcBrowser takeOwnershipOfWebContents:] + 148
+12  CoreFoundation                      0x0000000182bed6b4 __invoking___ + 148
+13  CoreFoundation                      0x0000000182bed540 -[NSInvocation invoke] + 424
+14  ArcEngineRecorder.dylib             0x0000000107c5dd58 RecForwardInvocation + 1548
+15  CoreFoundation                      0x0000000182bebdf8 ___forwarding___ + 1032
+16  CoreFoundation                      0x0000000182beb930 _CF_forwarding_prep_0 + 96
+17  ArcCore                             0x0000000137ac19e4 -[ArcBrowser createWebContents:] + 132
+18  CoreFoundation                      0x0000000182bed6b4 __invoking___ + 148
+19  CoreFoundation                      0x0000000182bed540 -[NSInvocation invoke] + 424
+20  ArcEngineRecorder.dylib             0x0000000107c5dd58 RecForwardInvocation + 1548
+21  CoreFoundation                      0x0000000182bebdf8 ___forwarding___ + 1032
+22  CoreFoundation                      0x0000000182beb930 _CF_forwarding_prep_0 + 96
+23  Arc                                 0x00000001032b9ebc Arc + 5398204
+24  Arc                                 0x00000001032bcf2c Arc + 5410604
+25  Arc                                 0x00000001040d7f28 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 10483080
+26  Arc                                 0x00000001040ed920 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 10571648
+27  Combine                             0x0000000198de00d4 $s7Combine6FutureCyACyxq_Gyys6ResultOyxq_GcccfcTf4gn_n + 372
+28  Combine                             0x0000000198ddc3d8 $s7Combine6FutureCyACyxq_Gyys6ResultOyxq_GcccfC + 60
+29  Arc                                 0x000000010332102c Arc + 5820460
+30  Arc                                 0x0000000103324f40 Arc + 5836608
+31  Arc                                 0x000000010349a224 Arc + 7365156
+32  Arc                                 0x00000001034982f0 Arc + 7357168
+33  Arc                                 0x000000010349b680 Arc + 7370368
+34  libswift_Concurrency.dylib          0x0000000287fd6380 $ss9TaskLocalC9withValue_9operation4file4lineqd__x_qd__yKXESSSutKlF + 232
+35  Arc                                 0x0000000103498278 Arc + 7357048
+36  Arc                                 0x0000000103499590 Arc + 7361936
+37  Arc                                 0x0000000103320f50 Arc + 5820240
+38  Combine                             0x0000000198db91b8 $s7Combine8DeferredV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 172
+39  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+40  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+41  Combine                             0x0000000198db91d4 $s7Combine8DeferredV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 200
+42  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+43  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+44  Combine                             0x0000000198e03c30 $s7Combine10PublishersO17PrefixUntilOutputV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AIRtz5InputQyd__0E0RtzlF + 188
+45  Combine                             0x0000000198e416c4 $s7Combine10PublishersO12HandleEventsV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AIRtz5InputQyd__6OutputRtzlF + 304
+46  Combine                             0x0000000198db91d4 $s7Combine8DeferredV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 200
+47  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+48  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+49  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+50  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+51  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+52  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+53  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+54  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+55  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+56  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+57  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+58  Arc                                 0x00000001035ee3b8 Arc + 8758200
+59  Combine                             0x0000000198e0b510 $s7Combine10PublishersO5MergeV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AIRt_5InputQyd__6OutputRt_lF + 364
+60  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+61  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+62  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+63  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+64  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+65  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+66  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+67  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+68  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+69  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+70  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+71  Arc                                 0x00000001035ee3b8 Arc + 8758200
+72  Combine                             0x0000000198e441ec $s7Combine10PublishersO11ConcatenateV5InnerC13prefixReceive10completionyAA11SubscribersO10CompletionOy_7FailureQzG_tF + 1476
+73  Combine                             0x0000000198e43c1c $s7Combine10PublishersO11ConcatenateV5InnerC16PrefixSubscriberV7receive10completionyAA11SubscribersO10CompletionOy_7FailureQzG_tF + 24
+74  Combine                             0x0000000198de0968 $s7Combine5EmptyV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 308
+75  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+76  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+77  Combine                             0x0000000198db91d4 $s7Combine8DeferredV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 200
+78  Combine                             0x0000000198db91d4 $s7Combine8DeferredV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 200
+79  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+80  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+81  Arc                                 0x00000001035ee3b8 Arc + 8758200
+82  Combine                             0x0000000198e435d0 $s7Combine10PublishersO11ConcatenateV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AIRt_5InputQyd__6OutputRt_lF + 532
+83  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+84  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+85  Combine                             0x0000000198e416c4 $s7Combine10PublishersO12HandleEventsV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AIRtz5InputQyd__6OutputRtzlF + 304
+86  Combine                             0x0000000198db9d6c $s7Combine9PublisherPAAE4sink17receiveCompletion0D5ValueAA14AnyCancellableCyAA11SubscribersO0E0Oy_7FailureQzGc_y6OutputQzctF + 320
+87  Arc                                 0x0000000103619b3c Arc + 8936252
+88  Arc                                 0x000000010361dca0 Arc + 8952992
+89  Arc                                 0x00000001034993cc Arc + 7361484
+90  Arc                                 0x00000001036184ac Arc + 8930476
+91  Arc                                 0x000000010361a8a4 Arc + 8939684
+92  Arc                                 0x000000010361e9c0 Arc + 8956352
+93  Arc                                 0x000000010349a224 Arc + 7365156
+94  Arc                                 0x00000001034982f0 Arc + 7357168
+95  Arc                                 0x000000010349b680 Arc + 7370368
+96  libswift_Concurrency.dylib          0x0000000287fd6380 $ss9TaskLocalC9withValue_9operation4file4lineqd__x_qd__yKXESSSutKlF + 232
+97  Arc                                 0x0000000103498278 Arc + 7357048
+98  Arc                                 0x0000000103499590 Arc + 7361936
+99  Arc                                 0x0000000103619e58 Arc + 8937048
+100 Combine                             0x0000000198dba760 $s7Combine11SubscribersO4SinkC7receiveyAC6DemandVxF + 92
+101 Combine                             0x0000000198dbafb4 $s7Combine11SubscribersO4SinkCy_xq_GAA10SubscriberA2aGP7receiveyAC6DemandV5InputQzFTW + 24
+102 Combine                             0x0000000198e41ee4 $s7Combine10PublishersO12HandleEventsV5Inner33_9464E9048FC4C9C669F954B681B5AD45LLC7receiveyAA11SubscribersO6DemandV6OutputQzF + 208
+103 Combine                             0x0000000198e42118 $s7Combine10PublishersO12HandleEventsV5Inner33_9464E9048FC4C9C669F954B681B5AD45LLCy_x_qd__GAA10SubscriberA2aJP7receiveyAA11SubscribersO6DemandV5InputQzFTW + 24
+104 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+105 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+106 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+107 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+108 Combine                             0x0000000198e445a4 $s7Combine10PublishersO11ConcatenateV5InnerC13suffixReceiveyAA11SubscribersO6DemandV6OutputQzF + 244
+109 Combine                             0x0000000198e444a4 $s7Combine10PublishersO11ConcatenateV5InnerC16SuffixSubscriberV7receiveyAA11SubscribersO6DemandV6OutputQzF + 24
+110 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+111 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+112 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+113 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+114 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+115 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+116 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+117 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+118 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+119 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+120 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+121 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+122 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+123 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+124 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+125 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+126 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+127 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+128 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+129 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+130 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+131 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+132 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+133 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+134 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+135 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+136 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+137 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+138 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+139 Combine                             0x0000000198e41ee4 $s7Combine10PublishersO12HandleEventsV5Inner33_9464E9048FC4C9C669F954B681B5AD45LLC7receiveyAA11SubscribersO6DemandV6OutputQzF + 208
+140 Combine                             0x0000000198e42118 $s7Combine10PublishersO12HandleEventsV5Inner33_9464E9048FC4C9C669F954B681B5AD45LLCy_x_qd__GAA10SubscriberA2aJP7receiveyAA11SubscribersO6DemandV5InputQzFTW + 24
+141 Combine                             0x0000000198e04758 $s7Combine10PublishersO17PrefixUntilOutputV5InnerC7receiveyAA11SubscribersO6DemandV0E0QzF + 220
+142 Combine                             0x0000000198e04a48 $s7Combine10PublishersO17PrefixUntilOutputV5InnerCy_xq__qd__qd_0_GAA10SubscriberA2aIP7receiveyAA11SubscribersO6DemandV5InputQzFTW + 24
+143 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+144 Combine                             0x0000000198dc8a60 $s7Combine18PassthroughSubjectC7ConduitC5offeryyxF + 724
+145 Combine                             0x0000000198dc7264 $s7Combine18PassthroughSubjectC4sendyyxFyAA11ConduitBaseCyxq_GXEfU_TA + 60
+146 Combine                             0x0000000198dfdda4 $s7Combine11ConduitListO7forEachyyyAA0B4BaseCyxq_GKXEKF + 268
+147 Combine                             0x0000000198dc7f24 $s7Combine18PassthroughSubjectC4sendyyxF + 256
+148 Arc                                 0x0000000103bcb39c $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 5188092
+149 Arc                                 0x00000001032cc9b8 Arc + 5474744
+150 CoreFoundation                      0x0000000182bed6b4 __invoking___ + 148
+151 CoreFoundation                      0x0000000182bed540 -[NSInvocation invoke] + 424
+152 ArcEngineRecorder.dylib             0x0000000107c5dd58 RecForwardInvocation + 1548
+153 CoreFoundation                      0x0000000182bebdf8 ___forwarding___ + 1032
+154 CoreFoundation                      0x0000000182beb930 _CF_forwarding_prep_0 + 96
+155 ArcCore                             0x0000000137ac8ad4 -[ArcWebContents nativeContentsDestroyed] + 252
+156 ArcCore                             0x0000000137acc050 (anonymous namespace)::ArcContentsObserver::WebContentsDestroyed() + 388
+157 ArcCore                             0x0000000133c11a24 void content::WebContentsImpl::WebContentsObserverList::NotifyObservers<void (content::WebContentsObserver::*)()>(void (content::WebContentsObserver::*)()) + 404
+158 ArcCore                             0x0000000133c101fc content::WebContentsImpl::~WebContentsImpl() + 2032
+159 ArcCore                             0x0000000133c11b74 content::WebContentsImpl::~WebContentsImpl() + 12
+160 ArcCore                             0x0000000136af6230 tabs::TabModel::~TabModel() + 696
+161 ArcCore                             0x0000000136afc56c TabStripModel::SendDetachWebContentsNotifications(TabStripModel::DetachNotifications*) + 1388
+162 ArcCore                             0x0000000136b06058 TabStripModel::CloseTabs(base::span<content::WebContents* const, 18446744073709551615ul, content::WebContents* const*>, unsigned int) + 1368
+163 ArcCore                             0x0000000136b05a10 TabStripModel::CloseAllTabs() + 444
+164 ArcCore                             0x00000001368f9bdc UnloadController::OnWindowClosing() + 1104
+165 ArcCore                             0x00000001368f9674 UnloadController::ProcessPendingTabs(bool) + 712
+166 ArcCore                             0x00000001368fae60 UnloadController::CanCloseContents(content::WebContents*) + 100
+167 ArcCore                             0x000000013664aec4 BrowserWebContentsDelegate::CloseContents(content::WebContents*) + 248
+168 ArcCore                             0x0000000133c3c01c content::WebContentsImpl::Close() + 220
+169 ArcCore                             0x000000013397ee70 content::RenderFrameHostImpl::ClosePageIgnoringUnloadEvents(content::RenderFrameHostImpl::ClosePageSource, base::RepeatingCallback<void ()>) + 360
+170 ArcCore                             0x00000001339ba20c base::internal::Invoker<base::internal::FunctorTraits<void (content::RenderFrameHostImpl::*&&)(content::RenderFrameHostImpl::ClosePageSource, base::RepeatingCallback<void ()>), base::WeakPtr<content::RenderFrameHostImpl>&&, content::RenderFrameHostImpl::ClosePageSource&&, base::RepeatingCallback<void ()>&&>, base::internal::BindState<true, true, false, void (content::RenderFrameHostImpl::*)(content::RenderFrameHostImpl::ClosePageSource, base::RepeatingCallback<void ()>), base::WeakPtr<content::RenderFrameHostImpl>, content::RenderFrameHostImpl::ClosePageSource, base::RepeatingCallback<void ()>>, void ()>::RunOnce(base::internal::BindStateBase*) + 108
+171 ArcCore                             0x000000012fc07ec0 blink::mojom::LocalMainFrame_ClosePage_ForwardToCallback::Accept(mojo::Message*) + 256
+172 ArcCore                             0x0000000137f5e9f4 mojo::InterfaceEndpointClient::HandleValidatedMessage(mojo::Message*) + 1324
+173 ArcCore                             0x0000000137f656d4 mojo::MessageDispatcher::Accept(mojo::Message*) + 468
+174 ArcCore                             0x0000000137f60a8c mojo::InterfaceEndpointClient::HandleIncomingMessage(mojo::Message*) + 76
+175 ArcCore                             0x0000000139401294 IPC::ChannelAssociatedGroupController::AcceptOnEndpointThread(mojo::Message, IPC::(anonymous namespace)::ScopedUrgentMessageNotification) + 608
+176 ArcCore                             0x0000000139401da4 base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelAssociatedGroupController::*&&)(mojo::Message, IPC::(anonymous namespace)::ScopedUrgentMessageNotification), IPC::ChannelAssociatedGroupController*&&, mojo::Message&&, IPC::(anonymous namespace)::ScopedUrgentMessageNotification&&>, base::internal::BindState<true, true, false, void (IPC::ChannelAssociatedGroupController::*)(mojo::Message, IPC::(anonymous namespace)::ScopedUrgentMessageNotification), scoped_refptr<IPC::ChannelAssociatedGroupController>, mojo::Message, IPC::(anonymous namespace)::ScopedUrgentMessageNotification>, void ()>::RunOnce(base::internal::BindStateBase*) + 176
+177 ArcCore                             0x0000000137bea8a8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+178 ArcCore                             0x0000000137c19e74 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+179 ArcCore                             0x0000000137c19660 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+180 ArcCore                             0x0000000137cb2d64 base::MessagePumpCFRunLoopBase::RunWork() + 320
+181 ArcCore                             0x0000000137caadcc base::apple::CallWithEHFrame(void () block_pointer) + 16
+182 ArcCore                             0x0000000137cb21ec base::MessagePumpCFRunLoopBase::RunWorkSource(void*) + 60
+183 CoreFoundation                      0x0000000182c0cfb0 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28
+184 CoreFoundation                      0x0000000182c0cf44 __CFRunLoopDoSource0 + 172
+185 CoreFoundation                      0x0000000182c0ccb0 __CFRunLoopDoSources0 + 232
+186 CoreFoundation                      0x0000000182c0b8d4 __CFRunLoopRun + 820
+187 CoreFoundation                      0x0000000182cde508 _CFRunLoopRunSpecificWithOptions + 532
+188 HIToolbox                           0x000000018f9fa560 RunCurrentEventLoopInMode + 320
+189 HIToolbox                           0x000000018f9fd8bc ReceiveNextEventCommon + 488
+190 HIToolbox                           0x000000018fb8714c _BlockUntilNextEventMatchingListInMode + 48
+191 AppKit                              0x00000001876f13d0 _DPSBlockUntilNextEventMatchingListInMode + 228
+192 AppKit                              0x0000000187045084 _DPSNextEvent + 576
+193 AppKit                              0x0000000187bda96c -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:] + 688
+194 AppKit                              0x0000000187bda678 -[NSApplication(NSEventRouting) nextEventMatchingMask:untilDate:inMode:dequeue:] + 72
+195 Arc                                 0x0000000105c5f988 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 39350248
+196 Arc                                 0x0000000102e9af2c Arc + 1077036
+197 Arc                                 0x0000000102fa7f00 Arc + 2178816
+198 ArcCore                             0x0000000137caadcc base::apple::CallWithEHFrame(void () block_pointer) + 16
+199 Arc                                 0x0000000102e9add4 Arc + 1076692
+200 Arc                                 0x0000000102e9b05c Arc + 1077340
+201 AppKit                              0x000000018725482c -[NSApplication _shouldTerminate] + 1188
+202 AppKit                              0x0000000187246578 -[NSApplication terminate:] + 780
+203 ArcCore                             0x000000013623ebcc chrome::ExitIgnoreUnloadHandlers() + 156
+204 ArcCore                             0x0000000137bea8a8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+205 ArcCore                             0x0000000137c19e74 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+206 ArcCore                             0x0000000137c19660 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+207 ArcCore                             0x0000000137cb2d64 base::MessagePumpCFRunLoopBase::RunWork() + 320
+208 ArcCore                             0x0000000137caadcc base::apple::CallWithEHFrame(void () block_pointer) + 16
+209 ArcCore                             0x0000000137cb21ec base::MessagePumpCFRunLoopBase::RunWorkSource(void*) + 60
+210 CoreFoundation                      0x0000000182c0cfb0 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28
+211 CoreFoundation                      0x0000000182c0cf44 __CFRunLoopDoSource0 + 172
+212 CoreFoundation                      0x0000000182c0ccb0 __CFRunLoopDoSources0 + 232
+213 CoreFoundation                      0x0000000182c0b8d4 __CFRunLoopRun + 820
+214 CoreFoundation                      0x0000000182cde508 _CFRunLoopRunSpecificWithOptions + 532
+215 HIToolbox                           0x000000018f9fa560 RunCurrentEventLoopInMode + 320
+216 HIToolbox                           0x000000018f9fd8bc ReceiveNextEventCommon + 488
+217 HIToolbox                           0x000000018fb8714c _BlockUntilNextEventMatchingListInMode + 48
+218 AppKit                              0x00000001876f13d0 _DPSBlockUntilNextEventMatchingListInMode + 228
+219 AppKit                              0x0000000187045084 _DPSNextEvent + 576
+220 AppKit                              0x0000000187bda96c -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:] + 688
+221 AppKit                              0x0000000187bda678 -[NSApplication(NSEventRouting) nextEventMatchingMask:untilDate:inMode:dequeue:] + 72
+222 Arc                                 0x0000000105c5f988 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 39350248
+223 Arc                                 0x0000000102e9af2c Arc + 1077036
+224 Arc                                 0x0000000102fa7f00 Arc + 2178816
+225 ArcCore                             0x0000000137caadcc base::apple::CallWithEHFrame(void () block_pointer) + 16
+226 Arc                                 0x0000000102e9add4 Arc + 1076692
+227 Arc                                 0x0000000102e9b05c Arc + 1077340
+228 AppKit                              0x000000018703813c -[NSApplication run] + 368
+229 ArcCore                             0x0000000137cb35a8 base::MessagePumpNSApplication::DoRun(base::MessagePump::Delegate*) + 316
+230 ArcCore                             0x0000000137cb18cc base::MessagePumpCFRunLoopBase::Run(base::MessagePump::Delegate*) + 124
+231 ArcCore                             0x0000000137c1aa1c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+232 ArcCore                             0x0000000137bbdb30 base::RunLoop::Run(base::Location const&) + 1056
+233 ArcCore                             0x0000000133344cb4 content::BrowserMainLoop::RunMainMessageLoop() + 308
+234 ArcCore                             0x00000001333470ac content::BrowserMainRunnerImpl::Run() + 344
+235 ArcCore                             0x000000012e23e948 ChromeMainRunHostedBrowser() + 72
+236 ArcCore                             0x0000000137a8d0e0 -[ArcBrowserApplication run] + 84
+237 CoreFoundation                      0x0000000182bed6b4 __invoking___ + 148
+238 CoreFoundation                      0x0000000182bed540 -[NSInvocation invoke] + 424
+239 ArcEngineRecorder.dylib             0x0000000107c5dd58 RecForwardInvocation + 1548
+240 CoreFoundation                      0x0000000182bebdf8 ___forwarding___ + 1032
+241 CoreFoundation                      0x0000000182beb930 _CF_forwarding_prep_0 + 96
+242 Arc                                 0x0000000103242258 Arc + 4907608
+243 Arc                                 0x0000000102d97890 Arc + 14480
+244 Arc                                 0x0000000102d972d4 Arc + 13012
+245 dyld                                0x00000001827844e4 start + 6992
+Task trace:
+0   ArcCore                             0x00000001393fe73c IPC::ChannelAssociatedGroupController::Accept(mojo::Message*) + 1140
+1   ArcCore                             0x0000000137f8b524 mojo::SimpleWatcher::Context::Notify(unsigned int, MojoHandleSignalsState, unsigned int) + 228
+Crash keys:
+  "shutdown-type" = "silent_exit"
+  "component-extension-3" = "Contextual Tasks"
+  "gpu-glver" = "OpenGL ES 3.0 (ANGLE 2.1.1 git hash: 3b89d84e9d59)"
+  "gpu-generation-intel" = "0"
+  "gpu-vsver" = "3.00"
+  "gpu-psver" = "3.00"
+  "gpu-driver" = "26.7.1"
+  "gpu_count" = "1"
+  "gpu-devid" = "0x0000"
+  "gpu-venid" = "0x106b"
+  "component-extension-2" = "Chromium PDF Viewer"
+  "component-extension-1" = "Arc Internal Extension"
+  "num-component-extensions" = "3"
+  "num-extensions" = "0"
+  "keep_alive_registry" = "{registered_count_=3, restart_allowed_count_=0, KeepAlives=[BROWSER (1), DEVTOOLS_WINDOW (1), APP_CONTROLLER (1)]}"
+  "chrome-trace-id" = "18039416215603439657"
+  "reentry_guard_tls_slot" = "274"
+  "num-variations-runtime-overrides" = "0"
+  "variations" = "9cdd2223-3f4a17df,bd6dd170-b5b075b6,f6f5c542-3f4a17df,d5e1fd03-72564c9d,63ef0138-3f4a17df,c6fc28a7-3f4a17df,bc3ce3e6-60a1867b,ae727645-d13781e7,f3dbf5bd-faff9ce0,ce94569c-3f4a17df,c290aefb-d8d91f8f,f3ed486d-3f4a17df,da493d3c-3f4a17df,a29130c-3f4a17df,72bafd3e-cdb4c186,35c106c9-3f4a17df,a66dbd64-71c38a98,e51c83b-dc4755e5,1e12d864-94f75473,92b406bd-3f4a17df,6e4912ad-3f4a17df,4dc2f223-3f4a17df,d6ad7f9a-a9080253,3e15bfc6-3f4a17df,f6ce9b08-3f4a17df,5e7a6b04-3f4a17df,a1777c74-3f4a17df,73f2ea1f-7fe57363,53fa9d2a-3f4a17df,d330cac7-3f4a17df,99fb13df-c3c0f822,6cd68a95-3f4a17df,305240ad-3f4a17df,a4ca7cb1-3f4a17df,73d480d9-3f4a17df,265c01cc-265c01cc,c6080aa-3f4a17df,b63743ab-3f4a17df,fa220cc1-3f4a17df,5e2ea1a-3f4a17df,4076100b-3f4a17df,533ac6d2-3f4a17df,ed3f5f6e-3f4a17df,b127f8bf-3f4a17df,e9844d40-3f4a17df,b1b6eab0-381bdb0c,8f80c10-78198108,46294e3b-3f4a17df,81bf947e-3f4a17df,d1ae5bf4-3f4a17df,8f9d758f-f0fa2256,8f418b04-299bae22,6f87b0c-3f4a17df,9d5ecd8d-ca7d8d80,44fe0078-3f4a17df,55cc39e1-3f4a17df,8e887d5e-3f4a17df,f2f8b883-3f4a17df,b706019d-3f4a17df,c2bfaa56-3f4a17df,21e47f2a-3f4a17df,4146cc26-775f6248,2385f431-3f4a17df,e14ee5ee-c6d6098d,76e51e2c-3f4a17df,25d1e44f-9c275af9,186230f2-3f4a17df,ef4764d7-88fcaf7d,53c64de7-3f4a17df,2e862394-fb669628,9f0fccc2-3f4a17df,e3559213-c0f46cd5,7a7cc1e6-3f4a17df,80b60e4a-3f4a17df,c203d55b-3f4a17df,d5f746a4-39aaf314,4d625646-3f4a17df,4ce582eb-3f4a17df,6e153b90-4fb74fee,3ac9fcb9-3f4a17df,8c162025-3d47f4f4,151258bf-3f4a17df,260bef7d-9973a429,2394f90f-ecc8f8cf,f7d06457-e9d42fcd,fd0aa8ec-3f4a17df,f914376f-3f4a17df,4369f1a2-3f4a17df,ff1e0777-3f4a17df,210f81c-3f4a17df,54b15be4-e3ec50a6,9ba1837a-3f4a17df,a374fdf0-964ff297,30cd3e72-fe6486b2,d990c4ac-3f4a17df,f980930-642c19ed,3d3f8872-3f4a17df,4354ea6d-3f4a17df,35a386c3-3f4a17df,258151b3-3f4a17df,68d69905-3f4a17df,a39574eb-3f4a17df,d3566fbd-c6f74b94,18b8e9fd-3f4a17df,959459a8-3f4a17df,a008700b-4593a253,779782d3-3f4a17df,8f4b3221-3f4a17df,8ad00b0c-3f4a17df,3299018c-3f4a17df,4b781a51-23ee7c7b,4b86e77-9609086,52a4deb3-9c275af9,5d43ba47-3f4a17df,ada18eb5-3f4a17df,1db33038-3f4a17df,3c978b59-3f4a17df,eb689255-3f4a17df,3b02c079-3f4a17df,8ba22946-3f4a17df,820f17d2-e484eeec,a028f288-d24710ce,44666d99-3d47f4f4,6821fcbe-3f4a17df,56aa5797-e5fec5a6,f181271f-4d066f7c,3b79d4f4-3f4a17df,ad757a37-3f4a17df,c219b73b-1edfaeb9,a52330dc-6d77353e,e4d43646-3f4a17df,6ddea229-6ddea229,f4159b43-3f4a17df,c526ddf6-58c66530,6a64ab7e-d0b22900,b60ea2ed-51a6e3be,19784e46-3f4a17df,9f488d92-3f4a17df,2ad3343-3f4a17df,3661073c-3f4a17df,e6d68be3-85c54e1c,eac788b4-77795d80,fd051c38-3f4a17df,1e11dbbb-3f4a17df,bab9965f-76c70532,b3c54bb3-88fcaf7d,9a26d980-13a3e431,78049c75-111140a5,f86bc1e2-3f4a17df,3e672fd9-e109e63f,47a0a3b2-3f4a17df,1a6f8066-3f4a17df,c1e2f598-3f4a17df,171eed38-3f4a17df,6eb9a8f-3f4a17df,7ccab089-3f4a17df,5199db31-f0c504d5,8643cb65-cf4f6ead,f7f6ed33-3f4a17df,56c4f1cd-8c7df51c,5e05ef36-3f4a17df,efd40742-3f4a17df,797fe373-3f4a17df,4e83575c-3f4a17df,8ed472ab-3f4a17df,a2d45efe-2319ef5a,cdc6dc11-e921803b,c5c172fe-443695d8,e642bc8f-3f4a17df,c5be9d88-3f4a17df,bc0b4e45-c1092d08,aa540f4f-3f4a17df,334b1a1c-3f4a17df,ef3132a9-3f4a17df,5e40cc59-a9e4c666,42e76f32-3f4a17df,16f47e60-3f4a17df,c7ee0c67-3f4a17df,63c162ac-e2001c64,3fcef0b9-3f4a17df,3ca85ee1-3d47f4f4,36f9655f-d14604de,f314f5b9-a2b13a7f,ee06daaa-3f4a17df,7dcaa2cd-3f4a17df,89986dbe-3f01b610,75251bde-3d47f4f4,fbf04c3e-3f4a17df,b0b483da-3f4a17df,d512da3a-513c429d,b252442a-3f4a17df,67dae843-3f4a17df,c71292e0-3f4a17df,e770b78e-3f4a17df,ba98e1e4-3f4a17df,ad4acdda-3f4a17df,299dc502-3f4a17df,9cf6c713-7585e9f1,f7adf49b-3f4a17df,70404afa-803f8fc4,531e1626-4513f3bf,7262ef2c-140d00b2,fd36b611-c64b7b92,f6264095-c3f8eab0,d0083347-3ec702d4,6678bb8a-ef96dc7c,b76b514f-3ac589b9,e043b5f9-3f4a17df,92ee5c9-a2abbf9f,626538e5-3f4a17df,6ec84df5-3f4a17df,af943b4f-b3e166c8,c0a2fd9b-3d47f4f4,8018a043-3f4a17df,eff066ba-463f4d40,b4c2bd17-23db2647,5abe5347-3f4a17df,47b4cae6-3f4a17df,fec9e2f8-3f4a17df,2d2b187a-3f4a17df,da968c94-3f4a17df,d09b7b7d-3f4a17df,a015f6e1-3f4a17df,3ede7bd6-3f4a17df,c21c2b8b-3d47f4f4,c297985a-3f4a17df,c7afe1d5-3f4a17df,5870a003-3f4a17df,703ef460-3f4a17df,635e5df5-3f4a17df,a34be965-3f4a17df,18324944-3f4a17df,9507cc99-f2018abe,70640dfa-3f4a17df,5d6e19f0-3d47f4f4,3728c466-3d47f4f4,a3652538-7f6593f0,ba1f9add-3f4a17df,57d64459-3f4a17df,7ca2dd7e-3f4a17df,c823d1e9-3d47f4f4,e2d38844-3f4a17df,29be5797-3f4a17df,d00bdbf9-3f4a17df,2faf225b-3f4a17df,2cee8ab6-3f4a17df,a49a69c3-3f4a17df,a2c6574d-3f4a17df,798ea899-3f4a17df,7b4be1f2-3f4a17df,6331e4d6-3f4a17df,6332ffaf-3f4a17df,595f5eb0-f23d1dea,5910121-3f4a17df,8a0f7c51-112fdb12,377002b7-3f4a17df,38b96156-3f4a17df,186d6e2c-36c0e608,63f121e7-3f4a17df,52a20523-3f4a17df,ed2195eb-3f4a17df,be9ac099-f9095748,f42905ff-3f4a17df,4776ceb-3f4a17df,2e7369a1-4aceb943,c772283a-3f4a17df,e0041356-e8edc07e,77ca3281-3f4a17df,153d998a-53b1d3ec,e0a24f31-3d47f4f4,508ec9c5-3f4a17df,6866cf8e-3f4a17df,54b7c895-7c276543,c7af5641-3f4a17df,e9854fc-2e12b55,de69cad8-3f4a17df,f8b97b53-3f4a17df,4d4e8d94-5191e673,7f6b87dc-3f4a17df,f112d133-3f4a17df,ec3153de-3f4a17df,b357b792-3f4a17df,f4f00e05-ca7d8d80,9481ce98-3d47f4f4,2a426c03-3d47f4f4,4b935545-bb2d3403,70678518-dee66fa8,be338734-dee66fa8,5f9907a9-206f6a6e,8eeccb9a-dee66fa8,2b465683-dee66fa8,52fc7926-dee66fa8,bc9b361d-dee66fa8,a41a7188-dee66fa8,ff71bfdc-dee66fa8,251fc742-dee66fa8,2159dd0c-dee66fa8,4330e9a4-dee66fa8,e7cc79d5-dee66fa8,9a38bae3-3d47f4f4,2d1e43a3-3f4a17df,370ace14-3f4a17df,386dc267-3d47f4f4,d69d967d-9cce7190,3c8f75a1-dcfbe471,a4406b35-1657e2d6,408da146-1657e2d6,a983f698-8e9cac75,"
+  "num-experiments" = "308"
+  "switch-11" = "--no-first-run"
+  "switch-10" = "--no-startup-window"
+  "switch-9" = "--arcmod-host-app"
+  "switch-8" = "--remote-debugging-port=9458"
+  "switch-7" = "--remote-debugging-address=127.0.0.1"
+  "switch-6" = "--user-data-dir=/Users/cryogenicplanet/Library/Application Suppo"
+  "switch-5" = "--host-resolver-rules=MAP arc.net ~NOTFOUND, MAP *.arc.net ~NOTF"
+  "switch-4" = "--disable-background-networking"
+  "switch-3" = "--disable-sync"
+  "switch-2" = "--no-default-browser-check"
+  "switch-1" = "--use-mock-keychain"
+  "num-switches" = "14"
+  "commandline-disabled-feature-1" = "MacAppCodeSignClone"
+  "osarch" = "arm64"
+  "pid" = "44136"
+  "ptype" = "browser"
+
+Received signal 6
+0   ArcCore                             0x0000000137c9d318 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x0000000137c84e30 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x0000000137c9d270 base::debug::(anonymous namespace)::StackDumpSignalHandler(int, __siginfo*, void*) + 924
+3   libsystem_platform.dylib            0x0000000182b59744 _sigtramp + 56
+4   libsystem_pthread.dylib             0x0000000182b4f8d8 pthread_kill + 296
+5   libsystem_c.dylib                   0x0000000182a55978 abort + 148
+6   ArcCore                             0x0000000137b66f28 logging::LogMessage::HandleFatal(unsigned long, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&) const + 456
+7   ArcCore                             0x0000000137b66994 logging::LogMessage::Flush() + 1748
+8   ArcCore                             0x0000000137b6621c logging::LogMessage::~LogMessage() + 36
+9   ArcCore                             0x0000000137b471ec logging::(anonymous namespace)::CheckLogMessage::~CheckLogMessage() + 196
+10  ArcCore                             0x0000000137b47260 logging::(anonymous namespace)::CheckLogMessage::~CheckLogMessage() + 12
+11  ArcCore                             0x0000000141ea0d88 logging::CheckNoreturnError::~CheckNoreturnError() + 16
+12  ArcCore                             0x0000000141ea0d98 base::debug::AsanHeapOverflow() + 0
+13  ArcCore                             0x0000000136af95ec (anonymous namespace)::ReentrancyCheck::ReentrancyCheck(bool*) + 380
+14  ArcCore                             0x0000000136af93b8 TabStripModel::InsertDetachedTabAt(int, std::__Cr::unique_ptr<tabs::TabModel, std::__Cr::default_delete<tabs::TabModel>>, int, std::__Cr::optional<tab_groups::TabGroupId>) + 56
+15  ArcCore                             0x0000000136af9330 TabStripModel::InsertWebContentsAt(int, std::__Cr::unique_ptr<content::WebContents, std::__Cr::default_delete<content::WebContents>>, int, std::__Cr::optional<tab_groups::TabGroupId>) + 108
+16  ArcCore                             0x0000000137ac1ab4 -[ArcBrowser takeOwnershipOfWebContents:] + 148
+17  CoreFoundation                      0x0000000182bed6b4 __invoking___ + 148
+18  CoreFoundation                      0x0000000182bed540 -[NSInvocation invoke] + 424
+19  ArcEngineRecorder.dylib             0x0000000107c5dd58 RecForwardInvocation + 1548
+20  CoreFoundation                      0x0000000182bebdf8 ___forwarding___ + 1032
+21  CoreFoundation                      0x0000000182beb930 _CF_forwarding_prep_0 + 96
+22  ArcCore                             0x0000000137ac19e4 -[ArcBrowser createWebContents:] + 132
+23  CoreFoundation                      0x0000000182bed6b4 __invoking___ + 148
+24  CoreFoundation                      0x0000000182bed540 -[NSInvocation invoke] + 424
+25  ArcEngineRecorder.dylib             0x0000000107c5dd58 RecForwardInvocation + 1548
+26  CoreFoundation                      0x0000000182bebdf8 ___forwarding___ + 1032
+27  CoreFoundation                      0x0000000182beb930 _CF_forwarding_prep_0 + 96
+28  Arc                                 0x00000001032b9ebc Arc + 5398204
+29  Arc                                 0x00000001032bcf2c Arc + 5410604
+30  Arc                                 0x00000001040d7f28 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 10483080
+31  Arc                                 0x00000001040ed920 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 10571648
+32  Combine                             0x0000000198de00d4 $s7Combine6FutureCyACyxq_Gyys6ResultOyxq_GcccfcTf4gn_n + 372
+33  Combine                             0x0000000198ddc3d8 $s7Combine6FutureCyACyxq_Gyys6ResultOyxq_GcccfC + 60
+34  Arc                                 0x000000010332102c Arc + 5820460
+35  Arc                                 0x0000000103324f40 Arc + 5836608
+36  Arc                                 0x000000010349a224 Arc + 7365156
+37  Arc                                 0x00000001034982f0 Arc + 7357168
+38  Arc                                 0x000000010349b680 Arc + 7370368
+39  libswift_Concurrency.dylib          0x0000000287fd6380 $ss9TaskLocalC9withValue_9operation4file4lineqd__x_qd__yKXESSSutKlF + 232
+40  Arc                                 0x0000000103498278 Arc + 7357048
+41  Arc                                 0x0000000103499590 Arc + 7361936
+42  Arc                                 0x0000000103320f50 Arc + 5820240
+43  Combine                             0x0000000198db91b8 $s7Combine8DeferredV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 172
+44  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+45  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+46  Combine                             0x0000000198db91d4 $s7Combine8DeferredV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 200
+47  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+48  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+49  Combine                             0x0000000198e03c30 $s7Combine10PublishersO17PrefixUntilOutputV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AIRtz5InputQyd__0E0RtzlF + 188
+50  Combine                             0x0000000198e416c4 $s7Combine10PublishersO12HandleEventsV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AIRtz5InputQyd__6OutputRtzlF + 304
+51  Combine                             0x0000000198db91d4 $s7Combine8DeferredV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 200
+52  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+53  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+54  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+55  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+56  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+57  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+58  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+59  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+60  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+61  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+62  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+63  Arc                                 0x00000001035ee3b8 Arc + 8758200
+64  Combine                             0x0000000198e0b510 $s7Combine10PublishersO5MergeV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AIRt_5InputQyd__6OutputRt_lF + 364
+65  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+66  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+67  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+68  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+69  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+70  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+71  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+72  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+73  Combine                             0x0000000198e4bcf4 $s7Combine10PublishersO3MapV7receive10subscriberyqd___t5InputQyd__Rs_AA10SubscriberRd__7FailureQyd__AKRtzlF + 460
+74  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+75  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+76  Arc                                 0x00000001035ee3b8 Arc + 8758200
+77  Combine                             0x0000000198e441ec $s7Combine10PublishersO11ConcatenateV5InnerC13prefixReceive10completionyAA11SubscribersO10CompletionOy_7FailureQzG_tF + 1476
+78  Combine                             0x0000000198e43c1c $s7Combine10PublishersO11ConcatenateV5InnerC16PrefixSubscriberV7receive10completionyAA11SubscribersO10CompletionOy_7FailureQzG_tF + 24
+79  Combine                             0x0000000198de0968 $s7Combine5EmptyV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 308
+80  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+81  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+82  Combine                             0x0000000198db91d4 $s7Combine8DeferredV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 200
+83  Combine                             0x0000000198db91d4 $s7Combine8DeferredV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 200
+84  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+85  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+86  Arc                                 0x00000001035ee3b8 Arc + 8758200
+87  Combine                             0x0000000198e435d0 $s7Combine10PublishersO11ConcatenateV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AIRt_5InputQyd__6OutputRt_lF + 532
+88  Combine                             0x0000000198e4b454 $s7Combine12PublisherBoxC7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AGRtz5InputQyd__6OutputRtzlF + 104
+89  Combine                             0x0000000198e4b6ec $s7Combine12AnyPublisherV7receive10subscriberyqd___t5InputQyd__Rsz7FailureQyd__Rs_AA10SubscriberRd__lF + 56
+90  Combine                             0x0000000198e416c4 $s7Combine10PublishersO12HandleEventsV7receive10subscriberyqd___tAA10SubscriberRd__7FailureQyd__AIRtz5InputQyd__6OutputRtzlF + 304
+91  Combine                             0x0000000198db9d6c $s7Combine9PublisherPAAE4sink17receiveCompletion0D5ValueAA14AnyCancellableCyAA11SubscribersO0E0Oy_7FailureQzGc_y6OutputQzctF + 320
+92  Arc                                 0x0000000103619b3c Arc + 8936252
+93  Arc                                 0x000000010361dca0 Arc + 8952992
+94  Arc                                 0x00000001034993cc Arc + 7361484
+95  Arc                                 0x00000001036184ac Arc + 8930476
+96  Arc                                 0x000000010361a8a4 Arc + 8939684
+97  Arc                                 0x000000010361e9c0 Arc + 8956352
+98  Arc                                 0x000000010349a224 Arc + 7365156
+99  Arc                                 0x00000001034982f0 Arc + 7357168
+100 Arc                                 0x000000010349b680 Arc + 7370368
+101 libswift_Concurrency.dylib          0x0000000287fd6380 $ss9TaskLocalC9withValue_9operation4file4lineqd__x_qd__yKXESSSutKlF + 232
+102 Arc                                 0x0000000103498278 Arc + 7357048
+103 Arc                                 0x0000000103499590 Arc + 7361936
+104 Arc                                 0x0000000103619e58 Arc + 8937048
+105 Combine                             0x0000000198dba760 $s7Combine11SubscribersO4SinkC7receiveyAC6DemandVxF + 92
+106 Combine                             0x0000000198dbafb4 $s7Combine11SubscribersO4SinkCy_xq_GAA10SubscriberA2aGP7receiveyAC6DemandV5InputQzFTW + 24
+107 Combine                             0x0000000198e41ee4 $s7Combine10PublishersO12HandleEventsV5Inner33_9464E9048FC4C9C669F954B681B5AD45LLC7receiveyAA11SubscribersO6DemandV6OutputQzF + 208
+108 Combine                             0x0000000198e42118 $s7Combine10PublishersO12HandleEventsV5Inner33_9464E9048FC4C9C669F954B681B5AD45LLCy_x_qd__GAA10SubscriberA2aJP7receiveyAA11SubscribersO6DemandV5InputQzFTW + 24
+109 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+110 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+111 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+112 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+113 Combine                             0x0000000198e445a4 $s7Combine10PublishersO11ConcatenateV5InnerC13suffixReceiveyAA11SubscribersO6DemandV6OutputQzF + 244
+114 Combine                             0x0000000198e444a4 $s7Combine10PublishersO11ConcatenateV5InnerC16SuffixSubscriberV7receiveyAA11SubscribersO6DemandV6OutputQzF + 24
+115 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+116 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+117 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+118 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+119 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+120 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+121 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+122 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+123 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+124 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+125 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+126 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+127 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+128 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+129 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+130 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+131 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+132 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+133 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+134 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+135 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+136 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+137 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+138 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+139 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+140 Combine                             0x0000000198e1a064 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7requestyyAA11SubscribersO6DemandVFAKq0_XEfU2_TATm + 56
+141 Combine                             0x0000000198e132f4 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC22guardedApplyDownstreamyqd__qd__q0_XElF + 184
+142 Combine                             0x0000000198e13c08 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC7receiveyAA11SubscribersO6DemandVx_SitF + 396
+143 Combine                             0x0000000198e13a70 $s7Combine10PublishersO7_Merged33_3ECDDD5E136557E37A635C683348124DLLC4SideV7receiveyAA11SubscribersO6DemandVxF + 24
+144 Combine                             0x0000000198e41ee4 $s7Combine10PublishersO12HandleEventsV5Inner33_9464E9048FC4C9C669F954B681B5AD45LLC7receiveyAA11SubscribersO6DemandV6OutputQzF + 208
+145 Combine                             0x0000000198e42118 $s7Combine10PublishersO12HandleEventsV5Inner33_9464E9048FC4C9C669F954B681B5AD45LLCy_x_qd__GAA10SubscriberA2aJP7receiveyAA11SubscribersO6DemandV5InputQzFTW + 24
+146 Combine                             0x0000000198e04758 $s7Combine10PublishersO17PrefixUntilOutputV5InnerC7receiveyAA11SubscribersO6DemandV0E0QzF + 220
+147 Combine                             0x0000000198e04a48 $s7Combine10PublishersO17PrefixUntilOutputV5InnerCy_xq__qd__qd_0_GAA10SubscriberA2aIP7receiveyAA11SubscribersO6DemandV5InputQzFTW + 24
+148 Combine                             0x0000000198e4c0fc $s7Combine10PublishersO3MapV5Inner33_5A6CD15A64659A6248DAF677D4BB6188LLV7receiveyAA11SubscribersO6DemandV6OutputQzF + 204
+149 Combine                             0x0000000198dc8a60 $s7Combine18PassthroughSubjectC7ConduitC5offeryyxF + 724
+150 Combine                             0x0000000198dc7264 $s7Combine18PassthroughSubjectC4sendyyxFyAA11ConduitBaseCyxq_GXEfU_TA + 60
+151 Combine                             0x0000000198dfdda4 $s7Combine11ConduitListO7forEachyyyAA0B4BaseCyxq_GKXEKF + 268
+152 Combine                             0x0000000198dc7f24 $s7Combine18PassthroughSubjectC4sendyyxF + 256
+153 Arc                                 0x0000000103bcb39c $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 5188092
+154 Arc                                 0x00000001032cc9b8 Arc + 5474744
+155 CoreFoundation                      0x0000000182bed6b4 __invoking___ + 148
+156 CoreFoundation                      0x0000000182bed540 -[NSInvocation invoke] + 424
+157 ArcEngineRecorder.dylib             0x0000000107c5dd58 RecForwardInvocation + 1548
+158 CoreFoundation                      0x0000000182bebdf8 ___forwarding___ + 1032
+159 CoreFoundation                      0x0000000182beb930 _CF_forwarding_prep_0 + 96
+160 ArcCore                             0x0000000137ac8ad4 -[ArcWebContents nativeContentsDestroyed] + 252
+161 ArcCore                             0x0000000137acc050 (anonymous namespace)::ArcContentsObserver::WebContentsDestroyed() + 388
+162 ArcCore                             0x0000000133c11a24 void content::WebContentsImpl::WebContentsObserverList::NotifyObservers<void (content::WebContentsObserver::*)()>(void (content::WebContentsObserver::*)()) + 404
+163 ArcCore                             0x0000000133c101fc content::WebContentsImpl::~WebContentsImpl() + 2032
+164 ArcCore                             0x0000000133c11b74 content::WebContentsImpl::~WebContentsImpl() + 12
+165 ArcCore                             0x0000000136af6230 tabs::TabModel::~TabModel() + 696
+166 ArcCore                             0x0000000136afc56c TabStripModel::SendDetachWebContentsNotifications(TabStripModel::DetachNotifications*) + 1388
+167 ArcCore                             0x0000000136b06058 TabStripModel::CloseTabs(base::span<content::WebContents* const, 18446744073709551615ul, content::WebContents* const*>, unsigned int) + 1368
+168 ArcCore                             0x0000000136b05a10 TabStripModel::CloseAllTabs() + 444
+169 ArcCore                             0x00000001368f9bdc UnloadController::OnWindowClosing() + 1104
+170 ArcCore                             0x00000001368f9674 UnloadController::ProcessPendingTabs(bool) + 712
+171 ArcCore                             0x00000001368fae60 UnloadController::CanCloseContents(content::WebContents*) + 100
+172 ArcCore                             0x000000013664aec4 BrowserWebContentsDelegate::CloseContents(content::WebContents*) + 248
+173 ArcCore                             0x0000000133c3c01c content::WebContentsImpl::Close() + 220
+174 ArcCore                             0x000000013397ee70 content::RenderFrameHostImpl::ClosePageIgnoringUnloadEvents(content::RenderFrameHostImpl::ClosePageSource, base::RepeatingCallback<void ()>) + 360
+175 ArcCore                             0x00000001339ba20c base::internal::Invoker<base::internal::FunctorTraits<void (content::RenderFrameHostImpl::*&&)(content::RenderFrameHostImpl::ClosePageSource, base::RepeatingCallback<void ()>), base::WeakPtr<content::RenderFrameHostImpl>&&, content::RenderFrameHostImpl::ClosePageSource&&, base::RepeatingCallback<void ()>&&>, base::internal::BindState<true, true, false, void (content::RenderFrameHostImpl::*)(content::RenderFrameHostImpl::ClosePageSource, base::RepeatingCallback<void ()>), base::WeakPtr<content::RenderFrameHostImpl>, content::RenderFrameHostImpl::ClosePageSource, base::RepeatingCallback<void ()>>, void ()>::RunOnce(base::internal::BindStateBase*) + 108
+176 ArcCore                             0x000000012fc07ec0 blink::mojom::LocalMainFrame_ClosePage_ForwardToCallback::Accept(mojo::Message*) + 256
+177 ArcCore                             0x0000000137f5e9f4 mojo::InterfaceEndpointClient::HandleValidatedMessage(mojo::Message*) + 1324
+178 ArcCore                             0x0000000137f656d4 mojo::MessageDispatcher::Accept(mojo::Message*) + 468
+179 ArcCore                             0x0000000137f60a8c mojo::InterfaceEndpointClient::HandleIncomingMessage(mojo::Message*) + 76
+180 ArcCore                             0x0000000139401294 IPC::ChannelAssociatedGroupController::AcceptOnEndpointThread(mojo::Message, IPC::(anonymous namespace)::ScopedUrgentMessageNotification) + 608
+181 ArcCore                             0x0000000139401da4 base::internal::Invoker<base::internal::FunctorTraits<void (IPC::ChannelAssociatedGroupController::*&&)(mojo::Message, IPC::(anonymous namespace)::ScopedUrgentMessageNotification), IPC::ChannelAssociatedGroupController*&&, mojo::Message&&, IPC::(anonymous namespace)::ScopedUrgentMessageNotification&&>, base::internal::BindState<true, true, false, void (IPC::ChannelAssociatedGroupController::*)(mojo::Message, IPC::(anonymous namespace)::ScopedUrgentMessageNotification), scoped_refptr<IPC::ChannelAssociatedGroupController>, mojo::Message, IPC::(anonymous namespace)::ScopedUrgentMessageNotification>, void ()>::RunOnce(base::internal::BindStateBase*) + 176
+182 ArcCore                             0x0000000137bea8a8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+183 ArcCore                             0x0000000137c19e74 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+184 ArcCore                             0x0000000137c19660 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+185 ArcCore                             0x0000000137cb2d64 base::MessagePumpCFRunLoopBase::RunWork() + 320
+186 ArcCore                             0x0000000137caadcc base::apple::CallWithEHFrame(void () block_pointer) + 16
+187 ArcCore                             0x0000000137cb21ec base::MessagePumpCFRunLoopBase::RunWorkSource(void*) + 60
+188 CoreFoundation                      0x0000000182c0cfb0 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28
+189 CoreFoundation                      0x0000000182c0cf44 __CFRunLoopDoSource0 + 172
+190 CoreFoundation                      0x0000000182c0ccb0 __CFRunLoopDoSources0 + 232
+191 CoreFoundation                      0x0000000182c0b8d4 __CFRunLoopRun + 820
+192 CoreFoundation                      0x0000000182cde508 _CFRunLoopRunSpecificWithOptions + 532
+193 HIToolbox                           0x000000018f9fa560 RunCurrentEventLoopInMode + 320
+194 HIToolbox                           0x000000018f9fd8bc ReceiveNextEventCommon + 488
+195 HIToolbox                           0x000000018fb8714c _BlockUntilNextEventMatchingListInMode + 48
+196 AppKit                              0x00000001876f13d0 _DPSBlockUntilNextEventMatchingListInMode + 228
+197 AppKit                              0x0000000187045084 _DPSNextEvent + 576
+198 AppKit                              0x0000000187bda96c -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:] + 688
+199 AppKit                              0x0000000187bda678 -[NSApplication(NSEventRouting) nextEventMatchingMask:untilDate:inMode:dequeue:] + 72
+200 Arc                                 0x0000000105c5f988 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 39350248
+201 Arc                                 0x0000000102e9af2c Arc + 1077036
+202 Arc                                 0x0000000102fa7f00 Arc + 2178816
+203 ArcCore                             0x0000000137caadcc base::apple::CallWithEHFrame(void () block_pointer) + 16
+204 Arc                                 0x0000000102e9add4 Arc + 1076692
+205 Arc                                 0x0000000102e9b05c Arc + 1077340
+206 AppKit                              0x000000018725482c -[NSApplication _shouldTerminate] + 1188
+207 AppKit                              0x0000000187246578 -[NSApplication terminate:] + 780
+208 ArcCore                             0x000000013623ebcc chrome::ExitIgnoreUnloadHandlers() + 156
+209 ArcCore                             0x0000000137bea8a8 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+210 ArcCore                             0x0000000137c19e74 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+211 ArcCore                             0x0000000137c19660 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+212 ArcCore                             0x0000000137cb2d64 base::MessagePumpCFRunLoopBase::RunWork() + 320
+213 ArcCore                             0x0000000137caadcc base::apple::CallWithEHFrame(void () block_pointer) + 16
+214 ArcCore                             0x0000000137cb21ec base::MessagePumpCFRunLoopBase::RunWorkSource(void*) + 60
+215 CoreFoundation                      0x0000000182c0cfb0 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28
+216 CoreFoundation                      0x0000000182c0cf44 __CFRunLoopDoSource0 + 172
+217 CoreFoundation                      0x0000000182c0ccb0 __CFRunLoopDoSources0 + 232
+218 CoreFoundation                      0x0000000182c0b8d4 __CFRunLoopRun + 820
+219 CoreFoundation                      0x0000000182cde508 _CFRunLoopRunSpecificWithOptions + 532
+220 HIToolbox                           0x000000018f9fa560 RunCurrentEventLoopInMode + 320
+221 HIToolbox                           0x000000018f9fd8bc ReceiveNextEventCommon + 488
+222 HIToolbox                           0x000000018fb8714c _BlockUntilNextEventMatchingListInMode + 48
+223 AppKit                              0x00000001876f13d0 _DPSBlockUntilNextEventMatchingListInMode + 228
+224 AppKit                              0x0000000187045084 _DPSNextEvent + 576
+225 AppKit                              0x0000000187bda96c -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:] + 688
+226 AppKit                              0x0000000187bda678 -[NSApplication(NSEventRouting) nextEventMatchingMask:untilDate:inMode:dequeue:] + 72
+227 Arc                                 0x0000000105c5f988 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 39350248
+228 Arc                                 0x0000000102e9af2c Arc + 1077036
+229 Arc                                 0x0000000102fa7f00 Arc + 2178816
+230 ArcCore                             0x0000000137caadcc base::apple::CallWithEHFrame(void () block_pointer) + 16
+231 Arc                                 0x0000000102e9add4 Arc + 1076692
+232 Arc                                 0x0000000102e9b05c Arc + 1077340
+233 AppKit                              0x000000018703813c -[NSApplication run] + 368
+234 ArcCore                             0x0000000137cb35a8 base::MessagePumpNSApplication::DoRun(base::MessagePump::Delegate*) + 316
+235 ArcCore                             0x0000000137cb18cc base::MessagePumpCFRunLoopBase::Run(base::MessagePump::Delegate*) + 124
+236 ArcCore                             0x0000000137c1aa1c base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+237 ArcCore                             0x0000000137bbdb30 base::RunLoop::Run(base::Location const&) + 1056
+238 ArcCore                             0x0000000133344cb4 content::BrowserMainLoop::RunMainMessageLoop() + 308
+239 ArcCore                             0x00000001333470ac content::BrowserMainRunnerImpl::Run() + 344
+240 ArcCore                             0x000000012e23e948 ChromeMainRunHostedBrowser() + 72
+241 ArcCore                             0x0000000137a8d0e0 -[ArcBrowserApplication run] + 84
+242 CoreFoundation                      0x0000000182bed6b4 __invoking___ + 148
+243 CoreFoundation                      0x0000000182bed540 -[NSInvocation invoke] + 424
+244 ArcEngineRecorder.dylib             0x0000000107c5dd58 RecForwardInvocation + 1548
+245 CoreFoundation                      0x0000000182bebdf8 ___forwarding___ + 1032
+246 CoreFoundation                      0x0000000182beb930 _CF_forwarding_prep_0 + 96
+247 Arc                                 0x0000000103242258 Arc + 4907608
+248 Arc                                 0x0000000102d97890 Arc + 14480
+249 Arc                                 0x0000000102d972d4 Arc + 13012
+[end of stack trace]

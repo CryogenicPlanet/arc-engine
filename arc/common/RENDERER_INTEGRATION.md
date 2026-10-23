@@ -1,19 +1,89 @@
 # Renderer integration, 2026-10-23
 
-CURRENT RELEASE: corrected UNAPPLIED TopBandd106f59e replaces withdrawn88.
+SHUTDOWN EVIDENCE LIMIT: below, “natural Browser.close/quit” means the harness
+sent Browser.close, observed browser/captured helpers absent, and used no fallback
+TERM for that run. It is NOT an observed normal OS exit status, WillTerminate or
+atexit receipt, and does not by itself exclude a crash. Peer140398 exposed that
+limit. Bounded audit renderer-shutdown-observation-audit/ preserved65exact files,
+including6app.logs/fullraw recordings: no matching fatal/DCHECK/signal/crash
+signatures, but also no WillTerminate/atexit/nativeOSwaitstatus. Normal OS exit
+and crash absence remain UNPROVEN. No source/runtime change or new run.
+
+NEW STATIC OWNED GAP: queued rules publication. Native has separate cosmetic/URL
+weak-service tasks and unconditional per-channel resets when live11 is false at
+callback; actual process registry sends one immediate combined update and <=ID
+receiver guards reject equal-revision reset/reapply. Fullbd0 network guard also
+needs correction. Native audit is complete/fresh-reviewed (17input pins exact);
+plan7ed62a79 is complete/fresh-reviewed; one PRIVATE writer stages the correction.
+No actual production/interface-generation/runtime fix yet. URL cancellation byte
+confirmationcdb8f80c is also complete. This
+is not blanket disable→clear: ordinary disable retains installed agent filtering.
+See logs/wp/renderer-feature11-observer-current-audit/ and renderer-queued-rules-design/.
+
+CURRENT OFFICIAL CSS AUDIT (raw977/native vs ff86/ours):29artifact assertions
+pass. __arc_theme_css remains app3/5; extras3920/4226 are main/depth1/run-only,
+not nested renderer calls. Creation-window visibility/state are published inside
+ours didCreate before initialtheme, after native callback; exact theme enqueue
+trigger remains unproved. Core review anchors arc_web_contents.mm407–410/316–359/
+720–752 and arc_browser.mm497–521. Recorder truncates theme CSS after300chars;
+full-payload equality is unknown. Evidence logs/wp/renderer-theme-css-current-
+official-audit/REPORT.md +audit.json. No normalization or renderer workaround.
+Chirp140369 requests core review plus accepted active Boost/filter/adblock/TopBand
+fixtures. No own runtime/build/waiter is active.
+
+CURRENT COMMIT PROPOSAL f18d3961 is UNAPPLIED/HELD at
+renderer_top_band_commit_refresh_proposal.patch; it replaces WITHDRAWN757.
+Refresh is ONLY IsPageActivation (BFCache OR prerender), captured committed&&
+before KVO and terminal after enqueue.3actualflags checks0/empty,22full composition
+routes and two fresh reviews pass. No actual shared hook is activated. BFCache/
+prerender finish/nested runtime and final linkage remain unverified. Manifest:
+logs/wp/renderer-topband-commit-refresh-activation-proposal/published-proposal.json
+(1b9ad84a...). Do not use archived757 broad generic-commit admission.
+
+CURRENT APP BASELINE: adopted flags ECC requires the UNAPPLIED alternative
+ALLbd0e51f1 → gradient66179056 → TopBand9d222711. App-only7dd is an alternative
+to full ALLbd0; never add both or restore old app bytes. Entire adopted typed
+string/int suffix and utility include are preserved. Earlier e90/d71/5ce and
+original e07/d106 remain immutable alternatives for their recorded old baselines.
+ECC adds one unchanged app-hunk context line only;49otherALLsections unchanged.
+New stacked-app syntax0/empty and fresh full77-file composition review pass.
+Startup746 composes; discard723 stays independently HELD. Commit757 WITHDRAWN;
+corrected activation-only f18 is published UNAPPLIED/HELD. Current manifest:
+logs/wp/renderer-app-flags-ecc-context/published-proposal.json (855318f7...).
+
+ORIGINAL BASELINE RELEASE: corrected UNAPPLIED TopBandd106f59e replaces withdrawn88.
 Dependency order ALL e07 → gradient661 → TopBandd106.19actual-flags checks0/empty;
 38fixtures compiled NOT executed; native-contract and canonical replay reviews pass.
 Native geometry and active-pending/no-area findings are closed. Historical88 is
-archived; dependent723 remains HELD while privately rebasing. Count-only discard21a
-remains independently HELD for core global phases. Production is unchanged.
+archived; dependent723 is published/rebased but HELD for core phases. Count-only discard21a
+remains independently HELD for core global phases. New owned extraction initializer
+correction is applied/checked and its dispatch behavior observed in fresh official
+peer rawff86; exact full-package attribution remains unavailable.
 Public TopBand flag is31 (36 is Snapshot); startup relay is proved but not integrated.
-Native live propagation, commit refresh activation and private ABI remain open.
+Native live propagation and commit refresh activation remain open. Private C++
+selectors are architecture-exempt.
 
 
-## Current handoff, 2026-10-23 13:36UTC
+## Current handoff, updated 2026-10-23 14:44UTC
 
-Production remains unchanged since the verified exclusion/compiler-sequence fixes.
-Published UNAPPLIED order: ALL `e07d1b39` → gradient `66179056` → corrected
+Native retry99411/tool36389 completed14:21:44UTC and drained0. Both5-stage modes
+have18real callbacks each:14navigation+4TopBand, allmain/source/forwarding verified.
+173strict checks pass;135input guards/profile journals/natural shutdown and18PID
+absence checks pass. Ordinary A/B/back/forward each start→commit→finish→colorF;
+fragment has2in-page callbacks and NO color replay. All4history traversals report
+BackForwardCacheDisabled+BrowsingInstanceNotSwapped, newnonce/timeOrigin and
+persisted=false: no BFCache or activation-order claim.20RAFbarriers each got2ticks,
+but18were hidden; controlsINCONCLUSIVE/paritynull. Parent viewed original red/blue/
+fragment PNGs, all5stageimages byte-identical between native controls. Audit:
+logs/wp/renderer-topband-commit-native-retry1-audit/; no own job/waiter active.
+
+Production additionally includes the reviewed owned extraction initializer correction:
+two-argument service initializer calls super directly, preserving data/weak owner
+without the extra one-argument recorded dispatch. Realflags/official checks pass;
+new official peer rawff86 confirms corrected constructor dispatch (twoarg1/onearg0),
+37/37 and natural exit. Whole-build/package source fingerprint unavailable; no
+duplicate canonical run planned. Evidence: renderer-extraction-initializer-fix/.
+Original-baseline UNAPPLIED order: ALL `e07d1b39` → gradient `66179056` → corrected
 TopBand `d106f59e` → optional startup `746ac8cc`. TopBand19real-flags checks0/empty,
 38fixtures compiled NOT executed; canonical replay/native-contract reviews clean.
 Geometry admits edge/fullbleed; strict interior needs coalescing+all3quarters.
@@ -23,9 +93,11 @@ Startup746 supplies the pre-Chrome installer/shared declaration/weakdefault and
 hosted renderer child callback reading public31. Native name lookup proves31TopBand,
 36Snapshot,43HEIF. No live IPC was invented. Real GN/link/weak-provider resolution,
 replacement runtime and conflicting feature-override behavior remain unverified.
-Commit refresh remains unwired; native receipt order is under a final placement
-review. Ordinary nonnested refresh precedes posted ObjC commit delivery; absolute
-nested/reentrant delivery order remains unproved. Private C++handle ABI is in recon.
+Commit refresh remains unwired; the reviewed two-file design places it after
+notification enqueue, guarded across URL/KVO reentry. Activation-only nonnested refresh
+precedes posted ObjC commit delivery; ordinary commits skip it. BFCache finish timing and absolute
+nested/reentrant delivery order remains unproved. Private C++handle selectors are exempt under ARCHITECTURE.md:32-33; optional typed
+recon is preserved, not an acceptance blocker.
 
 HELD count-only discard21a or full-stack723 (ALTERNATIVES, never both): retained
 native peer count read before teardown, seeded before new publication, KVO synclast.
@@ -48,16 +120,30 @@ logs/wp/renderer-topband-next-native-audit/ and visual-review.run2.json. Nativeo
 Peer UI37/37 fresh-profile renderer replay/natural quit remains scoped evidence.
 10strict CSScalls each match preservedv1 and current attributednative. Current-native
 vs historical UI global57 is diagnostic; old84 remains pinned tov1. Twoextra theme
-calls are app-origin, upstream schedulingunproved, no renderer workaround. Official
-results/ours/renderer-public-api remains absent. Timestamped census13:35:58UTC:
-24canonical/29launches/12v1archivesexcluded/21shared diff snapshots; all27renderer
-rows remain visible. See run2report/annex for literal first2headers. Acceptance
-is in progress; no own app/build/waiter is active.
+calls are app-origin, upstream schedulingunproved, no renderer workaround. Official results/ours/renderer-public-api now exists: integrator14:03:30UTC,37/37,
+natural Browser.close+8helpers, rawff86, global57/callback66vs106. It is preserved;
+source/whole-package fingerprints unavailable. No redundant own canonical rerun.
+Timestamped census14:49:10UTC:24accepted native/29launches/12v1archivesexcluded,
+28comparisons across all24dirs; restartlaunch2 missing. Ours markers11true/13false,
+all28renderer count rows retained (0missing). BookmarksCSS1/3,tabsCSS3/9; fresh
+command-barCSS1/1. Officialrendererunchanged.231frozen capture pins/postcheckmatch;
+no atomic producer-publication claim. Downloads sole stale-native comparison;
+4comparator timestamp flags. See renderer.shared-diff-census.20261023T144910Z.run2.md
+and matchingcoverage/frozenmanifest for literal first2headers/full SHA/UTC. Acceptance
+is in progress; no own app/build/waiter is active. All24recorded native app/helper
+PIDs were absent at13:42:39UTC (read-only exit check). Chirp139432 records the completed batch.
 
-## Current adoption artifact
+Historical app flags e90fa256 adopted native narrowed-ID/changed-only semantics after
+the original ALL patch was frozen. The published d71 alternative preserves those
+semantics, refreshes changed normalized11 only after unlock, and requires9d instead
+of d106 for one getter-context line. This is the preserved e90 baseline only;
+current ECC requires bd0/7dd plus9d as listed above. Old artifacts are unchanged.
 
-Use the consolidated renderer_all_integration_proposal.patch INSTEAD of its
-component proposals below. Current SHA256 is
+## Historical original-baseline adoption artifact
+
+The following original-baseline route is preserved for reproducibility only.
+Current ECC uses bd0/7dd plus9d listed above. For the old baseline, consolidated
+renderer_all_integration_proposal.patch REPLACES its components. Its frozen SHA256 is
 e07d1b39dd68beb59af325ab90446c760cc731911a2caf422d766ac20c0612bf,
 rebased onto the applied false-feature exclusion and serialized-compiler corrections. Follow it with
 renderer_gradient_followup_proposal.patch, SHA256
@@ -198,26 +284,26 @@ document PiP consumes/checks first and only then includes the skip flag.
 No per-tab storage or navigation replay should be added.
 
 
-## TopBand incremental proposal
+## Corrected TopBand proposal and preserved diagnostic history
 
-After exact ALL e07d1b39dd68beb59af325ab90446c760cc731911a2caf422d766ac20c0612bf
-and gradient66179056ee5ae3a5c76f226e805ca86a8652279ea9f8fd15ac7ec799bf129e80,
-review renderer_top_band_integration_proposal.patch, SHA256
-88adc051e7c8f8ed6646396215482b20eb04042b7a8b77aab0eae3cca3eb37ab.
-It contains29files (20Blink/shared,6owned transport,3lead hooks), and is an
-alternative to its3disjoint components. All19actual-flags syntax checks pass;
-25focused cases compile but have not run. Fresh independent composition and
-native-contract recheck pass; withdrawn359must not be adopted.
+The original-baseline route is ALL e07 → gradient661 → corrected TopBandd106,
+19actual-flags checks0/empty and38fixtures compiled, NOT executed. Current live
+ECC app instead requires ALLbd0 (or app-only7dd+unchanged49-file remainder),
+gradient661, and TopBand9d. Full ALL and its components are alternatives.
+The old88 proposal is WITHDRAWN; its source/evidence remains archived. Current
+canonical hashes/manifests are listed in the opening handoff. Never restore old
+staged full-source files over peer changes.
 
-This proposal remains incomplete: committed-navigation refresh is implemented
-but unwired pending native observer ordering; Arc36 relay/live updates are
-unproved and absent; private shared-handle ABI remains uncovered. Default base
-feature is disabled. Do not call static compile/review evidence runtime parity.
-Exact dependencies/hashes/checks/limitations: logs/wp/renderer-top-band-proposal/.
+Startup746 supplies public feature31→Blink argv relay;36 is Snapshot. Corrected
+f18 adds only activation-specific existing-sampler refresh (BFCache OR prerender)
+after navigation receipt enqueue with weak lifetime/identity guards. It replaces
+withdrawn757 and remains UNAPPLIED/HELD. Ordinary and same-document commits skip
+that replay. Final GN/link and replacement runtime are still unverified. Private
+C++ handle selectors are architecture-exempt, not an acceptance blocker.
 
-The first native4mode callback diagnostic preserved all four incomplete runs
-under results/renderer-topband-native-run2: a background RAF wait timed out
-before any full stage. Base/both produced one genuine red callback; default/Arc
-were silent, not nil. A compiled/reviewed isolated retry removes that RAF wait,
-records bounded host/capture timing, and adds a high-contrast gradient opportunity
-for a real nullable callback. No foreground UI or engine flag workaround.
+Historical52933 was a failed four-mode diagnostic: background RAF timeout before
+a full stage, one real red callback in base/both and silence in default/Arc,
+not nil or parity. Those raw results are preserved. Later87533 and99411 completed
+and were drained; latest99411 has173audit checks,36genuine callbacks and no
+BFCache traversal. All four back/forward paths were explicitly disabled/newdoc.
+No own job/waiter is active; current runtime limits are in the opening handoff.

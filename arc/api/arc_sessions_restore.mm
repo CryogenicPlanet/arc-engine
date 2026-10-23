@@ -529,16 +529,16 @@ ARC_EXPORT @interface ArcSessionTab : NSObject
 }
 - (void)setNavigations:(NSArray<ArcSessionNavigation*>*)navigations {
   CHECK(_tab);
-  // Native SetNavigations rejects an empty history before replacing its vector.
-  CHECK_GT(navigations.count, 0u);
+  // Native publishes the retained array before enumerating it, then rejects an
+  // empty collected history before replacing its native vector.
+  _navigations = navigations;
   std::vector<sessions::SerializedNavigationEntry> entries;
-  entries.reserve(navigations.count);
   for (ArcSessionNavigation* navigation in navigations) {
     CHECK([navigation isKindOfClass:[ArcSessionNavigation class]]);
     CHECK([navigation chromeNavigation]);
     entries.push_back(*[navigation chromeNavigation]);
   }
-  _navigations = navigations;
+  CHECK_GT(entries.size(), 0u);
   _tab->navigations = std::move(entries);
 }
 - (NSString*)groupId { return _tab && _tab->group ? ArcNSString(_tab->group->ToString()) : nil; }

@@ -3,6 +3,8 @@
 #import <objc/message.h>
 #import <objc/runtime.h>
 #include <sys/stat.h>
+#include <mach/mach_time.h>
+#include <math.h>
 
 @interface WebextrasProbeEntry : NSObject
 @property(nonatomic, weak) id owner;
@@ -67,6 +69,13 @@ static IMP gTools;
 static IMP gMedia;
 static IMP gDisplay;
 static IMP gClose;
+// Opt-in only. The DTO is a real public position result, retained across requests.
+static BOOL gMediaClock;
+static id gHeldPosition;
+static NSString* gHeldToken;
+static __weak WebextrasProbeEntry* gHeldEntry;
+static NSUInteger gPositionTag;
+static NSUInteger gHeldPositionTag;
 
 static NSNumber* Offset(void) {
   struct stat status;
@@ -287,6 +296,68 @@ static BOOL HasABI(id target, NSString* selector, NSUInteger count, char result)
   NSMethodSignature* signature = [target methodSignatureForSelector:NSSelectorFromString(selector)];
   return signature && signature.numberOfArguments == count && signature.methodReturnType[0] == result;
 }
+static NSString* ClockTicks(void) {
+  return [NSString stringWithFormat:@"%llu", (unsigned long long)mach_absolute_time()];
+}
+static NSMutableDictionary* ClockBegin(WebextrasProbeWork* work, id receiver, NSString* selector) {
+  BeginPublic(work, selector);
+  NSMutableDictionary* call = work.publicCalls.lastObject;
+  call[@"receiverClass"] = NSStringFromClass(object_getClass(receiver));
+  call[@"abi"] = [NSString stringWithUTF8String:method_getTypeEncoding(class_getInstanceMethod(object_getClass(receiver), NSSelectorFromString(selector)))];
+  call[@"clockBeforeTicks"] = ClockTicks();
+  return call;
+}
+static void ClockEnd(WebextrasProbeWork* work, NSMutableDictionary* call) {
+  call[@"clockAfterTicks"] = ClockTicks();
+  EndPublic(work);
+}
+static BOOL ClockDouble(WebextrasProbeWork* work, id receiver, NSString* selector) {
+  if (!HasABI(receiver, selector, 2, 'd')) return NO;
+  NSMutableDictionary* call = ClockBegin(work, receiver, selector);
+  double value = ((double (*)(id, SEL))objc_msgSend)(receiver, NSSelectorFromString(selector));
+  ClockEnd(work, call);
+  if (!isfinite(value)) { call[@"nonfinite"] = @YES; return NO; }
+  call[@"value"] = @(value);
+  // The recorder formats doubles with %%g; preserve its source-derived spelling too.
+  call[@"recordValue"] = [NSString stringWithFormat:@"%g", value];
+  return YES;
+}
+static NSString* ClockOperation(WebextrasProbeWork* work, WebextrasProbeEntry* entry, NSDictionary* request, NSString* operation) {
+  if (!gMediaClock) return @"media clock was not explicitly enabled";
+  if ([operation isEqual:@"clock-release"]) {
+    if (![request[@"heldToken"] isEqual:gHeldToken] || gHeldEntry != entry) return @"stale held position token";
+    gHeldPosition = nil; gHeldToken = nil; gHeldEntry = nil;
+    return nil;
+  }
+  if ([operation isEqual:@"clock-snapshot"]) {
+    id media = entry.media;
+    if (!HasABI(media, @"position", 2, '@')) return @"unexpected position getter ABI";
+    NSMutableDictionary* call = ClockBegin(work, media, @"position");
+    id position = ((id (*)(id, SEL))objc_msgSend)(media, NSSelectorFromString(@"position"));
+    ClockEnd(work, call);
+    call[@"resultClass"] = position ? NSStringFromClass(object_getClass(position)) : (id)NSNull.null;
+    // A failed receipt may not leave an earlier phase's DTO available as a fallback.
+    gHeldPosition = nil; gHeldToken = nil; gHeldEntry = nil;
+    if (!position || object_getClass(position) != NSClassFromString(@"ArcMediaPosition")) return @"position did not return an actual ArcMediaPosition";
+    gHeldPosition = position; gHeldToken = request[@"id"]; gHeldEntry = entry;
+    gHeldPositionTag = ++gPositionTag;
+  } else if (![operation isEqual:@"clock-held-time"]) return @"unsupported media clock operation";
+  else if (!gHeldPosition || gHeldEntry != entry || ![request[@"heldToken"] isEqual:gHeldToken]) return @"stale held position token";
+  mach_timebase_info_data_t timebase;
+  if (mach_timebase_info(&timebase) != KERN_SUCCESS || !timebase.denom) return @"mach timebase unavailable";
+  work.response[@"clock"] = @{@"heldToken":gHeldToken, @"dtoTag":@(gHeldPositionTag),
+      @"timebaseNumer":@(timebase.numer), @"timebaseDenom":@(timebase.denom)};
+  if ([operation isEqual:@"clock-snapshot"]) {
+    if (!ClockDouble(work, gHeldPosition, @"playbackRate") || !ClockDouble(work, gHeldPosition, @"duration") ||
+        !ClockDouble(work, gHeldPosition, @"currentTime")) return @"unexpected/nonfinite position double getter";
+    if (!HasABI(gHeldPosition, @"endOfMedia", 2, 'B')) return @"unexpected endOfMedia ABI";
+    NSMutableDictionary* call = ClockBegin(work, gHeldPosition, @"endOfMedia");
+    BOOL value = ((BOOL (*)(id, SEL))objc_msgSend)(gHeldPosition, NSSelectorFromString(@"endOfMedia"));
+    ClockEnd(work, call);
+    call[@"value"] = value ? @YES : @NO;
+  } else if (!ClockDouble(work, gHeldPosition, @"currentTime")) return @"unexpected/nonfinite held currentTime getter";
+  return nil;
+}
 static BOOL CleanupSubscription(WebextrasProbeWork* work) {
   if (!work.subscriptionToken) return YES;
   id tools = work.entry.tools;
@@ -362,6 +433,10 @@ static void Poll(void) {
     if ([operation isEqual:@"registry"]) {
       gWork.response[@"toolsClass"] = NSStringFromClass(object_getClass(tools));
       gWork.response[@"mediaClass"] = NSStringFromClass(object_getClass(media));
+    } else if ([operation hasPrefix:@"clock-"]) {
+      NSString* failure = ClockOperation(gWork, entry, request, operation);
+      Finish(failure);
+      return;
     } else if ([operation isEqual:@"console-open"] || [operation isEqual:@"console-close"]) {
       BOOL opening = [operation isEqual:@"console-open"];
       NSString* selector = opening ? @"openConsoleView" : @"close";
@@ -481,6 +556,7 @@ __attribute__((constructor)) static void StartWebextrasNativeProbe(void) {
     const char* record = getenv("ARC_RECORD_PATH");
     if (!path || !url || !record) return;
     gRequest = @(path); gExpectedURL = @(url); gRecord = @(record);
+    gMediaClock = [NSProcessInfo.processInfo.environment[@"ARC_WEBEXTRAS_MEDIA_CLOCK"] isEqual:@"1"];
     NSURL* parsed = [NSURL URLWithString:gExpectedURL];
     if (!gRequest.isAbsolutePath || ![gRequest.lastPathComponent isEqual:@"webextras-request.json"] ||
         ![parsed.scheme isEqual:@"http"] || ![parsed.host isEqual:@"127.0.0.1"] ||

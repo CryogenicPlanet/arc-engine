@@ -1,0 +1,334 @@
+## public eligibility and restore ObjC bridges 0x43e2b20..0x43e2c10
+043e2b20: sub      sp, sp, #0x30
+043e2b24: stp      x20, x19, [sp, #0x10]
+043e2b28: stp      x29, x30, [sp, #0x20]
+043e2b2c: add      x29, sp, #0x20
+043e2b30: mov      x19, x2
+043e2b34: mov      x20, x0
+043e2b38: mov      x0, x2
+043e2b3c: bl       #0x800484c
+043e2b40: ldrb     w8, [x20, #0x38]
+043e2b44: tbz      w8, #0, #0x43e2b94
+043e2b48: adrp     x8, #0xe290000
+043e2b4c: ldr      x1, [x8, #0x6e0]
+043e2b50: mov      x0, x19
+043e2b54: bl       #0x80045ec
+043e2b58: str      w0, [sp, #8]
+043e2b5c: lsr      x8, x0, #0x20
+043e2b60: strb     w8, [sp, #0xc]
+043e2b64: tbz      x0, #0x20, #0x43e2b98
+043e2b68: ldr      x0, [x20, #0x28]
+043e2b6c: add      x1, sp, #8
+043e2b70: bl       #0x42fae00
+043e2b74: mov      x20, x0
+043e2b78: mov      x0, x19
+043e2b7c: bl       #0x8003ddc
+043e2b80: mov      x0, x20
+043e2b84: ldp      x29, x30, [sp, #0x20]
+043e2b88: ldp      x20, x19, [sp, #0x10]
+043e2b8c: add      sp, sp, #0x30
+043e2b90: ret      
+043e2b94: brk      #1
+043e2b98: bl       #0x4b08a00
+043e2b9c: sub      sp, sp, #0x30
+043e2ba0: stp      x20, x19, [sp, #0x10]
+043e2ba4: stp      x29, x30, [sp, #0x20]
+043e2ba8: add      x29, sp, #0x20
+043e2bac: mov      x19, x2
+043e2bb0: mov      x20, x0
+043e2bb4: mov      x0, x2
+043e2bb8: bl       #0x800484c
+043e2bbc: ldrb     w8, [x20, #0x38]
+043e2bc0: tbz      w8, #0, #0x43e2c08
+043e2bc4: adrp     x8, #0xe290000
+043e2bc8: ldr      x1, [x8, #0x6e0]
+043e2bcc: mov      x0, x19
+043e2bd0: bl       #0x80045ec
+043e2bd4: str      w0, [sp, #8]
+043e2bd8: lsr      x8, x0, #0x20
+043e2bdc: strb     w8, [sp, #0xc]
+043e2be0: tbz      x0, #0x20, #0x43e2c0c
+043e2be4: ldr      x0, [x20, #0x28]
+043e2be8: add      x1, sp, #8
+043e2bec: bl       #0x42faed0
+043e2bf0: mov      x0, x19
+043e2bf4: bl       #0x8003ddc
+043e2bf8: ldp      x29, x30, [sp, #0x20]
+043e2bfc: ldp      x20, x19, [sp, #0x10]
+043e2c00: add      sp, sp, #0x30
+043e2c04: ret      
+043e2c08: brk      #1
+043e2c0c: bl       #0x4b08a00
+
+## public native eligibility and restore backends 0x42fae00..0x42fb09c
+042fae00: stp      x20, x19, [sp, #-0x20]!
+042fae04: stp      x29, x30, [sp, #0x10]
+042fae08: add      x29, sp, #0x10
+042fae0c: ldr      x8, [x0, #0xf0]
+042fae10: cbz      x8, #0x42fae1c
+042fae14: ldapurb  w8, [x8, #4]
+042fae18: cbz      w8, #0x42fae2c
+042fae1c: mov      w0, #0
+042fae20: ldp      x29, x30, [sp, #0x10]
+042fae24: ldp      x20, x19, [sp], #0x20
+042fae28: ret      
+042fae2c: ldr      x8, [x0, #0xf8]
+042fae30: cbz      x8, #0x42fae1c
+042fae34: ldrb     w8, [x0, #0x258]
+042fae38: cmp      w8, #1
+042fae3c: b.eq     #0x42fae1c
+042fae40: ldr      x8, [x0, #0xf0]
+042fae44: cbz      x8, #0x42faec0
+042fae48: ldapurb  w8, [x8, #4]
+042fae4c: cbnz     w8, #0x42faec0
+042fae50: mov      x19, x1
+042fae54: ldr      x0, [x0, #0xf8]
+042fae58: ldr      x8, [x0]
+042fae5c: ldr      x8, [x8, #0x38]
+042fae60: blr      x8
+042fae64: mov      x20, x0
+042fae68: bl       #0x2302728
+042fae6c: mov      x1, x20
+042fae70: mov      w2, #1
+042fae74: bl       #0x9278c
+042fae78: cbz      x0, #0x42fae20
+042fae7c: ldr      w9, [x19]
+042fae80: cmp      w9, #0
+042fae84: csinv    w8, w9, wzr, gt
+042fae88: cmp      w9, #1
+042fae8c: b.lt     #0x42fae1c
+042fae90: add      x9, x0, #0x38
+042fae94: mov      x10, x9
+042fae98: ldr      x10, [x10, #8]
+042fae9c: cmp      x10, x9
+042faea0: cset     w0, ne
+042faea4: b.eq     #0x42fae20
+042faea8: ldr      x11, [x10, #0x10]
+042faeac: ldp      w12, w11, [x11, #8]
+042faeb0: cmp      w12, w8
+042faeb4: ccmp     w11, w8, #4, ne
+042faeb8: b.ne     #0x42fae98
+042faebc: b        #0x42fae20
+042faec0: brk      #0
+042faec4: hlt      #0
+042faec8: brk      #1
+042faecc: udf      #0
+042faed0: sub      sp, sp, #0x60
+042faed4: stp      x22, x21, [sp, #0x30]
+042faed8: stp      x20, x19, [sp, #0x40]
+042faedc: stp      x29, x30, [sp, #0x50]
+042faee0: add      x29, sp, #0x50
+042faee4: ldr      x8, [x0, #0xf0]
+042faee8: cbz      x8, #0x42faef4
+042faeec: ldapurb  w8, [x8, #4]
+042faef0: cbz      w8, #0x42faf08
+042faef4: ldp      x29, x30, [sp, #0x50]
+042faef8: ldp      x20, x19, [sp, #0x40]
+042faefc: ldp      x22, x21, [sp, #0x30]
+042faf00: add      sp, sp, #0x60
+042faf04: ret      
+042faf08: mov      x21, x0
+042faf0c: ldr      x8, [x0, #0xf8]
+042faf10: cbz      x8, #0x42faef4
+042faf14: ldr      x8, [x21, #0xf0]
+042faf18: cbz      x8, #0x42fb090
+042faf1c: ldapurb  w8, [x8, #4]
+042faf20: cbnz     w8, #0x42fb090
+042faf24: mov      x20, x1
+042faf28: ldr      x0, [x21, #0xf8]
+042faf2c: ldr      x8, [x0]
+042faf30: ldr      x8, [x8, #0x38]
+042faf34: blr      x8
+042faf38: mov      x19, x0
+042faf3c: bl       #0x2302728
+042faf40: mov      x1, x19
+042faf44: mov      w2, #1
+042faf48: bl       #0x9278c
+042faf4c: cbz      x0, #0x42faef4
+042faf50: ldr      w9, [x20]
+042faf54: cmp      w9, #0
+042faf58: csinv    w8, w9, wzr, gt
+042faf5c: str      w8, [sp, #0x24]
+042faf60: cmp      w9, #1
+042faf64: b.lt     #0x42faef4
+042faf68: mov      x19, x0
+042faf6c: add      x9, x0, #0x38
+042faf70: add      x10, x0, #0x38
+042faf74: ldr      x10, [x10, #8]
+042faf78: cmp      x10, x9
+042faf7c: b.eq     #0x42faef4
+042faf80: ldr      x11, [x10, #0x10]
+042faf84: ldp      w12, w11, [x11, #8]
+042faf88: cmp      w12, w8
+042faf8c: ccmp     w11, w8, #4, ne
+042faf90: b.ne     #0x42faf74
+042faf94: add      x0, x21, #0x228
+042faf98: add      x1, sp, #0x24
+042faf9c: bl       #0x836c100
+042fafa0: adrp     x8, #0xe4ac000
+042fafa4: ldr      x8, [x8, #0x750]
+042fafa8: ldr      w8, [x8, #0x10]
+042fafac: cmp      w8, #0
+042fafb0: mov      w8, #3
+042fafb4: cinc     w20, w8, ne
+042fafb8: ldr      x8, [x21, #0xf0]
+042fafbc: cbz      x8, #0x42fafc8
+042fafc0: ldapurb  w8, [x8, #4]
+042fafc4: cbz      w8, #0x42faff0
+042fafc8: mov      x0, #0
+042fafcc: ldr      x8, [x0]
+042fafd0: ldr      x8, [x8, #0x18]
+042fafd4: blr      x8
+042fafd8: ldr      x8, [x0, #8]!
+042fafdc: adrp     x22, #0xe2f2000
+042fafe0: cbz      x8, #0x42fb018
+042fafe4: adrp     x9, #0xdf54000
+042fafe8: add      x9, x9, #0x488
+042fafec: b        #0x42fb000
+042faff0: ldr      x0, [x21, #0xf8]
+042faff4: b        #0x42fafcc
+042faff8: ldr      x8, [x8]
+042faffc: cbz      x8, #0x42fb018
+042fb000: ldr      x10, [x8, #0x20]
+042fb004: cmp      x10, x9
+042fb008: b.hi     #0x42faff8
+042fb00c: b.eq     #0x42fb020
+042fb010: ldr      x8, [x8, #8]
+042fb014: cbnz     x8, #0x42fb000
+042fb018: mov      x21, #0
+042fb01c: b        #0x42fb044
+042fb020: cmp      x8, x0
+042fb024: b.eq     #0x42fb018
+042fb028: ldr      x21, [x8, #0x28]
+042fb02c: and      x8, x21, #0xfffffffc00000000
+042fb030: ldr      x9, [x22, #0x208]
+042fb034: cmp      x8, x9
+042fb038: b.ne     #0x42fb044
+042fb03c: mov      x0, x21
+042fb040: bl       #0xffa8
+042fb044: and      x8, x21, #0xfffffffc00000000
+042fb048: ldr      x9, [x22, #0x208]
+042fb04c: cmp      x8, x9
+042fb050: b.ne     #0x42fb05c
+042fb054: mov      x0, x21
+042fb058: bl       #0x1fee4
+042fb05c: ldr      w2, [sp, #0x24]
+042fb060: mov      x22, sp
+042fb064: mov      x8, sp
+042fb068: add      x0, x19, #0x18
+042fb06c: mov      x1, x21
+042fb070: mov      x3, x20
+042fb074: bl       #0x6c84f80
+042fb078: ldrb     w8, [sp, #0x18]
+042fb07c: cbz      w8, #0x42faef4
+042fb080: str      x22, [sp, #0x28]
+042fb084: add      x0, sp, #0x28
+042fb088: bl       #0x267ce40
+042fb08c: b        #0x42faef4
+042fb090: brk      #0
+042fb094: hlt      #0
+042fb098: brk      #1
+
+## ArcSessionID initializer getter setter 0x440ab88..0x440ad10
+0440ab88: sub      sp, sp, #0x20
+0440ab8c: stp      x29, x30, [sp, #0x10]
+0440ab90: add      x29, sp, #0x10
+0440ab94: stur     w2, [x29, #-4]
+0440ab98: adrp     x8, #0xe290000
+0440ab9c: ldr      x1, [x8, #0x698]
+0440aba0: sub      x2, x29, #4
+0440aba4: bl       #0x80045ec
+0440aba8: ldp      x29, x30, [sp, #0x10]
+0440abac: add      sp, sp, #0x20
+0440abb0: ret      
+0440abb4: sub      sp, sp, #0x30
+0440abb8: stp      x20, x19, [sp, #0x10]
+0440abbc: stp      x29, x30, [sp, #0x20]
+0440abc0: add      x29, sp, #0x20
+0440abc4: mov      x19, x2
+0440abc8: adrp     x8, #0xe380000
+0440abcc: ldr      x8, [x8, #0x8d0]
+0440abd0: stp      x0, x8, [sp]
+0440abd4: adrp     x8, #0xe28c000
+0440abd8: ldr      x1, [x8, #0xb30]
+0440abdc: mov      x0, sp
+0440abe0: bl       #0x9968234
+0440abe4: cbz      x0, #0x440ac04
+0440abe8: ldrb     w8, [x0, #0xc]
+0440abec: cbz      w8, #0x440abf4
+0440abf0: strb     wzr, [x0, #0xc]
+0440abf4: ldr      w8, [x19]
+0440abf8: str      w8, [x0, #8]
+0440abfc: mov      w8, #1
+0440ac00: strb     w8, [x0, #0xc]
+0440ac04: ldp      x29, x30, [sp, #0x20]
+0440ac08: ldp      x20, x19, [sp, #0x10]
+0440ac0c: add      sp, sp, #0x30
+0440ac10: ret      
+0440ac14: stp      x22, x21, [sp, #-0x30]!
+0440ac18: stp      x20, x19, [sp, #0x10]
+0440ac1c: stp      x29, x30, [sp, #0x20]
+0440ac20: add      x29, sp, #0x20
+0440ac24: mov      x19, x2
+0440ac28: mov      x20, x0
+0440ac2c: mov      x0, x2
+0440ac30: bl       #0x800484c
+0440ac34: cmp      x20, x19
+0440ac38: b.eq     #0x440ac8c
+0440ac3c: cbz      x19, #0x440ac6c
+0440ac40: adrp     x8, #0xe28c000
+0440ac44: ldr      x0, [x8, #0x118]
+0440ac48: nop      
+0440ac4c: ldr      x1, [x8, #0x9e8]
+0440ac50: bl       #0x80045ec
+0440ac54: mov      x2, x0
+0440ac58: adrp     x8, #0xe28c000
+0440ac5c: ldr      x1, [x8, #0x9f0]
+0440ac60: mov      x0, x19
+0440ac64: bl       #0x80045ec
+0440ac68: cbnz     w0, #0x440ac94
+0440ac6c: mov      w21, #0
+0440ac70: mov      x0, x19
+0440ac74: bl       #0x8003ddc
+0440ac78: mov      x0, x21
+0440ac7c: ldp      x29, x30, [sp, #0x20]
+0440ac80: ldp      x20, x19, [sp, #0x10]
+0440ac84: ldp      x22, x21, [sp], #0x30
+0440ac88: ret      
+0440ac8c: mov      w21, #1
+0440ac90: b        #0x440ac70
+0440ac94: adrp     x8, #0xe290000
+0440ac98: ldr      x1, [x8, #0x6e0]
+0440ac9c: mov      x0, x19
+0440aca0: bl       #0x80045ec
+0440aca4: ldrb     w8, [x20, #0xc]
+0440aca8: lsr      x9, x0, #0x20
+0440acac: ubfx     x10, x0, #0x20, #8
+0440acb0: cmp      w8, w9, uxtb
+0440acb4: cset     w21, eq
+0440acb8: tst      w8, w10
+0440acbc: b.eq     #0x440ac70
+0440acc0: tbz      x0, #0x20, #0x440acd4
+0440acc4: ldr      w8, [x20, #8]
+0440acc8: cmp      w8, w0
+0440accc: cset     w21, eq
+0440acd0: b        #0x440ac70
+0440acd4: brk      #1
+0440acd8: ldrb     w8, [x0, #0xc]
+0440acdc: tbz      w8, #0, #0x440ace8
+0440ace0: ldrsw    x0, [x0, #8]
+0440ace4: ret      
+0440ace8: stp      x29, x30, [sp, #-0x10]!
+0440acec: mov      x29, sp
+0440acf0: bl       #0x4b08a00
+0440acf4: str      w2, [x0, #8]
+0440acf8: lsr      x8, x2, #0x20
+0440acfc: strb     w8, [x0, #0xc]
+0440ad00: ret      
+0440ad04: strb     wzr, [x0, #8]
+0440ad08: strb     wzr, [x0, #0xc]
+0440ad0c: ret      
+
+## native optional sessionId aggregate getter 0x2d0fb40..0x2d0fb48
+02d0fb40: ldr      x0, [x0, #8]
+02d0fb44: ret      

@@ -1,0 +1,281 @@
+--- a/arc/browser/extensions_service_probe.m
++++ b/arc/browser/extensions_service_probe.m
+@@ -48,6 +48,8 @@
+ static NSString* gFixtureMode;
+ static BOOL gBrowserPinsEnabled;
+ static BOOL gBrowserOmniboxEnabled;
++static BOOL gWebstoreNegativeEnabled;
++static BOOL gWebstoreNegativeUncertainState;
+ static NSString* gFixtureURL;
+ static NSMutableSet* gStartupPending;
+ static NSString* gRecord;
+@@ -301,7 +303,7 @@
+ }
+ static NSDictionary* Metadata(id service, id browser) {
+   NSMutableDictionary* result = [NSMutableDictionary dictionary];
+-  NSDictionary* classes = @{@"ArcBrowserContextExtensions":@[@"owner",@"isEqual:",@"hash",@"setDelegate:",@"isExtensionSystemReady",@"listExtensions",@"getExtensionInfo:",@"enableExtension:",@"disableExtension:",@"reloadExtension:",@"uninstallExtension:",@"installExtensionFromUnpackedPath:completion:",@"runJSInExtensionBackgroundPage:js_code:",@"getAllExtensionCommands",@"executeExtensionCommand:commandName:",@"getPinnedExtensionOrder",@"setPinnedExtensionOrder:"],
++  NSDictionary* classes = @{@"ArcBrowserContextExtensions":@[@"owner",@"isEqual:",@"hash",@"setDelegate:",@"isExtensionSystemReady",@"listExtensions",@"getExtensionInfo:",@"enableExtension:",@"disableExtension:",@"reloadExtension:",@"uninstallExtension:",@"installExtensionFromUnpackedPath:completion:",@"installExtensionFromWebstore:unattended:completion:",@"runJSInExtensionBackgroundPage:js_code:",@"getAllExtensionCommands",@"executeExtensionCommand:commandName:",@"getPinnedExtensionOrder",@"setPinnedExtensionOrder:"],
+       @"ArcBrowser":@[@"executeExtensionAction:",@"pinExtension:",@"unpinExtension:",@"moveExtension:targetIndex:",@"triggerExtensionOmniboxInput:inputText:disposition:"]};
+   for (NSString* className in classes) {
+     NSMutableDictionary* methods = [NSMutableDictionary dictionary];
+@@ -444,8 +446,89 @@
+   ((void (*)(id,SEL,id,id,long long))objc_msgSend)(browser,NSSelectorFromString(selector),gOwned[@"A"],input,disposition);
+   return nil;
+ }
++static void OwnershipJournal(void);
++static NSArray* InstalledExtensionIDs(id service) {
++  id infos = Get(service,@"listExtensions");
++  if (![infos isKindOfClass:NSArray.class]) return nil;
++  NSMutableArray* ids = [NSMutableArray array];
++  for (id info in infos) {
++    id identifier = Get(info,@"id");
++    if (![identifier isKindOfClass:NSString.class] || ![identifier length] || [ids containsObject:identifier]) return nil;
++    [ids addObject:identifier];
++  }
++  return [ids copy];
++}
++// Only fixed length-invalid IDs enter this phase. Native and current validation
++// reject them before Web Store fetch/download/install prompt work. Constructors
++// may create a dummy WebContents/observe the profile; global networklessness is
++// not asserted. Both real completion and every outstanding attempt are retained.
++static NSString* WebstoreNegativeRequest(id service, NSDictionary* request, ExtensionsProbeWork* work) {
++  if (!gWebstoreNegativeEnabled || ![gFixtureMode isEqual:@"command-line"])
++    return @"negative WebStore phase not explicitly enabled in command-line mode";
++  if (!service || !work.entry || work.entry.service != service || !work.entry.delegate ||
++      work.context != work.entry.context || !work.context ||
++      Get(work.context,@"extensions") != service || Get(service,@"owner") != work.context)
++    return @"negative WebStore service/context identity changed";
++  NSDictionary* contextID = ContextIDFields(work.context);
++  if (![contextID[@"directoryBasename"] isEqual:@"Default"] || ![contextID[@"isIncognito"] isEqual:@NO])
++    return @"negative WebStore requires the owned Default non-incognito context";
++  if (gOutstandingInstalls.count || gStartupPending.count || !gBaseline || gOwned.count != 2 ||
++      [gOwned[@"A"] isEqual:gOwned[@"B"]] || gWebstoreNegativeUncertainState)
++    return @"negative WebStore ownership/state unresolved";
++  for (NSString* label in @[@"A",@"B"])
++    if (!Proven(service,label,gOwned[label])) return @"negative WebStore context lacks both nonce-proven fixtures";
++  NSString* kind = request[@"case"];
++  NSString* input = [@{@"empty":@"",@"malformed":@"arc-invalid-webstore-id"} objectForKey:kind ?: @""];
++  if (!input || request[@"extensionID"] || request[@"storeID"] || request[@"url"])
++    return @"negative WebStore accepts only fixed empty/malformed cases, never raw IDs/URLs";
++  NSNumber* raw = request[@"unattended"];
++  if (![raw isKindOfClass:NSNumber.class] || CFGetTypeID((__bridge CFTypeRef)raw) != CFBooleanGetTypeID())
++    return @"negative WebStore unattended requires an actual JSON Boolean";
++  BOOL unattended = raw.boolValue;
++  NSString* selector = @"installExtensionFromWebstore:unattended:completion:";
++  Method method = class_getInstanceMethod([service class],NSSelectorFromString(selector));
++  if (!ABI(method,5,@"v")) return @"negative WebStore selector return/count ABI mismatch";
++  NSMethodSignature* signature = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(method)];
++  if (strcmp([signature getArgumentTypeAtIndex:2],"@") || strcmp([signature getArgumentTypeAtIndex:3],"B") ||
++      strcmp([signature getArgumentTypeAtIndex:4],"@?") || sizeof(BOOL) != 1)
++    return @"negative WebStore selector requires native object/B/block ABI";
++  NSArray* before = InstalledExtensionIDs(service);
++  NSArray* pins = [Get(service,@"getPinnedExtensionOrder") copy];
++  if (!before || ![pins isKindOfClass:NSArray.class]) return @"negative WebStore baseline snapshot unavailable";
++  work.response[@"webstoreNegativeSelector"] = selector;
++  work.response[@"webstoreNegativeABI"] = [NSString stringWithUTF8String:method_getTypeEncoding(method)];
++  work.response[@"webstoreNegativeCase"] = kind;
++  work.response[@"webstoreNegativeArguments"] = @[input,JSONBool(unattended)];
++  work.response[@"webstoreNegativeServiceIdentityVerified"] = @YES;
++  work.response[@"webstoreInstalledIDsBefore"] = before;
++  work.response[@"pinsBefore"] = Value(pins);
++  work.response[@"webstoreNegativeAttemptIssued"] = @YES;
++  work.pending = YES;
++  [gOutstandingInstalls addObject:work.operationID];
++  [gInstallAttempts addObject:@{@"operationID":work.operationID,@"kind":@"webstore-invalid",@"case":kind,@"requestedID":input,@"unattended":JSONBool(unattended)}];
++  OwnershipJournal();
++  void (^completion)(NSString*,NSInteger) = ^(NSString* identifier, NSInteger result) {
++    const BOOL callbackMainThread = NSThread.isMainThread;
++    id synchronous;
++    @synchronized(gCaptureLock) { synchronous = JSONBool(!work.returned); }
++    void (^save)(void) = ^{
++      NSDictionary* value = @{@"id":Value(identifier),@"result":@(result),@"mainThread":JSONBool(callbackMainThread),@"synchronous":synchronous};
++      if (work.response[@"completion"] || result != 3 || ![identifier isEqual:input]) gWebstoreNegativeUncertainState = YES;
++      [gOutstandingInstalls removeObject:work.operationID];
++      if (!work.response[@"completion"]) work.response[@"completion"] = value;
++      [work.response[@"completions"] addObject:value];
++      [work.response[@"events"] addObject:@{@"type":@"completion",@"value":value}];
++      work.pending = NO; work.settleAt = NSDate.timeIntervalSinceReferenceDate + 0.8;
++      OwnershipJournal();
++      if (gWork != work) Diagnostic(@"late-webstore-negative-completion",work,value);
++    };
++    if (callbackMainThread) save(); else dispatch_async(dispatch_get_main_queue(),save);
++  };
++  ((void (*)(id,SEL,id,BOOL,id))objc_msgSend)(service,NSSelectorFromString(selector),input,unattended,completion);
++  return nil;
++}
+ static void OwnershipJournal(void) {
+-  WriteJSON(@{@"fixtureMode":gFixtureMode,@"startupPending":[gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)],@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy]},[gRequest stringByAppendingString:@".owned.json"]);
++  WriteJSON(@{@"fixtureMode":gFixtureMode,@"startupPending":[gStartupPending.allObjects sortedArrayUsingSelector:@selector(compare:)],@"owned":[gOwned copy],@"outstandingInstalls":gOutstandingInstalls.allObjects,@"attempts":[gInstallAttempts copy],@"webstoreNegativeUncertainState":JSONBool(gWebstoreNegativeUncertainState)},[gRequest stringByAppendingString:@".owned.json"]);
+ }
+ static NSString* ReconcileOwned(id service) {
+   // An installation may have completed after its request timed out. Discover
+@@ -467,6 +550,7 @@
+   return nil;
+ }
+ static NSString* Cleanup(ExtensionsProbeWork* work) {
++  if (gWebstoreNegativeUncertainState) return @"negative WebStore unexpected completion/state; API cleanup cannot be certified";
+   if ([gFixtureMode isEqual:@"command-line"]) {
+     if (gOutstandingInstalls.count) return @"cleanup cannot certify while installs remain outstanding";
+     NSString* error = ReconcileOwned(work.entry.service);
+@@ -513,10 +597,24 @@
+       work.response[@"browserPinBaselineAfterPreserved"] = JSONBool(preserved);
+       if (!preserved && !error) error = @"browser pin baseline changed after mutation";
+     }
++    if ([work.response[@"operation"] isEqual:@"webstore-invalid"]) {
++      if ([work.response[@"webstoreNegativeAttemptIssued"] isEqual:@YES]) {
++        NSArray* ids = InstalledExtensionIDs(work.entry.service);
++        work.response[@"webstoreInstalledIDsAfter"] = Value(ids);
++        if (!ids || ![ids isEqual:work.response[@"webstoreInstalledIDsBefore"]] ||
++            ![work.response[@"pinsAfter"] isEqual:work.response[@"pinsBefore"]]) {
++          gWebstoreNegativeUncertainState = YES;
++          if (!error) error = @"negative WebStore changed installed IDs/pin order; API cleanup cannot be certified";
++        }
++      }
++      work.response[@"webstoreNegativeUncertainState"] = JSONBool(gWebstoreNegativeUncertainState);
++      if (gWebstoreNegativeUncertainState && !error) error = @"negative WebStore unexpected completion/state";
++      OwnershipJournal();
++    }
+     if ([work.response[@"operation"] isEqual:@"cleanup"]) {
+       BOOL absent = YES;
+       for (id value in infos.allValues) if (value != NSNull.null) absent = NO;
+-      work.response[@"cleanupCertified"] = JSONBool(!error && absent && !gOutstandingInstalls.count && !gStartupPending.count && [work.response[@"pinsAfter"] isEqual:gBaseline]);
++      work.response[@"cleanupCertified"] = JSONBool(!error && absent && !gWebstoreNegativeUncertainState && !gOutstandingInstalls.count && !gStartupPending.count && [work.response[@"pinsAfter"] isEqual:gBaseline]);
+     }
+   } @catch (NSException* exception) { error = exception.reason ?: exception.name; }
+   work.response[@"ok"] = JSONBool(!error);
+@@ -659,6 +757,9 @@
+     } else if ([@[@"browser-pin",@"browser-unpin",@"browser-move"] containsObject:operation]) {
+       NSString* error = BrowserPinRequest(service,browser,operation,request,gWork);
+       if (error) { Finish(error); return; }
++    } else if ([operation isEqual:@"webstore-invalid"]) {
++      NSString* error = WebstoreNegativeRequest(service,request,gWork);
++      if (error) { Finish(error); return; }
+     } else if ([operation isEqual:@"browser-omnibox"]) {
+       NSString* error = BrowserOmniboxRequest(service,browser,request,gWork);
+       if (error) { Finish(error); return; }
+@@ -706,6 +807,9 @@
+     const char* browserOmnibox = getenv("ARC_EXTENSIONS_PROBE_BROWSER_OMNIBOX");
+     gBrowserOmniboxEnabled = browserOmnibox && !strcmp(browserOmnibox,"1");
+     if (gBrowserOmniboxEnabled && ![gFixtureMode isEqual:@"command-line"]) return;
++    const char* webstoreNegative = getenv("ARC_EXTENSIONS_PROBE_WEBSTORE_NEGATIVE");
++    gWebstoreNegativeEnabled = webstoreNegative && !strcmp(webstoreNegative,"1");
++    if (gWebstoreNegativeEnabled && ![gFixtureMode isEqual:@"command-line"]) return;
+     const char* fixtureURL = getenv("ARC_EXTENSIONS_PROBE_FIXTURE_URL");
+     gFixtureURL = fixtureURL ? @(fixtureURL) : nil;
+     if (gBrowserOmniboxEnabled) {
+--- a/arc/browser/extensions_service_probe.ts
++++ b/arc/browser/extensions_service_probe.ts
+@@ -25,6 +25,8 @@
+ if (browserPins && fixtureMode !== "command-line") throw Error("--browser-pins requires explicit --fixture-mode command-line");
+ const browserOmnibox = args.includes("--browser-omnibox");
+ if (browserOmnibox && fixtureMode !== "command-line") throw Error("--browser-omnibox requires explicit --fixture-mode command-line");
++const webstoreNegative = args.includes("--webstore-negative");
++if (webstoreNegative && fixtureMode !== "command-line") throw Error("--webstore-negative requires explicit --fixture-mode command-line");
+ const diagnosticDisableFieldTrialConfig = args.includes("--diagnostic-disable-field-trial-config");
+ const fixtureEnvironmentArguments = ["--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking", "--noerrdialogs",
+   ...(diagnosticDisableFieldTrialConfig ? ["--disable-field-trial-config"] : [])];
+@@ -112,7 +114,7 @@
+   const current = statSync(file.path); return current.size === file.size && current.mtimeMs === file.mtimeMs;
+ };
+ const provenance = {
+-  capturedAt: new Date().toISOString(), fixtureMode, browserPins, browserOmnibox, diagnosticDisableFieldTrialConfig, fixtureEnvironmentArguments, builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
++  capturedAt: new Date().toISOString(), fixtureMode, browserPins, browserOmnibox, webstoreNegative, diagnosticDisableFieldTrialConfig, fixtureEnvironmentArguments, builtEngine, packagedEngines, probeBinary, recorderBinary, frameworkMetadata, imageFingerprintTool, sources, exportPreflight,
+   expectedStockSHA256, independentStockSibling,
+   traceMatchesVerifiedStock: packagedEngines.trace156.sha256 === expectedStockSHA256,
+   siblingMatchesVerifiedStock: independentStockSibling ? independentStockSibling.sha256 === expectedStockSHA256 : null,
+@@ -186,7 +188,7 @@
+   writeFileSync(join(dir, "readiness.json"), JSON.stringify({ pid, agent, timeoutMs, satisfied: false, events }, null, 2));
+   throw Error(`native readiness precondition timed out after ${timeoutMs}ms; current stages: ${JSON.stringify(last)}`);
+ };
+-const booleanFields = new Set(["ok", "mainThread", "synchronous", "ready", "identity", "hashStable", "browserPresent", "cleanupCertified", "enabled", "hasAction", "fromWebstore", "isGlobal", "fromIncognito", "present", "adoptionComplete"]);
++const booleanFields = new Set(["ok", "mainThread", "synchronous", "ready", "identity", "hashStable", "browserPresent", "cleanupCertified", "enabled", "hasAction", "fromWebstore", "isGlobal", "fromIncognito", "present", "adoptionComplete", "webstoreNegativeUncertainState", "webstoreNegativeAttemptIssued", "webstoreNegativeServiceIdentityVerified"]);
+ const requireNativeBooleanTypes = (value: any, path = "response") => {
+   if (!value || typeof value !== "object") return;
+   if (Array.isArray(value)) { value.forEach((item, index) => requireNativeBooleanTypes(item, `${path}[${index}]`)); return; }
+@@ -263,6 +265,7 @@
+   "browser-unpin":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
+   "browser-move":["pinsBefore","browserPinSelector","browserPinABI","browserPinLabel","browserPinArguments","browserPinAnchorLabel","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved"],
+   "browser-omnibox":["browserOmniboxSelector","browserOmniboxABI","browserOmniboxArguments","browserOmniboxIdentityVerified","browserOmniboxFixtureURL","effects","omniboxPreflight","omniboxCDPBefore","omniboxCDPAfter"],
++  "webstore-invalid":["completion","completions","outstandingInstalls","pinsBefore","webstoreInstalledIDsBefore","webstoreInstalledIDsAfter","webstoreNegativeSelector","webstoreNegativeABI","webstoreNegativeCase","webstoreNegativeArguments","webstoreNegativeAttemptIssued", "webstoreNegativeServiceIdentityVerified","webstoreNegativeUncertainState"],
+   command:["effects"], action:["callbacks"],
+   "background-js":["value"], disable:[], enable:[], reload:[], uninstall:[], cleanup:["cleanupCertified","outstandingInstalls","startupPending"],
+ };
+@@ -270,8 +273,10 @@
+   const dictionary = (item: any): boolean => !!item && typeof item === "object" && !Array.isArray(item);
+   const completion = (item: any): boolean => dictionary(item) && typeof item.id === "string" && Number.isInteger(item.result) && typeof item.mainThread === "boolean" && typeof item.synchronous === "boolean";
+   const callback = (item: any): boolean => dictionary(item) && typeof item.selector === "string" && Array.isArray(item.payload) && typeof item.mainThread === "boolean" && (item.synchronous === null || typeof item.synchronous === "boolean");
+-  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved","browserOmniboxIdentityVerified"].includes(path)) return typeof value === "boolean";
+-  if (["browserPinSelector","browserPinABI","browserPinLabel","browserPinAnchorLabel","browserOmniboxSelector","browserOmniboxABI","browserOmniboxFixtureURL"].includes(path)) return typeof value === "string" && value.length > 0;
++  if (["ok","mainThread","ready","identity","hashStable","adoptionComplete","cleanupCertified","browserPinIdentityVerified","browserPinBaselineBeforePreserved","browserPinBaselineAfterPreserved","browserOmniboxIdentityVerified","webstoreNegativeAttemptIssued", "webstoreNegativeServiceIdentityVerified","webstoreNegativeUncertainState"].includes(path)) return typeof value === "boolean";
++  if (["browserPinSelector","browserPinABI","browserPinLabel","browserPinAnchorLabel","browserOmniboxSelector","browserOmniboxABI","browserOmniboxFixtureURL","webstoreNegativeSelector","webstoreNegativeABI","webstoreNegativeCase"].includes(path)) return typeof value === "string" && value.length > 0;
++  if (path === "webstoreNegativeArguments") return Array.isArray(value) && value.length === 2 && ["","arc-invalid-webstore-id"].includes(value[0]) && typeof value[1] === "boolean";
++  if (["webstoreInstalledIDsBefore","webstoreInstalledIDsAfter"].includes(path)) return Array.isArray(value) && value.every(item=>typeof item === "string");
+   if (path === "browserOmniboxArguments") return Array.isArray(value) && value.length === 3 && typeof value[0] === "string" && typeof value[1] === "string" && Number.isSafeInteger(value[2]) && value[2] >= 0 && value[2] <= 11;
+   if (["omniboxPreflight","omniboxCDPBefore","omniboxCDPAfter"].includes(path)) return dictionary(value);
+   if (path === "browserPinArguments") return Array.isArray(value) && (value.length === 1 || value.length === 2) && typeof value[0] === "string" && (value.length === 1 || (Number.isSafeInteger(value[1]) && value[1] >= 0));
+@@ -303,7 +308,7 @@
+ try {
+   for (const agent of agents) {
+     currentAgent = agent;
+-    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: [browserPins ? "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only", browserOmnibox ? "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: metadata only; executable behavior uncovered"] }; runs.push(run);
++    const run: Run = { agent, fixtureMode, actions: [], errors: [], uncovered: [browserPins ? "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered", "Positive legacy background-page JavaScript uncovered; MV3 negative path only", browserOmnibox ? "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: optional phase selected but not completed; inspect actual per-operation evidence for partial coverage" : "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: metadata only; executable behavior uncovered", webstoreNegative ? "WebStore malformed-ID negative phase selected but not completed; inspect actual per-operation evidence" : "WebStore installation API executable behavior uncovered"] }; runs.push(run);
+     const dir = join(out, agent); mkdirSync(dir);
+     const app = resolve(root, `../arc/build/ArcModAgent-${agent}.app`), exe = join(app, "Contents/MacOS/Arc");
+     const plist = (key: string) => exec(["/usr/libexec/PlistBuddy", "-c", `Print :${key}`, join(app, "Contents/Info.plist")]);
+@@ -367,7 +372,7 @@
+       startupLoadIssued = fixtureMode === "command-line";
+       exec(["open", "-n", "-g", "-a", app,
+         "--env", `DYLD_INSERT_LIBRARIES=${dylib}:${recorder}`, "--env", `ARC_RECORD_PATH=${recordPath}`,
+-        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_PINS=${browserPins ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_OMNIBOX=${browserOmnibox ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_URL=${fixtureURL}`,
++        "--env", `ARC_EXTENSIONS_PROBE_REQUEST=${request}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURES=${fixtures}`, "--env", `ARC_EXTENSIONS_PROBE_TOKEN=${token}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_MODE=${fixtureMode}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_PINS=${browserPins ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_BROWSER_OMNIBOX=${browserOmnibox ? "1" : "0"}`, "--env", `ARC_EXTENSIONS_PROBE_FIXTURE_URL=${fixtureURL}`, "--env", `ARC_EXTENSIONS_PROBE_WEBSTORE_NEGATIVE=${webstoreNegative ? "1" : "0"}`,
+         "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args", ...fixtureEnvironmentArguments,
+         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${data}`, "--remote-debugging-address=127.0.0.1", `--remote-debugging-port=${port}`, ...startupArguments]);
+       pid = await wait(() => pids(exe)[0], 30000); run.pid = pid;
+@@ -395,6 +400,22 @@
+         }
+         run.startupIntent.state = "adopted-from-public-native-info"; run.startupIntent.actualIDs = registry.owned;
+         writeFileSync(join(dir,"launch-intents.json"),JSON.stringify(run.startupIntent,null,2));
++      }
++      if (webstoreNegative) {
++        for (const kind of ["empty","malformed"]) for (const unattended of [false,true]) {
++          const value = await action(`webstore-invalid-${kind}-${unattended ? "unattended" : "attended"}`,"webstore-invalid",{case:kind,unattended});
++          const input = kind === "empty" ? "" : "arc-invalid-webstore-id";
++          assert(value.webstoreNegativeAttemptIssued === true && value.webstoreNegativeServiceIdentityVerified === true && value.webstoreNegativeUncertainState === false &&
++            JSON.stringify(value.webstoreNegativeArguments) === JSON.stringify([input,unattended]),"WebStore negative identity/actual arguments unverified");
++          assert(value.completions?.length===1 && value.completion?.id===input && value.completion?.result===3 &&
++            value.completion?.mainThread===true && value.completion?.synchronous===true,
++            "WebStore malformed-ID completion differs from native requested-ID/result3/synchronous contract");
++          assert(value.outstandingInstalls?.length===0 && Array.isArray(value.webstoreInstalledIDsBefore) &&
++            JSON.stringify(value.webstoreInstalledIDsAfter)===JSON.stringify(value.webstoreInstalledIDsBefore) &&
++            JSON.stringify(value.pinsAfter)===JSON.stringify(value.pinsBefore),"WebStore negative changed installed IDs/pins or left unresolved installation");
++        }
++        run.uncovered=run.uncovered.filter(value=>!value.startsWith("WebStore malformed-ID") && value!=="WebStore installation API executable behavior uncovered");
++        run.uncovered.push("WebStore invalid empty/short IDs exercised with both unattended Booleans only; valid-store fetch/download/install success and unattended prompt suppression remain uncovered. Constructors create dummy WebContents/observe profile before validation; unrelated process network activity is outside the no-store-work guarantee.");
+       }
+       if (fixtureMode === "public-install") for (const label of ["A", "B"]) {
+         const installed = await action(`install-${label}`, "install", { label });
+@@ -637,6 +658,7 @@
+       if (!run.readiness && existsSync(join(dir, "readiness.json"))) run.readiness = json(join(dir, "readiness.json"));
+       if (existsSync(request + ".owned.json")) run.ownership = json(request + ".owned.json");
+       if (startupLoadIssued && (!run.ownership || run.ownership.startupPending?.length !== 0)) run.errors.push("command-line startup ownership unresolved; fixture cleanup cannot be certified even after process exit");
++      if (run.ownership?.webstoreNegativeUncertainState === true) run.errors.push("negative WebStore unexpected callback/state; API cleanup cannot be certified");
+       if (run.ownership?.outstandingInstalls?.length) run.errors.push("outstanding installation callbacks remained at process termination; cleanup cannot be certified");
+       run.diagnostics = existsSync(request + ".diagnostics.json") ? json(request + ".diagnostics.json") : [];
+       const fixtureIDs = Object.values(run.ownership?.owned ?? {});
+@@ -706,7 +728,7 @@
+     return { selector: event.selector, payload, mainThread: event.mainThread, synchronous: event.synchronous };
+   };
+   const callbacks = (action.callbacks ?? []).map(scopeCallback).filter(Boolean);
+-  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value", "browserPinSelector", "browserPinABI", "browserPinLabel", "browserPinArguments", "browserPinAnchorLabel", "browserPinIdentityVerified", "browserPinBaselineBeforePreserved", "browserPinBaselineAfterPreserved", "browserOmniboxSelector", "browserOmniboxABI", "browserOmniboxArguments", "browserOmniboxIdentityVerified", "browserOmniboxFixtureURL", "omniboxPreflight", "omniboxCDPBefore", "omniboxCDPAfter"];
++  const keep = ["step", "operation", "ok", "probeError", "matches", "mainThread", "metadata", "ready", "identity", "hashStable", "browserPresent", "browserMatches", "completion", "completions", "outstandingInstalls", "cleanupCertified", "fixtureMode", "startupPending", "adoptionComplete", "adopted", "list", "commands", "infosAfter", "owned", "value", "browserPinSelector", "browserPinABI", "browserPinLabel", "browserPinArguments", "browserPinAnchorLabel", "browserPinIdentityVerified", "browserPinBaselineBeforePreserved", "browserPinBaselineAfterPreserved", "browserOmniboxSelector", "browserOmniboxABI", "browserOmniboxArguments", "browserOmniboxIdentityVerified", "browserOmniboxFixtureURL", "omniboxPreflight", "omniboxCDPBefore", "omniboxCDPAfter", "webstoreNegativeSelector", "webstoreNegativeABI", "webstoreNegativeCase", "webstoreNegativeArguments", "webstoreNegativeAttemptIssued", "webstoreNegativeServiceIdentityVerified", "webstoreNegativeUncertainState", "webstoreInstalledIDsBefore", "webstoreInstalledIDsAfter"];
+   const result: Record<string, any> = Object.fromEntries(keep.filter(key => key in action).map(key => [key, action[key]]));
+   result.callbacks = callbacks;
+   result.eventOrder = (action.events ?? []).flatMap((event: any) => {
+@@ -788,6 +810,7 @@
+   "Existing diff.py renumbers recording object identities and masks loopback ports, temporary folders and UUID strings. The exact supplemental semantic comparison applies none of those string masks.",
+   browserPins ? "Explicit --browser-pins CLI phase calls real browser pin/unpin/move selectors only on enabled nonce-owned A/B, with exact service/browser identity, Q target ABI, actual before/after ordered snapshots, untouched baseline assertions, and no synthetic callbacks; default sequence and original cleanup remain. Invalid/disabled/OTR/force-pinned paths remain uncovered." : "ArcBrowser pinExtension:, unpinExtension:, moveExtension:targetIndex: are metadata-only here; their executable behavior is uncovered. Context setPinnedExtensionOrder: is exercised separately when the native enable precondition permits it.",
+   browserOmnibox ? "Explicit --browser-omnibox CLI phase uses real B-action preflight inventories then actual A omnibox calls for ordinals0..11. Both fixtures and exact browser/service are reverified each call; the sole actual nonce tab/window must retain identity. Input/nonce/listener strings and raw actual tab/window/CDP IDs remain in evidence/semantic comparison, so native SessionID differences can remain mismatches. Three event strings do not prove internal disposition casts/window behavior or an independent permission grant; v2 method inventory remains unknown." : "ArcBrowser triggerExtensionOmniboxInput:inputText:disposition: is metadata-only; executable behavior remains uncovered.",
++  webstoreNegative ? "Explicit --webstore-negative CLI-only phase sends only hardcoded empty/short malformed IDs with both actual unattended Booleans. Native and current validation reject before Web Store fetch/download/install prompt work; earlier dummy WebContents/profile observation and unrelated process activity are explicitly outside that guarantee. Actual two-argument completions, timing, attempt ledger and full before/after installed-ID/pin observations are preserved. This does not cover valid-store installation or unattended prompt suppression." : "WebStore installation API executable behavior remains uncovered; no store request is issued without explicit opt-in.",
+   "MV3 background-page JavaScript negative path only; positive legacy background-page execution is uncovered and no legacy fixture is enabled.",
+   "Browser captures retain all weak live browser/delegate entries per context; ambiguous selection fails a probe precondition. Action-B onClicked effects must prove a real numeric tab ID and the exact nonce fixture URL; no activation is attempted.",
+   "Context command dispatch targets an enabled extension, supplies only its command string, sets user gesture, and has no target-tab or independent activeTab permission-grant coverage. Listener argumentCount/types and noTab are retained exactly; optional undefined binding padding is observed rather than invented or normalized.",
