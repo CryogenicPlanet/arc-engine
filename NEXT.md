@@ -203,3 +203,16 @@ on canonical service wrappers, where NSObject identity is equivalent). Behavior 
 - `webContentsRenderViewReady:` not sent (see above); Protected Audience not exposed (Arc exposes it).
 - Native-UI scenarios (command bar, menus, shortcuts, Little Arc, Settings, Spaces, profiles UI, import
   wizard, autofill dropdown rendering) still need an unlocked screen.
+
+### Subagent guesses to verify against goldens (from their reports, 2026-10-23)
+- Find completion is `void (^)(ArcFindResult*)`, called once on the final result of the latest request.
+- `executeJavascript:` completion is `void (^)(NSString*, BOOL)`; the BOOL may instead be a sequence id
+  (Arc keeps a counter at +0x5e8). Results come back JSON-encoded.
+- `ArcAccessibilityActionData` codes 0-3 = DoDefault, Focus, SetValue, ScrollToMakeVisible (the app never
+  builds one in the decompile).
+- `captureViewport:`/`captureFullPage:` completions take an NSImage; capture runs a DevTools screenshot.
+- `debugProperties` content, `getEnterpriseDeviceID` source; memory dump providers register as
+  "TestDumpProvider" (Chromium needs a compile-time name); `setFreeMemoryTargetOnCriticalMemoryPressure:`
+  and `setArtifactAllowedScriptSources:` only store values; `setGestureHandler:forGestures:` delivers nothing.
+- `simulateLowBatteryStateForDuration:` (ADKClient debug command) forces the battery-saver pref; the lead
+  added a restore on app termination so a quit can't leave it on.

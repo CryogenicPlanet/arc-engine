@@ -34,6 +34,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/browser_management/browser_management_service.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/performance_manager/public/user_tuning/battery_saver_mode_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_commands_mac.h"
@@ -90,11 +91,13 @@ std::vector<std::string>& ArtifactAllowedScriptSources() {
 struct LowBatterySimulation {
   uint64_t generation = 0;
   std::optional<int> previous_state;
+  // Restores the previous state if the app quits before the delayed restore: the pref is persistent.
+  base::CallbackListSubscription on_terminating;
 };
 
 LowBatterySimulation& Simulation() {
-  static LowBatterySimulation simulation;
-  return simulation;
+  static base::NoDestructor<LowBatterySimulation> simulation;
+  return *simulation;
 }
 
 }  // namespace
@@ -279,6 +282,15 @@ ARC_EXPORT @interface ArcPerformanceController : NSObject
   LowBatterySimulation& simulation = Simulation();
   if (!simulation.previous_state) {
     simulation.previous_state = local_state->GetInteger(prefs::kBatterySaverModeState);
+    simulation.on_terminating = browser_shutdown::AddAppTerminatingCallback(base::BindOnce([] {
+      LowBatterySimulation& simulation = Simulation();
+      PrefService* local_state = g_browser_process ? g_browser_process->local_state() : nullptr;
+      if (local_state && simulation.previous_state) {
+        local_state->SetInteger(performance_manager::user_tuning::prefs::kBatterySaverModeState,
+                                *simulation.previous_state);
+      }
+      simulation.previous_state.reset();
+    }));
   }
   const uint64_t generation = ++simulation.generation;
   local_state->SetInteger(prefs::kBatterySaverModeState,
@@ -298,6 +310,7 @@ ARC_EXPORT @interface ArcPerformanceController : NSObject
                                                  *simulation.previous_state);
                        }
                        simulation.previous_state.reset();
+                       simulation.on_terminating = {};
                      },
                      generation),
       base::Seconds(duration));
