@@ -1,0 +1,1955 @@
+(lldb) target create ../arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore
+Current executable set to '/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore' (arm64).
+(lldb) disassemble -s 0x4279cd4 -e 0x427a98c
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x4279cd4] <+2328660>: stp    x28, x27, [sp, #-0x60]!
+ArcCore[0x4279cd8] <+2328664>: stp    x26, x25, [sp, #0x10]
+ArcCore[0x4279cdc] <+2328668>: stp    x24, x23, [sp, #0x20]
+ArcCore[0x4279ce0] <+2328672>: stp    x22, x21, [sp, #0x30]
+ArcCore[0x4279ce4] <+2328676>: stp    x20, x19, [sp, #0x40]
+ArcCore[0x4279ce8] <+2328680>: stp    x29, x30, [sp, #0x50]
+ArcCore[0x4279cec] <+2328684>: add    x29, sp, #0x50
+ArcCore[0x4279cf0] <+2328688>: sub    sp, sp, #0x2f0
+ArcCore[0x4279cf4] <+2328692>: mov    x19, x2
+ArcCore[0x4279cf8] <+2328696>: adrp   x8, 38315
+ArcCore[0x4279cfc] <+2328700>: ldr    x8, [x8, #0x20]
+ArcCore[0x4279d00] <+2328704>: ldr    x8, [x8]
+ArcCore[0x4279d04] <+2328708>: stur   x8, [x29, #-0x68]
+ArcCore[0x4279d08] <+2328712>: ldr    x8, [x0, #0x10]
+ArcCore[0x4279d0c] <+2328716>: cbz    x8, 0x4279e38             ; <+2329016>
+ArcCore[0x4279d10] <+2328720>: mov    x8, #0x7                  ; =7 
+ArcCore[0x4279d14] <+2328724>: movk   x8, #0x1, lsl #32
+ArcCore[0x4279d18] <+2328728>: sub    x8, x8, #0x3
+ArcCore[0x4279d1c] <+2328732>: str    x8, [sp, #0x110]
+ArcCore[0x4279d20] <+2328736>: cbz    x19, 0x427a9f0            ; <+2332016>
+ArcCore[0x4279d24] <+2328740>: ldr    x8, [x19, #0x8]
+ArcCore[0x4279d28] <+2328744>: add    x1, sp, #0x110
+ArcCore[0x4279d2c] <+2328748>: mov    x0, x19
+ArcCore[0x4279d30] <+2328752>: blr    x8
+ArcCore[0x4279d34] <+2328756>: mov    w8, #-0x1                 ; =-1 
+ArcCore[0x4279d38] <+2328760>: ldaddal w8, w8, [x19]
+ArcCore[0x4279d3c] <+2328764>: cmp    w8, #0x1
+ArcCore[0x4279d40] <+2328768>: b.ne   0x4279d50                 ; <+2328784>
+ArcCore[0x4279d44] <+2328772>: ldr    x8, [x19, #0x10]
+ArcCore[0x4279d48] <+2328776>: mov    x0, x19
+ArcCore[0x4279d4c] <+2328780>: blr    x8
+ArcCore[0x4279d50] <+2328784>: ldur   x8, [x29, #-0x68]
+ArcCore[0x4279d54] <+2328788>: adrp   x9, 38315
+ArcCore[0x4279d58] <+2328792>: ldr    x9, [x9, #0x20]
+ArcCore[0x4279d5c] <+2328796>: ldr    x9, [x9]
+ArcCore[0x4279d60] <+2328800>: cmp    x9, x8
+ArcCore[0x4279d64] <+2328804>: b.ne   0x427a9e0                 ; <+2332000>
+ArcCore[0x4279d68] <+2328808>: add    sp, sp, #0x2f0
+ArcCore[0x4279d6c] <+2328812>: ldp    x29, x30, [sp, #0x50]
+ArcCore[0x4279d70] <+2328816>: ldp    x20, x19, [sp, #0x40]
+ArcCore[0x4279d74] <+2328820>: ldp    x22, x21, [sp, #0x30]
+ArcCore[0x4279d78] <+2328824>: ldp    x24, x23, [sp, #0x20]
+ArcCore[0x4279d7c] <+2328828>: ldp    x26, x25, [sp, #0x10]
+ArcCore[0x4279d80] <+2328832>: ldp    x28, x27, [sp], #0x60
+ArcCore[0x4279d84] <+2328836>: ret    
+ArcCore[0x4279d88] <+2328840>: add    x0, sp, #0x38
+ArcCore[0x4279d8c] <+2328844>: bl     0x41f4660                 ; <+1782240>
+ArcCore[0x4279d90] <+2328848>: sub    x21, x23, #0x2
+ArcCore[0x4279d94] <+2328852>: str    x21, [sp, #0x110]
+ArcCore[0x4279d98] <+2328856>: ldr    x21, [x20, #0x280]
+ArcCore[0x4279d9c] <+2328860>: cbz    x21, 0x427aa08            ; <+2332040>
+ArcCore[0x4279da0] <+2328864>: str    xzr, [x20, #0x280]
+ArcCore[0x4279da4] <+2328868>: ldr    x8, [x21, #0x8]
+ArcCore[0x4279da8] <+2328872>: add    x1, sp, #0x110
+ArcCore[0x4279dac] <+2328876>: mov    x0, x21
+ArcCore[0x4279db0] <+2328880>: blr    x8
+ArcCore[0x4279db4] <+2328884>: mov    w8, #-0x1                 ; =-1 
+ArcCore[0x4279db8] <+2328888>: ldaddal w8, w8, [x21]
+ArcCore[0x4279dbc] <+2328892>: cmp    w8, #0x1
+ArcCore[0x4279dc0] <+2328896>: b.ne   0x4279dd0                 ; <+2328912>
+ArcCore[0x4279dc4] <+2328900>: ldr    x8, [x21, #0x10]
+ArcCore[0x4279dc8] <+2328904>: mov    x0, x21
+ArcCore[0x4279dcc] <+2328908>: blr    x8
+ArcCore[0x4279dd0] <+2328912>: cbnz   x19, 0x4279d34            ; <+2328756>
+ArcCore[0x4279dd4] <+2328916>: b      0x4279d50                 ; <+2328784>
+ArcCore[0x4279dd8] <+2328920>: ldr    x1, [sp, #0x58]
+ArcCore[0x4279ddc] <+2328924>: add    x0, sp, #0x110
+ArcCore[0x4279de0] <+2328928>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4279de4] <+2328932>: b      0x4279f98                 ; <+2329368>
+ArcCore[0x4279de8] <+2328936>: ldp    x1, x2, [x23, #0x50]
+ArcCore[0x4279dec] <+2328940>: add    x0, x8, #0x50
+ArcCore[0x4279df0] <+2328944>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4279df4] <+2328948>: b      0x4279ebc                 ; <+2329148>
+ArcCore[0x4279df8] <+2328952>: ldp    x1, x2, [x23, #0x68]
+ArcCore[0x4279dfc] <+2328956>: add    x0, x8, #0x68
+ArcCore[0x4279e00] <+2328960>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4279e04] <+2328964>: b      0x4279ed8                 ; <+2329176>
+ArcCore[0x4279e08] <+2328968>: ldp    x1, x2, [x23, #0x38]
+ArcCore[0x4279e0c] <+2328972>: add    x0, x8, #0x38
+ArcCore[0x4279e10] <+2328976>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4279e14] <+2328980>: b      0x4279ea0                 ; <+2329120>
+ArcCore[0x4279e18] <+2328984>: ldp    x1, x2, [x23, #0x20]
+ArcCore[0x4279e1c] <+2328988>: add    x0, x22, #0x20
+ArcCore[0x4279e20] <+2328992>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4279e24] <+2328996>: b      0x4279e84                 ; <+2329092>
+ArcCore[0x4279e28] <+2329000>: ldp    x1, x2, [x23, #0x8]
+ArcCore[0x4279e2c] <+2329004>: add    x0, x8, #0x8
+ArcCore[0x4279e30] <+2329008>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4279e34] <+2329012>: b      0x4279e68                 ; <+2329064>
+ArcCore[0x4279e38] <+2329016>: mov    x24, x1
+ArcCore[0x4279e3c] <+2329020>: mov    x20, x0
+ArcCore[0x4279e40] <+2329024>: ldr    x23, [x1]
+ArcCore[0x4279e44] <+2329028>: ldr    w8, [x23]
+ArcCore[0x4279e48] <+2329032>: str    w8, [sp, #0x38]
+ArcCore[0x4279e4c] <+2329036>: add    x8, sp, #0x38
+ArcCore[0x4279e50] <+2329040>: ldrsb  w9, [x23, #0x1f]
+ArcCore[0x4279e54] <+2329044>: tbnz   w9, #0x1f, 0x4279e28      ; <+2329000>
+ArcCore[0x4279e58] <+2329048>: ldur   q0, [x23, #0x8]
+ArcCore[0x4279e5c] <+2329052>: ldur   x9, [x23, #0x18]
+ArcCore[0x4279e60] <+2329056>: stur   x9, [x8, #0x18]
+ArcCore[0x4279e64] <+2329060>: stur   q0, [x8, #0x8]
+ArcCore[0x4279e68] <+2329064>: add    x22, sp, #0x38
+ArcCore[0x4279e6c] <+2329068>: ldrsb  w8, [x23, #0x37]
+ArcCore[0x4279e70] <+2329072>: tbnz   w8, #0x1f, 0x4279e18      ; <+2328984>
+ArcCore[0x4279e74] <+2329076>: ldur   q0, [x23, #0x20]
+ArcCore[0x4279e78] <+2329080>: ldur   x8, [x23, #0x30]
+ArcCore[0x4279e7c] <+2329084>: stur   x8, [x22, #0x30]
+ArcCore[0x4279e80] <+2329088>: stur   q0, [x22, #0x20]
+ArcCore[0x4279e84] <+2329092>: add    x8, sp, #0x38
+ArcCore[0x4279e88] <+2329096>: ldrsb  w9, [x23, #0x4f]
+ArcCore[0x4279e8c] <+2329100>: tbnz   w9, #0x1f, 0x4279e08      ; <+2328968>
+ArcCore[0x4279e90] <+2329104>: ldur   q0, [x23, #0x38]
+ArcCore[0x4279e94] <+2329108>: ldur   x9, [x23, #0x48]
+ArcCore[0x4279e98] <+2329112>: stur   x9, [x8, #0x48]
+ArcCore[0x4279e9c] <+2329116>: stur   q0, [x8, #0x38]
+ArcCore[0x4279ea0] <+2329120>: add    x8, sp, #0x38
+ArcCore[0x4279ea4] <+2329124>: ldrsb  w9, [x23, #0x67]
+ArcCore[0x4279ea8] <+2329128>: tbnz   w9, #0x1f, 0x4279de8      ; <+2328936>
+ArcCore[0x4279eac] <+2329132>: ldur   q0, [x23, #0x50]
+ArcCore[0x4279eb0] <+2329136>: ldur   x9, [x23, #0x60]
+ArcCore[0x4279eb4] <+2329140>: stur   x9, [x8, #0x60]
+ArcCore[0x4279eb8] <+2329144>: stur   q0, [x8, #0x50]
+ArcCore[0x4279ebc] <+2329148>: add    x8, sp, #0x38
+ArcCore[0x4279ec0] <+2329152>: ldrsb  w9, [x23, #0x7f]
+ArcCore[0x4279ec4] <+2329156>: tbnz   w9, #0x1f, 0x4279df8      ; <+2328952>
+ArcCore[0x4279ec8] <+2329160>: ldur   q0, [x23, #0x68]
+ArcCore[0x4279ecc] <+2329164>: ldur   x9, [x23, #0x78]
+ArcCore[0x4279ed0] <+2329168>: stur   x9, [x8, #0x78]
+ArcCore[0x4279ed4] <+2329172>: stur   q0, [x8, #0x68]
+ArcCore[0x4279ed8] <+2329176>: ldr    q0, [x23, #0x80]
+ArcCore[0x4279edc] <+2329180>: stur   q0, [sp, #0xb8]
+ArcCore[0x4279ee0] <+2329184>: adrp   x0, 41216
+ArcCore[0x4279ee4] <+2329188>: add    x0, x0, #0x840
+ArcCore[0x4279ee8] <+2329192>: ldr    x8, [x0]
+ArcCore[0x4279eec] <+2329196>: blr    x8
+ArcCore[0x4279ef0] <+2329200>: ldr    x8, [x0]
+ArcCore[0x4279ef4] <+2329204>: cbz    x8, 0x427a9e4             ; <+2332004>
+ArcCore[0x4279ef8] <+2329208>: ldr    x8, [x8]
+ArcCore[0x4279efc] <+2329212>: cbz    x8, 0x427a9e4             ; <+2332004>
+ArcCore[0x4279f00] <+2329216>: add    x9, x8, #0x8
+ArcCore[0x4279f04] <+2329220>: mov    w10, #0x1                 ; =1 
+ArcCore[0x4279f08] <+2329224>: ldadd  w10, w9, [x9]
+ArcCore[0x4279f0c] <+2329228>: mov    w10, #0x7fffffff          ; =2147483647 
+ArcCore[0x4279f10] <+2329232>: cmp    w9, w10
+ArcCore[0x4279f14] <+2329236>: b.eq   0x427a9fc                 ; <+2332028>
+ArcCore[0x4279f18] <+2329240>: ldr    x0, [x20, #0x2e0]
+ArcCore[0x4279f1c] <+2329244>: str    x8, [x20, #0x2e0]
+ArcCore[0x4279f20] <+2329248>: cbz    x0, 0x4279f58             ; <+2329304>
+ArcCore[0x4279f24] <+2329252>: add    x8, x0, #0x8
+ArcCore[0x4279f28] <+2329256>: mov    w9, #-0x1                 ; =-1 
+ArcCore[0x4279f2c] <+2329260>: ldaddal w9, w8, [x8]
+ArcCore[0x4279f30] <+2329264>: cmp    w8, #0x1
+ArcCore[0x4279f34] <+2329268>: b.ne   0x4279f58                 ; <+2329304>
+ArcCore[0x4279f38] <+2329272>: ldr    x9, [x0]
+ArcCore[0x4279f3c] <+2329276>: ldr    x8, [x9, #0x18]
+ArcCore[0x4279f40] <+2329280>: adrp   x10, 472
+ArcCore[0x4279f44] <+2329284>: add    x10, x10, #0x1c4          ; <+211536>
+ArcCore[0x4279f48] <+2329288>: cmp    x8, x10
+ArcCore[0x4279f4c] <+2329292>: b.ne   0x4279f54                 ; <+2329300>
+ArcCore[0x4279f50] <+2329296>: ldr    x8, [x9, #0x10]
+ArcCore[0x4279f54] <+2329300>: blr    x8
+ArcCore[0x4279f58] <+2329304>: mov    x23, #0x7                 ; =7 
+ArcCore[0x4279f5c] <+2329308>: movk   x23, #0x1, lsl #32
+ArcCore[0x4279f60] <+2329312>: ldrb   w9, [sp, #0x6f]
+ArcCore[0x4279f64] <+2329316>: sxtb   w8, w9
+ArcCore[0x4279f68] <+2329320>: ldr    x2, [sp, #0x60]
+ArcCore[0x4279f6c] <+2329324>: cmp    w8, #0x0
+ArcCore[0x4279f70] <+2329328>: csel   x9, x2, x9, mi
+ArcCore[0x4279f74] <+2329332>: cbz    x9, 0x4279d88             ; <+2328840>
+ArcCore[0x4279f78] <+2329336>: add    x25, sp, #0xe0
+ArcCore[0x4279f7c] <+2329340>: stp    xzr, xzr, [sp, #0xc8]
+ArcCore[0x4279f80] <+2329344>: str    xzr, [sp, #0xd8]
+ArcCore[0x4279f84] <+2329348>: tbnz   w8, #0x1f, 0x4279dd8      ; <+2328920>
+ArcCore[0x4279f88] <+2329352>: ldur   q0, [x22, #0x20]
+ArcCore[0x4279f8c] <+2329356>: str    q0, [x25, #0x30]
+ArcCore[0x4279f90] <+2329360>: ldur   x8, [x22, #0x30]
+ArcCore[0x4279f94] <+2329364>: str    x8, [sp, #0x120]
+ArcCore[0x4279f98] <+2329368>: ldrsb  x8, [sp, #0x127]
+ArcCore[0x4279f9c] <+2329372>: add    x9, sp, #0x110
+ArcCore[0x4279fa0] <+2329376>: ldp    x10, x11, [sp, #0x110]
+ArcCore[0x4279fa4] <+2329380>: cmp    x8, #0x0
+ArcCore[0x4279fa8] <+2329384>: csel   x1, x10, x9, mi
+ArcCore[0x4279fac] <+2329388>: cmp    w8, #0x0
+ArcCore[0x4279fb0] <+2329392>: csel   x2, x11, x8, mi
+ArcCore[0x4279fb4] <+2329396>: add    x21, sp, #0xc8
+ArcCore[0x4279fb8] <+2329400>: add    x0, sp, #0xc8
+ArcCore[0x4279fbc] <+2329404>: bl     0x8a7fc4                  ; ___lldb_unnamed_symbol2976 + 127876
+ArcCore[0x4279fc0] <+2329408>: ldrsb  w8, [sp, #0x127]
+ArcCore[0x4279fc4] <+2329412>: tbz    w8, #0x1f, 0x4279fd8      ; <+2329432>
+ArcCore[0x4279fc8] <+2329416>: ldr    x0, [sp, #0x110]
+ArcCore[0x4279fcc] <+2329420>: ldr    x8, [sp, #0x120]
+ArcCore[0x4279fd0] <+2329424>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x4279fd4] <+2329428>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x4279fd8] <+2329432>: add    x26, sp, #0x110
+ArcCore[0x4279fdc] <+2329436>: movi.2d v0, #0000000000000000
+ArcCore[0x4279fe0] <+2329440>: stp    q0, q0, [x25, #0x50]
+ArcCore[0x4279fe4] <+2329444>: stp    q0, q0, [x25, #0x30]
+ArcCore[0x4279fe8] <+2329448>: adrp   x0, 36662
+ArcCore[0x4279fec] <+2329452>: add    x0, x0, #0xf9a            ; "PathExists"
+ArcCore[0x4279ff0] <+2329456>: adrp   x1, 37168
+ArcCore[0x4279ff4] <+2329460>: add    x1, x1, #0x1ad            ; "../../base/files/file_util_posix.cc"
+ArcCore[0x4279ff8] <+2329464>: add    x8, sp, #0xe0
+ArcCore[0x4279ffc] <+2329468>: mov    w2, #0x375                ; =885 
+ArcCore[0x427a000] <+2329472>: bl     0x29e40                   ; ___lldb_unnamed_symbol2947 + 136192
+ArcCore[0x427a004] <+2329476>: add    x0, sp, #0x110
+ArcCore[0x427a008] <+2329480>: add    x1, sp, #0xe0
+ArcCore[0x427a00c] <+2329484>: mov    w2, #0x0                  ; =0 
+ArcCore[0x427a010] <+2329488>: bl     0x88c5e4                  ; ___lldb_unnamed_symbol2976 + 14756
+ArcCore[0x427a014] <+2329492>: ldrsb  w8, [sp, #0xdf]
+ArcCore[0x427a018] <+2329496>: ldr    x9, [sp, #0xc8]
+ArcCore[0x427a01c] <+2329500>: cmp    w8, #0x0
+ArcCore[0x427a020] <+2329504>: csel   x0, x9, x21, mi
+ArcCore[0x427a024] <+2329508>: mov    w1, #0x0                  ; =0 
+ArcCore[0x427a028] <+2329512>: bl     0x99a8eac                 ; ___lldb_unnamed_symbol3763 + 9300080
+ArcCore[0x427a02c] <+2329516>: mov    x22, x0
+ArcCore[0x427a030] <+2329520>: add    x0, sp, #0x110
+ArcCore[0x427a034] <+2329524>: bl     0x15d8e10                 ; ___lldb_unnamed_symbol3013 + 33904
+ArcCore[0x427a038] <+2329528>: cbz    w22, 0x427a168            ; <+2329832>
+ArcCore[0x427a03c] <+2329532>: sub    x21, x23, #0x1
+ArcCore[0x427a040] <+2329536>: ldrsb  w8, [sp, #0xdf]
+ArcCore[0x427a044] <+2329540>: tbnz   w8, #0x1f, 0x427a154      ; <+2329812>
+ArcCore[0x427a048] <+2329544>: add    x0, sp, #0x38
+ArcCore[0x427a04c] <+2329548>: bl     0x41f4660                 ; <+1782240>
+ArcCore[0x427a050] <+2329552>: lsr    x8, x21, #32
+ArcCore[0x427a054] <+2329556>: cbnz   x8, 0x4279d94             ; <+2328852>
+ArcCore[0x427a058] <+2329560>: str    xzr, [sp, #0x170]
+ArcCore[0x427a05c] <+2329564>: movi.2d v0, #0000000000000000
+ArcCore[0x427a060] <+2329568>: stp    q0, q0, [x26, #0x40]
+ArcCore[0x427a064] <+2329572>: stp    q0, q0, [x26, #0x20]
+ArcCore[0x427a068] <+2329576>: stp    q0, q0, [x26]
+ArcCore[0x427a06c] <+2329580>: ldr    x8, [x24]
+ArcCore[0x427a070] <+2329584>: ldr    w9, [x8]
+ArcCore[0x427a074] <+2329588>: str    w9, [sp, #0x110]
+ArcCore[0x427a078] <+2329592>: ldrsb  x9, [x8, #0x67]
+ArcCore[0x427a07c] <+2329596>: tbnz   x9, #0x3f, 0x427a130      ; <+2329776>
+ArcCore[0x427a080] <+2329600>: add    x10, x8, #0x50
+ArcCore[0x427a084] <+2329604>: str    x10, [sp, #0x148]
+ArcCore[0x427a088] <+2329608>: str    w9, [sp, #0x150]
+ArcCore[0x427a08c] <+2329612>: ldrsb  x9, [x8, #0x7f]
+ArcCore[0x427a090] <+2329616>: tbnz   x9, #0x3f, 0x427a138      ; <+2329784>
+ArcCore[0x427a094] <+2329620>: add    x10, x8, #0x68
+ArcCore[0x427a098] <+2329624>: str    x10, [sp, #0x158]
+ArcCore[0x427a09c] <+2329628>: str    w9, [sp, #0x160]
+ArcCore[0x427a0a0] <+2329632>: ldr    x8, [x20, #0x8]
+ArcCore[0x427a0a4] <+2329636>: mov    w9, #0x14                 ; =20 
+ArcCore[0x427a0a8] <+2329640>: strb   w9, [sp, #0xf7]
+ArcCore[0x427a0ac] <+2329644>: add    x10, sp, #0xe0
+ArcCore[0x427a0b0] <+2329648>: add    x11, x10, #0x14
+ArcCore[0x427a0b4] <+2329652>: adrp   x9, 34652
+ArcCore[0x427a0b8] <+2329656>: add    x9, x9, #0xaf
+ArcCore[0x427a0bc] <+2329660>: cmp    x11, x9
+ArcCore[0x427a0c0] <+2329664>: ccmp   x10, x9, #0x2, hi
+ArcCore[0x427a0c4] <+2329668>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a0c8] <+2329672>: mov    w10, #0x696c              ; =26988 
+ArcCore[0x427a0cc] <+2329676>: movk   w10, #0x657a, lsl #16
+ArcCore[0x427a0d0] <+2329680>: str    w10, [sp, #0xf0]
+ArcCore[0x427a0d4] <+2329684>: ldr    q0, [x9]
+ArcCore[0x427a0d8] <+2329688>: str    q0, [x25]
+ArcCore[0x427a0dc] <+2329692>: strb   wzr, [sp, #0xf4]
+ArcCore[0x427a0e0] <+2329696>: add    x0, x8, #0x20
+ArcCore[0x427a0e4] <+2329700>: add    x1, sp, #0xe0
+ArcCore[0x427a0e8] <+2329704>: bl     0x41a4338                 ; <+1453752>
+ArcCore[0x427a0ec] <+2329708>: cbz    x0, 0x427a140             ; <+2329792>
+ArcCore[0x427a0f0] <+2329712>: ldr    x21, [x0, #0x28]
+ArcCore[0x427a0f4] <+2329716>: ldrsb  w8, [sp, #0xf7]
+ArcCore[0x427a0f8] <+2329720>: tbz    w8, #0x1f, 0x427a10c      ; <+2329740>
+ArcCore[0x427a0fc] <+2329724>: ldr    x0, [sp, #0xe0]
+ArcCore[0x427a100] <+2329728>: ldr    x8, [sp, #0xf0]
+ArcCore[0x427a104] <+2329732>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x427a108] <+2329736>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x427a10c] <+2329740>: cbz    x21, 0x427a148            ; <+2329800>
+ArcCore[0x427a110] <+2329744>: ldr    x8, [x20, #0x280]
+ArcCore[0x427a114] <+2329748>: cbz    x8, 0x427a1f8             ; <+2329976>
+ArcCore[0x427a118] <+2329752>: mov    x8, #0x100000000          ; =4294967296 
+ArcCore[0x427a11c] <+2329756>: str    x8, [sp, #0xe0]
+ArcCore[0x427a120] <+2329760>: cbz    x19, 0x427aa14            ; <+2332052>
+ArcCore[0x427a124] <+2329764>: ldr    x8, [x19, #0x8]
+ArcCore[0x427a128] <+2329768>: add    x1, sp, #0xe0
+ArcCore[0x427a12c] <+2329772>: b      0x4279d2c                 ; <+2328748>
+ArcCore[0x427a130] <+2329776>: ldp    x10, x9, [x8, #0x50]
+ArcCore[0x427a134] <+2329780>: b      0x427a084                 ; <+2329604>
+ArcCore[0x427a138] <+2329784>: ldp    x10, x9, [x8, #0x68]
+ArcCore[0x427a13c] <+2329788>: b      0x427a098                 ; <+2329624>
+ArcCore[0x427a140] <+2329792>: mov    x21, #0x0                 ; =0 
+ArcCore[0x427a144] <+2329796>: b      0x427a0f4                 ; <+2329716>
+ArcCore[0x427a148] <+2329800>: str    x23, [sp, #0xe0]
+ArcCore[0x427a14c] <+2329804>: cbz    x19, 0x427aa20            ; <+2332064>
+ArcCore[0x427a150] <+2329808>: b      0x427a124                 ; <+2329764>
+ArcCore[0x427a154] <+2329812>: ldr    x0, [sp, #0xc8]
+ArcCore[0x427a158] <+2329816>: ldr    x8, [sp, #0xd8]
+ArcCore[0x427a15c] <+2329820>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x427a160] <+2329824>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x427a164] <+2329828>: b      0x427a048                 ; <+2329544>
+ArcCore[0x427a168] <+2329832>: ldr    x8, [x20, #0x8]
+ArcCore[0x427a16c] <+2329836>: adrp   x11, 34652
+ArcCore[0x427a170] <+2329840>: add    x11, x11, #0x249
+ArcCore[0x427a174] <+2329844>: cbz    x8, 0x427a228             ; <+2330024>
+ArcCore[0x427a178] <+2329848>: mov    w9, #0x10                 ; =16 
+ArcCore[0x427a17c] <+2329852>: strb   w9, [sp, #0x127]
+ArcCore[0x427a180] <+2329856>: add    x9, sp, #0x110
+ArcCore[0x427a184] <+2329860>: add    x10, x9, #0x10
+ArcCore[0x427a188] <+2329864>: cmp    x10, x11
+ArcCore[0x427a18c] <+2329868>: ccmp   x9, x11, #0x2, hi
+ArcCore[0x427a190] <+2329872>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a194] <+2329876>: ldr    q0, [x11]
+ArcCore[0x427a198] <+2329880>: str    q0, [x26]
+ArcCore[0x427a19c] <+2329884>: strb   wzr, [sp, #0x120]
+ArcCore[0x427a1a0] <+2329888>: add    x0, x8, #0x20
+ArcCore[0x427a1a4] <+2329892>: add    x1, sp, #0x110
+ArcCore[0x427a1a8] <+2329896>: bl     0x41a4338                 ; <+1453752>
+ArcCore[0x427a1ac] <+2329900>: cbz    x0, 0x427a1f0             ; <+2329968>
+ArcCore[0x427a1b0] <+2329904>: ldr    x22, [x0, #0x28]
+ArcCore[0x427a1b4] <+2329908>: ldrsb  w8, [sp, #0x127]
+ArcCore[0x427a1b8] <+2329912>: tbz    w8, #0x1f, 0x427a1cc      ; <+2329932>
+ArcCore[0x427a1bc] <+2329916>: ldr    x0, [sp, #0x110]
+ArcCore[0x427a1c0] <+2329920>: ldr    x8, [sp, #0x120]
+ArcCore[0x427a1c4] <+2329924>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x427a1c8] <+2329928>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x427a1cc] <+2329932>: mov    x21, #0x7                 ; =7 
+ArcCore[0x427a1d0] <+2329936>: movk   x21, #0x1, lsl #32
+ArcCore[0x427a1d4] <+2329940>: cbz    x22, 0x427a040            ; <+2329536>
+ArcCore[0x427a1d8] <+2329944>: blr    x22
+ArcCore[0x427a1dc] <+2329948>: str    x0, [x20, #0x10]
+ArcCore[0x427a1e0] <+2329952>: mov    x8, #0x100000000          ; =4294967296 
+ArcCore[0x427a1e4] <+2329956>: cmp    x0, #0x0
+ArcCore[0x427a1e8] <+2329960>: csel   x21, x8, xzr, eq
+ArcCore[0x427a1ec] <+2329964>: b      0x427a040                 ; <+2329536>
+ArcCore[0x427a1f0] <+2329968>: mov    x22, #0x0                 ; =0 
+ArcCore[0x427a1f4] <+2329972>: b      0x427a1b4                 ; <+2329908>
+ArcCore[0x427a1f8] <+2329976>: str    x19, [x20, #0x280]
+ArcCore[0x427a1fc] <+2329980>: adrp   x8, 41280
+ArcCore[0x427a200] <+2329984>: ldrh   w3, [x8, #0x9e0]
+ArcCore[0x427a204] <+2329988>: add    w9, w3, #0x1
+ArcCore[0x427a208] <+2329992>: strh   w9, [x8, #0x9e0]
+ArcCore[0x427a20c] <+2329996>: ldr    x0, [x20, #0x10]
+ArcCore[0x427a210] <+2330000>: adr    x2, 0x427f20c             ; <+2350476>
+ArcCore[0x427a214] <+2330004>: nop    
+ArcCore[0x427a218] <+2330008>: add    x1, sp, #0x110
+ArcCore[0x427a21c] <+2330012>: mov    x4, x20
+ArcCore[0x427a220] <+2330016>: blr    x21
+ArcCore[0x427a224] <+2330020>: b      0x4279d50                 ; <+2328784>
+ArcCore[0x427a228] <+2330024>: mov    w8, #0x10                 ; =16 
+ArcCore[0x427a22c] <+2330028>: strb   w8, [sp, #0x127]
+ArcCore[0x427a230] <+2330032>: add    x8, sp, #0x110
+ArcCore[0x427a234] <+2330036>: add    x9, x8, #0x10
+ArcCore[0x427a238] <+2330040>: cmp    x9, x11
+ArcCore[0x427a23c] <+2330044>: ccmp   x8, x11, #0x2, hi
+ArcCore[0x427a240] <+2330048>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a244] <+2330052>: ldr    q0, [x11]
+ArcCore[0x427a248] <+2330056>: str    q0, [x25, #0x30]
+ArcCore[0x427a24c] <+2330060>: strb   wzr, [sp, #0x120]
+ArcCore[0x427a250] <+2330064>: add    x9, x8, #0x18
+ArcCore[0x427a254] <+2330068>: mov    w10, #0x14                ; =20 
+ArcCore[0x427a258] <+2330072>: strb   w10, [sp, #0x13f]
+ArcCore[0x427a25c] <+2330076>: add    x10, x8, #0x2c
+ArcCore[0x427a260] <+2330080>: adrp   x8, 34652
+ArcCore[0x427a264] <+2330084>: add    x8, x8, #0xaf
+ArcCore[0x427a268] <+2330088>: cmp    x10, x8
+ArcCore[0x427a26c] <+2330092>: ccmp   x9, x8, #0x2, hi
+ArcCore[0x427a270] <+2330096>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a274] <+2330100>: mov    w10, #0x696c              ; =26988 
+ArcCore[0x427a278] <+2330104>: movk   w10, #0x657a, lsl #16
+ArcCore[0x427a27c] <+2330108>: str    w10, [x9, #0x10]
+ArcCore[0x427a280] <+2330112>: ldr    q0, [x8]
+ArcCore[0x427a284] <+2330116>: str    q0, [x9]
+ArcCore[0x427a288] <+2330120>: strb   wzr, [sp, #0x13c]
+ArcCore[0x427a28c] <+2330124>: add    x9, sp, #0x110
+ArcCore[0x427a290] <+2330128>: add    x8, x9, #0x30
+ArcCore[0x427a294] <+2330132>: mov    w10, #0x11                ; =17 
+ArcCore[0x427a298] <+2330136>: strb   w10, [sp, #0x157]
+ArcCore[0x427a29c] <+2330140>: add    x10, x9, #0x41
+ArcCore[0x427a2a0] <+2330144>: adrp   x9, 34652
+ArcCore[0x427a2a4] <+2330148>: add    x9, x9, #0xc4
+ArcCore[0x427a2a8] <+2330152>: cmp    x10, x9
+ArcCore[0x427a2ac] <+2330156>: ccmp   x8, x9, #0x2, hi
+ArcCore[0x427a2b0] <+2330160>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a2b4] <+2330164>: mov    w10, #0x72                ; =114 
+ArcCore[0x427a2b8] <+2330168>: strb   w10, [x8, #0x10]
+ArcCore[0x427a2bc] <+2330172>: ldr    q0, [x9]
+ArcCore[0x427a2c0] <+2330176>: str    q0, [x8]
+ArcCore[0x427a2c4] <+2330180>: strb   wzr, [sp, #0x151]
+ArcCore[0x427a2c8] <+2330184>: mov    w0, #0x20                 ; =32 
+ArcCore[0x427a2cc] <+2330188>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a2d0] <+2330192>: str    x0, [sp, #0x158]
+ArcCore[0x427a2d4] <+2330196>: adrp   x8, 38069
+ArcCore[0x427a2d8] <+2330200>: ldr    q0, [x8, #0xe0]
+ArcCore[0x427a2dc] <+2330204>: str    q0, [x25, #0x80]
+ArcCore[0x427a2e0] <+2330208>: add    x9, x0, #0x1e
+ArcCore[0x427a2e4] <+2330212>: cmp    x9, x0
+ArcCore[0x427a2e8] <+2330216>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a2ec] <+2330220>: adrp   x8, 34652
+ArcCore[0x427a2f0] <+2330224>: add    x8, x8, #0x22a
+ArcCore[0x427a2f4] <+2330228>: cmp    x9, x8
+ArcCore[0x427a2f8] <+2330232>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a2fc] <+2330236>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a300] <+2330240>: ldr    q0, [x8]
+ArcCore[0x427a304] <+2330244>: str    q0, [x0]
+ArcCore[0x427a308] <+2330248>: ldur   q0, [x8, #0xe]
+ArcCore[0x427a30c] <+2330252>: stur   q0, [x0, #0xe]
+ArcCore[0x427a310] <+2330256>: strb   wzr, [x0, #0x1e]
+ArcCore[0x427a314] <+2330260>: add    x9, sp, #0x110
+ArcCore[0x427a318] <+2330264>: add    x8, x9, #0x60
+ArcCore[0x427a31c] <+2330268>: mov    w10, #0xe                 ; =14 
+ArcCore[0x427a320] <+2330272>: strb   w10, [sp, #0x187]
+ArcCore[0x427a324] <+2330276>: add    x10, x9, #0x6e
+ArcCore[0x427a328] <+2330280>: adrp   x9, 34652
+ArcCore[0x427a32c] <+2330284>: add    x9, x9, #0xa0
+ArcCore[0x427a330] <+2330288>: cmp    x10, x9
+ArcCore[0x427a334] <+2330292>: ccmp   x8, x9, #0x2, hi
+ArcCore[0x427a338] <+2330296>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a33c] <+2330300>: ldr    x10, [x9]
+ArcCore[0x427a340] <+2330304>: str    x10, [x8]
+ArcCore[0x427a344] <+2330308>: ldur   x9, [x9, #0x6]
+ArcCore[0x427a348] <+2330312>: stur   x9, [x8, #0x6]
+ArcCore[0x427a34c] <+2330316>: strb   wzr, [sp, #0x17e]
+ArcCore[0x427a350] <+2330320>: mov    w0, #0x30                 ; =48 
+ArcCore[0x427a354] <+2330324>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a358] <+2330328>: str    x0, [sp, #0x188]
+ArcCore[0x427a35c] <+2330332>: adrp   x8, 38068
+ArcCore[0x427a360] <+2330336>: ldr    q0, [x8, #0x8f0]
+ArcCore[0x427a364] <+2330340>: str    q0, [x25, #0xb0]
+ArcCore[0x427a368] <+2330344>: add    x9, x0, #0x21
+ArcCore[0x427a36c] <+2330348>: cmp    x9, x0
+ArcCore[0x427a370] <+2330352>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a374] <+2330356>: adrp   x8, 34652
+ArcCore[0x427a378] <+2330360>: add    x8, x8, #0x25a
+ArcCore[0x427a37c] <+2330364>: cmp    x9, x8
+ArcCore[0x427a380] <+2330368>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a384] <+2330372>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a388] <+2330376>: str    q0, [sp, #0x10]
+ArcCore[0x427a38c] <+2330380>: mov    w9, #0x68                 ; =104 
+ArcCore[0x427a390] <+2330384>: strh   w9, [x0, #0x20]
+ArcCore[0x427a394] <+2330388>: ldp    q0, q1, [x8]
+ArcCore[0x427a398] <+2330392>: stp    q0, q1, [x0]
+ArcCore[0x427a39c] <+2330396>: add    x9, sp, #0x110
+ArcCore[0x427a3a0] <+2330400>: add    x8, x9, #0x90
+ArcCore[0x427a3a4] <+2330404>: mov    w10, #0xf                 ; =15 
+ArcCore[0x427a3a8] <+2330408>: strb   w10, [sp, #0x1b7]
+ArcCore[0x427a3ac] <+2330412>: add    x10, x9, #0x9f
+ArcCore[0x427a3b0] <+2330416>: adrp   x9, 34652
+ArcCore[0x427a3b4] <+2330420>: add    x9, x9, #0xd6
+ArcCore[0x427a3b8] <+2330424>: cmp    x10, x9
+ArcCore[0x427a3bc] <+2330428>: ccmp   x8, x9, #0x2, hi
+ArcCore[0x427a3c0] <+2330432>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a3c4] <+2330436>: ldr    x10, [x9]
+ArcCore[0x427a3c8] <+2330440>: str    x10, [x8]
+ArcCore[0x427a3cc] <+2330444>: ldur   x9, [x9, #0x7]
+ArcCore[0x427a3d0] <+2330448>: stur   x9, [x8, #0x7]
+ArcCore[0x427a3d4] <+2330452>: strb   wzr, [sp, #0x1af]
+ArcCore[0x427a3d8] <+2330456>: mov    w0, #0x20                 ; =32 
+ArcCore[0x427a3dc] <+2330460>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a3e0] <+2330464>: str    x0, [sp, #0x1b8]
+ArcCore[0x427a3e4] <+2330468>: adrp   x8, 38069
+ArcCore[0x427a3e8] <+2330472>: ldr    q0, [x8, #0xa0]
+ArcCore[0x427a3ec] <+2330476>: str    q0, [sp, #0x20]
+ArcCore[0x427a3f0] <+2330480>: str    q0, [x25, #0xe0]
+ArcCore[0x427a3f4] <+2330484>: add    x9, x0, #0x1c
+ArcCore[0x427a3f8] <+2330488>: cmp    x9, x0
+ArcCore[0x427a3fc] <+2330492>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a400] <+2330496>: adrp   x8, 34652
+ArcCore[0x427a404] <+2330500>: add    x8, x8, #0x27c
+ArcCore[0x427a408] <+2330504>: cmp    x9, x8
+ArcCore[0x427a40c] <+2330508>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a410] <+2330512>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a414] <+2330516>: ldr    q0, [x8]
+ArcCore[0x427a418] <+2330520>: str    q0, [x0]
+ArcCore[0x427a41c] <+2330524>: ldur   q0, [x8, #0xc]
+ArcCore[0x427a420] <+2330528>: stur   q0, [x0, #0xc]
+ArcCore[0x427a424] <+2330532>: strb   wzr, [x0, #0x1c]
+ArcCore[0x427a428] <+2330536>: mov    w0, #0x20                 ; =32 
+ArcCore[0x427a42c] <+2330540>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a430] <+2330544>: str    x0, [sp, #0x1d0]
+ArcCore[0x427a434] <+2330548>: ldr    q0, [sp, #0x20]
+ArcCore[0x427a438] <+2330552>: stur   q0, [x25, #0xf8]
+ArcCore[0x427a43c] <+2330556>: add    x9, x0, #0x1c
+ArcCore[0x427a440] <+2330560>: cmp    x9, x0
+ArcCore[0x427a444] <+2330564>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a448] <+2330568>: adrp   x8, 34652
+ArcCore[0x427a44c] <+2330572>: add    x8, x8, #0xe6
+ArcCore[0x427a450] <+2330576>: cmp    x9, x8
+ArcCore[0x427a454] <+2330580>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a458] <+2330584>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a45c] <+2330588>: ldr    q0, [x8]
+ArcCore[0x427a460] <+2330592>: str    q0, [x0]
+ArcCore[0x427a464] <+2330596>: ldur   q0, [x8, #0xc]
+ArcCore[0x427a468] <+2330600>: stur   q0, [x0, #0xc]
+ArcCore[0x427a46c] <+2330604>: strb   wzr, [x0, #0x1c]
+ArcCore[0x427a470] <+2330608>: mov    w0, #0x30                 ; =48 
+ArcCore[0x427a474] <+2330612>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a478] <+2330616>: str    x0, [sp, #0x1e8]
+ArcCore[0x427a47c] <+2330620>: ldr    q0, [sp, #0x10]
+ArcCore[0x427a480] <+2330624>: str    q0, [x25, #0x110]
+ArcCore[0x427a484] <+2330628>: add    x9, x0, #0x21
+ArcCore[0x427a488] <+2330632>: cmp    x9, x0
+ArcCore[0x427a48c] <+2330636>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a490] <+2330640>: adrp   x8, 34652
+ArcCore[0x427a494] <+2330644>: add    x8, x8, #0x103
+ArcCore[0x427a498] <+2330648>: cmp    x9, x8
+ArcCore[0x427a49c] <+2330652>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a4a0] <+2330656>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a4a4] <+2330660>: mov    w9, #0x72                 ; =114 
+ArcCore[0x427a4a8] <+2330664>: strh   w9, [x0, #0x20]
+ArcCore[0x427a4ac] <+2330668>: ldp    q0, q1, [x8]
+ArcCore[0x427a4b0] <+2330672>: stp    q0, q1, [x0]
+ArcCore[0x427a4b4] <+2330676>: mov    w0, #0x20                 ; =32 
+ArcCore[0x427a4b8] <+2330680>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a4bc] <+2330684>: str    x0, [sp, #0x200]
+ArcCore[0x427a4c0] <+2330688>: adrp   x8, 38069
+ArcCore[0x427a4c4] <+2330692>: ldr    q0, [x8, #0x130]
+ArcCore[0x427a4c8] <+2330696>: stur   q0, [x26, #0xf8]
+ArcCore[0x427a4cc] <+2330700>: add    x9, x0, #0x18
+ArcCore[0x427a4d0] <+2330704>: cmp    x9, x0
+ArcCore[0x427a4d4] <+2330708>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a4d8] <+2330712>: adrp   x8, 34652
+ArcCore[0x427a4dc] <+2330716>: add    x8, x8, #0x125
+ArcCore[0x427a4e0] <+2330720>: cmp    x9, x8
+ArcCore[0x427a4e4] <+2330724>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a4e8] <+2330728>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a4ec] <+2330732>: ldr    q0, [x8]
+ArcCore[0x427a4f0] <+2330736>: str    q0, [x0]
+ArcCore[0x427a4f4] <+2330740>: ldr    x8, [x8, #0x10]
+ArcCore[0x427a4f8] <+2330744>: str    x8, [x0, #0x10]
+ArcCore[0x427a4fc] <+2330748>: strb   wzr, [x0, #0x18]
+ArcCore[0x427a500] <+2330752>: mov    w0, #0x20                 ; =32 
+ArcCore[0x427a504] <+2330756>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a508] <+2330760>: str    x0, [sp, #0x218]
+ArcCore[0x427a50c] <+2330764>: ldr    q0, [sp, #0x20]
+ArcCore[0x427a510] <+2330768>: str    q0, [x26, #0x110]
+ArcCore[0x427a514] <+2330772>: add    x9, x0, #0x1c
+ArcCore[0x427a518] <+2330776>: cmp    x9, x0
+ArcCore[0x427a51c] <+2330780>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a520] <+2330784>: adrp   x8, 34652
+ArcCore[0x427a524] <+2330788>: add    x8, x8, #0x13e
+ArcCore[0x427a528] <+2330792>: cmp    x9, x8
+ArcCore[0x427a52c] <+2330796>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a530] <+2330800>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a534] <+2330804>: mov    x22, #0x20                ; =32 
+ArcCore[0x427a538] <+2330808>: movk   x22, #0x8000, lsl #48
+ArcCore[0x427a53c] <+2330812>: ldr    q0, [x8]
+ArcCore[0x427a540] <+2330816>: str    q0, [x0]
+ArcCore[0x427a544] <+2330820>: ldur   q0, [x8, #0xc]
+ArcCore[0x427a548] <+2330824>: stur   q0, [x0, #0xc]
+ArcCore[0x427a54c] <+2330828>: strb   wzr, [x0, #0x1c]
+ArcCore[0x427a550] <+2330832>: mov    w0, #0x20                 ; =32 
+ArcCore[0x427a554] <+2330836>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a558] <+2330840>: mov    w8, #0x1e                 ; =30 
+ArcCore[0x427a55c] <+2330844>: str    x0, [sp, #0x230]
+ArcCore[0x427a560] <+2330848>: str    x8, [sp, #0x238]
+ArcCore[0x427a564] <+2330852>: str    x22, [sp, #0x240]
+ArcCore[0x427a568] <+2330856>: add    x9, x0, #0x1e
+ArcCore[0x427a56c] <+2330860>: cmp    x9, x0
+ArcCore[0x427a570] <+2330864>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a574] <+2330868>: adrp   x8, 34652
+ArcCore[0x427a578] <+2330872>: add    x8, x8, #0x15b
+ArcCore[0x427a57c] <+2330876>: cmp    x9, x8
+ArcCore[0x427a580] <+2330880>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a584] <+2330884>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a588] <+2330888>: ldr    q0, [x8]
+ArcCore[0x427a58c] <+2330892>: str    q0, [x0]
+ArcCore[0x427a590] <+2330896>: ldur   q0, [x8, #0xe]
+ArcCore[0x427a594] <+2330900>: stur   q0, [x0, #0xe]
+ArcCore[0x427a598] <+2330904>: strb   wzr, [x0, #0x1e]
+ArcCore[0x427a59c] <+2330908>: mov    w0, #0x20                 ; =32 
+ArcCore[0x427a5a0] <+2330912>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a5a4] <+2330916>: str    x0, [sp, #0x248]
+ArcCore[0x427a5a8] <+2330920>: ldr    q0, [sp, #0x20]
+ArcCore[0x427a5ac] <+2330924>: str    q0, [x26, #0x140]
+ArcCore[0x427a5b0] <+2330928>: add    x9, x0, #0x1c
+ArcCore[0x427a5b4] <+2330932>: cmp    x9, x0
+ArcCore[0x427a5b8] <+2330936>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a5bc] <+2330940>: adrp   x8, 34652
+ArcCore[0x427a5c0] <+2330944>: add    x8, x8, #0x17a
+ArcCore[0x427a5c4] <+2330948>: cmp    x9, x8
+ArcCore[0x427a5c8] <+2330952>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a5cc] <+2330956>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a5d0] <+2330960>: ldr    q0, [x8]
+ArcCore[0x427a5d4] <+2330964>: str    q0, [x0]
+ArcCore[0x427a5d8] <+2330968>: ldur   q0, [x8, #0xc]
+ArcCore[0x427a5dc] <+2330972>: stur   q0, [x0, #0xc]
+ArcCore[0x427a5e0] <+2330976>: strb   wzr, [x0, #0x1c]
+ArcCore[0x427a5e4] <+2330980>: add    x9, sp, #0x110
+ArcCore[0x427a5e8] <+2330984>: add    x8, x9, #0x150
+ArcCore[0x427a5ec] <+2330988>: mov    w10, #0x14                ; =20 
+ArcCore[0x427a5f0] <+2330992>: strb   w10, [sp, #0x277]
+ArcCore[0x427a5f4] <+2330996>: add    x10, x9, #0x164
+ArcCore[0x427a5f8] <+2331000>: adrp   x9, 34652
+ArcCore[0x427a5fc] <+2331004>: add    x9, x9, #0x197
+ArcCore[0x427a600] <+2331008>: cmp    x10, x9
+ArcCore[0x427a604] <+2331012>: ccmp   x8, x9, #0x2, hi
+ArcCore[0x427a608] <+2331016>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a60c] <+2331020>: mov    w10, #0x626d              ; =25197 
+ArcCore[0x427a610] <+2331024>: movk   w10, #0x6465, lsl #16
+ArcCore[0x427a614] <+2331028>: str    w10, [x8, #0x10]
+ArcCore[0x427a618] <+2331032>: ldr    q0, [x9]
+ArcCore[0x427a61c] <+2331036>: str    q0, [x8]
+ArcCore[0x427a620] <+2331040>: strb   wzr, [sp, #0x274]
+ArcCore[0x427a624] <+2331044>: mov    w0, #0x20                 ; =32 
+ArcCore[0x427a628] <+2331048>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a62c] <+2331052>: str    x0, [sp, #0x278]
+ArcCore[0x427a630] <+2331056>: adrp   x8, 38068
+ArcCore[0x427a634] <+2331060>: ldr    q0, [x8, #0x8e0]
+ArcCore[0x427a638] <+2331064>: str    q0, [x26, #0x170]
+ArcCore[0x427a63c] <+2331068>: add    x9, x0, #0x1f
+ArcCore[0x427a640] <+2331072>: cmp    x9, x0
+ArcCore[0x427a644] <+2331076>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a648] <+2331080>: adrp   x8, 34652
+ArcCore[0x427a64c] <+2331084>: add    x8, x8, #0x1ac
+ArcCore[0x427a650] <+2331088>: cmp    x9, x8
+ArcCore[0x427a654] <+2331092>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a658] <+2331096>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a65c] <+2331100>: ldr    q0, [x8]
+ArcCore[0x427a660] <+2331104>: str    q0, [x0]
+ArcCore[0x427a664] <+2331108>: ldur   q0, [x8, #0xf]
+ArcCore[0x427a668] <+2331112>: stur   q0, [x0, #0xf]
+ArcCore[0x427a66c] <+2331116>: strb   wzr, [x0, #0x1f]
+ArcCore[0x427a670] <+2331120>: mov    w0, #0x20                 ; =32 
+ArcCore[0x427a674] <+2331124>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a678] <+2331128>: mov    w8, #0x18                 ; =24 
+ArcCore[0x427a67c] <+2331132>: str    x0, [sp, #0x290]
+ArcCore[0x427a680] <+2331136>: str    x8, [sp, #0x298]
+ArcCore[0x427a684] <+2331140>: str    x22, [sp, #0x2a0]
+ArcCore[0x427a688] <+2331144>: add    x9, x0, #0x18
+ArcCore[0x427a68c] <+2331148>: cmp    x9, x0
+ArcCore[0x427a690] <+2331152>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a694] <+2331156>: adrp   x8, 34652
+ArcCore[0x427a698] <+2331160>: add    x8, x8, #0x1cc
+ArcCore[0x427a69c] <+2331164>: cmp    x9, x8
+ArcCore[0x427a6a0] <+2331168>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a6a4] <+2331172>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a6a8] <+2331176>: ldr    q0, [x8]
+ArcCore[0x427a6ac] <+2331180>: str    q0, [x0]
+ArcCore[0x427a6b0] <+2331184>: ldr    x8, [x8, #0x10]
+ArcCore[0x427a6b4] <+2331188>: str    x8, [x0, #0x10]
+ArcCore[0x427a6b8] <+2331192>: strb   wzr, [x0, #0x18]
+ArcCore[0x427a6bc] <+2331196>: mov    w0, #0x30                 ; =48 
+ArcCore[0x427a6c0] <+2331200>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a6c4] <+2331204>: str    x0, [sp, #0x2a8]
+ArcCore[0x427a6c8] <+2331208>: adrp   x8, 38068
+ArcCore[0x427a6cc] <+2331212>: ldr    q0, [x8, #0x8c0]
+ArcCore[0x427a6d0] <+2331216>: str    q0, [x26, #0x1a0]
+ArcCore[0x427a6d4] <+2331220>: add    x9, x0, #0x23
+ArcCore[0x427a6d8] <+2331224>: cmp    x9, x0
+ArcCore[0x427a6dc] <+2331228>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a6e0] <+2331232>: adrp   x8, 34652
+ArcCore[0x427a6e4] <+2331236>: add    x8, x8, #0x1e5
+ArcCore[0x427a6e8] <+2331240>: cmp    x9, x8
+ArcCore[0x427a6ec] <+2331244>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a6f0] <+2331248>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a6f4] <+2331252>: mov    w9, #0x696b               ; =26987 
+ArcCore[0x427a6f8] <+2331256>: movk   w9, #0x676e, lsl #16
+ArcCore[0x427a6fc] <+2331260>: stur   w9, [x0, #0x1f]
+ArcCore[0x427a700] <+2331264>: ldp    q0, q1, [x8]
+ArcCore[0x427a704] <+2331268>: stp    q0, q1, [x0]
+ArcCore[0x427a708] <+2331272>: strb   wzr, [x0, #0x23]
+ArcCore[0x427a70c] <+2331276>: mov    w0, #0x30                 ; =48 
+ArcCore[0x427a710] <+2331280>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a714] <+2331284>: mov    w8, #0x20                 ; =32 
+ArcCore[0x427a718] <+2331288>: str    x0, [sp, #0x2c0]
+ArcCore[0x427a71c] <+2331292>: str    x8, [sp, #0x2c8]
+ArcCore[0x427a720] <+2331296>: add    x8, x22, #0x10
+ArcCore[0x427a724] <+2331300>: str    x8, [sp, #0x2d0]
+ArcCore[0x427a728] <+2331304>: add    x9, x0, #0x20
+ArcCore[0x427a72c] <+2331308>: cmp    x9, x0
+ArcCore[0x427a730] <+2331312>: b.lo   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a734] <+2331316>: adrp   x8, 34652
+ArcCore[0x427a738] <+2331320>: add    x8, x8, #0x209
+ArcCore[0x427a73c] <+2331324>: cmp    x9, x8
+ArcCore[0x427a740] <+2331328>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x427a744] <+2331332>: b.ls   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a748] <+2331336>: ldp    q0, q1, [x8]
+ArcCore[0x427a74c] <+2331340>: stp    q0, q1, [x0]
+ArcCore[0x427a750] <+2331344>: strb   wzr, [x0, #0x20]
+ArcCore[0x427a754] <+2331348>: mov    w0, #0x1c8                ; =456 
+ArcCore[0x427a758] <+2331352>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a75c] <+2331356>: mov    x22, x0
+ArcCore[0x427a760] <+2331360>: mov    x27, #0x0                 ; =0 
+ArcCore[0x427a764] <+2331364>: add    x21, sp, #0x110
+ArcCore[0x427a768] <+2331368>: b      0x427a788                 ; <+2331400>
+ArcCore[0x427a76c] <+2331372>: ldr    q0, [x8]
+ArcCore[0x427a770] <+2331376>: str    q0, [x0]
+ArcCore[0x427a774] <+2331380>: ldr    x8, [x8, #0x10]
+ArcCore[0x427a778] <+2331384>: str    x8, [x0, #0x10]
+ArcCore[0x427a77c] <+2331388>: add    x27, x27, #0x18
+ArcCore[0x427a780] <+2331392>: cmp    x27, #0x1c8
+ArcCore[0x427a784] <+2331396>: b.eq   0x427a7ac                 ; <+2331436>
+ArcCore[0x427a788] <+2331400>: adds   x0, x22, x27
+ArcCore[0x427a78c] <+2331404>: b.eq   0x427a9b4                 ; <+2331956>
+ArcCore[0x427a790] <+2331408>: add    x8, x21, x27
+ArcCore[0x427a794] <+2331412>: ldrsb  w9, [x8, #0x17]
+ArcCore[0x427a798] <+2331416>: tbz    w9, #0x1f, 0x427a76c      ; <+2331372>
+ArcCore[0x427a79c] <+2331420>: add    x8, x21, x27
+ArcCore[0x427a7a0] <+2331424>: ldp    x1, x2, [x8]
+ArcCore[0x427a7a4] <+2331428>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x427a7a8] <+2331432>: b      0x427a77c                 ; <+2331388>
+ArcCore[0x427a7ac] <+2331436>: add    x8, sp, #0x110
+ArcCore[0x427a7b0] <+2331440>: add    x21, x8, #0x1c7
+ArcCore[0x427a7b4] <+2331444>: add    x8, x22, x27
+ArcCore[0x427a7b8] <+2331448>: sub    x25, x8, #0x18
+ArcCore[0x427a7bc] <+2331452>: mov    x23, #-0x1c8              ; =-456 
+ArcCore[0x427a7c0] <+2331456>: b      0x427a7e0                 ; <+2331488>
+ArcCore[0x427a7c4] <+2331460>: ldur   x0, [x21, #-0x17]
+ArcCore[0x427a7c8] <+2331464>: ldur   x8, [x21, #-0x7]
+ArcCore[0x427a7cc] <+2331468>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x427a7d0] <+2331472>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x427a7d4] <+2331476>: sub    x21, x21, #0x18
+ArcCore[0x427a7d8] <+2331480>: adds   x23, x23, #0x18
+ArcCore[0x427a7dc] <+2331484>: b.eq   0x427a7fc                 ; <+2331516>
+ArcCore[0x427a7e0] <+2331488>: ldrsb  w8, [x21]
+ArcCore[0x427a7e4] <+2331492>: tbz    w8, #0x1f, 0x427a7d4      ; <+2331476>
+ArcCore[0x427a7e8] <+2331496>: b      0x427a7c4                 ; <+2331460>
+ArcCore[0x427a7ec] <+2331500>: ldp    x1, x2, [sp, #0xc8]
+ArcCore[0x427a7f0] <+2331504>: mov    x0, x23
+ArcCore[0x427a7f4] <+2331508>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x427a7f8] <+2331512>: b      0x427a820                 ; <+2331552>
+ArcCore[0x427a7fc] <+2331516>: mov    w0, #0x48                 ; =72 
+ArcCore[0x427a800] <+2331520>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427a804] <+2331524>: mov    x23, x0
+ArcCore[0x427a808] <+2331528>: ldrsb  w8, [sp, #0xdf]
+ArcCore[0x427a80c] <+2331532>: tbnz   w8, #0x1f, 0x427a7ec      ; <+2331500>
+ArcCore[0x427a810] <+2331536>: ldur   q0, [sp, #0xc8]
+ArcCore[0x427a814] <+2331540>: str    q0, [x23]
+ArcCore[0x427a818] <+2331544>: ldr    x8, [sp, #0xd8]
+ArcCore[0x427a81c] <+2331548>: str    x8, [x23, #0x10]
+ArcCore[0x427a820] <+2331552>: movi.2d v0, #0000000000000000
+ArcCore[0x427a824] <+2331556>: stp    q0, q0, [x23, #0x20]
+ArcCore[0x427a828] <+2331560>: mov    w8, #0x3f800000           ; =1065353216 
+ArcCore[0x427a82c] <+2331564>: str    w8, [x23, #0x40]
+ArcCore[0x427a830] <+2331568>: ldr    x0, [x20, #0x8]
+ArcCore[0x427a834] <+2331572>: str    x23, [x20, #0x8]
+ArcCore[0x427a838] <+2331576>: cbz    x0, 0x427a84c             ; <+2331596>
+ArcCore[0x427a83c] <+2331580>: bl     0x4276980                 ; <+2315520>
+ArcCore[0x427a840] <+2331584>: mov    w1, #0x48                 ; =72 
+ArcCore[0x427a844] <+2331588>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x427a848] <+2331592>: ldr    x23, [x20, #0x8]
+ArcCore[0x427a84c] <+2331596>: stp    xzr, xzr, [sp, #0x110]
+ArcCore[0x427a850] <+2331600>: str    xzr, [sp, #0x120]
+ArcCore[0x427a854] <+2331604>: add    x1, sp, #0x110
+ArcCore[0x427a858] <+2331608>: mov    x0, x23
+ArcCore[0x427a85c] <+2331612>: bl     0x2e8f958                 ; ___lldb_unnamed_symbol3086 + 123096
+ArcCore[0x427a860] <+2331616>: str    x0, [x23, #0x18]
+ArcCore[0x427a864] <+2331620>: str    x24, [sp, #0x8]
+ArcCore[0x427a868] <+2331624>: str    x25, [sp, #0x20]
+ArcCore[0x427a86c] <+2331628>: cbz    x0, 0x427a8ec             ; <+2331756>
+ArcCore[0x427a870] <+2331632>: cbz    x27, 0x427a980            ; <+2331904>
+ArcCore[0x427a874] <+2331636>: mov    x28, x27
+ArcCore[0x427a878] <+2331640>: mov    x24, x22
+ArcCore[0x427a87c] <+2331644>: adrp   x25, 33337
+ArcCore[0x427a880] <+2331648>: add    x25, x25, #0x410
+ArcCore[0x427a884] <+2331652>: b      0x427a8dc                 ; <+2331740>
+ArcCore[0x427a888] <+2331656>: ldr    x1, [x24]
+ArcCore[0x427a88c] <+2331660>: ldr    x0, [x23, #0x18]
+ArcCore[0x427a890] <+2331664>: bl     0x263ef8c                 ; ___lldb_unnamed_symbol3048 + 783628
+ArcCore[0x427a894] <+2331668>: cmp    x0, #0x0
+ArcCore[0x427a898] <+2331672>: cset   w21, ne
+ArcCore[0x427a89c] <+2331676>: cbz    x0, 0x427a8f0             ; <+2331760>
+ArcCore[0x427a8a0] <+2331680>: mov    x26, x0
+ArcCore[0x427a8a4] <+2331684>: str    x24, [sp, #0x108]
+ArcCore[0x427a8a8] <+2331688>: add    x8, x23, #0x20
+ArcCore[0x427a8ac] <+2331692>: str    x8, [sp, #0xe0]
+ArcCore[0x427a8b0] <+2331696>: add    x0, sp, #0xe0
+ArcCore[0x427a8b4] <+2331700>: add    x3, sp, #0x108
+ArcCore[0x427a8b8] <+2331704>: add    x4, sp, #0x107
+ArcCore[0x427a8bc] <+2331708>: mov    x1, x24
+ArcCore[0x427a8c0] <+2331712>: mov    x2, x25
+ArcCore[0x427a8c4] <+2331716>: bl     0x4281fec                 ; <+2362220>
+ArcCore[0x427a8c8] <+2331720>: cbz    x0, 0x427a9b4             ; <+2331956>
+ArcCore[0x427a8cc] <+2331724>: str    x26, [x0, #0x28]
+ArcCore[0x427a8d0] <+2331728>: add    x24, x24, #0x18
+ArcCore[0x427a8d4] <+2331732>: subs   x28, x28, #0x18
+ArcCore[0x427a8d8] <+2331736>: b.eq   0x427a8f0                 ; <+2331760>
+ArcCore[0x427a8dc] <+2331740>: ldrsb  w8, [x24, #0x17]
+ArcCore[0x427a8e0] <+2331744>: mov    x1, x24
+ArcCore[0x427a8e4] <+2331748>: tbz    w8, #0x1f, 0x427a88c      ; <+2331660>
+ArcCore[0x427a8e8] <+2331752>: b      0x427a888                 ; <+2331656>
+ArcCore[0x427a8ec] <+2331756>: mov    w21, #0x0                 ; =0 
+ArcCore[0x427a8f0] <+2331760>: ldrsb  w8, [sp, #0x127]
+ArcCore[0x427a8f4] <+2331764>: tbz    w8, #0x1f, 0x427a908      ; <+2331784>
+ArcCore[0x427a8f8] <+2331768>: ldr    x0, [sp, #0x110]
+ArcCore[0x427a8fc] <+2331772>: ldr    x8, [sp, #0x120]
+ArcCore[0x427a900] <+2331776>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x427a904] <+2331780>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x427a908] <+2331784>: ldr    x24, [sp, #0x8]
+ArcCore[0x427a90c] <+2331788>: mov    x23, #0x7                 ; =7 
+ArcCore[0x427a910] <+2331792>: movk   x23, #0x1, lsl #32
+ArcCore[0x427a914] <+2331796>: add    x25, sp, #0xe0
+ArcCore[0x427a918] <+2331800>: add    x26, sp, #0x110
+ArcCore[0x427a91c] <+2331804>: ldr    x28, [sp, #0x20]
+ArcCore[0x427a920] <+2331808>: tbz    w21, #0x0, 0x427a93c      ; <+2331836>
+ArcCore[0x427a924] <+2331812>: neg    x21, x27
+ArcCore[0x427a928] <+2331816>: cbnz   x22, 0x427a988            ; <+2331912>
+ArcCore[0x427a92c] <+2331820>: ldr    x8, [x20, #0x8]
+ArcCore[0x427a930] <+2331824>: adrp   x11, 34652
+ArcCore[0x427a934] <+2331828>: add    x11, x11, #0x249
+ArcCore[0x427a938] <+2331832>: b      0x427a178                 ; <+2329848>
+ArcCore[0x427a93c] <+2331836>: mov    x21, #0x7                 ; =7 
+ArcCore[0x427a940] <+2331840>: movk   x21, #0x1, lsl #32
+ArcCore[0x427a944] <+2331844>: cbz    x22, 0x427a040            ; <+2329536>
+ArcCore[0x427a948] <+2331848>: neg    x21, x27
+ArcCore[0x427a94c] <+2331852>: cbz    x27, 0x427a968            ; <+2331880>
+ArcCore[0x427a950] <+2331856>: cbz    x28, 0x427a9b4            ; <+2331956>
+ArcCore[0x427a954] <+2331860>: ldrsb  w8, [x28, #0x17]
+ArcCore[0x427a958] <+2331864>: tbnz   w8, #0x1f, 0x427a9cc      ; <+2331980>
+ArcCore[0x427a95c] <+2331868>: sub    x28, x28, #0x18
+ArcCore[0x427a960] <+2331872>: adds   x21, x21, #0x18
+ArcCore[0x427a964] <+2331876>: b.ne   0x427a950                 ; <+2331856>
+ArcCore[0x427a968] <+2331880>: mov    x0, x22
+ArcCore[0x427a96c] <+2331884>: mov    w1, #0x1c8                ; =456 
+ArcCore[0x427a970] <+2331888>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x427a974] <+2331892>: mov    x21, #0x7                 ; =7 
+ArcCore[0x427a978] <+2331896>: movk   x21, #0x1, lsl #32
+ArcCore[0x427a97c] <+2331900>: b      0x427a040                 ; <+2329536>
+ArcCore[0x427a980] <+2331904>: mov    w21, #0x1                 ; =1 
+ArcCore[0x427a984] <+2331908>: b      0x427a8f0                 ; <+2331760>
+ArcCore[0x427a988] <+2331912>: cbz    x27, 0x427a9a4            ; <+2331940>
+(lldb) disassemble -s 0x42830a0 -e 0x42836b0
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x42830a0] <+2366496>: b      0x5810                    ; ChromeMain + 5704
+ArcCore[0x42830a4] <+2366500>: sub    sp, sp, #0x190
+ArcCore[0x42830a8] <+2366504>: stp    x28, x27, [sp, #0x130]
+ArcCore[0x42830ac] <+2366508>: stp    x26, x25, [sp, #0x140]
+ArcCore[0x42830b0] <+2366512>: stp    x24, x23, [sp, #0x150]
+ArcCore[0x42830b4] <+2366516>: stp    x22, x21, [sp, #0x160]
+ArcCore[0x42830b8] <+2366520>: stp    x20, x19, [sp, #0x170]
+ArcCore[0x42830bc] <+2366524>: stp    x29, x30, [sp, #0x180]
+ArcCore[0x42830c0] <+2366528>: add    x29, sp, #0x180
+ArcCore[0x42830c4] <+2366532>: mov    x19, x2
+ArcCore[0x42830c8] <+2366536>: ldr    x8, [x0, #0x10]
+ArcCore[0x42830cc] <+2366540>: cbz    x8, 0x42831a8             ; <+2366760>
+ArcCore[0x42830d0] <+2366544>: mov    x8, #0x7                  ; =7 
+ArcCore[0x42830d4] <+2366548>: movk   x8, #0x1, lsl #32
+ArcCore[0x42830d8] <+2366552>: sub    x8, x8, #0x3
+ArcCore[0x42830dc] <+2366556>: str    x8, [sp, #0x10]
+ArcCore[0x42830e0] <+2366560>: cbz    x19, 0x4283bcc            ; <+2369356>
+ArcCore[0x42830e4] <+2366564>: ldr    x8, [x19, #0x8]
+ArcCore[0x42830e8] <+2366568>: add    x1, sp, #0x10
+ArcCore[0x42830ec] <+2366572>: mov    x0, x19
+ArcCore[0x42830f0] <+2366576>: blr    x8
+ArcCore[0x42830f4] <+2366580>: mov    w8, #-0x1                 ; =-1 
+ArcCore[0x42830f8] <+2366584>: ldaddal w8, w8, [x19]
+ArcCore[0x42830fc] <+2366588>: cmp    w8, #0x1
+ArcCore[0x4283100] <+2366592>: b.ne   0x4283110                 ; <+2366608>
+ArcCore[0x4283104] <+2366596>: ldr    x8, [x19, #0x10]
+ArcCore[0x4283108] <+2366600>: mov    x0, x19
+ArcCore[0x428310c] <+2366604>: blr    x8
+ArcCore[0x4283110] <+2366608>: ldp    x29, x30, [sp, #0x180]
+ArcCore[0x4283114] <+2366612>: ldp    x20, x19, [sp, #0x170]
+ArcCore[0x4283118] <+2366616>: ldp    x22, x21, [sp, #0x160]
+ArcCore[0x428311c] <+2366620>: ldp    x24, x23, [sp, #0x150]
+ArcCore[0x4283120] <+2366624>: ldp    x26, x25, [sp, #0x140]
+ArcCore[0x4283124] <+2366628>: ldp    x28, x27, [sp, #0x130]
+ArcCore[0x4283128] <+2366632>: add    sp, sp, #0x190
+ArcCore[0x428312c] <+2366636>: ret    
+ArcCore[0x4283130] <+2366640>: add    x0, sp, #0x60
+ArcCore[0x4283134] <+2366644>: bl     0x41bffc8                 ; <+1567560>
+ArcCore[0x4283138] <+2366648>: sub    x22, x25, #0x2
+ArcCore[0x428313c] <+2366652>: str    x22, [sp, #0x10]
+ArcCore[0x4283140] <+2366656>: cbz    x19, 0x4283be4            ; <+2369380>
+ArcCore[0x4283144] <+2366660>: b      0x42830e4                 ; <+2366564>
+ArcCore[0x4283148] <+2366664>: ldr    x1, [sp, #0x78]
+ArcCore[0x428314c] <+2366668>: add    x0, sp, #0x10
+ArcCore[0x4283150] <+2366672>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4283154] <+2366676>: b      0x428337c                 ; <+2367228>
+ArcCore[0x4283158] <+2366680>: ldp    x1, x2, [x22, #0x48]
+ArcCore[0x428315c] <+2366684>: add    x0, x8, #0x48
+ArcCore[0x4283160] <+2366688>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4283164] <+2366692>: b      0x4283220                 ; <+2366880>
+ArcCore[0x4283168] <+2366696>: ldp    x1, x2, [x22, #0x60]
+ArcCore[0x428316c] <+2366700>: add    x0, x8, #0x60
+ArcCore[0x4283170] <+2366704>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4283174] <+2366708>: b      0x428323c                 ; <+2366908>
+ArcCore[0x4283178] <+2366712>: ldp    x1, x2, [x22, #0x30]
+ArcCore[0x428317c] <+2366716>: add    x0, x8, #0x30
+ArcCore[0x4283180] <+2366720>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4283184] <+2366724>: b      0x4283204                 ; <+2366852>
+ArcCore[0x4283188] <+2366728>: ldp    x1, x2, [x22]
+ArcCore[0x428318c] <+2366732>: add    x0, sp, #0x60
+ArcCore[0x4283190] <+2366736>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4283194] <+2366740>: b      0x42831cc                 ; <+2366796>
+ArcCore[0x4283198] <+2366744>: ldp    x1, x2, [x22, #0x18]
+ArcCore[0x428319c] <+2366748>: add    x0, x23, #0x18
+ArcCore[0x42831a0] <+2366752>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x42831a4] <+2366756>: b      0x42831e8                 ; <+2366824>
+ArcCore[0x42831a8] <+2366760>: mov    x21, x1
+ArcCore[0x42831ac] <+2366764>: mov    x20, x0
+ArcCore[0x42831b0] <+2366768>: ldr    x22, [x1]
+ArcCore[0x42831b4] <+2366772>: ldrsb  w8, [x22, #0x17]
+ArcCore[0x42831b8] <+2366776>: tbnz   w8, #0x1f, 0x4283188      ; <+2366728>
+ArcCore[0x42831bc] <+2366780>: ldr    q0, [x22]
+ArcCore[0x42831c0] <+2366784>: ldr    x8, [x22, #0x10]
+ArcCore[0x42831c4] <+2366788>: str    x8, [sp, #0x70]
+ArcCore[0x42831c8] <+2366792>: str    q0, [sp, #0x60]
+ArcCore[0x42831cc] <+2366796>: add    x23, sp, #0x60
+ArcCore[0x42831d0] <+2366800>: ldrsb  w8, [x22, #0x2f]
+ArcCore[0x42831d4] <+2366804>: tbnz   w8, #0x1f, 0x4283198      ; <+2366744>
+ArcCore[0x42831d8] <+2366808>: ldur   q0, [x22, #0x18]
+ArcCore[0x42831dc] <+2366812>: ldur   x8, [x22, #0x28]
+ArcCore[0x42831e0] <+2366816>: stur   x8, [x23, #0x28]
+ArcCore[0x42831e4] <+2366820>: stur   q0, [x23, #0x18]
+ArcCore[0x42831e8] <+2366824>: add    x8, sp, #0x60
+ArcCore[0x42831ec] <+2366828>: ldrsb  w9, [x22, #0x47]
+ArcCore[0x42831f0] <+2366832>: tbnz   w9, #0x1f, 0x4283178      ; <+2366712>
+ArcCore[0x42831f4] <+2366836>: ldur   q0, [x22, #0x30]
+ArcCore[0x42831f8] <+2366840>: ldur   x9, [x22, #0x40]
+ArcCore[0x42831fc] <+2366844>: stur   x9, [x8, #0x40]
+ArcCore[0x4283200] <+2366848>: stur   q0, [x8, #0x30]
+ArcCore[0x4283204] <+2366852>: add    x8, sp, #0x60
+ArcCore[0x4283208] <+2366856>: ldrsb  w9, [x22, #0x5f]
+ArcCore[0x428320c] <+2366860>: tbnz   w9, #0x1f, 0x4283158      ; <+2366680>
+ArcCore[0x4283210] <+2366864>: ldur   q0, [x22, #0x48]
+ArcCore[0x4283214] <+2366868>: ldur   x9, [x22, #0x58]
+ArcCore[0x4283218] <+2366872>: stur   x9, [x8, #0x58]
+ArcCore[0x428321c] <+2366876>: stur   q0, [x8, #0x48]
+ArcCore[0x4283220] <+2366880>: add    x8, sp, #0x60
+ArcCore[0x4283224] <+2366884>: ldrsb  w9, [x22, #0x77]
+ArcCore[0x4283228] <+2366888>: tbnz   w9, #0x1f, 0x4283168      ; <+2366696>
+ArcCore[0x428322c] <+2366892>: ldur   q0, [x22, #0x60]
+ArcCore[0x4283230] <+2366896>: ldur   x9, [x22, #0x70]
+ArcCore[0x4283234] <+2366900>: stur   x9, [x8, #0x70]
+ArcCore[0x4283238] <+2366904>: stur   q0, [x8, #0x60]
+ArcCore[0x428323c] <+2366908>: adrp   x0, 41206
+ArcCore[0x4283240] <+2366912>: add    x0, x0, #0x840
+ArcCore[0x4283244] <+2366916>: ldr    x8, [x0]
+ArcCore[0x4283248] <+2366920>: blr    x8
+ArcCore[0x428324c] <+2366924>: ldr    x8, [x0]
+ArcCore[0x4283250] <+2366928>: cbz    x8, 0x4283bc0             ; <+2369344>
+ArcCore[0x4283254] <+2366932>: ldr    x8, [x8]
+ArcCore[0x4283258] <+2366936>: cbz    x8, 0x4283bc0             ; <+2369344>
+ArcCore[0x428325c] <+2366940>: add    x9, x8, #0x8
+ArcCore[0x4283260] <+2366944>: mov    w10, #0x1                 ; =1 
+ArcCore[0x4283264] <+2366948>: ldadd  w10, w9, [x9]
+ArcCore[0x4283268] <+2366952>: mov    w10, #0x7fffffff          ; =2147483647 
+ArcCore[0x428326c] <+2366956>: cmp    w9, w10
+ArcCore[0x4283270] <+2366960>: b.eq   0x4283bd8                 ; <+2369368>
+ArcCore[0x4283274] <+2366964>: ldr    x0, [x20, #0xa0]
+ArcCore[0x4283278] <+2366968>: str    x8, [x20, #0xa0]
+ArcCore[0x428327c] <+2366972>: cbz    x0, 0x42832b4             ; <+2367028>
+ArcCore[0x4283280] <+2366976>: add    x8, x0, #0x8
+ArcCore[0x4283284] <+2366980>: mov    w9, #-0x1                 ; =-1 
+ArcCore[0x4283288] <+2366984>: ldaddal w9, w8, [x8]
+ArcCore[0x428328c] <+2366988>: cmp    w8, #0x1
+ArcCore[0x4283290] <+2366992>: b.ne   0x42832b4                 ; <+2367028>
+ArcCore[0x4283294] <+2366996>: ldr    x9, [x0]
+ArcCore[0x4283298] <+2367000>: ldr    x8, [x9, #0x18]
+ArcCore[0x428329c] <+2367004>: adrp   x10, 462
+ArcCore[0x42832a0] <+2367008>: add    x10, x10, #0x1c4          ; <+211536>
+ArcCore[0x42832a4] <+2367012>: cmp    x8, x10
+ArcCore[0x42832a8] <+2367016>: b.ne   0x42832b0                 ; <+2367024>
+ArcCore[0x42832ac] <+2367020>: ldr    x8, [x9, #0x10]
+ArcCore[0x42832b0] <+2367024>: blr    x8
+ArcCore[0x42832b4] <+2367028>: adrp   x8, 41505
+ArcCore[0x42832b8] <+2367032>: ldr    x24, [x8, #0x128]
+ArcCore[0x42832bc] <+2367036>: mov    w0, #0x28                 ; =40 
+ArcCore[0x42832c0] <+2367040>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x42832c4] <+2367044>: mov    x22, x0
+ArcCore[0x42832c8] <+2367048>: add    x8, x24, #0x10
+ArcCore[0x42832cc] <+2367052>: cmp    x24, #0x0
+ArcCore[0x42832d0] <+2367056>: csel   x2, xzr, x8, eq
+ArcCore[0x42832d4] <+2367060>: ldrb   w3, [x24, #0x2b9]
+ArcCore[0x42832d8] <+2367064>: adrp   x1, 34643
+ArcCore[0x42832dc] <+2367068>: add    x1, x1, #0x374
+ArcCore[0x42832e0] <+2367072>: bl     0x1727700                 ; ___lldb_unnamed_symbol3014 + 412032
+ArcCore[0x42832e4] <+2367076>: cbz    x0, 0x4283300             ; <+2367104>
+ArcCore[0x42832e8] <+2367080>: add    x8, x22, #0x8
+ArcCore[0x42832ec] <+2367084>: mov    w9, #0x1                  ; =1 
+ArcCore[0x42832f0] <+2367088>: ldadd  w9, w8, [x8]
+ArcCore[0x42832f4] <+2367092>: mov    w9, #0x7fffffff           ; =2147483647 
+ArcCore[0x42832f8] <+2367096>: cmp    w8, w9
+ArcCore[0x42832fc] <+2367100>: b.eq   0x4283bb4                 ; <+2369332>
+ArcCore[0x4283300] <+2367104>: ldr    x0, [x20, #0xa8]
+ArcCore[0x4283304] <+2367108>: str    x22, [x20, #0xa8]
+ArcCore[0x4283308] <+2367112>: cbz    x0, 0x4283340             ; <+2367168>
+ArcCore[0x428330c] <+2367116>: add    x8, x0, #0x8
+ArcCore[0x4283310] <+2367120>: mov    w9, #-0x1                 ; =-1 
+ArcCore[0x4283314] <+2367124>: ldaddal w9, w8, [x8]
+ArcCore[0x4283318] <+2367128>: cmp    w8, #0x1
+ArcCore[0x428331c] <+2367132>: b.ne   0x4283340                 ; <+2367168>
+ArcCore[0x4283320] <+2367136>: ldr    x9, [x0]
+ArcCore[0x4283324] <+2367140>: ldr    x8, [x9, #0x18]
+ArcCore[0x4283328] <+2367144>: adrp   x10, 462
+ArcCore[0x428332c] <+2367148>: add    x10, x10, #0x1c4          ; <+211536>
+ArcCore[0x4283330] <+2367152>: cmp    x8, x10
+ArcCore[0x4283334] <+2367156>: b.ne   0x428333c                 ; <+2367164>
+ArcCore[0x4283338] <+2367160>: ldr    x8, [x9, #0x10]
+ArcCore[0x428333c] <+2367164>: blr    x8
+ArcCore[0x4283340] <+2367168>: mov    x25, #0x7                 ; =7 
+ArcCore[0x4283344] <+2367172>: movk   x25, #0x1, lsl #32
+ArcCore[0x4283348] <+2367176>: ldrb   w9, [sp, #0x8f]
+ArcCore[0x428334c] <+2367180>: sxtb   w8, w9
+ArcCore[0x4283350] <+2367184>: ldr    x2, [sp, #0x80]
+ArcCore[0x4283354] <+2367188>: cmp    w8, #0x0
+ArcCore[0x4283358] <+2367192>: csel   x9, x2, x9, mi
+ArcCore[0x428335c] <+2367196>: cbz    x9, 0x4283130             ; <+2366640>
+ArcCore[0x4283360] <+2367200>: stp    xzr, xzr, [x29, #-0xa8]
+ArcCore[0x4283364] <+2367204>: stur   xzr, [x29, #-0x98]
+ArcCore[0x4283368] <+2367208>: tbnz   w8, #0x1f, 0x4283148      ; <+2366664>
+ArcCore[0x428336c] <+2367212>: ldur   q0, [x23, #0x18]
+ArcCore[0x4283370] <+2367216>: str    q0, [sp, #0x10]
+ArcCore[0x4283374] <+2367220>: ldur   x8, [x23, #0x28]
+ArcCore[0x4283378] <+2367224>: str    x8, [sp, #0x20]
+ArcCore[0x428337c] <+2367228>: ldrsb  x8, [sp, #0x27]
+ArcCore[0x4283380] <+2367232>: add    x9, sp, #0x10
+ArcCore[0x4283384] <+2367236>: ldp    x10, x11, [sp, #0x10]
+ArcCore[0x4283388] <+2367240>: cmp    x8, #0x0
+ArcCore[0x428338c] <+2367244>: csel   x1, x10, x9, mi
+ArcCore[0x4283390] <+2367248>: cmp    w8, #0x0
+ArcCore[0x4283394] <+2367252>: csel   x2, x11, x8, mi
+ArcCore[0x4283398] <+2367256>: sub    x22, x29, #0xa8
+ArcCore[0x428339c] <+2367260>: sub    x0, x29, #0xa8
+ArcCore[0x42833a0] <+2367264>: bl     0x8a7fc4                  ; ___lldb_unnamed_symbol2976 + 127876
+ArcCore[0x42833a4] <+2367268>: ldrsb  w8, [sp, #0x27]
+ArcCore[0x42833a8] <+2367272>: tbz    w8, #0x1f, 0x42833bc      ; <+2367292>
+ArcCore[0x42833ac] <+2367276>: ldr    x0, [sp, #0x10]
+ArcCore[0x42833b0] <+2367280>: ldr    x8, [sp, #0x20]
+ArcCore[0x42833b4] <+2367284>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x42833b8] <+2367288>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x42833bc] <+2367292>: sub    x28, x29, #0xa8
+ArcCore[0x42833c0] <+2367296>: movi.2d v0, #0000000000000000
+ArcCore[0x42833c4] <+2367300>: stp    q0, q0, [sp, #0x30]
+ArcCore[0x42833c8] <+2367304>: stp    q0, q0, [sp, #0x10]
+ArcCore[0x42833cc] <+2367308>: adrp   x0, 36652
+ArcCore[0x42833d0] <+2367312>: add    x0, x0, #0xf9a            ; "PathExists"
+ArcCore[0x42833d4] <+2367316>: adrp   x1, 37158
+ArcCore[0x42833d8] <+2367320>: add    x1, x1, #0x1ad            ; "../../base/files/file_util_posix.cc"
+ArcCore[0x42833dc] <+2367324>: sub    x8, x29, #0x90
+ArcCore[0x42833e0] <+2367328>: mov    w2, #0x375                ; =885 
+ArcCore[0x42833e4] <+2367332>: bl     0x29e40                   ; ___lldb_unnamed_symbol2947 + 136192
+ArcCore[0x42833e8] <+2367336>: add    x0, sp, #0x10
+ArcCore[0x42833ec] <+2367340>: sub    x1, x29, #0x90
+ArcCore[0x42833f0] <+2367344>: mov    w2, #0x0                  ; =0 
+ArcCore[0x42833f4] <+2367348>: bl     0x88c5e4                  ; ___lldb_unnamed_symbol2976 + 14756
+ArcCore[0x42833f8] <+2367352>: ldursb w8, [x29, #-0x91]
+ArcCore[0x42833fc] <+2367356>: ldur   x9, [x29, #-0xa8]
+ArcCore[0x4283400] <+2367360>: cmp    w8, #0x0
+ArcCore[0x4283404] <+2367364>: csel   x0, x9, x22, mi
+ArcCore[0x4283408] <+2367368>: mov    w1, #0x0                  ; =0 
+ArcCore[0x428340c] <+2367372>: bl     0x99a8eac                 ; ___lldb_unnamed_symbol3763 + 9300080
+ArcCore[0x4283410] <+2367376>: mov    x22, x0
+ArcCore[0x4283414] <+2367380>: add    x0, sp, #0x10
+ArcCore[0x4283418] <+2367384>: bl     0x15d8e10                 ; ___lldb_unnamed_symbol3013 + 33904
+ArcCore[0x428341c] <+2367388>: cbz    w22, 0x42835c4            ; <+2367812>
+ArcCore[0x4283420] <+2367392>: sub    x22, x25, #0x1
+ArcCore[0x4283424] <+2367396>: ldursb w8, [x29, #-0x91]
+ArcCore[0x4283428] <+2367400>: tbnz   w8, #0x1f, 0x428359c      ; <+2367772>
+ArcCore[0x428342c] <+2367404>: add    x0, sp, #0x60
+ArcCore[0x4283430] <+2367408>: bl     0x41bffc8                 ; <+1567560>
+ArcCore[0x4283434] <+2367412>: lsr    x8, x22, #32
+ArcCore[0x4283438] <+2367416>: cbnz   x8, 0x428313c             ; <+2366652>
+ArcCore[0x428343c] <+2367420>: str    xzr, [sp, #0x58]
+ArcCore[0x4283440] <+2367424>: movi.2d v0, #0000000000000000
+ArcCore[0x4283444] <+2367428>: stur   q0, [sp, #0x48]
+ArcCore[0x4283448] <+2367432>: stur   q0, [sp, #0x38]
+ArcCore[0x428344c] <+2367436>: stur   q0, [sp, #0x28]
+ArcCore[0x4283450] <+2367440>: stur   q0, [sp, #0x18]
+ArcCore[0x4283454] <+2367444>: ldr    x8, [x21]
+ArcCore[0x4283458] <+2367448>: ldrsb  x9, [x8, #0x17]
+ArcCore[0x428345c] <+2367452>: tbnz   x9, #0x3f, 0x428358c      ; <+2367756>
+ArcCore[0x4283460] <+2367456>: mov    x10, x8
+ArcCore[0x4283464] <+2367460>: str    x10, [sp, #0x10]
+ArcCore[0x4283468] <+2367464>: str    w9, [sp, #0x18]
+ArcCore[0x428346c] <+2367468>: ldrsb  x9, [x8, #0x2f]
+ArcCore[0x4283470] <+2367472>: tbnz   x9, #0x3f, 0x428357c      ; <+2367740>
+ArcCore[0x4283474] <+2367476>: add    x10, x8, #0x18
+ArcCore[0x4283478] <+2367480>: str    x10, [sp, #0x20]
+ArcCore[0x428347c] <+2367484>: str    w9, [sp, #0x28]
+ArcCore[0x4283480] <+2367488>: ldrsb  x9, [x8, #0x47]
+ArcCore[0x4283484] <+2367492>: tbnz   x9, #0x3f, 0x428356c      ; <+2367724>
+ArcCore[0x4283488] <+2367496>: add    x10, x8, #0x30
+ArcCore[0x428348c] <+2367500>: str    x10, [sp, #0x30]
+ArcCore[0x4283490] <+2367504>: str    w9, [sp, #0x38]
+ArcCore[0x4283494] <+2367508>: ldrsb  x9, [x8, #0x5f]
+ArcCore[0x4283498] <+2367512>: tbnz   x9, #0x3f, 0x4283574      ; <+2367732>
+ArcCore[0x428349c] <+2367516>: add    x10, x8, #0x48
+ArcCore[0x42834a0] <+2367520>: str    x10, [sp, #0x40]
+ArcCore[0x42834a4] <+2367524>: str    w9, [sp, #0x48]
+ArcCore[0x42834a8] <+2367528>: ldrsb  x9, [x8, #0x77]
+ArcCore[0x42834ac] <+2367532>: tbnz   x9, #0x3f, 0x4283584      ; <+2367748>
+ArcCore[0x42834b0] <+2367536>: add    x10, x8, #0x60
+ArcCore[0x42834b4] <+2367540>: str    x10, [sp, #0x50]
+ArcCore[0x42834b8] <+2367544>: str    w9, [sp, #0x58]
+ArcCore[0x42834bc] <+2367548>: ldr    x21, [x20, #0x8]
+ArcCore[0x42834c0] <+2367552>: mov    w0, #0x30                 ; =48 
+ArcCore[0x42834c4] <+2367556>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x42834c8] <+2367560>: stur   x0, [x29, #-0x90]
+ArcCore[0x42834cc] <+2367564>: adrp   x8, 38059
+ArcCore[0x42834d0] <+2367568>: ldr    q0, [x8, #0x8c0]
+ArcCore[0x42834d4] <+2367572>: stur   q0, [x28, #0x20]
+ArcCore[0x42834d8] <+2367576>: add    x9, x0, #0x23
+ArcCore[0x42834dc] <+2367580>: cmp    x9, x0
+ArcCore[0x42834e0] <+2367584>: b.lo   0x4283bbc                 ; <+2369340>
+ArcCore[0x42834e4] <+2367588>: adrp   x8, 34643
+ArcCore[0x42834e8] <+2367592>: add    x8, x8, #0x300
+ArcCore[0x42834ec] <+2367596>: cmp    x9, x8
+ArcCore[0x42834f0] <+2367600>: ccmp   x0, x8, #0x2, hi
+ArcCore[0x42834f4] <+2367604>: b.ls   0x4283bbc                 ; <+2369340>
+ArcCore[0x42834f8] <+2367608>: mov    w9, #0x696c               ; =26988 
+ArcCore[0x42834fc] <+2367612>: movk   w9, #0x657a, lsl #16
+ArcCore[0x4283500] <+2367616>: stur   w9, [x0, #0x1f]
+ArcCore[0x4283504] <+2367620>: ldp    q0, q1, [x8]
+ArcCore[0x4283508] <+2367624>: stp    q0, q1, [x0]
+ArcCore[0x428350c] <+2367628>: strb   wzr, [x0, #0x23]
+ArcCore[0x4283510] <+2367632>: add    x0, x21, #0x28
+ArcCore[0x4283514] <+2367636>: sub    x1, x29, #0x90
+ArcCore[0x4283518] <+2367640>: bl     0x41a4338                 ; <+1453752>
+ArcCore[0x428351c] <+2367644>: cbz    x0, 0x4283594             ; <+2367764>
+ArcCore[0x4283520] <+2367648>: ldr    x22, [x0, #0x28]
+ArcCore[0x4283524] <+2367652>: ldursb w8, [x29, #-0x79]
+ArcCore[0x4283528] <+2367656>: tbz    w8, #0x1f, 0x428353c      ; <+2367676>
+ArcCore[0x428352c] <+2367660>: ldur   x0, [x29, #-0x90]
+ArcCore[0x4283530] <+2367664>: ldur   x8, [x29, #-0x80]
+ArcCore[0x4283534] <+2367668>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x4283538] <+2367672>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x428353c] <+2367676>: cbz    x22, 0x42835b0            ; <+2367792>
+ArcCore[0x4283540] <+2367680>: ldr    x21, [x20, #0x18]
+ArcCore[0x4283544] <+2367684>: str    x19, [x20, #0x18]
+ArcCore[0x4283548] <+2367688>: cbnz   x21, 0x4283ab0            ; <+2369072>
+ArcCore[0x428354c] <+2367692>: ldr    x0, [x20, #0x10]
+ArcCore[0x4283550] <+2367696>: adr    x2, 0x428549c             ; <+2375708>
+ArcCore[0x4283554] <+2367700>: nop    
+ArcCore[0x4283558] <+2367704>: add    x1, sp, #0x10
+ArcCore[0x428355c] <+2367708>: mov    x3, #0x0                  ; =0 
+ArcCore[0x4283560] <+2367712>: mov    x4, x20
+ArcCore[0x4283564] <+2367716>: blr    x22
+ArcCore[0x4283568] <+2367720>: b      0x4283110                 ; <+2366608>
+ArcCore[0x428356c] <+2367724>: ldp    x10, x9, [x8, #0x30]
+ArcCore[0x4283570] <+2367728>: b      0x428348c                 ; <+2367500>
+ArcCore[0x4283574] <+2367732>: ldp    x10, x9, [x8, #0x48]
+ArcCore[0x4283578] <+2367736>: b      0x42834a0                 ; <+2367520>
+ArcCore[0x428357c] <+2367740>: ldp    x10, x9, [x8, #0x18]
+ArcCore[0x4283580] <+2367744>: b      0x4283478                 ; <+2367480>
+ArcCore[0x4283584] <+2367748>: ldp    x10, x9, [x8, #0x60]
+ArcCore[0x4283588] <+2367752>: b      0x42834b4                 ; <+2367540>
+ArcCore[0x428358c] <+2367756>: ldp    x10, x9, [x8]
+ArcCore[0x4283590] <+2367760>: b      0x4283464                 ; <+2367460>
+ArcCore[0x4283594] <+2367764>: mov    x22, #0x0                 ; =0 
+ArcCore[0x4283598] <+2367768>: b      0x4283524                 ; <+2367652>
+ArcCore[0x428359c] <+2367772>: ldur   x0, [x29, #-0xa8]
+ArcCore[0x42835a0] <+2367776>: ldur   x8, [x29, #-0x98]
+ArcCore[0x42835a4] <+2367780>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x42835a8] <+2367784>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x42835ac] <+2367788>: b      0x428342c                 ; <+2367404>
+ArcCore[0x42835b0] <+2367792>: stur   x25, [x29, #-0x90]
+ArcCore[0x42835b4] <+2367796>: cbz    x19, 0x4283bf0            ; <+2369392>
+ArcCore[0x42835b8] <+2367800>: ldr    x8, [x19, #0x8]
+ArcCore[0x42835bc] <+2367804>: sub    x1, x29, #0x90
+ArcCore[0x42835c0] <+2367808>: b      0x42830ec                 ; <+2366572>
+ArcCore[0x42835c4] <+2367812>: ldr    x22, [x20, #0x8]
+ArcCore[0x42835c8] <+2367816>: adrp   x24, 34643
+ArcCore[0x42835cc] <+2367820>: add    x24, x24, #0x37a
+ArcCore[0x42835d0] <+2367824>: cbz    x22, 0x4283670            ; <+2367984>
+ArcCore[0x42835d4] <+2367828>: mov    w0, #0x20                 ; =32 
+ArcCore[0x42835d8] <+2367832>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x42835dc] <+2367836>: str    x0, [sp, #0x10]
+ArcCore[0x42835e0] <+2367840>: adrp   x8, 38059
+ArcCore[0x42835e4] <+2367844>: ldr    q0, [x8, #0x8e0]
+ArcCore[0x42835e8] <+2367848>: stur   q0, [sp, #0x18]
+ArcCore[0x42835ec] <+2367852>: add    x8, x0, #0x1f
+ArcCore[0x42835f0] <+2367856>: cmp    x8, x0
+ArcCore[0x42835f4] <+2367860>: b.lo   0x4283bbc                 ; <+2369340>
+ArcCore[0x42835f8] <+2367864>: cmp    x8, x24
+ArcCore[0x42835fc] <+2367868>: ccmp   x0, x24, #0x2, hi
+ArcCore[0x4283600] <+2367872>: b.ls   0x4283bbc                 ; <+2369340>
+ArcCore[0x4283604] <+2367876>: ldr    q0, [x24]
+ArcCore[0x4283608] <+2367880>: str    q0, [x0]
+ArcCore[0x428360c] <+2367884>: ldur   q0, [x24, #0xf]
+ArcCore[0x4283610] <+2367888>: stur   q0, [x0, #0xf]
+ArcCore[0x4283614] <+2367892>: strb   wzr, [x0, #0x1f]
+ArcCore[0x4283618] <+2367896>: add    x0, x22, #0x28
+ArcCore[0x428361c] <+2367900>: add    x1, sp, #0x10
+ArcCore[0x4283620] <+2367904>: bl     0x41a4338                 ; <+1453752>
+ArcCore[0x4283624] <+2367908>: cbz    x0, 0x4283668             ; <+2367976>
+ArcCore[0x4283628] <+2367912>: ldr    x23, [x0, #0x28]
+ArcCore[0x428362c] <+2367916>: ldrsb  w8, [sp, #0x27]
+ArcCore[0x4283630] <+2367920>: tbz    w8, #0x1f, 0x4283644      ; <+2367940>
+ArcCore[0x4283634] <+2367924>: ldr    x0, [sp, #0x10]
+ArcCore[0x4283638] <+2367928>: ldr    x8, [sp, #0x20]
+ArcCore[0x428363c] <+2367932>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x4283640] <+2367936>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x4283644] <+2367940>: mov    x22, #0x7                 ; =7 
+ArcCore[0x4283648] <+2367944>: movk   x22, #0x1, lsl #32
+ArcCore[0x428364c] <+2367948>: cbz    x23, 0x4283424            ; <+2367396>
+ArcCore[0x4283650] <+2367952>: blr    x23
+ArcCore[0x4283654] <+2367956>: str    x0, [x20, #0x10]
+ArcCore[0x4283658] <+2367960>: mov    x8, #0x100000000          ; =4294967296 
+ArcCore[0x428365c] <+2367964>: cmp    x0, #0x0
+ArcCore[0x4283660] <+2367968>: csel   x22, x8, xzr, eq
+ArcCore[0x4283664] <+2367972>: b      0x4283424                 ; <+2367396>
+ArcCore[0x4283668] <+2367976>: mov    x23, #0x0                 ; =0 
+ArcCore[0x428366c] <+2367980>: b      0x428362c                 ; <+2367916>
+ArcCore[0x4283670] <+2367984>: mov    w0, #0x20                 ; =32 
+ArcCore[0x4283674] <+2367988>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x4283678] <+2367992>: add    x8, x0, #0x1f
+ArcCore[0x428367c] <+2367996>: cmp    x8, x0
+ArcCore[0x4283680] <+2368000>: b.lo   0x4283bbc                 ; <+2369340>
+ArcCore[0x4283684] <+2368004>: mov    x26, x0
+ArcCore[0x4283688] <+2368008>: cmp    x8, x24
+ArcCore[0x428368c] <+2368012>: ccmp   x0, x24, #0x2, hi
+ArcCore[0x4283690] <+2368016>: b.ls   0x4283bbc                 ; <+2369340>
+ArcCore[0x4283694] <+2368020>: ldr    q0, [x24]
+ArcCore[0x4283698] <+2368024>: str    q0, [x26]
+ArcCore[0x428369c] <+2368028>: ldur   q0, [x24, #0xf]
+ArcCore[0x42836a0] <+2368032>: stur   q0, [x26, #0xf]
+ArcCore[0x42836a4] <+2368036>: strb   wzr, [x26, #0x1f]
+ArcCore[0x42836a8] <+2368040>: mov    w0, #0x30                 ; =48 
+ArcCore[0x42836ac] <+2368044>: bl     0x8790                    ; ChromeMain + 17864
+(lldb) disassemble -s 0x43db3b4 -e 0x43db45c
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x43db3b4] <+3776308>: stp    x29, x30, [sp, #-0x10]!
+ArcCore[0x43db3b8] <+3776312>: mov    x29, sp
+ArcCore[0x43db3bc] <+3776316>: ldr    x9, [x0]
+ArcCore[0x43db3c0] <+3776320>: ldr    x8, [x1]
+ArcCore[0x43db3c4] <+3776324>: ubfx   x10, x8, #32, #8
+ArcCore[0x43db3c8] <+3776328>: cbz    w10, 0x43db3f0            ; <+3776368>
+ArcCore[0x43db3cc] <+3776332>: cmp    w10, #0x1
+ArcCore[0x43db3d0] <+3776336>: b.ne   0x43db40c                 ; <+3776396>
+ArcCore[0x43db3d4] <+3776340>: cmp    w8, #0xb
+ArcCore[0x43db3d8] <+3776344>: b.hs   0x43db408                 ; <+3776392>
+ArcCore[0x43db3dc] <+3776348>: ldr    x0, [x9]
+ArcCore[0x43db3e0] <+3776352>: ldr    x3, [x0, #0x10]
+ArcCore[0x43db3e4] <+3776356>: and    x2, x8, #0xf
+ArcCore[0x43db3e8] <+3776360>: mov    x1, #-0x1                 ; =-1 
+ArcCore[0x43db3ec] <+3776364>: b      0x43db400                 ; <+3776384>
+ArcCore[0x43db3f0] <+3776368>: ldr    x0, [x9]
+ArcCore[0x43db3f4] <+3776372>: sxtw   x1, w8
+ArcCore[0x43db3f8] <+3776376>: ldr    x3, [x0, #0x10]
+ArcCore[0x43db3fc] <+3776380>: mov    x2, #-0x1                 ; =-1 
+ArcCore[0x43db400] <+3776384>: ldp    x29, x30, [sp], #0x10
+ArcCore[0x43db404] <+3776388>: br     x3
+ArcCore[0x43db408] <+3776392>: brk    #0x550b
+ArcCore[0x43db40c] <+3776396>: cmp    w10, #0xff
+ArcCore[0x43db410] <+3776400>: b.ne   0x43db420                 ; <+3776416>
+ArcCore[0x43db414] <+3776404>: adrp   x0, 35883
+ArcCore[0x43db418] <+3776408>: add    x0, x0, #0x340            ; "std::get: variant is valueless"
+ArcCore[0x43db41c] <+3776412>: bl     0x4b335b8                 ; ___lldb_unnamed_symbol3262 + 299832
+ArcCore[0x43db420] <+3776416>: adrp   x0, 35883
+ArcCore[0x43db424] <+3776420>: add    x0, x0, #0x360            ; "std::get: wrong alternative for variant"
+ArcCore[0x43db428] <+3776424>: bl     0x4b335b8                 ; ___lldb_unnamed_symbol3262 + 299832
+ArcCore[0x43db42c] <+3776428>: ldr    x9, [x0]
+ArcCore[0x43db430] <+3776432>: ldr    x8, [x1]
+ArcCore[0x43db434] <+3776436>: ldr    x0, [x9]
+ArcCore[0x43db438] <+3776440>: tbz    x8, #0x20, 0x43db44c      ; <+3776460>
+ArcCore[0x43db43c] <+3776444>: cmp    w8, #0xb
+ArcCore[0x43db440] <+3776448>: b.hs   0x43db458                 ; <+3776472>
+ArcCore[0x43db444] <+3776452>: and    x1, x8, #0xf
+ArcCore[0x43db448] <+3776456>: b      0x43db450                 ; <+3776464>
+ArcCore[0x43db44c] <+3776460>: mov    x1, #-0x1                 ; =-1 
+ArcCore[0x43db450] <+3776464>: ldr    x2, [x0, #0x10]
+ArcCore[0x43db454] <+3776468>: br     x2
+ArcCore[0x43db458] <+3776472>: brk    #0x550b
+(lldb) disassemble -s 0x40bf000 -e 0x40bf020
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x40bf000] <+514944>: stp    x20, x19, [sp, #-0x20]!
+ArcCore[0x40bf004] <+514948>: stp    x29, x30, [sp, #0x10]
+ArcCore[0x40bf008] <+514952>: add    x29, sp, #0x10
+ArcCore[0x40bf00c] <+514956>: cbz    x2, 0x40bf054             ; <+515028>
+ArcCore[0x40bf010] <+514960>: mov    x19, x2
+ArcCore[0x40bf014] <+514964>: ldr    x8, [x2, #0x8]
+ArcCore[0x40bf018] <+514968>: mov    x0, x2
+ArcCore[0x40bf01c] <+514972>: mov    w1, #0x0                  ; =0 
+(lldb) disassemble -s 0x2076b80 -e 0x2076b8c
+ArcCore`___lldb_unnamed_symbol3030:
+ArcCore[0x2076b80] <+349952>: brk    #0
+ArcCore[0x2076b84] <+349956>: hlt    #0
+ArcCore[0x2076b88] <+349960>: brk    #0x1
+(lldb) disassemble -s 0x427ac00 -e 0x427acf0
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x427ac00] <+2332544>: sub    sp, sp, #0x40
+ArcCore[0x427ac04] <+2332548>: stp    x20, x19, [sp, #0x20]
+ArcCore[0x427ac08] <+2332552>: stp    x29, x30, [sp, #0x30]
+ArcCore[0x427ac0c] <+2332556>: add    x29, sp, #0x30
+ArcCore[0x427ac10] <+2332560>: cbz    x1, 0x427ace8             ; <+2332776>
+ArcCore[0x427ac14] <+2332564>: mov    x20, x1
+ArcCore[0x427ac18] <+2332568>: mov    x19, x0
+ArcCore[0x427ac1c] <+2332572>: ldr    x8, [x1, #0x8]
+ArcCore[0x427ac20] <+2332576>: mov    x0, x1
+ArcCore[0x427ac24] <+2332580>: blr    x8
+ArcCore[0x427ac28] <+2332584>: mov    w8, #-0x1                 ; =-1 
+ArcCore[0x427ac2c] <+2332588>: ldaddal w8, w8, [x20]
+ArcCore[0x427ac30] <+2332592>: cmp    w8, #0x1
+ArcCore[0x427ac34] <+2332596>: b.ne   0x427ac44                 ; <+2332612>
+ArcCore[0x427ac38] <+2332600>: ldr    x8, [x20, #0x10]
+ArcCore[0x427ac3c] <+2332604>: mov    x0, x20
+ArcCore[0x427ac40] <+2332608>: blr    x8
+ArcCore[0x427ac44] <+2332612>: ldr    x8, [x19, #0x8]
+ArcCore[0x427ac48] <+2332616>: mov    w9, #0xf                  ; =15 
+ArcCore[0x427ac4c] <+2332620>: strb   w9, [sp, #0x1f]
+ArcCore[0x427ac50] <+2332624>: add    x10, sp, #0x8
+ArcCore[0x427ac54] <+2332628>: add    x11, x10, #0xf
+ArcCore[0x427ac58] <+2332632>: adrp   x9, 34652
+ArcCore[0x427ac5c] <+2332636>: add    x9, x9, #0xd6
+ArcCore[0x427ac60] <+2332640>: cmp    x11, x9
+ArcCore[0x427ac64] <+2332644>: ccmp   x10, x9, #0x2, hi
+ArcCore[0x427ac68] <+2332648>: b.ls   0x427acf0                 ; <+2332784>
+ArcCore[0x427ac6c] <+2332652>: ldr    x10, [x9]
+ArcCore[0x427ac70] <+2332656>: str    x10, [sp, #0x8]
+ArcCore[0x427ac74] <+2332660>: ldur   x9, [x9, #0x7]
+ArcCore[0x427ac78] <+2332664>: stur   x9, [sp, #0xf]
+ArcCore[0x427ac7c] <+2332668>: strb   wzr, [sp, #0x17]
+ArcCore[0x427ac80] <+2332672>: add    x0, x8, #0x20
+ArcCore[0x427ac84] <+2332676>: add    x1, sp, #0x8
+ArcCore[0x427ac88] <+2332680>: bl     0x41a4338                 ; <+1453752>
+ArcCore[0x427ac8c] <+2332684>: cbz    x0, 0x427ace0             ; <+2332768>
+ArcCore[0x427ac90] <+2332688>: ldr    x20, [x0, #0x28]
+ArcCore[0x427ac94] <+2332692>: ldrsb  w8, [sp, #0x1f]
+ArcCore[0x427ac98] <+2332696>: tbz    w8, #0x1f, 0x427acac      ; <+2332716>
+ArcCore[0x427ac9c] <+2332700>: ldr    x0, [sp, #0x8]
+ArcCore[0x427aca0] <+2332704>: ldr    x8, [sp, #0x18]
+ArcCore[0x427aca4] <+2332708>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x427aca8] <+2332712>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x427acac] <+2332716>: cbz    x20, 0x427acf4            ; <+2332788>
+ArcCore[0x427acb0] <+2332720>: ldr    x0, [x19, #0x10]
+ArcCore[0x427acb4] <+2332724>: adrp   x8, 41280
+ArcCore[0x427acb8] <+2332728>: ldrh   w2, [x8, #0x9e0]
+ArcCore[0x427acbc] <+2332732>: add    w9, w2, #0x1
+ArcCore[0x427acc0] <+2332736>: strh   w9, [x8, #0x9e0]
+ArcCore[0x427acc4] <+2332740>: mov    x1, #0x0                  ; =0 
+ArcCore[0x427acc8] <+2332744>: mov    x3, x19
+ArcCore[0x427accc] <+2332748>: blr    x20
+ArcCore[0x427acd0] <+2332752>: ldp    x29, x30, [sp, #0x30]
+ArcCore[0x427acd4] <+2332756>: ldp    x20, x19, [sp, #0x20]
+ArcCore[0x427acd8] <+2332760>: add    sp, sp, #0x40
+ArcCore[0x427acdc] <+2332764>: ret    
+ArcCore[0x427ace0] <+2332768>: mov    x20, #0x0                 ; =0 
+ArcCore[0x427ace4] <+2332772>: b      0x427ac94                 ; <+2332692>
+ArcCore[0x427ace8] <+2332776>: brk    #0
+ArcCore[0x427acec] <+2332780>: hlt    #0
+(lldb) disassemble -s 0x429a740 -e 0x429a780
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x429a740] <+2462400>: ldp    x29, x30, [sp, #0x20]
+ArcCore[0x429a744] <+2462404>: ldp    x20, x19, [sp, #0x10]
+ArcCore[0x429a748] <+2462408>: ldp    x22, x21, [sp], #0x30
+ArcCore[0x429a74c] <+2462412>: ret    
+ArcCore[0x429a750] <+2462416>: ldr    x8, [x20, #0x190]
+ArcCore[0x429a754] <+2462420>: cbz    x8, 0x429a740             ; <+2462400>
+ArcCore[0x429a758] <+2462424>: ldr    x8, [x20, #0x1a8]
+ArcCore[0x429a75c] <+2462428>: cbz    x8, 0x429a77c             ; <+2462460>
+ArcCore[0x429a760] <+2462432>: ldr    x0, [x20, #0x1a8]
+ArcCore[0x429a764] <+2462436>: and    w1, w19, #0xffff
+ArcCore[0x429a768] <+2462440>: mov    x2, #0x0                  ; =0 
+ArcCore[0x429a76c] <+2462444>: ldp    x29, x30, [sp, #0x20]
+ArcCore[0x429a770] <+2462448>: ldp    x20, x19, [sp, #0x10]
+ArcCore[0x429a774] <+2462452>: ldp    x22, x21, [sp], #0x30
+ArcCore[0x429a778] <+2462456>: b      0x41f6214                 ; <+1789332>
+ArcCore[0x429a77c] <+2462460>: mov    w0, #0x8                  ; =8 
+(lldb) disassemble -s 0x42a8f28 -e 0x42a8f60
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x42a8f28] <+2521768>: ldrsb  x8, [x21, #0x2f]
+ArcCore[0x42a8f2c] <+2521772>: tbz    x8, #0x3f, 0x42a8f34      ; <+2521780>
+ArcCore[0x42a8f30] <+2521776>: ldr    x8, [x21, #0x20]
+ArcCore[0x42a8f34] <+2521780>: cbz    x8, 0x42a8f58             ; <+2521816>
+ArcCore[0x42a8f38] <+2521784>: ldr    x8, [x21, #0x18]
+ArcCore[0x42a8f3c] <+2521788>: ldr    q0, [x21, #0x20]
+ArcCore[0x42a8f40] <+2521792>: stp    xzr, xzr, [x21, #0x20]
+ArcCore[0x42a8f44] <+2521796>: str    xzr, [x21, #0x18]
+ArcCore[0x42a8f48] <+2521800>: str    x8, [sp, #0x18]
+ArcCore[0x42a8f4c] <+2521804>: str    q0, [sp, #0x20]
+ArcCore[0x42a8f50] <+2521808>: mov    w8, #0x1                  ; =1 
+ArcCore[0x42a8f54] <+2521812>: strb   w8, [sp, #0x30]
+ArcCore[0x42a8f58] <+2521816>: mov    x28, sp
+ArcCore[0x42a8f5c] <+2521820>: ldr    x23, [x21, #0x38]
+(lldb) disassemble -s 0x2e8f958 -e 0x2e8f9b0
+ArcCore`___lldb_unnamed_symbol3086:
+ArcCore[0x2e8f958] <+123096>: sub    sp, sp, #0x30
+ArcCore[0x2e8f95c] <+123100>: stp    x20, x19, [sp, #0x10]
+ArcCore[0x2e8f960] <+123104>: stp    x29, x30, [sp, #0x20]
+ArcCore[0x2e8f964] <+123108>: add    x29, sp, #0x20
+ArcCore[0x2e8f968] <+123112>: mov    x19, x1
+ArcCore[0x2e8f96c] <+123116>: mov    x20, x0
+ArcCore[0x2e8f970] <+123120>: bl     0x221baa0                 ; ___lldb_unnamed_symbol3035 + 53620
+ArcCore[0x2e8f974] <+123124>: tbnz   w0, #0x0, 0x2e8f9dc       ; <+123228>
+ArcCore[0x2e8f978] <+123128>: ldrsb  w8, [x20, #0x17]
+ArcCore[0x2e8f97c] <+123132>: tbz    w8, #0x1f, 0x2e8f984      ; <+123140>
+ArcCore[0x2e8f980] <+123136>: ldr    x20, [x20]
+ArcCore[0x2e8f984] <+123140>: mov    x0, x20
+ArcCore[0x2e8f988] <+123144>: mov    w1, #0x5                  ; =5 
+ArcCore[0x2e8f98c] <+123148>: bl     0x9c2711c                 ; ___lldb_unnamed_symbol3763 + 11913952
+ArcCore[0x2e8f990] <+123152>: cbz    x0, 0x2e8f9bc             ; <+123196>
+ArcCore[0x2e8f994] <+123156>: mov    x20, x0
+ArcCore[0x2e8f998] <+123160>: mov    w0, #0x10                 ; =16 
+ArcCore[0x2e8f99c] <+123164>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x2e8f9a0] <+123168>: stp    xzr, x20, [x0]
+ArcCore[0x2e8f9a4] <+123172>: mov    w8, #0x1                  ; =1 
+ArcCore[0x2e8f9a8] <+123176>: str    w8, [x0]
+ArcCore[0x2e8f9ac] <+123180>: ldp    x29, x30, [sp, #0x20]
+(lldb) quit
+(lldb) target create ../arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore
+Current executable set to '/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore' (arm64).
+(lldb) disassemble -s 0x4284d8c -e 0x4284f68
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x4284d8c] <+2373900>: sub    sp, sp, #0xe0
+ArcCore[0x4284d90] <+2373904>: stp    x28, x27, [sp, #0x80]
+ArcCore[0x4284d94] <+2373908>: stp    x26, x25, [sp, #0x90]
+ArcCore[0x4284d98] <+2373912>: stp    x24, x23, [sp, #0xa0]
+ArcCore[0x4284d9c] <+2373916>: stp    x22, x21, [sp, #0xb0]
+ArcCore[0x4284da0] <+2373920>: stp    x20, x19, [sp, #0xc0]
+ArcCore[0x4284da4] <+2373924>: stp    x29, x30, [sp, #0xd0]
+ArcCore[0x4284da8] <+2373928>: add    x29, sp, #0xd0
+ArcCore[0x4284dac] <+2373932>: mov    x23, x3
+ArcCore[0x4284db0] <+2373936>: mov    x20, x2
+ArcCore[0x4284db4] <+2373940>: mov    x22, x1
+ArcCore[0x4284db8] <+2373944>: mov    x19, x0
+ArcCore[0x4284dbc] <+2373948>: mov    x21, x8
+ArcCore[0x4284dc0] <+2373952>: stur   x3, [x29, #-0x58]
+ArcCore[0x4284dc4] <+2373956>: str    xzr, [sp, #0x70]
+ArcCore[0x4284dc8] <+2373960>: movi.2d v0, #0000000000000000
+ArcCore[0x4284dcc] <+2373964>: stp    q0, q0, [sp, #0x50]
+ArcCore[0x4284dd0] <+2373968>: stur   q0, [sp, #0x40]
+ArcCore[0x4284dd4] <+2373972>: ldrsb  x8, [x3, #0x17]
+ArcCore[0x4284dd8] <+2373976>: tbnz   x8, #0x3f, 0x4284e8c      ; <+2374156>
+ArcCore[0x4284ddc] <+2373980>: mov    x9, x23
+ArcCore[0x4284de0] <+2373984>: str    x9, [sp, #0x38]
+ArcCore[0x4284de4] <+2373988>: str    w8, [sp, #0x40]
+ArcCore[0x4284de8] <+2373992>: ldrsb  x8, [x23, #0x2f]
+ArcCore[0x4284dec] <+2373996>: tbnz   x8, #0x3f, 0x4284e94      ; <+2374164>
+ArcCore[0x4284df0] <+2374000>: add    x9, x23, #0x18
+ArcCore[0x4284df4] <+2374004>: str    x9, [sp, #0x48]
+ArcCore[0x4284df8] <+2374008>: str    w8, [sp, #0x50]
+ArcCore[0x4284dfc] <+2374012>: ldr    w8, [x23, #0x30]
+ArcCore[0x4284e00] <+2374016>: str    w8, [sp, #0x58]
+ArcCore[0x4284e04] <+2374020>: ldr    w8, [x23, #0x34]
+ArcCore[0x4284e08] <+2374024>: str    w8, [sp, #0x5c]
+ArcCore[0x4284e0c] <+2374028>: ldr    w8, [x23, #0x38]
+ArcCore[0x4284e10] <+2374032>: str    w8, [sp, #0x60]
+ArcCore[0x4284e14] <+2374036>: ldrb   w8, [x23, #0x3c]
+ArcCore[0x4284e18] <+2374040>: strb   w8, [sp, #0x64]
+ArcCore[0x4284e1c] <+2374044>: ldrb   w8, [x23, #0x3d]
+ArcCore[0x4284e20] <+2374048>: strb   w8, [sp, #0x65]
+ArcCore[0x4284e24] <+2374052>: ldr    x26, [x23, #0x48]
+ArcCore[0x4284e28] <+2374056>: cbz    x26, 0x4284f14            ; <+2374292>
+ArcCore[0x4284e2c] <+2374060>: mov    x8, #-0x5555555555555556  ; =-6148914691236517206 
+ArcCore[0x4284e30] <+2374064>: movk   x8, #0xaaa, lsl #48
+ArcCore[0x4284e34] <+2374068>: cmp    x26, x8
+ArcCore[0x4284e38] <+2374072>: b.hi   0x4285064                 ; <+2374628>
+ArcCore[0x4284e3c] <+2374076>: add    x8, x26, x26, lsl #1
+ArcCore[0x4284e40] <+2374080>: lsl    x0, x8, #3
+ArcCore[0x4284e44] <+2374084>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x4284e48] <+2374088>: mov    x24, x0
+ArcCore[0x4284e4c] <+2374092>: lsl    x8, x26, #5
+ArcCore[0x4284e50] <+2374096>: cbz    x8, 0x4284f18             ; <+2374296>
+ArcCore[0x4284e54] <+2374100>: mov    x9, x26
+ArcCore[0x4284e58] <+2374104>: stp    x22, x21, [sp, #0x18]
+ArcCore[0x4284e5c] <+2374108>: stp    x20, x19, [sp, #0x28]
+ArcCore[0x4284e60] <+2374112>: mov    x27, #0x0                 ; =0 
+ArcCore[0x4284e64] <+2374116>: str    x23, [sp, #0x10]
+ArcCore[0x4284e68] <+2374120>: ldr    x8, [x23, #0x40]
+ArcCore[0x4284e6c] <+2374124>: add    x26, x8, x26, lsl #5
+ArcCore[0x4284e70] <+2374128>: add    x20, x8, #0x8
+ArcCore[0x4284e74] <+2374132>: mov    w22, #0x18                ; =24 
+ArcCore[0x4284e78] <+2374136>: mov    x10, #0x5555555555555555  ; =6148914691236517205 
+ArcCore[0x4284e7c] <+2374140>: movk   x10, #0x555, lsl #48
+ArcCore[0x4284e80] <+2374144>: mov    x11, #-0x5555555555555556 ; =-6148914691236517206 
+ArcCore[0x4284e84] <+2374148>: movk   x11, #0xaaab
+ArcCore[0x4284e88] <+2374152>: b      0x4284ee8                 ; <+2374248>
+ArcCore[0x4284e8c] <+2374156>: ldp    x9, x8, [x23]
+ArcCore[0x4284e90] <+2374160>: b      0x4284de0                 ; <+2373984>
+ArcCore[0x4284e94] <+2374164>: ldp    x9, x8, [x23, #0x18]
+ArcCore[0x4284e98] <+2374168>: b      0x4284df4                 ; <+2374004>
+ArcCore[0x4284e9c] <+2374172>: mov    x28, x20
+ArcCore[0x4284ea0] <+2374176>: cmp    x27, x9
+ArcCore[0x4284ea4] <+2374180>: b.eq   0x4284fd4                 ; <+2374484>
+ArcCore[0x4284ea8] <+2374184>: madd   x8, x27, x22, x24
+ArcCore[0x4284eac] <+2374188>: cbz    x8, 0x4284fd0             ; <+2374480>
+ArcCore[0x4284eb0] <+2374192>: stp    w23, wzr, [x8]
+ArcCore[0x4284eb4] <+2374196>: str    x28, [x8, #0x8]
+ArcCore[0x4284eb8] <+2374200>: mov    x25, x24
+ArcCore[0x4284ebc] <+2374204>: stp    w19, wzr, [x8, #0x10]
+ArcCore[0x4284ec0] <+2374208>: madd   x8, x27, x22, x25
+ArcCore[0x4284ec4] <+2374212>: add    x8, x8, #0x18
+ArcCore[0x4284ec8] <+2374216>: subs   x25, x8, x24
+ArcCore[0x4284ecc] <+2374220>: b.eq   0x4284fd0                 ; <+2374480>
+ArcCore[0x4284ed0] <+2374224>: asr    x8, x25, #3
+ArcCore[0x4284ed4] <+2374228>: mul    x27, x8, x11
+ArcCore[0x4284ed8] <+2374232>: add    x20, x20, #0x20
+ArcCore[0x4284edc] <+2374236>: add    x8, x21, #0x20
+ArcCore[0x4284ee0] <+2374240>: cmp    x8, x26
+ArcCore[0x4284ee4] <+2374244>: b.eq   0x4284f00                 ; <+2374272>
+ArcCore[0x4284ee8] <+2374248>: mov    x21, x20
+ArcCore[0x4284eec] <+2374252>: ldr    w23, [x21, #-0x8]!
+ArcCore[0x4284ef0] <+2374256>: ldrsb  x19, [x21, #0x1f]
+ArcCore[0x4284ef4] <+2374260>: tbz    x19, #0x3f, 0x4284e9c     ; <+2374172>
+ArcCore[0x4284ef8] <+2374264>: ldp    x28, x19, [x20]
+ArcCore[0x4284efc] <+2374268>: b      0x4284ea0                 ; <+2374176>
+ArcCore[0x4284f00] <+2374272>: mov    x26, x9
+ArcCore[0x4284f04] <+2374276>: ldp    x20, x19, [sp, #0x28]
+ArcCore[0x4284f08] <+2374280>: ldp    x22, x21, [sp, #0x18]
+ArcCore[0x4284f0c] <+2374284>: ldr    x23, [sp, #0x10]
+ArcCore[0x4284f10] <+2374288>: b      0x4284f20                 ; <+2374304>
+ArcCore[0x4284f14] <+2374292>: mov    x24, #0x0                 ; =0 
+ArcCore[0x4284f18] <+2374296>: mov    x25, #0x0                 ; =0 
+ArcCore[0x4284f1c] <+2374300>: mov    w27, #0x0                 ; =0 
+ArcCore[0x4284f20] <+2374304>: str    x24, [sp, #0x68]
+ArcCore[0x4284f24] <+2374308>: str    w27, [sp, #0x70]
+ArcCore[0x4284f28] <+2374312>: ldrb   w8, [x23, #0x58]
+ArcCore[0x4284f2c] <+2374316>: strb   w8, [sp, #0x74]
+ArcCore[0x4284f30] <+2374320>: str    xzr, [x21]
+ArcCore[0x4284f34] <+2374324>: adr    x2, 0x42857b8             ; <+2376504>
+ArcCore[0x4284f38] <+2374328>: nop    
+ArcCore[0x4284f3c] <+2374332>: add    x1, sp, #0x38
+ArcCore[0x4284f40] <+2374336>: mov    x0, x22
+ArcCore[0x4284f44] <+2374340>: mov    x3, #0x0                  ; =0 
+ArcCore[0x4284f48] <+2374344>: mov    x4, x21
+ArcCore[0x4284f4c] <+2374348>: blr    x20
+ArcCore[0x4284f50] <+2374352>: cbz    x24, 0x4284f84            ; <+2374404>
+ArcCore[0x4284f54] <+2374356>: cbz    x25, 0x4284f74            ; <+2374388>
+ArcCore[0x4284f58] <+2374360>: neg    x8, x25
+ArcCore[0x4284f5c] <+2374364>: add    x9, x25, x24
+ArcCore[0x4284f60] <+2374368>: sub    x9, x9, #0x18
+ArcCore[0x4284f64] <+2374372>: cbz    x9, 0x4284fd0             ; <+2374480>
+(lldb) disassemble -s 0x42858f0 -e 0x4285c50
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x42858f0] <+2376816>: ldp    x28, x27, [sp, #0x60]
+ArcCore[0x42858f4] <+2376820>: add    sp, sp, #0xc0
+ArcCore[0x42858f8] <+2376824>: ret    
+ArcCore[0x42858fc] <+2376828>: mov    w0, #0x80                 ; =128 
+ArcCore[0x4285900] <+2376832>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x4285904] <+2376836>: mov    x20, x0
+ArcCore[0x4285908] <+2376840>: movi.2d v0, #0000000000000000
+ArcCore[0x428590c] <+2376844>: stp    q0, q0, [x0]
+ArcCore[0x4285910] <+2376848>: stp    q0, q0, [x0, #0x20]
+ArcCore[0x4285914] <+2376852>: stp    q0, q0, [x0, #0x40]
+ArcCore[0x4285918] <+2376856>: stp    q0, q0, [x0, #0x60]
+ArcCore[0x428591c] <+2376860>: ldr    x23, [x25, #0x8]
+ArcCore[0x4285920] <+2376864>: ldr    w21, [x25, #0x10]
+ArcCore[0x4285924] <+2376868>: cbnz   x23, 0x428592c            ; <+2376876>
+ArcCore[0x4285928] <+2376872>: cbnz   w21, 0x4285cf8            ; <+2377848>
+ArcCore[0x428592c] <+2376876>: cmp    w21, #0x16
+ArcCore[0x4285930] <+2376880>: b.ls   0x4285958                 ; <+2376920>
+ArcCore[0x4285934] <+2376884>: and    x19, x21, #0xfffffff0
+ArcCore[0x4285938] <+2376888>: add    x0, x19, #0x10
+ArcCore[0x428593c] <+2376892>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x4285940] <+2376896>: mov    x24, x0
+ArcCore[0x4285944] <+2376900>: mov    x8, #0x7ffffffffffffff0   ; =9223372036854775792 
+ArcCore[0x4285948] <+2376904>: sub    x8, x19, x8
+ArcCore[0x428594c] <+2376908>: stp    x0, x21, [sp, #0x10]
+ArcCore[0x4285950] <+2376912>: str    x8, [sp, #0x20]
+ArcCore[0x4285954] <+2376916>: b      0x4285960                 ; <+2376928>
+ArcCore[0x4285958] <+2376920>: strb   w21, [sp, #0x27]
+ArcCore[0x428595c] <+2376924>: add    x24, sp, #0x10
+ArcCore[0x4285960] <+2376928>: add    x8, x24, x21
+ArcCore[0x4285964] <+2376932>: cmp    x8, x24
+ArcCore[0x4285968] <+2376936>: b.lo   0x4285cf8                 ; <+2377848>
+ArcCore[0x428596c] <+2376940>: cmp    x23, x24
+ArcCore[0x4285970] <+2376944>: ccmp   x23, x8, #0x2, hs
+ArcCore[0x4285974] <+2376948>: b.lo   0x4285cf8                 ; <+2377848>
+ArcCore[0x4285978] <+2376952>: mov    x0, x24
+ArcCore[0x428597c] <+2376956>: mov    x1, x23
+ArcCore[0x4285980] <+2376960>: mov    x2, x21
+ArcCore[0x4285984] <+2376964>: bl     0x8009564                 ; ___lldb_unnamed_symbol3357 + 11460644
+ArcCore[0x4285988] <+2376968>: strb   wzr, [x24, x21]
+ArcCore[0x428598c] <+2376972>: ldr    q0, [sp, #0x10]
+ArcCore[0x4285990] <+2376976>: str    q0, [x20]
+ArcCore[0x4285994] <+2376980>: ldr    x8, [sp, #0x20]
+ArcCore[0x4285998] <+2376984>: str    x8, [x20, #0x10]
+ArcCore[0x428599c] <+2376988>: ldr    x23, [x25, #0x18]
+ArcCore[0x42859a0] <+2376992>: ldr    w21, [x25, #0x20]
+ArcCore[0x42859a4] <+2376996>: cbnz   x23, 0x42859ac            ; <+2377004>
+ArcCore[0x42859a8] <+2377000>: cbnz   w21, 0x4285cf8            ; <+2377848>
+ArcCore[0x42859ac] <+2377004>: cmp    w21, #0x16
+ArcCore[0x42859b0] <+2377008>: b.ls   0x42859d8                 ; <+2377048>
+ArcCore[0x42859b4] <+2377012>: and    x19, x21, #0xfffffff0
+ArcCore[0x42859b8] <+2377016>: add    x0, x19, #0x10
+ArcCore[0x42859bc] <+2377020>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x42859c0] <+2377024>: mov    x24, x0
+ArcCore[0x42859c4] <+2377028>: mov    x8, #0x7ffffffffffffff0   ; =9223372036854775792 
+ArcCore[0x42859c8] <+2377032>: sub    x8, x19, x8
+ArcCore[0x42859cc] <+2377036>: stp    x0, x21, [sp, #0x10]
+ArcCore[0x42859d0] <+2377040>: str    x8, [sp, #0x20]
+ArcCore[0x42859d4] <+2377044>: b      0x42859e0                 ; <+2377056>
+ArcCore[0x42859d8] <+2377048>: strb   w21, [sp, #0x27]
+ArcCore[0x42859dc] <+2377052>: add    x24, sp, #0x10
+ArcCore[0x42859e0] <+2377056>: add    x8, x24, x21
+ArcCore[0x42859e4] <+2377060>: cmp    x8, x24
+ArcCore[0x42859e8] <+2377064>: b.lo   0x4285cf8                 ; <+2377848>
+ArcCore[0x42859ec] <+2377068>: cmp    x23, x24
+ArcCore[0x42859f0] <+2377072>: b.lo   0x42859fc                 ; <+2377084>
+ArcCore[0x42859f4] <+2377076>: cmp    x23, x8
+ArcCore[0x42859f8] <+2377080>: b.lo   0x4285cf8                 ; <+2377848>
+ArcCore[0x42859fc] <+2377084>: str    x22, [sp]
+ArcCore[0x4285a00] <+2377088>: mov    x0, x24
+ArcCore[0x4285a04] <+2377092>: mov    x1, x23
+ArcCore[0x4285a08] <+2377096>: mov    x2, x21
+ArcCore[0x4285a0c] <+2377100>: bl     0x8009564                 ; ___lldb_unnamed_symbol3357 + 11460644
+ArcCore[0x4285a10] <+2377104>: strb   wzr, [x24, x21]
+ArcCore[0x4285a14] <+2377108>: ldr    x21, [x25, #0x28]
+ArcCore[0x4285a18] <+2377112>: str    x25, [sp, #0x8]
+ArcCore[0x4285a1c] <+2377116>: ldr    w25, [x25, #0x30]
+ArcCore[0x4285a20] <+2377120>: ldr    q0, [sp, #0x10]
+ArcCore[0x4285a24] <+2377124>: stur   q0, [x20, #0x18]
+ArcCore[0x4285a28] <+2377128>: ldr    x8, [sp, #0x20]
+ArcCore[0x4285a2c] <+2377132>: str    x8, [x20, #0x28]
+ArcCore[0x4285a30] <+2377136>: add    x8, x25, x25, lsl #1
+ArcCore[0x4285a34] <+2377140>: lsl    x24, x8, #3
+ArcCore[0x4285a38] <+2377144>: mov    x0, x21
+ArcCore[0x4285a3c] <+2377148>: mov    x1, x24
+ArcCore[0x4285a40] <+2377152>: mov    w2, #0x18                 ; =24 
+ArcCore[0x4285a44] <+2377156>: bl     0x122014                  ; ___lldb_unnamed_symbol2950 + 412252
+ArcCore[0x4285a48] <+2377160>: cbnz   w0, 0x4285f48             ; <+2378440>
+ArcCore[0x4285a4c] <+2377164>: cbz    w25, 0x4285bcc            ; <+2377548>
+ArcCore[0x4285a50] <+2377168>: add    x8, x25, x25, lsl #2
+ArcCore[0x4285a54] <+2377172>: lsl    x0, x8, #3
+ArcCore[0x4285a58] <+2377176>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x4285a5c] <+2377180>: mov    x23, x0
+ArcCore[0x4285a60] <+2377184>: mov    x22, #0x0                 ; =0 
+ArcCore[0x4285a64] <+2377188>: add    x19, x21, x24
+ArcCore[0x4285a68] <+2377192>: add    x27, sp, #0x10
+ArcCore[0x4285a6c] <+2377196>: stp    x0, xzr, [x20, #0x30]
+ArcCore[0x4285a70] <+2377200>: str    x25, [x20, #0x40]
+ArcCore[0x4285a74] <+2377204>: mov    w28, #0x1                 ; =1 
+ArcCore[0x4285a78] <+2377208>: b      0x4285b80                 ; <+2377472>
+ArcCore[0x4285a7c] <+2377212>: ldp    x24, x2, [sp, #0x10]
+ArcCore[0x4285a80] <+2377216>: mov    x0, x23
+ArcCore[0x4285a84] <+2377220>: mov    x1, x24
+ArcCore[0x4285a88] <+2377224>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4285a8c] <+2377228>: str    w25, [x23, #0x18]
+ArcCore[0x4285a90] <+2377232>: str    w28, [x23, #0x20]
+ArcCore[0x4285a94] <+2377236>: ldr    x8, [sp, #0x20]
+ArcCore[0x4285a98] <+2377240>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x4285a9c] <+2377244>: mov    x0, x24
+ArcCore[0x4285aa0] <+2377248>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x4285aa4] <+2377252>: b      0x4285b2c                 ; <+2377388>
+ArcCore[0x4285aa8] <+2377256>: strb   w24, [sp, #0x5f]
+ArcCore[0x4285aac] <+2377260>: add    x26, sp, #0x48
+ArcCore[0x4285ab0] <+2377264>: add    x8, x26, x24
+ArcCore[0x4285ab4] <+2377268>: cmp    x8, x26
+ArcCore[0x4285ab8] <+2377272>: b.lo   0x4285cf8                 ; <+2377848>
+ArcCore[0x4285abc] <+2377276>: cmp    x25, x26
+ArcCore[0x4285ac0] <+2377280>: ccmp   x25, x8, #0x2, hs
+ArcCore[0x4285ac4] <+2377284>: b.lo   0x4285cf8                 ; <+2377848>
+ArcCore[0x4285ac8] <+2377288>: mov    x0, x26
+ArcCore[0x4285acc] <+2377292>: mov    x1, x25
+ArcCore[0x4285ad0] <+2377296>: mov    x2, x24
+ArcCore[0x4285ad4] <+2377300>: bl     0x8009564                 ; ___lldb_unnamed_symbol3357 + 11460644
+ArcCore[0x4285ad8] <+2377304>: strb   wzr, [x26, x24]
+ArcCore[0x4285adc] <+2377308>: ldur   q0, [sp, #0x48]
+ArcCore[0x4285ae0] <+2377312>: str    q0, [sp, #0x10]
+ArcCore[0x4285ae4] <+2377316>: ldr    x8, [sp, #0x58]
+ArcCore[0x4285ae8] <+2377320>: str    x8, [sp, #0x20]
+ArcCore[0x4285aec] <+2377324>: ldr    w25, [x21, #0x10]
+ArcCore[0x4285af0] <+2377328>: str    w25, [sp, #0x28]
+ArcCore[0x4285af4] <+2377332>: ldr    x8, [x20, #0x40]
+ArcCore[0x4285af8] <+2377336>: cmp    x22, x8
+ArcCore[0x4285afc] <+2377340>: b.eq   0x4285f1c                 ; <+2378396>
+ArcCore[0x4285b00] <+2377344>: mov    w8, #0x28                 ; =40 
+ArcCore[0x4285b04] <+2377348>: madd   x23, x22, x8, x23
+ArcCore[0x4285b08] <+2377352>: cbz    x23, 0x4285cf8            ; <+2377848>
+ArcCore[0x4285b0c] <+2377356>: ldrsb  w8, [sp, #0x27]
+ArcCore[0x4285b10] <+2377360>: tbnz   w8, #0x1f, 0x4285a7c      ; <+2377212>
+ArcCore[0x4285b14] <+2377364>: ldr    q0, [sp, #0x10]
+ArcCore[0x4285b18] <+2377368>: str    q0, [x23]
+ArcCore[0x4285b1c] <+2377372>: ldr    x8, [sp, #0x20]
+ArcCore[0x4285b20] <+2377376>: str    x8, [x23, #0x10]
+ArcCore[0x4285b24] <+2377380>: str    w25, [x23, #0x18]
+ArcCore[0x4285b28] <+2377384>: str    w28, [x23, #0x20]
+ArcCore[0x4285b2c] <+2377388>: str    wzr, [sp, #0x30]
+ArcCore[0x4285b30] <+2377392>: add    x0, x23, #0x28
+ArcCore[0x4285b34] <+2377396>: ldr    x23, [x20, #0x30]
+ArcCore[0x4285b38] <+2377400>: subs   x8, x0, x23
+ArcCore[0x4285b3c] <+2377404>: asr    x8, x8, #3
+ArcCore[0x4285b40] <+2377408>: mov    x9, #-0x3333333333333334  ; =-3689348814741910324 
+ArcCore[0x4285b44] <+2377412>: movk   x9, #0xcccd
+ArcCore[0x4285b48] <+2377416>: mul    x22, x8, x9
+ArcCore[0x4285b4c] <+2377420>: str    x22, [x20, #0x38]
+ArcCore[0x4285b50] <+2377424>: b.eq   0x4285cf8                 ; <+2377848>
+ArcCore[0x4285b54] <+2377428>: ldr    w8, [sp, #0x30]
+ArcCore[0x4285b58] <+2377432>: cbz    w8, 0x4285b74             ; <+2377460>
+ArcCore[0x4285b5c] <+2377436>: ldrsb  w8, [sp, #0x27]
+ArcCore[0x4285b60] <+2377440>: tbz    w8, #0x1f, 0x4285b74      ; <+2377460>
+ArcCore[0x4285b64] <+2377444>: ldr    x0, [sp, #0x10]
+ArcCore[0x4285b68] <+2377448>: ldr    x8, [sp, #0x20]
+ArcCore[0x4285b6c] <+2377452>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x4285b70] <+2377456>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x4285b74] <+2377460>: add    x21, x21, #0x18
+ArcCore[0x4285b78] <+2377464>: cmp    x21, x19
+ArcCore[0x4285b7c] <+2377468>: b.eq   0x4285bcc                 ; <+2377548>
+ArcCore[0x4285b80] <+2377472>: stp    xzr, xzr, [x27, #0x18]
+ArcCore[0x4285b84] <+2377476>: str    w28, [sp, #0x30]
+ArcCore[0x4285b88] <+2377480>: ldr    x25, [x21]
+ArcCore[0x4285b8c] <+2377484>: ldr    w24, [x21, #0x8]
+ArcCore[0x4285b90] <+2377488>: cmp    x25, #0x0
+ArcCore[0x4285b94] <+2377492>: ccmp   w24, #0x0, #0x4, eq
+ArcCore[0x4285b98] <+2377496>: b.ne   0x4285cf8                 ; <+2377848>
+ArcCore[0x4285b9c] <+2377500>: cmp    w24, #0x16
+ArcCore[0x4285ba0] <+2377504>: b.ls   0x4285aa8                 ; <+2377256>
+ArcCore[0x4285ba4] <+2377508>: and    x27, x24, #0xfffffff0
+ArcCore[0x4285ba8] <+2377512>: add    x0, x27, #0x10
+ArcCore[0x4285bac] <+2377516>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x4285bb0] <+2377520>: mov    x26, x0
+ArcCore[0x4285bb4] <+2377524>: mov    x8, #0x7ffffffffffffff0   ; =9223372036854775792 
+ArcCore[0x4285bb8] <+2377528>: sub    x8, x27, x8
+ArcCore[0x4285bbc] <+2377532>: add    x27, sp, #0x10
+ArcCore[0x4285bc0] <+2377536>: stp    x0, x24, [sp, #0x48]
+ArcCore[0x4285bc4] <+2377540>: str    x8, [sp, #0x58]
+ArcCore[0x4285bc8] <+2377544>: b      0x4285ab0                 ; <+2377264>
+ArcCore[0x4285bcc] <+2377548>: ldr    x8, [sp, #0x8]
+ArcCore[0x4285bd0] <+2377552>: ldr    d0, [x8, #0x48]
+ArcCore[0x4285bd4] <+2377556>: str    d0, [x20, #0x60]
+ArcCore[0x4285bd8] <+2377560>: ldr    x21, [x8, #0x50]
+ArcCore[0x4285bdc] <+2377564>: ldr    w19, [x8, #0x58]
+ArcCore[0x4285be0] <+2377568>: lsl    x23, x19, #5
+ArcCore[0x4285be4] <+2377572>: mov    x0, x21
+ArcCore[0x4285be8] <+2377576>: mov    x1, x23
+ArcCore[0x4285bec] <+2377580>: mov    w2, #0x20                 ; =32 
+ArcCore[0x4285bf0] <+2377584>: bl     0x122014                  ; ___lldb_unnamed_symbol2950 + 412252
+ArcCore[0x4285bf4] <+2377588>: cbnz   w0, 0x4285f54             ; <+2378452>
+ArcCore[0x4285bf8] <+2377592>: mov    x24, x20
+ArcCore[0x4285bfc] <+2377596>: ldr    x8, [x24, #0x78]!
+ArcCore[0x4285c00] <+2377600>: sub    x9, x24, #0x10
+ArcCore[0x4285c04] <+2377604>: str    x9, [sp, #0x8]
+ArcCore[0x4285c08] <+2377608>: cmp    x8, x19
+ArcCore[0x4285c0c] <+2377612>: b.hs   0x4285c7c                 ; <+2377724>
+ArcCore[0x4285c10] <+2377616>: mov    x25, x20
+ArcCore[0x4285c14] <+2377620>: ldr    x22, [x25, #0x70]!
+ArcCore[0x4285c18] <+2377624>: lsl    x8, x19, #6
+ArcCore[0x4285c1c] <+2377628>: sub    x0, x8, x19, lsl #3
+ArcCore[0x4285c20] <+2377632>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x4285c24] <+2377636>: mov    w8, #0x38                 ; =56 
+ArcCore[0x4285c28] <+2377640>: madd   x8, x22, x8, x0
+ArcCore[0x4285c2c] <+2377644>: stp    x0, x8, [sp, #0x10]
+ArcCore[0x4285c30] <+2377648>: stp    xzr, x19, [sp, #0x20]
+ArcCore[0x4285c34] <+2377652>: add    x0, sp, #0x10
+ArcCore[0x4285c38] <+2377656>: sub    x1, x24, #0x10
+ArcCore[0x4285c3c] <+2377660>: mov    x2, x25
+ArcCore[0x4285c40] <+2377664>: mov    x3, x24
+ArcCore[0x4285c44] <+2377668>: bl     0x42861d8                 ; <+2379096>
+ArcCore[0x4285c48] <+2377672>: ldr    x8, [sp, #0x20]
+ArcCore[0x4285c4c] <+2377676>: lsl    x9, x8, #6
+(lldb) disassemble -s 0x429fae0 -e 0x429faf0
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x429fae0] <+2483808>: adrp   x8, 41243
+ArcCore[0x429fae4] <+2483812>: ldrh   w20, [x8, #0xa98]
+ArcCore[0x429fae8] <+2483816>: add    w9, w20, #0x1
+ArcCore[0x429faec] <+2483820>: strh   w9, [x8, #0xa98]
+(lldb) disassemble -s 0x427f580 -e 0x427f7b0
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x427f580] <+2351360>: sub    sp, sp, #0x90
+ArcCore[0x427f584] <+2351364>: stp    x26, x25, [sp, #0x40]
+ArcCore[0x427f588] <+2351368>: stp    x24, x23, [sp, #0x50]
+ArcCore[0x427f58c] <+2351372>: stp    x22, x21, [sp, #0x60]
+ArcCore[0x427f590] <+2351376>: stp    x20, x19, [sp, #0x70]
+ArcCore[0x427f594] <+2351380>: stp    x29, x30, [sp, #0x80]
+ArcCore[0x427f598] <+2351384>: add    x29, sp, #0x80
+ArcCore[0x427f59c] <+2351388>: cbz    x4, 0x427f6e8             ; <+2351720>
+ArcCore[0x427f5a0] <+2351392>: mov    x21, x4
+ArcCore[0x427f5a4] <+2351396>: mov    x19, x3
+ArcCore[0x427f5a8] <+2351400>: mov    x24, x2
+ArcCore[0x427f5ac] <+2351404>: mov    x22, x1
+ArcCore[0x427f5b0] <+2351408>: ldr    x20, [x4, #0x2e0]
+ArcCore[0x427f5b4] <+2351412>: adrp   x0, 36230
+ArcCore[0x427f5b8] <+2351416>: add    x0, x0, #0xcc0            ; "operator()"
+ArcCore[0x427f5bc] <+2351420>: adrp   x1, 37117
+ArcCore[0x427f5c0] <+2351424>: add    x1, x1, #0x107            ; "../../arc/services/ai/ai_service.cc"
+ArcCore[0x427f5c4] <+2351428>: add    x8, sp, #0x20
+ArcCore[0x427f5c8] <+2351432>: mov    w2, #0x401                ; =1025 
+ArcCore[0x427f5cc] <+2351436>: bl     0x29e40                   ; ___lldb_unnamed_symbol2947 + 136192
+ArcCore[0x427f5d0] <+2351440>: add    x21, x21, #0x48
+ArcCore[0x427f5d4] <+2351444>: and    x8, x21, #0xfffffffc00000000
+ArcCore[0x427f5d8] <+2351448>: adrp   x9, 41075
+ArcCore[0x427f5dc] <+2351452>: ldr    x9, [x9, #0x208]
+ArcCore[0x427f5e0] <+2351456>: cmp    x8, x9
+ArcCore[0x427f5e4] <+2351460>: b.ne   0x427f5f0                 ; <+2351472>
+ArcCore[0x427f5e8] <+2351464>: mov    x0, x21
+ArcCore[0x427f5ec] <+2351468>: bl     0xffa8                    ; ___lldb_unnamed_symbol2947 + 30056
+ArcCore[0x427f5f0] <+2351472>: mov    w23, w24
+ArcCore[0x427f5f4] <+2351476>: cbnz   x22, 0x427f5fc            ; <+2351484>
+ArcCore[0x427f5f8] <+2351480>: cbnz   x23, 0x427f6e4            ; <+2351716>
+ArcCore[0x427f5fc] <+2351484>: cmp    x23, #0x16
+ArcCore[0x427f600] <+2351488>: b.ls   0x427f628                 ; <+2351528>
+ArcCore[0x427f604] <+2351492>: and    x25, x24, #0xfffffff0
+ArcCore[0x427f608] <+2351496>: add    x0, x25, #0x10
+ArcCore[0x427f60c] <+2351500>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427f610] <+2351504>: mov    x24, x0
+ArcCore[0x427f614] <+2351508>: mov    x8, #0x7ffffffffffffff0   ; =9223372036854775792 
+ArcCore[0x427f618] <+2351512>: sub    x8, x25, x8
+ArcCore[0x427f61c] <+2351516>: stp    x0, x23, [sp, #0x8]
+ArcCore[0x427f620] <+2351520>: str    x8, [sp, #0x18]
+ArcCore[0x427f624] <+2351524>: b      0x427f630                 ; <+2351536>
+ArcCore[0x427f628] <+2351528>: strb   w24, [sp, #0x1f]
+ArcCore[0x427f62c] <+2351532>: add    x24, sp, #0x8
+ArcCore[0x427f630] <+2351536>: add    x8, x24, x23
+ArcCore[0x427f634] <+2351540>: cmp    x8, x24
+ArcCore[0x427f638] <+2351544>: b.lo   0x427f6e4                 ; <+2351716>
+ArcCore[0x427f63c] <+2351548>: cmp    x8, x22
+ArcCore[0x427f640] <+2351552>: ccmp   x24, x22, #0x2, hi
+ArcCore[0x427f644] <+2351556>: b.ls   0x427f6e4                 ; <+2351716>
+ArcCore[0x427f648] <+2351560>: mov    x0, x24
+ArcCore[0x427f64c] <+2351564>: mov    x1, x22
+ArcCore[0x427f650] <+2351568>: mov    x2, x23
+ArcCore[0x427f654] <+2351572>: bl     0x8009564                 ; ___lldb_unnamed_symbol3357 + 11460644
+ArcCore[0x427f658] <+2351576>: strb   wzr, [x24, x23]
+ArcCore[0x427f65c] <+2351580>: mov    w0, #0x58                 ; =88 
+ArcCore[0x427f660] <+2351584>: bl     0x8790                    ; ChromeMain + 17864
+ArcCore[0x427f664] <+2351588>: mov    x2, x0
+ArcCore[0x427f668] <+2351592>: mov    w8, #0x1                  ; =1 
+ArcCore[0x427f66c] <+2351596>: adr    x9, 0x427f6f4             ; <+2351732>
+ArcCore[0x427f670] <+2351600>: nop    
+ArcCore[0x427f674] <+2351604>: adr    x10, 0x427f750            ; <+2351824>
+ArcCore[0x427f678] <+2351608>: nop    
+ArcCore[0x427f67c] <+2351612>: str    w8, [x0]
+ArcCore[0x427f680] <+2351616>: adrp   x8, -14088
+ArcCore[0x427f684] <+2351620>: add    x8, x8, #0x80             ; ___lldb_unnamed_symbol2981 + 292900
+ArcCore[0x427f688] <+2351624>: adr    x11, 0x4277830            ; <+2319280>
+ArcCore[0x427f68c] <+2351628>: nop    
+ArcCore[0x427f690] <+2351632>: stp    x9, x10, [x0, #0x8]
+ArcCore[0x427f694] <+2351636>: stp    x8, x11, [x0, #0x18]
+ArcCore[0x427f698] <+2351640>: stp    xzr, x21, [x0, #0x28]
+ArcCore[0x427f69c] <+2351644>: ldur   q0, [sp, #0x8]
+ArcCore[0x427f6a0] <+2351648>: stur   q0, [x0, #0x38]
+ArcCore[0x427f6a4] <+2351652>: ldr    x8, [sp, #0x18]
+ArcCore[0x427f6a8] <+2351656>: str    x8, [x0, #0x48]
+ArcCore[0x427f6ac] <+2351660>: strh   w19, [x0, #0x50]
+ArcCore[0x427f6b0] <+2351664>: ldr    x8, [x20]
+ArcCore[0x427f6b4] <+2351668>: ldr    x8, [x8]
+ArcCore[0x427f6b8] <+2351672>: add    x1, sp, #0x20
+ArcCore[0x427f6bc] <+2351676>: mov    x0, x20
+ArcCore[0x427f6c0] <+2351680>: mov    x3, #0x0                  ; =0 
+ArcCore[0x427f6c4] <+2351684>: blr    x8
+ArcCore[0x427f6c8] <+2351688>: ldp    x29, x30, [sp, #0x80]
+ArcCore[0x427f6cc] <+2351692>: ldp    x20, x19, [sp, #0x70]
+ArcCore[0x427f6d0] <+2351696>: ldp    x22, x21, [sp, #0x60]
+ArcCore[0x427f6d4] <+2351700>: ldp    x24, x23, [sp, #0x50]
+ArcCore[0x427f6d8] <+2351704>: ldp    x26, x25, [sp, #0x40]
+ArcCore[0x427f6dc] <+2351708>: add    sp, sp, #0x90
+ArcCore[0x427f6e0] <+2351712>: ret    
+ArcCore[0x427f6e4] <+2351716>: brk    #0x1
+ArcCore[0x427f6e8] <+2351720>: brk    #0
+ArcCore[0x427f6ec] <+2351724>: hlt    #0
+ArcCore[0x427f6f0] <+2351728>: b      0x427f6e4                 ; <+2351716>
+ArcCore[0x427f6f4] <+2351732>: sub    sp, sp, #0x30
+ArcCore[0x427f6f8] <+2351736>: stp    x20, x19, [sp, #0x10]
+ArcCore[0x427f6fc] <+2351740>: stp    x29, x30, [sp, #0x20]
+ArcCore[0x427f700] <+2351744>: add    x29, sp, #0x20
+ArcCore[0x427f704] <+2351748>: mov    x19, x0
+ArcCore[0x427f708] <+2351752>: ldr    x0, [x0, #0x20]
+ArcCore[0x427f70c] <+2351756>: str    x0, [sp, #0x8]
+ArcCore[0x427f710] <+2351760>: ldp    x20, x0, [x19, #0x28]
+ArcCore[0x427f714] <+2351764>: bl     0x34274                   ; ___lldb_unnamed_symbol2947 + 178228
+ArcCore[0x427f718] <+2351768>: ldr    x8, [x19, #0x30]
+ArcCore[0x427f71c] <+2351772>: add    x0, x8, x20, asr #1
+ArcCore[0x427f720] <+2351776>: tbz    w20, #0x0, 0x427f734      ; <+2351796>
+ArcCore[0x427f724] <+2351780>: ldr    x8, [x0]
+ArcCore[0x427f728] <+2351784>: ldr    x3, [sp, #0x8]
+ArcCore[0x427f72c] <+2351788>: ldr    x3, [x8, w3, uxtw]
+ArcCore[0x427f730] <+2351792>: b      0x427f738                 ; <+2351800>
+ArcCore[0x427f734] <+2351796>: ldr    x3, [sp, #0x8]
+ArcCore[0x427f738] <+2351800>: ldrh   w2, [x19, #0x50]
+ArcCore[0x427f73c] <+2351804>: add    x1, x19, #0x38
+ArcCore[0x427f740] <+2351808>: ldp    x29, x30, [sp, #0x20]
+ArcCore[0x427f744] <+2351812>: ldp    x20, x19, [sp, #0x10]
+ArcCore[0x427f748] <+2351816>: add    sp, sp, #0x30
+ArcCore[0x427f74c] <+2351820>: br     x3
+ArcCore[0x427f750] <+2351824>: cbz    x0, 0x427f7ac             ; <+2351916>
+ArcCore[0x427f754] <+2351828>: stp    x20, x19, [sp, #-0x20]!
+ArcCore[0x427f758] <+2351832>: stp    x29, x30, [sp, #0x10]
+ArcCore[0x427f75c] <+2351836>: add    x29, sp, #0x10
+ArcCore[0x427f760] <+2351840>: mov    x19, x0
+ArcCore[0x427f764] <+2351844>: ldrsb  w8, [x0, #0x4f]
+ArcCore[0x427f768] <+2351848>: tbz    w8, #0x1f, 0x427f77c      ; <+2351868>
+ArcCore[0x427f76c] <+2351852>: ldr    x0, [x19, #0x38]
+ArcCore[0x427f770] <+2351856>: ldr    x8, [x19, #0x48]
+ArcCore[0x427f774] <+2351860>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x427f778] <+2351864>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x427f77c] <+2351868>: ldr    x0, [x19, #0x30]
+ArcCore[0x427f780] <+2351872>: and    x8, x0, #0xfffffffc00000000
+ArcCore[0x427f784] <+2351876>: adrp   x9, 41075
+ArcCore[0x427f788] <+2351880>: ldr    x9, [x9, #0x208]
+ArcCore[0x427f78c] <+2351884>: cmp    x8, x9
+ArcCore[0x427f790] <+2351888>: b.ne   0x427f798                 ; <+2351896>
+ArcCore[0x427f794] <+2351892>: bl     0x270f0                   ; ___lldb_unnamed_symbol2947 + 124592
+ArcCore[0x427f798] <+2351896>: mov    x0, x19
+ArcCore[0x427f79c] <+2351900>: mov    w1, #0x58                 ; =88 
+ArcCore[0x427f7a0] <+2351904>: ldp    x29, x30, [sp, #0x10]
+ArcCore[0x427f7a4] <+2351908>: ldp    x20, x19, [sp], #0x20
+ArcCore[0x427f7a8] <+2351912>: b      0x5810                    ; ChromeMain + 5704
+ArcCore[0x427f7ac] <+2351916>: ret    
+(lldb) disassemble -s 0x4297c44 -e 0x4297d70
+ArcCore`___lldb_unnamed_symbol3126:
+ArcCore[0x4297c44] <+2451396>: sub    sp, sp, #0x40
+ArcCore[0x4297c48] <+2451400>: stp    x20, x19, [sp, #0x20]
+ArcCore[0x4297c4c] <+2451404>: stp    x29, x30, [sp, #0x30]
+ArcCore[0x4297c50] <+2451408>: add    x29, sp, #0x30
+ArcCore[0x4297c54] <+2451412>: mov    x19, x2
+ArcCore[0x4297c58] <+2451416>: mov    x20, x0
+ArcCore[0x4297c5c] <+2451420>: ldrsb  w8, [x1, #0x17]
+ArcCore[0x4297c60] <+2451424>: tbnz   w8, #0x1f, 0x4297cd8      ; <+2451544>
+ArcCore[0x4297c64] <+2451428>: ldr    q0, [x1]
+ArcCore[0x4297c68] <+2451432>: str    q0, [sp]
+ArcCore[0x4297c6c] <+2451436>: ldr    x8, [x1, #0x10]
+ArcCore[0x4297c70] <+2451440>: str    x8, [sp, #0x10]
+ArcCore[0x4297c74] <+2451444>: ldr    x8, [x20, #0x48]
+ArcCore[0x4297c78] <+2451448>: add    x0, x20, #0x38
+ArcCore[0x4297c7c] <+2451452>: mov    x1, sp
+ArcCore[0x4297c80] <+2451456>: blr    x8
+ArcCore[0x4297c84] <+2451460>: ldrsb  w8, [sp, #0x17]
+ArcCore[0x4297c88] <+2451464>: tbz    w8, #0x1f, 0x4297c9c      ; <+2451484>
+ArcCore[0x4297c8c] <+2451468>: ldr    x0, [sp]
+ArcCore[0x4297c90] <+2451472>: ldr    x8, [sp, #0x10]
+ArcCore[0x4297c94] <+2451476>: and    x1, x8, #0x7fffffffffffffff
+ArcCore[0x4297c98] <+2451480>: bl     0x5810                    ; ChromeMain + 5704
+ArcCore[0x4297c9c] <+2451484>: cbz    x19, 0x4297cec            ; <+2451564>
+ArcCore[0x4297ca0] <+2451488>: ldr    x8, [x19, #0x8]
+ArcCore[0x4297ca4] <+2451492>: mov    x0, x19
+ArcCore[0x4297ca8] <+2451496>: blr    x8
+ArcCore[0x4297cac] <+2451500>: mov    w8, #-0x1                 ; =-1 
+ArcCore[0x4297cb0] <+2451504>: ldaddal w8, w8, [x19]
+ArcCore[0x4297cb4] <+2451508>: cmp    w8, #0x1
+ArcCore[0x4297cb8] <+2451512>: b.ne   0x4297cc8                 ; <+2451528>
+ArcCore[0x4297cbc] <+2451516>: ldr    x8, [x19, #0x10]
+ArcCore[0x4297cc0] <+2451520>: mov    x0, x19
+ArcCore[0x4297cc4] <+2451524>: blr    x8
+ArcCore[0x4297cc8] <+2451528>: ldp    x29, x30, [sp, #0x30]
+ArcCore[0x4297ccc] <+2451532>: ldp    x20, x19, [sp, #0x20]
+ArcCore[0x4297cd0] <+2451536>: add    sp, sp, #0x40
+ArcCore[0x4297cd4] <+2451540>: ret    
+ArcCore[0x4297cd8] <+2451544>: ldp    x8, x2, [x1]
+ArcCore[0x4297cdc] <+2451548>: mov    x0, sp
+ArcCore[0x4297ce0] <+2451552>: mov    x1, x8
+ArcCore[0x4297ce4] <+2451556>: bl     0x60a60                   ; ___lldb_unnamed_symbol2948 + 59920
+ArcCore[0x4297ce8] <+2451560>: b      0x4297c74                 ; <+2451444>
+ArcCore[0x4297cec] <+2451564>: brk    #0
+ArcCore[0x4297cf0] <+2451568>: hlt    #0
+ArcCore[0x4297cf4] <+2451572>: brk    #0x1
+ArcCore[0x4297cf8] <+2451576>: sub    sp, sp, #0x30
+ArcCore[0x4297cfc] <+2451580>: stp    x20, x19, [sp, #0x10]
+ArcCore[0x4297d00] <+2451584>: stp    x29, x30, [sp, #0x20]
+ArcCore[0x4297d04] <+2451588>: add    x29, sp, #0x20
+ArcCore[0x4297d08] <+2451592>: and    x8, x1, #0x100000000
+ArcCore[0x4297d0c] <+2451596>: sbfx   x9, x1, #32, #1
+ArcCore[0x4297d10] <+2451600>: and    w9, w1, w9
+ArcCore[0x4297d14] <+2451604>: orr    x8, x9, x8
+ArcCore[0x4297d18] <+2451608>: str    x8, [sp, #0x8]
+ArcCore[0x4297d1c] <+2451612>: ldr    x19, [x0, #0x58]
+ArcCore[0x4297d20] <+2451616>: cbz    x19, 0x4297d64            ; <+2451684>
+ArcCore[0x4297d24] <+2451620>: str    xzr, [x0, #0x58]
+ArcCore[0x4297d28] <+2451624>: ldr    x8, [x19, #0x8]
+ArcCore[0x4297d2c] <+2451628>: add    x1, sp, #0x8
+ArcCore[0x4297d30] <+2451632>: mov    x0, x19
+ArcCore[0x4297d34] <+2451636>: blr    x8
+ArcCore[0x4297d38] <+2451640>: mov    w8, #-0x1                 ; =-1 
+ArcCore[0x4297d3c] <+2451644>: ldaddal w8, w8, [x19]
+ArcCore[0x4297d40] <+2451648>: cmp    w8, #0x1
+ArcCore[0x4297d44] <+2451652>: b.ne   0x4297d54                 ; <+2451668>
+ArcCore[0x4297d48] <+2451656>: ldr    x8, [x19, #0x10]
+ArcCore[0x4297d4c] <+2451660>: mov    x0, x19
+ArcCore[0x4297d50] <+2451664>: blr    x8
+ArcCore[0x4297d54] <+2451668>: ldp    x29, x30, [sp, #0x20]
+ArcCore[0x4297d58] <+2451672>: ldp    x20, x19, [sp, #0x10]
+ArcCore[0x4297d5c] <+2451676>: add    sp, sp, #0x30
+ArcCore[0x4297d60] <+2451680>: ret    
+ArcCore[0x4297d64] <+2451684>: brk    #0
+ArcCore[0x4297d68] <+2451688>: hlt    #0
+ArcCore[0x4297d6c] <+2451692>: brk    #0x1
+(lldb) quit

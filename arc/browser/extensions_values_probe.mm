@@ -65,12 +65,15 @@ int main(int argc,char**argv) {
     NSString* errorFields=@"extensionID contextURL message source fromIncognito severity";
     NSString* actionFields=@"id accessibleName tooltipText icon enabled pinnedPosition";
     root[@"metadata"]=@{
+      @"ArcBrowser":Methods(@"ArcBrowser",@"executeExtensionAction: pinExtension: unpinExtension: showExtensionContextMenu: moveExtension:targetIndex: triggerExtensionOmniboxInput:inputText:disposition:"),
+      @"ArcBrowserContextExtensions":Methods(@"ArcBrowserContextExtensions",@"initWithBrowserContextExtensions:forBrowserContext: isEqual: hash setDelegate: isExtensionSystemReady listExtensions enableExtension: disableExtension: reloadExtension: uninstallExtension: installExtensionFromWebstore:unattended:completion: installExtensionFromUnpackedPath:completion: getExtensionInfo: runJSInExtensionBackgroundPage:js_code: getAllExtensionCommands executeExtensionCommand:commandName: getPinnedExtensionOrder setPinnedExtensionOrder: owner setOwner:"),
       @"ArcExtensionInfo":Methods(@"ArcExtensionInfo",[infoFields stringByAppendingString:@" init initWithExtensionInfo: mutableExtensionInfo"]),
       @"ArcExtensionCommand":Methods(@"ArcExtensionCommand",[commandFields stringByAppendingString:@" initWithExtensionCommand:"]),
       @"ArcExtensionRuntimeErrorStackFrame":Methods(@"ArcExtensionRuntimeErrorStackFrame",[frameFields stringByAppendingString:@" initWithExtensionRuntimeErrorStackFrame:"]),
       @"ArcExtensionRuntimeError":Methods(@"ArcExtensionRuntimeError",[errorFields stringByAppendingString:@" stackTrace initWithExtensionRuntimeError:"]),
       @"ArcExtensionToolbarAction":Methods(@"ArcExtensionToolbarAction",[actionFields stringByAppendingString:@" initWithExtensionToolbarAction:"])};
-    id info=[[NSClassFromString(@"ArcExtensionInfo") alloc] init];
+    id __attribute__((objc_precise_lifetime)) info=
+        [[NSClassFromString(@"ArcExtensionInfo") alloc] init];
     root[@"defaultInfo"]=Snapshot(info,infoFields);
     auto* storage=static_cast<Info*>([info mutableExtensionInfo]);
     storage->name="Extension 🌙";storage->id="abcdefghijklmnopabcdefghijklmnop";
@@ -102,7 +105,10 @@ int main(int argc,char**argv) {
     root[@"stack"]=stack;root[@"stackIdentity"]=@([errorValue valueForKey:@"stackTrace"]==frames);
     NSMutableArray* actions=[NSMutableArray array];
     for (bool pinned : {false,true}) {
-      Action action;action.id="abcdefghijklmnopabcdefghijklmnop";action.name=u"Action 🌙";
+      // Preserve the engine's own polymorphic empty-image vtable. A synthetic
+      // null vptr is not a valid native Image even when its shared peer is empty.
+      Action action;action.icon=storage->icon;
+      action.id="abcdefghijklmnopabcdefghijklmnop";action.name=u"Action 🌙";
       action.tooltip=u"Tooltip";action.enabled=true;if(pinned)action.position=3;
       id value=[[NSClassFromString(@"ArcExtensionToolbarAction") alloc] initWithExtensionToolbarAction:&action];
       action.name=u"mutated";action.position=9;[actions addObject:Snapshot(value,actionFields)];

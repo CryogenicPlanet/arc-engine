@@ -2,19 +2,24 @@
 #import "arc/api/arc_internal.h"
 
 #include <limits>
+#include <algorithm>
 #include <map>
 #include <utility>
 
 #include "arc/common/ad_block_browser.h"
+#include "arc/common/effects_browser.h"
 #include "arc/common/renderer.mojom.h"
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 @interface ArcWebContents (RendererCountAccessors)
@@ -31,6 +36,7 @@ class RendererBridge : public content::WebContentsObserver,
     if (!contents) {
       return nullptr;
     }
+    InitializeRendererProcessBridge();
     CreateForWebContents(contents);
     return FromWebContents(contents);
   }
@@ -61,20 +67,31 @@ class RendererBridge : public content::WebContentsObserver,
         content::WebContents::FromRenderFrameHost(frame) != web_contents()) {
       return;
     }
-    ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:web_contents()];
-    if (wrapper.blockedResourceCount < std::numeric_limits<int>::max()) {
+    if (blocked_resource_count_ < std::numeric_limits<int>::max()) {
+      ++blocked_resource_count_;
+      ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:web_contents()];
       // Setter dispatch preserves Arc's observable KVO property contract.
-      wrapper.blockedResourceCount = wrapper.blockedResourceCount + 1;
+      wrapper.blockedResourceCount = blocked_resource_count_;
     }
   }
+
+  void PrimaryPageChanged(content::Page&) override {
+    if (blocked_resource_count_ != 0) {
+      blocked_resource_count_ = 0;
+      ArcWebContents* wrapper = [ArcWebContents wrapperForWebContents:web_contents()];
+      wrapper.blockedResourceCount = 0;
+    }
+  }
+
 
  private:
   friend class content::WebContentsUserData<RendererBridge>;
   explicit RendererBridge(content::WebContents* contents)
       : content::WebContentsObserver(contents),
         content::WebContentsUserData<RendererBridge>(*contents) {
-    subscription_ = ObserveAdBlockConfiguration(base::BindRepeating(
-        &RendererBridge::ConfigurationChanged, weak_ptr_factory_.GetWeakPtr()));
+    effects_subscription_ = ObserveProfileEffectsConfiguration(
+        Profile::FromBrowserContext(contents->GetBrowserContext()),
+        base::BindRepeating(&RendererBridge::EffectsChanged, weak_ptr_factory_.GetWeakPtr()));
     // Also initialize already-live frames when a caller attaches late.
     contents->ForEachRenderFrameHost([this](content::RenderFrameHost* frame) {
       FrameAgent(frame);
@@ -100,42 +117,69 @@ class RendererBridge : public content::WebContentsObserver,
   }
 
   void ConfigureFrame(content::RenderFrameHost* frame, FrameConnection& connection) {
+    ConfigureRendererHost(frame, connection);
+    ConfigureEffectsFrame(connection);
+  }
+
+  void ConfigureRendererHost(content::RenderFrameHost* frame, FrameConnection& connection) {
     if (connection.host_receiver) {
       hosts_.Remove(connection.host_receiver);
     }
     mojo::PendingAssociatedRemote<mojom::RendererHost> host;
     connection.host_receiver = hosts_.Add(
         this, host.InitWithNewEndpointAndPassReceiver(), frame->GetGlobalId());
-    const auto& configuration = GetAdBlockConfiguration();
-    connection.agent->ConfigureAdBlock(
-        configuration.indexed_ruleset.IsValid()
-            ? configuration.indexed_ruleset.Duplicate()
-            : base::File(),
-        configuration.excluded_origins, configuration.ruleset_id, std::move(host));
+    connection.agent->SetRendererHost(std::move(host), base::BindOnce(
+        [](content::GlobalRenderFrameHostId id) {
+          auto* frame = content::RenderFrameHost::FromID(id);
+          if (frame && frame->IsRenderFrameLive()) {
+            RendererProcessFrameReady(frame->GetProcess());
+          }
+        }, frame->GetGlobalId()));
   }
 
-  void ConfigurationChanged() {
+  void ConfigureEffectsFrame(FrameConnection& connection) {
+    const auto& configuration = GetProfileEffectsConfiguration(
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+    std::vector<mojom::HostEffectsConfigurationPtr> serialized;
+    for (const auto& [host, rule] : configuration) {
+      auto entry = mojom::HostEffectsConfiguration::New();
+      entry->host = host;
+      for (const auto& source : rule.stylesheets) {
+        entry->stylesheets.push_back(mojom::EffectSource::New(source.identifier, source.source));
+      }
+      for (const auto& source : rule.scripts) {
+        entry->scripts.push_back(mojom::EffectSource::New(source.identifier, source.source));
+      }
+      serialized.push_back(std::move(entry));
+    }
+    connection.agent->ConfigureEffects(std::move(serialized));
+  }
+
+  void EffectsChanged() {
     web_contents()->ForEachRenderFrameHost([this](content::RenderFrameHost* frame) {
       const auto it = agents_.find(frame->GetGlobalId());
       if (it == agents_.end()) {
         FrameAgent(frame);
       } else if (frame->IsRenderFrameLive()) {
-        ConfigureFrame(frame, it->second);
+        ConfigureEffectsFrame(it->second);
       }
     });
   }
 
   std::map<content::GlobalRenderFrameHostId, FrameConnection> agents_;
   mojo::AssociatedReceiverSet<mojom::RendererHost, content::GlobalRenderFrameHostId> hosts_;
-  base::CallbackListSubscription subscription_;
+  base::CallbackListSubscription effects_subscription_;
+  int blocked_resource_count_ = 0;
   base::WeakPtrFactory<RendererBridge> weak_ptr_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 WEB_CONTENTS_USER_DATA_KEY_IMPL(RendererBridge);
 
 void InitializeRendererBridge(content::WebContents* contents) {
+  InitializeRendererProcessBridge();
   RendererBridge::For(contents);
 }
+
 }  // namespace arc
 
 @implementation ArcWebContents (RendererStylesheets)

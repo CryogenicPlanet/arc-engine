@@ -1,0 +1,161 @@
+--- a/chrome/browser/arcmod/arcmod_hooks.h
++++ b/chrome/browser/arcmod/arcmod_hooks.h
+@@ -9,6 +9,7 @@
+ #include <memory>
+ #include <optional>
+ 
++#include "base/command_line.h"
+ #include "base/files/file_path.h"
+ #include "base/functional/callback.h"
+ #include "base/no_destructor.h"
+@@ -16,6 +17,7 @@
+ #include "net/base/auth.h"
+ 
+ class LoginHandler;
++class NotificationPlatformBridge;
+ class Profile;
+ namespace net {
+ class AuthChallengeInfo;
+@@ -25,6 +27,7 @@
+ }  // namespace permissions
+ namespace content {
+ class JavaScriptDialogManager;
++class RenderWidgetHost;
+ class NavigationThrottleRegistry;
+ class VideoOverlayWindow;
+ class VideoPictureInPictureWindowController;
+@@ -43,6 +46,31 @@
+ }  // namespace download
+ 
+ namespace arcmod {
++
++inline bool IsHostAppUI() {
++  return base::CommandLine::InitializedForCurrentProcess() &&
++         base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app");
++}
++
++using NotificationPlatformBridgeHook = base::RepeatingCallback<
++    std::unique_ptr<NotificationPlatformBridge>()>;
++inline NotificationPlatformBridgeHook& GetNotificationPlatformBridgeHook() {
++  static base::NoDestructor<NotificationPlatformBridgeHook> hook;
++  return *hook;
++}
++using HungRendererShowHook = base::RepeatingCallback<bool(
++    content::WebContents*, content::RenderWidgetHost*, base::RepeatingClosure)>;
++inline HungRendererShowHook& GetHungRendererShowHook() {
++  static base::NoDestructor<HungRendererShowHook> hook;
++  return *hook;
++}
++using HungRendererHideHook = base::RepeatingCallback<bool(
++    content::WebContents*, content::RenderWidgetHost*)>;
++inline HungRendererHideHook& GetHungRendererHideHook() {
++  static base::NoDestructor<HungRendererHideHook> hook;
++  return *hook;
++}
++
+ 
+ // Adds ArcCore's navigation throttles (synchronous navigation policy from Arc's app) to every navigation.
+ // Called from ChromeContentBrowserClient::CreateThrottlesForNavigation after Chrome's own throttles.
+--- a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
++++ b/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
+@@ -1097,6 +1097,11 @@
+   // the dialog will take the focus and immediately close the popup.
+   content::RenderWidgetHostView* view = render_widget_host->GetView();
+   if (view && !render_widget_host->GetView()->IsHTMLFormPopup()) {
++    if (const auto& hook = arcmod::GetHungRendererShowHook();
++        arcmod::IsHostAppUI() && !hook.is_null() &&
++        hook.Run(source, render_widget_host, hang_monitor_restarter)) {
++      return;
++    }
+     TabDialogs::FromWebContents(source)->ShowHungRendererDialog(
+         render_widget_host, std::move(hang_monitor_restarter));
+   }
+@@ -1107,6 +1112,11 @@
+     content::RenderWidgetHost* render_widget_host) {
+   content::RenderWidgetHostView* view = render_widget_host->GetView();
+   if (view && !render_widget_host->GetView()->IsHTMLFormPopup()) {
++    if (const auto& hook = arcmod::GetHungRendererHideHook();
++        arcmod::IsHostAppUI() && !hook.is_null() &&
++        hook.Run(source, render_widget_host)) {
++      return;
++    }
+     TabDialogs::FromWebContents(source)->HideHungRendererDialog(
+         render_widget_host);
+   }
+@@ -1117,7 +1127,7 @@
+     content::WebContents* source) {
+   // ArcMod: Arc's app shows JavaScript dialogs.
+   if (const auto& hook = arcmod::GetJavaScriptDialogManagerHook();
+-      !hook.is_null()) {
++      arcmod::IsHostAppUI() && !hook.is_null()) {
+     if (content::JavaScriptDialogManager* manager = hook.Run(source)) {
+       return manager;
+     }
+--- a/chrome/browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa.mm
++++ b/chrome/browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa.mm
+@@ -78,7 +78,7 @@
+ 
+ void RenderViewContextMenuMacCocoa::Show() {
+   // ArcMod: Arc's app presents context menus.
+-  if (const auto& hook = arcmod::GetContextMenuHook(); !hook.is_null() &&
++  if (const auto& hook = arcmod::GetContextMenuHook(); arcmod::IsHostAppUI() && !hook.is_null() &&
+       hook.Run(source_web_contents_, &menu_model_, params_)) {
+     return;
+   }
+--- a/chrome/browser/permissions/chrome_permissions_client.cc
++++ b/chrome/browser/permissions/chrome_permissions_client.cc
+@@ -1063,7 +1063,7 @@
+     content::WebContents* web_contents,
+     permissions::PermissionPrompt::Delegate* delegate) {
+   // ArcMod: Arc's app shows permission prompts.
+-  if (const auto& hook = arcmod::GetPermissionPromptHook(); !hook.is_null()) {
++  if (const auto& hook = arcmod::GetPermissionPromptHook(); arcmod::IsHostAppUI() && !hook.is_null()) {
+     if (auto prompt = hook.Run(web_contents, delegate)) {
+       return prompt;
+     }
+--- a/chrome/browser/ui/views/login_handler_views.cc
++++ b/chrome/browser/ui/views/login_handler_views.cc
+@@ -233,7 +233,7 @@
+     content::WebContents* web_contents,
+     content::LoginDelegate::LoginAuthRequiredCallback auth_required_callback) {
+   // ArcMod: Arc's app shows HTTP auth prompts.
+-  if (const auto& hook = arcmod::GetLoginHandlerHook(); !hook.is_null()) {
++  if (const auto& hook = arcmod::GetLoginHandlerHook(); arcmod::IsHostAppUI() && !hook.is_null()) {
+     return hook.Run(auth_info, web_contents, std::move(auth_required_callback));
+   }
+   return std::make_unique<LoginHandlerViews>(auth_info, web_contents,
+--- a/chrome/browser/notifications/mac/notification_platform_bridge_mac.cc
++++ b/chrome/browser/notifications/mac/notification_platform_bridge_mac.cc
+@@ -5,6 +5,8 @@
+ #include "chrome/browser/notifications/mac/notification_platform_bridge_mac.h"
+ 
+ #include <utility>
++
++#include "chrome/browser/arcmod/arcmod_hooks.h"
+ 
+ #include "base/barrier_closure.h"
+ #include "base/feature_list.h"
+@@ -45,6 +47,12 @@
+ // static
+ std::unique_ptr<NotificationPlatformBridge>
+ NotificationPlatformBridge::Create() {
++  if (const auto& hook = arcmod::GetNotificationPlatformBridgeHook();
++      arcmod::IsHostAppUI() && !hook.is_null()) {
++    if (auto bridge = hook.Run()) {
++      return bridge;
++    }
++  }
+   auto banner_dispatcher = std::make_unique<NotificationDispatcherMojo>(
+       std::make_unique<MacNotificationProviderFactory>(
+           mac_notifications::NotificationStyle::kBanner));
+@@ -67,6 +75,10 @@
+ // static
+ bool NotificationPlatformBridge::CanHandleType(
+     NotificationHandler::Type notification_type) {
++  if (arcmod::IsHostAppUI() &&
++      !arcmod::GetNotificationPlatformBridgeHook().is_null()) {
++    return true;
++  }
+   return notification_type != NotificationHandler::Type::TRANSIENT;
+ }
+ 

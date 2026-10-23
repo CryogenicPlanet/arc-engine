@@ -6,6 +6,7 @@
 namespace arc {
 void InstallBrowserExtensions(ArcBrowser* browser, id delegate);
 id BrowserExtensionDelegate(ArcBrowser* browser);
+ArcBrowser* BrowserForHostedExtensions(BrowserWindowInterface* browser);
 void RegisterHostedExtensionAPIs();
 }
 #endif

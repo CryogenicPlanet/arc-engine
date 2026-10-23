@@ -5,6 +5,8 @@
 // without introducing extra ObjC calls at the recorded boundary.
 
 #import "arc/api/arc_internal.h"
+#include "arc/browser/ai_bridge.h"
+#include "arc/browser/ai_transport.h"
 
 #include <optional>
 #include <string>
@@ -238,6 +240,7 @@ ARC_EXPORT @interface ArcCommandBarRankingResult : NSObject
 @end
 
 @implementation ArcCommandBarRankingResult {
+ @public
   std::optional<RankingResult> _result;
 }
 
@@ -314,6 +317,7 @@ ARC_EXPORT @interface ArcCommandBarRankingEvaluation : NSObject
 @end
 
 @implementation ArcCommandBarRankingEvaluation {
+ @public
   std::optional<RankingEvaluation> _evaluation;
 }
 
@@ -361,6 +365,7 @@ ARC_EXPORT @interface ArcCommandBarRankingExample : NSObject
 @end
 
 @implementation ArcCommandBarRankingExample {
+ @public
   std::optional<RankingExample> _example;
 }
 
@@ -424,6 +429,7 @@ ARC_EXPORT @interface ArcCommandBarRankingTrainingResult : NSObject
 @end
 
 @implementation ArcCommandBarRankingTrainingResult {
+ @public
   std::optional<RankingTrainingResult> _result;
 }
 
@@ -522,3 +528,83 @@ ARC_EXPORT @interface ArcCommandBarRankingTrainingResult : NSObject
 }
 
 @end
+
+namespace arc_ai {
+namespace {
+abi::CommandBarRankingCandidate CopyCandidate(const RankingCandidate& value, Input& input) {
+  return {input.String(value.id), input.String(value.archetype), input.String(value.destination),
+          input.String(value.title), input.String(value.url), value.last_nav_seconds, value.freq_ever,
+          value.typed_count, value.site_engagement, value.is_exact_url_match,
+          value.is_base_domain_match, value.is_title_prefix, input.Floats(value.title_embedding)};
+}
+}
+bool CopyRankingInput(id object, Input& input) {
+  if (![object isKindOfClass:[ArcCommandBarRankingInput class]]) return false;
+  const auto& value = ((ArcCommandBarRankingInput*)object)->_input;
+  if (!value) return false;
+  input.ranking_input = {input.Floats(value->query_embedding)};
+  return true;
+}
+void CopyRankingCandidates(NSArray* objects, Input& input) {
+  for (ArcCommandBarRankingCandidate* object in objects) {
+    CHECK([object isKindOfClass:[ArcCommandBarRankingCandidate class]]);
+    CHECK(object->_candidate);
+    input.candidates.push_back(CopyCandidate(*object->_candidate, input));
+  }
+}
+void CopyRankingExamples(NSArray* objects, Input& input) {
+  for (ArcCommandBarRankingExample* object in objects) {
+    CHECK([object isKindOfClass:[ArcCommandBarRankingExample class]]);
+    CHECK(object->_example);
+    const auto& value = *object->_example;
+    auto& candidates = input.candidate_lists.emplace_back();
+    for (const auto& candidate : value.candidates) candidates.push_back(CopyCandidate(candidate, input));
+    input.examples.push_back({{input.Floats(value.input.query_embedding)}, candidates.data(),
+                              static_cast<unsigned int>(candidates.size()), value.selected_index});
+  }
+}
+Factory RankingResult(const abi::CommandBarRankingResult& result) {
+  const std::string identifier(result.id.string, result.id.length);
+  const float score = result.score;
+  return ^id {
+    ArcCommandBarRankingResult* object = [[ArcCommandBarRankingResult alloc] init];
+    object->_result.emplace(identifier, score);
+    return object;
+  };
+}
+Factory RankingEvaluation(const abi::CommandBarRankingEvaluation& result) {
+  std::vector<RankingMetric> metrics;
+  for (const auto& metric : Buffer(result.metrics, result.metricsLength)) {
+    metrics.push_back({std::string(metric.name.string, metric.name.length), metric.value});
+  }
+  const int count = result.numExamplesEvaluated;
+  const int duration = result.evaluationDurationMs;
+  return ^id {
+    ArcCommandBarRankingEvaluation* object = [[ArcCommandBarRankingEvaluation alloc] init];
+    object->_evaluation.emplace(metrics, count, duration);
+    return object;
+  };
+}
+Factory RankingTrainingResult(const abi::CommandBarRankingTrainingResult& result) {
+  std::vector<RankingTensor> tensors;
+  for (const auto& tensor : Buffer(result.delta, result.deltaLength)) {
+    auto shape = Buffer(tensor.shape, tensor.shapeLength);
+    auto data = Buffer(tensor.data.begin, tensor.data.length);
+    tensors.push_back({std::string(tensor.name.string, tensor.name.length),
+                       std::vector<int>(shape.begin(), shape.end()),
+                       std::vector<float>(data.begin(), data.end())});
+  }
+  auto losses = Buffer(result.lossesPerEpoch.begin, result.lossesPerEpoch.length);
+  const ::RankingTrainingResult snapshot{
+      result.outcome, result.failureReason, std::move(tensors),
+      std::string(result.modelName.string, result.modelName.length),
+      result.modelVersion, result.numSamples, std::vector<float>(losses.begin(), losses.end()),
+      result.gradientNormMean, result.gradientNormMax, result.deltaNorm,
+      result.deltaToWeightRatio, result.trainingDurationMs};
+  return ^id {
+    ArcCommandBarRankingTrainingResult* object = [[ArcCommandBarRankingTrainingResult alloc] init];
+    object->_result.emplace(snapshot);
+    return object;
+  };
+}
+}  // namespace arc_ai

@@ -10,6 +10,10 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/scoped_accessibility_mode.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
+#include "content/browser/gpu/gpu_process_host.h"
+#include "content/public/browser/network_service_instance.h"
 #include "ui/accessibility/platform/ax_mode_observer.h"
 #include "ui/accessibility/platform/ax_platform.h"
 
@@ -19,9 +23,52 @@
 @protocol ArcPerformanceObserver <NSObject>
 - (void)onBatterySaverModeChanged:(BOOL)active;
 @end
+@protocol AppGPUDelegate <NSObject>
+- (void)didReceiveGPUInfoUpdate:(BOOL)available;
+- (void)didReceiveGPUCrashNotification:(int)count withFallbackCount:(int)fallbackCount;
+- (void)didConnectToNetworkProcess;
+@end
 
 namespace {
 using BatteryManager = performance_manager::user_tuning::BatterySaverModeManager;
+
+class ApplicationGPUBridge final : public content::GpuDataManagerObserver,
+                                   public content::NetworkServiceProcessObserver {
+ public:
+  ApplicationGPUBridge() {
+    content::GpuDataManager::GetInstance()->AddObserver(this);
+    content::AddNetworkServiceProcessObserver(this);
+  }
+  void OnGpuInfoUpdate() override {
+    // The native Arc producer (0x42bcd48) explicitly stores false in this
+    // event's BOOL payload; it does not report hardware acceleration state.
+    dispatch_async(dispatch_get_main_queue(), ^{
+      id<AppGPUDelegate> delegate = ArcBrowserApplicationDelegateObject();
+      if ([delegate respondsToSelector:@selector(didReceiveGPUInfoUpdate:)])
+        [delegate didReceiveGPUInfoUpdate:NO];
+    });
+  }
+  void OnGpuProcessCrashed() override {
+    const int count = content::GpuProcessHost::GetGpuCrashCount();
+    // Arc snapshots the count before requesting a fresh sandboxed GPU host.
+    content::GpuProcessHost::Get();
+    dispatch_async(dispatch_get_main_queue(), ^{
+      id<AppGPUDelegate> delegate = ArcBrowserApplicationDelegateObject();
+      if ([delegate respondsToSelector:@selector(didReceiveGPUCrashNotification:withFallbackCount:)])
+        [delegate didReceiveGPUCrashNotification:count withFallbackCount:3];
+    });
+  }
+  void OnServiceLaunched(const content::ServiceProcessInfo&) override {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      id<AppGPUDelegate> delegate = ArcBrowserApplicationDelegateObject();
+      if ([delegate respondsToSelector:@selector(didConnectToNetworkProcess)])
+        [delegate didConnectToNetworkProcess];
+    });
+  }
+};
+void ObserveApplicationGPU() {
+  static base::NoDestructor<ApplicationGPUBridge> bridge;
+}
 
 class AccessibilityBridge : public ui::AXModeObserver {
  public:
@@ -66,6 +113,7 @@ PerformanceBridge& Performance() {
   return *bridge;
 }
 const char kApplicationServicesKey = 0;
+__weak id g_host_notification_center;
 }
 
 @interface ApplicationServicesState : NSObject {
@@ -104,7 +152,15 @@ ApplicationServicesState* Services(id app) {
 ARC_EXPORT @interface ArcBrowserApplication : NSObject
 @end
 @implementation ArcBrowserApplication (AppServices)
-- (void)setNotificationCenter:(id)center { Services(self).notificationCenter = center; }
+- (void)setNotificationCenter:(id)center {
+  g_host_notification_center = center;
+  Services(self).notificationCenter = center;
+  // Registration precedes -initialize:, before Chromium's UI runner exists.
+  // Install on the first main-loop turn, after hosted initialization.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (content::GpuDataManager::Initialized()) ObserveApplicationGPU();
+  });
+}
 - (void)setHistogramSamplesDelegate:(id)delegate { Services(self).histogramDelegate = delegate; }
 - (void)setBreadcrumbCallback:(void (^)(id))callback { Services(self).breadcrumbCallback = callback; }
 - (void)setDumpWithoutCrashingCallback:(void (^)(void))callback { Services(self).dumpWithoutCrashingCallback = callback; }
@@ -148,3 +204,6 @@ ARC_EXPORT @interface ArcPerformanceController : NSObject
 }
 + (void)setArcPerformanceObserver:(id<ArcPerformanceObserver>)observer { Performance().SetObserver(observer); }
 @end
+
+// The UI producer resolves a strong local from the weak app registration.
+id ArcGetNotificationCenter() { return g_host_notification_center; }

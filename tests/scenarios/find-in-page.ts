@@ -1,8 +1,8 @@
 import type { ScenarioContext } from "../launch-slice/run";
-import { run, page, press, set, observed } from "./native";
+import { run, nativePage, press, set, observed } from "./native";
 export default async function scenario(c: ScenarioContext) {
   await run(c, async () => {
-    await page(c);
+    await nativePage(c);
     press(c, /^Find(?: in Page)?…$/);
     set(c, n => n.identifier === "findInPageTextField", "fixture");
     c.assert("one native find match", await c.waitFor(() => {

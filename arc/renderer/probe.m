@@ -12,6 +12,8 @@ static IMP gNativeView;
 static IMP gInsert;
 static IMP gContext;
 static IMP gExcluded;
+static IMP gGetContext;
+static BOOL gEnabledBeforeProfile;
 static __weak id gApplication;
 static BOOL gInstalled;
 
@@ -45,6 +47,16 @@ static id Context(id object, SEL selector) {
 static void Excluded(id object, SEL selector, id domains) {
   gApplication = object;
   ((void (*)(id, SEL, id))gExcluded)(object, selector, domains);
+}
+
+static id GetContext(id object, SEL selector, id name, NSUInteger type) {
+  gApplication = object;
+  if (!gEnabledBeforeProfile && getenv("ARC_RENDERER_PROBE_ENABLE_ADBLOCK")) {
+    gEnabledBeforeProfile = YES;
+    ((void (*)(id, SEL, NSUInteger, BOOL))objc_msgSend)(object,
+        NSSelectorFromString(@"setFeatureEnabled:enabled:"), 11, YES);
+  }
+  return ((id (*)(id, SEL, id, NSUInteger))gGetContext)(object, selector, name, type);
 }
 
 static id ProfileContext(void) {
@@ -87,6 +99,35 @@ static id NodeSnapshot(id node, NSUInteger* remaining) {
   return value;
 }
 
+static NSDictionary* ExtractionSurface(void) {
+  NSDictionary* selectors = @{
+    @"ArcExtractedPageContent": @[@"initWithExtractedPageContent:", @"url", @"title", @"rootNode", @"extractionTime"],
+    @"ArcContentNode": @[@"initWithContentNode:", @"type", @"children", @"textContent", @"hasEmphasis", @"textSize", @"textColor",
+      @"linkURL", @"imageAlt", @"iframeOrigin", @"formName", @"formActionURL", @"tableName", @"formControlInfo"],
+    @"ArcBrowserContextPageContentExtraction": @[@"initWithBrowserContextPageContentExtraction:",
+      @"initWithBrowserContextPageContentExtraction:forBrowserContext:", @"owner", @"setOwner:", @"getExtractedContentForWebContents:completion:"]};
+  NSMutableDictionary* surface = [NSMutableDictionary dictionary];
+  for (NSString* name in selectors) {
+    Class cls = NSClassFromString(name);
+    NSMutableDictionary* methods = [NSMutableDictionary dictionary];
+    NSMutableDictionary* properties = [NSMutableDictionary dictionary];
+    for (NSString* selector in selectors[name]) {
+      Method method = class_getInstanceMethod(cls, NSSelectorFromString(selector));
+      methods[selector] = method ? @(method_getTypeEncoding(method)) : @"MISSING";
+    }
+    unsigned int count = 0;
+    objc_property_t* list = class_copyPropertyList(cls, &count);
+    for (unsigned int i = 0; i < count; ++i) {
+      NSString* attributes = @(property_getAttributes(list[i]));
+      if (![attributes containsString:@"optional<"])
+        properties[@(property_getName(list[i]))] = attributes;
+    }
+    free(list);
+    surface[name] = @{@"methods": methods, @"properties": properties};
+  }
+  return surface;
+}
+
 static void WriteJSON(NSDictionary* value, NSString* path) {
   NSData* data = [NSJSONSerialization dataWithJSONObject:value options:NSJSONWritingPrettyPrinted error:NULL];
   [data writeToFile:path options:NSDataWritingAtomic error:NULL];
@@ -99,11 +140,13 @@ static void Poll(void) {
     Method insert = class_getInstanceMethod(cls, NSSelectorFromString(@"insertStylesheet:stylesheet:"));
     Method context = class_getInstanceMethod(NSClassFromString(@"ArcBrowser"), NSSelectorFromString(@"context"));
     Method excluded = class_getInstanceMethod(NSClassFromString(@"ArcBrowserApplication"), NSSelectorFromString(@"setExcludedDomains:"));
-    if (!native || !insert || !context || !excluded) return;
+    Method getContext = class_getInstanceMethod(NSClassFromString(@"ArcBrowserApplication"), NSSelectorFromString(@"getBrowserContext:type:"));
+    if (!native || !insert || !context || !excluded || !getContext) return;
     gNativeView = method_setImplementation(native, (IMP)NativeView);
     gInsert = method_setImplementation(insert, (IMP)Insert);
     gContext = method_setImplementation(context, (IMP)Context);
     gExcluded = method_setImplementation(excluded, (IMP)Excluded);
+    gGetContext = method_setImplementation(getContext, (IMP)GetContext);
     gInstalled = YES;
     WriteJSON(@{@"pid": @([NSProcessInfo processInfo].processIdentifier), @"installed": @YES},
               [gRequest stringByAppendingString:@".ready.json"]);
@@ -161,6 +204,7 @@ static void Poll(void) {
             response[@"ok"] = @YES;
             response[@"synchronous"] = @(!returned);
             response[@"mainThread"] = @([NSThread isMainThread]);
+            response[@"surface"] = ExtractionSurface();
             if (content) {
               NSUInteger remaining = 256;
               response[@"result"] = @{@"url": [content valueForKey:@"url"] ?: [NSNull null],
@@ -180,6 +224,36 @@ static void Poll(void) {
       int count = ((int (*)(id, SEL))objc_msgSend)(target, NSSelectorFromString(@"blockedResourceCount"));
       response[@"count"] = @(count);
       response[@"ok"] = @YES;
+    } else if ([operation isEqual:@"apply-color-scheme"] && [request[@"scheme"] isKindOfClass:[NSNumber class]]) {
+      ((void (*)(id, SEL, NSInteger))objc_msgSend)(target, NSSelectorFromString(@"applyColorScheme:"), [request[@"scheme"] integerValue]);
+      response[@"ok"] = @YES;
+    } else if ([operation isEqual:@"remove-color-scheme"]) {
+      ((void (*)(id, SEL))objc_msgSend)(target, NSSelectorFromString(@"removeColorScheme"));
+      response[@"ok"] = @YES;
+    } else if ([operation isEqual:@"adblock-debug"]) {
+      id context = ProfileContext();
+      if (!context) response[@"error"] = @"expected exactly one browser context";
+      else {
+        gLastID = [requestID copy];
+        __block BOOL returned = NO;
+        ((void (*)(id, SEL, id, id))objc_msgSend)(context,
+            NSSelectorFromString(@"getAdBlockDebugInfo:completion:"), parsed, ^(NSString* info) {
+          response[@"ok"] = @YES;
+          response[@"info"] = info ?: [NSNull null];
+          response[@"synchronous"] = @(!returned);
+          WriteJSON(response, [gRequest stringByAppendingString:@".response.json"]);
+        });
+        returned = YES;
+        return;
+      }
+    } else if ([operation isEqual:@"set-feature-11"] && [request[@"scheme"] isKindOfClass:[NSNumber class]]) {
+      id application = gApplication;
+      if (!application) response[@"error"] = @"application was not observed";
+      else {
+        ((void (*)(id, SEL, NSUInteger, BOOL))objc_msgSend)(application,
+            NSSelectorFromString(@"setFeatureEnabled:enabled:"), 11, [request[@"scheme"] boolValue]);
+        response[@"ok"] = @YES;
+      }
     } else if (([operation isEqual:@"set-block-lists"] || [operation isEqual:@"set-exclusions"]) &&
                [request[@"values"] isKindOfClass:[NSArray class]]) {
       id application = gApplication;
@@ -231,6 +305,9 @@ __attribute__((constructor)) static void StartRendererProbe(void) {
     if (!gRequest.isAbsolutePath || ![gRequest.lastPathComponent isEqual:@"renderer-request.json"]) return;
     gContents = [NSHashTable weakObjectsHashTable];
     gBrowsers = [NSHashTable weakObjectsHashTable];
+    // Install immediately when dyld has already registered the engine classes,
+    // so the optional feature probe can enable ID11 before the first profile.
+    Poll();
     dispatch_async(dispatch_get_main_queue(), ^{
       Poll();
       dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());

@@ -32,6 +32,7 @@ ARC_EXPORT @interface ArcBrowserSidePanel : NSObject {
   ArcWebContents* _contents;
   NSString* _title;
   BOOL _closing;
+  NSInteger _sourceSessionId;
 }
 - (instancetype)initWithArcBrowser:(ArcBrowser*)browser;
 - (instancetype)initWithSidePanel:(const void*)handle;
@@ -83,16 +84,20 @@ ARC_EXPORT @interface ArcBrowserSidePanel : NSObject {
     }
     // Only return a cached WebContents when the native entry has actually been
     // shown through this adapter. A registry entry alone is not a live panel.
-    [result setCachedWebContents:_contents];
+    if (entry && sessionId == _sourceSessionId) {
+      [result setCachedWebContents:_contents];
+    }
     break;
   }
   return result;
 }
 // Internal entry point for native panel providers. Kept separate from close
 // completion because Arc owns the closing animation and native view reparenting.
-- (void)showContents:(ArcWebContents*)contents title:(NSString*)title {
+- (void)showContents:(ArcWebContents*)contents title:(NSString*)title
+    forTabWithSessionId:(NSInteger)sessionId {
   BOOL unhide = _closing && _contents == contents;
   _contents = contents;
+  _sourceSessionId = sessionId;
   _title = [title copy] ?: @"";
   _closing = NO;
   id<WebExtrasSidePanelDelegate> delegate = _delegate;
@@ -120,6 +125,8 @@ ARC_EXPORT @interface ArcWebContentsBoostIDE : NSObject {
 - (instancetype)initWithArcWebContents:(ArcWebContents*)owner;
 - (instancetype)initWithBoostIDE:(const void*)handle;
 - (void)setDelegate:(id<WebExtrasBoostDelegate>)delegate;
+- (void)respond:(NSString*)identifier success:(BOOL)success jsonString:(NSString*)json __attribute__((objc_direct));
+- (void)didRequestCommand:(NSString*)identifier jsonString:(NSString*)json __attribute__((objc_direct));
 @end
 @implementation ArcWebContentsBoostIDE
 - (instancetype)initWithArcWebContents:(ArcWebContents*)owner {

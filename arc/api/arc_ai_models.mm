@@ -3,6 +3,7 @@
 // this layer implements the ObjC boundary and keeps its own value storage.
 
 #import "arc/api/arc_internal.h"
+#include "arc/browser/ai_bridge.h"
 
 #include <cstdint>
 #include <optional>
@@ -58,7 +59,11 @@ ARC_EXPORT @interface ArcAIInferenceModel : NSObject
 @property(nonatomic, readonly, copy) NSString* directory;
 @end
 
+// C++ accessors below copy owned storage without adding app/engine getter calls
+// during marshalling. The original uses its internal native-aggregate getters.
+
 @implementation ArcAIInferenceModel {
+ @public
   std::optional<InferenceModel> _model;
 }
 
@@ -87,6 +92,7 @@ ARC_EXPORT @interface ArcAIInferenceConfiguration : NSObject
 @end
 
 @implementation ArcAIInferenceConfiguration {
+ @public
   std::optional<InferenceConfiguration> _configuration;
 }
 
@@ -118,6 +124,7 @@ ARC_EXPORT @interface ArcAIDistilBertClassifier : NSObject
 @end
 
 @implementation ArcAIDistilBertClassifier {
+ @public
   std::optional<Classifier> _classifier;
 }
 
@@ -167,6 +174,7 @@ ARC_EXPORT @interface ArcNomicEmbedTextModel : NSObject
 @end
 
 @implementation ArcNomicEmbedTextModel {
+ @public
   std::optional<VersionedModel> _model;
 }
 
@@ -195,6 +203,7 @@ ARC_EXPORT @interface ArcNomicEmbedTextItem : NSObject
 @end
 
 @implementation ArcNomicEmbedTextItem {
+ @public
   std::optional<EmbedItem> _item;
 }
 
@@ -223,6 +232,7 @@ ARC_EXPORT @interface ArcCommandBarRankingModel : NSObject
 @end
 
 @implementation ArcCommandBarRankingModel {
+ @public
   std::optional<VersionedModel> _model;
 }
 
@@ -257,6 +267,7 @@ ARC_EXPORT @interface ArcAIServiceConfiguration : NSObject
 @end
 
 @implementation ArcAIServiceConfiguration {
+ @public
   std::optional<ServiceConfiguration> _configuration;
 }
 
@@ -327,3 +338,59 @@ ARC_EXPORT @interface ArcAIServiceConfiguration : NSObject
 }
 
 @end
+
+namespace arc_ai {
+bool CopyServiceConfiguration(id object, Input& input) {
+  if (![object isKindOfClass:[ArcAIServiceConfiguration class]]) return false;
+  const auto& config = ((ArcAIServiceConfiguration*)object)->_configuration;
+  if (!config) return false;
+  input.service = {static_cast<abi::AIServiceType>(config->type),
+                   input.String(config->display_name), input.String(config->library_path),
+                   input.String(config->library_version), input.String(config->environment),
+                   input.String(config->app_version), config->retries, config->timeout};
+  return true;
+}
+bool CopyInferenceModel(id object, Input& input) {
+  if (![object isKindOfClass:[ArcAIInferenceModel class]]) return false;
+  const auto& model = ((ArcAIInferenceModel*)object)->_model;
+  if (!model) return false;
+  input.model = {static_cast<abi::AIInferenceModelType>(model->type), input.String(model->directory)};
+  return true;
+}
+bool CopyInferenceConfiguration(id object, Input& input) {
+  if (![object isKindOfClass:[ArcAIInferenceConfiguration class]]) return false;
+  const auto& config = ((ArcAIInferenceConfiguration*)object)->_configuration;
+  if (!config) return false;
+  input.inference = {config->max_tokens, config->stream_interval};
+  return true;
+}
+bool CopyClassifier(id object, Input& input) {
+  if (![object isKindOfClass:[ArcAIDistilBertClassifier class]]) return false;
+  const auto& model = ((ArcAIDistilBertClassifier*)object)->_classifier;
+  if (!model) return false;
+  input.classifier = {input.String(model->model_path), input.String(model->lora_json),
+                      input.String(model->config_path), input.String(model->head_path), model->num_classes};
+  return true;
+}
+bool CopyNomicModel(id object, Input& input) {
+  if (![object isKindOfClass:[ArcNomicEmbedTextModel class]]) return false;
+  const auto& model = ((ArcNomicEmbedTextModel*)object)->_model;
+  if (!model) return false;
+  input.nomic = {input.String(model->directory), model->version};
+  return true;
+}
+bool CopyRankingModel(id object, Input& input) {
+  if (![object isKindOfClass:[ArcCommandBarRankingModel class]]) return false;
+  const auto& model = ((ArcCommandBarRankingModel*)object)->_model;
+  if (!model) return false;
+  input.ranking = {input.String(model->directory), model->version};
+  return true;
+}
+void CopyNomicItems(NSArray* objects, Input& input) {
+  for (ArcNomicEmbedTextItem* object in objects) {
+    CHECK([object isKindOfClass:[ArcNomicEmbedTextItem class]]);
+    CHECK(object->_item);
+    input.items.push_back({input.String(object->_item->text), input.String(object->_item->task)});
+  }
+}
+}  // namespace arc_ai

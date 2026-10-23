@@ -9,11 +9,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
+__attribute__((weak)) id ArcMakeLoginCredentials(const GURL&, std::u16string_view,
+                                                std::u16string_view) { return nil; }
+
 @interface ArcWebContents (UIInternal)
 - (id)uiDelegate;
 @end
 @protocol ArcHostAuthUI <NSObject>
 - (void)webContents:(ArcWebContents*)contents showWebLoginDialog:(ArcWebLoginDialog*)dialog;
+- (void)webContents:(ArcWebContents*)contents didAutoFillWebLoginDialog:(id)credentials;
 - (void)webContentsDidCloseWebLoginDialog:(ArcWebContents*)contents;
 @end
 
@@ -44,18 +48,30 @@ class HostLoginHandler : public LoginHandler,
     data.is_url_potentially_trustworthy = explanation.empty();
     data.authority = authority;
     data.accepted = [weak](const std::string& username, const std::string& password) {
+      if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+        if (weak) { weak->SetAuth(base::UTF8ToUTF16(username), base::UTF8ToUTF16(password)); }
+        return;
+      }
       content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
           base::BindOnce([](base::WeakPtr<HostLoginHandler> handler, std::string user, std::string pass) {
             if (handler) { handler->SetAuth(base::UTF8ToUTF16(user), base::UTF8ToUTF16(pass)); }
           }, weak, username, password));
     };
     data.cancelled = [weak]() {
+      if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+        if (weak) { weak->CancelAuth(true); }
+        return;
+      }
       content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
           base::BindOnce([](base::WeakPtr<HostLoginHandler> handler) {
             if (handler) { handler->CancelAuth(true); }
           }, weak));
     };
     data.closed = [weak]() {
+      if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+        if (weak) { weak->CancelAuth(false); }
+        return;
+      }
       content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
           base::BindOnce([](base::WeakPtr<HostLoginHandler> handler) {
             if (handler) { handler->CancelAuth(false); }
@@ -82,13 +98,27 @@ class HostLoginHandler : public LoginHandler,
       [ui webContentsDidCloseWebLoginDialog:owner];
     }
   }
-  void OnAutofillDataAvailable(std::u16string_view, std::u16string_view) override {
-    // The app's credential value adapter is supplied by the profile package;
-    // do not auto-submit credentials or fabricate a credentials object here.
+  void OnAutofillDataAvailable(std::u16string_view username,
+                               std::u16string_view password) override {
+    // Native 0x438112c posts independently of the show task, preserving the
+    // password manager's delivery order even if it supplies data synchronously.
+    const GURL url = auth_info().is_proxy ? auth_info().challenger.GetURL()
+        : (contents_ ? contents_->GetVisibleURL() : GURL());
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+        base::BindOnce(&HostLoginHandler::DeliverAutofill,
+            weak_factory_.GetWeakPtr(), url, std::u16string(username), std::u16string(password)));
   }
   void OnLoginModelDestroying() override { http_auth_manager_ = nullptr; }
 
  private:
+  void DeliverAutofill(GURL url, std::u16string username, std::u16string password) {
+    if (!contents_ || !dialog_) { return; }
+    ArcWebContents* owner = [ArcWebContents wrapperForWebContents:contents_.get()];
+    id<ArcHostAuthUI> ui = [owner respondsToSelector:@selector(uiDelegate)] ? [owner uiDelegate] : nil;
+    if (![ui respondsToSelector:@selector(webContents:didAutoFillWebLoginDialog:)]) { return; }
+    id credentials = ArcMakeLoginCredentials(url, username, password);
+    if (credentials) { [ui webContents:owner didAutoFillWebLoginDialog:credentials]; }
+  }
   void Show() {
     if (!contents_ || !dialog_) { return; }
     ArcWebContents* owner = [ArcWebContents wrapperForWebContents:contents_.get()];

@@ -12,7 +12,11 @@
 
 namespace content {
 class WebContents;
+class RenderProcessHost;
 }
+
+class GURL;
+class Profile;
 
 namespace arc {
 // Main-thread state. The descriptor is physically read-only and unlinked after
@@ -21,11 +25,33 @@ struct AdBlockConfiguration {
   base::File indexed_ruleset;
   std::vector<std::string> excluded_origins;
   uint64_t ruleset_id = 0;
+  uint64_t config_version = 0;
+  bool enabled = false;
+  // An engaged update may carry an invalid file: that explicitly clears rules.
+  // Disabling the feature disengages this manager update without resetting the
+  // independent profile and renderer copies.
+  bool has_ruleset_update = false;
+  bool has_cosmetic_rules = false;
 };
 
 const AdBlockConfiguration& GetAdBlockConfiguration();
 base::CallbackListSubscription ObserveAdBlockConfiguration(
     base::RepeatingClosure callback);
+
+// The application is remembered weakly. Feature11 changes call Refresh after
+// releasing the app's feature-table lock because Refresh invokes its getter.
+#ifdef __OBJC__
+void SetRendererAdBlockApplication(id application);
+#endif
+void RefreshRendererAdBlockFeature();
+void InitializeRendererProcessBridge();
+void InitializeRendererProfile(Profile* profile);
+void RendererProcessFrameReady(content::RenderProcessHost* host);
+void ReleaseRendererRulesetFile(base::File file);
+void GetRendererAdBlockDebugInfo(
+    Profile* profile,
+    const GURL& url,
+    base::OnceCallback<void(const std::string&)> completion);
 
 // Core must call this immediately after creating a WebContents, before its
 // first navigation, so all RenderFrameCreated notifications are observed.

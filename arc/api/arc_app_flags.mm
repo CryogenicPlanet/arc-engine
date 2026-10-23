@@ -39,10 +39,7 @@ RuntimeFeatures& Features() {
 }
 }
 
-ARC_EXPORT @interface ArcBrowserApplication : NSObject
-@end
-@implementation ArcBrowserApplication (AppFlags)
-- (BOOL)isFeatureEnabled:(NSUInteger)identifier {
+bool ArcRuntimeFeatureEnabled(NSUInteger identifier) {
   // Arc's getter special-cases this upstream-style feature independently of its
   // mutable Arc runtime table, including after setFeatureEnabled:enabled:.
   if (identifier == 45) return base::FeatureList::IsEnabled(kArcMacCoalescedResizing);
@@ -52,6 +49,13 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
   if (entry == features.values.end()) return NO;
   const bool* enabled = std::get_if<bool>(&entry->second);
   return enabled && *enabled;
+}
+
+ARC_EXPORT @interface ArcBrowserApplication : NSObject
+@end
+@implementation ArcBrowserApplication (AppFlags)
+- (BOOL)isFeatureEnabled:(NSUInteger)identifier {
+  return ArcRuntimeFeatureEnabled(identifier);
 }
 - (void)setFeatureEnabled:(NSUInteger)identifier enabled:(BOOL)enabled {
   auto& features = Features();

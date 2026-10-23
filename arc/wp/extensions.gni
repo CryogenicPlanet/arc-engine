@@ -1,14 +1,18 @@
-# Work package "extensions": sources and deps (absolute //arc/... paths). Owned by that package.
+# Work package "extensions": sources and deps (absolute //arc/... paths). Owned
+# by that package.
 wp_extensions_sources = [
-  "//arc/api/arc_extensions_values.mm",
   "//arc/api/arc_extensions_browser.mm",
   "//arc/api/arc_extensions_context.mm",
+  "//arc/api/arc_extensions_internal.mm",
+  "//arc/api/arc_extensions_values.mm",
   "//arc/browser/extensions_bridge.h",
   "//arc/browser/extensions_context.h",
   "//arc/browser/extensions_groups.mm",
+  "//arc/browser/extensions_internal_manifest.h",
   "//arc/browser/extensions_values.h",
 ]
 wp_extensions_deps = [
+  "//arc/browser/extensions_internal:resources",
   "//chrome/browser/extensions",
   "//chrome/browser/ui/extensions",
   "//chrome/browser/ui/extensions:impl",

@@ -13,23 +13,18 @@
     },
     {
       "step": "HTTP auth prompt",
-      "outcome": "pass",
-      "detail": ""
-    },
-    {
-      "step": "HTTP auth accepted",
       "outcome": "fail",
       "detail": ""
     },
     {
-      "step": "auth fixture diagnostics",
+      "step": "scenario actions",
       "outcome": "inconclusive",
-      "detail": "{\"attempts\":2,\"matched\":false}"
+      "detail": "Error: auth sheet not uniquely identified"
     },
     {
       "step": "quit",
-      "outcome": "pass",
-      "detail": "Browser.close; browser + 6 helpers exited"
+      "outcome": "fail",
+      "detail": "SIGTERM (Browser.close did not exit in 15 s); browser + 7 helpers exited"
     }
   ]
 }

@@ -6,6 +6,7 @@
 class Profile;
 namespace extensions { class Extension; }
 namespace arc {
+void EnsureInternalExtension(Profile* profile);
 ExtensionInfo MakeExtensionInfo(Profile* profile,
                                 const extensions::Extension& extension);
 }  // namespace arc

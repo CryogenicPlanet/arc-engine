@@ -91,7 +91,8 @@ ARC_EXPORT @interface ArcURLLoadCancellationToken : NSObject {
   // Destroy the loader before the consumer it references.
   std::unique_ptr<ArcURLStreamConsumer> _consumer;
   std::unique_ptr<network::SimpleURLLoader> _loader;
-  __weak id<ArcURLLoadDelegate> _delegate;
+  // Native URL-load adapters retain their delegate until the request ends.
+  id<ArcURLLoadDelegate> _delegate;
   NSString* _identifier;
   BOOL _terminal;
 }
@@ -206,6 +207,7 @@ static ArcURLLoadCancellationToken* LoadURL(ArcURLLoadConfiguration* config, id<
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
       current->_loader.reset();
       current->_consumer.reset();
+      current->_delegate = nil;
     }));
     [PendingLoads() removeObject:current];
   });
@@ -243,6 +245,7 @@ void ArcCancelURLLoad(ArcURLLoadCancellationToken* token) {
     id<ArcURLLoadDelegate> delegate = token->_delegate;
     if ([delegate respondsToSelector:@selector(didFail:withError:)])
       [delegate didFail:token->_identifier withError:net::ERR_ABORTED];
+    token->_delegate = nil;
   }));
 }
 

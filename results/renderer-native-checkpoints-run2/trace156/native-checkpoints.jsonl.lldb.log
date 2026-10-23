@@ -1,0 +1,12 @@
+(lldb) command script import "/Users/cryogenicplanet/general/arc-engine/arc/renderer/native_checkpoints.py"
+(lldb) script native_checkpoints.observe(lldb.debugger)
+native checkpoints: module 'hashlib' has no attribute 'file_digest'
+Traceback (most recent call last):
+  File "<input>", line 1, in <module>
+  File "/Users/cryogenicplanet/general/arc-engine/arc/renderer/native_checkpoints.py", line 243, in observe
+    signal.signal(sig, handler)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/signal.py", line 47, in signal
+    handler = _signal.signal(_enum_to_int(signalnum), _enum_to_int(handler))
+TypeError: signal handler must be signal.SIG_IGN, signal.SIG_DFL, or a callable object
+(lldb) process detach --keep-stopped false
+error: invalid target, create a target using the 'target create' command

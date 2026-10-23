@@ -3,6 +3,8 @@
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 #include <dlfcn.h>
+#include <string_view>
+#include <span>
 
 @interface NSObject (WebExtrasProbe)
 - (instancetype)initWithAction:(NSUInteger)action;
@@ -29,12 +31,38 @@ static NSDictionary* Snapshot(id object, NSString* fields) {
   return result;
 }
 
+static NSDictionary* Surface(NSString* className, NSString* selectors) {
+  Class cls = NSClassFromString(className);
+  NSMutableDictionary* result = [NSMutableDictionary dictionary];
+  for (NSString* selector in [selectors componentsSeparatedByString:@" "]) {
+    Method method = class_getInstanceMethod(cls, NSSelectorFromString(selector));
+    result[selector] = method ? [NSString stringWithUTF8String:method_getTypeEncoding(method)] : @"MISSING";
+  }
+  return result;
+}
+static NSDictionary* Properties(NSString* className, NSString* fields) {
+  NSArray* names = [fields componentsSeparatedByString:@" "];
+  unsigned count = 0;
+  objc_property_t* storage = class_copyPropertyList(NSClassFromString(className), &count);
+  NSMutableDictionary* result = [NSMutableDictionary dictionary];
+  for (objc_property_t property : std::span(storage, count)) {
+    NSString* name = [NSString stringWithUTF8String:property_getName(property)];
+    if ([names containsObject:name]) {
+      result[name] = [NSString stringWithUTF8String:property_getAttributes(property)];
+    }
+  }
+  free(storage);
+  return result;
+}
+
 int main(int argc, const char* argv[]) {
   @autoreleasepool {
-    if (argc != 2 || !dlopen(argv[1], RTLD_NOW | RTLD_GLOBAL)) {
+    if (argc < 2 || !dlopen(argv[1], RTLD_NOW | RTLD_GLOBAL)) {
       fprintf(stderr, "Unable to load engine: %s\n", dlerror());
       return 1;
     }
+    const char* recorder = getenv("ARC_WEBEXTRAS_RECORDER_LIBRARY");
+    if (recorder && !dlopen(recorder, RTLD_NOW | RTLD_GLOBAL)) { return 2; }
     NSMutableDictionary* result = [NSMutableDictionary dictionary];
     NSMutableArray* actions = [NSMutableArray array];
     for (NSUInteger action = 0; action < 4; ++action) {
@@ -51,6 +79,17 @@ int main(int argc, const char* argv[]) {
     result[@"emptyTree"] = Snapshot(tree, @"nodeId role name value description isClickable isEditable isFocusable childTreeId children");
     id entry = [[NSClassFromString(@"ArcBrowserSidePanelEntryInfo") alloc] init];
     result[@"entry"] = Snapshot(entry, @"hasActiveEntry extensionId cachedWebContents");
+    result[@"metadata"] = @{
+      @"action":Surface(@"ArcAccessibilityActionData", @"initWithAction: initWithAction:value: action value"),
+      @"tree":Surface(@"ArcAccessibilityTreeNode", @"initWithAccessibilityTreeNode: nodeId role name value description isClickable isEditable isFocusable childTreeId children"),
+      @"entry":Surface(@"ArcBrowserSidePanelEntryInfo", @"hasActiveEntry setHasActiveEntry: extensionId setExtensionId: cachedWebContents setCachedWebContents:")
+    };
+    result[@"properties"] = @{
+      @"action":Properties(@"ArcAccessibilityActionData", @"action value"),
+      @"tree":Properties(@"ArcAccessibilityTreeNode", @"nodeId role name value description isClickable isEditable isFocusable childTreeId children"),
+      @"entry":Properties(@"ArcBrowserSidePanelEntryInfo", @"hasActiveEntry extensionId cachedWebContents")
+    };
+    if (argc > 2 && std::string_view(argv[2]) == "--cookies") {
     WebExtrasCookieProbe* cookie = [[NSClassFromString(@"ArcCookie") alloc] init];
     NSString* fields = @"name value domain path hostOnly httpOnly secure session expirationDate sameSite";
     result[@"cookieDefault"] = Snapshot(cookie, fields);
@@ -61,6 +100,7 @@ int main(int argc, const char* argv[]) {
     result[@"cookieSet"] = Snapshot(cookie, fields);
     [cookie setName:nil]; [cookie setValue:nil]; [cookie setDomain:nil]; [cookie setPath:nil];
     result[@"cookieNil"] = Snapshot(cookie, fields);
+    }
     NSData* data = [NSJSONSerialization dataWithJSONObject:result options:NSJSONWritingPrettyPrinted | NSJSONWritingSortedKeys error:nil];
     puts([[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding].UTF8String);
   }

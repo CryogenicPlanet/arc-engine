@@ -11,6 +11,9 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_config.h"
 #include "content/public/browser/tracing_controller.h"
+#include "content/browser/tracing/tracing_controller_impl.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_config.h"
+#include "third_party/perfetto/include/perfetto/tracing/tracing.h"
 
 ARC_EXPORT @interface ArcTracingConfiguration : NSObject
 @property(nonatomic, strong) NSString* filePath;
@@ -54,15 +57,29 @@ BOOL OnMain(BOOL (^operation)(void)) {
   dispatch_sync(dispatch_get_main_queue(), ^{ result = operation(); });
   return result;
 }
+struct TracingSessionState {
+  std::unique_ptr<perfetto::TracingSession> session;
+  scoped_refptr<content::TracingController::TraceDataEndpoint> endpoint;
+  base::OneShotTimer timer;
+  bool stopping = false;
+};
 const char kTracingControllerKey = 0;
 }
 
 @implementation ArcTracingController {
   __weak id<ArcTracingControllerDelegate> _delegate;
   std::atomic_bool _active;
-  base::OneShotTimer _timer;
+  std::unique_ptr<TracingSessionState> _state;
   NSString* _filePath;
   uint64_t _generation;
+}
+- (void)dealloc {
+  // A wrapper cached from a background queue can also lose its final owner
+  // there. Timers and the native session must be destroyed on their UI sequence.
+  if (_state && ![NSThread isMainThread]) {
+    std::shared_ptr<TracingSessionState> cleanup(std::move(_state));
+    dispatch_async(dispatch_get_main_queue(), ^{ (void)cleanup; });
+  }
 }
 - (void)setDelegate:(id<ArcTracingControllerDelegate>)delegate {
   @synchronized(self) { _delegate = delegate; }
@@ -71,12 +88,10 @@ const char kTracingControllerKey = 0;
 - (BOOL)start:(ArcTracingConfiguration*)configuration {
   NSString* path = [configuration.filePath copy] ?: @"";
   double duration = configuration.tracingDuration;
-  if (!std::isfinite(duration)) return NO;
   BOOL privacy = configuration ? configuration.privacyFilteringEnabled : NO;
   return OnMain(^{
-    if (self->_active.load()) return NO;
-    auto* native = content::TracingController::GetInstance();
-    if (native->IsTracing()) return NO;
+    if (self->_state && self->_state->session) return NO;
+    if (!self->_state) self->_state = std::make_unique<TracingSessionState>();
     base::trace_event::TraceConfig config(
         "disabled-by-default-system_power,disabled-by-default-system_stats", "record-until-full");
     config.EnableSystrace();
@@ -87,66 +102,105 @@ const char kTracingControllerKey = 0;
       config.EnableHistogram(name);
     uint64_t generation = ++self->_generation;
     __weak ArcTracingController* weakSelf = self;
-    bool started = native->StartTracing(config, base::BindOnce(^{
-      ArcTracingController* controller = weakSelf;
-      if (!controller || !controller->_active.load() || controller->_generation != generation) return;
-      id<ArcTracingControllerDelegate> delegate;
-      @synchronized(controller) { delegate = controller->_delegate; }
-      if ([delegate respondsToSelector:@selector(tracingControllerDidStartTracing:)])
-        [delegate tracingControllerDidStartTracing:controller];
-    }), privacy);
-    if (!started) return NO;
+    self->_state->session = perfetto::Tracing::NewTrace(perfetto::BackendType::kCustomBackend);
+    if (!self->_state->session) return NO;
     self->_filePath = path;
+    self->_state->stopping = false;
     self->_active.store(true);
-    if (duration > 0) {
-      self->_timer.Start(FROM_HERE, base::Seconds(duration), base::BindOnce(^{
-        [weakSelf stop];
-      }));
-    }
+    self->_state->session->SetOnStartCallback([weakSelf, generation, duration] {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        ArcTracingController* controller = weakSelf;
+        if (!controller || controller->_generation != generation || !controller->_active.load()) return;
+        // Conversion saturates to microseconds. Native zero/negative durations
+        // still arm the timer, scheduling an immediate stop after acknowledgment.
+        controller->_state->timer.Start(FROM_HERE, base::Seconds(duration), base::BindOnce(^{
+          [weakSelf stop];
+        }));
+        id<ArcTracingControllerDelegate> delegate;
+        @synchronized(controller) { delegate = controller->_delegate; }
+        if ([delegate respondsToSelector:@selector(tracingControllerDidStartTracing:)])
+          [delegate tracingControllerDidStartTracing:controller];
+      });
+    });
+    self->_state->session->SetOnErrorCallback([weakSelf, generation](perfetto::TracingError error) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        ArcTracingController* controller = weakSelf;
+        if (!controller || controller->_generation != generation) return;
+        controller->_active.store(false);
+        ++controller->_generation;
+        controller->_state->timer.Stop();
+        controller->_state->endpoint.reset();
+        controller->_state->session.reset();
+        controller->_state->stopping = false;
+      });
+    });
+    self->_state->session->SetOnStopCallback([weakSelf, generation] {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        ArcTracingController* controller = weakSelf;
+        if (!controller || controller->_generation != generation || !controller->_state->session) return;
+        controller->_active.store(false);
+        controller->_state->timer.Stop();
+        controller->_state->stopping = true;
+        NSString* outputPath = controller->_filePath;
+        auto endpoint = content::TracingController::CreateFileEndpoint(
+            base::FilePath(ArcUTF8(outputPath)), base::BindOnce(^{
+              dispatch_async(dispatch_get_main_queue(), ^{
+                ArcTracingController* owner = weakSelf;
+                if (!owner || owner->_generation != generation) return;
+                owner->_state->session.reset();
+                owner->_state->endpoint.reset();
+                owner->_state->stopping = false;
+                id<ArcTracingControllerDelegate> delegate;
+                @synchronized(owner) { delegate = owner->_delegate; }
+                if ([delegate respondsToSelector:@selector(tracingController:didCompleteTracing:)])
+                  [delegate tracingController:owner didCompleteTracing:outputPath];
+              });
+            }));
+        controller->_state->endpoint = content::TracingControllerImpl::CreateCompressedStringEndpoint(
+            std::move(endpoint), false);
+        controller->_state->session->ReadTrace([weakSelf, generation](
+            perfetto::TracingSession::ReadTraceCallbackArgs args) {
+          // Perfetto owns args.data only during this invocation. Copy before
+          // handing the chunk to the UI sequence and compression endpoint.
+          std::string chunk = args.size ? std::string(args.data, args.size) : std::string();
+          bool finished = !args.has_more;
+          dispatch_async(dispatch_get_main_queue(), ^{
+            ArcTracingController* owner = weakSelf;
+            if (!owner || owner->_generation != generation || !owner->_state->endpoint) return;
+            if (!chunk.empty()) owner->_state->endpoint->ReceiveTraceChunk(std::make_unique<std::string>(chunk));
+            if (finished) owner->_state->endpoint->ReceivedTraceFinalContents();
+          });
+        });
+      });
+    });
+    self->_state->session->Setup(tracing::GetDefaultPerfettoConfig(config, privacy, false));
+    self->_state->session->Start();
     return YES;
   });
 }
 - (BOOL)stop {
   return OnMain(^{
-    if (!self->_active.load()) return NO;
-    __weak ArcTracingController* weakSelf = self;
-    uint64_t generation = self->_generation;
-    auto complete = ^(NSString* result) {
-      ArcTracingController* controller = weakSelf;
-      if (!controller || controller->_generation != generation) return;
-      id<ArcTracingControllerDelegate> delegate;
-      @synchronized(controller) { delegate = controller->_delegate; }
-      if ([delegate respondsToSelector:@selector(tracingController:didCompleteTracing:)])
-        [delegate tracingController:controller didCompleteTracing:result];
-    };
-    scoped_refptr<content::TracingController::TraceDataEndpoint> endpoint;
-    if (self->_filePath.length) {
-      NSString* path = self->_filePath;
-      endpoint = content::TracingController::CreateFileEndpoint(base::FilePath(ArcUTF8(path)),
-          base::BindOnce(^{ complete(path); }));
-    } else {
-      endpoint = content::TracingController::CreateStringEndpoint(base::BindOnce(
-          [](void (^completion)(NSString*), std::unique_ptr<std::string> trace) {
-            completion(trace ? ArcNSString(*trace) : @"");
-          }, complete));
-    }
-    if (!content::TracingController::GetInstance()->StopTracing(endpoint)) return NO;
+    if (!self->_active.load() || !self->_state || !self->_state->session || self->_state->stopping) return NO;
+    self->_state->stopping = true;
     self->_active.store(false);
-    self->_timer.Stop();
+    self->_state->timer.Stop();
+    self->_state->session->Stop();
     return YES;
   });
 }
 - (BOOL)abort {
   return OnMain(^{
-    if (!self->_active.load()) return NO;
-    if (!content::TracingController::GetInstance()->StopTracing(nullptr)) return NO;
+    if (!self->_active.load() || !self->_state || !self->_state->session || self->_state->stopping) return NO;
     self->_active.store(false);
-    ++self->_generation;
-    self->_timer.Stop();
+    uint64_t generation = ++self->_generation;
+    self->_state->timer.Stop();
+    self->_state->endpoint.reset();
+    self->_state->session.reset();
+    self->_state->stopping = false;
     __weak ArcTracingController* weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
       ArcTracingController* controller = weakSelf;
-      if (!controller) return;
+      if (!controller || controller->_generation != generation) return;
       id<ArcTracingControllerDelegate> delegate;
       @synchronized(controller) { delegate = controller->_delegate; }
       if ([delegate respondsToSelector:@selector(tracingControllerDidAbortTracing:)])

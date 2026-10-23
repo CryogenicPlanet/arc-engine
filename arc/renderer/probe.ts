@@ -70,7 +70,7 @@ const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
   if (url.pathname.endsWith("/blocked.js"))
     return new Response("globalThis.__arcResourceLoads=(globalThis.__arcResourceLoads||0)+1", { headers: {"content-type":"text/javascript"} });
   return new Response(`<!doctype html><meta charset="utf-8"><title>Renderer boundary fixture</title>
-    <style>#probe{color:rgb(0,0,0);background-color:rgb(255,255,255)}</style><div id="probe">fixture</div>
+    <style>#probe{color:rgb(0,0,0)${args.includes("--cascade") ? "!important" : ""};background-color:rgb(255,255,255)}</style><div id="probe">fixture</div><div class="arc-probe-ad">ad fixture</div>
     ${frame ? "" : rich + `<iframe id="child" src="/${token}/frame"></iframe>`}`, { headers: { "content-type": "text/html" } });
 } });
 const base = `http://${fixtureHost}:${server.port}/${token}`;
@@ -118,6 +118,7 @@ try {
         "--env", `DYLD_INSERT_LIBRARIES=${dylib}:${recorder}`,
         "--env", `ARC_RENDERER_PROBE_REQUEST=${requestPath}`,
         "--env", `ARC_RECORD_PATH=${join(dir, "record.jsonl")}`,
+        ...(args.includes("--adblock-enabled") ? ["--env", "ARC_RENDERER_PROBE_ENABLE_ADBLOCK=1"] : []),
         "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args",
         "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking",
         `--host-resolver-rules=MAP renderer-probe.test 127.0.0.1, ${plist("ArcModHostResolverRules")}`, `--user-data-dir=${chromiumData}`,
@@ -141,17 +142,19 @@ try {
         return (value.result as any)?.value;
       };
       let number = 0;
-      const action = async (operation: string, identifier?: string, stylesheet?: string, values?: string[], hostPattern?: string) => {
+      const action = async (operation: string, identifier?: string, stylesheet?: string, values?: string[], hostPattern?: string, scheme?: number) => {
         if (verifyAgentEndpoint(agent, port) !== pid) throw new Error("endpoint PID changed");
         const id = `${token}-${++number}`;
-        const request = { id, url: currentURL, operation, identifier, stylesheet, values, hostPattern };
+        const sentAt = Date.now() / 1000;
+        const request = { id, url: currentURL, operation, identifier, stylesheet, values, hostPattern, scheme };
         writeFileSync(requestPath + ".tmp", JSON.stringify(request));
         renameSync(requestPath + ".tmp", requestPath);
         const response = await wait(() => {
           const response = json(requestPath + ".response.json");
           return response.id === id ? response : undefined;
         });
-        run.acknowledgments.push({ ...response, url: new URL(response.url).pathname.replace(token, "fixture") });
+        run.acknowledgments.push({ ...response, sentAt, receivedAt: Date.now()/1000,
+          url: new URL(response.url).pathname.replace(token, "fixture") });
         if (response.pid !== pid || response.ok !== true || response.matches !== 1) throw new Error(`boundary action failed: ${JSON.stringify(response)}`);
         return response;
       };
@@ -168,11 +171,32 @@ try {
           return same >= 3 ? styles : undefined;
         });
         run.observations.push({ step, styles });
+        if (step === "insert-one") {
+          const capture = await cdp!.targetCommand(target!, "Page.captureScreenshot", {format:"png"});
+          if (typeof capture.data !== "string") throw new Error("fixture screenshot missing");
+          writeFileSync(join(dir,"styled.png"),Buffer.from(capture.data,"base64"));
+        }
         console.log(`${agent}: ${step} ${JSON.stringify(styles)}`);
       };
       await action("inspect");
+      if (args.includes("--checkpoint-gate") && agent === "trace156") {
+        // Parent may attach the bounded exact-PID observer while this run keeps
+        // the shared lock. No operation proceeds on an elapsed-time approval.
+        writeFileSync(join(dir,"checkpoint-target.json"),JSON.stringify({pid,url:currentURL},null,2));
+        console.log(`${agent}: waiting for exact-PID checkpoint gate`);
+        const gate = await wait(() => {
+          const gate = json(join(dir,"checkpoint-continue.json"));
+          return gate.pid === pid && typeof gate.proceed === "boolean" ? gate : undefined;
+        }, 120000);
+        if (!gate.proceed) throw new Error("parent cancelled checkpoint observation");
+      }
       await snapshot("baseline");
       if (args.includes("--extract")) await action("extract");
+      if (args.includes("--extract-repeat")) {
+        await evaluate("document.getElementById('probe').textContent='mutated fixture'");
+        await action("extract");
+        await evaluate("document.getElementById('probe').textContent='fixture'");
+      }
       const baseline = run.observations[0]!.styles as any;
       if ([baseline.main, ...baseline.frames].some(s => s.color !== "rgb(0, 0, 0)" || s.background !== "rgb(255, 255, 255)" || s.old || s.current || s.second)) {
         throw new Error("fixture computed-style baseline failed");
@@ -200,14 +224,25 @@ try {
       await wait(async () => (await evaluate("document.getElementById('child').contentWindow.location.href")) === base + "/frame-navigated");
       await snapshot("existing-subframe-navigation");
       await action("remove", "arc-renderer-probe-one"); await snapshot("remove-with-subframes");
+      if (args.includes("--schemes")) {
+        const schemes: unknown[] = [];
+        const sample = async(step:string)=>{ await sleep(300); schemes.push({step,dark:await evaluate("matchMedia('(prefers-color-scheme:dark)').matches")}); };
+        await sample("baseline");
+        await action("apply-color-scheme",undefined,undefined,undefined,undefined,0); await sample("scheme0");
+        await action("apply-color-scheme",undefined,undefined,undefined,undefined,1); await sample("scheme1");
+        await action("remove-color-scheme"); await sample("removed");
+        writeFileSync(join(dir,"scheme-observations.json"),JSON.stringify(schemes,null,2));
+      }
       if (args.includes("--effects")) {
         const effects: unknown[] = [];
         const sample = async (step: string) => {
           effects.push({step, result: await evaluate(`({color:getComputedStyle(document.getElementById('probe')).color,
-            js:window.__arcBoostProbe||0,childJS:document.querySelector('iframe').contentWindow.__arcBoostProbe||0})`)});
+            js:window.__arcBoostProbe||0,dom:document.documentElement.dataset.arcBoostProbe||'',
+            childJS:document.querySelector('iframe').contentWindow.__arcBoostProbe||0,
+            childDOM:document.querySelector('iframe').contentDocument.documentElement.dataset.arcBoostProbe||''})`)});
         };
         await action("register-boost-css", "arc-renderer-probe-boost", "#probe{color:rgb(81,17,141)!important}",undefined,fixtureHost);
-        await action("register-boost-js", "arc-renderer-probe-script", "window.__arcBoostProbe=(window.__arcBoostProbe||0)+1",undefined,fixtureHost);
+        await action("register-boost-js", "arc-renderer-probe-script", "window.__arcBoostProbe=(window.__arcBoostProbe||0)+1;document.documentElement.dataset.arcBoostProbe=String(window.__arcBoostProbe)",undefined,fixtureHost);
         await sleep(700); await sample("registered-existing-document");
         currentURL = base + "/effects";
         await cdp.targetCommand(target,"Page.navigate",{url:currentURL});
@@ -224,28 +259,50 @@ try {
       }
       if (args.includes("--adblock")) {
         const resources: unknown[] = [];
+        const debug = await action("adblock-debug");
+        console.log(`${agent}: adblock debug ${JSON.stringify(debug.info)}`);
+        writeFileSync(join(dir,"adblock-debug.json"),JSON.stringify(debug,null,2));
         const load = async (step: string) => {
           const resource = base + "/blocked.js?" + crypto.randomUUID();
           const loaded = await evaluate(`new Promise(resolve=>{ const s=document.createElement('script');
             s.src=${JSON.stringify(resource)};s.onload=()=>resolve('loaded');s.onerror=()=>resolve('blocked');document.body.append(s); })`);
           const count = await action("blocked-count");
-          resources.push({step,loaded,count:count.count});
-          console.log(`${agent}: adblock ${step} ${loaded}, count=${count.count}`);
+          const debug = await action("adblock-debug");
+          const adDisplay = await evaluate("getComputedStyle(document.querySelector('.arc-probe-ad')).display");
+          resources.push({step,loaded,count:count.count,debug:debug.info,adDisplay});
+          console.log(`${agent}: adblock ${step} ${loaded}, count=${count.count}, adDisplay=${adDisplay}, debug=${JSON.stringify(debug.info)}`);
         };
         await load("baseline");
-        await action("set-block-lists", undefined, undefined, ["/blocked.js$script"]);
+        const networkRule = `||${fixtureHost}^$script`;
+        const rules = `${networkRule}\n${fixtureHost}##.arc-probe-ad`;
+        await action("set-block-lists", undefined, undefined, [rules]);
+        let ready = false;
+        const compileStart = Date.now();
+        for (let attempt=0;attempt<120;++attempt) {
+          await sleep(500);
+          const debug = await action("adblock-debug");
+          if (!String(debug.info).includes("NoBlockList")) { ready = true; break; }
+        }
+        if (!ready) throw new Error("block list did not reach the queried renderer within 60 seconds");
+        writeFileSync(join(dir,"adblock-publication.json"),JSON.stringify({elapsedMs:Date.now()-compileStart},null,2));
         await sleep(1500); await load("rule-active");
         currentURL = base + "/c";
         await cdp.targetCommand(target, "Page.navigate", {url:currentURL});
         await wait(async()=>await evaluate("location.href=== " + JSON.stringify(currentURL) + " && document.readyState==='complete'"));
         await action("inspect"); await load("rule-active-new-document");
+        if (args.includes("--adblock-toggle")) {
+          await action("set-feature-11", undefined, undefined, undefined, undefined, 0);
+          await sleep(500); await load("feature-disabled");
+          await action("set-feature-11", undefined, undefined, undefined, undefined, 1);
+          await sleep(500); await load("feature-reenabled");
+        }
         await action("set-exclusions", undefined, undefined, [fixtureHost]);
         await sleep(500); await load("exclude-ip-no-port");
         await action("set-exclusions", undefined, undefined, [`${fixtureHost}:${server.port}`]);
         await sleep(500); await load("exclude-ip-with-port");
         await action("set-exclusions", undefined, undefined, []);
         await sleep(500); await load("exclusions-cleared");
-        await action("set-block-lists", undefined, undefined, ["/blocked.js$script\n/blocked.js$script,badfilter"]);
+        await action("set-block-lists", undefined, undefined, [`${rules}\n${networkRule},badfilter`]);
         await sleep(1500); await load("badfilter");
         await action("set-block-lists", undefined, undefined, []);
         await sleep(1000); await load("lists-cleared");

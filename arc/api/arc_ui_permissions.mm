@@ -45,8 +45,8 @@ ARC_EXPORT @interface ArcPermissionRequest : NSObject
 @end
 @interface ArcDisplayNameOrOrigin (PermissionUI)
 - (instancetype)initWithDisplayNameOrOrigin:(const void*)origin;
-- (NSString*)nameOrOrigin;
-- (BOOL)isOrigin;
+@property(nonatomic, readonly, copy) NSString* nameOrOrigin;
+@property(nonatomic, readonly) BOOL isOrigin;
 @end
 
 @protocol ArcHostPermissionUI <NSObject>
@@ -59,6 +59,7 @@ ARC_EXPORT @interface ArcPermissionRequest : NSObject
 @implementation ArcPermissionRequest {
   std::optional<PermissionData> _request;
 }
+@synthesize additionalData = _additionalData;
 - (instancetype)initWithPermissionRequest:(const void*)request {
   CHECK(request);
   if ((self = [super init])) { _request = *static_cast<const PermissionData*>(request); }
@@ -67,6 +68,7 @@ ARC_EXPORT @interface ArcPermissionRequest : NSObject
 - (NSInteger)type { CHECK(_request); return _request->type; }
 - (NSString*)originUrl { CHECK(_request); return ArcNSString(_request->origin); }
 - (NSDictionary*)additionalData {
+  (void)_additionalData;
   CHECK(_request);
   NSMutableDictionary* result = [NSMutableDictionary dictionary];
   for (const auto& [key, value] : _request->additional_data) { result[@(key)] = ArcNSString(value); }
@@ -150,8 +152,10 @@ class HostPermissionPrompt : public permissions::PermissionPrompt {
       [delegate webContentsClosePermission:owner];
     }
   }
-  bool UpdateAnchor() override { return true; }
-  TabSwitchingBehavior GetTabSwitchingBehavior() override { return kKeepPromptAlive; }
+  bool UpdateAnchor() override { return false; }
+  TabSwitchingBehavior GetTabSwitchingBehavior() override {
+    return kDestroyPromptButKeepRequestPending;
+  }
   permissions::PermissionPromptDisposition GetPromptDisposition() const override {
     return permissions::PermissionPromptDisposition::ANCHORED_BUBBLE;
   }

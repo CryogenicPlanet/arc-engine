@@ -5,7 +5,6 @@
 
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime_desktop.h"
@@ -24,20 +23,20 @@ class TerminationRequest final {
  public:
   bool active() const { return active_; }
   void Begin(void (^completion)(NSUInteger)) {
+    NSLog(@"Arc termination: begin");
     active_ = true;
     completion_ = [completion copy];
-    ScheduleCheck();
+    // Native starts preflight before returning NSTerminateLater. A posted
+    // Chromium task may be suppressed by Cocoa's nested termination loop.
+    Check();
   }
 
  private:
-  void ScheduleCheck() {
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(&TerminationRequest::Check, weak_factory_.GetWeakPtr()));
-  }
   void BeforeUnloadResult(bool allowed) {
+    NSLog(@"Arc termination: beforeunload %d", allowed);
     if (!active_ || approved_) return;
     if (allowed) {
-      ScheduleCheck();
+      Check();
       return;
     }
     GlobalBrowserCollection::GetInstance()->ForEach([](BrowserWindowInterface* browser) {
@@ -64,6 +63,7 @@ class TerminationRequest final {
         }
         return true;
       });
+      NSLog(@"Arc termination: preflight waiting=%d", waiting);
       if (waiting || !active_) return;
       approved_ = true;
       browsers->ForEach([](BrowserWindowInterface* browser) {
@@ -75,17 +75,21 @@ class TerminationRequest final {
       ProfileManager::ShutdownSessionServices();
       chrome::MarkAsCleanShutdown();
       pending_flushes_ = 1;  // Prevent an inline reply finishing during setup.
+      // Arc forces permission to terminate after ten seconds if a storage
+      // service never replies. Late replies must not invoke the block again.
+      flush_timeout_.Start(FROM_HERE, base::Seconds(10),
+          base::BindOnce(&TerminationRequest::Finish, weak_factory_.GetWeakPtr()));
       if (PrefService* local_state = g_browser_process->local_state()) {
         ++pending_flushes_;
         local_state->CommitPendingWrite(FlushCompletion());
       }
       for (Profile* profile : g_browser_process->profile_manager()->GetLoadedProfiles()) {
         ++pending_flushes_;
+        profile->GetDefaultStoragePartition()->GetCookieManagerForBrowserProcess()->FlushCookieStore(FlushCompletion());
+        ++pending_flushes_;
         profile->GetPrefs()->CommitPendingWrite(FlushCompletion());
-        profile->ForEachLoadedStoragePartition([this](content::StoragePartition* partition) {
+        profile->ForEachLoadedStoragePartition([](content::StoragePartition* partition) {
           partition->Flush();
-          ++pending_flushes_;
-          partition->GetCookieManagerForBrowserProcess()->FlushCookieStore(FlushCompletion());
         });
       }
       FlushDone();
@@ -95,7 +99,14 @@ class TerminationRequest final {
     return base::BindOnce(&TerminationRequest::FlushDone, weak_factory_.GetWeakPtr());
   }
   void FlushDone() {
+    NSLog(@"Arc termination: flush remaining=%zu", pending_flushes_);
     if (!pending_flushes_ || --pending_flushes_) return;
+    Finish();
+  }
+  void Finish() {
+    NSLog(@"Arc termination: finish");
+    pending_flushes_ = 0;
+    flush_timeout_.Stop();
     auto completion = completion_;
     completion_ = nil;
     // Keep active_ set after approval: a repeated request must neither replace
@@ -106,6 +117,7 @@ class TerminationRequest final {
   bool approved_ = false;
   size_t pending_flushes_ = 0;
   void (^completion_)(NSUInteger) = nil;
+  base::OneShotTimer flush_timeout_;
   base::WeakPtrFactory<TerminationRequest> weak_factory_{this};
 };
 const char kTerminationRequestKey = 0;

@@ -1,0 +1,40 @@
+--- a/chrome/browser/ui/browser.cc
++++ b/chrome/browser/ui/browser.cc
+@@ -618,6 +618,13 @@
+ }
+ 
+ void Browser::TabStripEmpty() {
++  // Arc owns the window lifetime; an empty hosted tab strip can receive another
++  // tab. Explicit window-close transactions still run through the normal path.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++      !UnloadController::From(this)->is_attempting_to_close_browser()) {
++    return;
++  }
++
+   // A touch tab drag session may still be delivering OS touch events to this
+   // window's native widget. Destroying it mid-gesture would strand the drag, so
+   // let TabDragController take ownership of closing this browser once the drag
+--- a/chrome/browser/ui/unload_controller.cc
++++ b/chrome/browser/ui/unload_controller.cc
+@@ -6,6 +6,7 @@
+ 
+ #include <algorithm>
+ 
++#include "base/command_line.h"
+ #include "base/functional/bind.h"
+ #include "base/location.h"
+ #include "base/task/single_thread_task_runner.h"
+@@ -628,6 +629,13 @@
+ }
+ 
+ void UnloadController::TabStripEmpty() {
++  // Closing one hosted tab does not start a window-close transaction. Keep the
++  // idle state so Arc can insert a replacement tab into the same Browser.
++  if (state_ == State::kIdle &&
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    return;
++  }
++
+   // Set state_ here, so that extensions, etc, do not attempt to add tabs to the
+   // browser before it closes.
+   if (state_ == State::kIdle) {

@@ -2,11 +2,14 @@
 #import "arc/api/arc_internal.h"
 #import <objc/runtime.h>
 #include "arc/browser/ui_hooks.h"
+#import "arc/browser/core_values.h"
 
 #include <array>
+#include <map>
 #include <optional>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/check.h"
 #include "base/memory/weak_ptr.h"
@@ -21,79 +24,49 @@
 #include "ui/gfx/image/image.h"
 #import "ui/menus/cocoa/menu_controller.h"
 
+@interface MenuControllerCocoa (ArcPrivateAction)
+- (void)itemSelected:(id)sender;
+@end
+
 @interface ArcWebContents (UIInternal)
 - (id)uiDelegate;
 @end
 
-// This class's generated shell remains its primary implementation. Only the
-// menu-owned adapter is supplied here; its initializer preserves the exact ABI.
-struct KeyboardAccelerator {
-  unsigned int key;
-  int modifiers;
-};
-@interface ArcKeyboardAccelerator : NSObject
-@end
-@interface ArcKeyboardAccelerator (HostMenuValues)
-- (instancetype)initWithAccelerator:(const KeyboardAccelerator*)accelerator;
-- (NSUInteger)key;
-- (NSUInteger)modifiers;
-@end
+namespace { char kCocoaItemWrapper; }
 
-namespace {
-char kAcceleratorKey;
-char kAcceleratorModifiers;
-char kCocoaItemWrapper;
-}
-
-@implementation ArcKeyboardAccelerator (HostMenuValues)
-- (instancetype)initWithAccelerator:(const KeyboardAccelerator*)accelerator {
-  CHECK(accelerator);
-  if ((self = [super init])) {
-    objc_setAssociatedObject(self, &kAcceleratorKey, @(accelerator->key),
-                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    objc_setAssociatedObject(self, &kAcceleratorModifiers,
-                             @((NSUInteger)(intptr_t)accelerator->modifiers),
-                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-  }
-  return self;
-}
-- (NSUInteger)key {
-  return [objc_getAssociatedObject(self, &kAcceleratorKey) unsignedIntegerValue];
-}
-- (NSUInteger)modifiers {
-  return [objc_getAssociatedObject(self, &kAcceleratorModifiers) unsignedIntegerValue];
-}
-@end
+namespace { class MenuState; }
 
 ARC_EXPORT @interface ArcMenuModel : NSObject
 - (instancetype)initWithMenuModel:(const void*)model;
 @property(nonatomic, readonly) NSArray* items;
 - (void)menuWillShow;
 - (void)menuWillClose;
-- (void)invalidateItems;
-- (void)trackWithController:(MenuControllerCocoa*)controller;
+- (void)invalidateItems __attribute__((objc_direct));
+- (std::shared_ptr<MenuState>)nativeMenuState __attribute__((objc_direct));
+- (void)trackWithController:(MenuControllerCocoa*)controller __attribute__((objc_direct));
 @end
 
 ARC_EXPORT @interface ArcMenuItemModel : NSObject
 - (instancetype)initWithMenuItemModel:(const void*)item;
 @property(nonatomic, readonly) NSInteger type;
 @property(nonatomic, readonly) NSInteger logicalType;
-@property(nonatomic, readonly) NSString* label;
+@property(nonatomic, readonly, copy) NSString* label;
 @property(nonatomic, readonly) BOOL isChecked;
 @property(nonatomic, readonly) BOOL isEnabled;
 @property(nonatomic, readonly) BOOL isVisible;
 @property(nonatomic, readonly) BOOL isAlerted;
 @property(nonatomic, readonly) BOOL isNewFeature;
-@property(nonatomic, readonly) NSString* accessibleName;
+@property(nonatomic, readonly, copy) NSString* accessibleName;
 @property(nonatomic, readonly) ArcMenuModel* submenuModel;
 @property(nonatomic, readonly) BOOL hasAccelerator;
 @property(nonatomic, readonly) ArcKeyboardAccelerator* accelerator;
 @property(nonatomic, readonly) NSImage* icon;
 - (void)activated;
 - (void)setDelegate:(id)delegate;
-- (ui::MenuModel*)liveModel;
-- (void)nativeItemChanged;
-- (void)nativeItemRemoved;
+- (ui::MenuModel*)liveModel __attribute__((objc_direct));
+- (void)nativeItemChanged __attribute__((objc_direct));
+- (void)nativeItemChangedForCommand:(int)command __attribute__((objc_direct));
+- (void)nativeItemRemoved __attribute__((objc_direct));
 @end
 
 @protocol ArcHostMenuItemDelegate <NSObject>
@@ -109,10 +82,10 @@ ARC_EXPORT @interface ArcContextMenuElementInfo : NSObject
 @property(nonatomic, readonly) NSURL* subFrameURL;
 @property(nonatomic, readonly) NSURL* linkURL;
 @property(nonatomic, readonly) NSURL* sourceAttributeURL;
-@property(nonatomic, readonly) NSString* selectionText;
-@property(nonatomic, readonly) NSString* suggestedFilename;
-@property(nonatomic, readonly) NSString* misspelledWord;
-@property(nonatomic, readonly) NSArray* dictionarySuggestions;
+@property(nonatomic, readonly, copy) NSString* selectionText;
+@property(nonatomic, readonly, copy) NSString* suggestedFilename;
+@property(nonatomic, readonly, copy) NSString* misspelledWord;
+@property(nonatomic, readonly, copy) NSArray* dictionarySuggestions;
 @property(nonatomic, readonly) NSInteger inputType;
 @property(nonatomic, readonly) NSInteger nodeType;
 @property(nonatomic, readonly) BOOL isEditable;
@@ -148,8 +121,21 @@ class MenuState : public ui::MenuModelDelegate,
   void AddItem(ArcMenuItemModel* item) { [items_ addObject:item]; }
   void SetOwner(ArcMenuModel* owner) { owner_ = owner; }
   void Track(MenuControllerCocoa* controller) { controller_ = controller; }
-  ui::MenuModel* LiveModel(size_t index) {
-    if (!valid_ || !model_) { return nullptr; }
+  void Refresh() {
+    if (valid_ || !model_) { return; }
+    identity_.clear();
+    for (size_t i = 0; i < model_->GetItemCount(); ++i) {
+      identity_.emplace_back(model_->GetCommandIdAt(i), model_->GetTypeAt(i));
+    }
+    valid_ = true;
+    if (!attached_ && !model_->menu_model_delegate()) {
+      attached_ = true;
+      model_->SetMenuModelDelegate(this);
+    }
+  }
+  uint64_t generation() const { return generation_; }
+  ui::MenuModel* LiveModel(size_t index, uint64_t generation) {
+    if (!valid_ || generation != generation_ || !model_) { return nullptr; }
     // Also protect menus whose observer slot was already in use, and models
     // that do not emit OnMenuStructureChanged after edits.
     bool unchanged = identity_.size() == model_->GetItemCount();
@@ -186,6 +172,7 @@ class MenuState : public ui::MenuModelDelegate,
   void Invalidate() {
     if (!valid_) { return; }
     valid_ = false;
+    ++generation_;
     NSArray* snapshot = items_.allObjects;
     [owner_ invalidateItems];
     [controller_ cancel];
@@ -198,11 +185,13 @@ class MenuState : public ui::MenuModelDelegate,
   MenuControllerCocoa* __weak controller_;
   bool attached_ = false;
   bool valid_ = true;
+  uint64_t generation_ = 0;
 };
 struct MenuItemData {
   std::shared_ptr<MenuState> state;
   size_t index;
   int command;
+  uint64_t generation;
 };
 }  // namespace
 
@@ -223,10 +212,12 @@ struct MenuItemData {
 }
 - (NSArray*)items {
   if (!_items) {
+    _state->Refresh();
     NSMutableArray* items = [NSMutableArray array];
     if (_model) {
       for (size_t index = 0; index < _model->GetItemCount(); ++index) {
-        MenuItemData data{_state, index, _model->GetCommandIdAt(index)};
+        MenuItemData data{_state, index, _model->GetCommandIdAt(index),
+                          _state->generation()};
         [items addObject:[[ArcMenuItemModel alloc] initWithMenuItemModel:&data]];
       }
     }
@@ -236,6 +227,7 @@ struct MenuItemData {
 }
 - (void)menuWillShow { if (_model) { _model->MenuWillShow(); } }
 - (void)menuWillClose { if (_model) { _model->MenuWillClose(); } }
+- (std::shared_ptr<MenuState>)nativeMenuState { return _state; }
 - (void)invalidateItems {
   _items = nil;
   // Re-create native observation on the next read, outside native callbacks.
@@ -249,8 +241,10 @@ struct MenuItemData {
   MenuItemData _item;
   ArcMenuModel* _submenuModel;
   __weak id _delegate;
+  BOOL _removed;
 }
 @synthesize submenuModel = _submenuModel;
+@synthesize hasAccelerator = _hasAccelerator, accelerator = _accelerator, icon = _icon;
 - (instancetype)initWithMenuItemModel:(const void*)item {
   CHECK(item);
   if ((self = [super init])) {
@@ -260,7 +254,8 @@ struct MenuItemData {
   return self;
 }
 - (ui::MenuModel*)liveModel {
-  return _item.state ? _item.state->LiveModel(_item.index) : nullptr;
+  return !_removed && _item.state
+      ? _item.state->LiveModel(_item.index, _item.generation) : nullptr;
 }
 - (NSInteger)type { auto* m = [self liveModel]; return m ? m->GetTypeAt(_item.index) : 0; }
 - (NSInteger)logicalType {
@@ -314,10 +309,12 @@ struct MenuItemData {
   return _submenuModel;
 }
 - (BOOL)hasAccelerator {
+  (void)_hasAccelerator;
   auto* m = [self liveModel]; ui::Accelerator accelerator;
   return m && m->GetAcceleratorAt(_item.index, &accelerator);
 }
 - (ArcKeyboardAccelerator*)accelerator {
+  (void)_accelerator;
   auto* model = [self liveModel];
   ui::Accelerator accelerator;
   if (!model || !model->GetAcceleratorAt(_item.index, &accelerator)) { return nil; }
@@ -326,6 +323,7 @@ struct MenuItemData {
   return [[ArcKeyboardAccelerator alloc] initWithAccelerator:&value];
 }
 - (NSImage*)icon {
+  (void)_icon;
   auto* m = [self liveModel];
   if (!m) { return nil; }
   auto image = m->GetIconAt(_item.index);
@@ -343,6 +341,8 @@ struct MenuItemData {
   }
 }
 - (void)nativeItemRemoved {
+  if (_removed) { return; }
+  _removed = YES;
   _submenuModel = nil;
   id<ArcHostMenuItemDelegate> delegate = _delegate;
   if ([delegate respondsToSelector:@selector(menuItemModelRemoved:)]) {
@@ -392,6 +392,62 @@ struct MenuItemData {
 - (BOOL)isEditable { CHECK(_info); return _info->is_editable; }
 @end
 
+// Keep native Cocoa validation separate from public Arc value getters so
+// presenting a menu does not manufacture app-to-engine boundary calls.
+@interface HostMenuItemIdentity : NSObject
+- (instancetype)initWithData:(const MenuItemData&)data;
+- (BOOL)isCurrent __attribute__((objc_direct));
+@end
+@implementation HostMenuItemIdentity {
+  MenuItemData _data;
+}
+- (instancetype)initWithData:(const MenuItemData&)data {
+  if ((self = [super init])) { _data = data; }
+  return self;
+}
+- (BOOL)isCurrent { return _data.state->LiveModel(_data.index, _data.generation) != nullptr; }
+@end
+
+@interface HostMenuController : MenuControllerCocoa
+- (void)itemSelected:(id)sender;
+@end
+@implementation HostMenuController
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  HostMenuItemIdentity* identity = objc_getAssociatedObject(item, &kCocoaItemWrapper);
+  return identity && [identity isCurrent] && [super validateUserInterfaceItem:item];
+}
+- (void)itemSelected:(id)sender {
+  HostMenuItemIdentity* identity = objc_getAssociatedObject(sender, &kCocoaItemWrapper);
+  if (identity && [identity isCurrent]) { [super itemSelected:sender]; }
+}
+@end
+
+@interface HostMenuTracking : NSObject <MenuControllerCocoaDelegate>
+- (instancetype)initWithRoot:(ArcMenuModel*)root native:(ui::MenuModel*)model;
+- (void)trackWithController:(MenuControllerCocoa*)controller;
+@end
+@implementation HostMenuTracking {
+  std::map<ui::MenuModel*, std::shared_ptr<MenuState>> _states;
+}
+- (instancetype)initWithRoot:(ArcMenuModel*)root native:(ui::MenuModel*)model {
+  if ((self = [super init])) { _states[model] = [root nativeMenuState]; }
+  return self;
+}
+- (void)controllerWillAddItem:(NSMenuItem*)item
+                    fromModel:(ui::MenuModel*)model
+                      atIndex:(size_t)index {
+  auto& state = _states[model];
+  if (!state) { state = std::make_shared<MenuState>(model); }
+  MenuItemData data{state, index, model->GetCommandIdAt(index), state->generation()};
+  objc_setAssociatedObject(item, &kCocoaItemWrapper,
+      [[HostMenuItemIdentity alloc] initWithData:data], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+- (void)controllerWillAddMenu:(NSMenu*)menu fromModel:(ui::MenuModel*)model {}
+- (void)trackWithController:(MenuControllerCocoa*)controller {
+  for (const auto& [model, state] : _states) { state->Track(controller); }
+}
+@end
+
 namespace {
 // Cocoa's menu controller holds the native model only while the menu tracks.
 // Close tracking synchronously if navigation/tab teardown destroys its owner.
@@ -424,13 +480,21 @@ bool ShowContextMenu(content::WebContents* contents, ui::MenuModel* model,
   if (!view.window) { return true; }
   // Arc owns the NSWindow rather than a Chrome Views widget. Reuse Chrome's
   // Cocoa menu model/controller directly; its lifecycle calls remain native.
-  MenuControllerCocoa* controller = [[MenuControllerCocoa alloc]
-      initWithModel:weak_model.get() isContextMenu:YES delegate:nil];
+  HostMenuTracking* __attribute__((objc_precise_lifetime)) tracking = [[HostMenuTracking alloc]
+      initWithRoot:menu native:weak_model.get()];
+  MenuControllerCocoa* controller = [[HostMenuController alloc]
+      initWithModel:weak_model.get() isContextMenu:YES delegate:tracking];
+  [tracking trackWithController:controller];
   ContextMenuLifetime lifetime(native.get(), controller);
   NSPoint point = NSMakePoint(params.x, NSHeight(view.bounds) - params.y);
   point = [view convertPoint:point toView:nil];
   NSEvent* event = ui::EventForPositioningContextMenuRelativeToWindow(point, view.window);
   ui::ShowContextMenu(controller.menu, event, view, true);
+  // MenuControllerCocoa holds a native WeakPtr, so a model replaced during
+  // tracking is no longer called when its clearing notification cancels Cocoa.
+  if (native && !weak_model && native->IsShowingContextMenu()) {
+    native->SetShowingContextMenu(false);
+  }
   return true;
 }
 }  // namespace arc

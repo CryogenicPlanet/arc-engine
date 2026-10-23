@@ -3,9 +3,13 @@
 
 #include <map>
 #include <memory>
+#include <limits>
 #include "base/containers/span.h"
 #include "base/functional/bind.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/supports_user_data.h"
 #include "net/base/auth.h"
 #include "chrome/browser/arcmod/arcmod_hooks.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
@@ -34,15 +38,28 @@
 @end
 
 using ProtocolNotification = void (^)(NSString*, NSError*);
+using SubscriptionNotification = void (^)(NSNumber*, NSString*, NSError*);
 
 @class ArcWebContentsDevTools;
 @interface NSObject (WebExtrasDevToolsInternal)
-- (id)devTools;
 - (void)didShowFrontend:(content::WebContents*)frontend docked:(BOOL)docked;
 @end
 
 namespace {
 constexpr size_t kMaximumProtocolBytes = 8 * 1024 * 1024;
+// Native subscriptions allocate IDs across all DevTools services on the UI sequence.
+constinit int g_nextSubscription = 0;
+constinit int g_nextCommand = 0;
+constinit char kDevToolsBindingKey = 0;
+class DevToolsBinding final : public base::SupportsUserData::Data {
+ public:
+  explicit DevToolsBinding(id value) : owner(value) {}
+  __weak id owner;
+};
+id ToolsForContents(content::WebContents* contents) {
+  auto* binding = contents ? static_cast<DevToolsBinding*>(contents->GetUserData(&kDevToolsBindingKey)) : nullptr;
+  return binding ? binding->owner : nil;
+}
 NSError* DevToolsError(NSInteger code, NSString* text) {
   return [NSError errorWithDomain:@"company.thebrowser.Arc" code:code
                         userInfo:@{NSLocalizedDescriptionKey:text}];
@@ -60,11 +77,21 @@ void Notify(ProtocolNotification callback, NSString* message, NSError* error) {
         callback(message, error);
       }, callback, message, error));
 }
+void NotifySubscription(SubscriptionNotification callback, NSNumber* identifier,
+                        NSString* payload, NSError* error) {
+  if (!callback) { return; }
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+      base::BindOnce([](SubscriptionNotification callback, NSNumber* identifier,
+                        NSString* payload, NSError* error) {
+        callback(identifier, payload, error);
+      }, callback, identifier, payload, error));
+}
 
 class ProtocolClient final : public content::DevToolsAgentHostClient,
                              public std::enable_shared_from_this<ProtocolClient> {
  public:
-  explicit ProtocolClient(ProtocolNotification callback) : callback_([callback copy]) {}
+  explicit ProtocolClient(ProtocolNotification callback, bool post_notifications = true)
+      : callback_([callback copy]), post_notifications_(post_notifications) {}
   ~ProtocolClient() override { Close(); }
   bool Attach(content::WebContents* contents) {
     host_ = content::DevToolsAgentHost::GetOrCreateFor(contents);
@@ -72,17 +99,15 @@ class ProtocolClient final : public content::DevToolsAgentHostClient,
     if (!attached_) { host_.reset(); }
     return attached_;
   }
+  bool is_open() const { return attached_ && !closing_; }
   bool Send(NSString* message, NSError** error) {
     if (!attached_ || closing_) { return DevToolsFail(error, 10, @"DevTools connection closed"); }
     const std::string bytes = ArcUTF8(message);
-    if (bytes.size() > kMaximumProtocolBytes) {
+    if (post_notifications_ && bytes.size() > kMaximumProtocolBytes) {
       return DevToolsFail(error, 10, @"DevTools message exceeds 8 MiB");
     }
-    NSData* data = [message dataUsingEncoding:NSUTF8StringEncoding];
-    id envelope = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
-    if (![envelope isKindOfClass:NSDictionary.class] ||
-        ![envelope[@"id"] isKindOfClass:NSNumber.class] ||
-        ![envelope[@"method"] isKindOfClass:NSString.class]) {
+    auto envelope = base::JSONReader::ReadDict(bytes, base::JSON_PARSE_RFC, 200);
+    if (!envelope || !envelope->FindInt("id") || !envelope->FindString("method")) {
       return DevToolsFail(error, 2, @"Invalid CDP command envelope");
     }
     host_->DispatchProtocolMessage(this, base::as_byte_span(bytes));
@@ -98,7 +123,7 @@ class ProtocolClient final : public content::DevToolsAgentHostClient,
   void DispatchProtocolMessage(content::DevToolsAgentHost*,
                                base::span<const uint8_t> bytes) override {
     if (closing_) { return; }
-    if (bytes.size() > kMaximumProtocolBytes) {
+    if (post_notifications_ && bytes.size() > kMaximumProtocolBytes) {
       closing_ = true;
       content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
           base::BindOnce([](std::shared_ptr<ProtocolClient> client) { client->Close(); }, shared_from_this()));
@@ -106,7 +131,12 @@ class ProtocolClient final : public content::DevToolsAgentHostClient,
     }
     NSString* message = [[NSString alloc] initWithBytes:bytes.data() length:bytes.size()
                                              encoding:NSUTF8StringEncoding];
-    Notify(callback_, message, nil);
+    if (post_notifications_) { Notify(callback_, message, nil); }
+    else if (callback_) {
+      // A synchronous command completion may release the owner/client.
+      auto keep_alive = shared_from_this();
+      callback_(message, nil);
+    }
   }
   void AgentHostClosed(content::DevToolsAgentHost*) override {
     if (!attached_) { return; }
@@ -117,6 +147,7 @@ class ProtocolClient final : public content::DevToolsAgentHostClient,
  private:
   scoped_refptr<content::DevToolsAgentHost> host_;
   ProtocolNotification callback_;
+  const bool post_notifications_;
   bool attached_ = false;
   bool closing_ = false;
 };
@@ -136,7 +167,9 @@ void QueryPanel(content::WebContents* frontend, ProtocolNotification completion)
   if (auto* bindings = DevToolsUIBindings::ForWebContents(frontend)) {
     bindings->CallClientMethod("DevToolsAPI", "currentPanel", {}, {}, {},
         base::BindOnce([](ProtocolNotification callback, base::Value result) {
-          if (callback) { callback(result.is_string() ? ArcNSString(result.GetString()) : nil, nil); }
+          if (!callback) { return; }
+          if (result.is_string()) { callback(ArcNSString(result.GetString()), nil); }
+          else { callback(nil, DevToolsError(3, @"panelName not found")); }
         }, completion));
   }
 }
@@ -150,8 +183,6 @@ ARC_EXPORT @interface ArcWebContentsDevTools : NSObject {
   NSMutableDictionary<NSNumber*, ProtocolNotification>* _pending;
   NSMutableDictionary<NSNumber*, NSDictionary*>* _subscriptions;
   int _nextConnection;
-  int _nextCommand;
-  int _nextSubscription;
   __weak ArcWebContents* _toolbox;
   base::WeakPtr<content::WebContents> _frontend;
   std::unique_ptr<FrontendObserver> _frontendObserver;
@@ -166,7 +197,7 @@ ARC_EXPORT @interface ArcWebContentsDevTools : NSObject {
 - (void)didShowFrontend:(content::WebContents*)frontend docked:(BOOL)docked;
 - (void)frontendClosed __attribute__((objc_direct));
 - (BOOL)ensureCommandClient:(NSError**)error __attribute__((objc_direct));
-- (BOOL)sendCommand:(NSString*)method params:(NSDictionary*)params
+- (BOOL)sendCommand:(NSString*)method params:(const base::DictValue&)params
         completion:(ProtocolNotification)completion error:(NSError**)error __attribute__((objc_direct));
 @end
 
@@ -181,9 +212,12 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
     _pending = [NSMutableDictionary dictionary];
     _subscriptions = [NSMutableDictionary dictionary];
     _panelQueries = [NSMutableArray array];
+    if (auto* contents = [owner webContents]) {
+      contents->SetUserData(&kDevToolsBindingKey, std::make_unique<DevToolsBinding>(self));
+    }
     arcmod::GetDevToolsShowHook() = base::BindRepeating(
         [](content::WebContents* inspected, content::WebContents* frontend, bool docked) {
-          id tools = [[ArcWebContents wrapperForWebContents:inspected] devTools];
+          id tools = ToolsForContents(inspected);
           [tools didShowFrontend:frontend docked:docked];
         });
   }
@@ -198,6 +232,7 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
   _opening = NO;
   _shown = YES;
   _frontend = frontend->GetWeakPtr();
+  frontend->SetUserData(&kDevToolsBindingKey, std::make_unique<DevToolsBinding>(self));
   _frontendObserver = std::make_unique<FrontendObserver>(frontend, self);
   if (_requestedPanel) {
     if (auto* bindings = DevToolsUIBindings::ForWebContents(frontend)) {
@@ -272,12 +307,12 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
 - (NSNumber*)openProtocolConnection:(ProtocolNotification)notification error:(NSError**)error {
   auto* contents = [_owner webContents];
   if (!contents) {
-    DevToolsFail(error, 10, @"Associated WebContents is not available.");
+    DevToolsFail(error, 10, @"Associated WebContents is not available");
     return nil;
   }
   auto client = std::make_shared<ProtocolClient>(notification);
   if (!client->Attach(contents)) {
-    DevToolsFail(error, 10, @"Failed to attach DevTools client");
+    DevToolsFail(error, 10, @"Unable to attach DevTools client");
     return nil;
   }
   int identifier = ++_nextConnection;
@@ -298,50 +333,50 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
   __weak ArcWebContentsDevTools* weakSelf = self;
   auto client = std::make_shared<ProtocolClient>(^(NSString* message, NSError* failure) {
     [weakSelf receiveMessage:message error:failure];
-  });
+  }, false);
   if (!client->Attach(contents)) { return DevToolsFail(error, 10, @"Failed to attach DevTools client"); }
   _commands = std::move(client);
   return YES;
 }
-- (BOOL)sendCommand:(NSString*)method params:(NSDictionary*)params
+- (BOOL)sendCommand:(NSString*)method params:(const base::DictValue&)params
         completion:(ProtocolNotification)completion error:(NSError**)error {
   if (![self ensureCommandClient:error]) { return NO; }
-  NSNumber* identifier = @(++_nextCommand);
-  NSData* data = [NSJSONSerialization dataWithJSONObject:@{@"id":identifier, @"method":method, @"params":params}
-                                                options:0 error:nil];
+  if (!_commands->is_open()) { return DevToolsFail(error, 10, @"DevTools agent host closed"); }
+  NSNumber* identifier = @(++g_nextCommand);
+  base::DictValue envelope;
+  envelope.Set("id", identifier.intValue);
+  envelope.Set("method", ArcUTF8(method));
+  envelope.Set("params", params.Clone());
+  auto data = base::WriteJson(envelope);
   if (completion) { _pending[identifier] = [completion copy]; }
   auto client = _commands;
-  if (!client->Send([[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding], error)) {
+  if (!client->Send(data ? ArcNSString(*data) : nil, error)) {
     [_pending removeObjectForKey:identifier];
     return NO;
   }
   return YES;
 }
 - (BOOL)execute:(id<ArcDevToolsProtocolCommand>)command completion:(ProtocolNotification)completion error:(NSError**)error {
-  NSString* text = command.params;
-  NSData* data = [text dataUsingEncoding:NSUTF8StringEncoding];
-  id params = data ? [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil] : nil;
-  if (![params isKindOfClass:NSDictionary.class]) { return DevToolsFail(error, 2, @"Malformed params."); }
-  return [self sendCommand:[NSString stringWithFormat:@"%@.%@",command.domain ?: @"",command.name ?: @""]
-                   params:params completion:completion error:error];
+  NSString* domain = [command.domain copy];
+  NSString* name = [command.name copy];
+  NSString* text = [command.params copy];
+  if (![_owner webContents]) { return DevToolsFail(error, 10, @"Associated WebContents is not available."); }
+  auto params = base::JSONReader::ReadDict(ArcUTF8(text), base::JSON_PARSE_CHROMIUM_EXTENSIONS, 200);
+  if (!params) { return DevToolsFail(error, 2, @"Malformed params."); }
+  return [self sendCommand:[NSString stringWithFormat:@"%@.%@",domain ?: @"",name ?: @""]
+                   params:*params completion:completion error:error];
 }
-- (NSNumber*)subscribe:(id<ArcDevToolsProtocolEvent>)event autoEnable:(BOOL)enable notification:(ProtocolNotification)notification {
+- (NSNumber*)subscribe:(id<ArcDevToolsProtocolEvent>)event autoEnable:(BOOL)enable notification:(SubscriptionNotification)notification {
+  NSString* domain = [event.domain copy] ?: @"";
+  NSString* name = [event.name copy] ?: @"";
   if (![self ensureCommandClient:nil]) { return nil; }
-  NSString* domain = event.domain ?: @"";
-  NSNumber* identifier = @(++_nextSubscription);
-  NSMutableDictionary* subscription = [@{@"method":[NSString stringWithFormat:@"%@.%@",domain,event.name ?: @""],
-                                         @"domain":domain, @"enable":@(enable)} mutableCopy];
+  NSNumber* identifier = @(++g_nextSubscription);
+  NSMutableDictionary* subscription = [@{@"method":[NSString stringWithFormat:@"%@.%@",domain,name],
+                                         @"domain":domain, @"identifier":identifier} mutableCopy];
   if (notification) { subscription[@"callback"] = [notification copy]; }
   _subscriptions[identifier] = subscription;
   if (enable) {
-    BOOL alreadyEnabled = NO;
-    for (NSNumber* key in _subscriptions) {
-      NSDictionary* other = _subscriptions[key];
-      if (![key isEqual:identifier] && [other[@"domain"] isEqual:domain] && [other[@"enable"] boolValue]) {
-        alreadyEnabled = YES;
-      }
-    }
-    if (!alreadyEnabled) { [self sendCommand:[domain stringByAppendingString:@".enable"] params:@{} completion:nil error:nil]; }
+    [self sendCommand:[domain stringByAppendingString:@".enable"] params:base::DictValue() completion:nil error:nil];
   }
   return identifier;
 }
@@ -349,47 +384,50 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
   NSDictionary* removed = _subscriptions[identifier];
   if (!removed) { return NO; }
   [_subscriptions removeObjectForKey:identifier];
-  if ([removed[@"enable"] boolValue]) {
-    BOOL stillEnabled = NO;
-    for (NSDictionary* other in _subscriptions.allValues) {
-      if ([other[@"domain"] isEqual:removed[@"domain"]] && [other[@"enable"] boolValue]) { stillEnabled = YES; }
-    }
-    if (!stillEnabled) {
-      [self sendCommand:[removed[@"domain"] stringByAppendingString:@".disable"] params:@{} completion:nil error:nil];
-    }
+  BOOL stillSubscribed = NO;
+  for (NSDictionary* other in _subscriptions.allValues) {
+    if ([other[@"method"] isEqual:removed[@"method"]]) { stillSubscribed = YES; }
+  }
+  if (!stillSubscribed) {
+    [self sendCommand:[removed[@"domain"] stringByAppendingString:@".disable"] params:base::DictValue() completion:nil error:nil];
   }
   return YES;
 }
 - (void)receiveMessage:(NSString*)message error:(NSError*)error {
-  if (error) {
-    NSArray* callbacks = _pending.allValues;
-    [_pending removeAllObjects];
-    _commands.reset();
-    for (ProtocolNotification callback in callbacks) { callback(nil, error); }
-    return;
-  }
-  NSData* data = [message dataUsingEncoding:NSUTF8StringEncoding];
-  id envelope = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
-  if (![envelope isKindOfClass:NSDictionary.class]) { return; }
-  NSNumber* identifier = envelope[@"id"];
-  if (identifier) {
+  // The native command router ignores the empty envelope delivered when its
+  // transport closes. It keeps pending completions and never reconnects here.
+  if (error) { return; }
+  auto envelope = base::JSONReader::ReadDict(ArcUTF8(message), base::JSON_PARSE_CHROMIUM_EXTENSIONS, 200);
+  if (!envelope) { return; }
+  auto commandID = envelope->FindInt("id");
+  if (commandID) {
+    NSNumber* identifier = @(*commandID);
     ProtocolNotification callback = _pending[identifier];
     [_pending removeObjectForKey:identifier];
     if (!callback) { return; }
-    if (envelope[@"error"]) {
-      id failure = envelope[@"error"];
-      callback(nil, DevToolsError(10, [failure isKindOfClass:NSDictionary.class] ? failure[@"message"] ?: @"DevTools command failed" : @"DevTools command failed"));
-    } else {
-      id result = envelope[@"result"] ?: @{};
-      NSData* bytes = [NSJSONSerialization dataWithJSONObject:result options:NSJSONWritingFragmentsAllowed error:nil];
-      callback([[NSString alloc] initWithData:bytes encoding:NSUTF8StringEncoding], nil);
-    }
+    if (auto* result = envelope->FindDict("result")) {
+      auto bytes = base::WriteJson(*result);
+      callback(bytes ? ArcNSString(*bytes) : nil, nil);
+    } else if (auto* failure = envelope->FindDict("error")) {
+      auto bytes = base::WriteJson(*failure);
+      callback(nil, DevToolsError(7, bytes ? ArcNSString(*bytes) : @""));
+    } else { callback(nil, DevToolsError(1, @"Missing the `result` or `error` field")); }
   } else {
-    NSArray* subscriptions = _subscriptions.allValues;
-    for (NSDictionary* subscription in subscriptions) {
-      if ([subscription[@"method"] isEqual:envelope[@"method"]]) {
-        ProtocolNotification callback = subscription[@"callback"];
-        if (callback) { callback(message, nil); }
+    NSString* payload = nil;
+    NSError* failure = nil;
+    if (auto* params = envelope->FindDict("params")) {
+      auto bytes = base::WriteJson(*params);
+      payload = bytes ? ArcNSString(*bytes) : nil;
+    } else {
+      failure = DevToolsError(3, @"Missing the `params`");
+    }
+    NSArray<NSNumber*>* identifiers = [_subscriptions.allKeys sortedArrayUsingSelector:@selector(compare:)];
+    for (NSNumber* identifier in identifiers) {
+      NSDictionary* subscription = _subscriptions[identifier];
+      auto* method = envelope->FindString("method");
+      if (method && [subscription[@"method"] isEqual:ArcNSString(*method)]) {
+        SubscriptionNotification callback = subscription[@"callback"];
+        NotifySubscription(callback, subscription[@"identifier"], payload, failure);
       }
     }
   }
@@ -398,7 +436,7 @@ void FrontendClosed(ArcWebContentsDevTools* owner) { [owner frontendClosed]; }
 
 ARC_EXPORT @interface ArcBrowserContextDevTools : NSObject {
   __weak ArcBrowserContext* _context;
-  __weak ArcWebContents* _contents;
+  base::WeakPtr<content::WebContents> _nativeContents;
 }
 - (instancetype)initWithArcBrowserContext:(ArcBrowserContext*)context;
 - (instancetype)initWithBrowserContextDevTools:(const void*)native;
@@ -409,8 +447,13 @@ ARC_EXPORT @interface ArcBrowserContextDevTools : NSObject {
   return self;
 }
 - (instancetype)initWithBrowserContextDevTools:(const void*)native {
-  return [self initWithArcBrowserContext:nil];
+  if ((self = [super init]) && native) {
+    _nativeContents = *static_cast<const base::WeakPtr<content::WebContents>*>(native);
+  }
+  return self;
 }
-- (ArcWebContents*)webContents { return _contents; }
-- (void)close { if (auto* contents = [_contents webContents]) { contents->ClosePage(); } }
+- (ArcWebContents*)webContents {
+  return _nativeContents ? [ArcWebContents wrapperForWebContents:_nativeContents.get()] : nil;
+}
+- (void)close { if (_nativeContents) { _nativeContents->ClosePage(); } }
 @end

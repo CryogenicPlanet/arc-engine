@@ -1,0 +1,51 @@
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -2181,6 +2181,16 @@
+ 
+ void WebContentsImpl::ClosePage() {
+   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::ClosePage");
++  // Arc can close a tab from its synchronous KVO/delegate callbacks. Preserve
++  // normal synchronous close, but never destroy this contents while notifying
++  // WebContentsObservers (the destructor checks that invariant).
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++      observers_.is_notifying_observers()) {
++    GetUIThreadTaskRunner({})->PostNonNestableTask(
++        FROM_HERE, base::BindOnce(&WebContentsImpl::ClosePage,
++                                 weak_factory_.GetWeakPtr()));
++    return;
++  }
+   GetPrimaryMainFrame()->ClosePage(
+       RenderFrameHostImpl::ClosePageSource::kBrowser);
+ }
+--- a/chrome/browser/ui/tabs/tab_strip_model.cc
++++ b/chrome/browser/ui/tabs/tab_strip_model.cc
+@@ -19,6 +19,7 @@
+ 
+ #include "base/check.h"
+ #include "base/check_op.h"
++#include "base/command_line.h"
+ #include "base/containers/flat_map.h"
+ #include "base/containers/span.h"
+ #include "base/dcheck_is_on.h"
+@@ -1327,6 +1328,21 @@
+ 
+ void TabStripModel::CloseWebContents(content::WebContents* contents,
+                                      uint32_t close_types) {
++  // Arc's synchronous tab callbacks can request another close while a tab-strip
++  // mutation is active. Preserve the transaction and retry the exact live tab.
++  if (reentrancy_guard_ &&
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    content::GetUIThreadTaskRunner({})->PostNonNestableTask(
++        FROM_HERE, base::BindOnce(
++            [](base::WeakPtr<TabStripModel> model,
++               base::WeakPtr<content::WebContents> tab, uint32_t flags) {
++              if (model && tab &&
++                  model->GetIndexOfWebContents(tab.get()) != kNoTab) {
++                model->CloseWebContents(tab.get(), flags);
++              }
++            }, weak_factory_.GetWeakPtr(), contents->GetWeakPtr(), close_types));
++    return;
++  }
+   ReentrancyCheck::ValidateNotReentrant(&reentrancy_guard_);
+ 
+   CHECK(contents);

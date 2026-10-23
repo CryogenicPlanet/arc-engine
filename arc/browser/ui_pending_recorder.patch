@@ -1,0 +1,19 @@
+--- a/tests/recorder/diff.py
++++ b/tests/recorder/diff.py
+@@ -16,6 +16,7 @@
+ import sys
+ 
+ OBJ = re.compile(r"<([A-Za-z_][A-Za-z0-9_]*)#(\d+)>")
++LOCALHOST_PORT = re.compile(r"(?<![A-Za-z0-9_.-])localhost:\d+")
+ 
+ 
+ def load(path):
+@@ -35,7 +36,7 @@
+                 per_class[m.group(1)] += 1
+                 ids[key] = per_class[m.group(1)]
+             return "<%s#%d>" % (m.group(1), ids[key])
+-        return OBJ.sub(sub, json.dumps(s, sort_keys=True))
++        return LOCALHOST_PORT.sub("localhost:*", OBJ.sub(sub, json.dumps(s, sort_keys=True)))
+ 
+     # Port numbers and temp paths differ run to run.
+     volatile = re.compile(r"127\.0\.0\.1:\d+|/var/folders/[^\"]*|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")

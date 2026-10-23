@@ -88,8 +88,10 @@ inline Profile* ArcProfileFrom(id context) {
 // ---- core (arc_browser.mm) -----------------------------------------------------------------------
 
 class BrowserWindowInterface;
+class SessionID;
 ARC_EXPORT @interface ArcSessionID : NSObject
 - (instancetype)initWithID:(NSInteger)identifier;
+- (instancetype)initWithSessionId:(const SessionID*)identifier;
 @property(nonatomic, readonly) NSInteger identifier;
 @end
 

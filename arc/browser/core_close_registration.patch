@@ -1,0 +1,15 @@
+--- a/arc/api/arc_web_contents.mm
++++ b/arc/api/arc_web_contents.mm
+@@ -862,10 +862,8 @@
+     // Chromium has finished notifying every observer.
+     content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, std::move(_ownedContents));
+   } else if (_contents) {
+-    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(
+-        [](base::WeakPtr<content::WebContents> contents) {
+-          if (contents) { contents->ClosePage(); }
+-        }, _contents));
++    // The host ClosePage path defers only while native observers are active.
++    _contents->ClosePage();
+   }
+ }
+ - (void)closeWithForegroundCommitTiming:(NSInteger)timing { [self close]; }

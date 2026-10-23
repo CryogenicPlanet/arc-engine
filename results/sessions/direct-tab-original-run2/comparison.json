@@ -1,0 +1,39 @@
+{
+  "match": false,
+  "runs": [
+    {
+      "pass": false,
+      "error": "Error: restore callback contract failed",
+      "before": {
+        "index": 1,
+        "pages": [
+          "FIXTURE/A",
+          "FIXTURE/B",
+          "FIXTURE/C"
+        ],
+        "titles": [
+          "Sessions A",
+          "Sessions B",
+          "Sessions C"
+        ]
+      },
+      "contract": {
+        "restores": 1,
+        "callbackUsesSourceID": false,
+        "oldInitialized": false,
+        "restoredInitialized": true,
+        "canRestoreNow": false,
+        "events": [
+          {
+            "type": "closed",
+            "main": true
+          },
+          {
+            "type": "restored",
+            "main": true
+          }
+        ]
+      }
+    }
+  ]
+}

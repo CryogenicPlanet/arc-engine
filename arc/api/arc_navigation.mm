@@ -12,15 +12,65 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 
+namespace {
+struct NavigationActionSnapshot {
+  GURL url;
+  GURL referrer;
+  NSUInteger navigation_type = 0;
+  NSInteger navigation_disposition = 1;
+};
+}  // namespace
+
+@implementation ArcNavigationAction {
+  NSURL* _url;
+  NSURL* _referrer;
+  NSUInteger _navigationType;
+  NSInteger _navigationDisposition;
+}
+- (instancetype)initWithNavigationAction:(const void*)data {
+  if ((self = [super init])) {
+    const auto& snapshot = *static_cast<const NavigationActionSnapshot*>(data);
+    _url = ArcNSURL(snapshot.url);
+    _referrer = ArcNSURL(snapshot.referrer);
+    _navigationType = snapshot.navigation_type;
+    _navigationDisposition = snapshot.navigation_disposition;
+  }
+  return self;
+}
+- (NSURL*)url { return _url; }
+- (NSURL*)referrer { return _referrer; }
+- (NSUInteger)navigationType { return _navigationType; }
+- (NSInteger)navigationDisposition { return _navigationDisposition; }
+@end
+
+namespace arc {
+ArcNavigationAction* CreateNavigationAction(content::NavigationHandle* handle,
+                                          NSInteger navigation_disposition,
+                                          NSUInteger navigation_type) {
+  if (!handle) {
+    return nil;
+  }
+  NavigationActionSnapshot snapshot;
+  snapshot.url = handle->GetURL();
+  snapshot.referrer = handle->GetReferrer().url.GetAsReferrer();
+  // Arc's five-valued navigation type is distinct from PageTransition. The
+  // renderer location assignments exercised by the goldens use ordinal zero.
+  snapshot.navigation_type = navigation_type;
+  snapshot.navigation_disposition = navigation_disposition;
+  return [[ArcNavigationAction alloc] initWithNavigationAction:&snapshot];
+}
+}  // namespace arc
+
 @interface ArcNavigation ()
-- (instancetype)initWithNavigationHandle:(content::NavigationHandle*)handle;
-- (ArcNavigation*)eventSnapshot;
+- (instancetype)initWithNavigationHandle:(content::NavigationHandle*)handle __attribute__((objc_direct));
 @end
 
 @implementation ArcNavigation {
+ @public
   NSString* _url;
   NSDictionary* _responseHeaders;
   NSInteger _responseStatusCode;
@@ -50,14 +100,6 @@
   }
   return self;
 }
-- (ArcNavigation*)eventSnapshot {
-  ArcNavigation* snapshot = [[ArcNavigation alloc] init];
-  snapshot->_url = _url;
-  snapshot->_responseHeaders = _responseHeaders;
-  snapshot->_responseStatusCode = _responseStatusCode;
-  snapshot->_navigationIdentifier = _navigationIdentifier;
-  return snapshot;
-}
 - (NSString*)url { return _url; }
 - (BOOL)didRedirectToOtherTab { return NO; }
 - (NSInteger)responseStatusCode { return _responseStatusCode; }
@@ -71,6 +113,18 @@
 @end
 
 namespace {
+ArcNavigation* CopyNavigationSnapshot(ArcNavigation* navigation) {
+  if (!navigation) {
+    return nil;
+  }
+  ArcNavigation* snapshot = [[ArcNavigation alloc] init];
+  snapshot->_url = navigation->_url;
+  snapshot->_responseHeaders = navigation->_responseHeaders;
+  snapshot->_responseStatusCode = navigation->_responseStatusCode;
+  snapshot->_navigationIdentifier = navigation->_navigationIdentifier;
+  return snapshot;
+}
+
 struct HistoryEntrySnapshot {
   base::WeakPtr<content::WebContents> contents;
   int entry_id = 0;
@@ -81,7 +135,7 @@ struct HistoryEntrySnapshot {
 }  // namespace
 
 @interface ArcBackForwardListItem ()
-- (int)indexInWebContents:(content::WebContents*)contents;
+- (int)indexInWebContents:(content::WebContents*)contents __attribute__((objc_direct));
 @end
 
 @implementation ArcBackForwardListItem {
@@ -144,6 +198,8 @@ ArcBackForwardListItem* SnapshotHistoryItem(content::WebContents* contents, int 
   NSArray<ArcBackForwardListItem*>* _backList;
   NSArray<ArcBackForwardListItem*>* _forwardList;
 }
+@synthesize backItem = _backItem, currentItem = _currentItem, forwardItem = _forwardItem;
+@synthesize backList = _backList, forwardList = _forwardList;
 + (instancetype)snapshotForWebContents:(content::WebContents*)contents {
   return [[self alloc] initWithBackForwardList:contents];
 }
@@ -224,19 +280,23 @@ class ReloadNavigationCapture : public content::WebContentsObserver {
 }  // namespace
 
 @interface ArcWebContentsNavigationController ()
-- (void)deliverSelector:(SEL)selector navigation:(ArcNavigation*)navigation error:(NSError*)error;
-- (ArcNavigation*)reloadWithType:(content::ReloadType)type;
+- (void)deliverSelector:(SEL)selector navigation:(ArcNavigation*)navigation error:(NSError*)error __attribute__((objc_direct));
+- (ArcNavigation*)reloadWithType:(content::ReloadType)type __attribute__((objc_direct));
 @end
 
 @implementation ArcWebContentsNavigationController {
   NSHashTable<id>* _observers;
   NSPointerArray* _observerOrder;
   ArcNavigation* _documentNavigation;
+  BOOL _didStartDocumentNavigation;
+  uint64_t _navigationGeneration;
 }
 @synthesize owner = _owner;
 - (void)setOwner:(ArcWebContents*)owner {
   if (_owner != owner) {
     _documentNavigation = nil;
+    _didStartDocumentNavigation = NO;
+    ++_navigationGeneration;
     _owner = owner;
   }
 }
@@ -308,8 +368,10 @@ class ReloadNavigationCapture : public content::WebContentsObserver {
                            inPage:handle->IsSameDocument()];
 }
 - (void)didStartNavigationSnapshot:(ArcNavigation*)navigation inPage:(BOOL)inPage {
+  ++_navigationGeneration;
   if (!inPage) {
     _documentNavigation = nil;
+    _didStartDocumentNavigation = YES;
   }
   SEL selector = inPage ? @selector(webContents:didStartInPageNavigation:)
                         : @selector(webContents:didStartProvisionalNavigation:);
@@ -317,7 +379,10 @@ class ReloadNavigationCapture : public content::WebContentsObserver {
 }
 - (void)didRedirectNavigation:(content::NavigationHandle*)handle {
   if (handle && handle->IsInPrimaryMainFrame() && handle->GetWebContents() == [_owner webContents]) {
-    [self deliverSelector:@selector(webContents:didReceiveServerRedirectForProvisionalNavigation:)
+    // Arc reports an intermediate commit for a server redirect. In the
+    // tabs-navigation golden this appears between provisional start and the
+    // final response's commit; it does not send the redirect observer method.
+    [self deliverSelector:@selector(webContents:didCommitNavigation:)
               navigation:[ArcNavigation snapshotForNavigationHandle:handle] error:nil];
   }
 }
@@ -333,6 +398,7 @@ class ReloadNavigationCapture : public content::WebContentsObserver {
                         committed:(BOOL)committed error:(NSInteger)error restored:(BOOL)restored {
   if (error != net::OK) {
     _documentNavigation = nil;
+    _didStartDocumentNavigation = NO;
     if (committed) {
       [self deliverSelector:@selector(webContents:didFailNavigation:) navigation:navigation error:nil];
     } else {
@@ -349,6 +415,20 @@ class ReloadNavigationCapture : public content::WebContentsObserver {
   if (inPage) {
     [self deliverSelector:@selector(webContents:didFinishInPageNavigation:) navigation:navigation error:nil];
   } else {
+    if (!_didStartDocumentNavigation) {
+      // Chrome can start a new tab's navigation before inserting it in the tab
+      // strip, where Arc's app installs its observer. Arc still reports that
+      // initial provisional start immediately before the first commit.
+      ArcWebContents* owner = _owner;
+      const uint64_t generation = _navigationGeneration;
+      [self deliverSelector:@selector(webContents:didStartProvisionalNavigation:)
+                navigation:navigation error:nil];
+      if (_owner != owner || ![owner webContents] || generation != _navigationGeneration) {
+        return;
+      }
+      navigation = CopyNavigationSnapshot(navigation);
+    }
+    _didStartDocumentNavigation = NO;
     _documentNavigation = navigation;
     [self deliverSelector:@selector(webContents:didCommitNavigation:) navigation:navigation error:nil];
     if (restored && _documentNavigation == navigation) {
@@ -357,7 +437,7 @@ class ReloadNavigationCapture : public content::WebContentsObserver {
   }
 }
 - (void)didFinishDocumentLoad {
-  ArcNavigation* navigation = [_documentNavigation eventSnapshot];
+  ArcNavigation* navigation = CopyNavigationSnapshot(_documentNavigation);
   _documentNavigation = nil;
   [self deliverSelector:@selector(webContents:didFinishNavigation:) navigation:navigation error:nil];
 }

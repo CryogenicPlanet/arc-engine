@@ -8,12 +8,18 @@
 
 namespace content {
 class JavaScriptDialogManager;
+class RenderWidgetHost;
 class WebContents;
 struct ContextMenuParams;
 }
 namespace ui { class MenuModel; }
 
+void ArcUIWebContentsCreated(content::WebContents* contents);
+
 namespace arc {
+bool ShowHungRendererDialog(content::WebContents* contents, content::RenderWidgetHost* widget,
+                            base::RepeatingClosure restarter);
+bool HideHungRendererDialog(content::WebContents* contents, content::RenderWidgetHost* widget);
 content::JavaScriptDialogManager* GetJavaScriptDialogManager(content::WebContents* contents);
 bool ShowContextMenu(content::WebContents* contents, ui::MenuModel* model,
                      const content::ContextMenuParams& params);

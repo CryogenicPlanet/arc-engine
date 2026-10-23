@@ -113,7 +113,7 @@ class HostedGroupsFunction : public ExtensionFunction {
   }
 
   bool Allowed(BrowserWindowInterface* browser) const {
-    if (!profile_ || !browser ||
+    if (!profile_ || !browser || !BrowserForHostedExtensions(browser) ||
         !profile_->IsSameOrParent(browser->GetProfile()) ||
         (!include_incognito_information() &&
          profile_.get() != browser->GetProfile())) {
@@ -140,7 +140,7 @@ class HostedGroupsFunction : public ExtensionFunction {
         *error = kUnavailable;
       return nil;
     }
-    return [ArcBrowser wrapperForBrowser:browser];
+    return BrowserForHostedExtensions(browser);
   }
 
   void Fail(NSString* error) {
@@ -195,7 +195,7 @@ class HostedGroupsFunction : public ExtensionFunction {
          ++browser_index) {
       const auto& weak = browsers[browser_index];
       ArcBrowser* wrapper =
-          weak ? [ArcBrowser wrapperForBrowser:weak.get()] : nil;
+          weak ? BrowserForHostedExtensions(weak.get()) : nil;
       id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(wrapper);
       if (!wrapper ||
           ![delegate
@@ -382,7 +382,7 @@ class HostedGroupsFunction : public ExtensionFunction {
         *error = extensions::tabs_constants::kNotAllowedForDevToolsError;
         return false;
       }
-      ArcBrowser* wrapper = [ArcBrowser wrapperForBrowser:browser];
+      ArcBrowser* wrapper = BrowserForHostedExtensions(browser);
       NSNumber* session_id =
           @(sessions::SessionTabHelper::IdForTab(contents).id());
       if (ordered && ![ordered containsObject:session_id])
@@ -575,6 +575,7 @@ class HostedTabGroupsMoveFunction : public HostedGroupsFunction {
         self->FailString(ExtensionTabUtil::kTabStripNotEditableError);
         return;
       }
+      ArcBrowser* destination = browser;
       if (window_id) {
         std::string window_error;
         ArcBrowser* target = self->Window(*window_id, &window_error);
@@ -582,22 +583,30 @@ class HostedTabGroupsMoveFunction : public HostedGroupsFunction {
           self->FailString(window_error);
           return;
         }
-        if (target != browser) {
-          self->Fail(@"Moving tab groups between windows is not supported by "
-                     @"this browser.");
+        auto* target_native = self->Live(target);
+        if (!target_native || target_native->GetProfile() != native->GetProfile()) {
+          self->Fail(@"Tab groups cannot be moved between different profiles.");
           return;
         }
+        if (!ExtensionTabUtil::IsTabStripEditable(*target_native->GetProfile())) {
+          self->FailString(ExtensionTabUtil::kTabStripNotEditableError);
+          return;
+        }
+        destination = target;
       }
-      id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(browser);
+      // The app receiver owns the destination window. Its native implementation
+      // ignores the ArcBrowser argument, so select the destination's delegate
+      // as well as passing that browser and the source group's global UUID.
+      id<ArcHostedGroupDelegate> delegate = BrowserExtensionDelegate(destination);
       if (![delegate respondsToSelector:@selector(browser:moveTabGroupWithId:
                                                   toNewIndex:completion:)]) {
         self->FailString(kUnavailable);
         return;
       }
-      [delegate browser:browser
+      [delegate browser:destination
           moveTabGroupWithId:info.groupId
                   toNewIndex:index
-                  completion:self->MutationCompletion(browser, false)];
+                  completion:self->MutationCompletion(destination, false)];
     });
     return RespondLater();
   }

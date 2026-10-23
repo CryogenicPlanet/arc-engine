@@ -1,0 +1,76 @@
+--- /dev/null
++++ b/content/public/browser/host_app_hooks.h
+@@ -0,0 +1,20 @@
++// Copyright 2026 ArcMod. Narrow callbacks for an externally hosted app.
++#ifndef CONTENT_PUBLIC_BROWSER_HOST_APP_HOOKS_H_
++#define CONTENT_PUBLIC_BROWSER_HOST_APP_HOOKS_H_
++
++#include "base/functional/callback.h"
++#include "content/common/content_export.h"
++
++namespace content {
++class NavigationHandle;
++class WebContents;
++
++// Synchronous UI-thread callback. Both arguments are borrowed for this call.
++// Called only for primary different-document commits in --arcmod-host-app mode.
++using HostWillCommitNavigationCallback =
++    base::RepeatingCallback<void(WebContents*, NavigationHandle*)>;
++CONTENT_EXPORT HostWillCommitNavigationCallback&
++GetHostWillCommitNavigationCallback();
++}  // namespace content
++
++#endif  // CONTENT_PUBLIC_BROWSER_HOST_APP_HOOKS_H_
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -3,6 +3,8 @@
+ // found in the LICENSE file.
+ 
+ #include "content/browser/web_contents/web_contents_impl.h"
++
++#include "content/public/browser/host_app_hooks.h"
+ 
+ #include <stddef.h>
+ 
+@@ -289,6 +291,11 @@
+ 
+ namespace content {
+ 
++HostWillCommitNavigationCallback& GetHostWillCommitNavigationCallback() {
++  static base::NoDestructor<HostWillCommitNavigationCallback> callback;
++  return *callback;
++}
++
+ namespace {
+ 
+ // These values are persisted to logs. Entries should not be renumbered and
+@@ -8569,6 +8576,20 @@
+ void WebContentsImpl::DidNavigateAnyFramePreCommit(
+     NavigationHandle* navigation_handle,
+     bool navigation_is_within_page) {
++  const bool is_primary_main_frame = navigation_handle->IsInPrimaryMainFrame();
++  if (!navigation_is_within_page && is_primary_main_frame &&
++      base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    // Copy before invoking: the host may replace or clear its registration.
++    auto callback = GetHostWillCommitNavigationCallback();
++    if (callback) {
++      base::WeakPtr<WebContentsImpl> weak_this = weak_factory_.GetWeakPtr();
++      callback.Run(this, navigation_handle);
++      if (!weak_this) {
++        return;
++      }
++    }
++  }
++
+   // Ensure fullscreen mode is exited before committing the navigation to a
+   // different page.  The next page will not start out assuming it is in
+   // fullscreen mode.
+@@ -8577,7 +8598,7 @@
+   }
+ 
+   bool should_exit_fullscreen = false;
+-  if (navigation_handle->IsInPrimaryMainFrame()) {
++  if (is_primary_main_frame) {
+     should_exit_fullscreen = true;
+   } else {
+     // For iframe navigation, exit if the fullscreen was requested by the

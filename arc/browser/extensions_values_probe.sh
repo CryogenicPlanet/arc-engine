@@ -28,7 +28,7 @@ while i<len(command):
  args.append(value.replace('../../arc/api/arc_browser.mm','../../arc/browser/extensions_values_probe.mm'));i+=1
 args+=['-o',str(tmp/'probe.o')]
 subprocess.run(args,cwd=cwd,check=True)
-subprocess.run([command[0],'-isysroot','sdk/xcode_links/MacOSX26.0.sdk','-nostdlib++',str(tmp/'probe.o'),str(cwd/'obj/buildtools/third_party/libc++/libc++.a'),str(cwd/'obj/buildtools/third_party/libc++abi/libc++abi.a'),'-framework','AppKit','-framework','Foundation','-o',str(tmp/'probe')],cwd=cwd,check=True)
+subprocess.run([command[0],'-fuse-ld=lld','-isysroot','sdk/xcode_links/MacOSX26.0.sdk','-nostdlib++',str(tmp/'probe.o'),str(cwd/'obj/buildtools/third_party/libc++/libc++.a'),str(cwd/'obj/buildtools/third_party/libc++abi/libc++abi.a'),'-framework','AppKit','-framework','Foundation','-o',str(tmp/'probe')],cwd=cwd,check=True)
 BUILD
 original="$E/../arc/build/ArcModAgent-trace156.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
 ours="$E/chromium/src/out/Base/Chromium.app/Contents/Frameworks/ArcCore.framework/Versions/A/ArcCore"
@@ -42,6 +42,19 @@ python3 - <<'PY'
 import json,subprocess
 from pathlib import Path
 root=Path('results/extensions-values')
+value_classes={'ArcExtensionInfo','ArcExtensionCommand','ArcExtensionRuntimeErrorStackFrame','ArcExtensionRuntimeError','ArcExtensionToolbarAction'}
+for engine in ('original','ours'):
+ raw=json.loads((root/engine/'values.json').read_text())
+ recorded=json.loads((root/engine/'recorded-values.json').read_text())
+ if raw!=recorded:raise SystemExit(engine+': recorder changed values or metadata')
+ calls=[json.loads(line) for line in (root/engine/'record.jsonl').read_text().splitlines() if line]
+ observed={(r['cls'],r['sel']) for r in calls if r.get('ev')=='call'}
+ # These NSObject selectors are deliberately excluded by ArcEngineRecorder;
+ # the raw/recorded snapshots still compare their results and type encodings.
+ recorder_skips={'init','description'}
+ expected={(name,selector) for name,methods in raw['metadata'].items() if name in value_classes for selector in methods if selector not in recorder_skips}
+ if expected-observed:raise SystemExit(engine+': missing recorder coverage '+repr(sorted(expected-observed)))
+ print(engine+': all '+str(len(expected))+' value methods recorded without changing observations')
 for name in ('values.json','recorded-values.json'):
  a=json.loads((root/'original'/name).read_text());b=json.loads((root/'ours'/name).read_text())
  if a!=b:

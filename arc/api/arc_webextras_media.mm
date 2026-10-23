@@ -13,10 +13,12 @@
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/compositor/layer_surface.h"
 #include "ui/gfx/display_color_spaces.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "base/memory/weak_ptr.h"
 #include "base/functional/bind.h"
 #include "net/base/auth.h"
 #include "chrome/browser/arcmod/arcmod_hooks.h"
+#include "chrome/browser/picture_in_picture/auto_picture_in_picture_tab_helper.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -25,6 +27,11 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/cpp/media_position.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+
+// ArcMediaImage is implemented by the app package; this initializer copies a Chromium value.
+@interface ArcMediaImage : NSObject
+- (instancetype)initWithChromiumMediaImage:(const media_session::MediaImage&)image;
+@end
 
 @protocol ArcMediaDelegate <NSObject>
 - (void)webContents:(id)owner pipControllerCreated:(id)controller;
@@ -142,6 +149,7 @@ ARC_EXPORT @interface ArcWebContentsMediaSession : NSObject
   if ((self = [super init])) {
     _owner = owner;
     _sessionState = 3;
+    objc_setAssociatedObject(owner, @selector(nativeMediaSession), self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     arcmod::GetVideoOverlayWindowHook() = base::BindRepeating(&arc::CreateVideoOverlayWindow);
   }
   return self;
@@ -186,7 +194,9 @@ ARC_EXPORT @interface ArcWebContentsMediaSession : NSObject
 - (ArcWebContentsMediaSessionPiPController*)pipController {
   auto* contents = [_owner webContents];
   if (!contents || !objc_getAssociatedObject(_owner, @selector(videoView))) { return nil; }
-  _pipController = [[ArcWebContentsMediaSessionPiPController alloc] initWithPiPController:(__bridge const void*)_owner];
+  if (!_pipController) {
+    _pipController = [[ArcWebContentsMediaSessionPiPController alloc] initWithPiPController:(__bridge const void*)_owner];
+  }
   return _pipController;
 }
 - (BOOL)play:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->Resume(content::MediaSession::SuspendType::kUI); return YES; }
@@ -198,8 +208,8 @@ ARC_EXPORT @interface ArcWebContentsMediaSession : NSObject
 - (BOOL)toggleCamera:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->ToggleCamera(); return YES; }
 - (BOOL)hangUp:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->HangUp(); return YES; }
 - (BOOL)raise:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->Raise(); return YES; }
-- (BOOL)seekTo:(int64_t)time error:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->SeekTo(base::Microseconds(time)); return YES; }
-- (BOOL)scrubTo:(int64_t)time error:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->ScrubTo(base::Microseconds(time)); return YES; }
+- (BOOL)seekTo:(int64_t)time error:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->SeekTo(base::Seconds(time)); return YES; }
+- (BOOL)scrubTo:(int64_t)time error:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->ScrubTo(base::Seconds(time)); return YES; }
 - (BOOL)setMute:(BOOL)mute error:(NSError**)error { auto* s = [self requireSession:error]; if (!s) return NO; s->SetMute(mute); return YES; }
 - (BOOL)setVolume:(double)volume error:(NSError**)error {
   auto* s = [self requireSession:error]; if (!s) return NO;
@@ -213,16 +223,20 @@ ARC_EXPORT @interface ArcWebContentsMediaSession : NSObject
   s->EnterPictureInPicture(); return YES;
 }
 - (BOOL)exitPictureInPicture:(BOOL)pause error:(NSError**)error {
-  auto* s = [self requireSession:error]; if (!s) return NO;
   auto* contents = [_owner webContents];
-  if (contents->HasPictureInPictureVideo()) {
-    content::PictureInPictureWindowController::GetOrCreateVideoPictureInPictureController(contents)->Close(pause);
-  }
+  if (!contents) { return ArcMediaFailure(error, @"managed webcontents is null"); }
+  if (!contents->HasPictureInPictureVideo()) { return ArcMediaFailure(error, @"webcontents has no active picture in picture videos"); }
+  if (![self requireSession:error]) { return NO; }
+  content::PictureInPictureWindowController::GetOrCreateVideoPictureInPictureController(contents)->Close(pause);
   return YES;
 }
 - (BOOL)notifyAutoPipTabActivationChanged:(BOOL)active error:(NSError**)error {
-  auto* s = [self requireSession:error]; if (!s) return NO;
-  s->ReportAutoPictureInPictureInfoChanged(); return YES;
+  auto* contents = [_owner webContents];
+  if (!contents) { return ArcMediaFailure(error, @"managed webcontents is null"); }
+  auto* helper = AutoPictureInPictureTabHelper::FromWebContents(contents);
+  if (!helper) { return ArcMediaFailure(error, @"no auto picture-in-picture tab helper"); }
+  helper->OnTabActivatedChanged(active);
+  return YES;
 }
 - (id<ArcMediaDelegate>)nativeDelegate { return _delegate; }
 - (void)nativePiPCreated {
@@ -259,7 +273,10 @@ ARC_EXPORT @interface ArcWebContentsMediaSession : NSObject
 }
 - (void)nativeActionsChanged:(const std::vector<media_session::mojom::MediaSessionAction>&)actions {
   NSMutableIndexSet* values = [NSMutableIndexSet indexSet];
-  for (auto action : actions) { [values addIndex:static_cast<NSUInteger>(action)]; }
+  for (auto action : actions) {
+    const auto index = static_cast<NSUInteger>(action);
+    if (index < 21) { [values addIndex:index]; }
+  }
   id<ArcMediaDelegate> delegate = _delegate;
   if ([delegate respondsToSelector:@selector(webContents:didChangeAvailableMediaActions:)]) { [delegate webContents:_owner didChangeAvailableMediaActions:values]; }
 }
@@ -276,7 +293,7 @@ ArcMediaObserver::ArcMediaObserver(content::WebContents* contents, content::Medi
     : content::WebContentsObserver(contents), owner_(owner) {
   session->AddObserver(receiver_.BindNewPipeAndPassRemote());
 }
-void ArcMediaObserver::WebContentsDestroyed() { [owner_ nativePiPDestroyed]; Observe(nullptr); }
+void ArcMediaObserver::WebContentsDestroyed() { Observe(nullptr); [owner_ nativePiPDestroyed]; }
 void ArcMediaObserver::MediaSessionInfoChanged(media_session::mojom::MediaSessionInfoPtr info) { [owner_ nativeInfoChanged:std::move(info)]; }
 void ArcMediaObserver::MediaSessionActionsChanged(const std::vector<media_session::mojom::MediaSessionAction>& actions) { [owner_ nativeActionsChanged:actions]; }
 void ArcMediaObserver::MediaSessionPositionChanged(const std::optional<media_session::MediaPosition>& position) { [owner_ nativePositionChanged:position]; }
@@ -292,6 +309,8 @@ void ArcMediaObserver::MediaSessionPositionChanged(const std::optional<media_ses
 @implementation PiPNSView
 @synthesize resizeHandler = _resizeHandler;
 - (BOOL)isFlipped { return YES; }
+- (void)viewDidMoveToWindow { [super viewDidMoveToWindow]; if (_resizeHandler) { _resizeHandler(self.bounds.size); } }
+- (void)viewDidChangeBackingProperties { [super viewDidChangeBackingProperties]; if (_resizeHandler) { _resizeHandler(self.bounds.size); } }
 - (void)setFrameSize:(NSSize)size {
   [super setFrameSize:size];
   if (_resizeHandler) { _resizeHandler(size); }
@@ -306,6 +325,7 @@ class ArcVideoOverlay final : public content::VideoOverlayWindow,
  public:
   explicit ArcVideoOverlay(content::VideoPictureInPictureWindowController* controller)
       : controller_(controller), owner_([ArcWebContents wrapperForWebContents:controller->GetWebContents()]) {
+    session_ = objc_getAssociatedObject(owner_, @selector(nativeMediaSession));
     view_ = [[PiPNSView alloc] initWithFrame:NSMakeRect(0, 0, 320, 180)];
     view_.wantsLayer = YES;
     view_.layer = [CALayer layer];
@@ -319,7 +339,6 @@ class ArcVideoOverlay final : public content::VideoOverlayWindow,
     view_.resizeHandler = ^(CGSize size) { if (weak) { weak->Resize(size); } };
     Resize(view_.bounds.size);
     objc_setAssociatedObject(owner_, @selector(videoView), view_, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    [[owner_ mediaSession] nativePiPCreated];
   }
   ~ArcVideoOverlay() override {
     weak_factory_.InvalidateWeakPtrs();
@@ -328,7 +347,7 @@ class ArcVideoOverlay final : public content::VideoOverlayWindow,
     compositor_->widget()->ResetNSView();
     compositor_->compositor()->SetRootLayer(nullptr);
     objc_setAssociatedObject(owner_, @selector(videoView), nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    [[owner_ mediaSession] nativePiPDestroyed];
+    [session_ nativePiPDestroyed];
   }
   bool IsActive() const override { return view_.window.isKeyWindow; }
   void Close() override {
@@ -357,6 +376,9 @@ class ArcVideoOverlay final : public content::VideoOverlayWindow,
     if ([delegate respondsToSelector:@selector(webContents:pipVideoResolutionChanged:)]) { [delegate webContents:owner_ pipVideoResolutionChanged:CGSizeMake(size.width(), size.height())]; }
   }
   void SetPlaybackState(PlaybackState state) override {
+    auto weak = weak_factory_.GetWeakPtr();
+    if (!created_) { created_ = true; [session_ nativePiPCreated]; }
+    if (!weak) { return; }
     auto* delegate = Delegate();
     if ([delegate respondsToSelector:@selector(webContents:pipPlaybackStateChanged:)]) { [delegate webContents:owner_ pipPlaybackStateChanged:state]; }
   }
@@ -384,24 +406,23 @@ class ArcVideoOverlay final : public content::VideoOverlayWindow,
     if ([delegate respondsToSelector:@selector(webContents:pipSourceTitleChanged:)]) { [delegate webContents:owner_ pipSourceTitleChanged:ArcNSString(title)]; }
   }
   void SetFaviconImages(const std::vector<media_session::MediaImage>& images) override {
-    // ArcMediaImage conversion is shared with the values package; preserve the event even for no artwork.
-    if (images.empty()) {
-      auto* delegate = Delegate();
-      if ([delegate respondsToSelector:@selector(webContents:pipFaviconImagesChanged:)]) { [delegate webContents:owner_ pipFaviconImagesChanged:@[]]; }
-    }
+    NSMutableArray* values = [NSMutableArray arrayWithCapacity:images.size()];
+    for (const auto& image : images) { [values addObject:[[ArcMediaImage alloc] initWithChromiumMediaImage:image]]; }
+    auto* delegate = Delegate();
+    if ([delegate respondsToSelector:@selector(webContents:pipFaviconImagesChanged:)]) { [delegate webContents:owner_ pipFaviconImagesChanged:values]; }
   }
   void SetSurfaceId(const viz::SurfaceId& surface_id) override {
     if (surface_id_.is_valid()) { compositor_->compositor()->RemoveChildFrameSink(surface_id_.frame_sink_id()); }
     surface_id_ = surface_id;
     compositor_->compositor()->AddChildFrameSink(surface_id.frame_sink_id());
-    surface_layer_->AsSurface()->SetShowSurface(surface_id, GetBounds().size(), cc::DeadlinePolicy::UseDefaultDeadline(), false);
+    surface_layer_->AsSurface()->SetShowSurface(surface_id, GetBounds().size(), cc::DeadlinePolicy::UseDefaultDeadline(), true);
     compositor_->Unsuspend();
   }
   void SetPlaybackControlsVisibility(bool) override {}
   void SetImmersiveVideoOptions(const content::ImmersiveOptions&) override {}
   void AcceleratedWidgetCALayerParamsUpdated(gfx::CALayerParams params) override { display_tree_->UpdateCALayerTree(std::move(params)); }
  private:
-  id<ArcMediaDelegate> Delegate() { return [[owner_ mediaSession] nativeDelegate]; }
+  id<ArcMediaDelegate> Delegate() { return [session_ nativeDelegate]; }
   void Feature(uint64_t feature, bool value) {
     auto* delegate = Delegate();
     if ([delegate respondsToSelector:@selector(webContents:pipFeatureStateChanged:turnedOn:)]) { [delegate webContents:owner_ pipFeatureStateChanged:feature turnedOn:value]; }
@@ -409,17 +430,23 @@ class ArcVideoOverlay final : public content::VideoOverlayWindow,
   void Resize(CGSize size) {
     gfx::Size dimensions(std::max(1, static_cast<int>(size.width)), std::max(1, static_cast<int>(size.height)));
     surface_layer_->SetBounds(gfx::Rect(dimensions));
-    compositor_->UpdateSurface(dimensions, 1, gfx::DisplayColorSpaces(), 0, 60);
-    if (surface_id_.is_valid()) { surface_layer_->AsSurface()->SetShowSurface(surface_id_, dimensions, cc::DeadlinePolicy::UseDefaultDeadline(), false); }
+    NSScreen* screen = view_.window.screen ?: NSScreen.mainScreen;
+    const float scale = std::max(1.0, view_.window ? view_.window.backingScaleFactor : screen.backingScaleFactor);
+    const int64_t display = [screen.deviceDescription[@"NSScreenNumber"] longLongValue];
+    compositor_->UpdateSurface(gfx::ScaleToCeiledSize(dimensions, scale), scale, gfx::DisplayColorSpaces(), display, 60);
+    if (surface_id_.is_valid()) { surface_layer_->AsSurface()->SetShowSurface(surface_id_, dimensions, cc::DeadlinePolicy::UseDefaultDeadline(), true); }
+    if (created_) { controller_->UpdateLayerBounds(); }
   }
   raw_ptr<content::VideoPictureInPictureWindowController> controller_;
   __weak ArcWebContents* owner_;
+  __weak ArcWebContentsMediaSession* session_;
   PiPNSView* __strong view_;
   std::unique_ptr<ui::DisplayCALayerTree> display_tree_;
   std::unique_ptr<ui::RecyclableCompositorMac> compositor_;
   std::unique_ptr<ui::LayerSurface> surface_layer_;
   viz::SurfaceId surface_id_;
   bool visible_ = false;
+  bool created_ = false;
   base::WeakPtrFactory<ArcVideoOverlay> weak_factory_{this};
 };
 }

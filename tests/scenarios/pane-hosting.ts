@@ -1,8 +1,8 @@
 import type { ScenarioContext } from "../launch-slice/run";
-import { run, page, press } from "./native";
+import { run, page, nativePage, press } from "./native";
 export default async function scenario(c: ScenarioContext) {
   await run(c, async () => {
-    await page(c); await page(c, "/b", c.EXPECT.bTitle);
+    await page(c, "/b", c.EXPECT.bTitle); await nativePage(c);
     press(c, /^Split View Menu$/);
     press(c, /^(Add Split View|Add Right Split|Add Left Split|Split Right)$/);
     const state = c.native();

@@ -410,7 +410,7 @@ void EmptyBrowserCompletion(BrowserCompletion completion) {
   BrowserWindowInterface* browser = [self browser];
   if (!browser) {
     if (error) {
-      *error = [NSError errorWithDomain:@"company.thebrowser.Arc" code:1
+      *error = [NSError errorWithDomain:@"company.thebrowser.Arc" code:6
                               userInfo:@{NSLocalizedDescriptionKey: @"browser deinitialized"}];
     }
     return NO;

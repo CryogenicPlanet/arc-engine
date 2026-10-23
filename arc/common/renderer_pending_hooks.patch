@@ -1,0 +1,55 @@
+--- a/arc/api/arc_internal.h
++++ b/arc/api/arc_internal.h
+@@ -133,6 +133,12 @@
+ 
+ @class ArcURLLoadConfiguration;
+ @class ArcURLLoadCancellationToken;
++// Native feature consumers must not create public ObjC boundary calls.
++bool ArcRuntimeFeatureEnabled(NSUInteger identifier);
++namespace arc {
++void RefreshRendererAdBlockFeature();
++}
++
+ // Starts a URL load like -[ArcBrowserApplication loadUrl:withDelegate:], using |profile|'s network context
+ // (nullptr: the system network context, as the application-level loader does). Delegate callbacks follow
+ // ArcURLLoadDelegate. Returns the cancellation token the API returns.
+--- a/arc/api/arc_app_flags.mm
++++ b/arc/api/arc_app_flags.mm
+@@ -51,6 +51,10 @@
+   return enabled && *enabled;
+ }
+ 
++namespace arc {
++__attribute__((weak)) void RefreshRendererAdBlockFeature() {}
++}
++
+ ARC_EXPORT @interface ArcBrowserApplication : NSObject
+ @end
+ @implementation ArcBrowserApplication (AppFlags)
+@@ -58,9 +62,12 @@
+   return ArcRuntimeFeatureEnabled(identifier);
+ }
+ - (void)setFeatureEnabled:(NSUInteger)identifier enabled:(BOOL)enabled {
+-  auto& features = Features();
+-  base::AutoLock hold(features.lock);
+-  features.values[identifier] = bool{enabled};
++  {
++    auto& features = Features();
++    base::AutoLock hold(features.lock);
++    features.values[identifier] = bool{enabled};
++  }
++  if (identifier == 11) arc::RefreshRendererAdBlockFeature();
+ }
+ - (void)setStringFeatureValue:(NSUInteger)identifier value:(NSString*)value {
+   auto& features = Features();
+--- a/chromium/src/chrome/renderer/chrome_content_renderer_client.cc
++++ b/chromium/src/chrome/renderer/chrome_content_renderer_client.cc
+@@ -1494,6 +1494,8 @@
+ 
+ void ChromeContentRendererClient::RunScriptsAtDocumentStart(
+     content::RenderFrame* render_frame) {
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app"))
++    arc::RunEffectsAtDocumentStart(render_frame);
+ #if BUILDFLAG(ENABLE_EXTENSIONS_CORE)
+   extensions::ExtensionsRendererClient::Get()->RunScriptsAtDocumentStart(
+       render_frame);

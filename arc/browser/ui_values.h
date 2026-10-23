@@ -58,6 +58,16 @@ struct UIExternalProtocolDialogData {
   std::function<void()> closed;
 };
 
+struct UIConfirmInfobarData {
+  std::function<std::u16string()> message;
+  std::function<void()> accepted;
+};
+
+struct UIHungRendererDialogData {
+  std::function<void()> crash_process;
+  std::function<void()> wait;
+};
+
 struct UIDevToolsConnectionDialogData {
   std::function<void()> accepted;
   std::function<void()> denied;
@@ -131,6 +141,18 @@ ARC_EXPORT @interface ArcDevToolsConnectionDialog : NSObject
 - (void)accept;
 - (void)deny;
 - (void)disable;
+@end
+
+ARC_EXPORT @interface ArcConfirmInfobar : NSObject
+- (instancetype)initWithConfirmInfobar:(const void*)infobar;
+- (NSString*)messageText;
+- (void)accept;
+@end
+
+ARC_EXPORT @interface ArcHungRendererDialog : NSObject
+- (instancetype)initWithHungRendererDialog:(const void*)dialog;
+- (void)crashProcess;
+- (void)wait;
 @end
 
 #endif  // ARC_BROWSER_UI_VALUES_H_

@@ -1,0 +1,80 @@
+methods differing: 133 (missing 30, extra 32, returns 15, callback args 1, counts 55; internal-only 11)
+callback sequence: {"golden": 56, "ours": 1032, "first_divergence": 1, "golden_from": ["ADK.ADKApplication didInitializeBrowserProcess", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"], "ours_from": ["ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.CrashKeysObser
+missing {"method": "->engine +ArcImageRep decodeFromData:scale:completion:", "golden_calls": 1, "example": {"args": "[\"data(346)\", 1, \"<block>\"]", "ret": "null"}}
+missing {"method": "->engine +ArcImageRep decodeFromData:scale:desiredWidth:desiredHeight:maxDecodedBytes:completion:", "golden_calls": 1, "example": {"args": "[\"data(346)\", 1, 0, 0, 0, \"<block>\"]", "ret": "null"}}
+missing {"method": "->engine -ArcBrowser isInitialized", "golden_calls": 1, "example": {"args": "[]", "ret": "false"}}
+missing {"method": "->engine -ArcBrowserApplicationConfiguration applicationID", "golden_calls": 1, "example": {"args": "[]", "ret": "0"}}
+missing {"method": "->engine -ArcBrowserApplicationConfiguration argc", "golden_calls": 2, "example": {"args": "[]", "ret": "9"}}
+missing {"method": "->engine -ArcBrowserApplicationConfiguration isProduction", "golden_calls": 1, "example": {"args": "[]", "ret": "true"}}
+missing {"method": "->engine -ArcBrowserApplicationConfiguration profilePath", "golden_calls": 1, "example": {"args": "[]", "ret": "\"/Users/cryogenicplanet/Library/Application Support/ArcModAgent-trace156\""}}
+missing {"method": "->engine -ArcBrowserApplicationConfiguration quitRunLoopOnTermination", "golden_calls": 1, "example": {"args": "[]", "ret": "false"}}
+missing {"method": "->engine -ArcBrowserApplicationConfiguration sessionRestorationPolicy", "golden_calls": 1, "example": {"args": "[]", "ret": "0"}}
+missing {"method": "->engine -ArcBrowserApplicationConfiguration shouldLoadAllProfilesAtStartup", "golden_calls": 1, "example": {"args": "[]", "ret": "true"}}
+missing {"method": "->engine -ArcBrowserApplicationConfiguration userDefaultsSuiteName", "golden_calls": 1, "example": {"args": "[]", "ret": "null"}}
+missing {"method": "->engine -ArcColor4f a", "golden_calls": 3, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcColor4f b", "golden_calls": 3, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcColor4f g", "golden_calls": 3, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcColor4f r", "golden_calls": 3, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcImageRep toNSImage", "golden_calls": 1, "example": {"args": "[]", "ret": "\"image(24x24)\""}}
+missing {"method": "->engine -ArcWebContents ignoreDisablePiPAttribute:", "golden_calls": 1, "example": {"args": "[false]", "ret": "null"}}
+missing {"method": "->engine -ArcWebContentsDevTools close", "golden_calls": 1, "example": {"args": "[]", "ret": "null"}}
+missing {"method": "->engine -ArcWebContentsDevTools openConsoleView", "golden_calls": 1, "example": {"args": "[]", "ret": "null"}}
+missing {"method": "->engine -ArcWebContentsDevTools webContents", "golden_calls": 1, "example": {"args": "[]", "ret": "\"<ArcWebContents#2>\""}}
+missing {"method": "engine->app -ADK.ADKApplication didCloseBrowser:forBrowserContextID:ofType:withRestorationSessionID:", "golden_calls": 1, "example": {"args": "[\"E9F63537-AA8E-40C9-AF8C-0DD7BCACEBDF\", \"<ArcBrowserContextID#5>\", 0, \"<ArcSessionID#5>\"]", "ret": "null"}}
+missing {"method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:", "golden_calls": 3, "example": {"args": "[\"<ArcBrowser#1>\", 1824117563]", "ret": "-1"}}
+missing {"method": "engine->app -ADK.WebContentChromium webContentsClosingImminent:withSessionID:", "golden_calls": 1, "example": {"args": "[\"<ArcWebContents#1>\", \"<ArcSessionID#4>\"]", "ret": "null"}}
+missing {"method": "engine->app -ADK.WebContentChromium webContentsDevTools:displayAs:", "golden_calls": 1, "example": {"args": "[\"<ArcWebContentsDevTools#1>\", 3]", "ret": "null"}}
+missing {"method": "engine->app -ADK.WebContentChromium webContentsDevToolsDidClose:", "golden_calls": 1, "example": {"args": "[\"<ArcWebContentsDevTools#1>\"]", "ret": "null"}}
+missing {"method": "engine->app -ADK.WebContentChromium webContentsPiPControllerDestroyed:", "golden_calls": 1, "example": {"args": "[\"<ArcWebContents#1>\"]", "ret": "null"}}
+missing {"method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:", "golden_calls": 3, "example": {"args": "[\"*\", -105]", "ret": "null"}}
+missing {"method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFinish:", "golden_calls": 1, "example": {"args": "[\"*\"]", "ret": "null"}}
+missing {"method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveData:withData:", "golden_calls": 1, "example": {"args": "[\"*\", \"data(346)\"]", "ret": "null"}}
+missing {"method": "engine->app -_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:", "golden_calls": 1, "example": {"args": "[\"*\", \"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://youtube.com/c
+return_mismatch {"method": "->engine -ArcBrowser context", "call": 0, "args": "[]", "golden": "\"<ArcBrowserContext#2>\"", "ours": "\"<ArcBrowserContext#1>\""}
+return_mismatch {"method": "->engine -ArcBrowserApplicationConfiguration argv", "call": 0, "args": "[]", "golden": "[\"/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app/Contents/MacOS/Arc\", \"--use-mock-keychain\", \"--no-default-browser-check\", \"--disable-sync\", \"--disable-background-networkin
+return_mismatch {"method": "->engine -ArcBrowserContext id", "call": 1, "args": "[]", "golden": "\"<ArcBrowserContextID#2>\"", "ours": "\"<ArcBrowserContextID#1>\""}
+return_mismatch {"method": "->engine -ArcBrowserContext loadUrl:withDelegate:", "call": 0, "args": "[\"<ArcURLLoadConfiguration#4>\", \"<_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate#4>\"]", "golden": "\"<ArcURLLoadCancellationToken#4>\"", "ours": "\"<ArcURLLoadCancellationToken#5>\""}
+return_mismatch {"method": "->engine -ArcBrowserContextAttributes userVisibleName", "call": 0, "args": "[]", "golden": "\"Default\"", "ours": "\"Your Chromium\""}
+return_mismatch {"method": "->engine -ArcColor b", "call": 0, "args": "[]", "golden": "250", "ours": "34"}
+return_mismatch {"method": "->engine -ArcColor g", "call": 0, "args": "[]", "golden": "199", "ours": "30"}
+return_mismatch {"method": "->engine -ArcColor r", "call": 0, "args": "[]", "golden": "168", "ours": "28"}
+return_mismatch {"method": "->engine -ArcSearchEngine url", "call": 513, "args": "[]", "golden": "\"https://www.google.com/search?q=%7BsearchTerms%7D&sourceid=chrome&ie=UTF-8\"", "ours": "\"https://drive.google.com/drive/search?q=%s\""}
+return_mismatch {"method": "->engine -ArcSessionID identifier", "call": 0, "args": "[]", "golden": "1824117563", "ours": "998197635"}
+return_mismatch {"method": "->engine -ArcWebContents nativeView", "call": 0, "args": "[]", "golden": "\"<WebContentsHostView#1>\"", "ours": "\"<WebContentsViewCocoa#1>\""}
+return_mismatch {"method": "->engine -ArcWebContents navigationID", "call": 2, "args": "[]", "golden": "0", "ours": "1"}
+return_mismatch {"method": "->engine -ArcWebContents pendingRenderFrameViewportSize", "call": 4, "args": "[]", "golden": "\"{698, 716}\"", "ours": "\"{1042, 716}\""}
+return_mismatch {"method": "->engine -ArcWebContents rootBackgroundColor", "call": 4, "args": "[]", "golden": "\"<ArcColor4f#3>\"", "ours": "\"<ArcColor4f#2>\""}
+return_mismatch {"method": "->engine -ArcWebContents visibility", "call": 4, "args": "[]", "golden": "0", "ours": "1"}
+arg_mismatch {"method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "call": 0, "golden": "[\"keep_alive_registry\", \"{registered_count_=1, restart_allowed_count_=0, KeepAlives=[APP_CONTROLLER (1)]}\"]", "ours": "[\"keep_alive_registry\", \"{registered_count_=4, restart_allowed_count_=0,
+extra {"method": "->engine +ArcBrowserContext wrapperForProfile:", "our_calls": 3, "example": {"args": "[\"<ptr>\"]", "ret": "\"<ArcBrowserContext#1>\""}}
+extra {"method": "->engine +ArcColor colorWithSkColor:", "our_calls": 8, "example": {"args": "[4280032802]", "ret": "\"<ArcColor#1>\""}}
+extra {"method": "->engine +ArcWebContents wrapperForWebContents:", "our_calls": 7, "example": {"args": "[\"<ptr>\"]", "ret": "\"<ArcWebContents#1>\""}}
+extra {"method": "->engine -ArcBrowserApplication isFeatureEnabled:", "our_calls": 1, "example": {"args": "[11]", "ret": "false"}}
+extra {"method": "->engine -ArcBrowserContext initWithProfile:", "our_calls": 1, "example": {"args": "[\"<ptr>\"]", "ret": "\"<ArcBrowserContext#1>\""}}
+extra {"method": "->engine -ArcBrowserContext profile", "our_calls": 17, "example": {"args": "[]", "ret": "\"<ptr>\""}}
+extra {"method": "->engine -ArcBrowserContext serviceNamed:", "our_calls": 19, "example": {"args": "[\"ArcBrowserContextPreferences\"]", "ret": "\"<ArcBrowserContextPreferences#1>\""}}
+extra {"method": "->engine -ArcBrowserContextAttributes initWithEntry:", "our_calls": 8, "example": {"args": "[\"<ptr>\"]", "ret": "\"<ArcBrowserContextAttributes#1>\""}}
+extra {"method": "->engine -ArcBrowserContextDownloads initWithArcBrowserContext:", "our_calls": 1, "example": {"args": "[\"<ArcBrowserContext#1>\"]", "ret": "\"<ArcBrowserContextDownloads#1>\""}}
+extra {"method": "->engine -ArcBrowserContextExtensions initWithArcBrowserContext:", "our_calls": 1, "example": {"args": "[\"<ArcBrowserContext#1>\"]", "ret": "\"<ArcBrowserContextExtensions#1>\""}}
+extra {"method": "->engine -ArcBrowserContextHistory initWithArcBrowserContext:", "our_calls": 1, "example": {"args": "[\"<ArcBrowserContext#1>\"]", "ret": "\"<ArcBrowserContextHistory#1>\""}}
+extra {"method": "->engine -ArcBrowserContextID initWithDirectoryBasename:isIncognito:", "our_calls": 1, "example": {"args": "[\"Default\", false]", "ret": "\"<ArcBrowserContextID#1>\""}}
+extra {"method": "->engine -ArcBrowserContextPreferences initWithArcBrowserContext:", "our_calls": 1, "example": {"args": "[\"<ArcBrowserContext#1>\"]", "ret": "\"<ArcBrowserContextPreferences#1>\""}}
+extra {"method": "->engine -ArcBrowserContextPreferences setOwner:", "our_calls": 1, "example": {"args": "[\"<ArcBrowserContext#1>\"]", "ret": "null"}}
+extra {"method": "->engine -ArcBrowserSidePanel initWithArcBrowser:", "our_calls": 1, "example": {"args": "[\"<ArcBrowser#1>\"]", "ret": "\"<ArcBrowserSidePanel#1>\""}}
+extra {"method": "->engine -ArcColor initWithR:g:b:a:", "our_calls": 8, "example": {"args": "[28, 30, 34, 255]", "ret": "\"<ArcColor#1>\""}}
+extra {"method": "->engine -ArcSearchEngine initWithTemplateURLData:", "our_calls": 25, "example": {"args": "[\"<ptr>\"]", "ret": "\"<ArcSearchEngine#20>\""}}
+extra {"method": "->engine -ArcURLLoadConfiguration blockLocalRequest", "our_calls": 5, "example": {"args": "[]", "ret": "false"}}
+extra {"method": "->engine -ArcURLLoadConfiguration cachePolicy", "our_calls": 5, "example": {"args": "[]", "ret": "0"}}
+extra {"method": "->engine -ArcURLLoadConfiguration followRedirects", "our_calls": 5, "example": {"args": "[]", "ret": "true"}}
+extra {"method": "->engine -ArcURLLoadConfiguration headers", "our_calls": 5, "example": {"args": "[]", "ret": "{}"}}
+extra {"method": "->engine -ArcURLLoadConfiguration method", "our_calls": 30, "example": {"args": "[]", "ret": "0"}}
+extra {"method": "->engine -ArcURLLoadConfiguration streamResponseData", "our_calls": 5, "example": {"args": "[]", "ret": "false"}}
+extra {"method": "->engine -ArcURLLoadConfiguration timeout", "our_calls": 5, "example": {"args": "[]", "ret": "\"inf\""}}
+extra {"method": "->engine -ArcURLLoadConfiguration url", "our_calls": 5, "example": {"args": "[]", "ret": "\"url:https://content.arc.net/web_content_behavior.json\""}}
+extra {"method": "->engine -ArcWebContents uiDelegate", "our_calls": 2, "example": {"args": "[]", "ret": "\"<ADK.WebContentChromium#109>\""}}
+extra {"method": "->engine -ArcWebContents webContents", "our_calls": 19, "example": {"args": "[]", "ret": "\"<ptr>\""}}
+extra {"method": "->engine -ArcWebContentsBoostIDE initWithArcWebContents:", "our_calls": 1, "example": {"args": "[\"<ArcWebContents#1>\"]", "ret": "\"<ArcWebContentsBoostIDE#1>\""}}
+extra {"method": "->engine -ArcWebContentsDevTools initWithArcWebContents:", "our_calls": 1, "example": {"args": "[\"<ArcWebContents#1>\"]", "ret": "\"<ArcWebContentsDevTools#1>\""}}
+extra {"method": "->engine -ArcWebContentsMediaSession initWithArcWebContents:", "our_calls": 1, "example": {"args": "[\"<ArcWebContents#1>\"]", "ret": "\"<ArcWebContentsMediaSession#1>\""}}
+extra {"method": "->engine -ArcWebContentsThumbnailsGenerator initWithArcWebContents:", "our_calls": 1, "example": {"args": "[\"<ArcWebContents#1>\"]", "ret": "\"<ArcWebContentsThumbnailsGenerator#1>\""}}
+extra {"method": "engine->app -ADK.WebContentChromium webContents:thumbnailReady:", "our_calls": 1, "example": {"args": "[\"<ArcWebContents#1>\", \"image(497x337)\"]", "ret": "null"}}

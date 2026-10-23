@@ -133,48 +133,50 @@ NSString* OptionalString(const std::optional<std::string>& value) {
 @end
 
 @implementation ArcWebLoginDialog {
-  arc::UIWebLoginDialogData _dialog;
+  std::shared_ptr<arc::UIWebLoginDialogData> _dialog;
 }
 - (instancetype)initWithWebLoginDialog:(const void*)dialog {
   CHECK(dialog);
   if ((self = [super init])) {
-    _dialog = *static_cast<const arc::UIWebLoginDialogData*>(dialog);
+    _dialog = std::make_shared<arc::UIWebLoginDialogData>(
+        *static_cast<const arc::UIWebLoginDialogData*>(dialog));
   }
   return self;
 }
-- (BOOL)isProxyLogin { return _dialog.is_proxy_login; }
+- (BOOL)isProxyLogin { return _dialog && _dialog->is_proxy_login; }
 - (BOOL)isURLPotentiallyTrustworthy {
-  return _dialog.is_url_potentially_trustworthy;
+  return _dialog && _dialog->is_url_potentially_trustworthy;
 }
-- (NSString*)authority { return ArcNSString(_dialog.authority); }
+- (NSString*)authority { return _dialog ? ArcNSString(_dialog->authority) : @""; }
 - (void)close {
-  auto callback = _dialog.closed;
-  if (callback) {
-    callback();
+  auto dialog = _dialog;
+  if (dialog && dialog->closed) {
+    dialog->closed();
   }
 }
 - (void)accept:(NSString*)username with:(NSString*)password {
-  auto callback = _dialog.accepted;
-  if (callback) {
-    callback(ArcUTF8(username), ArcUTF8(password));
+  auto dialog = _dialog;
+  if (dialog && dialog->accepted) {
+    dialog->accepted(ArcUTF8(username), ArcUTF8(password));
   }
 }
 - (void)cancel {
-  auto callback = _dialog.cancelled;
-  if (callback) {
-    callback();
+  auto dialog = _dialog;
+  if (dialog && dialog->cancelled) {
+    dialog->cancelled();
   }
 }
 @end
 
 @implementation ArcExternalProtocolDialog {
-  std::optional<arc::UIExternalProtocolDialogData> _external_protocol_dialog;
+  std::shared_ptr<arc::UIExternalProtocolDialogData> _external_protocol_dialog;
 }
 - (instancetype)initWithExternalProtocolDialog:(const void*)dialog {
   CHECK(dialog);
   if ((self = [super init])) {
     _external_protocol_dialog =
-        *static_cast<const arc::UIExternalProtocolDialogData*>(dialog);
+        std::make_shared<arc::UIExternalProtocolDialogData>(
+        *static_cast<const arc::UIExternalProtocolDialogData*>(dialog));
   }
   return self;
 }
@@ -188,53 +190,96 @@ NSString* OptionalString(const std::optional<std::string>& value) {
 }
 - (void)close {
   CHECK(_external_protocol_dialog);
-  auto callback = _external_protocol_dialog->closed;
-  if (callback) {
-    callback();
+  auto dialog = _external_protocol_dialog;
+  if (dialog && dialog->closed) {
+    dialog->closed();
   }
 }
 - (void)accept:(BOOL)remember {
   CHECK(_external_protocol_dialog);
-  auto callback = _external_protocol_dialog->accepted;
-  if (callback) {
-    callback(remember);
+  auto dialog = _external_protocol_dialog;
+  if (dialog && dialog->accepted) {
+    dialog->accepted(remember);
   }
 }
 - (void)cancel {
   CHECK(_external_protocol_dialog);
-  auto callback = _external_protocol_dialog->cancelled;
-  if (callback) {
-    callback();
+  auto dialog = _external_protocol_dialog;
+  if (dialog && dialog->cancelled) {
+    dialog->cancelled();
   }
 }
 @end
 
 @implementation ArcDevToolsConnectionDialog {
-  arc::UIDevToolsConnectionDialogData _dialog;
+  std::shared_ptr<arc::UIDevToolsConnectionDialogData> _dialog;
 }
 - (instancetype)initWithDevToolsConnectionDialog:(const void*)dialog {
   CHECK(dialog);
   if ((self = [super init])) {
-    _dialog = *static_cast<const arc::UIDevToolsConnectionDialogData*>(dialog);
+    _dialog = std::make_shared<arc::UIDevToolsConnectionDialogData>(
+        *static_cast<const arc::UIDevToolsConnectionDialogData*>(dialog));
   }
   return self;
 }
 - (void)accept {
-  auto callback = _dialog.accepted;
-  if (callback) {
-    callback();
+  auto dialog = _dialog;
+  if (dialog && dialog->accepted) {
+    dialog->accepted();
   }
 }
 - (void)deny {
-  auto callback = _dialog.denied;
-  if (callback) {
-    callback();
+  auto dialog = _dialog;
+  if (dialog && dialog->denied) {
+    dialog->denied();
   }
 }
 - (void)disable {
-  auto callback = _dialog.disabled;
-  if (callback) {
-    callback();
+  auto dialog = _dialog;
+  if (dialog && dialog->disabled) {
+    dialog->disabled();
   }
+}
+@end
+
+@implementation ArcConfirmInfobar {
+  std::shared_ptr<arc::UIConfirmInfobarData> _infobar;
+}
+- (instancetype)initWithConfirmInfobar:(const void*)infobar {
+  CHECK(infobar);
+  if ((self = [super init])) {
+    _infobar = std::make_shared<arc::UIConfirmInfobarData>(
+        *static_cast<const arc::UIConfirmInfobarData*>(infobar));
+  }
+  return self;
+}
+- (NSString*)messageText {
+  auto infobar = _infobar;
+  return ArcNSString(infobar && infobar->message ? infobar->message() : std::u16string());
+}
+- (void)accept {
+  auto infobar = _infobar;
+  if (infobar && infobar->accepted) { infobar->accepted(); }
+}
+@end
+
+@implementation ArcHungRendererDialog {
+  std::shared_ptr<arc::UIHungRendererDialogData> _dialog;
+}
+- (instancetype)initWithHungRendererDialog:(const void*)dialog {
+  CHECK(dialog);
+  if ((self = [super init])) {
+    _dialog = std::make_shared<arc::UIHungRendererDialogData>(
+        *static_cast<const arc::UIHungRendererDialogData*>(dialog));
+  }
+  return self;
+}
+- (void)crashProcess {
+  auto dialog = _dialog;
+  if (dialog && dialog->crash_process) { dialog->crash_process(); }
+}
+- (void)wait {
+  auto dialog = _dialog;
+  if (dialog && dialog->wait) { dialog->wait(); }
 }
 @end

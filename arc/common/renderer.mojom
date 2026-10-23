@@ -8,13 +8,44 @@ interface RendererHost {
   ReportDisallowedLoad();
 };
 
+struct EffectSource {
+  string identifier;
+  string source;
+};
+
+struct HostEffectsConfiguration {
+  string host;
+  array<EffectSource> stylesheets;
+  array<EffectSource> scripts;
+};
+
 // Associated with a RenderFrame so ordering is preserved with navigation IPC.
 // This is our internal transport, not ArcCore's binary-private Mojo protocol.
 interface RenderFrameAgent {
   InsertStylesheet(string identifier, string stylesheet);
   RemoveStylesheet(string identifier);
+  // Transitional frame entry points; removed after the process cutover.
   ConfigureAdBlock(mojo_base.mojom.ReadOnlyFile? indexed_ruleset,
+                   bool enabled,
                    array<string> excluded_origins,
                    uint64 ruleset_id,
+                   uint64 config_version,
                    pending_associated_remote<RendererHost> host);
+  GetAdBlockDebugInfo(string url) => (string info);
+  // The acknowledgement also confirms the first-frame process-agent fallback
+  // has installed its associated-interface binder.
+  SetRendererHost(pending_associated_remote<RendererHost> host) => ();
+  // Receiver swaps the cached config; application is at document start only.
+  ConfigureEffects(array<HostEffectsConfiguration> configuration);
+};
+
+// One agent/cache per renderer process, independent of public WebContents.
+interface RenderProcessAgent {
+  SetAdBlockRuleset(mojo_base.mojom.ReadOnlyFile? indexed_ruleset,
+                    uint64 ruleset_id,
+                    bool has_cosmetic_rules);
+  SetAdBlockExcludedOrigins(array<string> excluded_origins,
+                            uint64 config_version);
+  Ping() => ();
+  GetAdBlockDebugInfo(string url) => (string info);
 };

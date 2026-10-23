@@ -1,6 +1,10 @@
 # Work package "ai": sources and deps (absolute //arc/... paths). Owned by that package.
 wp_ai_sources = [
+  "//arc/browser/ai_stream_transport.mm",
+  "//arc/api/arc_ai_service.mm",
+  "//arc/api/arc_ai_agent.mm",
+  "//arc/api/arc_ai_conversion.mm",
   "//arc/api/arc_ai_models.mm",
   "//arc/api/arc_ai_ranking.mm",
 ]
-wp_ai_deps = []
+wp_ai_deps = [ "//mojo/public/cpp/system" ]

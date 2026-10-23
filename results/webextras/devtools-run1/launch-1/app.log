@@ -1,0 +1,179 @@
+2026-10-23 09:35:14 +0000 [ArcMod pid 7099] loaded into /Users/cryogenicplanet/general/arc-engine/tests/recorder/ArcEngineRecorder.dylib (main image slide 0x1053b8000)
+
+DevTools listening on ws://127.0.0.1:9333/devtools/browser/d4016fd8-2f73-4d2c-a298-fb8d78c178fa
+[ArcMod] blocked service: o298668.ingest.sentry.io
+[ArcMod] blocked service: cdn-settings.segment.com
+2026-10-23 09:35:15 +0000 [ArcMod pid 7099] didFinishLaunching, NSApp class = Arc.BrowserApp
+2026-10-23 09:35:15 +0000 [ArcMod pid 7099] local browser command validation installed on Arc.AppDelegate
+2026-10-23 09:35:15 +0000 [ArcMod pid 7099] local browser command validation installed on Arc.MainWindowController
+2026-10-23 09:35:15 +0000 [ArcMod pid 7099] local browser command validation installed on Arc.BrowserWindow
+2026-10-23 09:35:15 +0000 [ArcMod pid 7099] local browser command validation installed on Arc.LittleBrowserWindow
+[7099:3453827:1023/023515.762349:FATAL:base/observer_list.h:192] Check failed: !check_reentrancy || reentrancy != ObserverListReentrancyPolicy::kDisallowReentrancy || list_.IsOnlyRemainingNode(). 
+0   ArcCore                             0x00000001352a4b18 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x000000013528c630 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x000000013516d6b4 logging::LogMessage::Flush() + 180
+3   ArcCore                             0x000000013516d51c logging::LogMessage::~LogMessage() + 36
+4   ArcCore                             0x000000013514e1ec logging::(anonymous namespace)::CheckLogMessage::~CheckLogMessage() + 196
+5   ArcCore                             0x000000013514e260 logging::(anonymous namespace)::CheckLogMessage::~CheckLogMessage() + 12
+6   ArcCore                             0x000000013514de04 logging::CheckError::~CheckError() + 44
+7   ArcCore                             0x000000013514de44 logging::CheckError::~CheckError() + 12
+8   ArcCore                             0x000000012bd94a58 base::ObserverList<net::ResolveContext, true, (base::ObserverListReentrancyPolicy)0, base::internal::CheckedObserverAdapter>::Iter<true>::Iter(base::ObserverList<net::ResolveContext, true, (base::ObserverListReentrancyPolicy)0, base::internal::CheckedObserverAdapter> const*) + 408
+9   ArcCore                             0x0000000138d4eef4 TemplateURLService::Scoper::~Scoper() + 1084
+10  ArcCore                             0x0000000138d3e5e0 TemplateURLService::Add(std::__Cr::unique_ptr<TemplateURL, std::__Cr::default_delete<TemplateURL>>, bool) + 984
+11  ArcCore                             0x0000000138d3e078 TemplateURLService::Add(std::__Cr::unique_ptr<TemplateURL, std::__Cr::default_delete<TemplateURL>>) + 392
+12  ArcCore                             0x0000000135118e84 (anonymous namespace)::EnsureArcSearchEngines(Profile*, TemplateURLService*) + 440
+13  ArcCore                             0x00000001351192c0 (anonymous namespace)::PreferencesObserver::OnTemplateURLServiceChanged() + 132
+14  ArcCore                             0x0000000138d4f018 TemplateURLService::Scoper::~Scoper() + 1376
+15  ArcCore                             0x0000000138d448f0 TemplateURLService::OnWebDataServiceRequestDone(int, std::__Cr::unique_ptr<WDTypedResult, std::__Cr::default_delete<WDTypedResult>>) + 1904
+16  ArcCore                             0x0000000130774190 base::OnceCallback<void (optimization_guide::OptimizationGuideModelExecutionResult, std::__Cr::unique_ptr<optimization_guide::ModelQualityLogEntry, std::__Cr::default_delete<optimization_guide::ModelQualityLogEntry>>)>::Run(optimization_guide::OptimizationGuideModelExecutionResult, std::__Cr::unique_ptr<optimization_guide::ModelQualityLogEntry, std::__Cr::default_delete<optimization_guide::ModelQualityLogEntry>>) && + 80
+17  ArcCore                             0x00000001379a1d90 WebDataRequestManager::RequestCompletedOnThread(std::__Cr::unique_ptr<WebDataRequest, std::__Cr::default_delete<WebDataRequest>>, std::__Cr::unique_ptr<WDTypedResult, std::__Cr::default_delete<WDTypedResult>>) + 92
+18  ArcCore                             0x00000001351f20d0 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+19  ArcCore                             0x0000000135221600 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+20  ArcCore                             0x0000000135220dec base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+21  ArcCore                             0x00000001352ba564 base::MessagePumpCFRunLoopBase::RunWork() + 320
+22  ArcCore                             0x00000001352b25cc base::apple::CallWithEHFrame(void () block_pointer) + 16
+23  ArcCore                             0x00000001352b99ec base::MessagePumpCFRunLoopBase::RunWorkSource(void*) + 60
+24  CoreFoundation                      0x0000000182c0cfb0 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28
+25  CoreFoundation                      0x0000000182c0cf44 __CFRunLoopDoSource0 + 172
+26  CoreFoundation                      0x0000000182c0ccb0 __CFRunLoopDoSources0 + 232
+27  CoreFoundation                      0x0000000182c0b8d4 __CFRunLoopRun + 820
+28  CoreFoundation                      0x0000000182cde508 _CFRunLoopRunSpecificWithOptions + 532
+29  HIToolbox                           0x000000018f9fa560 RunCurrentEventLoopInMode + 320
+30  HIToolbox                           0x000000018f9fd8bc ReceiveNextEventCommon + 488
+31  HIToolbox                           0x000000018fb8714c _BlockUntilNextEventMatchingListInMode + 48
+32  AppKit                              0x00000001876f13d0 _DPSBlockUntilNextEventMatchingListInMode + 228
+33  AppKit                              0x0000000187045084 _DPSNextEvent + 576
+34  AppKit                              0x0000000187bda96c -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:] + 688
+35  AppKit                              0x0000000187bda678 -[NSApplication(NSEventRouting) nextEventMatchingMask:untilDate:inMode:dequeue:] + 72
+36  Arc                                 0x00000001033e3988 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 39350248
+37  Arc                                 0x000000010061ef2c Arc + 1077036
+38  Arc                                 0x000000010072bf00 Arc + 2178816
+39  ArcCore                             0x00000001352b25cc base::apple::CallWithEHFrame(void () block_pointer) + 16
+40  Arc                                 0x000000010061edd4 Arc + 1076692
+41  Arc                                 0x000000010061f05c Arc + 1077340
+42  AppKit                              0x000000018703813c -[NSApplication run] + 368
+43  ArcCore                             0x00000001352bada8 base::MessagePumpNSApplication::DoRun(base::MessagePump::Delegate*) + 316
+44  ArcCore                             0x00000001352b90cc base::MessagePumpCFRunLoopBase::Run(base::MessagePump::Delegate*) + 124
+45  ArcCore                             0x00000001352221a8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+46  ArcCore                             0x00000001351c5418 base::RunLoop::Run(base::Location const&) + 1056
+47  ArcCore                             0x0000000130978cb4 content::BrowserMainLoop::RunMainMessageLoop() + 308
+48  ArcCore                             0x000000013097b0ac content::BrowserMainRunnerImpl::Run() + 344
+49  ArcCore                             0x000000012b872948 ChromeMainRunHostedBrowser() + 72
+50  ArcCore                             0x00000001350ba760 -[ArcBrowserApplication run] + 84
+51  CoreFoundation                      0x0000000182bed6b4 __invoking___ + 148
+52  CoreFoundation                      0x0000000182bed540 -[NSInvocation invoke] + 424
+53  ArcEngineRecorder.dylib             0x00000001053b9d34 RecForwardInvocation + 1512
+54  CoreFoundation                      0x0000000182bebdf8 ___forwarding___ + 1032
+55  CoreFoundation                      0x0000000182beb930 _CF_forwarding_prep_0 + 96
+56  Arc                                 0x00000001009c6258 Arc + 4907608
+57  Arc                                 0x000000010051b890 Arc + 14480
+58  Arc                                 0x000000010051b2d4 Arc + 13012
+59  dyld                                0x00000001827844e4 start + 6992
+Task trace:
+0   ArcCore                             0x00000001379a1bb4 WebDataRequestManager::RequestCompleted(std::__Cr::unique_ptr<WebDataRequest, std::__Cr::default_delete<WebDataRequest>>, std::__Cr::unique_ptr<WDTypedResult, std::__Cr::default_delete<WDTypedResult>>) + 160
+1   ArcCore                             0x0000000138d398e0 KeywordWebDataService::GetKeywords(WebDataServiceConsumer*) + 88
+2   ArcCore                             0x0000000134b5b9fc os_crypt_async::KeychainKeyProvider::GetKey(base::OnceCallback<void (std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, base::expected<os_crypt_async::Encryptor::Key, os_crypt_async::KeyProvider::KeyError>)>) + 72
+3   ArcCore                             0x0000000134b5b9fc os_crypt_async::KeychainKeyProvider::GetKey(base::OnceCallback<void (std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&, base::expected<os_crypt_async::Encryptor::Key, os_crypt_async::KeyProvider::KeyError>)>) + 72
+Crash keys:
+  "gpu-glver" = "OpenGL ES 3.0 (ANGLE 2.1.1 git hash: 3b89d84e9d59)"
+  "gpu-generation-intel" = "0"
+  "gpu-vsver" = "3.00"
+  "gpu-psver" = "3.00"
+  "gpu-driver" = "26.7.1"
+  "gpu_count" = "1"
+  "gpu-devid" = "0x0000"
+  "gpu-venid" = "0x106b"
+  "component-extension-2" = "Contextual Tasks"
+  "component-extension-1" = "Chromium PDF Viewer"
+  "num-component-extensions" = "2"
+  "num-extensions" = "0"
+  "keep_alive_registry" = "{registered_count_=2, restart_allowed_count_=0, KeepAlives=[APP_CONTROLLER (1), REMOTE_DEBUGGING (1)]}"
+  "chrome-trace-id" = "15314364436857077725"
+  "reentry_guard_tls_slot" = "274"
+  "num-variations-runtime-overrides" = "0"
+  "variations" = "9cdd2223-3f4a17df,bd6dd170-b5b075b6,f6f5c542-3f4a17df,d5e1fd03-72564c9d,63ef0138-3f4a17df,c6fc28a7-3f4a17df,bc3ce3e6-60a1867b,ae727645-d13781e7,f3dbf5bd-faff9ce0,ce94569c-3f4a17df,c290aefb-d8d91f8f,f3ed486d-3f4a17df,da493d3c-3f4a17df,a29130c-3f4a17df,72bafd3e-cdb4c186,35c106c9-3f4a17df,a66dbd64-71c38a98,e51c83b-dc4755e5,1e12d864-94f75473,92b406bd-3f4a17df,6e4912ad-3f4a17df,4dc2f223-3f4a17df,d6ad7f9a-a9080253,3e15bfc6-3f4a17df,f6ce9b08-3f4a17df,5e7a6b04-3f4a17df,a1777c74-3f4a17df,73f2ea1f-7fe57363,53fa9d2a-3f4a17df,99fb13df-c3c0f822,6cd68a95-3f4a17df,305240ad-3f4a17df,a4ca7cb1-3f4a17df,73d480d9-3f4a17df,265c01cc-265c01cc,c6080aa-3f4a17df,b63743ab-3f4a17df,fa220cc1-3f4a17df,5e2ea1a-3f4a17df,4076100b-3f4a17df,533ac6d2-3f4a17df,ed3f5f6e-3f4a17df,b127f8bf-3f4a17df,e9844d40-3f4a17df,b1b6eab0-381bdb0c,8f80c10-78198108,46294e3b-3f4a17df,81bf947e-3f4a17df,d1ae5bf4-3f4a17df,8f9d758f-f0fa2256,8f418b04-299bae22,6f87b0c-3f4a17df,9d5ecd8d-ca7d8d80,44fe0078-3f4a17df,55cc39e1-3f4a17df,8e887d5e-3f4a17df,f2f8b883-3f4a17df,b706019d-3f4a17df,c2bfaa56-3f4a17df,21e47f2a-3f4a17df,4146cc26-775f6248,2385f431-3f4a17df,e14ee5ee-c6d6098d,76e51e2c-3f4a17df,25d1e44f-9c275af9,186230f2-3f4a17df,ef4764d7-88fcaf7d,53c64de7-3f4a17df,2e862394-fb669628,9f0fccc2-3f4a17df,e3559213-c0f46cd5,7a7cc1e6-3f4a17df,80b60e4a-3f4a17df,c203d55b-3f4a17df,d5f746a4-39aaf314,4d625646-3f4a17df,4ce582eb-3f4a17df,6e153b90-4fb74fee,3ac9fcb9-3f4a17df,8c162025-3d47f4f4,151258bf-3f4a17df,260bef7d-9973a429,2394f90f-ecc8f8cf,f7d06457-e9d42fcd,fd0aa8ec-3f4a17df,f914376f-3f4a17df,4369f1a2-3f4a17df,ff1e0777-3f4a17df,210f81c-3f4a17df,54b15be4-e3ec50a6,9ba1837a-3f4a17df,a374fdf0-964ff297,30cd3e72-fe6486b2,d990c4ac-3f4a17df,f980930-642c19ed,3d3f8872-3f4a17df,4354ea6d-3f4a17df,35a386c3-3f4a17df,258151b3-3f4a17df,68d69905-3f4a17df,a39574eb-3f4a17df,d3566fbd-c6f74b94,18b8e9fd-3f4a17df,959459a8-3f4a17df,a008700b-4593a253,779782d3-3f4a17df,8f4b3221-3f4a17df,8ad00b0c-3f4a17df,3299018c-3f4a17df,4b781a51-23ee7c7b,4b86e77-9609086,52a4deb3-9c275af9,5d43ba47-3f4a17df,ada18eb5-3f4a17df,1db33038-3f4a17df,3c978b59-3f4a17df,eb689255-3f4a17df,3b02c079-3f4a17df,8ba22946-3f4a17df,820f17d2-e484eeec,a028f288-d24710ce,44666d99-3d47f4f4,6821fcbe-3f4a17df,56aa5797-e5fec5a6,f181271f-4d066f7c,3b79d4f4-3f4a17df,ad757a37-3f4a17df,c219b73b-1edfaeb9,a52330dc-6d77353e,e4d43646-3f4a17df,6ddea229-6ddea229,f4159b43-3f4a17df,f3b01c08-3f4a17df,6a64ab7e-d0b22900,c295f76c-3f4a17df,b60ea2ed-51a6e3be,19784e46-3f4a17df,9f488d92-3f4a17df,2ad3343-3f4a17df,b357b792-3f4a17df,f4f00e05-ca7d8d80,9481ce98-3d47f4f4,2a426c03-3d47f4f4,4b935545-bb2d3403,70678518-dee66fa8,be338734-dee66fa8,5f9907a9-dee66fa8,8eeccb9a-dee66fa8,2b465683-dee66fa8,52fc7926-dee66fa8,bc9b361d-dee66fa8,a41a7188-dee66fa8,ff71bfdc-dee66fa8,251fc742-dee66fa8,2159dd0c-dee66fa8,4330e9a4-dee66fa8,e7cc79d5-dee66fa8,9a38bae3-3d47f4f4,2d1e43a3-3f4a17df,370ace14-3f4a17df,386dc267-3d47f4f4,d69d967d-9cce7190,3c8f75a1-dcfbe471,"
+  "num-experiments" = "163"
+  "switch-11" = "--no-first-run"
+  "switch-10" = "--no-startup-window"
+  "switch-9" = "--arcmod-host-app"
+  "switch-8" = "--remote-debugging-port=9333"
+  "switch-7" = "--remote-debugging-address=127.0.0.1"
+  "switch-6" = "--user-data-dir=/Users/cryogenicplanet/Library/Application Suppo"
+  "switch-5" = "--host-resolver-rules=MAP arc.net ~NOTFOUND, MAP *.arc.net ~NOTF"
+  "switch-4" = "--disable-background-networking"
+  "switch-3" = "--disable-sync"
+  "switch-2" = "--no-default-browser-check"
+  "switch-1" = "--use-mock-keychain"
+  "num-switches" = "14"
+  "commandline-disabled-feature-1" = "MacAppCodeSignClone"
+  "osarch" = "arm64"
+  "pid" = "7099"
+  "ptype" = "browser"
+
+Received signal 6
+0   ArcCore                             0x00000001352a4b18 base::debug::CollectStackTrace(base::span<void const*, 18446744073709551615ul, void const**>) + 24
+1   ArcCore                             0x000000013528c630 base::debug::StackTrace::StackTrace() + 112
+2   ArcCore                             0x00000001352a4a70 base::debug::(anonymous namespace)::StackDumpSignalHandler(int, __siginfo*, void*) + 924
+3   libsystem_platform.dylib            0x0000000182b59744 _sigtramp + 56
+4   libsystem_pthread.dylib             0x0000000182b4f8d8 pthread_kill + 296
+5   libsystem_c.dylib                   0x0000000182a55978 abort + 148
+6   ArcCore                             0x000000013516e248 logging::LogMessage::HandleFatal(unsigned long, std::__Cr::basic_string<char, std::__Cr::char_traits<char>, std::__Cr::allocator<char>> const&) const + 456
+7   ArcCore                             0x000000013516dcd4 logging::LogMessage::Flush() + 1748
+8   ArcCore                             0x000000013516d51c logging::LogMessage::~LogMessage() + 36
+9   ArcCore                             0x000000013514e1ec logging::(anonymous namespace)::CheckLogMessage::~CheckLogMessage() + 196
+10  ArcCore                             0x000000013514e260 logging::(anonymous namespace)::CheckLogMessage::~CheckLogMessage() + 12
+11  ArcCore                             0x000000013514de04 logging::CheckError::~CheckError() + 44
+12  ArcCore                             0x000000013514de44 logging::CheckError::~CheckError() + 12
+13  ArcCore                             0x000000012bd94a58 base::ObserverList<net::ResolveContext, true, (base::ObserverListReentrancyPolicy)0, base::internal::CheckedObserverAdapter>::Iter<true>::Iter(base::ObserverList<net::ResolveContext, true, (base::ObserverListReentrancyPolicy)0, base::internal::CheckedObserverAdapter> const*) + 408
+14  ArcCore                             0x0000000138d4eef4 TemplateURLService::Scoper::~Scoper() + 1084
+15  ArcCore                             0x0000000138d3e5e0 TemplateURLService::Add(std::__Cr::unique_ptr<TemplateURL, std::__Cr::default_delete<TemplateURL>>, bool) + 984
+16  ArcCore                             0x0000000138d3e078 TemplateURLService::Add(std::__Cr::unique_ptr<TemplateURL, std::__Cr::default_delete<TemplateURL>>) + 392
+17  ArcCore                             0x0000000135118e84 (anonymous namespace)::EnsureArcSearchEngines(Profile*, TemplateURLService*) + 440
+18  ArcCore                             0x00000001351192c0 (anonymous namespace)::PreferencesObserver::OnTemplateURLServiceChanged() + 132
+19  ArcCore                             0x0000000138d4f018 TemplateURLService::Scoper::~Scoper() + 1376
+20  ArcCore                             0x0000000138d448f0 TemplateURLService::OnWebDataServiceRequestDone(int, std::__Cr::unique_ptr<WDTypedResult, std::__Cr::default_delete<WDTypedResult>>) + 1904
+21  ArcCore                             0x0000000130774190 base::OnceCallback<void (optimization_guide::OptimizationGuideModelExecutionResult, std::__Cr::unique_ptr<optimization_guide::ModelQualityLogEntry, std::__Cr::default_delete<optimization_guide::ModelQualityLogEntry>>)>::Run(optimization_guide::OptimizationGuideModelExecutionResult, std::__Cr::unique_ptr<optimization_guide::ModelQualityLogEntry, std::__Cr::default_delete<optimization_guide::ModelQualityLogEntry>>) && + 80
+22  ArcCore                             0x00000001379a1d90 WebDataRequestManager::RequestCompletedOnThread(std::__Cr::unique_ptr<WebDataRequest, std::__Cr::default_delete<WebDataRequest>>, std::__Cr::unique_ptr<WDTypedResult, std::__Cr::default_delete<WDTypedResult>>) + 92
+23  ArcCore                             0x00000001351f20d0 base::TaskAnnotator::RunTaskImpl(base::PendingTask&) + 376
+24  ArcCore                             0x0000000135221600 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWorkImpl(base::LazyNow*) + 1668
+25  ArcCore                             0x0000000135220dec base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::DoWork() + 96
+26  ArcCore                             0x00000001352ba564 base::MessagePumpCFRunLoopBase::RunWork() + 320
+27  ArcCore                             0x00000001352b25cc base::apple::CallWithEHFrame(void () block_pointer) + 16
+28  ArcCore                             0x00000001352b99ec base::MessagePumpCFRunLoopBase::RunWorkSource(void*) + 60
+29  CoreFoundation                      0x0000000182c0cfb0 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28
+30  CoreFoundation                      0x0000000182c0cf44 __CFRunLoopDoSource0 + 172
+31  CoreFoundation                      0x0000000182c0ccb0 __CFRunLoopDoSources0 + 232
+32  CoreFoundation                      0x0000000182c0b8d4 __CFRunLoopRun + 820
+33  CoreFoundation                      0x0000000182cde508 _CFRunLoopRunSpecificWithOptions + 532
+34  HIToolbox                           0x000000018f9fa560 RunCurrentEventLoopInMode + 320
+35  HIToolbox                           0x000000018f9fd8bc ReceiveNextEventCommon + 488
+36  HIToolbox                           0x000000018fb8714c _BlockUntilNextEventMatchingListInMode + 48
+37  AppKit                              0x00000001876f13d0 _DPSBlockUntilNextEventMatchingListInMode + 228
+38  AppKit                              0x0000000187045084 _DPSNextEvent + 576
+39  AppKit                              0x0000000187bda96c -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:] + 688
+40  AppKit                              0x0000000187bda678 -[NSApplication(NSEventRouting) nextEventMatchingMask:untilDate:inMode:dequeue:] + 72
+41  Arc                                 0x00000001033e3988 $s09PictureInA019PIPWindowControllerC13subscriptions33_C835DADDC9A2ED40EB2207146FF4131CLLShy7Combine14AnyCancellableCGvM + 39350248
+42  Arc                                 0x000000010061ef2c Arc + 1077036
+43  Arc                                 0x000000010072bf00 Arc + 2178816
+44  ArcCore                             0x00000001352b25cc base::apple::CallWithEHFrame(void () block_pointer) + 16
+45  Arc                                 0x000000010061edd4 Arc + 1076692
+46  Arc                                 0x000000010061f05c Arc + 1077340
+47  AppKit                              0x000000018703813c -[NSApplication run] + 368
+48  ArcCore                             0x00000001352bada8 base::MessagePumpNSApplication::DoRun(base::MessagePump::Delegate*) + 316
+49  ArcCore                             0x00000001352b90cc base::MessagePumpCFRunLoopBase::Run(base::MessagePump::Delegate*) + 124
+50  ArcCore                             0x00000001352221a8 base::sequence_manager::internal::ThreadControllerWithMessagePumpImpl::Run(bool, base::TimeDelta) + 752
+51  ArcCore                             0x00000001351c5418 base::RunLoop::Run(base::Location const&) + 1056
+52  ArcCore                             0x0000000130978cb4 content::BrowserMainLoop::RunMainMessageLoop() + 308
+53  ArcCore                             0x000000013097b0ac content::BrowserMainRunnerImpl::Run() + 344
+54  ArcCore                             0x000000012b872948 ChromeMainRunHostedBrowser() + 72
+55  ArcCore                             0x00000001350ba760 -[ArcBrowserApplication run] + 84
+56  CoreFoundation                      0x0000000182bed6b4 __invoking___ + 148
+57  CoreFoundation                      0x0000000182bed540 -[NSInvocation invoke] + 424
+58  ArcEngineRecorder.dylib             0x00000001053b9d34 RecForwardInvocation + 1512
+59  CoreFoundation                      0x0000000182bebdf8 ___forwarding___ + 1032
+60  CoreFoundation                      0x0000000182beb930 _CF_forwarding_prep_0 + 96
+61  Arc                                 0x00000001009c6258 Arc + 4907608
+62  Arc                                 0x000000010051b890 Arc + 14480
+63  Arc                                 0x000000010051b2d4 Arc + 13012
+64  dyld                                0x00000001827844e4 start + 6992
+[end of stack trace]

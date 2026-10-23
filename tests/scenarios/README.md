@@ -27,13 +27,17 @@ and the pierced DOM tree (the MIME handler iframe lives in a closed shadow root)
 Fixtures run in a separate process. Synchronous agent-cdp CLI calls otherwise block an in-process HTTP
 server exactly when reload or redirect needs a response. The fixture process exits if its parent dies.
 Native actions use ArcMod's PID-verified NativeController; page actions use agent-cdp/AgentCDP. No generic
-foreground input or selector dispatch is used. Current native tools cannot invoke AXConfirm, keyboard
-shortcuts or Arc's custom sidebar actions; related probes remain nonpassing until that capability exists.
+foreground input or selector dispatch is used. With lead authorization (Chirp #133436), the sibling native adapter now supports `NativeController.action(handle, "perform", actionName)`.
+It accepts only currently advertised actions, checks the current fingerprint and enabled state, and binds
+handles to the snapshot PID so a restart cannot reuse them. AXWindows is inspected explicitly during menu
+tracking. Keyboard/mouse synthesis and selector fallback remain unavailable. Observed AXCancel/AXRaise are
+used only on exact agent elements when a key window is required. Native action receipts are recorded in
+`native-actions.jsonl`. The stdio MCP schema remains backward compatible (press/set).
 
 Read `REPORT.md` for the completed run, accepted coverage, actual diff headers and remaining blockers.
 Never infer acceptance from diff-run.sh's exit code alone: inspect `steps.json` and `coverage.json` too.
 
-Feature limits: `downloads` currently covers the default no-prompt save with exact bytes; `media` tests
+Feature limits: `downloads` covers the default no-prompt save with exact bytes; `downloads-prompt` separately gates native save-sheet cancellation; `media` tests
 playback/pause and media metadata, with PiP in `media-pip`. Tab restoration is separate from opening a
 replacement (`tabs-restore`). `dialogs` tests alert/confirm/prompt; beforeunload and HTTP authentication
 have their own files. Extension installation uses the explicitly enabled CDP Extensions.loadUnpacked

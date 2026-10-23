@@ -14,12 +14,18 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_url_parameters.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_item_utils.h"
 
 ARC_EXPORT @interface ArcDownloadItem : NSObject
 + (instancetype)wrapperForDownload:(download::DownloadItem*)item;
 @end
+
+namespace arc_profile {
+void AfterInitialSearchUpdate(Profile* profile, base::OnceClosure callback);
+}
 
 namespace {
 constinit unsigned gDownloadCallbackDepth = 0;
@@ -206,6 +212,20 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
   }
   void SetDelegate(id<ArcProfileDownloadsDelegate> delegate) { delegate_ = delegate; }
   void SendSnapshot() {
+    ArcBrowserContext* owner = owner_;
+    if (!manager_ || !owner || !manager_->IsManagerInitialized() || snapshot_sent_ ||
+        snapshot_pending_ || !delegate_) return;
+    Profile* profile = ArcProfileFrom(owner);
+    if (!profile) return;
+    snapshot_pending_ = true;
+    arc_profile::AfterInitialSearchUpdate(profile, base::BindOnce([](std::weak_ptr<DownloadsObserver> weak) {
+      auto alive = weak.lock();
+      if (!alive) return;
+      alive->snapshot_pending_ = false;
+      alive->SendReadySnapshot();
+    }, weak_from_this()));
+  }
+  void SendReadySnapshot() {
     auto keep_alive = shared_from_this();
     base::AutoReset<unsigned> in_callback(&gDownloadCallbackDepth, gDownloadCallbackDepth + 1);
     id<ArcProfileDownloadsDelegate> delegate = delegate_;
@@ -275,6 +295,7 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
   __weak ArcBrowserContext* owner_;
   __weak id<ArcProfileDownloadsDelegate> delegate_;
   bool snapshot_sent_ = false;
+  bool snapshot_pending_ = false;
   std::set<std::string> pending_created_;
   base::ScopedMultiSourceObservation<download::DownloadItem, download::DownloadItem::Observer> items_{this};
 };
@@ -285,6 +306,7 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
   __weak id<ArcProfileDownloadsDelegate> _delegate;
   std::shared_ptr<DownloadsObserver> _observer;
 }
+@synthesize owner = _owner;
 - (instancetype)initWithArcBrowserContext:(ArcBrowserContext*)context {
   if ((self = [super init])) { _owner = context; }
   return self;
@@ -296,6 +318,10 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
 - (ArcBrowserContext*)owner { return _owner; }
 - (void)setOwner:(ArcBrowserContext*)owner {
   if (_owner != owner) {
+    if (Profile* profile = ArcProfileFrom(_owner)) {
+      auto* target = static_cast<FilenameTarget*>(profile->GetUserData(kFilenameTargetKey));
+      if (target && target->service == self) profile->RemoveUserData(kFilenameTargetKey);
+    }
     _observer.reset();
     _owner = owner;
   }
@@ -331,5 +357,39 @@ class DownloadsObserver final : public content::DownloadManager::Observer,
     ArcBrowserContextDownloads* strongSelf = weakSelf;
     if (strongSelf && strongSelf->_observer) { strongSelf->_observer->SendSnapshot(); }
   });
+}
+- (void)startDownload:(NSURL*)url error:(NSError* __autoreleasing*)error {
+  __block NSError* failure;
+  void (^start)(void) = ^{
+    Profile* profile = ArcProfileFrom(self->_owner);
+    content::DownloadManager* manager = profile ? profile->GetDownloadManager() : nullptr;
+    if (!manager) {
+      failure = [NSError errorWithDomain:@"company.thebrowser.Arc" code:10
+          userInfo:@{NSLocalizedDescriptionKey: profile ? @"Download manager is not available"
+                                                        : @"This object is detached"}];
+      return;
+    }
+    auto parameters = std::make_unique<download::DownloadUrlParameters>(ArcGURL(url),
+        net::DefineNetworkTrafficAnnotation("arc_profile_download", R"(
+          semantics {
+            sender: "Arc profile downloads"
+            description: "Downloads a URL explicitly requested by the host application."
+            trigger: "The user asks Arc to download a URL."
+            data: "The requested URL and the profile's cookies."
+            destination: WEBSITE
+          }
+          policy {
+            cookies_allowed: YES
+            cookies_store: "user"
+            setting: "Explicit user download request."
+            policy_exception_justification: "Downloads use Chromium's normal download policies."
+          })"));
+    // Original 0x836bb20 writes download source 6 (INTERNAL_API).
+    parameters->set_download_source(download::DownloadSource::INTERNAL_API);
+    manager->DownloadUrl(std::move(parameters));
+  };
+  if ([NSThread isMainThread]) start();
+  else dispatch_sync(dispatch_get_main_queue(), start);
+  if (error && failure) *error = failure;
 }
 @end

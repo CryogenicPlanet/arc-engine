@@ -1,0 +1,40 @@
+{
+  "agent": "trace156",
+  "actions": [
+    {
+      "step": "cleanup-after-error",
+      "callbacks": [],
+      "cleanupCertified": 0,
+      "completions": [],
+      "events": [],
+      "id": "arc-extensions-service-probe-7186c814-6604-4008-8d15-82caa44820fa-1",
+      "infosAfter": {},
+      "mainThread": true,
+      "matches": 0,
+      "ok": 0,
+      "operation": "cleanup",
+      "outstandingInstalls": [],
+      "owned": {},
+      "pid": 47882,
+      "pinsAfter": null,
+      "probeError": "expected one live Default context with real app extension delegate",
+      "recordBegin": 103119,
+      "recordEnd": 103119
+    }
+  ],
+  "errors": [
+    "Error: bounded wait 60000ms: Error: ENOENT: no such file or directory, open '/Users/cryogenicplanet/general/arc-engine/results/extensions-service-probe/run3/trace156/extensions-service-request.json.ready.json'",
+    "fixture cleanup: Error: cleanup-after-error: expected one live Default context with real app extension delegate"
+  ],
+  "uncovered": [
+    "ArcBrowser pinExtension:/unpinExtension:/moveExtension:targetIndex: metadata only; executable behavior uncovered",
+    "Positive legacy background-page JavaScript uncovered; MV3 negative path only"
+  ],
+  "pid": 47882,
+  "ownership": {
+    "attempts": [],
+    "outstandingInstalls": [],
+    "owned": {}
+  },
+  "diagnostics": []
+}

@@ -1,0 +1,36 @@
+--- a/arc/api/arc_internal.h
++++ b/arc/api/arc_internal.h
+@@ -7,6 +7,7 @@
+ 
+ #include <memory>
+ #include <string>
++#include <string_view>
+ 
+ #include "base/strings/sys_string_conversions.h"
+ #include "base/time/time.h"
+@@ -149,4 +150,9 @@
+ - (BOOL)foregroundForInsertion;
+ @end
+ 
++// UI package: native observers and the app weak notification center.
++void ArcUIWebContentsCreated(content::WebContents* contents);
++id ArcGetNotificationCenter();
++id ArcMakeLoginCredentials(const GURL&, std::u16string_view, std::u16string_view);
++
+ #endif  // ARC_API_ARC_INTERNAL_H_
+--- a/arc/api/arc_web_contents.mm
++++ b/arc/api/arc_web_contents.mm
+@@ -625,6 +625,7 @@
+     wrapper = [[self alloc] initWithWebContents:contents];
+     data->wrapper = wrapper;
+     data->weak_wrapper = wrapper;
++    ArcUIWebContentsCreated(contents);
+     // Renderer package: per-frame config (ad blocking, effects) before the first navigation.
+     arc::InitializeRendererBridge(contents);
+   }
+@@ -886,3 +887,5 @@
+ namespace arc {
+ __attribute__((weak)) void InitializeRendererBridge(content::WebContents* contents) {}
+ }  // namespace arc
++
++__attribute__((weak)) void ArcUIWebContentsCreated(content::WebContents*) {}

@@ -5,14 +5,24 @@ export function observed(c: ScenarioContext, match: (node: NativeNode) => boolea
   return nodes[0]!;
 }
 export function press(c: ScenarioContext, label: RegExp) {
-  const state = c.native();
-  const matches = state.elements.filter(n => label.test(n.label) && n.actions.includes("AXPress"));
+  const match = (n: NativeNode) => label.test(n.label) && n.actions.includes("AXPress");
+  const state = c.native(), matches = state.elements.filter(match);
   if (matches.length === 1 && !matches[0]!.enabled) {
     const item = matches[0]!;
     const menu = state.elements.find(n => n.role === "AXMenuBarItem" && item.path.startsWith(n.path + "."));
     if (menu?.enabled && menu.actions.includes("AXPress")) c.action(menu);
+    const refreshed = c.native();
+    if (!refreshed.elements.some(n => n.enabled && match(n))) {
+      // Use only the exact agent window's advertised native action when a command needs a key window.
+      const bars = refreshed.elements.filter(n => n.role === "AXMenuBar");
+      const active = refreshed.elements.filter(n => n.role === "AXMenu" && n.actions.includes("AXCancel") && !bars.some(b => n.path.startsWith(b.path + ".")));
+      if (active.length === 1) c.perform(active[0]!, "AXCancel");
+      const raised = c.native();
+      const windows = raised.elements.filter(n => n.role === "AXWindow" && n.enabled && n.actions.includes("AXRaise"));
+      if (windows.length === 1) c.perform(windows[0]!, "AXRaise");
+    }
   }
-  const node = observed(c, n => label.test(n.label) && n.actions.includes("AXPress"));
+  const node = observed(c, match);
   return c.action(node);
 }
 export function set(c: ScenarioContext, match: (node: NativeNode) => boolean, value: string) {
@@ -33,4 +43,28 @@ export async function pressWhenReady(c: ScenarioContext, label: RegExp, ms = 800
   if (!await c.waitFor(() => c.native().elements.some(n => n.enabled && label.test(n.label) && n.actions.includes("AXPress")) ? true : undefined, ms))
     throw new Error(`native control did not appear: ${label}`);
   return press(c, label);
+}
+export async function ensureNativeWindow(c: ScenarioContext) {
+  if (c.native().elements.some(n => n.role === "AXWindow")) return;
+  const state = c.native(), bars = state.elements.filter(n => n.role === "AXMenuBar");
+  const menus = state.elements.filter(n => n.role === "AXMenu" && n.actions.includes("AXCancel") && !bars.some(b => n.path.startsWith(b.path + ".")));
+  if (menus.length === 1) c.perform(menus[0]!, "AXCancel");
+  if (c.native().elements.some(n => n.role === "AXWindow")) return;
+  c.action(observed(c, n => n.identifier === "newWindow" && n.actions.includes("AXPress")));
+  if (!await c.waitFor(() => c.native().elements.some(n => n.role === "AXWindow") ? true : undefined, 5000)) throw new Error("agent window not exposed after native New Window");
+}
+export async function nativePage(c: ScenarioContext, path = "/a", title = c.EXPECT.aTitle) {
+  const target = await page(c, path, title);
+  await ensureNativeWindow(c);
+  const state = c.native();
+  const controls = state.elements.filter(n => n.role === "AXButton" && n.label === title && n.enabled);
+  if (controls.length !== 1) throw new Error(`fixture tab is ambiguous in native UI: ${controls.length} matches`);
+  const control = controls[0]!, action = control.actions.find(a => a === "AXPress" || a.startsWith("Name:press"));
+  if (!action) throw new Error("fixture tab has no advertised press action");
+  c.perform(control, action);
+  if (!await c.waitFor(() => c.native().elements.some(n => n.identifier === "contentPanelTextField" && n.value === `${c.base}${path}`) ? true : undefined, 5000)) throw new Error("native selected fixture URL did not match");
+  const selected = c.native(), address = selected.elements.find(n => n.identifier === "contentPanelTextField" && n.value === `${c.base}${path}`)!;
+  const owner = selected.elements.filter(n => n.role === "AXWindow" && address.path.startsWith(n.path + "."));
+  if (owner.length === 1 && owner[0]!.actions.includes("AXRaise")) c.perform(owner[0]!, "AXRaise");
+  return target;
 }

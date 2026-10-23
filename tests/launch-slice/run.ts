@@ -7,7 +7,7 @@ import { summarize } from "../scenarios/coverage";
 import { AgentCDP, verifyAgentEndpoint } from "../../../arc/tools/agent-cdp";
 import { NativeController } from "../../../arc/tools/agent-native";
 import { spawn, spawnSync, type Subprocess } from "bun";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 
 const ARCMOD = resolve(import.meta.dir, "../../../arc");
@@ -188,7 +188,14 @@ const context = {
     return state as NativeSnapshot;
   },
   action(node: NativeNode, kind: "press" | "set" = "press", value?: string) {
-    return nativeController.action(node.handle, kind, value);
+    const result = nativeController.action(node.handle, kind, value);
+    appendFileSync(join(outDir, "native-actions.jsonl"), JSON.stringify({kind, label:node.label, identifier:node.identifier, receipt:result.receipt}) + "\n");
+    return result;
+  },
+  perform(node: NativeNode, actionName: string) {
+    const result = nativeController.action(node.handle, "perform", actionName);
+    appendFileSync(join(outDir, "native-actions.jsonl"), JSON.stringify({kind:"perform", actionName, label:node.label, identifier:node.identifier, receipt:result.receipt}) + "\n");
+    return result;
   },
   async step(name: string, fn: () => Promise<void> | void) {
     try { await fn(); } catch (error) { record(name, "inconclusive", String(error)); }

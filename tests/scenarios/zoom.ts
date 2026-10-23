@@ -1,8 +1,8 @@
 import type { ScenarioContext } from "../launch-slice/run";
-import { run, page, press } from "./native";
+import { run, nativePage, press } from "./native";
 export default async function scenario(c: ScenarioContext) {
   await run(c, async () => {
-    const t = await page(c);
+    const t = await nativePage(c);
     press(c, /^Zoom to Actual Size$/);
     c.assert("normalize to fixed 100% retina scale", c.evaluate(t, "devicePixelRatio") === 2);
     press(c, /^Zoom In$/);

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
@@ -35,6 +36,7 @@
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "ui/base/models/image_model.h"
+#include "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/unowned_user_data/scoped_unowned_user_data.h"
 #include "ui/gfx/image/image.h"
@@ -60,8 +62,9 @@ class BrowserExtensions;
 class ActionDelegate : public ExtensionActionDelegate,
                        public extensions::ExtensionView {
  public:
-  ActionDelegate(ArcBrowser* browser, id delegate, BrowserExtensions* container)
-      : browser_(browser), delegate_(delegate), container_(container) {}
+  ActionDelegate(ArcBrowser* browser, id delegate,
+                 base::WeakPtr<BrowserExtensions> container)
+      : browser_(browser), delegate_(delegate), container_(std::move(container)) {}
   ~ActionDelegate() override {
     weak_factory_.InvalidateWeakPtrs(); delegate_ = nil; HidePopup();
   }
@@ -117,10 +120,11 @@ class ActionDelegate : public ExtensionActionDelegate,
   }
   void ShowContextMenu();
   base::WeakPtr<ActionDelegate> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
+  void SuppressDelegate() { delegate_ = nil; }
  private:
   __weak ArcBrowser* browser_;
   __weak id<ArcExtensionsBrowserDelegate> delegate_;
-  raw_ptr<BrowserExtensions> container_;
+  base::WeakPtr<BrowserExtensions> container_;
   raw_ptr<ExtensionActionViewModel> model_ = nullptr;
   std::unique_ptr<extensions::ExtensionViewHost> host_;
   ShowPopupCallback pending_callback_;
@@ -134,11 +138,14 @@ class BrowserExtensions : public base::SupportsUserData::Data,
                           public ToolbarActionsModel::Observer,
                           public TabStripModelObserver {
  public:
+  DECLARE_USER_DATA(BrowserExtensions);
   BrowserExtensions(ArcBrowser* wrapper, id delegate)
       : browser_([wrapper browser]->GetWeakPtr()), wrapper_(wrapper),
         delegate_(delegate), scoped_data_(std::make_unique<
             ui::ScopedUnownedUserData<ExtensionsContainer>>(
                 browser_->GetUnownedUserDataHost(), *this)) {
+    typed_data_ = std::make_unique<ui::ScopedUnownedUserData<BrowserExtensions>>(
+        browser_->GetUnownedUserDataHost(), *this);
     model_ = ToolbarActionsModel::Get(browser_->GetProfile());
     if (model_) model_->AddObserver(this);
     browser_->GetTabStripModel()->AddObserver(this);
@@ -150,28 +157,52 @@ class BrowserExtensions : public base::SupportsUserData::Data,
   }
   ~BrowserExtensions() override { Shutdown(); }
   void Shutdown() {
+    if (shutting_down_) return;
+    shutting_down_ = true;
+    ++delegate_generation_;
     weak_factory_.InvalidateWeakPtrs();
     TabStripModelObserver::StopObservingAll(this);
     scoped_data_.reset();
+    typed_data_.reset();
     icon_subscriptions_.clear();
-    auto actions = std::move(actions_);
-    actions.clear();
     if (model_) model_->RemoveObserver(this);
     model_ = nullptr;
+    auto actions = std::move(actions_);
+    for (auto& [id, action] : actions) {
+      auto* delegate = static_cast<ActionDelegate*>(action->delegate());
+      delegate->SuppressDelegate();
+      delegate->HidePopup();
+    }
+    actions.clear();
   }
   void SetDelegate(id delegate) {
+    if (shutting_down_) return;
     // Existing action delegates are weak, so rebuild them on delegate replacement.
+    delegate_ = delegate;
+    const uint64_t generation = ++delegate_generation_;
+    ++popup_serial_;
+    auto weak = weak_factory_.GetWeakPtr();
     icon_subscriptions_.clear();
     auto actions = std::move(actions_);
-    actions.clear(); delegate_ = delegate; ScheduleSnapshot();
+    for (auto& [id, action] : actions) {
+      auto* previous = static_cast<ActionDelegate*>(action->delegate());
+      previous->SuppressDelegate();
+      previous->HidePopup();
+    }
+    actions.clear();
+    if (weak && weak->delegate_generation_ == generation) weak->ScheduleSnapshot();
   }
   id GetDelegate() const { return delegate_; }
+  ArcBrowser* GetWrapper() const { return wrapper_; }
+  base::WeakPtr<BrowserExtensions> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
+  uint64_t BeginPopup() { return ++popup_serial_; }
+  bool IsPopupRequestCurrent(uint64_t serial) const { return popup_serial_ == serial; }
   ToolbarActionViewModel* GetActionForId(const std::string& id) override {
     if (!browser_ || !model_ || !model_->HasAction(id)) return nullptr;
     auto found = actions_.find(id);
     if (found == actions_.end()) {
       auto action = ExtensionActionViewModel::Create(id, browser_.get(),
-          std::make_unique<ActionDelegate>(wrapper_, delegate_, this));
+          std::make_unique<ActionDelegate>(wrapper_, delegate_, weak_factory_.GetWeakPtr()));
       if (!action) return nullptr;
       found = actions_.emplace(id, std::move(action)).first;
       icon_subscriptions_.emplace(id, found->second->RegisterIconUpdateObserver(
@@ -184,10 +215,19 @@ class BrowserExtensions : public base::SupportsUserData::Data,
     return found->second.get();
   }
   void HideActivePopup() override {
+    ++popup_serial_;
+    HideActivePopups();
+  }
+  void HideActivePopups() {
+    auto weak = weak_factory_.GetWeakPtr();
+    const uint64_t serial = popup_serial_;
     std::vector<base::WeakPtr<ActionDelegate>> delegates;
     for (auto& [id, action] : actions_)
       delegates.push_back(static_cast<ActionDelegate*>(action->delegate())->GetWeakPtr());
-    for (auto& delegate : delegates) if (delegate) delegate->HidePopup();
+    for (auto& delegate : delegates) {
+      if (delegate) delegate->HidePopup();
+      if (!weak || weak->popup_serial_ != serial) return;
+    }
   }
   void CloseExtensionsMenuIfOpen() override {}
   bool ShowToolbarActionPopupForAPICall(const std::string& id,
@@ -204,7 +244,11 @@ class BrowserExtensions : public base::SupportsUserData::Data,
                        weak_factory_.GetWeakPtr(), identifier));
   }
   void OnToolbarActionRemoved(const std::string& id) override {
-    icon_subscriptions_.erase(id); actions_.erase(id); ScheduleSnapshot();
+    auto weak = weak_factory_.GetWeakPtr();
+    icon_subscriptions_.erase(id);
+    auto removed = actions_.extract(id);
+    if (!removed.empty()) removed.mapped()->HidePopup();
+    if (weak) weak->ScheduleSnapshot();
   }
   void OnToolbarActionUpdated(const std::string& action_id) override {
     id<ArcExtensionsBrowserDelegate> delegate = delegate_;
@@ -216,7 +260,12 @@ class BrowserExtensions : public base::SupportsUserData::Data,
   void OnToolbarModelInitialized() override { ScheduleSnapshot(); }
   void OnTabStripModelChanged(TabStripModel*, const TabStripModelChange&,
                              const TabStripSelectionChange& selection) override {
-    if (selection.active_tab_changed()) ScheduleActionUpdates();
+    if (selection.active_tab_changed()) {
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+          base::BindOnce(&BrowserExtensions::HideActivePopup,
+                         weak_factory_.GetWeakPtr()));
+      ScheduleActionUpdates();
+    }
   }
   void OnTabChangedAt(tabs::TabInterface*, TabChangeType) override {
     ScheduleActionUpdates();
@@ -230,7 +279,7 @@ class BrowserExtensions : public base::SupportsUserData::Data,
   }
   void OnToolbarPinnedActionsChanged() override { ScheduleSnapshot(); }
   void OnToolbarActionsModelShutdown() override {
-    model_ = nullptr; icon_subscriptions_.clear(); actions_.clear();
+    Shutdown();
   }
   ArcExtensionToolbarAction* Snapshot(const std::string& id) {
     auto* action = GetActionForId(id);
@@ -241,7 +290,7 @@ class BrowserExtensions : public base::SupportsUserData::Data,
     result.accessible_name = action->GetAccessibleName(contents);
     result.tooltip_text = action->GetTooltip(contents);
     result.enabled = action->IsEnabled(contents);
-    ui::ImageModel icon = action->GetIcon(contents, gfx::Size(28,28));
+    ui::ImageModel icon = action->GetIcon(contents, gfx::Size(32,32));
     result.icon = Image(gfx::Image(icon.Rasterize(static_cast<ArcBrowserWindow*>(browser_->GetWindow())->GetColorProvider())));
     const auto& pinned = model_->pinned_action_ids();
     for (size_t index = 0; index < pinned.size(); ++index)
@@ -271,13 +320,18 @@ class BrowserExtensions : public base::SupportsUserData::Data,
   __weak ArcBrowser* wrapper_;
   __weak id<ArcExtensionsBrowserDelegate> delegate_;
   std::unique_ptr<ui::ScopedUnownedUserData<ExtensionsContainer>> scoped_data_;
+  std::unique_ptr<ui::ScopedUnownedUserData<BrowserExtensions>> typed_data_;
   raw_ptr<ToolbarActionsModel> model_ = nullptr;
   std::map<std::string, std::unique_ptr<ExtensionActionViewModel>> actions_;
   std::map<std::string, base::CallbackListSubscription> icon_subscriptions_;
   bool snapshot_pending_ = false;
+  bool shutting_down_ = false;
+  uint64_t delegate_generation_ = 0;
+  uint64_t popup_serial_ = 0;
   base::CallbackListSubscription close_;
   base::WeakPtrFactory<BrowserExtensions> weak_factory_{this};
 };
+DEFINE_USER_DATA(BrowserExtensions);
 const char kExtensionsKey[] = "ArcBrowserExtensions";
 BrowserExtensions* Bridge(ArcBrowser* wrapper) {
   auto* browser = [wrapper browser];
@@ -286,12 +340,34 @@ BrowserExtensions* Bridge(ArcBrowser* wrapper) {
   return static_cast<BrowserExtensions*>(window->GetUserData(kExtensionsKey));
 }
 
+WindowOpenDisposition ExtensionOmniboxDisposition(long long disposition) {
+  // Arc's public navigation ordinals differ from Chromium's. Recovered from
+  // the original 0x42fc7e0 mapping; unrecognized native values use current tab.
+  switch (disposition) {
+    case 0: return WindowOpenDisposition::IGNORE_ACTION;
+    case 2:
+    case 9:
+    case 10: return WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    case 3: return WindowOpenDisposition::NEW_BACKGROUND_TAB;
+    case 5: return WindowOpenDisposition::NEW_WINDOW;
+    case 6: return WindowOpenDisposition::NEW_POPUP;
+    case 8: return WindowOpenDisposition::OFF_THE_RECORD;
+    default: return WindowOpenDisposition::CURRENT_TAB;
+  }
+}
+
 void ActionDelegate::TriggerPopup(std::unique_ptr<extensions::ExtensionViewHost> host,
                                   PopupShowAction show_action, bool by_user,
                                   ShowPopupCallback callback) {
   auto weak_before_hide = weak_factory_.GetWeakPtr();
-  container_->HideActivePopup();
-  if (!weak_before_hide) {
+  auto weak_container = container_;
+  if (!weak_container) {
+    if (callback) std::move(callback).Run(nullptr);
+    return;
+  }
+  const uint64_t serial = weak_container->BeginPopup();
+  weak_container->HideActivePopups();
+  if (!weak_before_hide || !weak_container || !weak_container->IsPopupRequestCurrent(serial)) {
     if (callback) std::move(callback).Run(nullptr);
     return;
   }
@@ -315,7 +391,8 @@ void ActionDelegate::TriggerPopup(std::unique_ptr<extensions::ExtensionViewHost>
   if ([delegate respondsToSelector:@selector(browser:didOpenExtensionPopup:webContents:)])
     [delegate browser:browser_ didOpenExtensionPopup:ArcNSString(model_->GetId())
               webContents:[ArcWebContents wrapperForWebContents:host_->host_contents()]];
-  if (weak && weak->host_ && weak->host_->has_loaded_once()) weak->OnLoaded();
+  if (weak && weak->popup_generation_ == generation && weak->host_ &&
+      weak->host_->has_loaded_once()) weak->OnLoaded();
 }
 
 // NSMenu targets carry the model index, including submenus. Chrome's menu model
@@ -339,7 +416,8 @@ void ActionDelegate::TriggerPopup(std::unique_ptr<extensions::ExtensionViewHost>
 
 namespace arc {
 namespace {
-NSMenu* MakeMenu(ui::MenuModel* model, NSMutableArray* targets) {
+NSMenu* MakeMenu(ui::MenuModel* model, NSMutableArray* targets,
+                 const ui::ColorProvider* colors) {
   NSMenu* menu = [[NSMenu alloc] initWithTitle:@""];
   menu.autoenablesItems = NO;
   for (size_t i=0; i<model->GetItemCount(); ++i) {
@@ -350,13 +428,23 @@ NSMenu* MakeMenu(ui::MenuModel* model, NSMutableArray* targets) {
     NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:ArcNSString(model->GetLabelAt(i))
                                                action:@selector(invoke:) keyEquivalent:@""];
     auto* submenu = model->GetSubmenuModelAt(i);
-    if (submenu) item.submenu = MakeMenu(submenu, targets);
+    if (submenu) item.submenu = MakeMenu(submenu, targets, colors);
     else {
       ExtensionsMenuTarget* target = [[ExtensionsMenuTarget alloc] initWithModel:model index:i];
       [targets addObject:target]; item.target = target;
     }
     item.enabled = model->IsEnabledAt(i);
     item.state = model->IsItemCheckedAt(i) ? NSControlStateValueOn : NSControlStateValueOff;
+    ui::ImageModel icon = model->GetIconAt(i);
+    if (colors && !icon.IsEmpty()) item.image = gfx::Image(icon.Rasterize(colors)).AsNSImage();
+    if (model->GetForceShowAcceleratorForItemAt(i)) {
+      ui::Accelerator accelerator;
+      if (model->GetAcceleratorAt(i, &accelerator)) {
+        KeyEquivalentAndModifierMask* key = ui::GetKeyEquivalentAndModifierMaskFromAccelerator(accelerator);
+        item.keyEquivalent = key.keyEquivalent;
+        item.keyEquivalentModifierMask = key.modifierMask;
+      }
+    }
     [menu addItem:item];
   }
   return menu;
@@ -364,21 +452,31 @@ NSMenu* MakeMenu(ui::MenuModel* model, NSMutableArray* targets) {
 void ActionDelegate::ShowContextMenu() {
   auto* model = model_->GetContextMenu(extensions::ExtensionContextMenuModel::ContextMenuSource::kToolbarAction);
   if (!model) return;
-  NSMutableArray* targets = [NSMutableArray array];
-  NSMenu* menu = MakeMenu(model, targets);
+  auto weak_model = model->AsWeakPtr();
+  model->MenuWillShow();
+  if (!weak_model) return;
+  auto* browser = [browser_ browser];
+  const ui::ColorProvider* colors = browser
+      ? static_cast<ArcBrowserWindow*>(browser->GetWindow())->GetColorProvider() : nullptr;
+  NSMutableArray* __attribute__((objc_precise_lifetime)) targets = [NSMutableArray array];
+  NSMenu* menu = MakeMenu(weak_model.get(), targets, colors);
   [menu popUpMenuPositioningItem:nil atLocation:NSEvent.mouseLocation inView:nil];
+  if (weak_model) weak_model->MenuWillClose();
 }
 void ActionDelegate::ShowContextMenuAsFallback() { ShowContextMenu(); }
 }  // namespace
 
 void InstallBrowserExtensions(ArcBrowser* wrapper, id delegate) {
-  if (![wrapper browser]) return;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") ||
+      ![wrapper browser]) return;
   RegisterHostedExtensionAPIs();
+  EnsureInternalExtension([wrapper browser]->GetProfile());
   arcmod::GetExtensionGroupIdHook() = base::BindRepeating(
       [](content::WebContents* contents) -> std::optional<int> {
         auto* browser = GlobalBrowserCollection::GetInstance()->FindBrowserWithTab(contents);
         if (!browser) return std::nullopt;
-        ArcBrowser* wrapper = [ArcBrowser wrapperForBrowser:browser];
+        ArcBrowser* wrapper = BrowserForHostedExtensions(browser);
+        if (!wrapper) return std::nullopt;
         id<ArcExtensionsBrowserDelegate> delegate = BrowserExtensionDelegate(wrapper);
         if (![delegate respondsToSelector:@selector(browser:extensionGroupIdForTabWithSessionId:)])
           return std::nullopt;
@@ -391,7 +489,8 @@ void InstallBrowserExtensions(ArcBrowser* wrapper, id delegate) {
          base::OnceCallback<void(bool)> done) {
         auto* browser = ProfileBrowserCollection::GetForProfile(profile)->GetLastActiveBrowser();
         if (!browser) return false;
-        ArcBrowser* wrapper = [ArcBrowser wrapperForBrowser:browser];
+        ArcBrowser* wrapper = BrowserForHostedExtensions(browser);
+        if (!wrapper) return false;
         id<ArcExtensionsBrowserDelegate> delegate = BrowserExtensionDelegate(wrapper);
         if (![delegate respondsToSelector:@selector(browser:didRequestExtensionPermissions:completion:)])
           return false;
@@ -422,6 +521,10 @@ id BrowserExtensionDelegate(ArcBrowser* wrapper) {
   auto* bridge = Bridge(wrapper);
   return bridge ? bridge->GetDelegate() : nil;
 }
+ArcBrowser* BrowserForHostedExtensions(BrowserWindowInterface* browser) {
+  auto* bridge = browser ? BrowserExtensions::Get(browser->GetUnownedUserDataHost()) : nullptr;
+  return bridge ? bridge->GetWrapper() : nil;
+}
 }  // namespace arc
 
 @implementation ArcBrowser (Extensions)
@@ -442,10 +545,10 @@ id BrowserExtensionDelegate(ArcBrowser* wrapper) {
       if (model->IsActionPinned(ArcUTF8(identifier)) && !model->IsActionForcePinned(ArcUTF8(identifier)))
         model->SetActionVisibility(ArcUTF8(identifier), false);
 }
-- (void)moveExtension:(NSString*)identifier targetIndex:(long long)index {
+- (void)moveExtension:(NSString*)identifier targetIndex:(unsigned long long)index {
   if (auto* browser = [self browser]; browser && !browser->GetProfile()->IsOffTheRecord())
     if (auto* model = ToolbarActionsModel::Get(browser->GetProfile()))
-      if (model->IsActionPinned(ArcUTF8(identifier)) && index >= 0 && static_cast<size_t>(index) < model->pinned_action_ids().size())
+      if (model->IsActionPinned(ArcUTF8(identifier)) && index < model->pinned_action_ids().size())
         model->MovePinnedAction(ArcUTF8(identifier), static_cast<size_t>(index));
 }
 - (void)showExtensionContextMenu:(NSString*)identifier {
@@ -457,7 +560,7 @@ id BrowserExtensionDelegate(ArcBrowser* wrapper) {
   if (auto* browser = [self browser]) {
     auto* contents = browser->GetTabStripModel()->GetActiveWebContents();
     if (contents) extensions::ExtensionOmniboxEventRouter::OnInputEntered(
-        contents, ArcUTF8(identifier), ArcUTF8(input), static_cast<WindowOpenDisposition>(disposition));
+        contents, ArcUTF8(identifier), ArcUTF8(input), arc::ExtensionOmniboxDisposition(disposition));
   }
 }
 @end

@@ -167,6 +167,7 @@ ARC_EXPORT @interface ArcHistoryDeletion : NSObject
   std::set<history::VisitID> _visitIds;
   NSArray* _deletedItems;
 }
+@synthesize deletedItems = _deletedItems;
 - (instancetype)initWithNativeDeletion:(const history::DeletionInfo&)info {
   if ((self = [super init])) {
     _allHistory = info.IsAllHistory();
@@ -317,6 +318,7 @@ ARC_EXPORT @interface ArcBrowserContextHistory : NSObject
   __weak id<ArcProfileHistoryDelegate> _delegate;
   std::shared_ptr<HistoryState> _state;
 }
+@synthesize owner = _owner;
 - (instancetype)initWithArcBrowserContext:(ArcBrowserContext*)context {
   if ((self = [super init])) { _owner = context; }
   return self;

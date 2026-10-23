@@ -22,6 +22,7 @@
 #include "components/content_settings/core/browser/permission_settings_registry.h"
 #include "components/content_settings/core/browser/permission_settings_info.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/prefs/pref_service.h"
@@ -36,9 +37,44 @@
 namespace {
 // ArcCore 1.170: conversion table at 0xc9d7034. Arc's public enum is stable,
 // Chromium's ContentSettingsType can be reordered between releases.
-constexpr std::array<int, 37> kNativeContentTypes = {
-    4, 5, 10, 59, 9, 33, 6, 2, 1, 3, 60, 26, 22, 31, 13, 14, 52, 36, 44,
-    40, 49, 61, 21, 43, 102, 55, 56, 39, 73, 86, 89, 93, 97, 98, 103, 110, 111};
+constexpr std::array<ContentSettingsType, 37> kNativeContentTypes = {
+    ContentSettingsType::GEOLOCATION,
+    ContentSettingsType::GEOLOCATION_WITH_OPTIONS,
+    ContentSettingsType::MEDIASTREAM_CAMERA,
+    ContentSettingsType::CAMERA_PAN_TILT_ZOOM,
+    ContentSettingsType::MEDIASTREAM_MIC,
+    ContentSettingsType::SENSORS,
+    ContentSettingsType::NOTIFICATIONS,
+    ContentSettingsType::JAVASCRIPT,
+    ContentSettingsType::IMAGES,
+    ContentSettingsType::POPUPS,
+    ContentSettingsType::WINDOW_MANAGEMENT,
+    ContentSettingsType::ADS,
+    ContentSettingsType::BACKGROUND_SYNC,
+    ContentSettingsType::SOUND,
+    ContentSettingsType::AUTOMATIC_DOWNLOADS,
+    ContentSettingsType::MIDI_SYSEX,
+    ContentSettingsType::CLIPBOARD_READ_WRITE,
+    ContentSettingsType::USB_GUARD,
+    ContentSettingsType::HID_GUARD,
+    ContentSettingsType::SERIAL_GUARD,
+    ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+    ContentSettingsType::LOCAL_FONTS,
+    ContentSettingsType::BLUETOOTH_GUARD,
+    ContentSettingsType::BLUETOOTH_SCANNING,
+    ContentSettingsType::HAND_TRACKING,
+    ContentSettingsType::VR,
+    ContentSettingsType::AR,
+    ContentSettingsType::IDLE_DETECTION,
+    ContentSettingsType::FEDERATED_IDENTITY_API,
+    ContentSettingsType::AUTO_PICTURE_IN_PICTURE,
+    ContentSettingsType::CAPTURED_SURFACE_CONTROL,
+    ContentSettingsType::AUTOMATIC_FULLSCREEN,
+    ContentSettingsType::KEYBOARD_LOCK,
+    ContentSettingsType::POINTER_LOCK,
+    ContentSettingsType::WEB_APP_INSTALLATION,
+    ContentSettingsType::LOCAL_NETWORK,
+    ContentSettingsType::LOOPBACK_NETWORK};
 // Verified by all 37 calls to the original ArcSiteSettingInfo.permissionType.
 constexpr std::array<NSInteger, 37> kPermissionTypes = {
     9, 9, 2, 1, 13, 20, 16, 28, 28, 28, 24, 28, 28, 28, 28, 14, 4, 28,
@@ -50,7 +86,7 @@ struct SiteSettingRecord {
 };
 std::optional<ContentSettingsType> NativeType(NSUInteger type) {
   if (type >= kNativeContentTypes.size()) return std::nullopt;
-  return static_cast<ContentSettingsType>(kNativeContentTypes[type]);
+  return kNativeContentTypes[type];
 }
 HostContentSettingsMap* Settings(ArcBrowserContext* context) {
   Profile* profile = ArcProfileFrom(context);
@@ -221,6 +257,10 @@ ARC_EXPORT @interface ArcSiteSettingInfo : NSObject
   for (NSUInteger permission = types.firstIndex; permission != NSNotFound;
        permission = [types indexGreaterThanIndex:permission]) {
     if (permission >= 28) continue;
+    if (permission == 9) {
+      WriteSetting(map, url, content_settings::GeolocationContentSettingsType(), setting);
+      continue;
+    }
     for (NSUInteger type = 0; type < kPermissionTypes.size(); ++type) {
       if (kPermissionTypes[type] != static_cast<NSInteger>(permission)) continue;
       WriteSetting(map, url, *NativeType(type), setting);
@@ -294,8 +334,15 @@ ARC_EXPORT @interface ArcSiteSettingInfo : NSObject
   (*area)->GetAll(mojo::NullRemote(), base::BindOnce(
       ^(std::vector<blink::mojom::KeyValuePtr> values) {
         std::optional<std::vector<uint8_t>> old;
-        for (const auto& entry : values) if (ArcUTF16(StorageString(entry->key)) == keyText) { old = entry->value; break; }
-        (*area)->Put(nativeKey, nativeValue, old, nullptr, base::BindOnce(^(bool success) {
+        auto existingKey = nativeKey;
+        for (const auto& entry : values) {
+          if (ArcUTF16(StorageString(entry->key)) == keyText) {
+            existingKey = entry->key;
+            old = entry->value;
+            break;
+          }
+        }
+        (*area)->Put(existingKey, nativeValue, old, nullptr, base::BindOnce(^(bool success) {
           (void)area;
           if (completion) completion();
         }));
