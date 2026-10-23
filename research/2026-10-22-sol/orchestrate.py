@@ -18,7 +18,15 @@ SPEC_WORKERS = ("spec-1", "spec-2", "spec-3", "spec-4")
 SSH = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=15"]
 
 
+def require_running_engine():
+    result=subprocess.run(SSH+["exe.dev","ls --json"],check=True,capture_output=True,text=True)
+    vm=next(v for v in json.loads(result.stdout)['vms'] if v['vm_name']=='arcmod-engine')
+    if vm['status']!='running':
+        raise RuntimeError('arcmod-engine is '+vm['status']+'; refusing SSH or implicit resume')
+
+
 def remote(host, command, **kwargs):
+    if host==ENGINE: require_running_engine()
     return subprocess.run(SSH + [host, command], check=True, **kwargs)
 
 
@@ -33,7 +41,7 @@ def launch(name, stage):
 def setup():
     remote(RESEARCH, "mkdir -p ~/work/prompts ~/work/logs ~/work/out ~/work/agents")
     assets=("run-agent.sh","validate-stage.py","read-function.py","index-corpus.py",
-            "reconcile-completion.py","notify-completion.py")
+            "reconcile-completion.py","notify-completion.py","auto-synthesis.sh")
     stage="/home/exedev/work/.harness-"+uuid.uuid4().hex
     remote(RESEARCH, "mkdir "+shlex.quote(stage))
     subprocess.run(["scp", "-q", *[str(ROOT/name) for name in assets],
@@ -48,8 +56,13 @@ def setup():
 def status():
     remote(RESEARCH, "date -u; cat ~/work/STATUS 2>/dev/null; "
            "ps -eo pid,ppid,etime,comm | rg 'codex|run-agent' || true; free -h")
-    remote(ENGINE, "tail -3 ~/work/STATUS; "
-           "rg 'DecompileAll:' ~/work/logs/ghidra-decompile.log | tail -3")
+    listing=remote("exe.dev","ls --json",capture_output=True,text=True)
+    vm=next(v for v in json.loads(listing.stdout)['vms'] if v['vm_name']=='arcmod-engine')
+    if vm['status']=='running':
+        remote(ENGINE, "tail -3 ~/work/STATUS; "
+               "rg 'DecompileAll:' ~/work/logs/ghidra-decompile.log | tail -3")
+    else:
+        print('arcmod-engine state:',vm['status'],'(no SSH/resume attempted)')
 
 
 def collect():
@@ -135,6 +148,7 @@ with tarfile.open(fileobj=sys.stdout.buffer,mode='w|gz') as t:
         destination = "/home/exedev/work/inputs/decompile-extra/" + batch
     stage = "/home/exedev/work/inputs/.decompile-" + uuid.uuid4().hex
     remote(RESEARCH, "mkdir " + shlex.quote(stage))
+    require_running_engine()
     sender = subprocess.Popen(SSH + [ENGINE, "python3 -c " + shlex.quote(program)],
                               stdout=subprocess.PIPE)
     receiver = subprocess.run(SSH + [RESEARCH, "tar xzf - -C " + shlex.quote(stage)],
@@ -171,7 +185,7 @@ print('Published',len(manifest),'verified shards')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["setup", "launch-initial", "status", "collect", "feed-decompile", "feed-extra", "launch-quality", "launch-specs", "launch-class-reviews", "launch-review"])
+    parser.add_argument("action", choices=["setup", "launch-initial", "status", "collect", "feed-decompile", "feed-extra", "launch-quality", "launch-protocols", "launch-specs", "launch-class-reviews", "launch-review"])
     action = parser.parse_args().action
     if action == "setup": setup()
     elif action == "launch-initial":
@@ -181,6 +195,7 @@ if __name__ == "__main__":
     elif action == "feed-decompile": feed_decompile()
     elif action == "feed-extra": feed_decompile(extra_only=True)
     elif action == "launch-quality": launch("quality", "initial")
+    elif action == "launch-protocols": launch("protocols", "initial")
     elif action == "launch-specs":
         for worker in SPEC_WORKERS: launch(worker, "specs")
     elif action == "launch-class-reviews":

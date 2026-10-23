@@ -2,7 +2,7 @@
 set -uo pipefail
 name=$1
 stage=${2:-initial}
-case "$name" in abi|cef|arc-layer|matcher|review|quality|spec-[1-4]) ;; *) exit 64 ;; esac
+case "$name" in abi|cef|arc-layer|matcher|review|quality|protocols|spec-[1-4]) ;; *) exit 64 ;; esac
 case "$stage" in initial|decompile|synthesis|specs|classreview) ;; *) exit 64 ;; esac
 root=/home/exedev/work
 job="$name-$stage"
@@ -18,6 +18,7 @@ elif [ "$stage" = synthesis ]; then
     test -e "$root/$role-decompile.done" || exit 75
   done
   test -e "$root/quality-initial.done" || exit 75
+  test -e "$root/protocols-initial.done" || exit 75
   for role in spec-1 spec-2 spec-3 spec-4; do
     test -e "$root/$role-classreview.done" || exit 75
   done
@@ -29,7 +30,7 @@ elif [ "$stage" = classreview ]; then
     test -e "$root/$role-specs.done" || exit 75
   done
 fi
-if [ "$stage" != initial ] || [ "$name" = quality ]; then
+if [ "$stage" != initial ] || [ "$name" = quality ] || [ "$name" = protocols ]; then
   for marker in FULL-CORPUS-READY INDEX-READY CHROMIUM-READY; do
     test -s "$root/inputs/$marker" || exit 75
   done
@@ -38,7 +39,7 @@ fi
 # Old initial runs have independently recorded reconciliation evidence. All new
 # work records prompt/input hashes; changed scopes require explicit new jobs.
 if [ -e "$root/$job.done" ]; then
-  if [ "$stage" = initial ] && [ "$name" != quality ]; then exit 0; fi
+  if [ "$stage" = initial ] && [ "$name" != quality ] && [ "$name" != protocols ]; then exit 0; fi
   python3 "$root/validate-stage.py" "$name" "$stage" check-identity || exit 76
   exit 0
 fi

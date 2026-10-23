@@ -4,6 +4,7 @@ import csv
 import hashlib
 import json
 from pathlib import Path
+import re
 import sqlite3
 import sys
 
@@ -12,7 +13,11 @@ role,stage,action=sys.argv[1:]
 job=role+'-'+stage
 directory=root/'agents'/role/stage
 
-def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+def sha(path):
+    digest=hashlib.sha256()
+    with path.open('rb') as stream:
+        for block in iter(lambda:stream.read(1048576),b''):digest.update(block)
+    return digest.hexdigest()
 def rows(path):
     assert path.is_file() and path.stat().st_size>0,path
     with path.open(newline='') as stream:return list(csv.DictReader(stream,delimiter='\t'))
@@ -22,6 +27,9 @@ def identity():
         path=root/'inputs'/name
         if path.exists():paths.append(path)
     paths+=sorted((root/'inputs').glob('decompile*/**/MANIFEST.json'))
+    if role=='protocols':
+        paths+=[root/'inputs/app168/dump/objc-classes.h']
+        paths+=[root/'inputs/binaries'/name for name in ('Arc-1.168.0.arm64','ArcCore-1.168.0.arm64','ArcCore-1.170.0.arm64')]
     return {str(path.relative_to(root)):sha(path) for path in paths}
 
 if action=='record-identity':
@@ -59,6 +67,25 @@ elif action=='artifacts':
         actual=[int(r['va'],0) for r in failed]
         assert len(actual)==len(set(actual)) and set(actual)==expected,'Failure inventory mismatch'
         assert (directory/'quality-gates.tsv').is_file()
+    elif role=='protocols':
+        dump=(root/'inputs/app168/dump/objc-classes.h').read_text()
+        blocks=re.findall(r'(?ms)^@protocol (Arc\w+)[^\n]*\n(.*?)^@end',dump)
+        names={name for name,_ in blocks}
+        inventory=rows(directory/'protocols.tsv')
+        actual=[r['protocol_name'] for r in inventory]
+        assert len(actual)==len(set(actual)) and set(actual)==names,'Protocol inventory coverage mismatch'
+        expected={(name,kind,selector) for name,body in blocks
+                  for kind,selector in re.findall(r'^([+-])\[\S+ (.*?)\];',body,re.M)}
+        callbacks=rows(directory/'callbacks.tsv')
+        actual=[(r['protocol_name'],r['kind'],r['selector']) for r in callbacks]
+        assert len(actual)==len(set(actual)) and set(actual)==expected,'Dump protocol declaration coverage mismatch'
+        assert {p.stem for p in (directory/'protocol-specs').glob('*.md') if p.stat().st_size>0}==names
+        assert isinstance(json.loads((directory/'coverage.json').read_text()),dict)
+        contract=rows(root/'agents/abi/initial/contract.tsv')
+        expected={(r['class_name'],r['category'],r['kind'],r['selector']) for r in contract if not r['encoding_168']}
+        audit=rows(directory/'older-encoding-audit.tsv')
+        actual=[(r.get('class_name',r.get('class')),r.get('category',''),r.get('kind'),r.get('selector')) for r in audit]
+        assert len(actual)==len(set(actual)) and set(actual)==expected,'Six older encoding identities missing/duplicated'
     elif stage=='synthesis':
         assert (directory/'engine-feasibility.md').stat().st_size>0
         actual=[r['class_name'] for r in rows(directory/'spec-index.tsv')]
