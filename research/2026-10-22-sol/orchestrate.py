@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parent
 RESEARCH = "arcmod-research.exe.xyz"
 ENGINE = "arcmod-engine.exe.xyz"
 WORKERS = ("abi", "cef", "arc-layer", "matcher")
+SPEC_WORKERS = ("spec-1", "spec-2", "spec-3", "spec-4")
 SSH = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=15"]
 
 
@@ -31,9 +32,15 @@ def launch(name, stage):
 
 def setup():
     remote(RESEARCH, "mkdir -p ~/work/prompts ~/work/logs ~/work/out ~/work/agents")
-    subprocess.run(["scp", "-q", str(ROOT / "run-agent.sh"),
-                    RESEARCH + ":work/run-agent.sh.new"], check=True)
-    remote(RESEARCH, "mv ~/work/run-agent.sh.new ~/work/run-agent.sh")
+    assets=("run-agent.sh","validate-stage.py","read-function.py","index-corpus.py",
+            "reconcile-completion.py","notify-completion.py")
+    stage="/home/exedev/work/.harness-"+uuid.uuid4().hex
+    remote(RESEARCH, "mkdir "+shlex.quote(stage))
+    subprocess.run(["scp", "-q", *[str(ROOT/name) for name in assets],
+                    RESEARCH+":"+stage+"/"], check=True)
+    for name in assets:
+        remote(RESEARCH, "mv "+shlex.quote(stage+"/"+name)+" "+shlex.quote("/home/exedev/work/"+name))
+    remote(RESEARCH, "rmdir "+shlex.quote(stage))
     subprocess.run(["scp", "-q", *map(str, sorted((ROOT / "prompts").glob("*.md"))),
                     RESEARCH + ":work/prompts/"], check=True)
 
@@ -164,7 +171,7 @@ print('Published',len(manifest),'verified shards')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["setup", "launch-initial", "status", "collect", "feed-decompile", "feed-extra", "launch-review"])
+    parser.add_argument("action", choices=["setup", "launch-initial", "status", "collect", "feed-decompile", "feed-extra", "launch-quality", "launch-specs", "launch-class-reviews", "launch-review"])
     action = parser.parse_args().action
     if action == "setup": setup()
     elif action == "launch-initial":
@@ -173,4 +180,9 @@ if __name__ == "__main__":
     elif action == "collect": collect()
     elif action == "feed-decompile": feed_decompile()
     elif action == "feed-extra": feed_decompile(extra_only=True)
+    elif action == "launch-quality": launch("quality", "initial")
+    elif action == "launch-specs":
+        for worker in SPEC_WORKERS: launch(worker, "specs")
+    elif action == "launch-class-reviews":
+        for worker in SPEC_WORKERS: launch(worker, "classreview")
     elif action == "launch-review": launch("review", "synthesis")

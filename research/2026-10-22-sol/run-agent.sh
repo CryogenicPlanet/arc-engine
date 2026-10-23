@@ -11,9 +11,8 @@ mkdir -p "$dir" "$root/logs" "$root/out"
 # A second monitor must not launch the same logical job twice.
 exec 9>"$root/$name.lock"
 flock -n 9 || exit 0
-test ! -e "$root/$job.done" || exit 0
 if [ "$stage" = decompile ]; then
-  test -e "$root/$name-initial.done" && test -e "$root/inputs/decompile/READY" || exit 75
+  test -e "$root/$name-initial.done" || exit 75
 elif [ "$stage" = synthesis ]; then
   for role in abi cef arc-layer matcher; do
     test -e "$root/$role-decompile.done" || exit 75
@@ -23,13 +22,27 @@ elif [ "$stage" = synthesis ]; then
     test -e "$root/$role-classreview.done" || exit 75
   done
 elif [ "$stage" = specs ]; then
-  test -e "$root/inputs/FULL-CORPUS-READY" && test -e "$root/inputs/INDEX-READY" || exit 75
+  test -e "$root/arc-layer-initial.done" || exit 75
 elif [ "$stage" = classreview ]; then
   test -e "$root/quality-initial.done" || exit 75
   for role in spec-1 spec-2 spec-3 spec-4; do
     test -e "$root/$role-specs.done" || exit 75
   done
 fi
+if [ "$stage" != initial ] || [ "$name" = quality ]; then
+  for marker in FULL-CORPUS-READY INDEX-READY CHROMIUM-READY; do
+    test -s "$root/inputs/$marker" || exit 75
+  done
+  test -e "$root/arc-layer-initial.done" || exit 75
+fi
+# Old initial runs have independently recorded reconciliation evidence. All new
+# work records prompt/input hashes; changed scopes require explicit new jobs.
+if [ -e "$root/$job.done" ]; then
+  if [ "$stage" = initial ] && [ "$name" != quality ]; then exit 0; fi
+  python3 "$root/validate-stage.py" "$name" "$stage" check-identity || exit 76
+  exit 0
+fi
+python3 "$root/validate-stage.py" "$name" "$stage" record-identity || exit 76
 echo $$ > "$root/$job.pid"
 stamp() { printf '%s JOB %s %s\n' "$(date -u +%FT%TZ)" "$job" "$*" >> "$root/STATUS"; }
 stamp START
@@ -47,7 +60,8 @@ nice -n 10 timeout --signal=TERM --kill-after=30s 90m codex exec --ignore-user-c
   > "$root/logs/$job.jsonl" 2>&1
 rc=$?
 if [ "$rc" -eq 0 ] && [ -s "$root/out/$job.md" ] && [ -s "$dir/$stage/report.md" ] \
-  && [ "$dir/$stage/report.md" -nt "$attempt" ]; then
+  && [ "$dir/$stage/report.md" -nt "$attempt" ] \
+  && python3 "$root/validate-stage.py" "$name" "$stage" artifacts; then
   touch "$root/$job.done"
   stamp DONE
 else
