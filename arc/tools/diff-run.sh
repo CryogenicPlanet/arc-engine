@@ -15,7 +15,10 @@ exec "$E/arc/tools/locked.sh" bash -c '
   ./package-engine.sh ours156 > /dev/null 2>&1 || { echo "package failed"; exit 1; }
   rm -rf "$HOME/Library/Application Support/ArcModAgent-ours156" "results/ours/$SC"
   SCARG=""; [ "$SC" != launch-slice ] && SCARG="--scenario $SC"
-  bun tests/launch-slice/run.ts --app "$E/../arc/build/ArcModAgent-ours156.app" --out "results/ours/$SC" --record $SCARG 2>&1 | tail -12
+  bun tests/launch-slice/run.ts --app "$E/../arc/build/ArcModAgent-ours156.app" --out "results/ours/$SC" --record $SCARG > "results/ours/$SC.harness.log" 2>&1
+  harness=$?
+  tail -12 "results/ours/$SC.harness.log"
+  [ $harness -eq 0 ] || echo "HARNESS EXIT $harness (see results/ours/$SC.harness.log)"
   for g in results/golden/arc-1.170-$SC/launch-*/record.jsonl; do
     n=$(basename "$(dirname "$g")")
     o="results/ours/$SC/$n/record.jsonl"
