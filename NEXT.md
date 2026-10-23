@@ -48,6 +48,9 @@ Rahul: "just go build it" — an ArcCore built from Chromium so the engine can f
 - Sol workers (codex exec, gpt-6.1-sol high, full access, no commits): logs `logs/wp/<pkg>.log`, report
   `logs/wp/<pkg>.report.md`. Wave 1 running: core, profile, app, scenarios; wave 2 running: ai, renderer, omnibox.
   Wave 2 waiting on core: ui, extensions, webextras, sessions. Lead reviews each report, commits, launches next.
+- Board: the lead PULLS chirp projects/arc at every checkpoint (cursor in logs/lead-board-cursor); routing to
+  @claude isn't automatic. Workers apply their own reviewed patches (COMMON.md "Integration authority",
+  patches/MANIFEST + arc/tools/regen-patches.sh).
 - Lead owns: patches/ (host mode 0003 incl. custom BrowserWindow gate), arc_internal.h (core appends its section),
   arc_browser_application.mm, arc_browser_context.mm, arc_values.mm, allowlist.
 - ArcMod integration: `bun tools/build-mod.ts --engine <ArcCore.framework>` (arc ebd02f4); package-engine.sh uses it.
