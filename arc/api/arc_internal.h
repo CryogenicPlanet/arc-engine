@@ -5,6 +5,7 @@
 
 #import <AppKit/AppKit.h>
 
+#include <memory>
 #include <string>
 
 #include "base/strings/sys_string_conversions.h"
@@ -108,5 +109,13 @@ ARC_EXPORT @interface ArcBrowser : NSObject
 // (nullptr: the system network context, as the application-level loader does). Delegate callbacks follow
 // ArcURLLoadDelegate. Returns the cancellation token the API returns.
 ArcURLLoadCancellationToken* ArcStartURLLoad(Profile* profile, ArcURLLoadConfiguration* configuration, id delegate);
+
+ARC_EXPORT @interface ArcWebContents : NSObject
++ (instancetype)wrapperForWebContents:(content::WebContents*)contents;
++ (instancetype)createWithProfile:(Profile*)profile configuration:(id)configuration;
+- (content::WebContents*)webContents;
+- (std::unique_ptr<content::WebContents>)takeOwnedWebContents;
+- (BOOL)foregroundForInsertion;
+@end
 
 #endif  // ARC_API_ARC_INTERNAL_H_

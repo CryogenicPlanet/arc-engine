@@ -1,3 +1,11 @@
 # Work package "app": sources and deps (absolute //arc/... paths). Owned by that package.
-wp_app_sources = [ "//arc/api/arc_app_cpu.mm", "//arc/api/arc_app_url.mm" ]
-wp_app_deps = [ "//services/network/public/cpp", "//net" ]
+wp_app_sources = [
+  "//arc/api/arc_app_cpu.mm",
+  "//arc/api/arc_app_flags.mm",
+  "//arc/api/arc_app_url.mm",
+]
+wp_app_deps = [
+  "//components/webui/flags",
+  "//net",
+  "//services/network/public/cpp",
+]

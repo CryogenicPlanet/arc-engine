@@ -1,0 +1,55 @@
+{
+  "scenario": "launch-slice",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-ours156.app",
+  "slug": "ours156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "S1 launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "S2 open A",
+      "outcome": "pass",
+      "detail": "title=launch-slice A"
+    },
+    {
+      "step": "S3 navigate",
+      "outcome": "pass",
+      "detail": "B=true (61 ms) frag=true back=true title=launch-slice B href=http://127.0.0.1:61604/b"
+    },
+    {
+      "step": "S4 store",
+      "outcome": "pass",
+      "detail": "ok"
+    },
+    {
+      "step": "S2-S5",
+      "outcome": "inconclusive",
+      "detail": "agent-cdp open: ECONNRESET: The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()"
+    },
+    {
+      "step": "S6 quit",
+      "outcome": "fail",
+      "detail": "SIGTERM (Browser.close failed); browser + 0 helpers exited"
+    },
+    {
+      "step": "S7 relaunch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "S7 readback",
+      "outcome": "fail",
+      "detail": "{\"cookie\":\"\",\"local\":null,\"idb\":\"idb-93\"}"
+    },
+    {
+      "step": "S8 quit",
+      "outcome": "fail",
+      "detail": "SIGTERM (Browser.close did not exit in 15 s); browser + 6 helpers exited"
+    }
+  ]
+}

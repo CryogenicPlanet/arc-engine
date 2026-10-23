@@ -1,0 +1,35 @@
+{
+  "scenario": "cookies-storage-site-settings",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app",
+  "slug": "trace156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "cookie/local/session storage roundtrip",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "dismiss notification prompt without granting",
+      "outcome": "fail",
+      "detail": ""
+    },
+    {
+      "step": "scenario actions",
+      "outcome": "inconclusive",
+      "detail": "Error: expected one native control; observed 0"
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 7 helpers exited"
+    }
+  ]
+}

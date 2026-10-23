@@ -1,3 +1,11 @@
 # Work package "renderer": sources and deps (absolute //arc/... paths). Owned by that package.
-wp_renderer_sources = []
-wp_renderer_deps = []
+wp_renderer_sources = [
+  "//arc/api/arc_renderer_effects.mm",
+  "//arc/api/arc_renderer_values.mm",
+  "//arc/api/arc_renderer_web_contents.mm",
+]
+wp_renderer_deps = [
+  "//arc/common:renderer_interfaces",
+  "//arc/renderer",
+  "//mojo/public/cpp/bindings",
+]

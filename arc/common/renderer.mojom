@@ -1,0 +1,9 @@
+// Copyright 2026 ArcMod.
+module arc.mojom;
+
+// Associated with a RenderFrame so ordering is preserved with navigation IPC.
+// This is our internal transport, not ArcCore's binary-private Mojo protocol.
+interface RenderFrameAgent {
+  InsertStylesheet(string identifier, string stylesheet);
+  RemoveStylesheet(string identifier);
+};

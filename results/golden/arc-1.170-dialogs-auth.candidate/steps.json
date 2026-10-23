@@ -1,0 +1,30 @@
+{
+  "scenario": "dialogs-auth",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app",
+  "slug": "trace156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "HTTP auth prompt",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "HTTP auth accepted",
+      "outcome": "fail",
+      "detail": ""
+    },
+    {
+      "step": "quit",
+      "outcome": "fail",
+      "detail": "SIGTERM (Browser.close did not exit in 15 s); browser + 5 helpers exited"
+    }
+  ]
+}
