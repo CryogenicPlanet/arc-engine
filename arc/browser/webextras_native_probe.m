@@ -69,6 +69,31 @@ static IMP gTools;
 static IMP gMedia;
 static IMP gDisplay;
 static IMP gClose;
+// Opt-in observation is separate from public-call work and never retains a delegate/service.
+static BOOL gFrontendEvents;
+static IMP gInspect;
+static IMP gFocus;
+@interface WebextrasFrontendObservation : NSObject
+@property(nonatomic, weak) WebextrasProbeEntry* entry;
+@property(nonatomic, copy) NSString* spanID;
+@property(nonatomic, copy) NSString* nonce;
+@property(nonatomic, copy) NSString* expectedURL;
+@property(nonatomic) NSUInteger ownerTag;
+@property(nonatomic, strong) NSNumber* recordBegin;
+@property(nonatomic, strong) NSMutableArray* callbacks;
+@property(nonatomic) NSTimeInterval deadline;
+@property(nonatomic) NSUInteger forwarding;
+@property(nonatomic) NSUInteger ignored;
+@property(nonatomic) BOOL overflow;
+@end
+@implementation WebextrasFrontendObservation
+@synthesize nonce=_nonce,expectedURL=_expectedURL,ownerTag=_ownerTag;
+@synthesize entry=_entry,spanID=_spanID,recordBegin=_recordBegin,callbacks=_callbacks,deadline=_deadline;
+@synthesize forwarding=_forwarding,ignored=_ignored,overflow=_overflow;
+@end
+static NSObject* gFrontendLock;
+static WebextrasFrontendObservation* gFrontendObservation;
+
 // Opt-in only. The DTO is a real public position result, retained across requests.
 static BOOL gMediaClock;
 static id gHeldPosition;
@@ -244,6 +269,53 @@ static void Closed(id receiver, SEL selector, id tools) {
   if (work) { event[@"forwarded"] = @YES; event[@"recordAfterForwarding"] = Offset(); --work.forwardingCallbacks; }
   else if (!NSThread.isMainThread) BackgroundCallback(tools, NO, 0, entered, offset);
 }
+// This wrapper observes the existing app IMP, including nested callbacks, exactly once.
+static NSMutableDictionary* FrontendCallbackBegin(id receiver, SEL selector, id tools, NSUInteger mode,
+                                                 WebextrasFrontendObservation** captured) {
+  @synchronized(gFrontendLock) {
+    WebextrasFrontendObservation* observation=gFrontendObservation;
+    if (!observation || NSDate.timeIntervalSinceReferenceDate > observation.deadline) return nil;
+    WebextrasProbeEntry* entry=observation.entry;id owner=entry.owner;id registeredTools=entry.tools;
+    if (!owner || !tools || registeredTools != tools) { ++observation.ignored; return nil; }
+    if (observation.callbacks.count >= 128) { observation.overflow=YES; return nil; }
+    NSMutableDictionary* event=[@{ @"selector":NSStringFromSelector(selector), @"mode":@(mode),
+      @"ownerTag":@(entry.identifier), @"ownerClass":NSStringFromClass(object_getClass(owner)),
+      @"serviceClass":NSStringFromClass(object_getClass(tools)), @"delegateClass":NSStringFromClass(object_getClass(receiver)),
+      @"abi":@(method_getTypeEncoding(class_getInstanceMethod(object_getClass(receiver),selector))),
+      @"mainThread":@(NSThread.isMainThread), @"ordinal":@(observation.callbacks.count+1),
+      @"forwardDepth":@(++observation.forwarding), @"recordOffset":Offset(), @"forwarded":@NO,
+      @"nativeBeforeTicks":[NSString stringWithFormat:@"%llu",(unsigned long long)mach_absolute_time()] } mutableCopy];
+    [observation.callbacks addObject:event]; *captured=observation; return event;
+  }
+}
+static void FrontendCallbackEnd(WebextrasFrontendObservation* observation, NSMutableDictionary* event, BOOL returned) {
+  if (!event) return;
+  @synchronized(gFrontendLock) {
+    event[@"recordAfterForwarding"]=Offset();event[@"forwarded"]=@(returned);
+    event[@"nativeAfterTicks"]=[NSString stringWithFormat:@"%llu",(unsigned long long)mach_absolute_time()];
+    --observation.forwarding;
+  }
+}
+static void FrontendDisplay(id receiver, SEL selector, id tools, NSUInteger mode) {
+  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,tools,mode,&observation);BOOL returned=NO;
+  @try { Display(receiver,selector,tools,mode);returned=YES; }
+  @finally { FrontendCallbackEnd(observation,event,returned); }
+}
+static void FrontendClosed(id receiver, SEL selector, id tools) {
+  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,tools,0,&observation);BOOL returned=NO;
+  @try { Closed(receiver,selector,tools);returned=YES; }
+  @finally { FrontendCallbackEnd(observation,event,returned); }
+}
+static void FrontendInspect(id receiver, SEL selector, id tools, NSUInteger mode) {
+  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,tools,mode,&observation);BOOL returned=NO;
+  @try { ((void (*)(id,SEL,id,NSUInteger))gInspect)(receiver,selector,tools,mode);returned=YES; }
+  @finally { FrontendCallbackEnd(observation,event,returned); }
+}
+static void FrontendFocus(id receiver, SEL selector, id tools) {
+  WebextrasFrontendObservation* observation=nil;NSMutableDictionary* event=FrontendCallbackBegin(receiver,selector,tools,0,&observation);BOOL returned=NO;
+  @try { ((void (*)(id,SEL,id))gFocus)(receiver,selector,tools);returned=YES; }
+  @finally { FrontendCallbackEnd(observation,event,returned); }
+}
 static const char* Unqualified(const char* type) {
   for (;;) {
     switch (*type) {
@@ -273,11 +345,22 @@ static BOOL Install(void) {
       !Signature(display, 4, "v") || !Signature(close, 3, "v")) return NO;
   NSMethodSignature* displayABI = [NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(display)];
   if (!Argument(displayABI, 2, "@") || !Argument(displayABI, 3, "Q")) return NO;
+  Method inspect=NULL,focus=NULL;
+  if(gFrontendEvents){
+    inspect=class_getInstanceMethod(delegate,NSSelectorFromString(@"webContentsDevTools:inspectModeDidChange:"));
+    focus=class_getInstanceMethod(delegate,NSSelectorFromString(@"webContentsDevToolsNeedsFocus:"));
+    NSMethodSignature* inspectABI=inspect?[NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(inspect)]:nil;
+    NSMethodSignature* focusABI=focus?[NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(focus)]:nil;
+    NSMethodSignature* closeABI=[NSMethodSignature signatureWithObjCTypes:method_getTypeEncoding(close)];
+    if(!Signature(inspect,4,"v")||!Signature(focus,3,"v")||!Argument(inspectABI,2,"@")||!Argument(inspectABI,3,"Q")||!Argument(focusABI,2,"@")||!Argument(closeABI,2,"@"))return NO;
+    gInspect=method_setImplementation(inspect,(IMP)FrontendInspect);
+    gFocus=method_setImplementation(focus,(IMP)FrontendFocus);
+  }
   gSetURL = method_setImplementation(url, (IMP)SetURL);
   gTools = method_setImplementation(tools, (IMP)Tools);
   gMedia = method_setImplementation(media, (IMP)Media);
-  gDisplay = method_setImplementation(display, (IMP)Display);
-  gClose = method_setImplementation(close, (IMP)Closed);
+  gDisplay = method_setImplementation(display, gFrontendEvents ? (IMP)FrontendDisplay : (IMP)Display);
+  gClose = method_setImplementation(close, gFrontendEvents ? (IMP)FrontendClosed : (IMP)Closed);
   return YES;
 }
 static BOOL CleanupSubscription(WebextrasProbeWork* work);
@@ -291,6 +374,34 @@ static void Finish(NSString* error) {
   gWork.response[@"recordEnd"] = Offset();
   WriteJSON(gWork.response, [gRequest stringByAppendingString:@".response.json"]);
   gWork = nil;
+}
+static NSString* FrontendObservationOperation(WebextrasProbeWork* work, WebextrasProbeEntry* entry, NSDictionary* request, NSString* operation) {
+  if(!gFrontendEvents)return @"frontend observation was not explicitly enabled";
+  NSString* spanID=request[@"spanID"];NSNumber* ownerTag=request[@"ownerTag"];NSString* nonce=request[@"observationNonce"];
+  NSArray* components=[NSURL URLWithString:gExpectedURL].pathComponents;
+  NSString* expectedNonce=components.count==3?components[1]:nil;
+  if(![spanID isKindOfClass:NSString.class]||!spanID.length||spanID.length>128||![ownerTag isKindOfClass:NSNumber.class]||!ownerTag.unsignedIntegerValue||CFGetTypeID((__bridge CFTypeRef)ownerTag)==CFBooleanGetTypeID()||![ownerTag isEqualToNumber:@(ownerTag.unsignedIntegerValue)]||
+     ![nonce isKindOfClass:NSString.class]||![nonce isEqual:expectedNonce]||![request[@"url"] isEqual:gExpectedURL])return @"invalid frontend span/nonce/owner identity";
+  @synchronized(gFrontendLock){
+    if([operation isEqual:@"frontend-observe-arm"]){
+      if(gFrontendObservation)return @"frontend observation already armed";
+      if(!entry.owner||!entry.tools||entry.identifier!=ownerTag.unsignedIntegerValue)return @"frontend arm owner/service unavailable";
+      WebextrasFrontendObservation* observation=[WebextrasFrontendObservation new];
+      observation.entry=entry;observation.spanID=spanID;observation.nonce=nonce;observation.expectedURL=gExpectedURL;observation.ownerTag=entry.identifier;observation.recordBegin=Offset();observation.callbacks=[NSMutableArray array];
+      observation.deadline=NSDate.timeIntervalSinceReferenceDate+5;gFrontendObservation=observation;
+    }
+    WebextrasFrontendObservation* observation=gFrontendObservation;
+    if(!observation||![observation.spanID isEqual:spanID]||observation.ownerTag!=ownerTag.unsignedIntegerValue||![observation.nonce isEqual:nonce]||![observation.expectedURL isEqual:request[@"url"]])return @"frontend span/owner changed";
+    if(![operation isEqual:@"frontend-observe-arm"]&&![operation isEqual:@"frontend-observe-read"]&&![operation isEqual:@"frontend-observe-disarm"])return @"unsupported frontend observation operation";
+    work.response[@"observation"]=@{@"spanID":observation.spanID,@"ownerTag":@(observation.ownerTag),@"observationNonce":observation.nonce,@"recordBegin":observation.recordBegin,
+      @"recordEnd":Offset(),@"callbacks":SafeJSON(observation.callbacks,0),@"forwarding":@(observation.forwarding),
+      @"ignoredServiceCallbacks":@(observation.ignored),@"overflow":@(observation.overflow),@"expired":@(NSDate.timeIntervalSinceReferenceDate>observation.deadline)};
+    if([operation isEqual:@"frontend-observe-disarm"]){
+      if(observation.forwarding)return @"frontend callbacks still forwarding";
+      gFrontendObservation=nil;
+    }
+  }
+  return nil;
 }
 static BOOL HasABI(id target, NSString* selector, NSUInteger count, char result) {
   NSMethodSignature* signature = [target methodSignatureForSelector:NSSelectorFromString(selector)];
@@ -412,6 +523,21 @@ static void Poll(void) {
       [identifier isEqual:gLastID] || ![operation isKindOfClass:NSString.class] ||
       ![request[@"url"] isEqual:gExpectedURL]) return;
   gLastID = identifier;
+  // An immutable armed identity permits journal-only cleanup after weak owner/service loss.
+  // This dispatch does not admit new arming or normal public work on another entry.
+  if(gFrontendEvents&&([operation isEqual:@"frontend-observe-read"]||[operation isEqual:@"frontend-observe-disarm"])){
+    @synchronized(gFrontendLock){
+      WebextrasFrontendObservation* observation=gFrontendObservation;
+      if(observation){
+        gWork=[WebextrasProbeWork new];gWork.publicCalls=[NSMutableArray array];gWork.timeline=[NSMutableArray array];
+        gWork.started=NSDate.timeIntervalSinceReferenceDate;gWork.entry=observation.entry;
+        gWork.response=[@{@"id":identifier,@"operation":operation,@"url":gExpectedURL,@"pid":@(NSProcessInfo.processInfo.processIdentifier),
+          @"mainThread":@(NSThread.isMainThread),@"matches":@(observation.entry.owner&&observation.entry.tools?1:0),
+          @"ownerTag":@(observation.ownerTag),@"recordBegin":Offset(),@"callbacks":[NSMutableArray array]} mutableCopy];
+        Finish(FrontendObservationOperation(gWork,observation.entry,request,operation));return;
+      }
+    }
+  }
   NSMutableArray* matches = [NSMutableArray array];
   for (WebextrasProbeEntry* entry in gEntries.objectEnumerator) {
     if (entry.owner && entry.tools && entry.media && [entry.url isEqual:gExpectedURL]) [matches addObject:entry];
@@ -430,6 +556,10 @@ static void Poll(void) {
   id tools = entry.tools;
   id media = entry.media;
   @try {
+    if ([operation hasPrefix:@"frontend-observe-"]) {
+      Finish(FrontendObservationOperation(gWork,entry,request,operation));return;
+    }
+    if(gFrontendObservation){Finish(@"public probe work cannot overlap frontend observation");return;}
     if ([operation isEqual:@"registry"]) {
       gWork.response[@"toolsClass"] = NSStringFromClass(object_getClass(tools));
       gWork.response[@"mediaClass"] = NSStringFromClass(object_getClass(media));
@@ -557,6 +687,8 @@ __attribute__((constructor)) static void StartWebextrasNativeProbe(void) {
     if (!path || !url || !record) return;
     gRequest = @(path); gExpectedURL = @(url); gRecord = @(record);
     gMediaClock = [NSProcessInfo.processInfo.environment[@"ARC_WEBEXTRAS_MEDIA_CLOCK"] isEqual:@"1"];
+    gFrontendEvents=[NSProcessInfo.processInfo.environment[@"ARC_WEBEXTRAS_FRONTEND_EVENTS"] isEqual:@"1"];
+    if(gFrontendEvents){gFrontendLock=[NSObject new];if(gMediaClock)return;}
     NSURL* parsed = [NSURL URLWithString:gExpectedURL];
     if (!gRequest.isAbsolutePath || ![gRequest.lastPathComponent isEqual:@"webextras-request.json"] ||
         ![parsed.scheme isEqual:@"http"] || ![parsed.host isEqual:@"127.0.0.1"] ||

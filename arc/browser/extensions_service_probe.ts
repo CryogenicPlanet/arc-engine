@@ -39,6 +39,28 @@ const exec = (argv: string[]) => {
   if (!result.success) throw Error(`${argv[0]}: ${result.stderr.toString().trim()}`);
   return result.stdout.toString().trim();
 };
+type ProbeBundleIdentity = {
+  CFBundleName: string; ArcModAgentSession: string;
+  CFBundleIdentifier: string; ArcModLocalMode: true;
+};
+function readDisposableBundleIdentity(agent: string): ProbeBundleIdentity {
+  if (!["trace156", "ours156"].includes(agent)) throw Error("unknown disposable agent");
+  const app = resolve(root, `../arc/build/ArcModAgent-${agent}.app`);
+  const conversion = Bun.spawnSync(["/usr/bin/plutil", "-convert", "json", "-o", "-", join(app, "Contents/Info.plist")], {stdout:"pipe", stderr:"pipe"});
+  if (!conversion.success || conversion.stderr.length) throw Error("invalid disposable agent Info.plist: plutil failed");
+  let decoded: unknown;
+  try { decoded = JSON.parse(conversion.stdout.toString()); }
+  catch { throw Error("invalid disposable agent Info.plist: malformed JSON"); }
+  if (!decoded || typeof decoded !== "object" || Array.isArray(decoded)) throw Error("invalid disposable agent Info.plist: dictionary required");
+  const info = decoded as Record<string, unknown>;
+  if (info.CFBundleName !== `ArcModAgent-${agent}` || info.ArcModAgentSession !== agent ||
+      info.CFBundleIdentifier !== `company.thebrowser.Browser.mod.agent.${agent}` || info.ArcModLocalMode !== true)
+    throw Error("invalid disposable agent bundle identity: typed name/session/identifier/local mode mismatch");
+  return {CFBundleName: info.CFBundleName, ArcModAgentSession: info.ArcModAgentSession,
+    CFBundleIdentifier: info.CFBundleIdentifier, ArcModLocalMode: info.ArcModLocalMode};
+}
+// Reject malformed identities before output, fixtures, app data or app launch.
+for (const agent of agents) readDisposableBundleIdentity(agent);
 const lockPID = Number(readFileSync(join(root, "logs/arccore-build.lock/pid"), "utf8").trim());
 let ancestor = process.pid;
 for (let depth = 0; ancestor !== lockPID && ancestor > 1 && depth < 20; ++depth)
@@ -251,7 +273,7 @@ const fixtureInputs = ["A", "B"].map(label => ({ label, path: realpathSync(join(
 writeFileSync(join(out,"fixture-inputs.json"), JSON.stringify({fixtureMode, startupArguments, fixtures:fixtureInputs},null,2));
 writeFileSync(join(out,"provenance.json"), JSON.stringify({...provenance, fixtureMode, startupArguments, fixtureInputs},null,2));
 type Action = { step: string; [key: string]: any };
-type Run = { agent: string; actions: Action[]; errors: string[]; uncovered: string[]; cleanup?: string; pid?: number; diagnostics?: any[]; ownership?: any; readiness?: any; policyPrecondition?: any; fixtureMode?: string; startupIntent?: any; reloadObservation?: any; startupCallbacks?: any[] };
+type Run = { agent: string; actions: Action[]; errors: string[]; uncovered: string[]; cleanup?: string; pid?: number; diagnostics?: any[]; ownership?: any; readiness?: any; policyPrecondition?: any; fixtureMode?: string; startupIntent?: any; reloadObservation?: any; startupCallbacks?: any[]; bundleIdentity?: ProbeBundleIdentity };
 const runs: Run[] = [];
 const callbackSelectors = new Set([
   "browserContext:didEnableExtension:", "browserContext:didDisableExtension:", "browserContext:didInstallExtension:", "browserContext:didUninstallExtension:",
@@ -403,7 +425,7 @@ try {
     try {
       assert(fixtureInputs.every(fixture => fixture.files.every(unchanged)),"generated fixture source changed before launch");
       assert(sources.every(unchanged) && unchanged(builtEngine) && unchanged(selectedEngine(agent)) && unchanged(probeBinary) && unchanged(recorderBinary) && unchanged(imageFingerprintTool), "provenance changed before launch; rebuild/repackage and use a fresh output directory");
-      assert(plist("ArcModAgentSession") === agent && plist("CFBundleIdentifier") === `company.thebrowser.Browser.mod.agent.${agent}` && plist("CFBundleName") === `ArcModAgent-${agent}`, "disposable bundle identity mismatch");
+      run.bundleIdentity = readDisposableBundleIdentity(agent);
       assert(!pids(exe).length, "agent already running; refusing attach/termination");
       assert(!Bun.spawnSync(["/usr/sbin/lsof", "-nP", `-iTCP:${port}`, "-sTCP:LISTEN"], { stdout: "ignore", stderr: "ignore" }).success, "CDP port occupied");
       const agentData = join(process.env.HOME!, "Library/Application Support", `ArcModAgent-${agent}`);

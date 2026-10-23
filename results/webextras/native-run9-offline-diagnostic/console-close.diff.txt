@@ -1,0 +1,14 @@
+methods differing: 11 (missing 11, extra 0, returns 0, callback args 0, counts 0; internal-only 0, ours-internal 0)
+callback sequence: {"golden": 2, "ours": 1, "first_divergence": 1, "golden_from": ["ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:"], "ours_from": []}
+caller attribution: on (app calls + engine setters)
+missing {"method": "->engine -ArcColor4f a", "golden_calls": 1, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcColor4f b", "golden_calls": 1, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcColor4f g", "golden_calls": 1, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcColor4f r", "golden_calls": 1, "example": {"args": "[]", "ret": "1"}}
+missing {"method": "->engine -ArcWebContents isReadyToDisplay", "golden_calls": 2, "example": {"args": "[]", "ret": "true"}}
+missing {"method": "->engine -ArcWebContents pendingRenderFrameViewportSize", "golden_calls": 1, "example": {"args": "[]", "ret": "\"{1042, 716}\""}}
+missing {"method": "->engine -ArcWebContents rootBackgroundColor", "golden_calls": 1, "example": {"args": "[]", "ret": "\"<ArcColor4f#1>\""}}
+missing {"method": "->engine -ArcWebContents setIsReadyToDisplay:", "golden_calls": 2, "example": {"args": "[true]", "ret": "null"}}
+missing {"method": "->engine -ArcWebContents setPendingRenderFrameViewportSize:", "golden_calls": 1, "example": {"args": "[\"{1042, 716}\"]", "ret": "null"}}
+missing {"method": "->engine -ArcWebContents setRootBackgroundColor:", "golden_calls": 1, "example": {"args": "[\"<ArcColor4f#1>\"]", "ret": "null"}}
+missing {"method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "golden_calls": 1, "example": {"args": "[\"ProfileKeepAlive-origin\", \"kDevToolsWindow\"]", "ret": "null"}}

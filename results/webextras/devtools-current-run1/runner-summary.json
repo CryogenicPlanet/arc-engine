@@ -1,0 +1,44 @@
+{
+  "scenario": "devtools",
+  "runNumber": "1",
+  "startedAt": "2026-10-23T15:19:24.340191+00:00",
+  "scope": "canonical app-record scenario; default frozen comparator; no fixture override",
+  "errors": [],
+  "comparisons": [
+    {
+      "launch": "launch-1",
+      "clean": false,
+      "mismatches": {
+        "missing": 22,
+        "extra": 2,
+        "return_mismatch": 12,
+        "arg_mismatch": 4,
+        "count_mismatch": 66
+      },
+      "firstTwoLines": [
+        "methods differing: 106 (missing 22, extra 2, returns 12, callback args 4, counts 66; internal-only 10, ours-internal 20)",
+        "callback sequence: {\"golden\": 56, \"ours\": 61, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserve"
+      ]
+    },
+    {
+      "launch": "launch-2",
+      "clean": false,
+      "mismatches": {
+        "missing": 25,
+        "extra": 2,
+        "return_mismatch": 15,
+        "arg_mismatch": 4,
+        "count_mismatch": 63
+      },
+      "firstTwoLines": [
+        "methods differing: 109 (missing 25, extra 2, returns 15, callback args 4, counts 63; internal-only 9, ours-internal 20)",
+        "callback sequence: {\"golden\": 58, \"ours\": 62, \"first_divergence\": 1, \"golden_from\": [\"ADK.ADKApplication didInitializeBrowserProcess\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\"], \"ours_from\": [\"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:\", \"ADK.CrashKeysObserve"
+      ]
+    }
+  ],
+  "harnessExit": 1,
+  "runtimeAccepted": false,
+  "profileRestored": true,
+  "finishedAt": "2026-10-23T15:20:33.885743+00:00",
+  "accepted": false
+}

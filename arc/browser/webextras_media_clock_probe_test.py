@@ -28,7 +28,7 @@ class MediaClockTests(unittest.TestCase):
 import {PublicTraceProjection} from %s;
 const source=readFileSync(%s,'utf8');
 const validators=source.slice(source.indexOf('type RecordRow'),source.indexOf('const root ='));
-const api=new Function('PublicTraceProjection',new Bun.Transpiler({loader:'ts'}).transformSync(validators+`\nreturn {parseRecords,expectedSelectors,validateActionTrace,outcomeErrors,clockDelta,validateClockPhase,mediaClockPolicy,mediaClockPhases,clockActionKey,mediaClockPrepareJS,evaluateMediaClock,mediaClockFailureDOMJS,activateMediaClockTarget,clockIdentityJS,runtimeLogOutcome,isClockInconclusive,clockVisibilityLimitMilliseconds};`))(PublicTraceProjection);
+const api=new Function('PublicTraceProjection',new Bun.Transpiler({loader:'ts'}).transformSync(validators+`\nreturn {parseRecords,expectedSelectors,validateActionTrace,outcomeErrors,clockDelta,validateClockPhase,mediaClockPolicy,mediaClockPhases,clockActionKey,mediaClockPrepareJS,evaluateMediaClock,mediaClockFailureDOMJS,activateMediaClockTarget,clockIdentityJS,runtimeLogOutcome,isClockInconclusive,clockVisibilityLimitMilliseconds,clockModeFromArgs,mediaServiceClockPhases,mediaServiceClockPrepareJS,serviceClockObservationJS,validateMediaServiceClockPhase,isNilClockPosition};`))(PublicTraceProjection);
 const check=(v:any,m:string)=>{if(!v)throw Error(m)};
 const rejects=(fn:()=>void,m:string)=>{let caught=false;try{fn()}catch{caught=true}check(caught,m)};
 ''' % (json.dumps(str(ROOT / 'arc/browser/webextras_fixture_projection.ts')), json.dumps(str(DRIVER))) + body)
@@ -228,12 +228,12 @@ const wrong=fn({href:'https://foreign.invalid/private-token'},{},null,null,null,
 
     def test_actual_phase_is_saved_before_prepare_and_failure_snapshot_runs_once(self):
         source = DRIVER.read_text()
-        start = source.index('        for (const phase of mediaClockPhases) {')
-        start += len('        for (const phase of mediaClockPhases) {')
+        start = source.index('        for (const phase of (mediaServiceClock?mediaServiceClockPhases:mediaClockPhases)) {')
+        start += len('        for (const phase of (mediaServiceClock?mediaServiceClockPhases:mediaClockPhases)) {')
         end = source.index('\n        }\n      }\n      run.phase = "cdp-close-fixture";', start)
         body = source[start:end]
         self.bun('''
-const {mediaClockPrepareJS,mediaClockFailureDOMJS,isClockInconclusive}=api;
+const {mediaClockPrepareJS,mediaClockFailureDOMJS,isClockInconclusive}=api;const mediaServiceClock=false;
 for(const failDiagnostic of [false,true]){
  const writes:any[]=[],labels:string[]=[],run:any={},clockReport:any={phases:[]};
  const dir='unused',server={port:1234},token='owned-nonce',fixtureURL='http://127.0.0.1:1234/owned-nonce/fixture';
@@ -311,11 +311,11 @@ const scanStart=source.indexOf('const ownedLog=join(dir,"app.log")');
 check(scanStart>source.indexOf('cdp?.close()')&&scanStart<source.indexOf('writeFileSync(join(dir, "observations.json")'),'scan not in completed cleanup path');
 check(source.includes('run.errors.push(...run.runtimeStatus.errors)'),'runtime failures not included in acceptance errors');
 const acceptance=source.slice(source.indexOf('const complete ='),source.indexOf('const parity ='));
-const accepts=new Function('runs','agents','actionManifest',new Bun.Transpiler({loader:'ts'}).transformSync(acceptance)+';return complete');
+const accepts=new Function('runs','agents','actionManifest','devToolsFrontendEvents',new Bun.Transpiler({loader:'ts'}).transformSync(acceptance)+';return complete');
 const manifest=Array.from({length:11},(_,index)=>({key:String(index)}));
 const run=(errors:any[])=>({errors,cleanup:'Browser.close',actions:manifest.map(()=>({traceShape:[{mock:true}]}))});
-check(accepts([run(good.errors)],['ours156'],manifest)===true,'clean fixture acceptance changed');
-check(accepts([run(bad.errors)],['ours156'],manifest)===false&&accepts([run(forced.errors)],['ours156'],manifest)===false,'fatal/forced runtime accepted as complete');
+check(accepts([run(good.errors)],['ours156'],manifest,false)===true,'clean fixture acceptance changed');
+check(accepts([run(bad.errors)],['ours156'],manifest,false)===false&&accepts([run(forced.errors)],['ours156'],manifest,false)===false,'fatal/forced runtime accepted as complete');
 
 '''.replace('__FATAL__', json.dumps(fatal)))
 
@@ -329,7 +329,7 @@ check(accepts([run(bad.errors)],['ours156'],manifest)===false&&accepts([run(forc
         acceptance = source[start:source.index('writeFileSync(join(out, "summary.json")', start)]
         path = self.directory / 'default-pending.ts'
         path.write_text('''
-const mediaClock=false,fixtureVerified=false,fixtureImage='WebextrasNativeProbe.dylib',fixtureComparisonPending='pending-fixture-comparison-support';
+const mediaClock=false,mediaServiceClock=false,anyClock=false,devToolsFrontendEvents=false,fixtureVerified=false,fixtureImage='WebextrasNativeProbe.dylib',fixtureComparisonPending='pending-fixture-comparison-support';
 const operations=['console-open','frontend','console-close','panel-closed','execute-evaluate','execute-malformed','execute-unknown','subscription','media-types','pip-request-error','pip-exit-error'];
 const actionManifest=operations.map(operation=>({key:operation,operation}));
 const agents=['trace156','ours156'],runs:any[]=[],differences:any[]=[];
@@ -347,6 +347,134 @@ if(!runs.every(run=>run.actions.length===11&&run.errors.length===1)||complete!==
 ''')
         result = subprocess.run(['bun', str(path)], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_actual_service_only_js_six_exact_inputs_without_media_or_activation(self):
+        self.bun(r'''
+const fixture='http://127.0.0.1/nonce/fixture',nonce='nonce';
+check(source.includes('<main id="webextras-probe" data-nonce='),'mock nonce element differs from actual served HTML');
+for(const phase of api.mediaServiceClockPhases){
+ const issued:any[]=[],events:string[]=[],window:any={};let now=0;
+ const session={_state:'none',get playbackState(){return this._state},set playbackState(state:string){events.push('state:'+state);this._state=state},setPositionState(input:any){events.push('input');issued.push(structuredClone(input))}};
+ const document={querySelector:(selector:string)=>{check(selector==='#webextras-probe','service touched a media element');return{dataset:{nonce}}},visibilityState:'hidden',hidden:true,
+   createElement:()=>{throw Error('service created media/DOM')},body:{append:()=>{throw Error('service changed body')}}};
+ const fn=new Function('location','document','navigator','window','performance','return '+api.mediaServiceClockPrepareJS(phase,fixture,nonce));
+ const result=fn({href:fixture},document,{mediaSession:session},window,{now:()=>++now});
+ const receipt=result.receipt;
+ check(JSON.stringify(issued)==JSON.stringify([{duration:20,position:phase.base,playbackRate:phase.issuedRate}]),'exact service API input changed');
+ check(events.join(',')==='state:'+(phase.rate===0?'paused':'playing')+',input','state/setter order changed');
+ check(receipt.source==='public-service-only'&&receipt.phase===phase.name&&receipt.input.playbackRate!==0&&receipt.playbackState===(phase.rate===0?'paused':'playing'),'invalid public service receipt');
+ check(receipt.observed.visibilityState==='hidden'&&receipt.observed.hidden&&receipt.observed.urlMatches&&receipt.observed.nonceMatches&&receipt.observed.mediaSessionPresent,'actual hidden identity observation lost');
+ check(receipt.observed.performanceNow<=receipt.beforeSetPerformanceNow&&receipt.beforeSetPerformanceNow<receipt.afterSetPerformanceNow,'service receipt clocks lost');
+ check(window.__webextrasClockReceipt===receipt&&window.__webextrasClockPhase===phase.name,'receipt not stored exactly');
+ const observation=new Function('location','document','navigator','window','performance','return '+api.serviceClockObservationJS(fixture,nonce))({href:fixture},document,{mediaSession:session},window,{now:()=>++now});
+ check(observation.positionReceipt===receipt&&observation.phase===phase.name&&observation.playbackState===receipt.playbackState,'current receipt not observed');
+ for(const bad of ['wrong-url','wrong-nonce','no-api']){
+  const badWindow:any={};let calls=0;
+  const badSession={playbackState:'none',setPositionState:()=>++calls};
+  let failed=false;try{fn({href:bad==='wrong-url'?'http://off-fixture':fixture},{...document,querySelector:()=>({dataset:{nonce:bad==='wrong-nonce'?'wrong':nonce}})},{mediaSession:bad==='no-api'?undefined:badSession},badWindow,{now:()=>++now})}catch{failed=true}
+  check(failed&&calls===0&&badWindow.__webextrasClockFailure.stage==='service-identity-before','bad service identity/API issued state');
+ }
+ const js=api.mediaServiceClockPrepareJS(phase,fixture,nonce)+api.serviceClockObservationJS(fixture,nonce);
+ for(const forbidden of ['createElement',"#webextras-clock-video",'play()','pause()','canvas','Audio','Page.bringToFront','Emulation'])check(!js.includes(forbidden),'non-service stimulus: '+forbidden);
+}
+check(JSON.stringify(api.mediaServiceClockPhases.map((p:any)=>[p.rate,p.base,p.issuedRate]))===JSON.stringify([[0,1.25,1],[1,1.25,1],[2,1.25,2],[0,2.25,1],[0,7.25,1.5],[1.5,7.25,1.5]]),'six fixed service phases changed');
+check(api.mediaServiceClockPhases.length*17+13===115,'service public pair count changed');
+''')
+
+    def test_service_clock_relational_validator_negatives_and_nil_inconclusive(self):
+        self.bun(r'''
+for(const phase of api.mediaServiceClockPhases){
+ const state=phase.rate===0?'paused':'playing';
+ const receipt={phase:phase.name,source:'public-service-only',playbackState:state,input:{duration:20,position:phase.base,playbackRate:phase.issuedRate},
+  observed:{urlMatches:true,nonceMatches:true,mediaSessionPresent:true,performanceNow:0,visibilityState:'hidden',hidden:true},beforeSetPerformanceNow:1,afterSetPerformanceNow:2};
+ const actions=Array.from({length:5},(_,index)=>{
+  const elapsed=index<3?index*.25:.5+(index-2)*.4,position=phase.base+phase.rate*elapsed;
+  const observed={...receipt.observed,performanceNow:elapsed*1000+3,phase:phase.name,playbackState:state,positionReceipt:receipt};
+  const publicCalls=(index<3?['position','playbackRate','duration','currentTime','endOfMedia']:['currentTime']).map(selector=>({selector,
+   value:selector==='playbackRate'?phase.rate:selector==='duration'?20:selector==='endOfMedia'?false:position,
+   clockBeforeTicks:String(1000000000+elapsed*1e9),clockAfterTicks:String(1000001000+elapsed*1e9)}));
+  return {ok:true,operation:index<3?'clock-snapshot':'clock-held-time',ownerTag:1,actionKey:api.clockActionKey(phase.name,index),clockPhase:phase.name,clockAttempt:index,
+   clock:{heldToken:index<3?'token'+index:'token2',dtoTag:index<3?index+1:3,timebaseNumer:1,timebaseDenom:1},publicCalls,positionReceipt:receipt,domBefore:observed,domAfter:observed};
+ });
+ api.validateMediaServiceClockPhase(phase,actions);
+ const mutate=(fn:(x:any[])=>void)=>{const x=structuredClone(actions);fn(x);rejects(()=>api.validateMediaServiceClockPhase(phase,x),'bad service phase passed')};
+ mutate(x=>{x[2].publicCalls.find((c:any)=>c.selector==='duration').value=8.208});
+ mutate(x=>{x[2].publicCalls.find((c:any)=>c.selector==='playbackRate').value=phase.rate+1});
+ mutate(x=>{x[2].publicCalls.find((c:any)=>c.selector==='endOfMedia').value=true});
+ mutate(x=>{for(const a of x)for(const c of a.publicCalls)if(c.selector==='currentTime')c.value+=100});
+ mutate(x=>{x[4].clock.heldToken='stale'});mutate(x=>{x[4].clock.dtoTag=99});mutate(x=>{x[4].ownerTag=99});
+ mutate(x=>{x[4].domAfter={...x[4].domAfter,nonceMatches:false}});
+ mutate(x=>{x[4].domAfter={...x[4].domAfter,mediaSessionPresent:false}});
+ mutate(x=>{x[4].domAfter={...x[4].domAfter,playbackState:'none'}});
+ mutate(x=>{x[4].domAfter={...x[4].domAfter,positionReceipt:{input:{duration:8}}}});
+ mutate(x=>{for(const a of x)a.positionReceipt.input.position+=1});mutate(x=>{x.reverse()});
+ if(phase.rate)mutate(x=>{const q=x[2].publicCalls.find((c:any)=>c.selector==='currentTime').value;for(const a of x.slice(3))a.publicCalls[0].value=q});
+ else mutate(x=>{x[2].publicCalls.find((c:any)=>c.selector==='currentTime').value=phase.base+.25});
+ const nil=structuredClone(actions);nil[0]={...nil[0],ok:false,probeError:'position did not return an actual ArcMediaPosition',publicCalls:[{selector:'position',resultClass:null}]};
+ let error:any;try{api.validateMediaServiceClockPhase(phase,nil)}catch(e){error=e}check(api.isClockInconclusive(error),'authentic nil receipt not inconclusive');
+ const wrongClass={...nil[0],publicCalls:[{selector:'position',resultClass:'UnexpectedClass'}]};check(!api.isNilClockPosition(wrongClass),'wrong class treated as nil');
+}
+''')
+
+    def test_actual_service_mode_orchestration_has_no_activation_or_resource_stimulus(self):
+        source = DRIVER.read_text()
+        body = source[source.index('      if (anyClock) {'):source.index('      run.phase = "cdp-close-fixture";')]
+        self.bun(r'''
+const {evaluateMediaClock,mediaClockPolicy,mediaServiceClockPhases,mediaClockPhases,clockActionKey,mediaServiceClockPrepareJS,serviceClockObservationJS,validateMediaServiceClockPhase,isNilClockPosition,isClockInconclusive}=api;
+const assert=check;const mediaClock=false,mediaServiceClock=true,anyClock=true,probeMode='media-service-clock';
+const dir='unused',server={port:1234},token='owned-nonce',fixtureURL='http://127.0.0.1:1234/owned-nonce/fixture',agent='original',port=12345,pid=1,target='owned-target';
+const mediaClockIdentity=undefined,run:any={actions:[],errors:[]},registry={ownerTag:1},window:any={},writes:any[]=[];
+const join=(...parts:string[])=>parts.join('/'),writeFileSync=(path:string,text:string)=>writes.push({path,body:JSON.parse(text)});
+let now=0,sequence=0,tag=0,held:any,releaseCount=0,position:any;
+const session={playbackState:'none',setPositionState(input:any){position={...input,at:now}}};
+const document={querySelector:(selector:string)=>{check(selector==='#webextras-probe','media element queried');return{dataset:{nonce:token}}},visibilityState:'hidden',hidden:true,
+ createElement:()=>{throw Error('created media')},body:{append:()=>{throw Error('appended media')}}};
+const cdp={targetCommand:async(actualTarget:string,method:string,params:any)=>{check(actualTarget===target&&method==='Runtime.evaluate','activation/non-evaluation command issued');
+ return{result:{value:await new Function('location','document','navigator','window','performance','return '+params.expression)({href:fixtureURL},document,{mediaSession:session},window,{now:()=>now})}}}};
+const verifyAgentEndpoint=()=>pid,sleep=async(ms:number)=>{now+=ms},outcomeErrors=()=>[];
+const action=async(operation:string,extra:any={})=>{
+ if(operation==='clock-release'){check(extra.heldToken===held.token,'release token changed');held=undefined;releaseCount++;return{ok:true,publicCalls:[],timeline:[]}}
+ const id='native-'+(++sequence);if(operation==='clock-snapshot')held={token:id,tag:++tag,input:{...position}};
+ else check(extra.heldToken===held.token,'held action changed DTO token');
+ const q=held.input.position+(session.playbackState==='paused'?0:held.input.playbackRate)*(now-held.input.at)/1000;
+ const selectors=operation==='clock-snapshot'?['position','playbackRate','duration','currentTime','endOfMedia']:['currentTime'];
+ return{id,operation,ok:true,matches:1,ownerTag:1,callbacks:[],timeline:[],clock:{heldToken:held.token,dtoTag:held.tag,timebaseNumer:1,timebaseDenom:1},
+ publicCalls:selectors.map(selector=>({selector,value:selector==='currentTime'?q:selector==='duration'?20:selector==='playbackRate'?(session.playbackState==='paused'?0:held.input.playbackRate):false,
+ clockBeforeTicks:String(1000000000+now*1e6),clockAfterTicks:String(1000001000+now*1e6)}))};
+};
+__BODY__
+check(run.actions.length===30&&releaseCount===6&&run.errors.length===0,'service orchestration missing actions/releases or false failure');
+check(run.actions.reduce((count:number,a:any)=>count+a.publicCalls.length,0)===102,'service clock public pair count wrong');
+const phases=writes.filter((write:any)=>write.path.endsWith('media-clock.json')).at(-1).body.phases;
+check(phases.length===6&&phases.every((phase:any)=>phase.functional==='pass'&&phase.status==='complete'&&phase.attempts.length===5),'six service phases did not pass actual branch');
+const evaluations=writes.filter((write:any)=>write.path.endsWith('clock-evaluations.jsonl'));
+check(evaluations.length===66&&evaluations.every((entry:any)=>entry.body.rawResult&&!entry.body.expression.includes('video')&&!entry.body.label.startsWith('activation')),'raw evaluations missing or service activated/loaded video');
+'''.replace('__BODY__', body))
+
+    def test_modes_mutually_exclusive_and_video_helpers_unchanged(self):
+        self.bun(r'''
+check(api.clockModeFromArgs([])==='default'&&api.clockModeFromArgs(['--media-clock'])==='media-clock'&&api.clockModeFromArgs(['--media-service-clock'])==='media-service-clock','mode selection wrong');
+for(const flags of [['--media-clock','--media-service-clock'],['--media-service-clock','--media-clock'],['--media-service-clock','--media-service-clock'],['--media-clock','--media-clock']])rejects(()=>api.clockModeFromArgs(flags),'ambiguous mode accepted');
+const measurement=source.slice(source.indexOf('      if (anyClock) {'),source.indexOf('      run.phase = "cdp-close-fixture";'));
+const activationStart=measurement.indexOf('if(mediaClock){'),activationEnd=measurement.indexOf('const clockReport');
+check(activationStart>=0&&activationEnd>activationStart&&measurement.slice(activationStart,activationEnd).includes('Page.bringToFront'),'video-only activation guard lost');
+check(measurement.match(/Page.bringToFront/g)?.length===2,'activation path duplicated');
+const manifestBody=source.slice(source.indexOf('const actionManifest ='),source.indexOf('try {',source.indexOf('const actionManifest =')));
+for(const mode of ['default','media-clock','media-service-clock']){
+ const operations=Array.from({length:11},(_,i)=>'op'+i);
+ const fn=new Function('operations','anyClock','mediaServiceClock','mediaClockPhases','mediaServiceClockPhases','clockActionKey','expectedSelectors',new Bun.Transpiler({loader:'ts'}).transformSync(manifestBody)+';return actionManifest');
+ const manifest=fn(operations,mode!=='default',mode==='media-service-clock',api.mediaClockPhases,api.mediaServiceClockPhases,api.clockActionKey,()=>[]);
+ check(manifest.length===(mode==='default'?11:41),'mode action count changed');
+}
+''')
+        archived = ROOT/'logs/wp/webextras-native8-service-lane-inputs/arc/browser/webextras_native_probe.ts'
+        old, current = archived.read_text(), DRIVER.read_text()
+        for begin, end in [('const mediaClockPhases =','// Separate public service-only lane:'),
+                           ('function validateClockPhase(', 'function validateClockReceivers('),
+                           ('function mediaClockPrepareJS(', '// Persist the complete Runtime.evaluate response'),
+                           ('function activateMediaClockTarget(', 'function runtimeLogOutcome(')]:
+            old_end = 'function clockActionKey(' if end.startswith('// Separate') else end
+            self.assertEqual(current[current.index(begin):current.index(end)], old[old.index(begin):old.index(old_end)])
 
     def test_actual_native_retained_dto_stale_token_and_disabled_gate(self):
         # Include the actual helper routines. These ObjC mocks construct no native/C++ DTO.

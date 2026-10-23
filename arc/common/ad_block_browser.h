@@ -34,11 +34,17 @@ struct AdBlockConfiguration {
   // independent profile and renderer copies.
   bool has_ruleset_update = false;
   bool has_cosmetic_rules = false;
+  bool has_url_rules = false;
 };
 
+// Notifications carry the manager operation, not a synthetic rules revision.
+struct AdBlockChange {
+  bool publish_rules = false;
+  bool publish_exclusions = false;
+};
 const AdBlockConfiguration& GetAdBlockConfiguration();
 base::CallbackListSubscription ObserveAdBlockConfiguration(
-    base::RepeatingClosure callback);
+    base::RepeatingCallback<void(AdBlockChange)> callback);
 
 // The application is remembered weakly. Feature11 changes call Refresh after
 // releasing the app's feature-table lock because Refresh invokes its getter.

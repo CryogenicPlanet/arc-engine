@@ -10,6 +10,8 @@ if [ "${1:-}" = --locked ]; then
 fi
 run_number=4
 media_clock=0
+media_service_clock=0
+frontend_events=0
 seen_run_number=0
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -19,11 +21,20 @@ while [ "$#" -gt 0 ]; do
     --media-clock)
       [ "$media_clock" -eq 0 ] || { echo "repeated --media-clock" >&2; exit 2; }
       media_clock=1; shift ;;
-    *) echo "usage: $0 [--run-number N] [--media-clock]" >&2; exit 2 ;;
+    --media-service-clock)
+      [ "$media_service_clock" -eq 0 ] || { echo "repeated --media-service-clock" >&2; exit 2; }
+      media_service_clock=1; shift ;;
+    --devtools-frontend-events)
+      [ "$frontend_events" -eq 0 ] || { echo "repeated --devtools-frontend-events" >&2; exit 2; }
+      frontend_events=1; shift ;;
+    *) echo "usage: $0 [--run-number N] [--media-clock | --media-service-clock | --devtools-frontend-events]" >&2; exit 2 ;;
   esac
 done
+[ "$((media_clock + media_service_clock + frontend_events))" -le 1 ] || { echo "probe modes are mutually exclusive" >&2; exit 2; }
 clock_args=()
 [ "$media_clock" -eq 0 ] || clock_args=(--media-clock)
+[ "$media_service_clock" -eq 0 ] || clock_args=(--media-service-clock)
+[ "$frontend_events" -eq 0 ] || clock_args=(--devtools-frontend-events)
 if [ "$locked" -ne 1 ]; then
   exec "$ROOT/arc/tools/locked.sh" bash "$0" --locked --run-number "$run_number" ${clock_args[@]+"${clock_args[@]}"}
 fi
@@ -42,17 +53,21 @@ stem="$ROOT/logs/wp/webextras.native.run$run_number"
 output="$ROOT/results/webextras/native-run$run_number"
 [ ! -e "$output" ] && [ ! -e "$stem.source-before.json" ] || { echo "Refusing prior native-run$run_number artifacts" >&2; exit 2; }
 source_snapshot() {
-  python3 - "$ROOT" "$stem" "$1" "$media_clock" <<'PY'
+  python3 - "$ROOT" "$stem" "$1" "$media_clock" "$media_service_clock" "$frontend_events" <<'PY'
 import datetime, hashlib, json, pathlib, sys
 root, stem, phase = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
-mode = 'media-clock' if sys.argv[4] == '1' else 'default'
+assert sum(value == '1' for value in sys.argv[4:7]) <= 1, 'probe modes are mutually exclusive'
+mode = 'media-clock' if sys.argv[4] == '1' else 'media-service-clock' if sys.argv[5] == '1' else 'devtools-frontend-events' if sys.argv[6] == '1' else 'default'
 paths = sorted(root.glob('arc/api/arc_webextras_*.mm')) + [root/path for path in (
     'arc/browser/webextras_media.h', 'arc/browser/webextras_values.h',
     'arc/wp/webextras.gni', 'arc/browser/webextras_native_probe.m',
     'arc/browser/webextras_native_probe.ts', 'arc/browser/webextras_native_probe.sh',
     'arc/browser/webextras_fixture_inputs.py', 'arc/browser/webextras_fixture_projection.ts',
     'arc/browser/webextras_native_current_run.sh')]
-if mode == 'media-clock':
+# Both opt-in lanes freeze the same16 inventory; service-only does not load/serve these video assets.
+if mode == 'devtools-frontend-events':
+    paths += [root/'arc/browser/webextras_frontend_comparison.py']
+if mode in ('media-clock','media-service-clock'):
     paths += [root/path for path in ('arc/browser/webextras_media_clock_fixture.webm',
                                     'arc/browser/webextras_media_clock_fixture.json')]
 files = {}
@@ -65,7 +80,7 @@ for path in paths:
     files[str(path.relative_to(root))] = {'sha256': digest, 'size': after.st_size,
                                         'mtimeNs': after.st_mtime_ns}
 state = {'capturedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-         'phase': phase, 'probeMode': mode, 'scope': 'owned production and native probe source only', 'files': files}
+         'phase': phase, 'probeMode': mode, 'mediaResourceUsed': mode == 'media-clock', 'scope': 'owned production and native probe source only', 'files': files}
 pathlib.Path(stem+'.source-'+phase+'.json').write_text(json.dumps(state, indent=2)+'\n')
 if phase != 'before':
     original = json.loads(pathlib.Path(stem+'.source-before.json').read_text())

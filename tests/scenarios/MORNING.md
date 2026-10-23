@@ -13,11 +13,11 @@ engine failure. No script synthesizes global input or touches a human profile.
 | Close/restore tab | `arcmod-tabs-restore` | ready-to-record | Existing native archive/restore flow, selected fixture URL, old target gone, fixed restored document. Uses `tabs-restore.ts`. |
 | Local mode + service filtering | `arcmod-local-services` | ready-to-record; unrecorded until morning | Six exact agent-domain preferences false; Chromium DNS rejection and loopback recovery. Tests-owned `arcmod-native-services-driver.m` also probes the exact public NSURLSession factory and getaddrinfo inside the same PID: blocked firestore.googleapis.com must return ArcMod's exact -1009 policy failure/EAI_NONAME, with loopback HTTP200 and numeric DNS controls. Native Foundation/libc proof is sidecar assertions, outside the engine boundary recorder's method scope. |
 | Agent MCP tools | `arcmod-agent-mcp` | ready-to-record | Actual stdio initialize/list plus all 15 tools. Attach to exact harness PID/slug/port; separate pages, redacted fixture password, trusted text/click, stale element/native/page rejection, navigate/back/forward, PNG, PID-bound observed native New Window, exact close, detach preserves externally launched app. |
-| Profiles create/switch | `arcmod-profiles` | probe-only; guaranteed inconclusive | Captures enabled state of observed New Profile, then reports blocked/unimplemented mutation. Static name-field ID importMenuFeatureNewProfileTextField, picker spacePicker and submit labels are recovered. Creation selected-Spaces/behavior and exact move/reload confirmation flow remain unresolved. Full fixed isolation/persistence plan and known controls are exported. |
+| Profiles create/switch | `arcmod-profiles` | ready-to-record; runtime unverified | Exact owned name field; guarded Create-only or Next/sole-Space selection; exact destination warning and Switch it up. Observe assignment, select exact profile names, prove independent A markers, return old marker, then new-PID/same-profile persistence for both. No private state mutation or action retry. |
 | Spaces create/switch | `arcmod-spaces` | ready-to-record; runtime unverified | Checked one initial Space; one exact owned Space-name setter and Create button; require two Space entries and fixed new name. Previous/Next must restore exact A/B selection, then repeat in a new PID with the same no-symlink disposable profile. Static identifiers/bindings are recovered; live editor behavior, placement and persistence remain unverified. |
 | Single Little Arc | `arcmod-little-arc` | unsupported; guaranteed inconclusive | Current agent Info.plist marker disables external Little Arc and singleton consolidation, and redirects New Little Arc to full windows. Full morning plan is exported, but the normal `windows` scenario tests the agent redirect only. |
 | App-event key shortcuts | `arcmod-key-shortcuts` | ready-to-record; unrecorded until morning | Tests-owned `arcmod-key-driver.m` sends only seven whitelisted keyDown/keyUp pairs through public NSApplication.sendEvent inside the exact disposable PID and already-key observed window. Fixed native outcomes cover Cmd+T/L/comma/W/Shift+T/N/Option+N; optional local-monitor observations are retained in receipts. This tests app-event/key-equivalent routing, not OS hardware/WindowServer delivery or keyboard layouts. |
-| Import from disposable fixture | `arcmod-disposable-import` | unsupported; guaranteed inconclusive | Emits one Netscape bookmark file under this run's outDir; never selects real CHROME/SAFARI sources. File contains exact folder `ArcCore Fixture Folder`, title `ArcCore Imported Bookmark 7f3a`, href `<fixture base>/arccore-import-fixture`, ADD_DATE 1700000000, no credentials/history/cookies. Existing wizard has no observed explicit file/source-root selector. |
+| Import from disposable fixture | `arcmod-disposable-import` | ready-to-record; runtime unverified | One explicit directory/HTML, native13/public12 descriptor and bookmark mask2, two live dedicated targets, one import, five own-delegate sidecar events, exact folder/leaf result and new-PID/same-profile persistence. Static route and code reviewed; no ADK callback/date/parity claim. |
 
 ## Additional app-owner morning case
 
@@ -46,8 +46,8 @@ parser positive and real non-app child observation are offline proof only;
 records first observed absence and proof-writing times. Frozen inputs and exact
 check receipts are `logs/wp/scenarios-termination-{freeze.json,offline-check.ts,offline-check.json}`.
 The actual native two-Quit flow has never run. All eleven morning scripts remain
-unrecorded; the requested ten still have seven complete scripts and three blocked
-plans.
+unrecorded; the requested ten now have nine complete scripts and one blocked
+plan (true Little Arc).
 
 ## Recording after unlock
 
@@ -93,28 +93,16 @@ names are saved under outDir for review; stdout remains JSON-RPC only.
 
 ## Requests to lead
 
-1. Profile creation/switching: establish creation selected-Spaces/behavior and the
-   exact move/reload confirmation branch/actions after unlock before mutations. The menu commands are **not
-   inherently disabled**: accepted `results/golden/arc-1.170-context-menus/native-1.json`
-   exposes enabled New Profile (:1769), New Space… (:3817) and Change Profile
-   (:3868); older bookmarks-import snapshots expose disabled commands.
-   Background/menu-validation state can affect this. `../arc/notes/shortcut-audit.md:16-17`
-   independently records change-profile/naming sheets opened then cancelled,
-   but gives no control labels. `../arc/mods/hello/ArcMod.m:68-69`'s local allowlist
-   omits these commands while :81-85 retain original validation, which does not
-   establish an account/local-mode gate. The guaranteed-inconclusive profile probe
-   observes the current exact state without bypassing it. Fixed profile/Space
-   names, storage markers, tab selection and persistence assertions are written;
-   a targeted static scout subsequently recovered shared name-field ID
-   `importMenuFeatureNewProfileTextField` (0x1015.c:55051), picker `spacePicker`
-   (:39865), profile display-name rows, and Create Profile/Change Profile/Next/
-   Back/Cancel labels (:31216-31336). These are exported as `morningControls`.
-   Change Profile→New Profile writes an input enum (:40630-40638), rather than
-   proving creation behavior or focused-Space preselection; context constructor
-   :30082-30112 accepts those unresolved caller arguments (0x1029.c:81898).
-   Move/reload warning branch/actions remain unproved. Do not guess or mutate
-   private context fields to finish the flow.
-   Spaces now has the separately reviewed write-only script described below.
+1. Profile creation/switching now has a complete write-only script. Static bindings
+   prove name field `importMenuFeatureNewProfileTextField` (0x1015.c:55051),
+   picker `spacePicker` (:39865-39867), valid-name/nonempty-Space validity
+   (:30175-30233), bound sole-Space selection (:57263-57309) and the exact
+   destination warning/`Switch it up` (:31800-32020). The first recording must
+   still observe those owned controls, exact selected-name readback and document
+   replacement. The scenario fails on unknown sheets, ambiguous controls or
+   uncertain dispatch. Bounded read-only readiness polls precede one submit
+   action. Independent review is CLEAN; frozen SHA and validation receipt are
+   `logs/wp/scenarios-profiles-freeze.json`. No native run has occurred.
 
 2. Single Little Arc: provide an explicitly isolated disposable bundle/harness
    retaining the human policy, without touching ArcMod's human app/data or
@@ -125,6 +113,14 @@ names are saved under outDir for review; stdout remains JSON-RPC only.
    `../arc/notes/local-mode.md:50-59` validates a separate singleton mode, but
    the current harness identity guards (`tests/launch-slice/run.ts:33,41`)
    reject that bundle; it is not a drop-in substitute for trace156/ours156.
+   Read-only follow-up found no existing safe opt-in. A precise UNAPPLIED
+   sibling-owner proposal is `logs/wp/scenarios-little-arc-policy-proposal.md`
+   (Chirp #140942): explicit `--single-little-arc-parity` accepted only for
+   trace156/ours156, typed plist marker with exact session/bundle/name/app checks,
+   and exemption only from the three Little Arc exclusions. Agent identity,
+   profile isolation, local service policy and ordinary defaults remain. Actual
+   external URL delivery, native panel/profile controls and replacement ordering
+   still need observation; this proposal does not make the case ready.
 3. Key shortcuts now have a tests-owned in-process AppKit driver. It constructs
    public NSEvent keyDown/keyUp objects and calls NSApplication.sendEvent for an
    exact observed agent window, refusing dispatch if that window is no longer key.
@@ -135,30 +131,34 @@ names are saved under outDir for review; stdout remains JSON-RPC only.
    The sibling inventory supplies the exact default bindings in
    `../arc/resources/shortcut-menu-inventory.json`; `../arc/notes/perf-wins.md:18`
    documents BrowserApp.sendEvent forwarding to super. No recording was attempted.
-4. Import: expose an explicit fixture file/source-root input in the importer or
-   supply a disposable browser source root that the wizard can select without
-   discovering the user's profiles. Never click a discovered CHROME/SAFARI source
-   merely to inspect its contents. Existing `bookmarks-import/native-3.json:1347-1392`
-   exposes CHROME/SAFARI/Maybe Later/Next only. `../arc/tools/import-arc-data.ts:136,148`
-   hardcodes human Arc data and Keychain access, so it must not be used for this
-   fixture. The generated fixture is ready for an explicit safe input.
-   Read-only follow-up found public
-   `ArcImportSourceProfile.initWithSafariExportedData:profileName:name:categories:`
-   (runtime TSV:874) and the public context import entrypoint (:2387), but the
-   initializer only copies a supplied path into custom native source type13.
-   The original archive/file/directory format and absence of real-profile fallback
-   are unverified. Modern Chromium Safari ZIP support is not proof of this custom
-   original importer. Do not pass the bare HTML or guess a ZIP layout.
-   The missing already-exported original body is `FUN_083680dc` in research
-   snapshot `/home/exedev/work/inputs/decompile/0x83.c`, byte2002662/5304Cbytes;
-   shard SHA256 `37105cd32dd0b385f4b2ff4154e5e46eab8a33ef6e18c156830f917c91ccc2a1`.
-   Evidence: research `arc-layer/decompile/handoff-audit.tsv:1886` and
-   `corpus-inventory.tsv:34`. Lead request #139599 asks for that bounded body and
-   format/path-resolution callees from an authorized snapshot. No VM/SSH/resume
-   was attempted. Import targets require two live valid bookmark nodes (invalid
-   supplied nodes can trap); the delegate is weakly held and fresh callback
-   profile wrappers must be compared by scalar fields. These are additional
-   preconditions, not proof that import is ready.
+4. Disposable import now has the complete reviewed three-file script. The parent
+   static receipt `logs/wp/scenarios-import-route-approved.json` pins original
+   type13/public12/bookmark-mask2 transport, public metadata, exact directory
+   parser and nine evidence artifacts. It closes a static preflight only and
+   explicitly does not authorize native recording. The selected valid route
+   preserves the supplied directory; it does not select a discovered human
+   Chrome/Safari profile. A fresh no-follow directory contains exactly one HTML
+   file with separate structural lines. No ZIP/bare-file path is inferred.
+   The script creates two dedicated live bookmark target folders and makes one
+   typed public import call with empty allowed extensions and skip-existing-
+   cookies true. A retained own public-protocol delegate requires exactly five
+   callback sidecars, nil errors and matching profile scalars. Those callbacks
+   are not canonical ADK ImportDelegate recorder rows. Final fixed folder/title/
+   URL structure and new-PID/same-profile persistence are asserted; date parity,
+   callback threading and whole-import parity are unclaimed. Genuine create
+   forwarding and exact raw public-call/return gates remain required.
+   Fresh review fixed actual storage identity and restored-target reuse. Harness
+   typed plist guards now run before setup and every launch; each import stage
+   creates a new stage-specific fixture after driver readiness. Strict clang,
+   Bun/strict TypeScript and six actual malformed-bundle CLI rejections pass;
+   no apps/fixtures were launched by those negative checks. Proof is frozen in
+   `logs/wp/scenarios-import-code-freeze.json` and related import receipts.
+   Native success, callback order and persistence await first unlocked capture.
+   The replacement context import is still a real stub. App/profile owners need
+   descriptor/target/delegate seams preserving this explicit export-directory
+   route; generic C156 Library/Safari discovery is not equivalent. Requests
+   #140811/#141000 and profile #140912 record that remaining implementation gap.
+
 5. Native services now have a tests-owned own-PID Foundation/libc probe using
    NSURLSession's designated public factory and getaddrinfo. It uses ephemeral
    sessions without cookie/credential/cache storage, preserves TLS/ATS policy,

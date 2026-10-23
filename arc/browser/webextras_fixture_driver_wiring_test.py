@@ -40,7 +40,7 @@ def adopt_patch(directory, patch):
 
 
 def adopt_current_driver(directory):
-    """Recognize the exact clock-v1 delta, preserving strict historical adoption checks.
+    """Recognize the exact v4 reviewed clock + genuine frontend opt-in delta, preserving strict historical adoption checks.
 
     Reverse only the owned explicit extension in TEMP, demand the full prior
     adopted driver's frozen SHA, verify historical wiring, then restore current
@@ -58,7 +58,7 @@ def adopt_current_driver(directory):
         try:
             original = directory/'arc/browser/webextras_native_probe.ts'
             if hashlib.sha256(original.read_bytes()).hexdigest() != '1a31eb68758d66f50e608479b164ac7ff9f825555af300c0d39512f2c10d929f':
-                raise ValueError('clock-v1 reversal did not recover the exact adopted driver')
+                raise ValueError('v4 reversal did not recover the exact adopted driver')
             if adopt_patch(directory, patch) != 'already-applied':
                 raise ValueError('clock-v1 baseline did not have complete historical wiring')
         finally:
@@ -207,7 +207,7 @@ class WiringTests(unittest.TestCase):
         acceptance = driver[comparison_start:driver.index('writeFileSync(join(out, "summary.json")', comparison_start)]
         harness = self.directory/'unsupported-measurement.ts'
         harness.write_text(r'''
-const mediaClock=false;
+const mediaClock=false,mediaServiceClock=false,anyClock=false,devToolsFrontendEvents=false;
 const fixtureVerified=false, fixtureImage='WebextrasNativeProbe.dylib';
 const fixtureComparisonPending='pending-fixture-comparison-support';
 const operations=['console-open','frontend','console-close','panel-closed','execute-evaluate','execute-malformed','execute-unknown','subscription','media-types','pip-request-error','pip-exit-error'];

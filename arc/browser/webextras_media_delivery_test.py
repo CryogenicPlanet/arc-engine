@@ -38,6 +38,11 @@ static void PostWebextrasMediaTask(base::OnceClosure f) { tasks.push_back(std::m
 static void DrainOne() { auto f=std::move(tasks.front()); tasks.pop_front(); f(); }
 static void Drain() { while(!tasks.empty()) DrainOne(); }
 static int observers=0, detachments=0, dto_allocations=0;
+static void (^onControllerInit)(void);
+static void (^onImageInit)(void);
+static void (^onPositionInit)(void);
+static void (^onTitleConvert)(void);
+static int image_allocations=0, title_conversions=0;
 static NSMutableArray<NSString*>* events;
 #define REQUIRE(x) do { if(!(x)) { std::fprintf(stderr,"failed line %d: %s\n",__LINE__,#x); std::abort(); } } while(0)
 namespace content {
@@ -46,7 +51,7 @@ struct MediaSession { static MediaSession* Get(WebContents*) { return nullptr; }
 }
 namespace media_session {
 struct MediaPosition { std::array<uint64_t,5> words; };
-struct MediaImage {};
+struct MediaImage { uint64_t token=0; };
 namespace mojom {
 using MediaSessionAction=uint32_t;
 struct MediaSessionInfo { uint64_t state,camera_state,microphone_state; };
@@ -62,7 +67,10 @@ using MediaSessionInfoPtr=std::unique_ptr<MediaSessionInfo>;
 @end
 @implementation ArcMediaPosition
 - (instancetype)initWithMediaPosition:(const void*)p {
-  if((self=[super init])) { copied=*static_cast<const media_session::MediaPosition*>(p); ++dto_allocations; }
+  if((self=[super init])) {
+    void (^callback)(void)=onPositionInit; if(callback) callback();
+    copied=*static_cast<const media_session::MediaPosition*>(p); ++dto_allocations;
+  }
   return self;
 }
 @end
@@ -70,15 +78,24 @@ using MediaSessionInfoPtr=std::unique_ptr<MediaSessionInfo>;
 - (instancetype)initWithArcWebContents:(ArcWebContents*)owner;
 @end
 @implementation ArcWebContentsMediaSessionPiPController
-- (instancetype)initWithArcWebContents:(ArcWebContents*)owner { (void)owner; return [super init]; }
+- (instancetype)initWithArcWebContents:(ArcWebContents*)owner {
+  (void)owner; void (^callback)(void)=onControllerInit; if(callback) callback(); return [super init];
+}
 @end
-@interface ArcMediaImage : NSObject
+@interface ArcMediaImage : NSObject {
+ @public uint64_t token;
+}
 - (instancetype)initWithChromiumMediaImage:(const media_session::MediaImage&)image;
 @end
 @implementation ArcMediaImage
-- (instancetype)initWithChromiumMediaImage:(const media_session::MediaImage&)image { (void)image; return [super init]; }
+- (instancetype)initWithChromiumMediaImage:(const media_session::MediaImage&)image {
+  void (^callback)(void)=onImageInit; if(callback) callback();
+  if((self=[super init])) { token=image.token; ++image_allocations; } return self;
+}
 @end
-static NSString* ArcNSString(const std::u16string& s) { return [[NSString alloc] initWithCharacters:(const unichar*)s.data() length:s.size()]; }
+static NSString* ArcNSString(const std::u16string& s) {
+  void (^callback)(void)=onTitleConvert; if(callback) callback(); ++title_conversions;
+  return [[NSString alloc] initWithCharacters:(const unichar*)s.data() length:s.size()]; }
 namespace gfx { struct Size { int width() const { return 4; } int height() const { return 5; } }; }
 @class ArcWebContentsMediaSession;
 class WebextrasMediaSource;
@@ -115,6 +132,9 @@ OVERLAY
 @property(nonatomic) BOOL sawNilOwner;
 @property(nonatomic, strong) NSIndexSet* actions;
 @property(nonatomic, strong) ArcMediaPosition* position;
+@property(nonatomic, strong) ArcMediaPosition* pipPosition;
+@property(nonatomic, copy) NSString* title;
+@property(nonatomic, strong) NSArray* images;
 @end
 @implementation WebextrasTestDelegate
 - (void)record:(NSString*)kind owner:(id)owner value:(uint64_t)v {
@@ -136,9 +156,9 @@ OVERLAY
 - (void)webContentsClosePiP:(id)o { [self record:@"close" owner:o value:0]; }
 - (void)webContents:(id)o pipPlaybackStateChanged:(uint64_t)v { [self record:@"playback" owner:o value:v]; }
 - (void)webContents:(id)o pipFeatureStateChanged:(uint64_t)v turnedOn:(BOOL)b { (void)b; [self record:@"feature" owner:o value:v]; }
-- (void)webContents:(id)o pipMediaPositionChanged:(id)p { (void)p; [self record:@"pipPosition" owner:o value:0]; }
-- (void)webContents:(id)o pipSourceTitleChanged:(NSString*)s { (void)s; [self record:@"title" owner:o value:0]; }
-- (void)webContents:(id)o pipFaviconImagesChanged:(NSArray*)a { (void)a; [self record:@"icons" owner:o value:0]; }
+- (void)webContents:(id)o pipMediaPositionChanged:(id)p { self.pipPosition=p; [self record:@"pipPosition" owner:o value:0]; }
+- (void)webContents:(id)o pipSourceTitleChanged:(NSString*)s { self.title=s; [self record:@"title" owner:o value:0]; }
+- (void)webContents:(id)o pipFaviconImagesChanged:(NSArray*)a { self.images=a; [self record:@"icons" owner:o value:0]; }
 @end
 static WebextrasTestDelegate* Delegate(NSString* name) {
   WebextrasTestDelegate* d=[[WebextrasTestDelegate alloc] init]; d.name=name; return d;
@@ -210,20 +230,83 @@ int main() { @autoreleasepool {
   overlay.source_.reset();
   Expect(@[@"A:hide:0",@"A:volume:80"]); source->VolumeChanged(.81); Drain(); Expect(@[]);
   }
+  // The weak-loaded app delegate is leased through return, even when the last
+  // external app reference disappears before a nested old-registration drain.
+  __weak WebextrasTestDelegate* expiredLease;
+  @autoreleasepool {
+    __block WebextrasTestDelegate* sole=Delegate(@"lease"); expiredLease=sole;
+    [service setDelegate:sole];
+    sole.onCallback=^{
+      expiredLease.onCallback=nil; sole=nil; [service setDelegate:nil];
+      REQUIRE(expiredLease!=nil); source->VolumeChanged(.88); Drain();
+    };
+    WebextrasTestOverlay leased(source); leased.ShowInactive(); leased.source_.reset();
+    Expect(@[@"lease:show:0",@"lease:volume:88"]);
+  }
+  REQUIRE(expiredLease==nil);
+  // Creation selects/leases its bridge BEFORE DTO construction. Reentrant
+  // allocation cannot migrate it to a new registration, and old queued work
+  // stays eligible while that selected bridge is leased.
+  @autoreleasepool {
+    [service setDelegate:a]; source->VolumeChanged(.87);
+    onControllerInit=^{
+      onControllerInit=nil; [service setDelegate:nil]; [service setDelegate:b];
+      source->VolumeChanged(.89); Drain();
+    };
+    source->PiPCreated();
+    Expect(@[@"A:volume:87",@"B:volume:89",@"A:created:0"]);
+    // Favicon bridge weak-loads precede image DTO construction. Updating the
+    // same bridge during construction affects only the later invocation.
+    [service setDelegate:a];
+    onImageInit=^{ onImageInit=nil; [service setDelegate:b]; };
+    WebextrasTestOverlay images(source); images.SetFaviconImages({media_session::MediaImage{}});
+    source->VolumeChanged(.86); Drain(); images.source_.reset();
+    Expect(@[@"A:icons:0",@"B:volume:86"]);
+  }
+  // Synchronous native inputs are copied before a reentrant conversion can
+  // mutate/free the controller's referenced value, string or vector storage.
+  @autoreleasepool {
+    [service setDelegate:a]; WebextrasTestOverlay snapshots(source);
+    __block media_session::MediaPosition borrowedPosition{{11,12,13,14,15}};
+    onPositionInit=^{ onPositionInit=nil; borrowedPosition.words={91,92,93,94,95}; };
+    snapshots.SetMediaPosition(borrowedPosition);
+    REQUIRE((a.pipPosition->copied.words==std::array<uint64_t,5>{11,12,13,14,15}));
+    __block std::u16string borrowedTitle=u"original-title";
+    onTitleConvert=^{ onTitleConvert=nil; borrowedTitle=std::u16string(4096,u'x'); };
+    snapshots.SetSourceTitle(borrowedTitle); REQUIRE([a.title isEqualToString:@"original-title"]);
+    __block std::vector<media_session::MediaImage> borrowedImages={{41},{42}};
+    onImageInit=^{ onImageInit=nil; borrowedImages.clear(); borrowedImages.shrink_to_fit(); borrowedImages.push_back({99}); };
+    snapshots.SetFaviconImages(borrowedImages);
+    REQUIRE(a.images.count==2 && ((ArcMediaImage*)a.images[0])->token==41 && ((ArcMediaImage*)a.images[1])->token==42);
+    Expect(@[@"A:pipPosition:0",@"A:title:0",@"A:icons:0"]); snapshots.source_.reset();
+  }
   // Weak app delegate expiration, no extra owner prerequisite.
   @autoreleasepool { WebextrasTestDelegate* ephemeral=Delegate(@"expired"); [service setDelegate:ephemeral]; }
   source->VolumeChanged(.90); Drain(); Expect(@[]);
+  // A live registration with expired app delegate still allocates PiP DTOs;
+  // absence of the registration itself skips that bridge invocation entirely.
+  WebextrasTestOverlay expired(source);
+  const int beforePiPDto=dto_allocations, beforeTitle=title_conversions, beforeImage=image_allocations;
+  expired.SetMediaPosition(*position); expired.SetSourceTitle(u"expired"); expired.SetFaviconImages({{17}});
+  REQUIRE(dto_allocations==beforePiPDto+1 && title_conversions==beforeTitle+1 && image_allocations==beforeImage+1);
+  [service setDelegate:nil]; expired.SetMediaPosition(*position); expired.SetSourceTitle(u"missing"); expired.SetFaviconImages({{18}});
+  REQUIRE(dto_allocations==beforePiPDto+1 && title_conversions==beforeTitle+1 && image_allocations==beforeImage+1);
+  expired.source_.reset(); Expect(@[]);
   [service setDelegate:a]; owner=nil; source->VolumeChanged(.91); Drain(); REQUIRE(a.sawNilOwner);
   Expect(@[@"A:volume:91"]);
   // Functional Source survives service + physical retirement through accepted payload.
   // An independently held bridge models native shared bridge exposure, without retaining app objects.
   auto selected=service->_bridge; std::weak_ptr<WebextrasMediaSource> weak=source;
+  __weak ArcWebContentsMediaSession* weakService=service;
+  __weak WebextrasTestDelegate* retireDelegate=a;
+  a.onCallback=^{ retireDelegate.onCallback=nil; REQUIRE(detachments==1); };
   source->VolumeChanged(.92); source->RetirePhysical(); REQUIRE(detachments==1);
-  Expect(@[@"A:destroyed:0"]); service=nil; source.reset(); REQUIRE(!weak.expired() && observers==before);
+  Expect(@[@"A:destroyed:0"]); service=nil; source.reset(); REQUIRE(weakService==nil && !weak.expired() && observers==before);
   Drain(); Expect(@[@"A:volume:92"]); REQUIRE(weak.expired() && observers==before-1); selected.reset();
   // Initial receipts without a delegate update caches, and re-add emits nothing synthetic.
   auto early=std::make_shared<WebextrasMediaSource>(nil); early->AttachInitial(&physical);
-  early->Info(Info()); Drain(); ArcWebContentsMediaSession* late=Service(early,nil); [late setDelegate:a];
+  early->Info(Info()); early->Position(position); Drain();
+  ArcWebContentsMediaSession* late=Service(early,nil); REQUIRE([late position]->copied.words[3]==9); [late setDelegate:a];
   early->Info(Info()); REQUIRE(tasks.empty()); early->Info(Info(2)); Drain(); Expect(@[@"A:state:2"]);
   // PiP created/destroyed are synchronous and maintain only the service cache. Destroy latch is logical.
   early->Position(position); Drain(); Expect(@[@"A:position:9"]);
@@ -239,8 +322,17 @@ int main() { @autoreleasepool {
   REQUIRE(tasks.empty());
   Expect(@[@"A:created:0",@"A:playback:2",@"A:size:0",@"A:show:0",@"A:hide:0",@"A:close:0",@"A:feature:4",@"A:pipPosition:0",@"A:title:0",@"A:icons:0",@"A:destroyed:0"]);
   all.source_.reset();
-  late=nil; early.reset(); REQUIRE(observers==0 && tasks.empty());
-  std::puts("PASS actual proposed delivery/cache/Source: async order, payload copies, late DTOs, bridge transitions, weak expiry/nil owner, functional lifetime/cache, nested sync, PiP latch");
+  early->PiPCreated(); Expect(@[@"A:created:0"]);
+  __weak ArcWebContentsMediaSessionPiPController* weakController=late->_pipController;
+  late=nil; REQUIRE(weakController==nil); early.reset(); REQUIRE(observers==0 && tasks.empty());
+  // Even uncounted/no-registration native work retains its logical payload.
+  auto unregistered=std::make_shared<WebextrasMediaSource>(nil); unregistered->AttachInitial(&physical);
+  unregistered->Info(Info()); unregistered->Position(position); unregistered->Actions({1});
+  REQUIRE(tasks.size()==5); std::weak_ptr<WebextrasMediaSource> weakUnregistered=unregistered; unregistered.reset();
+  REQUIRE(!weakUnregistered.expired() && observers==1);
+  for(int i=0;i<4;++i) { DrainOne(); REQUIRE(!weakUnregistered.expired()); }
+  DrainOne(); REQUIRE(weakUnregistered.expired() && observers==0 && tasks.empty()); Expect(@[]);
+  std::puts("PASS actual proposed delivery/cache/Source: async order, payload copies, late DTOs, bridge transitions, weak expiry/nil owner, functional lifetime/cache/getter snapshots, nested sync, all 11 PiP selectors/latch");
 } }
 '''
 
@@ -280,10 +372,10 @@ def main():
             methods.append(source[start:end].replace(' override', ''))
         overlay = ('class WebextrasTestOverlay { public: '                   'explicit WebextrasTestOverlay(std::shared_ptr<WebextrasMediaSource> s):source_(s) {} '                   'using PlaybackState=uint64_t; std::shared_ptr<WebextrasMediaSource> source_; '                   'bool created_=false,visible_=false; struct C { void Unsuspend(){} } c; C* compositor_=&c; '                   'struct W { bool GetWeakPtr(){return true;} } weak_factory_;\n' + '\n'.join(methods) + '\n};\n')
         start = source.index('- (ArcMediaPosition*)position {')
-        getter = source[start:source.index('- (ArcWebContentsMediaSessionPiPController*)pipController {', start)]
+        getter = source[start:source.index('\n#pragma clang diagnostic pop', start)]
         test = PRELUDE + protocol + '\n' + helper + '\n' + cls + '\n' + SERVICE.replace('SETDELEGATE', method).replace('GETPOSITION', getter).replace('PIPDEFINITIONS', pip).replace('OVERLAY', overlay) + TESTS
         (work / 'test.mm').write_text(test)
-        cmd = ['xcrun', 'clang++', '-std=c++20', '-fobjc-arc', '-O2', '-Wall', '-Wextra', '-Werror', '-Wno-objc-protocol-method-implementation', '-framework', 'Foundation', '-framework', 'CoreGraphics', str(work / 'test.mm'), '-o', str(work / 'test')]
+        cmd = ['xcrun', 'clang++', '-std=c++20', '-fobjc-arc', '-O2', '-Wall', '-Wextra', '-Werror', '-framework', 'Foundation', '-framework', 'CoreGraphics', str(work / 'test.mm'), '-o', str(work / 'test')]
         compile_result = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = compile_result.stdout
         result = compile_result.returncode

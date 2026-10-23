@@ -1,0 +1,361 @@
+diff --git a/third_party/blink/renderer/platform/media/web_media_player_impl.cc b/third_party/blink/renderer/platform/media/web_media_player_impl.cc
+--- a/third_party/blink/renderer/platform/media/web_media_player_impl.cc
++++ b/third_party/blink/renderer/platform/media/web_media_player_impl.cc
+@@ -1231,11 +1231,15 @@
+ void WebMediaPlayerImpl::SetVolume(double volume) {
+   DVLOG(1) << __func__ << "(" << volume << ")";
+   DCHECK(main_task_runner_->BelongsToCurrentThread());
++  const double previous_volume = volume_;
+   volume_ = volume;
+   pipeline_controller_->SetVolume(volume_ * volume_multiplier_);
+   if (watch_time_reporter_)
+     watch_time_reporter_->OnVolumeChange(volume);
+   client_->DidPlayerMutedStatusChange(volume == 0.0);
++  if (previous_volume != volume) {
++    client_->DidPlayerVolumeChange(volume);
++  }
+ 
+   if (delegate_has_audio_ != HasUnmutedAudio()) {
+     delegate_has_audio_ = HasUnmutedAudio();
+diff --git a/third_party/blink/renderer/platform/media/media_player_client.h b/third_party/blink/renderer/platform/media/media_player_client.h
+--- a/third_party/blink/renderer/platform/media/media_player_client.h
++++ b/third_party/blink/renderer/platform/media/media_player_client.h
+@@ -159,6 +159,9 @@
+   // Notify the client that the muted status of the media player has changed.
+   virtual void DidPlayerMutedStatusChange(bool muted) = 0;
+ 
++  // Reports a changed volume input, before the player volume multiplier.
++  virtual void DidPlayerVolumeChange(double volume) {}
++
+   // Notify the client that the media metadata of the media player has changed.
+   virtual void DidMediaMetadataChange(
+       bool has_audio,
+diff --git a/third_party/blink/renderer/core/html/media/html_media_element.h b/third_party/blink/renderer/core/html/media/html_media_element.h
+--- a/third_party/blink/renderer/core/html/media/html_media_element.h
++++ b/third_party/blink/renderer/core/html/media/html_media_element.h
+@@ -639,6 +639,7 @@
+   void DidPlayerStartPlaying() override;
+   void DidPlayerPaused(bool stream_ended) override;
+   void DidPlayerMutedStatusChange(bool muted) override;
++  void DidPlayerVolumeChange(double volume) override;
+   void DidMediaMetadataChange(bool has_audio,
+                               bool has_video,
+                               media::AudioCodec audio_codec,
+diff --git a/third_party/blink/renderer/core/html/media/html_media_element.cc b/third_party/blink/renderer/core/html/media/html_media_element.cc
+--- a/third_party/blink/renderer/core/html/media/html_media_element.cc
++++ b/third_party/blink/renderer/core/html/media/html_media_element.cc
+@@ -5190,6 +5190,11 @@
+     observer->OnMutedStatusChanged(muted);
+ }
+ 
++void HTMLMediaElement::DidPlayerVolumeChange(double volume) {
++  for (auto& observer : media_player_observer_remote_set_->Value())
++    observer->OnVolumeChanged(volume);
++}
++
+ void HTMLMediaElement::DidMediaMetadataChange(
+     bool has_audio,
+     bool has_video,
+diff --git a/media/mojo/mojom/media_player.mojom b/media/mojo/mojom/media_player.mojom
+--- a/media/mojo/mojom/media_player.mojom
++++ b/media/mojo/mojom/media_player.mojom
+@@ -135,6 +135,10 @@
+ 
+   // Notifies the browser process of save video frame's availability.
+   OnVideoFrameAvailabilityChanged(bool available);
++
++  // Reports a changed renderer player volume input. HTML element mute is
++  // already applied; the player volume multiplier is not.
++  OnVolumeChanged(double volume);
+ };
+ 
+ // Implemented by MediaWebContentsObserver::MediaPlayerHostImpl in the browser
+diff --git a/content/browser/media/media_web_contents_observer.h b/content/browser/media/media_web_contents_observer.h
+--- a/content/browser/media/media_web_contents_observer.h
++++ b/content/browser/media/media_web_contents_observer.h
+@@ -241,6 +241,7 @@
+     void OnMediaPlaying() override;
+     void OnMediaPaused(bool stream_ended) override;
+     void OnMutedStatusChanged(bool muted) override;
++    void OnVolumeChanged(double volume) override;
+     void OnMediaMetadataChanged(
+         bool has_audio,
+         bool has_video,
+diff --git a/content/browser/media/media_web_contents_observer.cc b/content/browser/media/media_web_contents_observer.cc
+--- a/content/browser/media/media_web_contents_observer.cc
++++ b/content/browser/media/media_web_contents_observer.cc
+@@ -443,6 +443,11 @@
+ 
+   player_info->set_muted(muted);
+   NotifyAudioStreamMonitorIfNeeded();
++}
++
++void MediaWebContentsObserver::MediaPlayerObserverHostImpl::OnVolumeChanged(
++    double volume) {
++  media_web_contents_observer_->web_contents_impl()->MediaVolumeChanged(volume);
+ }
+ 
+ void MediaWebContentsObserver::MediaPlayerObserverHostImpl::
+diff --git a/content/browser/web_contents/web_contents_impl.h b/content/browser/web_contents/web_contents_impl.h
+--- a/content/browser/web_contents/web_contents_impl.h
++++ b/content/browser/web_contents/web_contents_impl.h
+@@ -1375,6 +1375,7 @@
+   void ActivateAndShowRepostFormWarningDialog() override;
+ 
+   void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted);
++  void MediaVolumeChanged(double volume);
+ 
+   void UpdateOverridingUserAgent() override;
+ 
+diff --git a/content/browser/web_contents/web_contents_impl.cc b/content/browser/web_contents/web_contents_impl.cc
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -12859,6 +12859,10 @@
+                              muted);
+ }
+ 
++void WebContentsImpl::MediaVolumeChanged(double volume) {
++  observers_.NotifyObservers(&WebContentsObserver::MediaVolumeChanged, volume);
++}
++
+ void WebContentsImpl::SetVisibilityForChildViews(bool visible) {
+   OPTIONAL_TRACE_EVENT1("content",
+                         "WebContentsImpl::SetVisibilityForChildViews",
+diff --git a/content/public/browser/web_contents_observer.h b/content/public/browser/web_contents_observer.h
+--- a/content/public/browser/web_contents_observer.h
++++ b/content/public/browser/web_contents_observer.h
+@@ -952,6 +952,11 @@
+   virtual void MediaEffectivelyFullscreenChanged(bool is_fullscreen) {}
+   virtual void MediaPictureInPictureChanged(bool is_picture_in_picture) {}
+   virtual void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted) {}
++
++  // A renderer player changed its volume input, after HTML element mute and
++  // before the player volume multiplier. Changes from different players are
++  // reported individually; this is not an aggregate WebContents volume.
++  virtual void MediaVolumeChanged(double volume) {}
+   virtual void MediaDestroyed(const MediaPlayerId& id) {}
+ 
+   // Invoked when a MediaSession associated with this WebContents has been
+diff --git a/third_party/blink/renderer/core/exported/web_media_player_impl_unittest.cc b/third_party/blink/renderer/core/exported/web_media_player_impl_unittest.cc
+--- a/third_party/blink/renderer/core/exported/web_media_player_impl_unittest.cc
++++ b/third_party/blink/renderer/core/exported/web_media_player_impl_unittest.cc
+@@ -204,6 +204,7 @@
+   MOCK_METHOD0(DidPlayerStartPlaying, void());
+   MOCK_METHOD1(DidPlayerPaused, void(bool));
+   MOCK_METHOD1(DidPlayerMutedStatusChange, void(bool));
++  MOCK_METHOD1(DidPlayerVolumeChange, void(double));
+   MOCK_METHOD6(DidMediaMetadataChange,
+                void(bool,
+                     bool,
+@@ -409,6 +410,10 @@
+   }
+ 
+  protected:
++  float PipelineVolumeForTesting() {
++    return wmpi_->pipeline_controller_->GetVolume();
++  }
++
+   void InitializeWebMediaPlayerImpl(
+       std::unique_ptr<media::Demuxer> demuxer_override = nullptr) {
+     // We want to avoid the "Uninteresting mock function call" warning.
+@@ -1796,6 +1801,38 @@
+   wmpi_->SetVolume(1.0);
+ }
+ 
++TEST_F(WebMediaPlayerImplTest, VolumeNotificationUsesChangedInputAfterMute) {
++  InitializeWebMediaPlayerImpl();
++  {
++    InSequence sequence;
++    EXPECT_CALL(client_, DidPlayerMutedStatusChange(false));
++    EXPECT_CALL(client_, DidPlayerVolumeChange(0.625));
++    EXPECT_CALL(client_, DidPlayerMutedStatusChange(false));
++    EXPECT_CALL(client_, DidPlayerMutedStatusChange(false));
++    EXPECT_CALL(client_, DidPlayerVolumeChange(0.375));
++    EXPECT_CALL(client_, DidPlayerMutedStatusChange(false));
++    EXPECT_CALL(client_, DidPlayerMutedStatusChange(true));
++    EXPECT_CALL(client_, DidPlayerVolumeChange(0.0));
++    EXPECT_CALL(client_, DidPlayerMutedStatusChange(true));
++  }
++  wmpi_->SetVolume(0.625);
++  EXPECT_FLOAT_EQ(PipelineVolumeForTesting(), 0.625f);
++  wmpi_->SetVolume(0.625);  // Equal input must not notify again.
++  wmpi_->SetVolume(0.375);
++  wmpi_->SetVolumeMultiplier(0.25);
++  EXPECT_FLOAT_EQ(PipelineVolumeForTesting(), 0.09375f);
++  wmpi_->SetVolume(0.0);  // HTML element mute reaches the player as zero.
++  wmpi_->SetVolumeMultiplier(0.5);
++  EXPECT_FLOAT_EQ(PipelineVolumeForTesting(), 0.0f);
++}
++
++TEST_F(WebMediaPlayerImplTest, VolumeNotificationPreservesDoublePrecision) {
++  InitializeWebMediaPlayerImpl();
++  constexpr double kVolume = 0.123456789123;
++  EXPECT_CALL(client_, DidPlayerVolumeChange(kVolume));
++  wmpi_->SetVolume(kVolume);
++}
++
+ TEST_F(WebMediaPlayerImplTest, MediaPositionState_Playing) {
+   InitializeWebMediaPlayerImpl();
+   LoadAndWaitForReadyState(kAudioOnlyTestFile,
+diff --git a/third_party/blink/renderer/core/html/media/html_media_element_test.cc b/third_party/blink/renderer/core/html/media/html_media_element_test.cc
+--- a/third_party/blink/renderer/core/html/media/html_media_element_test.cc
++++ b/third_party/blink/renderer/core/html/media/html_media_element_test.cc
+@@ -134,6 +134,7 @@
+   MOCK_METHOD0(UnlockBackgroundPlayback, void());
+   MOCK_METHOD1(Pause, void(PauseReason));
+   MOCK_METHOD0(OnTimeUpdate, void());
++  MOCK_METHOD1(SetVolume, void(double));
+   MOCK_CONST_METHOD0(Paused, bool());
+   MOCK_CONST_METHOD0(Seekable, WebTimeRanges());
+   MOCK_METHOD0(OnFrozen, void());
+@@ -265,6 +266,14 @@
+     run_loop_->Quit();
+   }
+ 
++  void OnVolumeChanged(double volume) override {
++    received_volumes_.push_back(volume);
++    if (run_loop_)
++      run_loop_->Quit();
++  }
++
++  const Vector<double>& received_volumes() const { return received_volumes_; }
++
+   void OnMediaMetadataChanged(bool has_audio,
+                               bool has_video,
+                               media::MediaContentType content_type) override {
+@@ -362,6 +371,7 @@
+   bool received_media_playing_{false};
+   std::optional<bool> received_media_paused_stream_ended_;
+   std::optional<bool> received_muted_status_type_;
++  Vector<double> received_volumes_;
+   std::optional<OnMetadataChangedResult> received_metadata_changed_result_;
+   gfx::Size received_media_size_{0, 0};
+   std::optional<bool> received_uses_audio_service_;
+@@ -622,6 +632,16 @@
+ 
+   void NotifyMutedStatusChange(bool muted) {
+     media_->DidPlayerMutedStatusChange(muted);
++    media_player_observer().WaitUntilReceivedMessage();
++  }
++
++  mojo::PendingAssociatedReceiver<media::mojom::blink::MediaPlayerObserver>
++  AddVolumeObserver() {
++    return Media()->AddMediaPlayerObserverAndPassReceiver();
++  }
++
++  void NotifyVolumeChange(double volume) {
++    Media()->DidPlayerVolumeChange(volume);
+     media_player_observer().WaitUntilReceivedMessage();
+   }
+ 
+@@ -1875,6 +1895,35 @@
+   EXPECT_TRUE(ReceivedMessageMutedStatusChange(false));
+ }
+ 
++TEST_P(HTMLMediaElementTest, SendVolumeChangesToEveryObserver) {
++  WaitForPlayer();
++  TestMediaPlayerObserver second;
++  mojo::AssociatedReceiver<media::mojom::blink::MediaPlayerObserver> receiver(
++      &second, AddVolumeObserver());
++  for (double volume : {0.625, 0.375, 0.0, 0.375}) {
++    NotifyVolumeChange(volume);
++    receiver.FlushForTesting();
++  }
++  const Vector<double> expected{0.625, 0.375, 0.0, 0.375};
++  EXPECT_EQ(media_player_observer().received_volumes(), expected);
++  EXPECT_EQ(second.received_volumes(), expected);
++}
++
++TEST_P(HTMLMediaElementTest, PlayerReceivesEffectiveVolumeWhenMuted) {
++  WaitForPlayer();
++  {
++    testing::InSequence sequence;
++    EXPECT_CALL(*MockMediaPlayer(), SetVolume(0.625));
++    EXPECT_CALL(*MockMediaPlayer(), SetVolume(0.0));
++    EXPECT_CALL(*MockMediaPlayer(), SetVolume(0.0));
++    EXPECT_CALL(*MockMediaPlayer(), SetVolume(0.375));
++  }
++  Media()->setVolume(0.625);
++  Media()->setMuted(true);
++  Media()->setVolume(0.375);  // Raw element volume changes, effective input stays 0.
++  Media()->setMuted(false);
++}
++
+ TEST_P(HTMLMediaElementTest, SendMediaMetadataChangedToObserver) {
+   WaitForPlayer();
+ 
+diff --git a/content/browser/media/media_web_contents_observer_unittest.cc b/content/browser/media/media_web_contents_observer_unittest.cc
+--- a/content/browser/media/media_web_contents_observer_unittest.cc
++++ b/content/browser/media/media_web_contents_observer_unittest.cc
+@@ -6,6 +6,7 @@
+ 
+ #include <memory>
+ #include <optional>
++#include <vector>
+ 
+ #include "base/run_loop.h"
+ #include "content/test/test_render_view_host.h"
+@@ -20,6 +21,20 @@
+ namespace {
+ 
+ constexpr auto kContentType = media::MediaContentType::kPersistent;
++
++class VolumeObserver : public WebContentsObserver {
++ public:
++  explicit VolumeObserver(WebContents* contents) : WebContentsObserver(contents) {}
++  void MediaVolumeChanged(double volume) override {
++    volumes.push_back(volume);
++    events.push_back('v');
++  }
++  void MediaMutedStatusChanged(const MediaPlayerId&, bool) override {
++    events.push_back('m');
++  }
++  std::vector<double> volumes;
++  std::vector<char> events;
++};
+ 
+ class TestMediaPlayer final : public media::mojom::MediaPlayer {
+  public:
+@@ -139,6 +154,42 @@
+   int32_t next_player_id_ = 0;
+ };
+ 
++TEST_F(MediaWebContentsObserverTest,
++       VolumeChangesPreservePerPlayerValuesAndOrder) {
++  VolumeObserver observed(contents());
++  auto host = SetupPlayerHost();
++  auto first = CreateAndAddPlayer(host, 41);
++  auto second = CreateAndAddPlayer(host, 73);
++  first.observer->OnVolumeChanged(0.625);
++  first.observer.FlushForTesting();
++  second.observer->OnVolumeChanged(0.625);
++  second.observer.FlushForTesting();
++  first.observer->OnVolumeChanged(0.375);
++  first.observer.FlushForTesting();
++  first.observer->OnVolumeChanged(0.375);  // Browser must not add global dedup.
++  first.observer.FlushForTesting();
++  second.observer->OnVolumeChanged(0.123456789123);
++  second.observer.FlushForTesting();
++  EXPECT_EQ(observed.volumes,
++            (std::vector<double>{0.625, 0.625, 0.375, 0.375, 0.123456789123}));
++}
++
++TEST_F(MediaWebContentsObserverTest, MutedStatusAndVolumeRemainSeparate) {
++  VolumeObserver observed(contents());
++  auto host = SetupPlayerHost();
++  auto player = CreateAndAddPlayer(host, 41);
++  player.observer->OnMutedStatusChanged(true);
++  player.observer.FlushForTesting();
++  EXPECT_TRUE(observed.volumes.empty());
++  player.observer->OnVolumeChanged(0.375);
++  player.observer.FlushForTesting();
++  EXPECT_EQ(observed.events, (std::vector<char>{'m', 'v'}));
++  EXPECT_EQ(observed.volumes, (std::vector<double>{0.375}));
++  contents()->SetAudioMuted(true);
++  contents()->SetAudioMuted(false);
++  EXPECT_EQ(observed.volumes, (std::vector<double>{0.375}));
++}
++
+ TEST_F(MediaWebContentsObserverTest, GetCurrentlyPlayingVideoCount) {
+   auto player_host = SetupPlayerHost();
+   constexpr int32_t kAudioVideoPlayerId = 0;

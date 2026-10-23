@@ -35,7 +35,7 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
    void WebContentsDestroyed() override;
    void MediaSessionInfoChanged(media_session::mojom::MediaSessionInfoPtr info) override;
    void MediaSessionMetadataChanged(const std::optional<media_session::MediaMetadata>&) override {}
-@@ -113,12 +121,217 @@
+@@ -113,12 +121,225 @@
    void MediaSessionImagesChanged(const base::flat_map<media_session::mojom::MediaSessionImageType, std::vector<media_session::MediaImage>>&) override {}
    void MediaSessionPositionChanged(const std::optional<media_session::MediaPosition>& position) override;
   private:
@@ -66,6 +66,11 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
 +    Deliver(registered_, std::move(callback));
 +  }
 +
++  template <typename Prepare, typename Callback>
++  void SyncPrepared(Prepare prepare, Callback callback) const {
++    DeliverPrepared(registered_, std::move(prepare), std::move(callback));
++  }
++
 +  template <typename Source, typename Payload, typename Callback>
 +  void Async(std::shared_ptr<Source> source, Payload payload,
 +             Callback callback) const {
@@ -80,7 +85,8 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
 +    // Native expired registrations enqueue inert work, without acquiring a
 +    // counted invocation. Accounting is deliberately a separate proposal.
 +    if (selected.expired()) {
-+      PostWebextrasMediaTask(base::BindOnce([] {}));
++      PostWebextrasMediaTask(base::BindOnce(
++          [](std::shared_ptr<Source> source) { (void)source; }, std::move(source)));
 +      return;
 +    }
 +    PostWebextrasMediaTask(base::BindOnce(
@@ -147,8 +153,10 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
 +        contents, content::MediaSession::Get(contents), weak_from_this());
 +  }
 +  void RetirePhysical() {
-+    // Keep the old logical binding during the synchronous destruction callback.
-+    // No accepted task checks physical attachment or service liveness.
++    // Detach before synchronous destruction delivery. CORE needs a separate
++    // early retirement hook to preserve its public binding through app return;
++    // this Source WeakPtr alone cannot preserve that binding. No accepted task
++    // checks physical attachment or service liveness.
 +    if (observer_) { observer_->Detach(); }
 +    PiPDestroyed();
 +    contents_.reset();
@@ -254,7 +262,7 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
  }
  }
  
-@@ -128,29 +341,21 @@
+@@ -128,29 +349,21 @@
  @property(nonatomic, strong) ArcWebContentsMediaSessionPiPController* pipController;
  - (instancetype)initWithArcWebContents:(ArcWebContents*)owner;
  - (void)setDelegate:(id<ArcMediaDelegate>)delegate;
@@ -290,7 +298,7 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
    }
    return self;
  }
-@@ -165,12 +370,12 @@
+@@ -165,12 +378,12 @@
    return session;
  }
  - (void)setDelegate:(id<ArcMediaDelegate>)delegate {
@@ -309,20 +317,27 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
  }
  - (NSIndexSet*)getMediaContentTypes:(NSError**)error {
    auto* session = [self requireSession:error];
-@@ -186,10 +391,8 @@
+@@ -185,12 +398,14 @@
+   }
    return [values copy];
  }
++// Native's metadata-backed setter storage is separate from this receipt cache.
++#pragma clang diagnostic push
++#pragma clang diagnostic ignored "-Wunused-property-ivar"
  - (ArcMediaPosition*)position {
 -  auto* session = [self nativeSession];
 -  auto position = session ? session->GetMediaSessionPosition() : std::nullopt;
 -  _position = position ? [[ArcMediaPosition alloc] initWithMediaPosition:&*position] : nil;
 -  return _position;
+-}
 +  auto position = _source ? _source->PositionSnapshot() : std::nullopt;
 +  return position ? [[ArcMediaPosition alloc] initWithMediaPosition:&*position] : nil;
- }
++}
++#pragma clang diagnostic pop
  - (ArcWebContentsMediaSessionPiPController*)pipController {
    auto* contents = [_owner webContents];
-@@ -238,65 +441,49 @@
+   if (!contents || !objc_getAssociatedObject(_owner, @selector(videoView))) { return nil; }
+@@ -238,65 +453,53 @@
    helper->OnTabActivatedChanged(active);
    return YES;
  }
@@ -383,10 +398,14 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
 -    : content::WebContentsObserver(contents), owner_(owner) {
 +void WebextrasMediaSource::PiPCreated() {
 +  pip_destroyed_ = false;
-+  ArcWebContentsMediaSessionPiPController* controller =
-+      [[ArcWebContentsMediaSessionPiPController alloc] initWithArcWebContents:owner_];
-+  [service webextrasCachePiPController:controller];
-+  delivery.Sync([&](id<ArcMediaDelegate> d, ArcWebContents* o) {
++  [service webextrasCachePiPController:nil];
++  delivery.SyncPrepared([&] {
++    ArcWebContentsMediaSessionPiPController* controller =
++        [[ArcWebContentsMediaSessionPiPController alloc] initWithArcWebContents:owner_];
++    [service webextrasCachePiPController:controller];
++    return controller;
++  }, [](id<ArcMediaDelegate> d, ArcWebContents* o,
++        ArcWebContentsMediaSessionPiPController* controller) {
 +    if ([d respondsToSelector:@selector(webContents:pipControllerCreated:)]) { [d webContents:o pipControllerCreated:controller]; }
 +  });
 +}
@@ -425,7 +444,7 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
  }
  
  @interface ArcWebContents (ArcMediaAccess)
-@@ -325,7 +512,7 @@
+@@ -325,7 +528,7 @@
   public:
    explicit ArcVideoOverlay(content::VideoPictureInPictureWindowController* controller)
        : controller_(controller), owner_([ArcWebContents wrapperForWebContents:controller->GetWebContents()]) {
@@ -434,7 +453,7 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
      view_ = [[PiPNSView alloc] initWithFrame:NSMakeRect(0, 0, 320, 180)];
      view_.wantsLayer = YES;
      view_.layer = [CALayer layer];
-@@ -347,24 +534,27 @@
+@@ -347,24 +550,27 @@
      compositor_->widget()->ResetNSView();
      compositor_->compositor()->SetRootLayer(nullptr);
      objc_setAssociatedObject(owner_, @selector(videoView), nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -469,7 +488,7 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
    }
    bool IsVisible() const override { return visible_; }
    gfx::Rect GetBounds() override {
-@@ -372,15 +562,18 @@
+@@ -372,15 +578,18 @@
      return gfx::Rect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
    }
    void UpdateNaturalSize(const gfx::Size& size) override {
@@ -493,7 +512,7 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
    }
    void SetPlayPauseButtonVisibility(bool value) override { Feature(4, value); }
    void SetSkipAdButtonVisibility(bool value) override { Feature(6, value); }
-@@ -396,20 +589,23 @@
+@@ -396,20 +605,28 @@
    void SetNextSlideButtonVisibility(bool value) override { Feature(9, value); }
    void SetPreviousSlideButtonVisibility(bool value) override { Feature(10, value); }
    void SetMediaPosition(const media_session::MediaPosition& position) override {
@@ -501,31 +520,38 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
 -    if ([delegate respondsToSelector:@selector(webContents:pipMediaPositionChanged:)]) {
 -      [delegate webContents:owner_ pipMediaPositionChanged:[[ArcMediaPosition alloc] initWithMediaPosition:&position]];
 -    }
-+    if (auto source = source_) { source->delivery.Sync([&](id<ArcMediaDelegate> d, ArcWebContents* o) {
++    const auto snapshot = position;
++    if (auto source = source_) { source->delivery.Sync([snapshot](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      ArcMediaPosition* wrapper = [[ArcMediaPosition alloc] initWithMediaPosition:&snapshot];
 +      if ([d respondsToSelector:@selector(webContents:pipMediaPositionChanged:)]) {
-+        [d webContents:o pipMediaPositionChanged:[[ArcMediaPosition alloc] initWithMediaPosition:&position]];
++        [d webContents:o pipMediaPositionChanged:wrapper];
 +      }
 +    }); }
    }
    void SetSourceTitle(const std::u16string& title) override {
 -    auto* delegate = Delegate();
 -    if ([delegate respondsToSelector:@selector(webContents:pipSourceTitleChanged:)]) { [delegate webContents:owner_ pipSourceTitleChanged:ArcNSString(title)]; }
-+    if (auto source = source_) { source->delivery.Sync([&](id<ArcMediaDelegate> d, ArcWebContents* o) {
-+      if ([d respondsToSelector:@selector(webContents:pipSourceTitleChanged:)]) { [d webContents:o pipSourceTitleChanged:ArcNSString(title)]; }
++    const auto snapshot = title;
++    if (auto source = source_) { source->delivery.Sync([snapshot](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      NSString* value = ArcNSString(snapshot);
++      if ([d respondsToSelector:@selector(webContents:pipSourceTitleChanged:)]) { [d webContents:o pipSourceTitleChanged:value]; }
 +    }); }
    }
    void SetFaviconImages(const std::vector<media_session::MediaImage>& images) override {
-     NSMutableArray* values = [NSMutableArray arrayWithCapacity:images.size()];
-     for (const auto& image : images) { [values addObject:[[ArcMediaImage alloc] initWithChromiumMediaImage:image]]; }
+-    NSMutableArray* values = [NSMutableArray arrayWithCapacity:images.size()];
+-    for (const auto& image : images) { [values addObject:[[ArcMediaImage alloc] initWithChromiumMediaImage:image]]; }
 -    auto* delegate = Delegate();
 -    if ([delegate respondsToSelector:@selector(webContents:pipFaviconImagesChanged:)]) { [delegate webContents:owner_ pipFaviconImagesChanged:values]; }
-+    if (auto source = source_) { source->delivery.Sync([&](id<ArcMediaDelegate> d, ArcWebContents* o) {
++    const auto snapshot = images;
++    if (auto source = source_) { source->delivery.Sync([snapshot](id<ArcMediaDelegate> d, ArcWebContents* o) {
++      NSMutableArray* values = [NSMutableArray arrayWithCapacity:snapshot.size()];
++      for (const auto& image : snapshot) { [values addObject:[[ArcMediaImage alloc] initWithChromiumMediaImage:image]]; }
 +      if ([d respondsToSelector:@selector(webContents:pipFaviconImagesChanged:)]) { [d webContents:o pipFaviconImagesChanged:values]; }
 +    }); }
    }
    void SetSurfaceId(const viz::SurfaceId& surface_id) override {
      if (surface_id_.is_valid()) { compositor_->compositor()->RemoveChildFrameSink(surface_id_.frame_sink_id()); }
-@@ -422,10 +618,10 @@
+@@ -422,10 +639,10 @@
    void SetImmersiveVideoOptions(const content::ImmersiveOptions&) override {}
    void AcceleratedWidgetCALayerParamsUpdated(gfx::CALayerParams params) override { display_tree_->UpdateCALayerTree(std::move(params)); }
   private:
@@ -539,7 +565,7 @@ diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
    }
    void Resize(CGSize size) {
      gfx::Size dimensions(std::max(1, static_cast<int>(size.width)), std::max(1, static_cast<int>(size.height)));
-@@ -439,7 +635,7 @@
+@@ -439,7 +656,7 @@
    }
    raw_ptr<content::VideoPictureInPictureWindowController> controller_;
    __weak ArcWebContents* owner_;

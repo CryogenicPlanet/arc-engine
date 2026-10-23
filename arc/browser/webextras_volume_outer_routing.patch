@@ -1,0 +1,96 @@
+diff --git a/content/browser/web_contents/web_contents_impl.cc b/content/browser/web_contents/web_contents_impl.cc
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -12860,7 +12860,8 @@
+ }
+ 
+ void WebContentsImpl::MediaVolumeChanged(double volume) {
+-  observers_.NotifyObservers(&WebContentsObserver::MediaVolumeChanged, volume);
++  GetOutermostWebContents()->observers_.NotifyObservers(
++      &WebContentsObserver::MediaVolumeChanged, volume);
+ }
+ 
+ void WebContentsImpl::SetVisibilityForChildViews(bool visible) {
+diff --git a/content/public/browser/web_contents_observer.h b/content/public/browser/web_contents_observer.h
+--- a/content/public/browser/web_contents_observer.h
++++ b/content/public/browser/web_contents_observer.h
+@@ -953,7 +953,8 @@
+   virtual void MediaPictureInPictureChanged(bool is_picture_in_picture) {}
+   virtual void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted) {}
+ 
+-  // A renderer player changed its volume input, after HTML element mute and
++  // A player in this outermost WebContents or one of its inner WebContents
++  // changed its volume input, after HTML element mute and
+   // before the player volume multiplier. Changes from different players are
+   // reported individually; this is not an aggregate WebContents volume.
+   virtual void MediaVolumeChanged(double volume) {}
+diff --git a/content/browser/media/media_web_contents_observer_unittest.cc b/content/browser/media/media_web_contents_observer_unittest.cc
+--- a/content/browser/media/media_web_contents_observer_unittest.cc
++++ b/content/browser/media/media_web_contents_observer_unittest.cc
+@@ -9,6 +9,9 @@
+ #include <vector>
+ 
+ #include "base/run_loop.h"
++#include "base/test/scoped_feature_list.h"
++#include "content/public/common/content_features.h"
++#include "content/public/test/test_renderer_host.h"
+ #include "content/test/test_render_view_host.h"
+ #include "content/test/test_web_contents.h"
+ #include "media/base/media_content_type.h"
+@@ -190,6 +193,56 @@
+   EXPECT_EQ(observed.volumes, (std::vector<double>{0.375}));
+ }
+ 
++class MediaVolumeOuterWebContentsTest : public MediaWebContentsObserverTest {
++ public:
++  MediaVolumeOuterWebContentsTest() {
++    feature_list_.InitAndDisableFeature(features::kGuestViewMPArch);
++  }
++
++ private:
++  base::test::ScopedFeatureList feature_list_;
++};
++
++TEST_F(MediaVolumeOuterWebContentsTest, VolumeNotifiesOnlyOutermostContents) {
++  auto middle = TestWebContents::Create(browser_context(), nullptr);
++  auto* middle_contents = middle.get();
++  auto inner = TestWebContents::Create(browser_context(), nullptr);
++  auto* inner_contents = inner.get();
++  VolumeObserver root_observer(contents());
++  VolumeObserver middle_observer(middle_contents);
++  VolumeObserver inner_observer(inner_contents);
++
++  auto append_container = [](WebContents* outer, const char* name) {
++    auto* main = outer->GetPrimaryMainFrame();
++    RenderFrameHostTester::For(main)->InitializeRenderFrameIfNeeded();
++    auto* child = RenderFrameHostTester::For(main)->AppendChild(name);
++    RenderFrameHostTester::For(child)->InitializeRenderFrameIfNeeded();
++    return child;
++  };
++  auto* inner_container = append_container(middle_contents, "inner");
++  middle_contents->AttachInnerWebContents(std::move(inner), inner_container,
++                                         /*is_full_page=*/false);
++  EXPECT_EQ(inner_contents->GetOuterWebContents(), middle_contents);
++  inner_contents->MediaVolumeChanged(0.625);
++  EXPECT_EQ(middle_observer.volumes, (std::vector<double>{0.625}));
++  EXPECT_TRUE(root_observer.volumes.empty());
++  EXPECT_TRUE(inner_observer.volumes.empty());
++
++  auto* middle_container = append_container(contents(), "middle");
++  contents()->AttachInnerWebContents(std::move(middle), middle_container,
++                                    /*is_full_page=*/false);
++  EXPECT_EQ(inner_contents->GetOutermostWebContents(), contents());
++  middle_observer.volumes.clear();
++  inner_contents->MediaVolumeChanged(0.375);
++  middle_contents->MediaVolumeChanged(0.375);
++  inner_contents->MediaVolumeChanged(0.123456789123);
++  contents()->MediaVolumeChanged(0.0);
++  EXPECT_EQ(root_observer.volumes,
++            (std::vector<double>{0.375, 0.375, 0.123456789123, 0.0}));
++  EXPECT_TRUE(middle_observer.volumes.empty());
++  EXPECT_TRUE(inner_observer.volumes.empty());
++}
++
+ TEST_F(MediaWebContentsObserverTest, GetCurrentlyPlayingVideoCount) {
+   auto player_host = SetupPlayerHost();
+   constexpr int32_t kAudioVideoPlayerId = 0;

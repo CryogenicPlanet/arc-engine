@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/no_destructor.h"
+#include "base/unguessable_token.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "content/public/renderer/render_frame.h"
@@ -29,10 +30,17 @@ namespace arc {
 namespace {
 class UpdateFrames final : public content::RenderFrameVisitor {
  public:
+  explicit UpdateFrames(bool cosmetics_only) : cosmetics_only_(cosmetics_only) {}
   bool Visit(content::RenderFrame* frame) override {
-    UpdateFrameAdBlockConfiguration(frame);
+    if (cosmetics_only_) {
+      UpdateFrameAdBlockCosmetics(frame);
+    } else {
+      UpdateFrameAdBlockConfiguration(frame);
+    }
     return true;
   }
+ private:
+  const bool cosmetics_only_;
 };
 
 class RenderProcessAgent final : public content::RenderThreadObserver,
@@ -51,25 +59,34 @@ class RenderProcessAgent final : public content::RenderThreadObserver,
   void UnregisterMojoInterfaces(blink::AssociatedInterfaceRegistry* registry) override {
     registry->RemoveInterface(mojom::RenderProcessAgent::Name_);
   }
-  void SetAdBlockRuleset(base::File indexed_ruleset, uint64_t ruleset_id,
-                         bool has_cosmetic_rules) override {
-    if (has_ruleset_ && ruleset_id <= ruleset_id_) {
+  void UpdateAdBlockCosmeticRules(base::File indexed_ruleset) override {
+    auto mapping = MapRules(std::move(indexed_ruleset));
+    if (!mapping) {
       return;
     }
-    if (!indexed_ruleset.IsValid()) {
-      ruleset_.reset();
-    } else {
-      auto mapping = subresource_filter::MemoryMappedRuleset::CreateAndInitialize(
-          std::move(indexed_ruleset));
-      if (!mapping || !subresource_filter::IndexedRulesetMatcher::Verify(
-                          mapping->data(), 0, "Arc.AdBlock")) {
-        return;
-      }
-      ruleset_ = std::move(mapping);
+    cosmetic_ruleset_ = std::move(mapping);
+    Invalidate(true);
+  }
+  void ResetAdBlockCosmeticRules() override {
+    cosmetic_ruleset_.reset();
+    Invalidate(true);
+  }
+  void UpdateAdBlockURLRules(base::File indexed_ruleset,
+                             const base::UnguessableToken& region_identity) override {
+    if (url_ruleset_ && url_region_identity_ == region_identity) {
+      return;
     }
-    has_cosmetic_rules_ = has_cosmetic_rules;
-    has_ruleset_ = true;
-    ruleset_id_ = ruleset_id;
+    auto mapping = MapRules(std::move(indexed_ruleset));
+    if (!mapping) {
+      return;
+    }
+    url_ruleset_ = std::move(mapping);
+    url_region_identity_ = region_identity;
+    Invalidate();
+  }
+  void ResetAdBlockURLRules() override {
+    url_ruleset_.reset();
+    url_region_identity_ = base::UnguessableToken();
     Invalidate();
   }
   void SetAdBlockExcludedOrigins(const std::vector<std::string>& excluded_origins,
@@ -93,7 +110,7 @@ class RenderProcessAgent final : public content::RenderThreadObserver,
     std::move(callback).Run("/* Result: " + result.state + " */\n/ * CSS: */\n" + result.css);
   }
   scoped_refptr<const subresource_filter::MemoryMappedRuleset> ruleset() const {
-    return ruleset_;
+    return url_ruleset_;
   }
   bool IsExcluded(const url::Origin& origin) const {
     if (origin.scheme() == "chrome-extension") {
@@ -108,7 +125,7 @@ class RenderProcessAgent final : public content::RenderThreadObserver,
   CosmeticResult EvaluateCosmetics(const GURL& url, const url::Origin& origin) {
     // This order is recovered from 0x43a51f4, including cache lookup before
     // NoScheme/InternalScheme. Only successful nonempty CSS is cached.
-    if (!ruleset_ || !has_cosmetic_rules_) {
+    if (!cosmetic_ruleset_) {
       return {"NoBlockList", {}};
     }
     if (IsExcluded(origin)) {
@@ -120,14 +137,19 @@ class RenderProcessAgent final : public content::RenderThreadObserver,
     if (cached != cache.end()) {
       return {"Cached: " + host, cached->second};
     }
-    subresource_filter::IndexedRulesetMatcher matcher(ruleset_->data());
+    subresource_filter::IndexedRulesetMatcher matcher(cosmetic_ruleset_->data());
     const auto evaluated_origin = url::Origin::Create(url);
-    if (matcher.ShouldDisableFilteringForDocument(
-            url, evaluated_origin, url_pattern_index::proto::ACTIVATION_TYPE_ELEMHIDE)) {
-      return {"Excluded", {}};
+    bool generic_disabled = false;
+    if (url_ruleset_) {
+      // Selector indices belong to C; activation exceptions belong to CURRENT U.
+      subresource_filter::IndexedRulesetMatcher url_matcher(url_ruleset_->data());
+      if (url_matcher.ShouldDisableFilteringForDocument(
+              url, evaluated_origin, url_pattern_index::proto::ACTIVATION_TYPE_ELEMHIDE)) {
+        return {"Excluded", {}};
+      }
+      generic_disabled = url_matcher.ShouldDisableFilteringForDocument(
+          url, evaluated_origin, url_pattern_index::proto::ACTIVATION_TYPE_GENERICHIDE);
     }
-    const bool generic_disabled = matcher.ShouldDisableFilteringForDocument(
-        url, evaluated_origin, url_pattern_index::proto::ACTIVATION_TYPE_GENERICHIDE);
     if (!url.has_scheme()) {
       return {"NoScheme", {}};
     }
@@ -138,7 +160,7 @@ class RenderProcessAgent final : public content::RenderThreadObserver,
     }
     std::vector<std::string_view> matched;
     matcher.GetDomainSelectors(origin, matched);
-    const auto* index = subresource_filter::flat::GetIndexedRuleset(ruleset_->data().data())
+    const auto* index = subresource_filter::flat::GetIndexedRuleset(cosmetic_ruleset_->data().data())
                             ->style_rule_index();
     if (index && !generic_disabled) {
       // Blink currently has no consumers for its class/ID matcher methods.
@@ -185,9 +207,19 @@ class RenderProcessAgent final : public content::RenderThreadObserver,
 
 
  private:
-  void Invalidate() {
+  static scoped_refptr<const subresource_filter::MemoryMappedRuleset> MapRules(
+      base::File indexed_ruleset) {
+    auto mapping = subresource_filter::MemoryMappedRuleset::CreateAndInitialize(
+        std::move(indexed_ruleset));
+    if (!mapping || !subresource_filter::IndexedRulesetMatcher::Verify(
+                        mapping->data(), 0, "Arc.AdBlock")) {
+      return nullptr;
+    }
+    return mapping;
+  }
+  void Invalidate(bool cosmetics_only = false) {
     css_by_host_.clear();
-    UpdateFrames visitor;
+    UpdateFrames visitor(cosmetics_only);
     content::RenderFrame::ForEach(&visitor);
   }
   void Bind(mojo::PendingAssociatedReceiver<mojom::RenderProcessAgent> receiver) {
@@ -195,11 +227,10 @@ class RenderProcessAgent final : public content::RenderThreadObserver,
   }
   bool installed_ = false;
   bool configured_ = false;
-  bool has_ruleset_ = false;
-  bool has_cosmetic_rules_ = false;
-  uint64_t ruleset_id_ = 0;
+  base::UnguessableToken url_region_identity_;
   uint64_t config_version_ = 0;
-  scoped_refptr<const subresource_filter::MemoryMappedRuleset> ruleset_;
+  scoped_refptr<const subresource_filter::MemoryMappedRuleset> cosmetic_ruleset_;
+  scoped_refptr<const subresource_filter::MemoryMappedRuleset> url_ruleset_;
   std::vector<url::Origin> excluded_origins_;
   std::map<std::string, std::string> css_by_host_;
   mojo::AssociatedReceiverSet<mojom::RenderProcessAgent> receivers_;

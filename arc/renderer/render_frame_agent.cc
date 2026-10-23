@@ -234,6 +234,13 @@ void CreateRenderFrameAgent(content::RenderFrame* frame) {
   }
 }
 
+void UpdateFrameAdBlockCosmetics(content::RenderFrame* frame) {
+  auto* reference = static_cast<FrameAgentReference*>(frame->GetUserData(&kFrameAgentKey));
+  if (reference && reference->agent) {
+    reference->agent->ApplyAdBlockCosmetics();
+  }
+}
+
 void UpdateFrameAdBlockConfiguration(content::RenderFrame* frame) {
   auto* reference = static_cast<FrameAgentReference*>(frame->GetUserData(&kFrameAgentKey));
   if (reference && reference->agent) {

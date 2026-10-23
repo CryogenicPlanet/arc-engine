@@ -59,19 +59,20 @@ void DeliverPendingCrashKey(std::string name) {
     return;
   }
   std::string value = std::move(*record.pending_value);
-  record.pending_value.reset();
   record.last_value = value;
   record.last_emission = base::TimeTicks::Now();
   // Resolve the current observer when the timer fires, as the native reporter
   // does. Replacing the observer does not cancel or replay crash annotations.
   DeliverCrashKey(name, value);
+  // Native leaves the moved-from pending string engaged through the callback.
+  // A reentrant write can replace it, but this outer timer then clears it.
+  record.pending_value.reset();
 }
 
 void RecordCrashKey(std::string name, std::string value) {
   CrashKeyRecord& record = CrashObserverState().records[name];
-  // The order matters: a write equal to the last emission leaves an already
-  // pending, different value in place.
-  if (record.pending_value == value || record.last_value == value) {
+  // Pending equality rejects before reading the clock, as native does.
+  if (record.pending_value == value) {
     return;
   }
   const base::TimeTicks now = base::TimeTicks::Now();
@@ -79,6 +80,10 @@ void RecordCrashKey(std::string name, std::string value) {
       base::Seconds(2) - (now - record.last_emission);
   if (record.pending_value ||
       (record.last_value && remaining >= base::TimeDelta())) {
+    // A throttled equal-last write leaves a different pending value in place.
+    if (record.last_value == value) {
+      return;
+    }
     const bool needs_timer = !record.pending_value;
     record.pending_value = std::move(value);
     if (needs_timer) {
@@ -88,8 +93,12 @@ void RecordCrashKey(std::string name, std::string value) {
     }
     return;
   }
-  record.last_value = value;
+  // Native advances the expired window even when equal-last rejects delivery.
   record.last_emission = now;
+  if (record.last_value == value) {
+    return;
+  }
+  record.last_value = value;
   DeliverCrashKey(name, value);
 }
 

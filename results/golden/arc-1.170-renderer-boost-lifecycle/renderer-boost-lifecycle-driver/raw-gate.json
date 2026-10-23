@@ -1,0 +1,49 @@
+{
+  "sha256": "a2642097a0809197c6df8237eca3f363629a4eb4cfb79cceb7cc8fdb9b0af354",
+  "driverImage": "RendererBoostLifecycleDriver.dylib",
+  "host": "127.0.0.1",
+  "ownPublicCalls": 16,
+  "pairedDriverReturns": 16,
+  "effectsOperations": 4,
+  "genuineCreateCallback": {
+    "seq": 2984,
+    "ev": "call",
+    "thread": "main",
+    "depth": 1,
+    "from": "engine",
+    "dir": "engine->app",
+    "cls": "ADK.ChromiumBrowser",
+    "kind": "-",
+    "sel": "browser:didCreateNewWebContents:isActive:",
+    "self": "<ADK.ChromiumBrowser#94>",
+    "args": [
+      "<ArcBrowser#89>",
+      "<ArcWebContents#118>",
+      true
+    ]
+  },
+  "operations": [
+    {
+      "selector": "registerStylesheet:withIdentifier:forHostPattern:",
+      "seq": 4126,
+      "receiver": "<ArcBrowserContextEffects#154>"
+    },
+    {
+      "selector": "registerScript:withIdentifier:forHostPattern:",
+      "seq": 4128,
+      "receiver": "<ArcBrowserContextEffects#154>"
+    },
+    {
+      "selector": "unregisterStylesheet:",
+      "seq": 4692,
+      "receiver": "<ArcBrowserContextEffects#154>"
+    },
+    {
+      "selector": "unregisterScript:",
+      "seq": 4694,
+      "receiver": "<ArcBrowserContextEffects#154>"
+    }
+  ],
+  "rawLabelsPreserved": true,
+  "scope": "Separate public operation proof; DOM lifecycle observations are sidecars, default comparator does not establish public-API parity."
+}

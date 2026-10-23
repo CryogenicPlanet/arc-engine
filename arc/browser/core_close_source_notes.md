@@ -52,7 +52,7 @@ its main RFH8d8, and does:
    ID or -1. Native UI delegate slot68 maps through da89030+68 to4446054,
    which sends webContentsClosingImminent:withSessionID: at44460b8.
 3. Continue synchronously into ownership/proxy close. If owned binding+128 exists
-   and embedding browser weak58/60 is absent/expired, clear+128 and delete its
+   and proxy ORIGINAL-DELEGATE weak58/60 is absent/expired, clear+128 and delete its
    owned native pointer, then release owning helper120 (4383534-3560). Otherwise
    call WebContentsDelegateProxy::CloseContents4350ee4 with ORIGINAL sourceWC
    at438358c-3594. That proxy weak-loads original delegate30/38 and invokes its
@@ -189,8 +189,13 @@ Current whole-window path is independent: UnloadController::OnWindowClosing
 unload_controller.cc:213 ->TabStripModel::CloseAllTabs:1261 ->one bulk CloseTabs
 transaction:3995. It bypasses both WC::Close and delegate CloseContents. It
 captures reverse-order tabs and preserves bulk unload/history/notification state.
-The original whole-browser bulk producer was not independently fully mapped in
-this audit; no claim that every bulk tab installs the individual source token.
+The original ordinary owned-window bulk route is now independently mapped:
+adapter43cbe38 ->preclose35ea6c0 ->OnWindowClosing35ea198 ->CloseAllTabs31bb174.
+It has reverse recursive tabs, historical flags2, and a model guard that spans
+Removed, physical destruction and post-WCO Closed. No direct Arc five-domain or
+individual source-token gate was found on this bounded route. Original validator
+policy may permit nested mutations under a separate lazy policy; its semantic
+identity/live value remain unresolved. This is not an unconditional CHECK claim.
 Original custom destructor client thunk438a43c subtracts Impl+70; this is neither
 HostViewClient+68 nor content WCO+A8. Physical dtor36926b0 first fans out all WCO
 WebContentsDestroyed calls (original A8 slot258 is no-op), then36926b4 checks dying
@@ -215,7 +220,8 @@ Coordinated design requirements justified by this evidence:
    public Close accounting decision. This is a separate native-route coverage
    boundary, NOT an independent Busy/retry requirement. NativeCloseContents
    preserves its proven source token/timing/forwarding behavior; original bulk
-   gating remains untraced. Preserve flags, reverse order and unload continuation;
+   validator enforcement policy remains unresolved. Preserve flags, reverse order
+   and unload continuation;
    do not invent a Busy gate or replay bulk as N public closes.
 5. Preserve historical ID rules and callback-before-logical-cleanup ordering at
    the source-proven Closed phase. The prior actual-destruction-only claim is
@@ -225,8 +231,8 @@ Coordinated design requirements justified by this evidence:
 6. Do not remove public deferral or land the held ClosePage-only patch from this
    audit alone. Timing1 activation requires exact five-domain producer coverage,
    ordinary native forwarding/conditional imminent and safe callback/query phase,
-   with composed validation. Timing0 continuation and original whole-browser bulk
-   semantics remain separate bounded scopes; neither proves a new bulk Busy gate.
+   with composed validation. Timing0 continuation and original bulk validator enforcement policy remain
+   separate bounded scopes; neither proves a new bulk Busy gate.
 
 No runtime/test success is claimed for a proposed implementation.
 
@@ -253,3 +259,41 @@ still resets false and unavailable-process path never enters Begin. Core stages
 a receipt-time snapshot before app callouts and suppresses only didClose delegate
 work, preserving existing cleanup/imminent. This does not repair the separate
 early-WCO/clear-order/transfer gaps or activate synchronous public Close.
+
+## BeforeUnload interface and original-delegate identity correction
+
+Complete original4383ea4 audit at logs/wp/core.beforeunload-native-interface/
+proves void ABI(thisImpl, inputsource, proceed, BORROWEDbool*). It never writes
+the output itself. proceed&&159&&!15a sets15a BEFORE synchronous imminent using
+CURRENT logical WC sessionID/-1. It then RELOADS proxy original-delegate weak
+Impl58/60 (=proxy+30/+38) after the app callout and forwards exact original
+source/proceed/SAMEoutput pointer via virtual88. Missing original delegate leaves
+output unchanged, not base fallbacktrue. No source160token/post/WeakSource check.
+Earlier wording describing58/60 as embedding-browser weak state was wrong and
+is corrected above; this is the proxy's original content delegate identity.
+
+Current RFHManager initializes this stack outputfalse and reads it immediately
+on return. A delayed Close-style OnceClosure capturing bool* is not safe or
+source-proven. Any BeforeUnload transport must remain synchronous, preserve
+unchanged-output cancellation and native Unloader semantics, and avoid receiver
+access after native forwarding can delete it. New weak liveness/association
+guards would be safety adaptations, not checks found in original4383ea4. This
+source audit does not activate another transport or public synchronous Close.
+
+## Ordinary owned window/bulk producer mapped
+
+Exact route/raw hashes: logs/wp/core.original-bulk-close/. Nativeadapter43cbe38
+calls originalpreclose35ea6c0 thenOnWindowClosing35ea198, which calls one guarded
+CloseAllTabs31bb174. It captures reverse recursive WCs and flags2(historical).
+TSM+100 holds backtrace guard31bb1dc through CloseTabs3194194 ->SendDetach31968c0
+Removed ->TabModel/WC destructor ->post-WCO Closed438a18c, only clearing31bb320.
+Current156 boolguard spans the same phases. Thus post-WCO Closed alone does not
+escape bulk reentrancy. Nonquit Closed still invokes its UI bridge ifavailable;
+only trying-to-quit suppresses that particular invocation. There is no direct
+ArcfiveBusy/source-token gate on this audited bulkroute.
+
+Original validator422d7c0 captures diagnostics then consults lazy policy354e8e8;
+that policy canreturn before trap. Its semantic producer/live value are still
+being mapped. Do NOT claim original unconditional C156 CHECK equivalence, disable
+ourguard, suppress nonquit Closed, or invent bulkBusy from this partial policy
+mapping. No new implementation safety fix is inferred from the bounded audit.

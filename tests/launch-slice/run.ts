@@ -17,8 +17,6 @@ const scenario = opt("--scenario") ?? "launch-slice";
 if (!/^[a-z][a-z0-9-]*$/.test(scenario)) throw new Error("invalid scenario name");
 const scenarioPath = resolve(import.meta.dir, `../scenarios/${scenario}.ts`);
 if (!existsSync(scenarioPath)) throw new Error(`unknown scenario: ${scenario}`);
-const scenarioModule = await import(scenarioPath);
-if (typeof scenarioModule.default !== "function") throw new Error(`scenario ${scenario} has no default runner`);
 const app = resolve(opt("--app") ?? "");
 const outDir = resolve(opt("--out") ?? "");
 const port = opt("--port") ?? "9333";
@@ -30,15 +28,33 @@ const recorded = argv.includes("--record");
 const recorderDylib = resolve(import.meta.dir, "../recorder/ArcEngineRecorder.dylib");
 if (recorded && !existsSync(recorderDylib)) throw new Error(`build ${recorderDylib} first (see its header)`);
 if (!existsSync(app) || !opt("--out")) throw new Error("usage: bun run.ts --app <ArcModAgent-x.app> --out <dir> [--trace] [--port N]");
-if (!/^ArcModAgent-[a-z][a-z0-9-]*\.app$/.test(basename(app))) throw new Error("only disposable ArcModAgent apps are allowed");
+const agentName = basename(app).match(/^ArcModAgent-([a-z][a-z0-9-]*)\.app$/);
+if (!agentName) throw new Error("only disposable ArcModAgent apps are allowed");
+const slug = agentName[1]!;
+const appName = `ArcModAgent-${slug}`;
+const domain = `company.thebrowser.Browser.mod.agent.${slug}`;
+// CFBundleName controls the app's real default storage path. A disposable
+// filename/session alone is insufficient. Read actual JSON types, including a
+// true boolean local-mode flag; PlistBuddy string output cannot prove that.
+const bundleIdentity = () => {
+  const conversion = spawnSync(["/usr/bin/plutil", "-convert", "json", "-o", "-", join(app, "Contents/Info.plist")], {stdout:"pipe", stderr:"pipe"});
+  if (!conversion.success || conversion.stderr.length) throw new Error("invalid disposable agent Info.plist: plutil failed");
+  let decoded: unknown;
+  try { decoded = JSON.parse(conversion.stdout.toString()); }
+  catch { throw new Error("invalid disposable agent Info.plist: malformed JSON"); }
+  if (!decoded || typeof decoded !== "object" || Array.isArray(decoded)) throw new Error("invalid disposable agent Info.plist: dictionary required");
+  const info = decoded as Record<string, unknown>;
+  if (info.CFBundleName !== appName || info.ArcModAgentSession !== slug || info.CFBundleIdentifier !== domain || info.ArcModLocalMode !== true)
+    throw new Error("invalid disposable agent bundle identity: typed CFBundleName/session/identifier/local mode mismatch");
+  return { CFBundleName: info.CFBundleName, ArcModAgentSession: info.ArcModAgentSession, CFBundleIdentifier: info.CFBundleIdentifier, ArcModLocalMode: info.ArcModLocalMode };
+};
+// Fail before fixture startup, output creation, defaults writes or app launch.
+bundleIdentity();
 mkdirSync(outDir, { recursive: true });
-
+const scenarioModule = await import(scenarioPath);
+if (typeof scenarioModule.default !== "function") throw new Error(`scenario ${scenario} has no default runner`);
 const plist = (key: string): string =>
   spawnSync(["/usr/libexec/PlistBuddy", "-c", `Print :${key}`, join(app, "Contents/Info.plist")]).stdout.toString().trim();
-const slug = plist("ArcModAgentSession");
-const appName = basename(app, ".app");
-const domain = `company.thebrowser.Browser.mod.agent.${slug}`;
-if (!/^[a-z][a-z0-9-]*$/.test(slug) || appName !== `ArcModAgent-${slug}`) throw new Error("invalid agent bundle identity");
 const data = join(process.env.HOME!, "Library/Application Support", appName);
 const chromiumData = join(data, "Agent Chromium Data");
 
@@ -89,6 +105,7 @@ const launch = (options: LaunchOptions = {}): Launch => {
   const l = launchProcess(options); launches.push(l); return l;
 };
 const launchProcess = (options: LaunchOptions): Launch => {
+  bundleIdentity(); // Recheck before any per-launch mutations, in every mode.
   const extraEnv = Object.entries(options.environment ?? {});
   const libraries = (options.libraries ?? []).map(path => {
     if (!isAbsolute(path) || /[:\r\n]/.test(path)) throw new Error("test library must be an absolute dylib path below outDir");
@@ -195,7 +212,7 @@ const titleIs = async (target: string, title: string, ms = 30000) =>
   (await waitFor(() => (evaluate(target, "document.title") === title ? true : undefined), ms)) === true;
 
 const context = {
-  app, slug, port: Number(port), outDir, data, base, EXPECT, recorded, traced, launch, ready, quit, open, titleIs,
+  app, slug, port: Number(port), outDir, data, base, EXPECT, recorded, traced, bundleIdentity, launch, ready, quit, open, titleIs,
   evaluate, record, waitFor, cdp, sleep,
   assert(step: string, ok: unknown, detail = "") { record(step, ok ? "pass" : "fail", detail); },
   async client() { return client ??= await AgentCDP.connectAgent(slug, Number(port)); },

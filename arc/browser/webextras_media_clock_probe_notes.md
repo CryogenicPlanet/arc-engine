@@ -203,3 +203,95 @@ exactly one owned-target command with a fixed5s bound. Existing source/default r
 raw tamper, fixed clock math and unsupported-comparator tests remain. Prior11 inputs
 were copied and hash-verified before editing under
 logs/wp/webextras-native7-failed-inputs/manifest.json. No new app/run has occurred.
+
+
+## Separate declared service-only mode (run8 preserved)
+
+`--media-service-clock` is a separate opt-in mode, mutually exclusive with
+`--media-clock` (duplicates are rejected too). Default11 actions/13 public pairs
+and the existing video lane retain their producer/activation/validator behavior.
+The run8 video lane remains inconclusive: the one genuine Page.bringToFront did
+not change the actual hidden document, so it never created video or collected
+clock samples. This new mode does not repair or reinterpret that observation.
+The exact11 run8 inputs were copied and verified before this change at
+`logs/wp/webextras-native8-service-lane-inputs/manifest.json`.
+
+The new lane uses ONLY public `navigator.mediaSession.playbackState` followed by
+`setPositionState({duration:20,position,playbackRate})`. It creates no video,
+audio, canvas or decoder, requests no media asset, activates no target and uses
+no visibility/focus emulation or new native ABI. The inert owned fixture remains
+identified by the same exact URL, nonce, endpoint PID and passive native wrapper
+registration. Actual visibility/hidden is recorded; hidden is allowed here.
+It tests declared SERVICE-position DTO clocks only. It supplies no evidence of
+implicit player fallback, DOM/player alignment, override precedence against real
+video, decoder operation or successful activation/visibility.
+
+| Phase | Public playbackState | Issued position | Issued playbackRate | Expected DTO rate |
+| --- | --- | ---: | ---: | ---: |
+| paused-one | paused | 1.25 | 1 | 0 |
+| playing-one | playing | 1.25 | 1 | 1 |
+| playing-two | playing | 1.25 | 2 | 2 |
+| paused-two | paused | 2.25 | 1 | 0 |
+| declared-paused | paused | 7.25 | 1.5 | 0 |
+| declared-playing | playing | 7.25 | 1.5 | 1.5 |
+
+Each phase records its exact issued input, public playbackState, performance.now
+before/after the setter, actual API/URL/nonce/visibility observation, progress and
+all raw Runtime.evaluate results/exceptions/transport failures before assertion.
+There is no input rate0: paused effective0 is produced by public playbackState.
+The six phases reuse the unchanged native helper: three complete public position
+snapshots (five getters each), two currentTime reads on the SAME retained third
+DTO, then explicit release. Thus successful evidence is41 action spans and115
+admitted public call/return pairs including the unchanged baseline11/13.
+No receiver, ABI, raw caller/offset, frozen comparator, callback or count checks
+are relaxed. Raw numeric currentTime is preserved and strict cross-engine
+comparison remains strict; this is not a timing-normalization allowlist.
+
+Final fixed snapshot convergence requires duration20, exact effective rate and
+endOfMedia=false. Measured/held values must be finite, above the issued lower
+base and strictly inside(0,20), excluding clamp-based false slope evidence.
+Paused values equal their distinct exact issued base within the predeclared4us.
+The SAME retained DTO must obey all three mach-bracket slope comparisons, still
+with the original fixed4us*(1+abs(rate)) endpoint quantization allowance.
+Warmups are saved diagnostics, not a hidden success poll. A genuine nil position
+receipt is explicitly inconclusive; raw coverage remains incomplete and cannot
+pass. Wrong class/ABI/owner/receiver or malformed traces remain errors. If the
+fixed attempts leave no held DTO, the attempted release is recorded as such;
+this does not synthesize a successful release or missing public pairs.
+
+Absolute alignment of a PLAYING DTO's offset to setter/DOM time remains
+UNCOVERED: the held slope and lower/interior checks do not prove that alignment.
+The paused distinct-base checks anchor the three paused phases. Host RPC brackets
+are diagnostic only; no hrtime/mach origin equality or original IPC timestamp
+preservation is assumed. Original-native service behavior stays provisional
+until genuinely measured, and failure/nonconvergence is diagnostic evidence,
+not by itself an engine defect. Default DevTools focus/undocked-close and real
+native cleanup limitations are unchanged. Fatal/Check-failed scanning and forced
+SIGTERM rejection apply to every mode.
+
+The fresh-build wrapper accepts/forwards the strict new flag under the same
+verified ancestor lock. Both opt-in modes retain a16-file source inventory;
+service mode labels `mediaResourceUsed:false` and freezes the unused video asset
+and JSON only as inventory. It never loads/serves them. Default remains14 files.
+Mode changes or any inventoried source/asset drift are rejected before/after
+build/package/probe. No app or runtime run is part of these standalone checks.
+
+Tests execute the actual service JS with throwing media-element/DOM mocks, all
+six exact inputs and setter ordering, wrong URL/nonce/missing API rejection,
+hidden observations, exact receipt caching and failure stages. They execute the
+actual service measurement branch for six phases/30 clock actions/102 public
+pairs plus six releases, asserting66 raw evaluations and no activation/resource
+stimulus. Relational negative controls reject constant clocks, rate/duration/end
+mismatches, stale tokens/replaced DTOs/owners, changed receipts/identity/state,
+reordered attempts, paused wrong bases and out-of-range values. Existing saved
+default11 replay, raw receiver/caller/ABI/offset tampering, fatal/forced cleanup,
+old video stimulus and visibility tests remain. Frozen run8 video producer,
+validator, phase definitions and activation helper bodies are byte-compared in
+tests. The exact current clock extension still reverses to the frozen previously
+adopted historical driver before the10 wiring behavioral/adoption tests run;
+partial/arbitrary drift is not accepted.
+
+
+The separate opt-in genuine frontend diagnostic is documented in
+`webextras_devtools_frontend_probe_notes.md`; it adds no public fixture pairs and
+is mutually exclusive with both clocks. Existing clock behavior/policy is unchanged.

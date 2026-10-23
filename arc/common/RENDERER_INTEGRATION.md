@@ -1,5 +1,31 @@
 # Renderer integration, 2026-10-23
 
+QUEUED-RULE OWNED CORRECTION APPLIED (source/interface, not runtime):
+transaction22910 completed/reaped0 under the shared lock. Exact owned5475 changes
+are installed; all14 official generated outputs equal the reviewed bytes. Both
+prescribed checks and all6 actual-source compiler checks pass (six empty logs).
+Build graph and all nonpermitted checked dependencies are unchanged. Receipt:
+`logs/wp/renderer-queued-rules-adoption/transaction.json`, SHA256
+`c27c1833f8356c8d00f8b06df715bd3efa9914c2915812c55587454fb163ef23`.
+Fresh full Base build/package and unchanged official CSS/extraction regression
+completed/reaped0 (tool96238),37/37 steps/coverage/raw fixture pass.225 declared
+source/tool/golden/stock inputs and runtime hashes stay pinned; prior official
+output is preserved. New output `results/renderer-queued-rules-canonical-run2`,
+raw SHA256 `7bbf1095c77d100c9466879c0d60785b5d0d209e35b58747f6ff319edcef8fa6`.
+Status `renderer-canonical-post-queued-rules/run/status.json` SHA8d27f36d... .
+Global57/callback66:105/div1 and app CSS3/5 remain; global parity is false.
+New accepted Boost lifecycle nativea264 passes58/58; first standard OURS50fc
+fails registered next-document b (black/DOMempty vs purple/DOM1); unregister/c
+unreached. Current shared Chrome renderer document-start hook is absent. A
+minimal one-file host-gated hook is being prepared for lead adoption. Shared
+hooks remain UNAPPLIED; no own runtime waiter is active.
+Current post-owned integration route: ALL43914cf5 → unchanged gradient66179056 →
+TopBand6360353c, or aggregate129c38a4 INSTEAD OF those three patches. Details and
+exact published paths: `arc/common/RENDERER_QUEUED_RULES_ADOPTION.md`.
+Oldbd0/9d and historical followup7a12 are not applicable after owned5475. Their
+bytes are preserved. Optional746/f18/723 remain separate/HELD. Fresh3composition
+compiler checks pass with4negative selection controls/3485 pinned dependencies.
+
 SHUTDOWN EVIDENCE LIMIT: below, “natural Browser.close/quit” means the harness
 sent Browser.close, observed browser/captured helpers absent, and used no fallback
 TERM for that run. It is NOT an observed normal OS exit status, WillTerminate or
@@ -7,18 +33,18 @@ atexit receipt, and does not by itself exclude a crash. Peer140398 exposed that
 limit. Bounded audit renderer-shutdown-observation-audit/ preserved65exact files,
 including6app.logs/fullraw recordings: no matching fatal/DCHECK/signal/crash
 signatures, but also no WillTerminate/atexit/nativeOSwaitstatus. Normal OS exit
-and crash absence remain UNPROVEN. No source/runtime change or new run.
+and crash absence remain UNPROVEN. That bounded audit changed no source and ran no app.
 
-NEW STATIC OWNED GAP: queued rules publication. Native has separate cosmetic/URL
-weak-service tasks and unconditional per-channel resets when live11 is false at
-callback; actual process registry sends one immediate combined update and <=ID
-receiver guards reject equal-revision reset/reapply. Fullbd0 network guard also
-needs correction. Native audit is complete/fresh-reviewed (17input pins exact);
-plan7ed62a79 is complete/fresh-reviewed; one PRIVATE writer stages the correction.
-No actual production/interface-generation/runtime fix yet. URL cancellation byte
-confirmationcdb8f80c is also complete. This
-is not blanket disable→clear: ordinary disable retains installed agent filtering.
-See logs/wp/renderer-feature11-observer-current-audit/ and renderer-queued-rules-design/.
+QUEUED-RULE DEFECT NOW CORRECTED IN OWNED SOURCE: separate C/U update/reset
+RPCs, queued current-state/live-feature delivery, URL-only pending cancellation,
+independent C/U mappings and current-U activation checks replace the old combined
+synchronous/revision-guarded path. Ordinary disable still sends nothing. Native
+proof/design and private fixture results remain pinned in
+renderer-feature11-observer-current-audit/, renderer-queued-rules-design/ and
+renderer-queued-rules-implementation/.15 production-helper assertions execute;
+4actual-code fixtures are compile-only. Browser-network integration is still a
+lead-owned proposal; native registration/pre-bind and the deterministic queue race
+remain runtime-unverified. Actual source/interface adoption is recorded above.
 
 CURRENT OFFICIAL CSS AUDIT (raw977/native vs ff86/ours):29artifact assertions
 pass. __arc_theme_css remains app3/5; extras3920/4226 are main/depth1/run-only,
@@ -40,16 +66,12 @@ prerender finish/nested runtime and final linkage remain unverified. Manifest:
 logs/wp/renderer-topband-commit-refresh-activation-proposal/published-proposal.json
 (1b9ad84a...). Do not use archived757 broad generic-commit admission.
 
-CURRENT APP BASELINE: adopted flags ECC requires the UNAPPLIED alternative
-ALLbd0e51f1 → gradient66179056 → TopBand9d222711. App-only7dd is an alternative
-to full ALLbd0; never add both or restore old app bytes. Entire adopted typed
-string/int suffix and utility include are preserved. Earlier e90/d71/5ce and
-original e07/d106 remain immutable alternatives for their recorded old baselines.
-ECC adds one unchanged app-hunk context line only;49otherALLsections unchanged.
-New stacked-app syntax0/empty and fresh full77-file composition review pass.
-Startup746 composes; discard723 stays independently HELD. Commit757 WITHDRAWN;
-corrected activation-only f18 is published UNAPPLIED/HELD. Current manifest:
-logs/wp/renderer-app-flags-ecc-context/published-proposal.json (855318f7...).
+CURRENT APP/OWNED BASELINE: flagsECC + owned5475 now require the new
+UNAPPLIED ALL439 → gradient661 → TopBand636 route described above. It preserves
+current ff957 quit behavior and the entire adopted app flags suffix. Earlier
+bd0/7dd/9d, e90/d71/5ce and original e07/d106 are historical routes only. Optional
+startup746, activationf18 and discard723 remain separate under their existing
+holds. No shared integration is activated by the owned correction.
 
 ORIGINAL BASELINE RELEASE: corrected UNAPPLIED TopBandd106f59e replaces withdrawn88.
 Dependency order ALL e07 → gradient661 → TopBandd106.19actual-flags checks0/empty;
@@ -82,7 +104,7 @@ two-argument service initializer calls super directly, preserving data/weak owne
 without the extra one-argument recorded dispatch. Realflags/official checks pass;
 new official peer rawff86 confirms corrected constructor dispatch (twoarg1/onearg0),
 37/37 and natural exit. Whole-build/package source fingerprint unavailable; no
-duplicate canonical run planned. Evidence: renderer-extraction-initializer-fix/.
+additional old-source duplicate planned; the new owned5475 regression is recorded above. Evidence: renderer-extraction-initializer-fix/.
 Original-baseline UNAPPLIED order: ALL `e07d1b39` → gradient `66179056` → corrected
 TopBand `d106f59e` → optional startup `746ac8cc`. TopBand19real-flags checks0/empty,
 38fixtures compiled NOT executed; canonical replay/native-contract reviews clean.

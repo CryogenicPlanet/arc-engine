@@ -1,0 +1,24 @@
+--- a/arc/api/arc_web_contents.mm
++++ b/arc/api/arc_web_contents.mm
+@@ -395,14 +395,13 @@
+   void NavigationListPruned(const content::PrunedDetails&) override { UpdateHistory(); }
+   void NavigationEntriesDeleted() override { UpdateHistory(); }
+   void LoadProgressChanged(double progress) override {
+-    if (awaiting_navigation_start_ || awaiting_policy_) {
+-      PendingStateEvent event;
+-      event.kind = PendingStateEvent::Kind::kProgress;
+-      event.progress = progress;
+-      pending_state_events_.push_back(event);
+-    } else {
+-      wrapper_.loadProgress = progress;
+-    }
++    __weak ArcWebContents* weak_owner = wrapper_;
++    void (^callback)() = ^{
++      ArcWebContents* owner __attribute__((objc_precise_lifetime)) = weak_owner;
++      if (owner) { owner.loadProgress = progress; }
++    };
++    content::GetUIThreadTaskRunner({})->PostTask(
++        FROM_HERE, base::BindOnce([](void (^work)()) { work(); }, callback));
+   }
+   void DidFirstVisuallyNonEmptyPaint() override { wrapper_.isReadyToDisplay = YES; }
+   void OnVisibilityChanged(content::Visibility visibility) override {

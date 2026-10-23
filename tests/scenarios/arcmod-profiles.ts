@@ -239,11 +239,18 @@ export default async function scenario(c:ScenarioContext){
     assert("profile name field enabled nonsecure actually settable",editor!.field.role==="AXTextField"&&editor!.field.subrole!=="AXSecureTextField"&&editor!.field.enabled&&editor!.field.valueSettable&&typeof editor!.field.value==="string");
     ui.dispatch(editor!.field,"set",NAME);
     assert("profile name setter reads back fixed name",await ui.poll(()=>{const v=creation();return v?.field.value===NAME?true:undefined;},3000));
-    const named=creation();if(!named)throw new Error("Profiles name editor disappeared before known submit step");
-    const next=named.s.elements.filter(n=>ui.under(n,named.sheet)&&n.role==="AXButton"&&n.label==="Next"),create=named.s.elements.filter(n=>ui.under(n,named.sheet)&&n.role==="AXButton"&&n.label==="Create Profile");
-    assert("Profiles has exactly one known Next-or-Create step",next.length+create.length===1);
-    if(next.length===1){
-      ui.dispatch(next[0]!);
+    // Name readback can precede asynchronous validation/AXPress readiness. Only
+    // observe the exact unchanged editor and known submit; never replay input.
+    const readySubmit=await ui.poll(()=>{
+      const v=creation();if(!v)return;
+      if(v.field.value!==NAME)throw new Error("Profiles fixed name changed before submit readiness");
+      const submits=v.s.elements.filter(n=>ui.under(n,v.sheet)&&n.role==="AXButton"&&["Next","Create Profile"].includes(n.label));
+      if(submits.length>1)throw new Error("Profiles ambiguous Next-or-Create submit step");
+      const submit=submits[0];return submit?.enabled&&submit.actions.includes("AXPress")?submit:undefined;
+    },5000);
+    assert("Profiles has one ready enabled advertised Next-or-Create step",readySubmit!==undefined);
+    if(readySubmit!.label==="Next"){
+      ui.dispatch(readySubmit!);
       const selection=()=>{
         const s=ui.state(),sheets=ui.sheets(s);if(!sheets.length)return;
         const sheet=sheets[0]!;
@@ -257,9 +264,10 @@ export default async function scenario(c:ScenarioContext){
       };
       const step=await ui.poll(selection,5000);assert("Profiles sole Space selection step appears",step!==undefined);
       assert("Profiles initially no selected Space by submit validity",step!.submit.enabled===false);ui.dispatch(step!.row);
-      assert("sole bound Space press enables Create Profile",await ui.poll(()=>{const v=selection();return v?.submit.enabled===true?true:undefined;},3000));
-      const final=selection();if(!final?.submit.enabled)throw new Error("Profiles selection validity changed before submit");ui.dispatch(final.submit);
-    }else{assert("Profiles Create-only step enabled after fixed valid name",create[0]!.enabled);ui.dispatch(create[0]!);}
+      const selectedSubmit=await ui.poll(()=>{const v=selection();return v?.submit.enabled&&v.submit.actions.includes("AXPress")?v.submit:undefined;},3000);
+      assert("sole bound Space press enables advertised Create Profile",selectedSubmit!==undefined);
+      ui.dispatch(selectedSubmit!);
+    }else ui.dispatch(readySubmit!);
     // Known creation editor may remain while completion is in flight. Only its
     // exact destination warning may intervene; no unknown sheet is dismissed.
     const completed=await ui.poll(()=>{

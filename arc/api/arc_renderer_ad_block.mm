@@ -34,7 +34,7 @@ namespace arc {
 namespace {
 struct ApplicationAdBlockState {
   AdBlockConfiguration configuration;
-  base::RepeatingClosureList observers;
+  base::RepeatingCallbackList<void(AdBlockChange)> observers;
   uint64_t requested_ruleset_id = 0;
   __weak id application = nil;
 };
@@ -126,7 +126,7 @@ class IndexOutput final : public subresource_filter::RuleOutputStream {
 };
 
 base::File CompileRules(std::vector<std::string> lists, uint64_t ruleset_id,
-                        bool* success, bool* has_cosmetic_rules) {
+                        bool* success, bool* has_cosmetic_rules, bool* has_url_rules) {
   if (lists.empty()) {
     *success = true;
     return {};
@@ -168,6 +168,7 @@ base::File CompileRules(std::vector<std::string> lists, uint64_t ruleset_id,
   }
   output.IndexStyles();
   *has_cosmetic_rules = output.has_style_rules();
+  *has_url_rules = output.has_url_rules();
   if (!output.has_url_rules() && !output.has_style_rules()) {
     *success = true;
     return {};
@@ -200,6 +201,7 @@ struct CompiledRules {
   DeferredRulesetFile file;
   bool success;
   bool has_cosmetic_rules;
+  bool has_url_rules;
 };
 
 CompiledRules CompileRulesForReply(
@@ -208,10 +210,12 @@ CompiledRules CompileRulesForReply(
     scoped_refptr<base::SequencedTaskRunner> close_runner) {
   bool success = false;
   bool has_cosmetic_rules = false;
-  auto file = CompileRules(std::move(lists), ruleset_id, &success, &has_cosmetic_rules);
+  bool has_url_rules = false;
+  auto file = CompileRules(std::move(lists), ruleset_id, &success, &has_cosmetic_rules,
+                           &has_url_rules);
   return {DeferredRulesetFile(new base::File(std::move(file)),
                               base::OnTaskRunnerDeleter(std::move(close_runner))),
-          success, has_cosmetic_rules};
+          success, has_cosmetic_rules, has_url_rules};
 }
 
 void PublishRules(uint64_t generation, CompiledRules result) {
@@ -228,8 +232,11 @@ void PublishRules(uint64_t generation, CompiledRules result) {
   state.configuration.ruleset_id = generation;
   state.configuration.has_ruleset_update = true;
   state.configuration.has_cosmetic_rules = result.has_cosmetic_rules;
-  if (state.configuration.enabled) {
-    state.observers.Notify();
+  state.configuration.has_url_rules = result.has_url_rules;
+  // Completion may re-engage the global pair after disable. A refresh here
+  // would destroy that just-retained pair; only read the current feature.
+  if (RendererAdBlockFeatureEnabled()) {
+    state.observers.Notify(AdBlockChange{.publish_rules = true});
   }
 }
 }  // namespace
@@ -249,7 +256,7 @@ const AdBlockConfiguration& GetAdBlockConfiguration() {
 }
 
 base::CallbackListSubscription ObserveAdBlockConfiguration(
-    base::RepeatingClosure callback) {
+    base::RepeatingCallback<void(AdBlockChange)> callback) {
   return State().observers.Add(std::move(callback));
 }
 
@@ -274,7 +281,9 @@ void RefreshRendererAdBlockFeature() {
     if (enabled) {
       // Re-enabling republishes retained exclusions; disabling sends nothing.
       ++state.configuration.config_version;
-      state.observers.Notify();
+      state.observers.Notify(AdBlockChange{
+          .publish_rules = state.configuration.has_ruleset_update,
+          .publish_exclusions = true});
     }
   }
 }
@@ -333,8 +342,8 @@ void SetRendererExcludedDomains(std::vector<std::string> domains) {
   ++State().configuration.config_version;
   // Native manager 0x42971f0 caches strings before its feature-11 guard.
   // Disabled changes become visible only at the next enabled publication.
-  if (State().configuration.enabled) {
-    State().observers.Notify();
+  if (RendererAdBlockFeatureEnabled()) {
+    State().observers.Notify(AdBlockChange{.publish_exclusions = true});
   }
 }
 }  // namespace arc

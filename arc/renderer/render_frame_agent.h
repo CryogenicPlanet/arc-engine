@@ -12,6 +12,8 @@ void CreateRenderFrameAgent(content::RenderFrame* frame);
 // ChromeContentRendererClient calls this before extension document-start code.
 // False means a script destroyed the frame; the caller must return immediately.
 bool RunEffectsAtDocumentStart(content::RenderFrame* frame);
+// Cosmetic messages reapply sheets without reinstalling the URL adapter.
+void UpdateFrameAdBlockCosmetics(content::RenderFrame* frame);
 // Process configuration publication visits every live renderer frame.
 void UpdateFrameAdBlockConfiguration(content::RenderFrame* frame);
 }  // namespace arc

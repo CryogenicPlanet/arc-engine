@@ -1,0 +1,236 @@
+diff --git a/arc/browser/core_logical_web_contents.h b/arc/browser/core_logical_web_contents.h
+new file mode 100644
+--- /dev/null
++++ b/arc/browser/core_logical_web_contents.h
+@@ -0,0 +1,115 @@
++// Copyright 2026 ArcMod. Private logical lifetime; no routing is installed.
++#ifndef ARC_BROWSER_CORE_LOGICAL_WEB_CONTENTS_H_
++#define ARC_BROWSER_CORE_LOGICAL_WEB_CONTENTS_H_
++
++#include <memory>
++
++#include "arc/browser/core_close_state.h"
++#include "base/functional/callback_forward.h"
++#include "base/memory/weak_ptr.h"
++#include "base/sequence_checker.h"
++
++namespace base {
++template <typename T>
++class DeleteHelper;
++}  // namespace base
++
++namespace content {
++class WebContents;
++}  // namespace content
++
++namespace arc {
++
++class CoreLogicalWebContents;
++using CoreLogicalWebContentsHandle = std::shared_ptr<CoreLogicalWebContents>;
++using CoreLogicalWebContentsWeakHandle = std::weak_ptr<CoreLogicalWebContents>;
++
++// Implement these interfaces with the actual functional package peers. Each
++// peer owns its real native observation/dispatch/cache state and holds only a
++// weak logical back-reference. A service may independently retain the SAME
++// peer. These are not cancellation tokens or substitutes for the package state.
++// All operations and final peer destruction must obey the package UI contract.
++class CoreMediaPeer {
++ public:
++  virtual ~CoreMediaPeer();
++  virtual void AttachToWebContents(
++      base::WeakPtr<content::WebContents> contents) = 0;
++  virtual void RetireFromWebContents() = 0;
++};
++
++class CoreDevToolsPeer {
++ public:
++  virtual ~CoreDevToolsPeer();
++  virtual void AttachToWebContents(
++      base::WeakPtr<content::WebContents> contents) = 0;
++  virtual void RetireFromWebContents() = 0;
++};
++
++using CoreMediaPeerFactory = base::OnceCallback<std::shared_ptr<CoreMediaPeer>(
++    CoreLogicalWebContentsWeakHandle)>;
++using CoreDevToolsPeerFactory =
++    base::OnceCallback<std::shared_ptr<CoreDevToolsPeer>(
++        CoreLogicalWebContentsWeakHandle)>;
++
++// UI only. Requires a live initial native weak binding, the already-associated
++// close state, and two nonempty factories returning actual nonnull peers.
++// Factories construct nonobserving peers: no subscription, app callout, task
++// posting, sibling lookup, or publication of the constructing logical handle.
++// They may store its weak handle and read its native binding/close state.
++// Both peers are installed once before the completed handle is returned.
++//
++// This function does NOT attach peers, publish native userdata, create a facade,
++// register hooks, replace contents, or acquire exclusive physical ownership.
++CoreLogicalWebContentsHandle CreateCoreLogicalWebContents(
++    base::WeakPtr<content::WebContents> contents,
++    CoreCloseStateHandle close_state,
++    CoreMediaPeerFactory media_factory,
++    CoreDevToolsPeerFactory devtools_factory);
++
++// A real logical owner of both functional peers and the supplied close state.
++// Strong handles may travel with accepted work; access is UI only. Last strong
++// release off UI queues raw-object deletion on UI. Weak locks already fail then;
++// no queued task retains or resurrects this logical owner for that interval.
++// Native destruction merely expires the weak binding. It does not cancel work.
++//
++// No facade/native-ownership/replacement integration is provided by this library.
++// Its destructor only releases its members: it does not run peer retirement,
++// synthesize Closed, or detach/delete a Chromium-owned tab.
++class CoreLogicalWebContents final {
++ public:
++  CoreLogicalWebContents(const CoreLogicalWebContents&) = delete;
++  CoreLogicalWebContents& operator=(const CoreLogicalWebContents&) = delete;
++
++  // Returned raw native pointer is a UI-local borrow, never a retained owner.
++  base::WeakPtr<content::WebContents> GetNativeWeakPtr() const;
++  content::WebContents* GetNative() const;
++  CoreCloseStateHandle GetCloseState() const;
++  std::shared_ptr<CoreMediaPeer> GetMediaPeer() const;
++  std::shared_ptr<CoreDevToolsPeer> GetDevToolsPeer() const;
++
++ private:
++  friend CoreLogicalWebContentsHandle CreateCoreLogicalWebContents(
++      base::WeakPtr<content::WebContents>,
++      CoreCloseStateHandle,
++      CoreMediaPeerFactory,
++      CoreDevToolsPeerFactory);
++  friend struct CoreLogicalWebContentsDeleter;
++  friend class base::DeleteHelper<CoreLogicalWebContents>;
++
++  CoreLogicalWebContents(base::WeakPtr<content::WebContents> contents,
++                         CoreCloseStateHandle close_state);
++  ~CoreLogicalWebContents();
++  void CheckUISequence() const;
++
++  const base::WeakPtr<content::WebContents> contents_;
++  const CoreCloseStateHandle close_state_;
++  // Reverse member destruction drops Media before DevTools. Retained service
++  // handles may independently keep either real peer alive afterward.
++  std::shared_ptr<CoreDevToolsPeer> devtools_peer_;
++  std::shared_ptr<CoreMediaPeer> media_peer_;
++  SEQUENCE_CHECKER(sequence_checker_);
++};
++
++}  // namespace arc
++
++#endif  // ARC_BROWSER_CORE_LOGICAL_WEB_CONTENTS_H_
+diff --git a/arc/browser/core_logical_web_contents.mm b/arc/browser/core_logical_web_contents.mm
+new file mode 100644
+--- /dev/null
++++ b/arc/browser/core_logical_web_contents.mm
+@@ -0,0 +1,99 @@
++// Copyright 2026 ArcMod. Bare logical library; no consumer is installed.
++#include "arc/browser/core_logical_web_contents.h"
++
++#include <utility>
++
++#include "base/check.h"
++#include "base/functional/callback.h"
++#include "base/location.h"
++#include "base/task/single_thread_task_runner.h"
++#include "content/public/browser/browser_task_traits.h"
++#include "content/public/browser/browser_thread.h"
++#include "content/public/browser/web_contents.h"
++
++namespace arc {
++
++// This deleter never owns another shared logical handle. std::shared_ptr ends
++// strong ownership before invoking it, including when UI deletion is deferred.
++struct CoreLogicalWebContentsDeleter {
++  void operator()(CoreLogicalWebContents* logical) const {
++    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
++      delete logical;
++      return;
++    }
++    // As with BrowserThread::DeleteOnUIThread, rejection at shutdown leaks the
++    // raw object rather than destroying UI-owned state on the releasing thread.
++    content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, logical);
++  }
++};
++
++CoreMediaPeer::~CoreMediaPeer() = default;
++CoreDevToolsPeer::~CoreDevToolsPeer() = default;
++
++CoreLogicalWebContentsHandle CreateCoreLogicalWebContents(
++    base::WeakPtr<content::WebContents> contents,
++    CoreCloseStateHandle close_state,
++    CoreMediaPeerFactory media_factory,
++    CoreDevToolsPeerFactory devtools_factory) {
++  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
++  CHECK(contents);
++  CHECK(close_state);
++  CHECK(media_factory);
++  CHECK(devtools_factory);
++
++  CoreLogicalWebContentsHandle logical(
++      new CoreLogicalWebContents(std::move(contents), std::move(close_state)),
++      CoreLogicalWebContentsDeleter());
++  CoreLogicalWebContentsWeakHandle weak_logical(logical);
++  logical->media_peer_ = std::move(media_factory).Run(weak_logical);
++  CHECK(logical->media_peer_);
++  logical->devtools_peer_ = std::move(devtools_factory).Run(weak_logical);
++  CHECK(logical->devtools_peer_);
++  return logical;
++}
++
++CoreLogicalWebContents::CoreLogicalWebContents(
++    base::WeakPtr<content::WebContents> contents,
++    CoreCloseStateHandle close_state)
++    : contents_(std::move(contents)), close_state_(std::move(close_state)) {
++  CheckUISequence();
++}
++
++CoreLogicalWebContents::~CoreLogicalWebContents() {
++  CheckUISequence();
++}
++
++void CoreLogicalWebContents::CheckUISequence() const {
++  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
++  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
++}
++
++base::WeakPtr<content::WebContents>
++CoreLogicalWebContents::GetNativeWeakPtr() const {
++  CheckUISequence();
++  return contents_;
++}
++
++content::WebContents* CoreLogicalWebContents::GetNative() const {
++  CheckUISequence();
++  return contents_.get();
++}
++
++CoreCloseStateHandle CoreLogicalWebContents::GetCloseState() const {
++  CheckUISequence();
++  return close_state_;
++}
++
++std::shared_ptr<CoreMediaPeer> CoreLogicalWebContents::GetMediaPeer() const {
++  CheckUISequence();
++  CHECK(media_peer_);
++  return media_peer_;
++}
++
++std::shared_ptr<CoreDevToolsPeer> CoreLogicalWebContents::GetDevToolsPeer() const {
++  CheckUISequence();
++  CHECK(devtools_peer_);
++  return devtools_peer_;
++}
++
++}  // namespace arc
+diff --git a/arc/wp/core.gni b/arc/wp/core.gni
+--- a/arc/wp/core.gni
++++ b/arc/wp/core.gni
+@@ -4,6 +4,8 @@
+   "//arc/browser/core_close_adapters.h",
+   "//arc/browser/core_close_state.h",
+   "//arc/browser/core_close_state.mm",
++  "//arc/browser/core_logical_web_contents.h",
++  "//arc/browser/core_logical_web_contents.mm",
+   "//arc/api/arc_navigation.mm",
+   "//arc/api/arc_web_contents.mm",
+   "//arc/browser/arc_browser_window.h",

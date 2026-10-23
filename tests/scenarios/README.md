@@ -88,7 +88,7 @@ any SIGTERM fallback remains a failing step.
 
 The morning `arcmod-command-bar` uses a tests-owned public current-editor AX setter and independently requires a NEW app-origin autocomplete query/paired true return plus actual same-window suggestions. It is written/reviewed and unrecorded, with runtime unverified. Existing navigation coverage remains separate; neither navigation nor block completion follows from the archived autocomplete proof.
 
-See [MORNING.md](MORNING.md) for seven ready-to-record-after-unlock scripts and three incomplete plans/probes.
+See [MORNING.md](MORNING.md) for nine ready-to-record-after-unlock scripts and one blocked plan.
 All `arcmod-*` scripts remain unrecorded overnight. The new in-process key driver tests seven whitelisted
 app-event routes, not hardware/WindowServer delivery; Foundation/DNS service results are explicit
 sidecars, not engine-selector coverage. No human profile or discovered import source may be used.

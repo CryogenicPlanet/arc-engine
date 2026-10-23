@@ -1,3 +1,32 @@
+# Current status (2026-10-23): global default remains HOLD
+
+The historical integration recommendation below is not approval to apply the
+full app pending/default-fieldtrial patch. The sessions worker's isolated flagged
+discard still closes/uninitializes the selected wrapper and never finalizes; its
+underlying replacement/feature cause remains unresolved. Keep that global default
+on HOLD pending coordinated lead adoption and validation. The safe app init/network
+stage I and early observer E do not include this default change.
+
+A read-only current Base/Release check found that switching to the existing Release
+configuration does **not** remove the testing-config producer: both generated
+`components/variations/service/buildflags.h` files have FIELDTRIAL_TESTING_ENABLED=1
+and identical SHA256d3f20a7b01a7b147bdfb68a4fe7b6f45cd9cc996e9d0e5ae236b92b43a82c0ec.
+Both generated branding headers have CHROMIUM_BRANDING=1/GOOGLE_CHROME_BRANDING=0
+and identical SHA256dd3c6d9977d484846175ad32d4b97bd6327e7fc1efd70ea1c3e90260b22dc2c0.
+Both generated Mac testing-config sources are also byte-identical, SHA256
+cd1de83b99d54cc925f1c5525f89ebd87f7effad193ef6765adbf3e8ead2f5a5.
+The checked args differ only by Release's explicit dcheck_always_on=false.
+ShouldUseFieldTrialTestingConfig retains its same unbranded default policy; neither
+is_debug nor DCHECK state is consulted by that function. This is source/generated
+configuration evidence, not a fresh effective-feature or extension runtime result.
+No build, argument edit, app run, profile action or shared-source change was made.
+
+Earlier document bytes and their historical evidence scopes are preserved verbatim
+below and archived in
+`logs/wp/extensions-report-history/extensions_feature_state.before-release-check.md`.
+
+---
+
 # Extension feature-state audit: superseded by app integration
 
 The individual-feature startup proposal is **superseded and withdrawn**. No

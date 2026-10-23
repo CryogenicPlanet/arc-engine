@@ -1,3 +1,16 @@
+2026-10-23 source correction — HOLD
+=====================================
+The original plan below is historical and incomplete on UI eligibility.
+Fresh independently bounded source audits prove TargetURL/imminent/Closed busy
+scopes and LOAD-status/security pending must first select a live actual native
+UI registration. Neither weak ObjC delegate nor selector support is eligibility.
+Missing async registration still queues guarded uncounted logical-self work.
+Receipt-selected bridge must survive through inner return and pending completion;
+physical detach is not final logical dispatcher death. No CloseState-only/fake
+alive stand-in is sufficient. See core_ui_registration_plan.md and
+logs/wp/core.ui-registration/. No WCO/display/nav gate is inferred from UI proof.
+Existing adapterbec remains UNAPPLIED/HOLD; no production behavior was changed.
+
 Core accounting adapter plan review — UNAPPLIED composition only
 ================================================================
 

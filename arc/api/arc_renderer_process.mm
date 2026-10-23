@@ -5,11 +5,13 @@
 #include <utility>
 
 #include "arc/common/ad_block_browser.h"
+#include "arc/common/ad_block_publication.h"
 #include "arc/common/renderer.mojom.h"
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/supports_user_data.h"
+#include "base/unguessable_token.h"
 #include "base/scoped_multi_source_observation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -24,14 +26,22 @@
 namespace arc {
 namespace {
 constexpr int kProfileRulesKey = 0;
-struct ProfileRules final : public base::SupportsUserData::Data {
-  ~ProfileRules() override { ReleaseRendererRulesetFile(std::move(file)); }
-  base::File file;
-  bool has_ruleset_update = false;
-  bool has_cosmetic_rules = false;
-  uint64_t ruleset_id = 0;
+// Retained source state, independent of receiver-side delivery/reset state.
+struct RulesSnapshot {
+  ~RulesSnapshot() {
+    ReleaseRendererRulesetFile(std::move(cosmetic_file));
+    ReleaseRendererRulesetFile(std::move(url_file));
+  }
+  base::File cosmetic_file;
+  base::File url_file;
+  base::UnguessableToken url_region_identity;
+};
+struct ProfileRules final : public base::SupportsUserData::Data, RulesSnapshot {
   uint64_t exclusions_version = 0;
   std::vector<std::string> excluded_origins;
+  // Native C/E tasks share a stable service-lifetime weak flag; only U cancels U.
+  base::WeakPtrFactory<ProfileRules> service_weak_factory{this};
+  base::WeakPtrFactory<ProfileRules> url_weak_factory{this};
 };
 
 class RendererProcessRegistry final
@@ -55,14 +65,17 @@ class RendererProcessRegistry final
     }
     profiles_.insert_or_assign(reinterpret_cast<uintptr_t>(profile), profile->GetWeakPtr());
     if (!profile->GetUserData(&kProfileRulesKey)) {
-      auto rules = std::make_unique<ProfileRules>();
+      profile->SetUserData(&kProfileRulesKey, std::make_unique<ProfileRules>());
+      auto* rules = Rules(profile);
       const auto& configuration = GetAdBlockConfiguration();
       if (configuration.enabled) {
-        ApplyManagerRules(*rules);
+        // The UserData owner exists before either publication task is posted.
+        if (configuration.has_ruleset_update) {
+          SetProfilePair(profile, *rules);
+        }
         rules->excluded_origins = configuration.excluded_origins;
         rules->exclusions_version = configuration.config_version;
       }
-      profile->SetUserData(&kProfileRulesKey, std::move(rules));
     }
   }
 
@@ -157,7 +170,9 @@ class RendererProcessRegistry final
     bool retried = false;
     bool initial_configuration_captured = false;
     bool has_exclusions = false;
-    ProfileRules pending;
+    RulesSnapshot pending;
+    uint64_t exclusions_version = 0;
+    std::vector<std::string> excluded_origins;
   };
 
   void Track(content::RenderProcessHost* host) {
@@ -244,40 +259,85 @@ class RendererProcessRegistry final
     return profile ? static_cast<ProfileRules*>(profile->GetUserData(&kProfileRulesKey)) : nullptr;
   }
 
-  bool ApplyManagerRules(ProfileRules& rules) {
+  void SetProfilePair(Profile* profile, ProfileRules& rules) {
     const auto& configuration = GetAdBlockConfiguration();
-    if (!configuration.has_ruleset_update ||
-        (rules.has_ruleset_update && rules.ruleset_id == configuration.ruleset_id)) {
-      return false;
+    ReleaseRendererRulesetFile(std::move(rules.cosmetic_file));
+    rules.cosmetic_file = configuration.has_cosmetic_rules && configuration.indexed_ruleset.IsValid()
+                              ? configuration.indexed_ruleset.Duplicate() : base::File();
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&RendererProcessRegistry::BroadcastCosmetics,
+                                  weak_factory_.GetWeakPtr(), profile->GetWeakPtr(),
+                                  rules.service_weak_factory.GetWeakPtr()));
+
+    ReleaseRendererRulesetFile(std::move(rules.url_file));
+    rules.url_file = configuration.has_url_rules && configuration.indexed_ruleset.IsValid()
+                        ? configuration.indexed_ruleset.Duplicate() : base::File();
+    // Region identity belongs to this service replacement, not compiler content.
+    rules.url_region_identity = rules.url_file.IsValid()
+                                    ? base::UnguessableToken::Create() : base::UnguessableToken();
+    rules.url_weak_factory.InvalidateWeakPtrs();
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&RendererProcessRegistry::BroadcastURL,
+                                  weak_factory_.GetWeakPtr(), profile->GetWeakPtr(),
+                                  rules.url_weak_factory.GetWeakPtr()));
+  }
+
+  void CopyRules(RulesSnapshot& destination, const RulesSnapshot& source) {
+    ReleaseRendererRulesetFile(std::move(destination.cosmetic_file));
+    destination.cosmetic_file = source.cosmetic_file.IsValid()
+                                    ? source.cosmetic_file.Duplicate() : base::File();
+    ReleaseRendererRulesetFile(std::move(destination.url_file));
+    destination.url_file = source.url_file.IsValid() ? source.url_file.Duplicate() : base::File();
+    destination.url_region_identity = source.url_region_identity;
+  }
+
+  std::vector<Entry*> BoundAgents(Profile* profile) {
+    std::vector<Entry*> agents;
+    for (auto& [id, entry] : entries_) {
+      if (entry.profile.get() == profile && entry.remote.is_bound()) {
+        // Awaiting Ping is still an ordered associated message destination.
+        agents.push_back(&entry);
+      }
     }
-    ReleaseRendererRulesetFile(std::move(rules.file));
-    rules.file = configuration.indexed_ruleset.IsValid()
-                     ? configuration.indexed_ruleset.Duplicate() : base::File();
-    rules.has_ruleset_update = true;
-    rules.ruleset_id = configuration.ruleset_id;
-    rules.has_cosmetic_rules = configuration.has_cosmetic_rules;
-    return true;
+    return agents;
   }
 
-  void SendRules(Entry& entry, const ProfileRules& rules) {
-    entry.remote->SetAdBlockRuleset(
-        rules.file.IsValid() ? rules.file.Duplicate() : base::File(), rules.ruleset_id,
-        rules.has_cosmetic_rules);
+  void BroadcastCosmetics(base::WeakPtr<Profile> profile,
+                           base::WeakPtr<ProfileRules> rules) {
+    if (!profile || !rules || Rules(profile.get()) != rules.get()) {
+      return;
+    }
+    PublishAdBlockCosmetics(
+        BoundAgents(profile.get()), [&] { return rules->cosmetic_file.IsValid(); },
+        &RendererAdBlockFeatureEnabled,
+        [&](Entry& entry) {
+          entry.remote->UpdateAdBlockCosmeticRules(rules->cosmetic_file.Duplicate());
+        },
+        [](Entry& entry) { entry.remote->ResetAdBlockCosmeticRules(); });
   }
 
-  void CopyRules(ProfileRules& destination, const ProfileRules& source) {
-    ReleaseRendererRulesetFile(std::move(destination.file));
-    destination.file = source.file.IsValid() ? source.file.Duplicate() : base::File();
-    destination.has_ruleset_update = source.has_ruleset_update;
-    destination.ruleset_id = source.ruleset_id;
-    destination.has_cosmetic_rules = source.has_cosmetic_rules;
+  void BroadcastURL(base::WeakPtr<Profile> profile,
+                     base::WeakPtr<ProfileRules> rules) {
+    if (!profile || !rules || Rules(profile.get()) != rules.get()) {
+      return;
+    }
+    PublishAdBlockURL(
+        BoundAgents(profile.get()), [&] { return rules->url_file.IsValid(); },
+        &RendererAdBlockFeatureEnabled,
+        [&](Entry& entry) {
+          entry.remote->UpdateAdBlockURLRules(rules->url_file.Duplicate(),
+                                              rules->url_region_identity);
+        },
+        [](Entry& entry) { entry.remote->ResetAdBlockURLRules(); },
+        [](bool) {});
   }
 
   void ResetPending(Entry& entry) {
-    ReleaseRendererRulesetFile(std::move(entry.pending.file));
-    entry.pending.has_ruleset_update = false;
-    entry.pending.excluded_origins.clear();
-    entry.pending.exclusions_version = 0;
+    ReleaseRendererRulesetFile(std::move(entry.pending.cosmetic_file));
+    ReleaseRendererRulesetFile(std::move(entry.pending.url_file));
+    entry.pending.url_region_identity = base::UnguessableToken();
+    entry.excluded_origins.clear();
+    entry.exclusions_version = 0;
     entry.has_exclusions = false;
     entry.initial_configuration_captured = false;
   }
@@ -294,26 +354,31 @@ class RendererProcessRegistry final
     }
     auto* rules = Rules(entry.profile.get());
     CopyRules(entry.pending, *rules);
-    entry.pending.excluded_origins = rules->excluded_origins;
-    entry.pending.exclusions_version = rules->exclusions_version;
+    entry.excluded_origins = rules->excluded_origins;
+    entry.exclusions_version = rules->exclusions_version;
     entry.has_exclusions = true;
   }
 
   void SendPendingConfiguration(Entry& entry) {
-    if (entry.pending.has_ruleset_update) {
-      SendRules(entry, entry.pending);
+    // Initial registration skips invalid channels; live publication resets them.
+    if (entry.pending.cosmetic_file.IsValid()) {
+      entry.remote->UpdateAdBlockCosmeticRules(entry.pending.cosmetic_file.Duplicate());
+    }
+    if (entry.pending.url_file.IsValid()) {
+      entry.remote->UpdateAdBlockURLRules(entry.pending.url_file.Duplicate(),
+                                          entry.pending.url_region_identity);
     }
     if (entry.has_exclusions) {
-      entry.remote->SetAdBlockExcludedOrigins(entry.pending.excluded_origins,
-                                              entry.pending.exclusions_version);
+      entry.remote->SetAdBlockExcludedOrigins(entry.excluded_origins,
+                                              entry.exclusions_version);
     }
   }
 
-  void BroadcastExclusions(base::WeakPtr<Profile> profile) {
-    if (!profile) {
+  void BroadcastExclusions(base::WeakPtr<Profile> profile,
+                            base::WeakPtr<ProfileRules> rules) {
+    if (!profile || !rules || Rules(profile.get()) != rules.get()) {
       return;
     }
-    auto* rules = Rules(profile.get());
     for (auto& [id, entry] : entries_) {
       if (entry.profile.get() != profile.get() ||
           !entry.initial_configuration_captured ||
@@ -322,46 +387,40 @@ class RendererProcessRegistry final
       }
       // Native queued callback 0x4730fa0 captures only its weak service. It
       // reads the live feature for each agent and the latest profile origins.
-      entry.pending.excluded_origins = rules->excluded_origins;
-      entry.pending.exclusions_version = rules->exclusions_version;
+      entry.excluded_origins = rules->excluded_origins;
+      entry.exclusions_version = rules->exclusions_version;
       entry.has_exclusions = true;
       if (entry.remote.is_bound()) {
-        entry.remote->SetAdBlockExcludedOrigins(entry.pending.excluded_origins,
-                                                entry.pending.exclusions_version);
+        entry.remote->SetAdBlockExcludedOrigins(entry.excluded_origins,
+                                                entry.exclusions_version);
       }
     }
   }
 
-  void ConfigurationChanged() {
+  void ConfigurationChanged(AdBlockChange change) {
     const auto& configuration = GetAdBlockConfiguration();
-    // Manager updates while disabled retain only the global cache. Existing
-    // profile and renderer state continues filtering with its previous values.
-    if (!configuration.enabled) {
-      return;
-    }
+    // Notification eligibility belongs to the live manager operation. Rules and
+    // exclusions have distinct causes; compile identity is not a publication gate.
     std::erase_if(profiles_, [](const auto& pair) { return !pair.second; });
     for (const auto& [identity, weak_profile] : profiles_) {
       auto* rules = Rules(weak_profile.get());
-      const bool update_rules = ApplyManagerRules(*rules);
-      const bool update_exclusions = rules->exclusions_version != configuration.config_version;
-      if (update_exclusions) {
+      if (change.publish_rules && configuration.has_ruleset_update) {
+        SetProfilePair(weak_profile.get(), *rules);
+        for (auto& [id, entry] : entries_) {
+          if (entry.profile.get() == weak_profile.get() &&
+              entry.initial_configuration_captured) {
+            // Preserve the existing pre-bind/retry snapshot policy, not a FIFO.
+            CopyRules(entry.pending, *rules);
+          }
+        }
+      }
+      if (change.publish_exclusions) {
         rules->excluded_origins = configuration.excluded_origins;
         rules->exclusions_version = configuration.config_version;
         content::GetUIThreadTaskRunner({})->PostTask(
             FROM_HERE, base::BindOnce(&RendererProcessRegistry::BroadcastExclusions,
-                                      weak_factory_.GetWeakPtr(), weak_profile));
-      }
-      for (auto& [id, entry] : entries_) {
-        if (entry.profile.get() != weak_profile.get() ||
-            !entry.initial_configuration_captured) {
-          continue;
-        }
-        if (update_rules) {
-          CopyRules(entry.pending, *rules);
-          if (entry.remote.is_bound()) {
-            SendRules(entry, entry.pending);
-          }
-        }
+                                      weak_factory_.GetWeakPtr(), weak_profile,
+                                      rules->service_weak_factory.GetWeakPtr()));
       }
     }
   }

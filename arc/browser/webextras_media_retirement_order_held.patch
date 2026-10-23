@@ -1,0 +1,20 @@
+diff --git a/arc/api/arc_webextras_media.mm b/arc/api/arc_webextras_media.mm
+--- a/arc/api/arc_webextras_media.mm
++++ b/arc/api/arc_webextras_media.mm
+@@ -234,12 +234,11 @@
+         contents, content::MediaSession::Get(contents), weak_from_this());
+   }
+   void RetirePhysical() {
+-    // Detach before synchronous destruction delivery. CORE needs a separate
+-    // early retirement hook to preserve its public binding through app return;
+-    // this Source WeakPtr alone cannot preserve that binding. No accepted task
+-    // checks physical attachment or service liveness.
++    // Native's unchanged-attachment path keeps receiver/binding through PiP.
++    // No post-call expected-old/generation revalidation was recovered. CORE's
++    // early hook is still required to preserve the public old binding here.
++    PiPDestroyed();
+     if (observer_) { observer_->Detach(); }
+-    PiPDestroyed();
+     contents_.reset();
+   }
+   void Info(media_session::mojom::MediaSessionInfoPtr info) {

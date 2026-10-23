@@ -299,6 +299,81 @@ const mediaClockPhases = [
   { name: "service-independent-paused", rate: 0, seek: 2.25, declared: true },
   { name: "service-independent-playing", rate: 1.5, seek: 2.25, declared: true },
 ] as const;
+// Separate public service-only lane: no player, resource loading, activation or visibility override.
+const mediaServiceClockPhases = [
+  { name:"service-only-paused-one", rate:0, base:1.25, issuedRate:1 },
+  { name:"service-only-playing-one", rate:1, base:1.25, issuedRate:1 },
+  { name:"service-only-playing-two", rate:2, base:1.25, issuedRate:2 },
+  { name:"service-only-paused-two", rate:0, base:2.25, issuedRate:1 },
+  { name:"service-only-declared-paused", rate:0, base:7.25, issuedRate:1.5 },
+  { name:"service-only-declared-playing", rate:1.5, base:7.25, issuedRate:1.5 },
+] as const;
+function clockModeFromArgs(argv:string[]): "default"|"media-clock"|"media-service-clock"|"devtools-frontend-events" {
+  const flags=argv.filter(arg=>arg==="--media-clock"||arg==="--media-service-clock"||arg==="--devtools-frontend-events");
+  assert(flags.length<=1,"probe modes are mutually exclusive and cannot be repeated");
+  return flags.length ? flags[0]!.slice(2) as "media-clock"|"media-service-clock"|"devtools-frontend-events" : "default";
+}
+function serviceClockObservationJS(fixtureURL:string,nonce:string):string {
+  return `(()=>{const session=navigator.mediaSession;return {phase:window.__webextrasClockPhase,
+    urlMatches:location.href===${JSON.stringify(fixtureURL)},nonceMatches:document.querySelector('#webextras-probe')?.dataset.nonce===${JSON.stringify(nonce)},
+    mediaSessionPresent:!!session,performanceNow:performance.now(),visibilityState:document.visibilityState,hidden:document.hidden,
+    playbackState:session?.playbackState,positionReceipt:window.__webextrasClockReceipt}})()`;
+}
+function mediaServiceClockPrepareJS(phase:typeof mediaServiceClockPhases[number],fixtureURL:string,nonce:string):string {
+  return `(()=>{const phase=${JSON.stringify(phase)},progress=[];
+    const mark=stage=>{progress.push({stage,performanceNow:performance.now()});window.__webextrasClockProgress={phase:phase.name,stage,progress};};
+    try{mark('service-identity-before');
+      const observed=(${serviceClockObservationJS(fixtureURL,nonce)});delete observed.positionReceipt;
+      if(!observed.urlMatches||!observed.nonceMatches||!observed.mediaSessionPresent)throw Error('service clock fixture identity/API unavailable');
+      mark('service-identity-after');
+      const session=navigator.mediaSession;
+      mark('playback-state-before');session.playbackState=phase.rate===0?'paused':'playing';mark('playback-state-after');
+      const input={duration:20,position:phase.base,playbackRate:phase.issuedRate};
+      const receipt={phase:phase.name,source:'public-service-only',observed,input,beforeSetPerformanceNow:performance.now(),playbackState:session.playbackState};
+      mark('input-setter-before');session.setPositionState(input);receipt.afterSetPerformanceNow=performance.now();mark('input-setter-after');
+      window.__webextrasClockPhase=phase.name;window.__webextrasClockReceipt=receipt;
+      mark('complete');return {receipt,progress};
+    }catch(error){window.__webextrasClockFailure={name:String(error?.name??'Error'),message:String(error?.message??error),stack:String(error?.stack??''),stage:window.__webextrasClockProgress?.stage};mark('failed');throw error;}
+  })()`;
+}
+function isNilClockPosition(action:any):boolean {
+  return action.operation==="clock-snapshot"&&action.ok===false&&action.probeError==="position did not return an actual ArcMediaPosition"&&
+    action.publicCalls?.length===1&&action.publicCalls[0]?.selector==="position"&&action.publicCalls[0]?.resultClass===null;
+}
+function validateMediaServiceClockPhase(phase:typeof mediaServiceClockPhases[number],actions:any[]):void {
+  assert(actions.length===5&&actions.every((action,index)=>action.actionKey===clockActionKey(phase.name,index)&&action.clockPhase===phase.name&&action.clockAttempt===index),"missing/reordered service clock attempts");
+  if(actions.some(isNilClockPosition))throw new ClockProbeInconclusive("public service position DTO did not converge in the fixed attempts");
+  assert(actions.every(action=>action.ok===true),"failed service clock receipt");
+  assert(actions.slice(0,3).every(action=>action.operation==="clock-snapshot")&&actions.slice(3).every(action=>action.operation==="clock-held-time"),"wrong service clock operation sequence");
+  const receipt=actions[2].positionReceipt,input=receipt?.input,state=phase.rate===0?"paused":"playing";
+  assert(receipt?.phase===phase.name&&receipt.source==="public-service-only"&&receipt.playbackState===state&&
+    input?.duration===20&&input.position===phase.base&&input.playbackRate===phase.issuedRate&&
+    Number.isFinite(receipt.observed?.performanceNow)&&Number.isFinite(receipt.beforeSetPerformanceNow)&&Number.isFinite(receipt.afterSetPerformanceNow)&&
+    receipt.observed.performanceNow<=receipt.beforeSetPerformanceNow&&receipt.beforeSetPerformanceNow<=receipt.afterSetPerformanceNow,
+    "missing/incorrect issued public service receipt");
+  const identity=(observation:any)=>assert(observation?.urlMatches===true&&observation.nonceMatches===true&&observation.mediaSessionPresent===true&&
+    typeof observation.visibilityState==="string"&&typeof observation.hidden==="boolean"&&Number.isFinite(observation.performanceNow),"service fixture identity/API/actual observation missing");
+  identity(receipt.observed);
+  for(const action of actions){
+    assert(JSON.stringify(canonical(action.positionReceipt))===JSON.stringify(canonical(receipt)),"service receipt changed between attempts");
+    for(const observation of [action.domBefore,action.domAfter]){
+      identity(observation);
+      assert(observation.phase===phase.name&&observation.playbackState===state&&observation.performanceNow>=receipt.afterSetPerformanceNow&&
+        JSON.stringify(canonical(observation.positionReceipt))===JSON.stringify(canonical(receipt)),"service public state/receipt changed");
+    }
+    clockBracket(action);
+  }
+  const epsilon=mediaClockPolicy.quantizationSeconds;
+  // Fixed warmups are diagnostic receipts. Final snapshot and same retained DTO must converge.
+  const measurement=actions[2];
+  assert(clockValue(measurement,"playbackRate")===phase.rate&&clockValue(measurement,"duration")===20&&clockValue(measurement,"endOfMedia")===false,"service rate/duration/end did not converge on final fixed attempt");
+  for(const action of actions.slice(2)){
+    const value=clockValue(action,"currentTime");
+    assert(Number.isFinite(value)&&value>0&&value<20&&value>=phase.base-epsilon,"service clock is outside issued base/unclamped interior");
+    if(phase.rate===0)assert(Math.abs(value-phase.base)<=epsilon,"paused service clock differs from exact issued base");
+  }
+  clockDelta(measurement,actions[3],phase.rate);clockDelta(actions[3],actions[4],phase.rate);clockDelta(measurement,actions[4],phase.rate);
+}
 function clockActionKey(phase: string, index: number): string { return `clock-${phase}-${index}`; }
 function clockValue(action: any, selector: string): any { return action.publicCalls?.find((call: any) => call.selector === selector)?.value; }
 function clockBracket(action: any): { begin: number; end: number; value: number } {
@@ -464,6 +539,187 @@ function mediaClockFailureDOMJS(fixtureURL:string,videoURL:string):string {
 
 const mediaClockDOMJS = `(()=>{const v=document.querySelector('#webextras-clock-video');return v&&({phase:window.__webextrasClockPhase,performanceNow:performance.now(),visibilityState:document.visibilityState,hidden:document.hidden,currentTime:v.currentTime,duration:v.duration,paused:v.paused,ended:v.ended,loop:v.loop,playbackRate:v.playbackRate,readyState:v.readyState,seeking:v.seeking,playbackState:navigator.mediaSession.playbackState,positionReceipt:window.__webextrasClockReceipt})})()`;
 
+// Genuine frontend diagnostics use their own zero-public callback spans, never the fixture comparator.
+const frontendEventPolicy=Object.freeze({waitMilliseconds:5000,pollMilliseconds:100,quietMilliseconds:200,maxCandidates:8});
+const frontendCallbackSelectors=["webContentsDevTools:displayAs:","webContentsDevTools:inspectModeDidChange:","webContentsDevToolsDidClose:","webContentsDevToolsNeedsFocus:"];
+function genuineFrontendURL(value:any):boolean {
+  if(typeof value!=="string")return false;
+  try{const url=new URL(value);return ["devtools:","chrome-devtools:"].includes(url.protocol)&&url.hostname==="devtools"&&/\/(?:bundled\/)?(?:devtools_app|inspector|js_app)\.html$/.test(url.pathname);}catch{return false;}
+}
+function frontendCandidates(before:any[],after:any[]):any[]{
+  const prior=new Set(before.map(info=>info.targetId));
+  const candidates=after.filter(info=>typeof info.targetId==="string"&&!prior.has(info.targetId)&&genuineFrontendURL(info.url));
+  assert(new Set(candidates.map(info=>info.targetId)).size===candidates.length,"duplicate frontend target identity");
+  assert(candidates.length<=frontendEventPolicy.maxCandidates,"too many new frontend targets");return candidates;
+}
+function frontendProducerJS(fixtureURL:string,kind:"read"|"inspect-on"|"inspect-off"|"dock-change"|"dock-restore",side?:string,primaryID?:string):string {
+  return `(async()=>{
+    const SDK=await import(new URL('./core/sdk/sdk.js',location.href).href),UI=await import(new URL('./ui/legacy/legacy.js',location.href).href),Common=await import(new URL('./core/common/common.js',location.href).href);
+    const manager=SDK.TargetManager.TargetManager.instance();
+    const action=UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search'),dock=UI.DockController.DockController.instance();
+    const read=()=>{const primary=manager.primaryPageTarget();return ({primaryURLMatches:primary?.inspectedURL()===${JSON.stringify(fixtureURL)},primaryTargetID:primary?.id(),suspended:manager.allTargetsSuspended(),
+      actionEnabled:action.enabled(),actionToggled:action.toggled(),canDock:dock.canDock(),dockSide:dock.dockSide(),
+      uaShadow:Common.Settings.Settings.instance().moduleSetting('show-ua-shadow-dom').get(),
+      performanceNow:performance.now()});};
+    const expectedPrimaryID=${JSON.stringify(primaryID??null)};
+    const before=read();if(!before.primaryURLMatches||(expectedPrimaryID&&before.primaryTargetID!==expectedPrimaryID))throw Error('frontend primary target is not exact owned nonce URL/identity');
+    const kind=${JSON.stringify(kind)};let acknowledged=null;
+    if(kind==='inspect-on'||kind==='inspect-off'){
+      if(before.suspended||!before.actionEnabled||before.actionToggled!==(kind==='inspect-off'))throw Error('genuine inspect action not ready or prior state changed');
+      acknowledged=await action.execute();
+    }else if(kind==='dock-change'||kind==='dock-restore'){
+      const side=${JSON.stringify(side??null)};
+      if(!before.canDock||!['right','bottom','left','undocked'].includes(side)||before.dockSide===side)throw Error('genuine docking change unavailable or unchanged');
+      dock.setDockSide(side);acknowledged=true;
+    }
+    const after=read();if(!after.primaryURLMatches||(expectedPrimaryID&&after.primaryTargetID!==expectedPrimaryID))throw Error('frontend primary target changed during producer');
+    return {kind,before,after,acknowledged};
+  })()`;
+}
+async function frontendRuntimeEvaluation(send:(expression:string)=>Promise<any>,save:(value:any)=>void,context:{label:string;expression:string;targetID?:string;sessionID?:string}):Promise<any>{
+  const hostBeforeNanos=process.hrtime.bigint().toString();let rawResult:any;
+  try{rawResult=await send(context.expression);}catch(error){save({...context,status:"transport-error",hostBeforeNanos,hostAfterNanos:process.hrtime.bigint().toString(),error:String(error)});throw error;}
+  save({...context,status:"response",hostBeforeNanos,hostAfterNanos:process.hrtime.bigint().toString(),rawResult:rawResult??null});
+  if(rawResult?.exceptionDetails&&JSON.stringify(rawResult.exceptionDetails).includes("frontend primary target"))throw new ClockProbeInconclusive("genuine frontend primary target identity changed; raw exception preserved");
+  assert(rawResult&&!rawResult.exceptionDetails&&rawResult.result?.value!==undefined,"frontend Runtime.evaluate failed; exact raw result preserved");return rawResult.result.value;
+}
+function validateFrontendStimulusReceipt(span:any):void{
+  const producer=span.producer,ack=span.afterAcknowledgment?.after,before=producer?.before,after=producer?.after;
+  assert(producer?.kind===span.kind&&producer.acknowledged===true&&span.afterAcknowledgment?.kind==="read"&&before?.primaryURLMatches&&after?.primaryURLMatches&&ack?.primaryURLMatches&&
+    typeof before.primaryTargetID==="string"&&before.primaryTargetID.length>0&&before.primaryTargetID===after.primaryTargetID&&after.primaryTargetID===ack.primaryTargetID,"frontend stimulus acknowledgment/primary owner receipt mismatch");
+  if(span.kind==="inspect-on"||span.kind==="inspect-off"){
+    const on=span.kind==="inspect-on";
+    assert(before.suspended===false&&before.actionEnabled===true&&before.actionToggled===!on&&after.actionToggled===on&&ack.actionToggled===on&&typeof before.uaShadow==="boolean"&&
+      span.expectedSelector==="webContentsDevTools:inspectModeDidChange:"&&span.expectedMode===(on?(before.uaShadow?2:1):0),"genuine inspect action was a no-op or expected mode was altered");
+  }else{
+    assert(["dock-change","dock-restore"].includes(span.kind)&&before.canDock===true&&before.dockSide!==after.dockSide&&after.dockSide===ack.dockSide&&
+      ["right","bottom","left","undocked"].includes(after.dockSide)&&span.expectedSelector==="webContentsDevTools:displayAs:"&&
+      span.expectedMode===({undocked:1,left:2,right:3,bottom:4} as any)[after.dockSide]&&
+      after.dockSide===(span.kind==="dock-change"?(before.dockSide==="right"?"bottom":"right"):span.initialDockSide),"genuine docking change/restore receipt mismatch");
+  }
+}
+function validateFrontendCallbackSpan(span:any,record:Buffer,serviceReceiver:string,ownerTag:number,fixtureImage:string,projection?:PublicTraceProjection):any[]{
+  validateFrontendStimulusReceipt(span);
+  assert(span?.ok===true&&span.quietComplete===true&&span.ownerTag===ownerTag&&span.publicCalls?.length===0&&span.timeline?.length===0,"callback observation performed public work or changed owner");
+  const observation=span.observation;
+  assert(observation?.spanID===span.spanID&&observation.ownerTag===ownerTag&&observation.forwarding===0&&observation.overflow===false,"incomplete/overflowed callback observation");
+  const rows=parseRecords(validSpan(record,observation.recordBegin,observation.recordEnd),observation.recordBegin);
+  const ambient=observation.recordBegin?scanRecords(parseRecords(record.subarray(0,observation.recordBegin))).stacks:new Map<string,RecordRow[]>();
+  const matched=validateNesting(rows,ambient);
+  assert(rows.every(row=>row.event.from&&typeof row.event.from==="string"),"callback caller label missing");
+  assert(!rows.some(row=>row.event.dir==="->engine"&&row.event.from===fixtureImage),"callback-only span contains fixture public calls");
+  const delegates=rows.filter(row=>row.event.ev==="call"&&row.event.dir==="engine->app");
+  const callbacks=observation.callbacks;
+  assert(Array.isArray(callbacks)&&callbacks.length>0&&delegates.length===callbacks.length,"missing/unobserved app callbacks");
+  for(let index=0;index<callbacks.length;++index){
+    const event=callbacks[index],entry=delegates[index],returned=matched.get(entry.event.seq),modeful=frontendCallbackSelectors.slice(0,2).includes(entry.event.sel);
+    assert(frontendCallbackSelectors.includes(entry.event.sel)&&entry.event.cls===event.delegateClass&&entry.event.kind==="-"&&entry.event.thread==="main"&&entry.event.from==="engine"&&returned&&returned.event.ret===null,"callback selector/class/thread/caller/return mismatch");
+    assert(event.selector===entry.event.sel&&event.mainThread===true&&event.forwarded===true&&event.ownerTag===ownerTag&&event.ownerClass==="ArcWebContents"&&event.serviceClass==="ArcWebContentsDevTools"&&event.ordinal===index+1,"callback service/owner/forwarding association mismatch");
+    assert(event.abi===(modeful?"v32@0:8@16Q24":"v24@0:8@16"),"callback ABI mismatch");
+    assert(entry.event.args?.length===(modeful?2:1)&&entry.event.args[0]===serviceReceiver&&Number.isSafeInteger(event.mode)&&event.mode>=0&&event.mode<=4&&(modeful?entry.event.args[1]===event.mode:event.mode===0),"callback argument/service/mode mismatch");
+    const begin=event.recordOffset,end=event.recordAfterForwarding;
+    assert(Number.isSafeInteger(begin)&&Number.isSafeInteger(end)&&begin>=observation.recordBegin&&begin<=end&&end<=observation.recordEnd&&
+      (begin===0||record[begin-1]===10)&&(end===0||record[end-1]===10),"callback forwarding offsets unaligned/outside span");
+    assert((begin<=entry.begin&&returned!.end<=end)||(entry.end<=begin&&end<=returned!.begin),"callback recorder inner/outer forwarding bracket mismatch");
+    assert(/^\d+$/.test(event.nativeBeforeTicks)&&/^\d+$/.test(event.nativeAfterTicks)&&BigInt(event.nativeAfterTicks)>=BigInt(event.nativeBeforeTicks),"callback monotonic bracket invalid");
+    const ancestors=scanRecords(rows.filter(row=>row.end<=entry.begin),ambient).stacks.get("main")??[];
+    assert(event.forwardDepth===1+ancestors.filter(row=>row.event.dir==="engine->app"&&frontendCallbackSelectors.includes(row.event.sel)&&row.event.args?.[0]===serviceReceiver).length,"callback forwarding reentry depth mismatch");
+  }
+  const expected=callbacks.filter((event:any)=>event.selector===span.expectedSelector);
+  assert(expected.length>0&&expected.every((event:any)=>event.mode===span.expectedMode),"declared producer missing callback or produced wrong mode");
+  if(projection)return projection.project(rows);
+  return delegates.map(row=>({selector:row.event.sel,args:["<canonical-service>",...row.event.args.slice(1)],thread:row.event.thread,from:row.event.from}));
+}
+function frontendJournalSignature(observation:any):string{
+  return JSON.stringify(canonical({callbacks:observation?.callbacks,forwarding:observation?.forwarding,ignored:observation?.ignoredServiceCallbacks,overflow:observation?.overflow}));
+}
+async function runGenuineFrontendEvents(io:any,before:any[],fixtureURL:string,ownerTag:number):Promise<any>{
+  const report:any={policy:frontendEventPolicy,status:"discovering",spans:[],censusBefore:before};io.save(report);
+  const sessions=new Map<string,string>();let chosen:any,inspectNeedsRestore=false,dockNeedsRestore=false,initialSide:string|undefined;
+  const evaluate=async(candidate:any,kind:any,side?:string)=>{
+    io.verify();let info:any;try{info=await io.request("Target.getTargetInfo",{targetId:candidate.targetId});}catch(error){throw new ClockProbeInconclusive(`genuine frontend target unavailable: ${String(error)}`);}
+    if(info.targetInfo?.targetId!==candidate.targetId||info.targetInfo?.url!==candidate.url||!genuineFrontendURL(info.targetInfo.url))throw new ClockProbeInconclusive("frontend target identity changed");
+    let session=sessions.get(candidate.targetId);
+    if(!session){const attached=await io.request("Target.attachToTarget",{targetId:candidate.targetId,flatten:true});assert(typeof attached.sessionId==="string"&&attached.sessionId.length>0,"missing frontend session");session=attached.sessionId;sessions.set(candidate.targetId,session);}
+    return frontendRuntimeEvaluation(expression=>{io.verify();return io.request("Runtime.evaluate",{expression,returnByValue:true,awaitPromise:true},session);},io.raw,{label:kind,targetID:candidate.targetId,sessionID:session,expression:frontendProducerJS(fixtureURL,kind,side,report.preflight?.after.primaryTargetID)});
+  };
+  const observe=async(kind:string,expectedSelector:string,expectedMode:number,side?:string)=>{
+    const spanID=io.spanID(kind),identity={spanID,ownerTag,observationNonce:new URL(fixtureURL).pathname.split("/")[1]},span:any={spanID,kind,expectedSelector,expectedMode,...(initialSide?{initialDockSide:initialSide}:{}),status:"arming"};report.spans.push(span);io.save(report);
+    const arm=await io.action("frontend-observe-arm",identity);span.arm=arm;
+    assert(arm.ok===true&&arm.ownerTag===ownerTag,"frontend callback observation did not arm on canonical owner");
+    const started=io.now();let failure:any,stableJournalSignature:string|undefined;
+    try{
+      span.producer=await evaluate(chosen,kind,side);
+      assert(span.producer.acknowledged===true,"genuine frontend action did not acknowledge");
+      try{span.afterAcknowledgment=await evaluate(chosen,"read");}catch(error){throw new ClockProbeInconclusive(`frontend owner unverified after acknowledgment: ${String(error)}`);}
+      if(kind==="inspect-on"){inspectNeedsRestore=span.producer.after.actionToggled===true;assert(inspectNeedsRestore,"inspect action was a no-op");}
+      if(kind==="inspect-off"){assert(span.producer.after.actionToggled===false,"inspect restore was a no-op");inspectNeedsRestore=false;}
+      if(kind==="dock-change"){dockNeedsRestore=span.producer.after.dockSide!==initialSide;assert(span.producer.after.dockSide===side,"dock action was a no-op");}
+      if(kind==="dock-restore"){assert(span.producer.after.dockSide===side,"dock restore was a no-op");dockNeedsRestore=false;}
+      let journalSignature:string|undefined,lastJournalChange=io.now();
+      while(io.now()-started<frontendEventPolicy.waitMilliseconds){
+        const sample=await io.action("frontend-observe-read",identity);span.samples??=[];span.samples.push(sample);io.save(report);
+        assert(sample.ok===true,"frontend observation read failed");
+        const observation=sample.observation;
+        const signature=frontendJournalSignature(observation);
+        if(signature!==journalSignature){journalSignature=signature;lastJournalChange=io.now();}
+        if(observation?.callbacks?.some((event:any)=>event.selector===expectedSelector&&event.mode===expectedMode)&&observation.forwarding===0&&io.now()-lastJournalChange>=frontendEventPolicy.quietMilliseconds){span.quietComplete=true;stableJournalSignature=signature;span.quietElapsedMilliseconds=io.now()-started;break;}
+        if(observation?.expired)break;
+        await io.sleep(frontendEventPolicy.pollMilliseconds);
+      }
+      if(!span.quietComplete)throw new ClockProbeInconclusive("frontend callback journal did not become quiet within the fixed observation window");
+    }catch(error){failure=error;}
+    finally{
+      span.disarm=await io.action("frontend-observe-disarm",identity);
+      Object.assign(span,span.disarm,{spanID,kind,expectedSelector,expectedMode});
+      if(span.quietComplete&&frontendJournalSignature(span.observation)!==stableJournalSignature){span.quietComplete=false;span.quietInvalidatedAtDisarm=true;failure??=new ClockProbeInconclusive("frontend journal changed between stable sample and disarm; extra events preserved");}
+      io.save(report);
+    }
+    if(failure)throw failure;
+    assert(span.ok===true&&span.observation?.callbacks?.some((event:any)=>event.selector===expectedSelector&&event.mode===expectedMode),"genuine frontend producer has no matching callback in bounded observation");
+    span.status="observed";io.save(report);
+  };
+  try{
+    const started=io.now();
+    while(io.now()-started<frontendEventPolicy.waitMilliseconds){
+      io.verify();const after=await io.census();report.censusAfter=after;
+      const candidates=frontendCandidates(before,after);report.candidates=candidates;
+      const matches:any[]=[];let unresolved=false;
+      for(const candidate of candidates){try{const state=await evaluate(candidate,"read");matches.push({candidate,state});}catch(error){report.discoveryErrors??=[];report.discoveryErrors.push({targetID:candidate.targetId,error:String(error)});unresolved=true;}}
+      io.save(report);
+      assert(matches.length<=1,"multiple genuine frontends match exact owned primary target");
+      if(matches.length===1&&!unresolved){chosen=matches[0].candidate;report.preflight=matches[0].state;break;}
+      await io.sleep(frontendEventPolicy.pollMilliseconds);
+    }
+    if(!chosen)throw new ClockProbeInconclusive("unique genuine frontend for exact owned nonce target unavailable");
+    report.target=chosen;report.status="exercising";io.save(report);
+    const state=report.preflight.after;
+    if(typeof state.primaryTargetID!=="string"||!state.primaryTargetID)throw new ClockProbeInconclusive("frontend primary target identity unavailable");
+    if(!state.primaryURLMatches||state.suspended||!state.actionEnabled||state.actionToggled!==false)throw new ClockProbeInconclusive("inspect action precondition unavailable");
+    // Restore even if producer response/callback is lost after it applied a mutation.
+    inspectNeedsRestore=true;
+    await observe("inspect-on","webContentsDevTools:inspectModeDidChange:",state.uaShadow?2:1);
+    await observe("inspect-off","webContentsDevTools:inspectModeDidChange:",0);
+    if(!state.canDock){report.dockStatus="unsupported-canDock-false";throw new ClockProbeInconclusive("genuine frontend does not permit docking; no forced docking stimulus");}
+    initialSide=state.dockSide;assert(["right","bottom","left","undocked"].includes(initialSide!),"unknown initial dock side");
+    const side=initialSide==="right"?"bottom":"right";dockNeedsRestore=true;
+    await observe("dock-change","webContentsDevTools:displayAs:",side==="right"?3:4,side);
+    await observe("dock-restore","webContentsDevTools:displayAs:",({undocked:1,left:2,right:3,bottom:4} as any)[initialSide!],initialSide);
+    report.status="observed";
+  }catch(error){report.status=isClockInconclusive(error)?"inconclusive":"failed";report.error=String(error);}
+  finally{
+    if(chosen&&(inspectNeedsRestore||dockNeedsRestore)){
+      report.restoration=[];
+      if(inspectNeedsRestore)try{const read=await evaluate(chosen,"read");if(read.after.actionToggled)report.restoration.push(await evaluate(chosen,"inspect-off"));}catch(error){report.restoration.push({error:String(error)});}
+      if(dockNeedsRestore&&initialSide)try{const read=await evaluate(chosen,"read");if(read.after.dockSide!==initialSide)report.restoration.push(await evaluate(chosen,"dock-restore",initialSide));}catch(error){report.restoration.push({error:String(error)});}
+    }
+    for(const sessionId of sessions.values())try{io.verify();await io.request("Target.detachFromTarget",{sessionId});}catch(error){report.detachErrors??=[];report.detachErrors.push(String(error));}
+    if(report.detachErrors?.length){report.status="failed";report.error="frontend session detach failed";}
+    io.save(report);
+  }
+  return report;
+}
+
 const root = resolve(import.meta.dir, "../..");
 const args = process.argv.slice(2);
 const option = (key: string, fallback?: string): string | undefined => {
@@ -472,7 +728,9 @@ const option = (key: string, fallback?: string): string | undefined => {
 };
 if (!option("--out")) throw new Error("usage: webextras_native_probe.sh run --out DIR [--agents trace156,ours156] [--port 9458]");
 const out = resolve(option("--out")!);
-const mediaClock = args.includes("--media-clock");
+const probeMode=clockModeFromArgs(args);
+const mediaClock=probeMode==="media-clock",mediaServiceClock=probeMode==="media-service-clock",anyClock=mediaClock||mediaServiceClock;
+const devToolsFrontendEvents=probeMode==="devtools-frontend-events";
 const agents = option("--agents", "trace156,ours156")!.split(",");
 if (!agents.length || new Set(agents).size !== agents.length || agents.some(agent => !["trace156", "ours156"].includes(agent))) {
   throw new Error("only trace156 and ours156, each at most once, are allowed");
@@ -593,6 +851,16 @@ const comparisonInputs = JSON.parse(exec(["python3", "-B", join(root, "arc/brows
 const comparisonHelper = join(comparisonSnapshot, "arc/browser/webextras_fixture_inputs.py");
 const comparisonMetadata = readFileSync(join(comparisonSnapshot, "arc/tools/arccore-1.170.0-objc.tsv"), "utf8");
 const fixtureVerified = comparisonInputs.capability?.verified === true;
+let frontendComparison:any,frontendComparisonHelper:string|undefined;
+if(devToolsFrontendEvents){
+  const source=recorderFileIdentity(join(root,"arc/browser/webextras_frontend_comparison.py"));
+  frontendComparisonHelper=join(out,"frontend-comparison.py");copyFileSync(source.realpath,frontendComparisonHelper,constants.COPYFILE_EXCL);chmodSync(frontendComparisonHelper,0o444);
+  const frozen=recorderFileIdentity(frontendComparisonHelper);
+  assert(source.sha256===frozen.sha256&&source.size===frozen.size&&JSON.stringify(recorderFileIdentity(source.path))===JSON.stringify(source),"frontend comparison helper changed while freezing");
+  const capability=JSON.parse(exec(["python3","-B",frontendComparisonHelper,"capability",comparisonSnapshot,fixtureImage]));
+  frontendComparison={source,frozen,capability};writeFileSync(join(out,"frontend-comparison-capability.json"),JSON.stringify(frontendComparison,null,2),{flag:"wx"});
+}
+
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 let observeProcesses: (() => void) | undefined;
 const wait = async <T>(read: () => T | Promise<T>, timeout = 20000): Promise<NonNullable<T>> => {
@@ -651,14 +919,15 @@ const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
 } });
 const fixtureURL = `http://127.0.0.1:${server.port}${fixturePath}`;
 mkdirSync(out, { recursive: true });
-type Run = { agent: string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; comparisonInputs?: any; fixturePublicCounts?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string; runtimeStatus?:any };
+type Run = { agent: string; probeMode?:string; pid?: number; phase?: string; failure?: { phase?: string; message: string }; binaryIdentity?: any; recorderIdentity?: any; comparisonInputs?: any; fixturePublicCounts?: any; recordCallerLabels?: boolean; fixtureComparisonStatus?: string; actions: any[]; errors: string[]; cleanup?: string; runtimeStatus?:any; frontendEvents?:any };
 const runs: Run[] = [];
 const operations = ["console-open", "frontend", "console-close", "panel-closed", "execute-evaluate", "execute-malformed", "execute-unknown", "subscription", "media-types", "pip-request-error", "pip-exit-error"];
-const actionManifest = operations.map(operation => ({ key: operation, operation })).concat(mediaClock ? mediaClockPhases.flatMap(phase => Array.from({length:5}, (_, index) => ({key:clockActionKey(phase.name,index), operation:index < 3 ? "clock-snapshot" : "clock-held-time"}))) : []);
+const actionManifest = operations.map(operation => ({ key: operation, operation })).concat(anyClock ? (mediaServiceClock ? mediaServiceClockPhases : mediaClockPhases).flatMap(phase => Array.from({length:5}, (_, index) => ({key:clockActionKey(phase.name,index), operation:index < 3 ? "clock-snapshot" : "clock-held-time"}))) : []);
 const expectedPairCount = actionManifest.reduce((count, entry) => count + expectedSelectors(entry.operation).length, 0);
 try {
   for (const agent of agents) {
-    const run: Run = { agent, phase: "preflight", recorderIdentity, comparisonInputs, actions: [], errors: [] };
+    const run: Run = { agent, ...((anyClock||devToolsFrontendEvents)?{probeMode}:{}), phase: "preflight", recorderIdentity, comparisonInputs, actions: [], errors: [] };
+    if(devToolsFrontendEvents&&frontendComparison?.capability?.verified!==true)run.errors.push("pending-callback-boundary-comparison-support: explicit argument option/default policy canaries not verified");
     runs.push(run);
     const dir = join(out, agent);
     mkdirSync(dir, { recursive: true });
@@ -722,6 +991,7 @@ try {
       run.phase = "recorder-identity";
       assert(JSON.stringify(recorderFileIdentity(recorder)) === JSON.stringify(recorderIdentity.frozen), "frozen recorder changed before launch");
       exec(["python3", "-B", comparisonHelper, "verify", comparisonSnapshot]);
+      if(devToolsFrontendEvents)assert(JSON.stringify(recorderFileIdentity(frontendComparison.frozen.path))===JSON.stringify(frontendComparison.frozen),"frozen frontend comparison helper changed before launch");
       if (mediaClock) {
         assert(JSON.stringify(recorderFileIdentity(mediaClockIdentity.frozen.path)) === JSON.stringify(mediaClockIdentity.frozen), "frozen media clock fixture changed before launch");
         assert(JSON.stringify(recorderFileIdentity(mediaClockIdentity.provenanceIdentity.path)) === JSON.stringify(mediaClockIdentity.provenanceIdentity), "frozen media clock provenance changed before launch");
@@ -734,7 +1004,8 @@ try {
         "--env", `ARC_WEBEXTRAS_PROBE_REQUEST=${requestPath}`,
         "--env", `ARC_WEBEXTRAS_PROBE_URL=${fixtureURL}`,
         "--env", `ARC_RECORD_PATH=${recordPath}`,
-        ...(mediaClock ? ["--env", "ARC_WEBEXTRAS_MEDIA_CLOCK=1"] : []),
+        ...(anyClock ? ["--env", "ARC_WEBEXTRAS_MEDIA_CLOCK=1"] : []),
+        ...(devToolsFrontendEvents ? ["--env", "ARC_WEBEXTRAS_FRONTEND_EVENTS=1"] : []),
         "--stdout", join(dir, "app.log"), "--stderr", join(dir, "app.log"), "--args",
         "--use-mock-keychain", "--no-default-browser-check", "--disable-sync", "--disable-background-networking",
         `--host-resolver-rules=${plist("ArcModHostResolverRules")}`, `--user-data-dir=${chromiumData}`,
@@ -807,7 +1078,14 @@ try {
         return response.ok === true && response.matches === 1 ? response : undefined;
       });
       writeFileSync(join(dir, "registry.json"), JSON.stringify(registry, null, 2));
+      const frontendCensus=async()=>{
+        if(verifyAgentEndpoint(agent,port)!==pid)throw new Error("owned endpoint PID changed before frontend census");
+        const result=await cdp!.request("Target.getTargets");assert(Array.isArray(result.targetInfos),"missing target census");
+        return result.targetInfos.map((info:any)=>({targetId:info.targetId,type:info.type,url:genuineFrontendURL(info.url)?info.url:info.url===fixtureURL?fixtureURL:"[other owned-app target URL]"}));
+      };
+      let frontendBefore:any[]=[];
       for (const operation of operations) {
+        if(devToolsFrontendEvents&&operation==="console-open")frontendBefore=await frontendCensus();
         run.phase = `action:${operation}`;
         const result = await action(operation);
         run.actions.push(result);
@@ -818,13 +1096,24 @@ try {
         if (operation.startsWith("pip-") && (result.value !== false || result.error?.domain !== "company.thebrowser.Arc" || result.error?.code !== 6)) run.errors.push(`${operation}: expected false/Arc NSError6 on inert fixture`);
         if (result.matches !== 1 || result.ownerTag !== registry.ownerTag) run.errors.push(`${operation}: canonical wrapper changed`);
         console.log(`${agent}: ${operation}: ${result.ok === true ? "acknowledged" : result.probeError}`);
+        if(devToolsFrontendEvents&&operation==="console-open"){
+          run.phase="genuine-frontend-events";
+          let rawSequence=0,spanSequence=0;
+          run.frontendEvents=await runGenuineFrontendEvents({verify:()=>{if(verifyAgentEndpoint(agent,port)!==pid)throw new Error("owned endpoint PID changed before frontend diagnostic");},
+            census:frontendCensus,request:(method:string,params:any,sessionId?:string)=>cdp!.request(method,params,sessionId),action,
+            raw:(record:any)=>writeFileSync(join(dir,"frontend-runtime.jsonl"),JSON.stringify({sequence:++rawSequence,...record})+"\n",{flag:"a"}),
+            spanID:(kind:string)=>`${token}-frontend-${++spanSequence}-${kind}`,now:()=>performance.now(),sleep,
+            save:(report:any)=>writeFileSync(join(dir,"frontend-events.json"),JSON.stringify(report,null,2))},frontendBefore,fixtureURL,registry.ownerTag);
+          if(run.frontendEvents.status!=="observed")run.errors.push(`frontend-events: ${run.frontendEvents.error??run.frontendEvents.status}`);
+        }
       }
-      if (mediaClock) {
+      if (anyClock) {
         let evaluationSequence=0;
         const evaluate = async (expression: string,label:string) => evaluateMediaClock(async text=>{
           if (verifyAgentEndpoint(agent, port) !== pid) throw new Error("owned endpoint PID changed before clock stimulus");
           return cdp!.targetCommand(target!, "Runtime.evaluate", { expression:text, returnByValue:true, awaitPromise:true });
         }, record=>writeFileSync(join(dir,"clock-evaluations.jsonl"),JSON.stringify({sequence:++evaluationSequence,...record})+"\n",{flag:"a"}),{phase:run.phase!,label,expression});
+        if(mediaClock){
         run.phase="clock-activation";
         await activateMediaClockTarget(target!,{
           verify:()=>{if(verifyAgentEndpoint(agent,port)!==pid)throw new Error("owned endpoint PID changed before clock activation");},
@@ -832,8 +1121,9 @@ try {
           bring:async()=>{if(verifyAgentEndpoint(agent,port)!==pid)throw new Error("owned endpoint PID changed before Page.bringToFront");return cdp!.targetCommand(target!,"Page.bringToFront",{});},
           save:report=>writeFileSync(join(dir,"clock-activation.json"),JSON.stringify(report,null,2)),now:()=>performance.now(),sleep,
         });
-        const clockReport: any = { policy:mediaClockPolicy, fixture:mediaClockIdentity, lane:"public service-position clock; implicit player fallback uncovered", laneB:"provisional original behavior until measured; no timing normalization", phases:[] };
-        for (const phase of mediaClockPhases) {
+        }
+        const clockReport: any = { probeMode, policy:mediaClockPolicy, ...(mediaClock?{fixture:mediaClockIdentity}:{}), lane:mediaServiceClock?"declared public SERVICE-position DTO clock only; no player/DOM alignment/fallback/visibility claim":"public service-position clock; implicit player fallback uncovered", laneB:"provisional original behavior until measured; no timing normalization", phases:[] };
+        for (const phase of (mediaServiceClock?mediaServiceClockPhases:mediaClockPhases)) {
           run.phase = `clock-prepare:${phase.name}`;
           const videoURL=`http://127.0.0.1:${server.port}/${token}/clock.webm`;
           const phaseReport: any = { phase:phase.name,status:"preparing",attempts:[] };
@@ -843,12 +1133,12 @@ try {
           const failureDOM=async()=>{
             if(phaseReport.failureDiagnosticAttempted)return;
             phaseReport.failureDiagnosticAttempted=true;savePhase();
-            try{phaseReport.failureDOM=await evaluate(mediaClockFailureDOMJS(fixtureURL,videoURL),"failure-DOM");}
+            try{phaseReport.failureDOM=await evaluate(mediaServiceClock?serviceClockObservationJS(fixtureURL,token):mediaClockFailureDOMJS(fixtureURL,videoURL),"failure-DOM");}
             catch(error){phaseReport.failureDOMError=String(error);}
             savePhase();
           };
           try{
-          phaseReport.preparation=await evaluate(mediaClockPrepareJS(phase,videoURL),"prepare");
+          phaseReport.preparation=await evaluate(mediaServiceClock?mediaServiceClockPrepareJS(phase as typeof mediaServiceClockPhases[number],fixtureURL,token):mediaClockPrepareJS(phase as typeof mediaClockPhases[number],videoURL),"prepare");
           phaseReport.status="prepared";savePhase();
           const measured: any[] = [];
           let heldToken: string | undefined;
@@ -857,27 +1147,28 @@ try {
             const operation = index < 3 ? "clock-snapshot" : "clock-held-time";
             run.phase = `action:${clockActionKey(phase.name,index)}`;
             const hostBeforeDOM = process.hrtime.bigint().toString();
-            const domBefore = await evaluate(mediaClockDOMJS,`attempt-${index}-before`);
+            const domBefore = await evaluate(mediaServiceClock?serviceClockObservationJS(fixtureURL,token):mediaClockDOMJS,`attempt-${index}-before`);
             const hostBeforeRequest = process.hrtime.bigint().toString();
             const result = await action(operation, heldToken ? {heldToken} : {});
             const hostAfterResponse = process.hrtime.bigint().toString();
-            result.domBefore = domBefore; result.domAfter = await evaluate(mediaClockDOMJS,`attempt-${index}-after`);
+            result.domBefore = domBefore; result.domAfter = await evaluate(mediaServiceClock?serviceClockObservationJS(fixtureURL,token):mediaClockDOMJS,`attempt-${index}-after`);
             result.hostMonotonicNanos = { beforeDOM:hostBeforeDOM, beforeRequest:hostBeforeRequest,
               afterResponse:hostAfterResponse, afterDOM:process.hrtime.bigint().toString() };
             result.actionKey = clockActionKey(phase.name,index); result.clockPhase = phase.name; result.clockAttempt = index;
             result.positionReceipt = phaseReport.preparation.receipt;
             run.actions.push(result); measured.push(result); phaseReport.attempts.push(result);
             if (index < 3) heldToken = result.clock?.heldToken;
-            if (result.ok !== true || result.matches !== 1 || result.ownerTag !== registry.ownerTag) run.errors.push(`${result.actionKey}: failed clock receipt or canonical owner changed`);
+            if (result.ok !== true || result.matches !== 1 || result.ownerTag !== registry.ownerTag) run.errors.push(mediaServiceClock&&isNilClockPosition(result)?`${result.actionKey}: inconclusive nil public service position receipt`:`${result.actionKey}: failed clock receipt or canonical owner changed`);
             for (const issue of outcomeErrors(result)) run.errors.push(`${result.actionKey}: ${issue}`);
             writeFileSync(join(dir, "media-clock.json"), JSON.stringify(clockReport, null, 2));
           }
-          try { validateClockPhase(phase, measured); phaseReport.functional = "pass"; }
+          try { if(mediaServiceClock)validateMediaServiceClockPhase(phase as typeof mediaServiceClockPhases[number],measured);else validateClockPhase(phase as typeof mediaClockPhases[number], measured); phaseReport.functional = "pass"; }
           catch (error) { phaseReport.functional = isClockInconclusive(error)?"inconclusive":"fail"; phaseReport.error = String(error); run.errors.push(`${phase.name}: ${String(error)}`); await failureDOM(); }
           const release = await action("clock-release", {heldToken});
           phaseReport.release = release;
           writeFileSync(join(dir, "media-clock.json"), JSON.stringify(clockReport, null, 2));
-          assert(release.ok === true && release.publicCalls?.length === 0 && release.timeline?.length === 0, "held clock DTO release failed");
+          if(mediaServiceClock&&!heldToken&&phaseReport.functional==="inconclusive")phaseReport.releaseStatus="no retained DTO after fixed inconclusive attempts";
+          else assert(release.ok === true && release.publicCalls?.length === 0 && release.timeline?.length === 0, "held clock DTO release failed");
           phaseReport.status=phaseReport.functional==="inconclusive"?"inconclusive":"complete";savePhase();
           }catch(error){phaseReport.status=isClockInconclusive(error)?"inconclusive":"failed";phaseReport.error=String(error);savePhase();await failureDOM();throw error;}
         }
@@ -951,6 +1242,27 @@ try {
             writeFileSync(join(dir, `${action.actionKey ?? action.operation}.record.jsonl`), span);
           } catch (error) { run.errors.push(`${action.actionKey ?? action.operation}: ${String(error)}`); }
         }
+        if(devToolsFrontendEvents&&run.frontendEvents){
+          try{
+            const open=run.actions.find(action=>action.operation==="console-open");
+            const roots=parseRecords(validSpan(record,open.recordBegin,open.recordEnd),open.recordBegin).filter(row=>row.event.ev==="call"&&row.event.cls==="ArcWebContentsDevTools"&&row.event.sel==="openConsoleView"&&row.event.from===fixtureImage);
+            assert(roots.length===1,"missing canonical service anchor for frontend callback spans");
+            const spanKinds=["inspect-on","inspect-off","dock-change","dock-restore"],spanIDs=new Set<string>();let priorFrontendEnd=open.recordEnd;
+            for(const [index,span] of run.frontendEvents.spans.entries()){
+              try{
+                assert(span.kind===spanKinds[index]&&!spanIDs.has(span.spanID)&&span.observation?.recordBegin>=priorFrontendEnd,"missing/reordered/overlapping frontend callback span");
+                spanIDs.add(span.spanID);priorFrontendEnd=span.observation.recordEnd;
+                span.traceShape=validateFrontendCallbackSpan(span,record,roots[0]!.event.self,open.ownerTag,fixtureImage,projection);
+                const bytes=validSpan(record,span.observation.recordBegin,span.observation.recordEnd);
+                writeFileSync(join(dir,`frontend-${span.kind}.callbacks.record.jsonl`),bytes);span.rawValidated=true;
+              }catch(error){span.rawValidated=false;span.rawError=String(error);run.errors.push(`frontend-${span.kind} callback evidence: ${String(error)}`);}
+            }
+            run.frontendEvents.typedSpanCount=run.frontendEvents.spans.filter((span:any)=>span.rawValidated).length;
+            run.frontendEvents.rawValidated=run.frontendEvents.spans.length===4&&run.frontendEvents.status==="observed"&&run.frontendEvents.spans.every((span:any)=>span.rawValidated);
+            assert(run.frontendEvents.rawValidated,"incomplete genuine frontend stimulus/typed callback manifest");
+          }catch(error){run.errors.push(`frontend callback evidence: ${String(error)}`);}
+          writeFileSync(join(dir,"frontend-events.json"),JSON.stringify(run.frontendEvents,null,2));
+        }
         run.fixturePublicCounts = { call: fixtureCalls, ret: fixtureReturns };
         if (run.actions.length === actionManifest.length && (fixtureCalls !== expectedPairCount || fixtureReturns !== expectedPairCount)) run.errors.push(`expected exactly ${expectedPairCount} admitted fixture calls and returns`);
         if (JSON.stringify(run.actions.map(action => ({key:action.actionKey ?? action.operation, operation:action.operation}))) !== JSON.stringify(actionManifest)) run.errors.push("missing/reordered action manifest");
@@ -985,6 +1297,27 @@ if (golden && ours) for (let index = 0; index < Math.max(golden.actions.length, 
   const right = ours.actions[index] ? semantic(ours.actions[index]) : null;
   if (JSON.stringify(left) !== JSON.stringify(right)) differences.push({ golden: left, ours: right });
 }
+const frontendEventDifferences:any[]=[];
+if(devToolsFrontendEvents&&golden&&ours){
+  const shape=(run:Run)=>canonical({status:run.frontendEvents?.status,rawValidated:run.frontendEvents?.rawValidated,
+    spans:run.frontendEvents?.spans.map((span:any)=>({kind:span.kind,expectedSelector:span.expectedSelector,expectedMode:span.expectedMode,
+      callbacks:span.observation?.callbacks.map((event:any)=>({selector:event.selector,mode:event.mode,mainThread:event.mainThread,forwarded:event.forwarded,forwardDepth:event.forwardDepth,abi:event.abi})),traceShape:span.traceShape}))});
+  if(JSON.stringify(shape(golden))!==JSON.stringify(shape(ours)))frontendEventDifferences.push({golden:shape(golden),ours:shape(ours)});
+}
+if(devToolsFrontendEvents&&golden&&ours){
+  for(const kind of ["inspect-on","inspect-off","dock-change","dock-restore"]){
+    const left=golden.frontendEvents?.spans.find((span:any)=>span.kind===kind),right=ours.frontendEvents?.spans.find((span:any)=>span.kind===kind);
+    if(!left?.rawValidated||!right?.rawValidated){frontendEventDifferences.push({kind,status:"incomplete-typed-callback-evidence"});continue;}
+    try{
+      assert(JSON.stringify(recorderFileIdentity(frontendComparison.frozen.path))===JSON.stringify(frontendComparison.frozen),"frozen frontend comparator helper changed");
+      const result=JSON.parse(exec(["python3","-B",frontendComparisonHelper!,"compare",comparisonSnapshot,fixtureImage,
+        join(out,"trace156",`frontend-${kind}.callbacks.record.jsonl`),join(out,"ours156",`frontend-${kind}.callbacks.record.jsonl`),join(out,`frontend-${kind}.diff.json`)]));
+      writeFileSync(join(out,`frontend-${kind}.diff.txt`),result.stdout);
+      writeFileSync(join(out,`frontend-${kind}.comparison.json`),JSON.stringify(result,null,2));
+      if(result.verified!==true||result.mismatches?.length)frontendEventDifferences.push({kind,status:result.status,mismatches:result.mismatches});
+    }catch(error){frontendEventDifferences.push({kind,status:"pending-callback-boundary-comparison-support",error:String(error)});}
+  }
+}
 const boundaryDiffs: unknown[] = [];
 const fixtureComparison = { status: fixtureVerified ? "verified-exact-image" : "pending-fixture-comparison-support",
   fixtureImageOption: fixtureVerified ? fixtureImage : null, reason: fixtureVerified ? null : fixtureComparisonPending };
@@ -998,14 +1331,14 @@ if (golden && ours) for (const {key, operation} of actionManifest) {
   const result = Bun.spawnSync(["python3", "-B", comparisonHelper, "compare", comparisonSnapshot, fixtureImage,
     left, right, String(expectedSelectors(operation).length), diffPath], { stdout: "pipe", stderr: "pipe" });
   writeFileSync(join(out, `${key}.diff.txt`), result.stdout);
-  if (!result.success) { boundaryDiffs.push({ operation, ...(mediaClock ? {actionKey:key} : {}), error: result.stderr.toString() }); continue; }
+  if (!result.success) { boundaryDiffs.push({ operation, ...(anyClock ? {actionKey:key} : {}), error: result.stderr.toString() }); continue; }
   const diff = json(diffPath);
   const mismatches = ["missing", "extra", "return_mismatch", "arg_mismatch", "count_mismatch"].filter(key => diff[key]?.length);
   if (diff.callback_sequence?.first_divergence !== null) mismatches.push("callback_sequence");
-  if (mismatches.length) boundaryDiffs.push({ operation, ...(mediaClock ? {actionKey:key} : {}), mismatches });
+  if (mismatches.length) boundaryDiffs.push({ operation, ...(anyClock ? {actionKey:key} : {}), mismatches });
 }
-const complete = runs.length === agents.length && runs.every(run => !run.errors.length && !!run.cleanup && run.actions.length === actionManifest.length && run.actions.every(action => action.traceShape?.length > 0));
-const parity = golden && ours ? complete && !differences.length && !boundaryDiffs.length : null;
-writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, comparisonInputs, fixtureComparison, ...(mediaClock ? {mediaClockIdentity, mediaClockPolicy, actionManifest, expectedPairCount} : {}), differences, boundaryDiffs, runs }, null, 2));
+const complete = runs.length === agents.length && runs.every(run => !run.errors.length && (!devToolsFrontendEvents||run.frontendEvents?.rawValidated===true) && !!run.cleanup && run.actions.length === actionManifest.length && run.actions.every(action => action.traceShape?.length > 0));
+const parity = golden && ours ? complete && !differences.length && !boundaryDiffs.length && (!devToolsFrontendEvents||!frontendEventDifferences.length) : null;
+writeFileSync(join(out, "summary.json"), JSON.stringify({ complete, parity, recorderIdentity, comparisonInputs, fixtureComparison, ...(devToolsFrontendEvents?{probeMode,frontendEventPolicy,frontendComparison,frontendEventDifferences}:{}), ...(anyClock ? {probeMode, ...(mediaClock?{mediaClockIdentity}:{}), mediaClockPolicy, actionManifest, expectedPairCount} : {}), differences, boundaryDiffs, runs }, null, 2));
 console.log(JSON.stringify({ complete, parity, fixtureComparison, out }));
 process.exitCode = complete && parity !== false ? 0 : 1;

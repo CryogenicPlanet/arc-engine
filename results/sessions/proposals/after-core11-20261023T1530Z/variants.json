@@ -1,0 +1,24 @@
+{
+  "status": "UNAPPLIED after-core11 native-source context variants; preserves original semantic insertions and remaining file hunks",
+  "core11HeaderSHA256": "27e5d1f5435f6f11f34f8d957dd47a4fc22851da3e6d78894de63d4f17b52b6d",
+  "variants": {
+    "source-only": {
+      "original": "/tmp/arccore-sessions-native-source-hooks.patch",
+      "originalSHA256": "dcb48f82b42facc8fddc01666b70b213d1f861138f90f9313876e3739e2ac097",
+      "path": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/after-core11-20261023T1530Z/native-source-hooks-after-core11.patch",
+      "sha256": "fd6068db59ea60e2de4c02e999e6d37f7b4ddd66568c2a1d6453b010e9e192db",
+      "unchangedRemainingFileSections": true,
+      "insertedNamespaceBody": "\n// Marks one actual historical WebContents insertion, preserving both source\n// IDs and optional presence. The returned scope clears its exact WC marker.\nusing SessionTabRestoreScopeHook = base::RepeatingCallback<\n    base::ScopedClosureRunner(content::WebContents*, int32_t, int32_t)>;\ninline SessionTabRestoreScopeHook& GetSessionTabRestoreScopeHook() {\n  static base::NoDestructor<SessionTabRestoreScopeHook> hook;\n  return *hook;\n}\n",
+      "expectedSourceHeaderSHA256": "b2be6c7faa76f459e905a46018fa28ec72e8baadca2594febcccdb60b28021ec"
+    },
+    "source-policy": {
+      "original": "/tmp/arccore-sessions-native-source-policy.patch",
+      "originalSHA256": "69c52f50825e845862c8889b34bb43f88e52522d0d03f2f16f75da38e090ce24",
+      "path": "/Users/cryogenicplanet/general/arc-engine/results/sessions/proposals/after-core11-20261023T1530Z/native-source-policy-after-core11.patch",
+      "sha256": "fc43a59b8d6fabdba47f2fdf611e505a233fc32aad7afff7a4e87bf9dd6e539f",
+      "unchangedRemainingFileSections": true,
+      "insertedNamespaceBody": "\n// Hosted configuration chooses the startup type, while profile startup URLs\n// still come from preferences. nullopt leaves Chrome's type lookup unchanged.\nusing SessionStartupRestoreHook =\n    base::RepeatingCallback<std::optional<bool>()>;\ninline SessionStartupRestoreHook& GetSessionStartupRestoreHook() {\n  static base::NoDestructor<SessionStartupRestoreHook> hook;\n  return *hook;\n}\n\n// Marks one actual historical WebContents insertion, preserving both source\n// IDs and optional presence. The returned scope clears its exact WC marker.\nusing SessionTabRestoreScopeHook = base::RepeatingCallback<\n    base::ScopedClosureRunner(content::WebContents*, int32_t, int32_t)>;\ninline SessionTabRestoreScopeHook& GetSessionTabRestoreScopeHook() {\n  static base::NoDestructor<SessionTabRestoreScopeHook> hook;\n  return *hook;\n}\n",
+      "expectedSourceHeaderSHA256": "2ed7909f76cb898dd1e98d9852f3cf9be15a27db1e4ed770d00fcce89a7398c6"
+    }
+  }
+}

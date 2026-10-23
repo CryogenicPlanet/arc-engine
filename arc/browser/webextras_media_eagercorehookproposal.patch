@@ -1,9 +1,7 @@
 diff --git a/arc/browser/webextras_media.h b/arc/browser/webextras_media.h
 --- a/arc/browser/webextras_media.h
 +++ b/arc/browser/webextras_media.h
-@@ -2,11 +2,18 @@
- #ifndef ARC_BROWSER_WEBEXTRAS_MEDIA_H_
- #define ARC_BROWSER_WEBEXTRAS_MEDIA_H_
+@@ -4,3 +4,7 @@
  #include <memory>
 +#ifdef __OBJC__
 +@class ArcWebContents;
@@ -11,31 +9,20 @@ diff --git a/arc/browser/webextras_media.h b/arc/browser/webextras_media.h
  namespace content {
 +class WebContents;
  class VideoOverlayWindow;
- class VideoPictureInPictureWindowController;
- }
+@@ -9,2 +13,5 @@
  namespace arc {
 +#ifdef __OBJC__
 +void InitializeWebextrasMediaSource(ArcWebContents* owner, content::WebContents* native);
 +#endif
  std::unique_ptr<content::VideoOverlayWindow> CreateVideoOverlayWindow(
-     content::VideoPictureInPictureWindowController* controller);
- }
 diff --git a/arc/api/arc_web_contents.mm b/arc/api/arc_web_contents.mm
 --- a/arc/api/arc_web_contents.mm
 +++ b/arc/api/arc_web_contents.mm
-@@ -3,6 +3,7 @@
- #import "arc/api/arc_internal.h"
+@@ -4,2 +4,3 @@
  #import "arc/browser/arc_navigation.h"
- #import "arc/browser/core_render_state.h"
 +#import "arc/browser/webextras_media.h"
- 
- #include "base/memory/weak_ptr.h"
- #include <bit>
-@@ -642,6 +643,7 @@
-     }
-     _diagnosticId = @(NextDiagnosticID());
+ #import "arc/browser/core_render_state.h"
+@@ -644,2 +645,3 @@
      _services = [NSMutableDictionary dictionary];
 +    arc::InitializeWebextrasMediaSource(self, native);
      self.title = native->GetTitle().empty() ? nil : ArcNSString(native->GetTitle());
-     self.url = ArcNSURL(native->GetVisibleURL());
-     self.selectedText = nil;

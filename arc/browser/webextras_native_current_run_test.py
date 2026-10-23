@@ -17,10 +17,12 @@ class WrapperTests(unittest.TestCase):
         # Actual parser and re-exec body; shell function replaces exec before it can
         # invoke locked.sh. There is no lock command/process in this test.
         parser = SOURCE[SOURCE.index('locked=0'):SOURCE.index('python3 - "$ROOT" <<')]
-        shell = 'set -euo pipefail\nROOT=/unused\nexec(){ printf "EXEC<%s>\\n" "$@"; }\n' + parser + '\nprintf "STATE:%s:%s\\n" "$run_number" "$media_clock"\n'
-        cases = [([], 'STATE:4:0', False), (['--run-number', '6', '--media-clock'], 'STATE:6:1', True),
-                 (['--media-clock', '--run-number', '6'], 'STATE:6:1', True),
-                 (['--locked', '--run-number', '6', '--media-clock'], 'STATE:6:1', True)]
+        shell = 'set -euo pipefail\nROOT=/unused\nexec(){ printf "EXEC<%s>\\n" "$@"; }\n' + parser + '\nprintf "STATE:%s:%s\\n" "$run_number" "$media_clock:$media_service_clock:$frontend_events"\n'
+        cases = [([], 'STATE:4:0:0:0', False), (['--run-number', '6', '--media-clock'], 'STATE:6:1:0:0', True),
+                 (['--media-clock', '--run-number', '6'], 'STATE:6:1:0:0', True),
+                 (['--locked', '--run-number', '6', '--media-clock'], 'STATE:6:1:0:0', True),
+                 (['--run-number','9','--media-service-clock'],'STATE:9:0:1:0',False),
+                 (['--run-number','10','--devtools-frontend-events'],'STATE:10:0:0:1',False)]
         for args, expected, clock in cases:
             result = subprocess.run(['/bin/bash', '-c', shell, 'wrapper', *args], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -28,38 +30,44 @@ class WrapperTests(unittest.TestCase):
             if '--locked' not in args:
                 self.assertIn('EXEC</unused/arc/tools/locked.sh>', result.stdout)
                 self.assertEqual('EXEC<--media-clock>' in result.stdout, clock)
+                self.assertEqual('EXEC<--media-service-clock>' in result.stdout, '--media-service-clock' in args)
+                self.assertEqual('EXEC<--devtools-frontend-events>' in result.stdout, '--devtools-frontend-events' in args)
         for args in (['--run-number'], ['--run-number','0'], ['--run-number','-1'], ['--run-number','6','--run-number','7'],
-                     ['--media-clock','--media-clock'], ['--unknown'], ['--media-clock','true'], ['--locked','--locked']):
+                     ['--media-clock','--media-clock'], ['--media-service-clock','--media-service-clock'],
+                     ['--media-clock','--media-service-clock'],['--media-service-clock','--media-clock'], ['--devtools-frontend-events','--media-clock'],
+                     ['--media-service-clock','--devtools-frontend-events'],['--devtools-frontend-events','--devtools-frontend-events'], ['--unknown'], ['--media-clock','true'], ['--locked','--locked']):
             result = subprocess.run(['/bin/bash', '-c', shell, 'wrapper', *args], capture_output=True, text=True)
             self.assertEqual(result.returncode, 2, (args, result.stderr))
             self.assertNotIn('EXEC<', result.stdout)
 
     def test_actual_snapshot_default_inventory_clock_assets_mode_and_tamper(self):
-        body = re.search(r'python3 - "\$ROOT" "\$stem" "\$1" "\$media_clock" <<\'PY\'\n(.*?)\nPY\n', SOURCE, re.S).group(1)
+        body = re.search(r'python3 - "\$ROOT" "\$stem" "\$1" "\$media_clock" "\$media_service_clock" "\$frontend_events" <<\'PY\'\n(.*?)\nPY\n', SOURCE, re.S).group(1)
         with tempfile.TemporaryDirectory(prefix='webextras-wrapper-snapshot-') as directory:
             root = Path(directory)
             paths = list(ROOT.glob('arc/api/arc_webextras_*.mm')) + [ROOT/path for path in (
                 'arc/browser/webextras_media.h','arc/browser/webextras_values.h','arc/wp/webextras.gni',
                 'arc/browser/webextras_native_probe.m','arc/browser/webextras_native_probe.ts','arc/browser/webextras_native_probe.sh',
                 'arc/browser/webextras_fixture_inputs.py','arc/browser/webextras_fixture_projection.ts','arc/browser/webextras_native_current_run.sh',
-                'arc/browser/webextras_media_clock_fixture.webm','arc/browser/webextras_media_clock_fixture.json')]
+                'arc/browser/webextras_media_clock_fixture.webm','arc/browser/webextras_media_clock_fixture.json','arc/browser/webextras_frontend_comparison.py')]
             for source in paths:
                 target = root/source.relative_to(ROOT); target.parent.mkdir(parents=True, exist_ok=True); shutil.copyfile(source, target)
             def snapshot(stem, phase, mode):
-                return subprocess.run(['python3','-',str(root),str(root/stem),phase,str(mode)], input=body, capture_output=True, text=True)
-            for mode in (0, 1):
+                return subprocess.run(['python3','-',str(root),str(root/stem),phase,str(int(mode==1)),str(int(mode==2)),str(int(mode==3))], input=body, capture_output=True, text=True)
+            for mode in (0, 1, 2, 3):
                 stem = 'mode'+str(mode)
                 self.assertEqual(snapshot(stem,'before',mode).returncode,0)
                 self.assertEqual(snapshot(stem,'after-build',mode).returncode,0)
                 state=json.loads((root/(stem+'.source-before.json')).read_text())
-                self.assertEqual(state['probeMode'], 'media-clock' if mode else 'default')
-                self.assertEqual(len(state['files']), 16 if mode else 14)
-                self.assertEqual('arc/browser/webextras_media_clock_fixture.webm' in state['files'], bool(mode))
-                self.assertNotEqual(snapshot(stem,'after-mode-change',1-mode).returncode,0)
+                self.assertEqual(state['probeMode'], 'media-clock' if mode==1 else 'media-service-clock' if mode==2 else 'devtools-frontend-events' if mode==3 else 'default')
+                self.assertEqual(len(state['files']), 16 if mode in (1,2) else 15 if mode==3 else 14)
+                self.assertEqual(state['mediaResourceUsed'],mode==1)
+                self.assertEqual('arc/browser/webextras_media_clock_fixture.webm' in state['files'], mode in (1,2))
+                self.assertNotEqual(snapshot(stem,'after-mode-change',(mode+1)%4).returncode,0)
             fixture=root/'arc/browser/webextras_media_clock_fixture.webm'
             fixture.write_bytes(fixture.read_bytes()+b'tampered')
             self.assertEqual(snapshot('mode0','after-fixture-tamper',0).returncode,0)
             self.assertNotEqual(snapshot('mode1','after-fixture-tamper',1).returncode,0)
+            self.assertNotEqual(snapshot('mode2','after-fixture-tamper',2).returncode,0)
             self.assertEqual(snapshot('json-only','before',1).returncode,0)
             metadata=root/'arc/browser/webextras_media_clock_fixture.json'
             metadata.write_bytes(metadata.read_bytes()+b'\n')
