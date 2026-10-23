@@ -44,7 +44,8 @@ This file is binding for everyone writing code under `arc/`. Decisions here are 
   touching wrappers or calling the app. Completion blocks are invoked on the main thread unless the golden
   transcript shows otherwise.
 - **Delegates/observers.** Held weakly (`__weak`) like Arc's engine. Call optional protocol methods only after
-  `respondsToSelector:`. Observer lists: `NSHashTable weakObjectsHashTable`.
+  `respondsToSelector:`. Observer lists: `NSHashTable weakObjectsHashTable`, or an equivalent weak registration (e.g. weak
+  registration tokens) where deferred/cancellable delivery needs it; observers are never retained.
 - **Observable state.** Where the golden shows the engine calling its own setters (`-[ArcWebContents setTitle:]`,
   `setIsLoading:`, ...), state changes must go through those ObjC setters (the app observes them with KVO).
   Declare them as `@property (nonatomic)` so KVO works.
