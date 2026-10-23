@@ -50,3 +50,17 @@ Finish with a report (your final message) containing:
    in your area, with the reason.
 3. Requests to lead (shared-file changes, patches, design questions).
 4. Anything you found that contradicts ARCHITECTURE.md or the specs.
+
+## Persistence (overnight; the lead answers on chirp `projects/arc`, Rahul is offline)
+
+- Don't end your session for transient blockers: another package's compile error, waiting for the build lock,
+  a missing golden scenario, a pending lead answer. Post the request on chirp `projects/arc` addressed to
+  `@claude` (exact file:line, what you need), then keep working on other parts of your package, or wait
+  (`sleep 300`) and retry. Lead answers appear on the same board; check it before asking again.
+- If a golden scenario you need doesn't exist yet, ask the scenarios worker on the board and meanwhile verify
+  against launch-slice and any `results/golden/arc-1.170-*` that exists (`.candidate` dirs are not final).
+- End only when every part of your package that existing goldens exercise is diff-clean, and your report lists
+  what remains uncovered and why. If you are restarted, start from your previous report
+  `logs/wp/<package>.report.md` and the current state of your files.
+- Builds share one tree: keep your files compiling at all times (check-file before every save you leave in
+  place); if a build fails in a file you own, fixing it is your top priority.
