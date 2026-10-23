@@ -32,6 +32,23 @@ struct NavigationActionSnapshot {
 };
 }  // namespace
 
+namespace {
+// Arc's navigation error codes: 2 for HTTP authentication failures (dialogs-auth-cancel golden, where ours
+// commits ERR_INVALID_AUTH_CREDENTIALS), 1 for certificate errors (inferred; not in a golden yet), 0 for other
+// network failures (DNS failure in arcmod-local-services).
+NSInteger ArcNavigationErrorCode(int net_error) {
+  switch (net_error) {
+    case net::ERR_INVALID_AUTH_CREDENTIALS:
+    case net::ERR_MISSING_AUTH_CREDENTIALS:
+    case net::ERR_UNSUPPORTED_AUTH_SCHEME:
+    case net::ERR_UNEXPECTED_PROXY_AUTH:
+      return 2;
+    default:
+      return net::IsCertificateError(net_error) ? 1 : 0;
+  }
+}
+}  // namespace
+
 @implementation ArcNavigationAction {
   NSURL* _url;
   NSURL* _referrer;
@@ -529,11 +546,13 @@ class ReloadNavigationCapture : public content::WebContentsObserver {
   if (error != net::OK) {
     _documentNavigation = nil;
     _didStartDocumentNavigation = NO;
+    // Arc's engine reports a failure only when Chrome commits an error page, always as a provisional failure
+    // in its own error domain (arcmod-local-services: DNS failure -> 0; dialogs-auth-cancel: empty 401 -> 2).
+    // An uncommitted abort (a download, a superseded navigation) reports nothing (downloads golden).
     if (committed) {
-      [self deliverSelector:@selector(webContents:didFailNavigation:) navigation:navigation error:nil];
-    } else {
-      NSError* failure = [NSError errorWithDomain:@"company.thebrowser.Arc"
-          code:error userInfo:@{NSURLErrorKey: [NSURL URLWithString:navigation.url] ?: [NSNull null]}];
+      NSError* failure = [NSError errorWithDomain:@"com.thebrowsercompany.arcnavigationerrror"
+                                             code:ArcNavigationErrorCode(static_cast<int>(error))
+                                         userInfo:@{NSURLErrorKey : [NSURL URLWithString:navigation.url] ?: [NSNull null]}];
       [self deliverSelector:@selector(webContents:didFailProvisionalNavigation:withError:)
                 navigation:navigation error:failure];
     }
