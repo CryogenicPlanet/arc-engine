@@ -1,0 +1,30 @@
+{
+  "scenario": "web-features",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app",
+  "slug": "trace156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "enabled features",
+      "outcome": "pass",
+      "detail": "badging,bluetooth,clipboardItem,compute,credentialsGet,digitalCredentials,documentPiP,eyeDropper,fileSystemAccess,hid,idleDetection,languageModel,launchQueue,localFonts,notifications,paymentRequest,protectedAudience,serial,speechRecognition,speechSynthesis,storageAccess,summarizerApi,translatorApi,usb,wakeLock,webShare,webauthn,webgpu,webxr,windowManagement"
+    },
+    {
+      "step": "disabled features",
+      "outcome": "pass",
+      "detail": "contacts,fedcm,fedcmDisconnect,privateAggregation,sharedStorage,topics"
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 8 helpers exited"
+    }
+  ]
+}

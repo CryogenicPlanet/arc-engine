@@ -48,3 +48,29 @@ index 98b9d2865c..cc4fe35aa1 100644
    DCHECK(time_range_.IsValid() || !restrict_urls_.has_value());
    // If restrict_urls_ is defined, it should be non-empty.
    DCHECK(!restrict_urls_.has_value() || !restrict_urls_->empty());
+diff --git a/ui/views/widget/native_widget_mac.mm b/ui/views/widget/native_widget_mac.mm
+index 4b50e18821..90f6b292ae 100644
+--- a/ui/views/widget/native_widget_mac.mm
++++ b/ui/views/widget/native_widget_mac.mm
+@@ -4,6 +4,8 @@
+ 
+ #include "ui/views/widget/native_widget_mac.h"
+ 
++#include "base/command_line.h"
++
+ #include <ApplicationServices/ApplicationServices.h>
+ #import <Cocoa/Cocoa.h>
+ #include <CoreFoundation/CoreFoundation.h>
+@@ -585,8 +587,11 @@ void OnDidChangeFocus(View* focused_before, View* focused_now) override {
+   // A peculiarity of the constrained window framework is that it permits a
+   // dialog of ModalType::kWindow to have a null parent window; falling back to
+   // a non-modal window in this case.
++  // ArcMod host: tab-modal dialogs are parented to a tab view in Arc's own (non-views) window and shown
++  // by Arc's app as auxiliary windows.
+   DCHECK(ns_window_host_->parent() ||
+-         modal_type == ui::mojom::ModalType::kWindow);
++         modal_type == ui::mojom::ModalType::kWindow ||
++         base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app"));
+ 
+   // Everything happens upon show.
+ }

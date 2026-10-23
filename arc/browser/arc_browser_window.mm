@@ -5,6 +5,7 @@
 #include "arc/browser/arc_browser_window.h"
 
 #include "arc/api/arc_save_requests.h"
+#include "arc/browser/arc_modal_dialog_host.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 
 #import <AppKit/AppKit.h>
@@ -397,15 +398,17 @@ std::unique_ptr<FindBar> ArcBrowserWindow::CreateFindBar() {
   return nullptr;
 }
 
+// Chrome's tab-modal dialogs are parented to the tab's view (arc_modal_dialog_host.mm).
 web_modal::WebContentsModalDialogHost*
 ArcBrowserWindow::GetWebContentsModalDialogHost() {
-  return nullptr;
+  return browser_ ? ModalDialogHostForWebContents(browser_->GetTabStripModel()->GetActiveWebContents())
+                  : nullptr;
 }
 
 web_modal::WebContentsModalDialogHost*
 ArcBrowserWindow::GetWebContentsModalDialogHostFor(
     content::WebContents* web_contents) {
-  return nullptr;
+  return ModalDialogHostForWebContents(web_contents);
 }
 
 ExclusiveAccessContext* ArcBrowserWindow::GetExclusiveAccessContext() {

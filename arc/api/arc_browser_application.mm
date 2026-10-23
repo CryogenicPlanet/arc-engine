@@ -185,6 +185,9 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
   args.push_back("--no-first-run");
   // Chrome's code-sign clone protects Chrome's own updater; Arc's app has none.
   AppendFeatures(args, "disable-features", "MacAppCodeSignClone");
+  // Arc's engine doesn't expose FedCM (web-features golden), and its account chooser is a views dialog
+  // that needs a BrowserView, which Arc's windows don't have.
+  AppendFeatures(args, "disable-features", "FedCm");
   if (!HasSwitch(args, "user-data-dir") && config.profilePath.length) {
     args.push_back("--user-data-dir=" + base::SysNSStringToUTF8(config.profilePath));
   }
