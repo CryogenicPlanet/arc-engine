@@ -45,7 +45,7 @@ index 0000000000..2cbf8710d5
 +
 +#endif  // CHROME_BROWSER_ARCMOD_ARCMOD_HOOKS_H_
 diff --git a/chrome/browser/chrome_content_browser_client.cc b/chrome/browser/chrome_content_browser_client.cc
-index 2e0f287290..c1a2ef1cba 100644
+index 2e0f287290..8f3de36151 100644
 --- a/chrome/browser/chrome_content_browser_client.cc
 +++ b/chrome/browser/chrome_content_browser_client.cc
 @@ -4,6 +4,8 @@
@@ -57,7 +57,20 @@ index 2e0f287290..c1a2ef1cba 100644
  #include <algorithm>
  #include <iterator>
  #include <map>
-@@ -5667,6 +5669,10 @@ void ChromeContentBrowserClient::RemovePresentationObserver(
+@@ -2926,6 +2928,12 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
+ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
+     base::CommandLine* command_line,
+     int child_process_id) {
++  // ArcMod: renderers of an Arc-hosted engine run Arc's frame agent.
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++      command_line->GetSwitchValueASCII(switches::kProcessType) ==
++          switches::kRendererProcess) {
++    command_line->AppendSwitch("arcmod-host-app");
++  }
+   crash_keys::AppendStringAnnotationsCommandLineSwitch(command_line);
+ #if BUILDFLAG(IS_MAC)
+   std::unique_ptr<metrics::ClientInfo> client_info =
+@@ -5667,6 +5675,10 @@ void ChromeContentBrowserClient::RemovePresentationObserver(
  void ChromeContentBrowserClient::CreateThrottlesForNavigation(
      content::NavigationThrottleRegistry& registry) {
    CreateAndAddChromeThrottlesForNavigation(registry);
