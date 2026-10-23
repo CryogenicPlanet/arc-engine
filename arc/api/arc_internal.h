@@ -76,9 +76,37 @@ ARC_EXPORT @interface ArcBrowserContext : NSObject
 - (id)serviceNamed:(NSString*)className;
 @end
 
+// Services returned by -serviceNamed: that implement -initWithArcBrowserContext:(ArcBrowserContext*) are created
+// with it (the wrapper is held weakly by convention; the context owns the service).
+
 // Profile of an ArcBrowserContext argument, or nullptr.
 inline Profile* ArcProfileFrom(id context) {
   return [context isKindOfClass:[ArcBrowserContext class]] ? [(ArcBrowserContext*)context profile] : nullptr;
 }
+
+// ---- core (arc_browser.mm) -----------------------------------------------------------------------
+
+class BrowserWindowInterface;
+ARC_EXPORT @interface ArcSessionID : NSObject
+- (instancetype)initWithID:(NSInteger)identifier;
+@property(nonatomic, readonly) NSInteger identifier;
+@end
+
+ARC_EXPORT @interface ArcBrowser : NSObject
++ (instancetype)wrapperForBrowser:(BrowserWindowInterface*)browser;
+- (BrowserWindowInterface*)browser;
+- (void)setDelegate:(id)delegate;
+- (void)setWindow:(NSWindow*)window;
+@property(nonatomic, copy) NSString* windowIdentifier;
+@end
+
+// ---- app package: URL loading (implemented in arc/api/arc_app_*.mm) ------------------------------
+
+@class ArcURLLoadConfiguration;
+@class ArcURLLoadCancellationToken;
+// Starts a URL load like -[ArcBrowserApplication loadUrl:withDelegate:], using |profile|'s network context
+// (nullptr: the system network context, as the application-level loader does). Delegate callbacks follow
+// ArcURLLoadDelegate. Returns the cancellation token the API returns.
+ArcURLLoadCancellationToken* ArcStartURLLoad(Profile* profile, ArcURLLoadConfiguration* configuration, id delegate);
 
 #endif  // ARC_API_ARC_INTERNAL_H_

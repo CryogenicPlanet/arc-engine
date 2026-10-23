@@ -3,6 +3,7 @@
 // on ArcBrowserApplication. Unimplemented methods fall back to the stubs in arc_api_stubs.mm.
 
 #import "arc/api/arc_internal.h"
+#import <objc/message.h>
 
 #include "base/files/file_path.h"
 #include "base/supports_user_data.h"
@@ -140,7 +141,12 @@ const char kArcBrowserContextKey[] = "ArcBrowserContext";
   }
   id service = _services[className];
   if (!service) {
-    service = [[NSClassFromString(className) alloc] init];
+    // Implemented services take their profile wrapper; shell classes (stubs) get plain init.
+    Class cls = NSClassFromString(className);
+    SEL withContext = NSSelectorFromString(@"initWithArcBrowserContext:");
+    service = [cls instancesRespondToSelector:withContext]
+                  ? ((id (*)(id, SEL, id))objc_msgSend)([cls alloc], withContext, self)
+                  : [[cls alloc] init];
     if (service) {
       _services[className] = service;
     }
