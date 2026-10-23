@@ -109,6 +109,9 @@ ARC_EXPORT @interface ArcBrowser : NSObject
 // (nullptr: the system network context, as the application-level loader does). Delegate callbacks follow
 // ArcURLLoadDelegate. Returns the cancellation token the API returns.
 ArcURLLoadCancellationToken* ArcStartURLLoad(Profile* profile, ArcURLLoadConfiguration* configuration, id delegate);
+// Cancels a load started by ArcStartURLLoad, like -[ArcBrowserApplication cancelUrlLoad:]. No-op for nil or
+// finished loads.
+void ArcCancelURLLoad(ArcURLLoadCancellationToken* token);
 
 ARC_EXPORT @interface ArcWebContents : NSObject
 + (instancetype)wrapperForWebContents:(content::WebContents*)contents;
