@@ -11,7 +11,7 @@ index df80dfe84a..955464e1f0 100644
      "//base/allocator:buildflags",
      "//build:chromeos_buildflags",
 diff --git a/chrome/renderer/chrome_content_renderer_client.cc b/chrome/renderer/chrome_content_renderer_client.cc
-index d460c0fb69..05c8ea95e1 100644
+index d460c0fb69..7528d4e050 100644
 --- a/chrome/renderer/chrome_content_renderer_client.cc
 +++ b/chrome/renderer/chrome_content_renderer_client.cc
 @@ -4,6 +4,8 @@
@@ -35,3 +35,14 @@ index d460c0fb69..05c8ea95e1 100644
    ChromeRenderFrameObserver* render_frame_observer =
        new ChromeRenderFrameObserver(render_frame, web_cache_impl_.get());
    service_manager::BinderRegistry* registry = render_frame_observer->registry();
+@@ -1487,6 +1494,10 @@ ChromeContentRendererClient::CreateSpeechRecognitionClient(
+ 
+ void ChromeContentRendererClient::RunScriptsAtDocumentStart(
+     content::RenderFrame* render_frame) {
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app") &&
++      !arc::RunEffectsAtDocumentStart(render_frame)) {
++    return;
++  }
+ #if BUILDFLAG(ENABLE_EXTENSIONS_CORE)
+   extensions::ExtensionsRendererClient::Get()->RunScriptsAtDocumentStart(
+       render_frame);

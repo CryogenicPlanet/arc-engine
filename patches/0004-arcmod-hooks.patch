@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/arcmod/arcmod_hooks.h b/chrome/browser/arcmod/arcmod_hooks.h
 new file mode 100644
-index 0000000000..c4a9cf77c3
+index 0000000000..dc9c5ec02f
 --- /dev/null
 +++ b/chrome/browser/arcmod/arcmod_hooks.h
-@@ -0,0 +1,209 @@
+@@ -0,0 +1,236 @@
 +// Copyright 2026 ArcMod. Hooks that ArcCore (Arc's engine interface, //arc, linked into the same framework)
 +// fills in when Arc's app hosts this engine (--arcmod-host-app). Chrome code calls them only when set, so
 +// Chrome itself does not depend on //arc. Header-only: function-local statics in inline functions are shared
@@ -12,12 +12,15 @@ index 0000000000..c4a9cf77c3
 +#ifndef CHROME_BROWSER_ARCMOD_ARCMOD_HOOKS_H_
 +#define CHROME_BROWSER_ARCMOD_ARCMOD_HOOKS_H_
 +
++#include <cstdint>
 +#include <memory>
 +#include <optional>
 +
 +#include "base/files/file_path.h"
 +#include "base/functional/callback.h"
++#include "base/functional/callback_helpers.h"
 +#include "base/no_destructor.h"
++#include "base/memory/weak_ptr.h"
 +#include "chrome/browser/ui/tab_helpers.h"
 +#include "net/base/auth.h"
 +
@@ -48,7 +51,31 @@ index 0000000000..c4a9cf77c3
 +class DownloadItem;
 +}  // namespace download
 +
++class BrowserWindowInterface;
++struct BrowserWindowCreateParams;
 +namespace arcmod {
++
++// Runs after Chrome computes all native restoration params. A scoped embedder
++// request may supply its BrowserWindow and return a one-shot notification that
++// runs after native creation and before tab insertion. Empty means no override.
++using SessionBrowserCreatedCallback =
++    base::OnceCallback<void(base::WeakPtr<BrowserWindowInterface>)>;
++using SessionBrowserFactoryHook = base::RepeatingCallback<
++    SessionBrowserCreatedCallback(Profile*, BrowserWindowCreateParams&)>;
++inline SessionBrowserFactoryHook& GetSessionBrowserFactoryHook() {
++  static base::NoDestructor<SessionBrowserFactoryHook> hook;
++  return *hook;
++}
++
++
++// Marks one actual historical WebContents insertion, preserving both source
++// IDs and optional presence. The returned scope clears its exact WC marker.
++using SessionTabRestoreScopeHook = base::RepeatingCallback<
++    base::ScopedClosureRunner(content::WebContents*, int32_t, int32_t)>;
++inline SessionTabRestoreScopeHook& GetSessionTabRestoreScopeHook() {
++  static base::NoDestructor<SessionTabRestoreScopeHook> hook;
++  return *hook;
++}
 +
 +// Adds ArcCore's navigation throttles (synchronous navigation policy from Arc's app) to every navigation.
 +// Called from ChromeContentBrowserClient::CreateThrottlesForNavigation after Chrome's own throttles.
