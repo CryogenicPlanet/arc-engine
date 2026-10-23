@@ -6,7 +6,9 @@ source_set("arc_core") {
   sources = [
     "api/arc_api_stubs.mm",
     "api/arc_browser_application.mm",
+    "api/arc_browser_context.mm",
     "api/arc_exports.mm",
+    "api/arc_values.mm",
   ]
   inputs = [
     "api/arc_api_classes.inc",
@@ -18,6 +20,11 @@ source_set("arc_core") {
   ]
   deps = [
     "//base",
+    "//chrome/browser",
+    "//chrome/browser/profiles:profile",
+    "//components/keep_alive_registry",
+    "//components/search_engines",
+    "//skia",
     "//components/version_info",
   ]
 

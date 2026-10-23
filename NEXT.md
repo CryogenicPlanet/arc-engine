@@ -14,8 +14,15 @@ Rahul: "just go build it" — an ArcCore built from Chromium so the engine can f
       unimplemented methods are logging stubs from real metadata (`arc/api/arc_api_stubs.mm`, `arc/tools/gen_api_table.py`).
 - [x] Hosted bootstrap: `initialize:` starts Chrome's browser process inside Arc's NSApplication, `run` runs the loop
       (`patches/0003`: split RunContentProcess, hosted ChromeMain, skip Chrome's AppController/menu/NSApp checks).
-- [ ] Profiles: `availableBrowserContextAttributes` must include `.default` (app asserts), `getBrowserContext:type:`,
-      ArcBrowserContext and its service wrappers. Next.
+- [x] Profiles (first pass): `availableBrowserContextAttributes`, `getBrowserContext:type:`, ArcBrowserContext with
+      service wrappers (still stubs inside), ArcSearchEngine, ArcColor (`arc/api/arc_browser_context.mm`, `arc_values.mm`).
+- [x] Stubs: property getters return typed placeholders (from real metadata) instead of nil; NSObject skip list
+      narrowed (macOS 26 added `-[NSObject addObserver:]`, which collides with Arc's selector).
+- [ ] NEXT: `createBrowser:withDelegate:forWindow:` (Chrome Browser + a BrowserWindow that reports to Arc's delegate),
+      then WebContents, `nativeView`/pane host views, navigation. App currently stops at
+      "ADK.swift:678: Expected a loaded profile '' to be available" right after createBrowser returns nil.
+      `loadUrl:withDelegate:` (app's URL loader for remote config) also still a stub.
+- Test loop: `./build-babysit.sh && ./try-engine.sh 30` (prints unimplemented calls in order + newest crash).
 - [ ] Browser/WebContents creation, native views (pane host), navigation, delegates — then the launch-slice harness.
 - Loop: `./build-babysit.sh` → `./package-engine.sh ours156` → `../arc/tools/run-mod.sh --agent ours156 --background
   --cdp-port 9334` → read `../arc/build/ArcModAgent-ours156-run.log` ("ArcCore unimplemented:" lines show what's next).

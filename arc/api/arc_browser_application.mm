@@ -15,6 +15,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/app/chrome_main.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/version_info/version_info.h"
 
 #define ARC_EXPORT __attribute__((visibility("default")))
@@ -105,6 +108,13 @@ std::vector<std::string>& ArgvStorage() {
   return *storage;
 }
 
+// Keeps the browser running while Arc's app owns the process, as Chrome's AppController does on the Mac
+// (which host mode skips). Released by -quit.
+std::unique_ptr<ScopedKeepAlive>& AppKeepAlive() {
+  static base::NoDestructor<std::unique_ptr<ScopedKeepAlive>> keep_alive;
+  return *keep_alive;
+}
+
 bool HasSwitch(const std::vector<std::string>& args, const std::string& name) {
   for (const std::string& arg : args) {
     if (arg == "--" + name || arg.starts_with("--" + name + "=")) {
@@ -177,6 +187,8 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
     LOG(ERROR) << "ArcCore: browser initialization stopped with exit code " << exit_code;
     return exit_code;
   }
+  AppKeepAlive() =
+      std::make_unique<ScopedKeepAlive>(KeepAliveOrigin::APP_CONTROLLER, KeepAliveRestartOption::DISABLED);
   // The app expects these once the main loop runs.
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE, base::BindOnce(^{
                                                              [g_delegate didInitializeBrowserProcess];
@@ -190,6 +202,12 @@ ARC_EXPORT @interface ArcBrowserApplication : NSObject
   int exit_code = ChromeMainRunHostedBrowser();
   [g_delegate didQuitRunLoop];
   return exit_code;
+}
+
+// Ends the browser: drops the app's keep-alive and exits through Chrome's normal path, which ends -run.
+- (void)quit {
+  AppKeepAlive().reset();
+  chrome::AttemptExit();
 }
 
 - (NSString*)version {
