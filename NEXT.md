@@ -6,6 +6,18 @@ Facts, locations, procedures and the step-by-step runbook are in `ENGINE.md`.
 Static research is complete and reviewed: report `../arc/notes/engine-feasibility.md`, class and protocol
 index `specs/README.md` (146 classes, 1,964 declared methods, 26 protocols; declared coverage, not behavior).
 
+## Evening status (2026-10-23 ~16:00 PDT)
+
+Release engine (`out/Release`, packaged as ArcMod agent `rel156` via `ARC_ENGINE_OUT=out/Release
+./package-engine.sh rel156`; runner `logs/run-release.sh <scenarios>`): launch-slice, tabs-navigation,
+profiles-public-api, webauthn-dialog, navigation-forms, media, downloads, pdf pass every step with 0 crashes
+and 0-1 missing/extra calls vs Arc's engine; password-save, autofill-save, save-offers-accept fail only the
+slow quit that Arc's engine also fails. Real-profile copy (APFS clone of ArcMod's data, Chromium 155 profile)
+on the release engine: launched twice, quit cleanly, 0 crashes; the copy was deleted
+(`logs/run-realcopy.sh`). Tab restoration wasn't observable (background app, locked screen: 0 page targets).
+ArcMod READMEs (master e4d3fec, no-login 61402b0) describe the engine and the release build. Next: native-UI
+checks on an unlocked screen, then the gaps listed below.
+
 ## Afternoon status (2026-10-23 ~13:30 PDT): lead implementing directly
 
 The Sol workers are stopped: every `codex exec` hit the ChatGPT usage limit ("try again at Oct 30th, 2026
