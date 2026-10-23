@@ -190,6 +190,8 @@ static BOOL Skip(const char* sel, const char* types) {
                                 "methodSignatureForSelector:", "init", NULL};
   for (int i = 0; kSkip[i]; i++) if (!strcmp(sel, kSkip[i])) return YES;
   if (sel[0] == '.' || !strncmp(sel, "__arcrec_", 9)) return YES;
+  // C arrays (e.g. [20f]) can't go through NSInvocation.
+  if (strchr(types, '[')) return YES;
   // C++-typed signatures are ArcCore's internal plumbing; NSInvocation can't carry them.
   for (const char* p = strchr(types, '{'); p; p = strchr(p + 1, '{'))
     if (strncmp(p, "{CGRect", 7) && strncmp(p, "{CGSize", 7) && strncmp(p, "{CGPoint", 8)) return YES;
