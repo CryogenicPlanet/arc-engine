@@ -44,7 +44,8 @@ static BOOL ValidNonce(NSString* nonce) {
 static BOOL BundleIdentity(NSString* expected, NSString* actual, NSString* executable, NSString* processExecutable, NSDictionary* info) {
   if (!expected.length || ![expected isEqual:actual]) return NO;
   NSString* slug=[actual.lastPathComponent isEqual:@"ArcModAgent-trace156.app"] ? @"trace156" :
-    [actual.lastPathComponent isEqual:@"ArcModAgent-ours156.app"] ? @"ours156" : nil;
+    [actual.lastPathComponent isEqual:@"ArcModAgent-ours156.app"] ? @"ours156" :
+    [actual.lastPathComponent isEqual:@"ArcModAgent-rel156.app"] ? @"rel156" : nil;
   NSString* required=[actual stringByAppendingPathComponent:@"Contents/MacOS/Arc"];
   return slug && [executable isEqual:required] && [processExecutable isEqual:required] &&
     [info[@"ArcModAgentSession"] isEqual:slug] &&

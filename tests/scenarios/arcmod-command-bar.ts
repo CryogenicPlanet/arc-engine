@@ -33,7 +33,7 @@ function readJSON<T>(path:string):T|undefined {
 export default async function scenario(c:ScenarioContext) {
   const assert=(name:string,ok:unknown,detail="")=>{c.assert(name,ok,detail);if(!ok)throw new Error(name+(detail?": "+detail:""));};
   assert("morning command bar requires caller-aware standard recording",c.recorded&&!c.traced);
-  assert("morning command bar uses exact disposable engine agent",["trace156","ours156"].includes(c.slug));
+  assert("morning command bar uses exact disposable engine agent",["trace156","ours156","rel156"].includes(c.slug));
   assert("morning command bar starts with empty disposable browser storage",["User Data","Agent Chromium Data"].every(name=>!existsSync(join(c.data,name))||readdirSync(join(c.data,name)).length===0));
   const helper=resolve(import.meta.dir,"../../../arc/build/agent-native"),helperSource=resolve(import.meta.dir,"../../../arc/tools/agent-native.swift");
   assert("morning command bar has current native helper without auto-build",existsSync(helper)&&statSync(helper).mtimeMs>=statSync(helperSource).mtimeMs);

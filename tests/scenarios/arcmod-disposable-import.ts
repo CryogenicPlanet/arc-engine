@@ -47,7 +47,7 @@ const sha=(bytes:Buffer)=>createHash("sha256").update(bytes).digest("hex");
 
 export default async function scenario(c:ScenarioContext){
   const assert=(name:string,ok:unknown,detail="")=>{c.assert(name,ok,detail);if(!ok)throw new Error(name+(detail?": "+detail:""));};
-  assert("disposable import requires caller-aware standard agent recording",c.recorded&&!c.traced&&["trace156","ours156"].includes(c.slug));
+  assert("disposable import requires caller-aware standard agent recording",c.recorded&&!c.traced&&["trace156","ours156","rel156"].includes(c.slug));
   const workspace=resolve(import.meta.dir,"../.."),app=resolve(workspace,`../arc/build/ArcModAgent-${c.slug}.app`);
   assert("disposable import exact canonical agent app",c.app===app&&realpathSync(app)===app);
   const info=(path:string)=>{try{return lstatSync(path);}catch(error){if((error as NodeJS.ErrnoException).code==="ENOENT")return;throw error;}};

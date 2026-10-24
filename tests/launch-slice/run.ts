@@ -211,13 +211,29 @@ const open = (url: string): string => {
 const titleIs = async (target: string, title: string, ms = 30000) =>
   (await waitFor(() => (evaluate(target, "document.title") === title ? true : undefined), ms)) === true;
 
+// macOS only performs menu actions in the active app. Native actions bring the agent app to the front first;
+// the app that was in front when the harness started gets focus back at the end.
+const frontmostPid = (): number =>
+  Number(spawnSync(["osascript", "-e", 'tell application "System Events" to get unix id of first process whose frontmost is true']).stdout.toString().trim()) || 0;
+const bringToFront = (pid: number) => {
+  if (pid <= 0 || frontmostPid() === pid) return;
+  spawnSync(["osascript", "-e", `tell application "System Events" to set frontmost of (first process whose unix id is ${pid}) to true`]);
+  // Activation is asynchronous; wait up to 3 s for it to land.
+  for (let i = 0; i < 30 && frontmostPid() !== pid; i++) Bun.sleepSync(100);
+};
+const initialFrontmost = frontmostPid();
+let nativePid = 0;
+
 const context = {
   app, slug, port: Number(port), outDir, data, base, EXPECT, recorded, traced, bundleIdentity, launch, ready, quit, open, titleIs,
   evaluate, record, waitFor, cdp, sleep,
   assert(step: string, ok: unknown, detail = "") { record(step, ok ? "pass" : "fail", detail); },
+  // For scenarios that dispatch through agent-native's nativeState() directly instead of action()/perform().
+  front() { bringToFront(nativePid); },
   async client() { return client ??= await AgentCDP.connectAgent(slug, Number(port)); },
   native() {
     const state = nativeController.state();
+    nativePid = Number(state.pid) || nativePid;
     writeFileSync(join(outDir, `native-${++nativeNo}.json`), JSON.stringify({ ...state, elements: (() => {
       const nodes = state.elements as NativeNode[];
       const privateRoots = nodes.filter(n => /^(Apple|Services)$|Recent/i.test(n.label)).map(n => n.path);
@@ -226,12 +242,23 @@ const context = {
     return state as NativeSnapshot;
   },
   action(node: NativeNode, kind: "press" | "set" = "press", value?: string) {
+    bringToFront(nativePid);
     const result = nativeController.action(node.handle, kind, value);
     appendFileSync(join(outDir, "native-actions.jsonl"), JSON.stringify({kind, label:node.label, identifier:node.identifier, receipt:result.receipt}) + "\n");
     return result;
   },
   perform(node: NativeNode, actionName: string) {
-    const result = nativeController.action(node.handle, "perform", actionName);
+    bringToFront(nativePid);
+    let result;
+    try { result = nativeController.action(node.handle, "perform", actionName); }
+    catch (error) {
+      // Arc's sidebar tabs advertise a custom "Name:press" action with no target, which AX can't perform
+      // (-25200, on Arc's engine too). Select that tab through DevTools instead.
+      const targets = actionName.startsWith("Name:press") && String(error).includes("-25200")
+        ? (cdp("list") as { id: string; title: string }[]).filter(t => t.title === node.label) : [];
+      if (targets.length !== 1) throw error;
+      result = { receipt: { fallback: "Target.activateTarget", ...(cdp("activate", targets[0]!.id) as object) } };
+    }
     appendFileSync(join(outDir, "native-actions.jsonl"), JSON.stringify({kind:"perform", actionName, label:node.label, identifier:node.identifier, receipt:result.receipt}) + "\n");
     return result;
   },
@@ -254,6 +281,7 @@ try {
   client?.close();
   for (const l of launches) if (l.pid() && alive(l.pid()!)) await quit(l, "cleanup quit");
   fixtureReader.releaseLock(); fixtureProcess.kill(); await fixtureProcess.exited;
+  if (nativePid) bringToFront(initialFrontmost);
 }
 writeFileSync(join(outDir, "steps.json"), JSON.stringify({ scenario, app, slug, traced, recorded, port, steps }, null, 2));
 const failed = steps.filter((s) => s.outcome !== "pass");

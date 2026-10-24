@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/arcmod/arcmod_hooks.h b/chrome/browser/arcmod/arcmod_hooks.h
 new file mode 100644
-index 0000000000..f46533b367
+index 0000000000..ac0606fcee
 --- /dev/null
 +++ b/chrome/browser/arcmod/arcmod_hooks.h
-@@ -0,0 +1,257 @@
+@@ -0,0 +1,265 @@
 +// Copyright 2026 ArcMod. Hooks that ArcCore (Arc's engine interface, //arc, linked into the same framework)
 +// fills in when Arc's app hosts this engine (--arcmod-host-app). Chrome code calls them only when set, so
 +// Chrome itself does not depend on //arc. Header-only: function-local statics in inline functions are shared
@@ -183,6 +183,14 @@ index 0000000000..f46533b367
 +        content::VideoPictureInPictureWindowController*)>;
 +inline VideoOverlayWindowHook& GetVideoOverlayWindowHook() {
 +  static base::NoDestructor<VideoOverlayWindowHook> hook;
++  return *hook;
++}
++
++// A tab asking to be shown (window.focus(), DevTools Target.activateTarget, ...). Arc's app owns tab
++// selection: true when the app was told (Chrome's tab strip activation is then skipped).
++using ActivateContentsHook = base::RepeatingCallback<bool(content::WebContents*)>;
++inline ActivateContentsHook& GetActivateContentsHook() {
++  static base::NoDestructor<ActivateContentsHook> hook;
 +  return *hook;
 +}
 +
@@ -535,7 +543,7 @@ index 5220b34d64..a0be238448 100644
        web_contents(), profile, original_profile, save_address_bubble_type,
        !GetPersonalDataManager().address_data_manager().GetProfiles().empty(),
 diff --git a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc b/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
-index 3bc40bcc91..f0b847319a 100644
+index 3bc40bcc91..7a059fe239 100644
 --- a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
 +++ b/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
 @@ -4,7 +4,11 @@
@@ -550,7 +558,20 @@ index 3bc40bcc91..f0b847319a 100644
  #include "base/metrics/histogram_macros.h"
  #include "base/notimplemented.h"
  #include "base/trace_event/trace_event.h"
-@@ -768,6 +772,30 @@ void BrowserWebContentsDelegate::LoadingStateChanged(
+@@ -743,6 +747,12 @@ content::WebContents* BrowserWebContentsDelegate::AddNewContents(
+ 
+ void BrowserWebContentsDelegate::ActivateContents(
+     content::WebContents* contents) {
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app")) {
++    const auto& hook = arcmod::GetActivateContentsHook();
++    if (hook && hook.Run(contents)) {
++      return;
++    }
++  }
+   // A WebContents can ask to activate after it's been removed from the
+   // TabStripModel. See https://crbug.com/40679349
+   int index = browser_->GetTabStripModel()->GetIndexOfWebContents(contents);
+@@ -768,6 +778,30 @@ void BrowserWebContentsDelegate::LoadingStateChanged(
  }
  
  void BrowserWebContentsDelegate::CloseContents(content::WebContents* source) {
@@ -581,7 +602,7 @@ index 3bc40bcc91..f0b847319a 100644
    if (unload_controller_->CanCloseContents(source)) {
      chrome::CloseWebContents(&browser_.get(), source, true);
    }
-@@ -870,6 +898,28 @@ void BrowserWebContentsDelegate::BeforeUnloadFired(
+@@ -870,6 +904,28 @@ void BrowserWebContentsDelegate::BeforeUnloadFired(
      content::WebContents* web_contents,
      bool proceed,
      bool* proceed_to_fire_unload) {
@@ -610,7 +631,7 @@ index 3bc40bcc91..f0b847319a 100644
    unload_controller_->BeforeUnloadFired(web_contents, proceed,
                                          proceed_to_fire_unload);
  }
-@@ -1113,6 +1163,13 @@ void BrowserWebContentsDelegate::RendererResponsive(
+@@ -1113,6 +1169,13 @@ void BrowserWebContentsDelegate::RendererResponsive(
  content::JavaScriptDialogManager*
  BrowserWebContentsDelegate::GetJavaScriptDialogManager(
      content::WebContents* source) {

@@ -1,0 +1,79 @@
+{
+  "passed": true,
+  "rawBytes": 950580,
+  "rawSha256": "a2a51874b5791d5cbbd6438ac572ff8898a58140741a64fb6a0b1ab7c2af1a5c",
+  "rawEventCount": 4906,
+  "preSetterCursor": 876928,
+  "sequenceGaps": 0,
+  "mainIdentityDepthOrderMismatches": 0,
+  "backgroundEvents": 4,
+  "pairedMainInvocations": 2450,
+  "preexistingRun": {
+    "line": 48,
+    "offset": 11477,
+    "endOffset": 11654,
+    "event": {
+      "seq": 47,
+      "ev": "call",
+      "thread": "main",
+      "depth": 0,
+      "from": "app",
+      "dir": "->engine",
+      "cls": "ArcBrowserApplication",
+      "kind": "-",
+      "sel": "run",
+      "self": "<ArcBrowserApplication#3>",
+      "args": []
+    }
+  },
+  "targetCall": {
+    "line": 4565,
+    "offset": 876928,
+    "endOffset": 877237,
+    "event": {
+      "seq": 4564,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "app",
+      "dir": "->engine",
+      "cls": "ArcBrowser",
+      "kind": "-",
+      "sel": "autocomplete:cursorPosition:preventInlineAutocomplete:startFresh:keyword:error:completion:",
+      "self": "<ArcBrowser#89>",
+      "args": [
+        "http://127.0.0.1:55216/a",
+        24,
+        false,
+        true,
+        "",
+        "<ptr>",
+        "<block>"
+      ]
+    }
+  },
+  "targetReturn": {
+    "line": 4732,
+    "offset": 912971,
+    "endOffset": 913216,
+    "event": {
+      "seq": 4731,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "app",
+      "dir": "->engine",
+      "cls": "ArcBrowser",
+      "kind": "-",
+      "sel": "autocomplete:cursorPosition:preventInlineAutocomplete:startFresh:keyword:error:completion:",
+      "self": "<ArcBrowser#89>",
+      "ret": true
+    }
+  },
+  "genuineAppResultReads": 2,
+  "prefixEqualsFinalExactInvocation": true,
+  "allPostCursorMainCallsPaired": true,
+  "blockInvocation": "uninstrumented-unknown",
+  "completionDone": "uninstrumented-unknown",
+  "scope": "New exact app autocomplete/true return, complete main pairing and genuine app result consumption. No block-callback, navigation, parity or shutdown inference."
+}
