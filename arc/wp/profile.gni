@@ -1,6 +1,8 @@
 # Work package "profile": sources and deps (absolute //arc/... paths). Owned by that package.
 wp_profile_sources = [
   "//arc/api/arc_profile_extras.mm",
+  "//arc/api/arc_chromium_import.h",
+  "//arc/api/arc_chromium_import.mm",
   "//arc/api/arc_profile_bookmarks.mm",
   "//arc/api/arc_profile_cookies.mm",
   "//arc/api/arc_profile_credentials.mm",
@@ -28,4 +30,11 @@ wp_profile_deps = [
   "//components/content_settings/core/browser",
   "//components/download/public/common:public",
   "//components/prefs",
+  "//components/autofill/core/browser",
+  "//components/crx_file",
+  "//components/password_manager/core/browser",
+  "//crypto",
+  "//extensions/browser",
+  "//extensions/common",
+  "//third_party/boringssl",
 ]

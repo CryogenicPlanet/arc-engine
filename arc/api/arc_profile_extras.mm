@@ -1,6 +1,7 @@
 // Copyright 2026 ArcMod. Per-profile extras: import, favicon writes, metrics, search-engine/auto-open/user-color
 // preferences and the annotated-visit value classes.
 #import "arc/api/arc_internal.h"
+#include "arc/api/arc_chromium_import.h"
 
 #include <memory>
 #include <optional>
@@ -277,7 +278,10 @@ namespace {
 // Arc's import categories (ArcImportSourceProfile.supportedCategories, masked to 0xfff).
 constexpr long long kCategoryHistory = 1 << 0;
 constexpr long long kCategoryBookmarks = 1 << 1;
+constexpr long long kCategoryCookies = 1 << 2;
 constexpr long long kCategoryPasswords = 1 << 3;
+constexpr long long kCategoryExtensions = 1 << 7;
+constexpr long long kCategoryCreditCards = 1 << 8;
 // Bits 9 and 10 are reported together with history by the source scanner (mask 1537) and carry no data of
 // their own here.
 constexpr long long kCategoryHistoryCompanions = (1 << 9) | (1 << 10);
@@ -372,6 +376,7 @@ struct ChromiumFamilyData {
   bool bookmarks_ok = false;
   history::URLRows history;
   bool history_ok = false;
+  arc::ChromiumSecrets secrets;
 };
 
 base::Time ChromeTime(int64_t microseconds) {
@@ -484,8 +489,15 @@ bool ReadChromiumHistory(const base::FilePath& dir, ChromiumFamilyData* data) {
   return ok;
 }
 
-ChromiumFamilyData ReadChromiumFamily(base::FilePath dir, bool want_history, bool want_bookmarks) {
+ChromiumFamilyData ReadChromiumFamily(base::FilePath dir,
+                                      bool want_history,
+                                      bool want_bookmarks,
+                                      std::string keychain_service,
+                                      bool want_cookies,
+                                      bool want_passwords,
+                                      bool want_cards) {
   ChromiumFamilyData data;
+  data.secrets = arc::ReadChromiumSecrets(dir, keychain_service, want_cookies, want_passwords, want_cards);
   if (want_bookmarks) {
     data.bookmarks_ok = ReadChromiumBookmarks(dir, &data);
   }
@@ -501,13 +513,16 @@ class ImportSession final : public importer::ImporterProgressObserver,
                             public std::enable_shared_from_this<ImportSession> {
  public:
   ImportSession(ArcBrowserContext* context, Profile* profile, id delegate, long long categories,
-                id<ArcExtrasImportSourceProfile> source, scoped_refptr<ProfileWriter> writer)
+                id<ArcExtrasImportSourceProfile> source, scoped_refptr<ProfileWriter> writer,
+                std::vector<std::string> allowed_extensions, bool skip_existing_cookies)
       : context_(context),
         profile_(profile->GetWeakPtr()),
         delegate_(delegate),
         categories_(categories),
         source_(source),
-        writer_(std::move(writer)) {}
+        writer_(std::move(writer)),
+        allowed_extensions_(std::move(allowed_extensions)),
+        skip_existing_cookies_(skip_existing_cookies) {}
   ~ImportSession() override = default;
 
   void Start() {
@@ -550,8 +565,11 @@ class ImportSession final : public importer::ImporterProgressObserver,
   }
   // Categories Chromium's importer host (Firefox, Safari) can import.
   static long long HostMask() { return kCategoryHistory | kCategoryBookmarks | kCategoryPasswords; }
-  // Chromium-family sources provide history and bookmarks only.
-  static long long FamilyMask() { return kCategoryHistory | kCategoryBookmarks; }
+  // What Arc's Chromium importer reads from Chrome, Edge, Brave, Vivaldi, Opera and Arc profiles.
+  static long long FamilyMask() {
+    return kCategoryHistory | kCategoryBookmarks | kCategoryCookies | kCategoryPasswords | kCategoryExtensions |
+           kCategoryCreditCards;
+  }
 
   void NotifyStart() {
     if ([delegate_ respondsToSelector:@selector(didImportStart:)]) {
@@ -645,7 +663,9 @@ class ImportSession final : public importer::ImporterProgressObserver,
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&ReadChromiumFamily, base::FilePath(ArcUTF8(source_.sourcePath)),
-                       (wanted & kCategoryHistory) != 0, (wanted & kCategoryBookmarks) != 0),
+                       (wanted & kCategoryHistory) != 0, (wanted & kCategoryBookmarks) != 0,
+                       arc::ChromiumKeychainService(source_.type), (wanted & kCategoryCookies) != 0,
+                       (wanted & kCategoryPasswords) != 0, (wanted & kCategoryCreditCards) != 0),
         base::BindOnce(
             [](std::weak_ptr<ImportSession> weak, long long wanted, ChromiumFamilyData data) {
               if (auto session = weak.lock()) {
@@ -673,7 +693,50 @@ class ImportSession final : public importer::ImporterProgressObserver,
         NotifyCategoryEnd(kCategoryBookmarks, MakeError(@"The bookmarks could not be imported."));
       }
     }
-    Finish(nil);
+    if (wanted & kCategoryPasswords) {
+      if (alive && data.secrets.passwords_ok) {
+        for (const password_manager::PasswordForm& form : data.secrets.passwords) {
+          writer_->AddPasswordForm(form);
+        }
+        NotifyCategoryEnd(kCategoryPasswords, nil);
+      } else {
+        NotifyCategoryEnd(kCategoryPasswords, MakeError(@"The passwords could not be read."));
+      }
+    }
+    if (wanted & kCategoryCreditCards) {
+      if (alive && data.secrets.cards_ok) {
+        arc::WriteImportedCards(profile_.get(), data.secrets.cards);
+        NotifyCategoryEnd(kCategoryCreditCards, nil);
+      } else {
+        NotifyCategoryEnd(kCategoryCreditCards, MakeError(@"The cards could not be read."));
+      }
+    }
+    if (wanted & kCategoryExtensions) {
+      // Installs continue from the Chrome Web Store after the import ends; the app hears about each one from
+      // the extensions delegate.
+      const bool scheduled = alive && arc::InstallImportedExtensions(profile_.get(), allowed_extensions_);
+      NotifyCategoryEnd(kCategoryExtensions, scheduled ? nil : MakeError(@"The extensions could not be installed."));
+    }
+    if (!(wanted & kCategoryCookies)) {
+      Finish(nil);
+      return;
+    }
+    if (!alive || !data.secrets.cookies_ok) {
+      NotifyCategoryEnd(kCategoryCookies, MakeError(@"The cookies could not be read."));
+      Finish(nil);
+      return;
+    }
+    arc::WriteImportedCookies(
+        profile_.get(), std::move(data.secrets.cookies), skip_existing_cookies_,
+        base::BindOnce(
+            [](std::weak_ptr<ImportSession> weak, bool ok) {
+              if (auto session = weak.lock()) {
+                session->NotifyCategoryEnd(kCategoryCookies,
+                                           ok ? nil : MakeError(@"Some cookies could not be imported."));
+                session->Finish(nil);
+              }
+            },
+            weak_from_this()));
   }
 
   __weak ArcBrowserContext* context_;
@@ -682,6 +745,8 @@ class ImportSession final : public importer::ImporterProgressObserver,
   const long long categories_;
   id<ArcExtrasImportSourceProfile> source_;
   scoped_refptr<ProfileWriter> writer_;
+  const std::vector<std::string> allowed_extensions_;
+  const bool skip_existing_cookies_;
   std::shared_ptr<ImportSession> keepalive_;
 };
 
@@ -769,7 +834,14 @@ withBookmarkImportTargets:(id)targets
     }
   }
   auto writer = base::MakeRefCounted<TargetedProfileWriter>(profile, bar_id, other_id);
-  std::make_shared<ImportSession>(self, profile, delegate, categories & kCategoryMask, source, std::move(writer))
+  std::vector<std::string> extension_ids;
+  for (id extension in allowedExtensions) {
+    if ([extension isKindOfClass:[NSString class]]) {
+      extension_ids.push_back(ArcUTF8(extension));
+    }
+  }
+  std::make_shared<ImportSession>(self, profile, delegate, categories & kCategoryMask, source, std::move(writer),
+                                  std::move(extension_ids), skipExistingCookies)
       ->Start();
   return YES;
 }
