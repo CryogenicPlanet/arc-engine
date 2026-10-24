@@ -1,0 +1,849 @@
+{
+  "engineClassCount": 35,
+  "engineSelectorCount": 257,
+  "callbackSelectorCount": 26,
+  "scenario": "arcmod-profiles",
+  "accepted": true,
+  "errors": [],
+  "launches": [
+    "launch-1",
+    "launch-2"
+  ],
+  "classCount": 44,
+  "selectorCount": 283,
+  "callCount": 19031,
+  "classes": {
+    "ADK.ADKApplication": {
+      "calls": 8,
+      "selectorCount": 3,
+      "selectors": [
+        "engine->app -[ADK.ADKApplication didConnectToNetworkProcess]",
+        "engine->app -[ADK.ADKApplication didInitializeBrowserProcess]",
+        "engine->app -[ADK.ADKApplication didReceiveGPUInfoUpdate:]"
+      ]
+    },
+    "ADK.AccessibilityObserver": {
+      "calls": 2,
+      "selectorCount": 1,
+      "selectors": [
+        "engine->app -[ADK.AccessibilityObserver accessibilityModeChanged:]"
+      ]
+    },
+    "ADK.BrowserContextDelegateBridge": {
+      "calls": 5,
+      "selectorCount": 2,
+      "selectors": [
+        "engine->app -[ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdate:]",
+        "engine->app -[ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:]"
+      ]
+    },
+    "ADK.BrowserContextDownloadDelegateBridge": {
+      "calls": 4,
+      "selectorCount": 1,
+      "selectors": [
+        "engine->app -[ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:]"
+      ]
+    },
+    "ADK.ChromiumBrowser": {
+      "calls": 23,
+      "selectorCount": 3,
+      "selectors": [
+        "engine->app -[ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:]",
+        "engine->app -[ADK.ChromiumBrowser browser:didUpdateExtensionToolbarActions:]",
+        "engine->app -[ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:]"
+      ]
+    },
+    "ADK.CrashKeysObserverBridge": {
+      "calls": 67,
+      "selectorCount": 1,
+      "selectors": [
+        "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]"
+      ]
+    },
+    "ADK.WebContentChromium": {
+      "calls": 71,
+      "selectorCount": 10,
+      "selectors": [
+        "engine->app -[ADK.WebContentChromium webContents:didChangeAvailableMediaActions:]",
+        "engine->app -[ADK.WebContentChromium webContents:didChangeStatusText:]",
+        "engine->app -[ADK.WebContentChromium webContents:didChangeVisibleSecurityState:]",
+        "engine->app -[ADK.WebContentChromium webContents:didCloseWithSessionID:]",
+        "engine->app -[ADK.WebContentChromium webContents:didCommitNavigation:]",
+        "engine->app -[ADK.WebContentChromium webContents:didFinishNavigation:]",
+        "engine->app -[ADK.WebContentChromium webContents:didStartProvisionalNavigation:]",
+        "engine->app -[ADK.WebContentChromium webContentsActivate:]",
+        "engine->app -[ADK.WebContentChromium webContentsClosingImminent:withSessionID:]",
+        "engine->app -[ADK.WebContentChromium webContentsPiPControllerDestroyed:]"
+      ]
+    },
+    "ADKClientLive.BrowserExtensionsLifeCycleManager": {
+      "calls": 1,
+      "selectorCount": 1,
+      "selectors": [
+        "engine->app -[ADKClientLive.BrowserExtensionsLifeCycleManager browserContextDidExtensionSystemReady:]"
+      ]
+    },
+    "ArcBackForwardList": {
+      "calls": 12,
+      "selectorCount": 1,
+      "selectors": [
+        "->engine -[ArcBackForwardList initWithBackForwardList:]"
+      ]
+    },
+    "ArcBackForwardListItem": {
+      "calls": 36,
+      "selectorCount": 1,
+      "selectors": [
+        "->engine -[ArcBackForwardListItem initWithBackForwardListItem:]"
+      ]
+    },
+    "ArcBrowser": {
+      "calls": 149,
+      "selectorCount": 11,
+      "selectors": [
+        "->engine -[ArcBrowser context]",
+        "->engine -[ArcBrowser createWebContents:]",
+        "->engine -[ArcBrowser isCastEnabled]",
+        "->engine -[ArcBrowser isInitialized]",
+        "->engine -[ArcBrowser isJavaScriptFromAppleEventsAllowed]",
+        "->engine -[ArcBrowser setDelegate:]",
+        "->engine -[ArcBrowser setWindow:]",
+        "->engine -[ArcBrowser setWindowIdentifier:]",
+        "->engine -[ArcBrowser sidePanel]",
+        "->engine -[ArcBrowser takeOwnershipOfWebContents:]",
+        "->engine -[ArcBrowser type]"
+      ]
+    },
+    "ArcBrowserApplication": {
+      "calls": 615,
+      "selectorCount": 23,
+      "selectors": [
+        "->engine -[ArcBrowserApplication availableBrowserContextAttributes]",
+        "->engine -[ArcBrowserApplication availableImportSourceProfiles:]",
+        "->engine -[ArcBrowserApplication createBrowser:withDelegate:forWindow:]",
+        "->engine -[ArcBrowserApplication createBrowserContext:isHidden:type:completion:error:]",
+        "->engine -[ArcBrowserApplication disableAccessibility]",
+        "->engine -[ArcBrowserApplication ensureBasicAccessibilityEnabled]",
+        "->engine -[ArcBrowserApplication getBrowserContext:type:]",
+        "->engine -[ArcBrowserApplication getNonDefaultFlags:]",
+        "->engine -[ArcBrowserApplication init:]",
+        "->engine -[ArcBrowserApplication initialize:]",
+        "->engine -[ArcBrowserApplication isEncryptionAvailable]",
+        "->engine -[ArcBrowserApplication isFeatureEnabled:]",
+        "->engine -[ArcBrowserApplication loadUrl:withDelegate:]",
+        "->engine -[ArcBrowserApplication run]",
+        "->engine -[ArcBrowserApplication setAccessibilityObserver:]",
+        "->engine -[ArcBrowserApplication setExcludedDomains:]",
+        "->engine -[ArcBrowserApplication setFeatureEnabled:enabled:]",
+        "->engine -[ArcBrowserApplication setHistogramSamplesDelegate:]",
+        "->engine -[ArcBrowserApplication setNotificationCenter:]",
+        "->engine -[ArcBrowserApplication setOnWebContentsCloseDebugLogCallback:]",
+        "->engine -[ArcBrowserApplication setStringFeatureValue:value:]",
+        "->engine -[ArcBrowserApplication tracingController]",
+        "->engine -[ArcBrowserApplication tryToTerminate:]"
+      ]
+    },
+    "ArcBrowserApplicationConfiguration": {
+      "calls": 4,
+      "selectorCount": 2,
+      "selectors": [
+        "->engine -[ArcBrowserApplicationConfiguration argv]",
+        "->engine -[ArcBrowserApplicationConfiguration init:argv:profilePath:applicationID:isProduction:sessionRestorationPolicy:shouldLoadAllProfilesAtStartup:quitRunLoopOnTermination:userDefaultsSuiteName:]"
+      ]
+    },
+    "ArcBrowserContext": {
+      "calls": 906,
+      "selectorCount": 13,
+      "selectors": [
+        "->engine +[ArcBrowserContext wrapperForProfile:]",
+        "->engine -[ArcBrowserContext downloads]",
+        "->engine -[ArcBrowserContext extensions]",
+        "->engine -[ArcBrowserContext favicon:completion:]",
+        "->engine -[ArcBrowserContext getContentSettingForOrigin:withContentSettingType:]",
+        "->engine -[ArcBrowserContext history]",
+        "->engine -[ArcBrowserContext id]",
+        "->engine -[ArcBrowserContext initWithProfile:]",
+        "->engine -[ArcBrowserContext loadUrl:withDelegate:]",
+        "->engine -[ArcBrowserContext preferences]",
+        "->engine -[ArcBrowserContext profile]",
+        "->engine -[ArcBrowserContext serviceNamed:]",
+        "->engine -[ArcBrowserContext setDelegate:]"
+      ]
+    },
+    "ArcBrowserContextAttributes": {
+      "calls": 928,
+      "selectorCount": 4,
+      "selectors": [
+        "->engine -[ArcBrowserContextAttributes directoryBasename]",
+        "->engine -[ArcBrowserContextAttributes initWithEntry:]",
+        "->engine -[ArcBrowserContextAttributes userColor]",
+        "->engine -[ArcBrowserContextAttributes userVisibleName]"
+      ]
+    },
+    "ArcBrowserContextDownloads": {
+      "calls": 12,
+      "selectorCount": 3,
+      "selectors": [
+        "->engine -[ArcBrowserContextDownloads initWithArcBrowserContext:]",
+        "->engine -[ArcBrowserContextDownloads owner]",
+        "->engine -[ArcBrowserContextDownloads setDelegate:]"
+      ]
+    },
+    "ArcBrowserContextExtensions": {
+      "calls": 132,
+      "selectorCount": 4,
+      "selectors": [
+        "->engine -[ArcBrowserContextExtensions initWithArcBrowserContext:]",
+        "->engine -[ArcBrowserContextExtensions initWithBrowserContextExtensions:forBrowserContext:]",
+        "->engine -[ArcBrowserContextExtensions listExtensions]",
+        "->engine -[ArcBrowserContextExtensions setDelegate:]"
+      ]
+    },
+    "ArcBrowserContextHistory": {
+      "calls": 12,
+      "selectorCount": 3,
+      "selectors": [
+        "->engine -[ArcBrowserContextHistory initWithArcBrowserContext:]",
+        "->engine -[ArcBrowserContextHistory owner]",
+        "->engine -[ArcBrowserContextHistory setDelegate:]"
+      ]
+    },
+    "ArcBrowserContextID": {
+      "calls": 30,
+      "selectorCount": 3,
+      "selectors": [
+        "->engine -[ArcBrowserContextID directoryBasename]",
+        "->engine -[ArcBrowserContextID initWithDirectoryBasename:isIncognito:]",
+        "->engine -[ArcBrowserContextID isIncognito]"
+      ]
+    },
+    "ArcBrowserContextPreferences": {
+      "calls": 220,
+      "selectorCount": 11,
+      "selectors": [
+        "->engine -[ArcBrowserContextPreferences addObserver:]",
+        "->engine -[ArcBrowserContextPreferences addSearchEngine:error:]",
+        "->engine -[ArcBrowserContextPreferences downloadFilePath]",
+        "->engine -[ArcBrowserContextPreferences getDefaultSearchEngine]",
+        "->engine -[ArcBrowserContextPreferences getSearchEngines]",
+        "->engine -[ArcBrowserContextPreferences initWithArcBrowserContext:]",
+        "->engine -[ArcBrowserContextPreferences keywordSearchSpaceTriggeringEnabled]",
+        "->engine -[ArcBrowserContextPreferences owner]",
+        "->engine -[ArcBrowserContextPreferences promptForDownloadPath]",
+        "->engine -[ArcBrowserContextPreferences searchSuggestEnabled]",
+        "->engine -[ArcBrowserContextPreferences setKeywordSearchSpaceTriggeringEnabled:]"
+      ]
+    },
+    "ArcBrowserCreateParams": {
+      "calls": 4,
+      "selectorCount": 1,
+      "selectors": [
+        "->engine -[ArcBrowserCreateParams initWithBrowserCreateParams:]"
+      ]
+    },
+    "ArcBrowserSidePanel": {
+      "calls": 12,
+      "selectorCount": 3,
+      "selectors": [
+        "->engine -[ArcBrowserSidePanel initWithArcBrowser:]",
+        "->engine -[ArcBrowserSidePanel initWithSidePanel:]",
+        "->engine -[ArcBrowserSidePanel setDelegate:]"
+      ]
+    },
+    "ArcColor": {
+      "calls": 1254,
+      "selectorCount": 6,
+      "selectors": [
+        "->engine +[ArcColor colorWithSkColor:]",
+        "->engine -[ArcColor a]",
+        "->engine -[ArcColor b]",
+        "->engine -[ArcColor g]",
+        "->engine -[ArcColor initWithR:g:b:a:]",
+        "->engine -[ArcColor r]"
+      ]
+    },
+    "ArcColor4f": {
+      "calls": 5,
+      "selectorCount": 5,
+      "selectors": [
+        "->engine -[ArcColor4f a]",
+        "->engine -[ArcColor4f b]",
+        "->engine -[ArcColor4f g]",
+        "->engine -[ArcColor4f initWithR:g:b:a:]",
+        "->engine -[ArcColor4f r]"
+      ]
+    },
+    "ArcCpuInfo": {
+      "calls": 52,
+      "selectorCount": 26,
+      "selectors": [
+        "->engine -[ArcCpuInfo architecture]",
+        "->engine -[ArcCpuInfo armImplementer]",
+        "->engine -[ArcCpuInfo armPartNumber]",
+        "->engine -[ArcCpuInfo extFamily]",
+        "->engine -[ArcCpuInfo extModel]",
+        "->engine -[ArcCpuInfo family]",
+        "->engine -[ArcCpuInfo hasAESNI]",
+        "->engine -[ArcCpuInfo hasAVX2]",
+        "->engine -[ArcCpuInfo hasAVX]",
+        "->engine -[ArcCpuInfo hasBMI2]",
+        "->engine -[ArcCpuInfo hasBTI]",
+        "->engine -[ArcCpuInfo hasFMA3]",
+        "->engine -[ArcCpuInfo hasMMX]",
+        "->engine -[ArcCpuInfo hasMTE]",
+        "->engine -[ArcCpuInfo hasPOPCNT]",
+        "->engine -[ArcCpuInfo hasSSE2]",
+        "->engine -[ArcCpuInfo hasSSE3]",
+        "->engine -[ArcCpuInfo hasSSE41]",
+        "->engine -[ArcCpuInfo hasSSE42]",
+        "->engine -[ArcCpuInfo hasSSE]",
+        "->engine -[ArcCpuInfo hasSSSE3]",
+        "->engine -[ArcCpuInfo isHypervisorActive]",
+        "->engine -[ArcCpuInfo model]",
+        "->engine -[ArcCpuInfo stepping]",
+        "->engine -[ArcCpuInfo type]",
+        "->engine -[ArcCpuInfo vendor]"
+      ]
+    },
+    "ArcCrashKeysReporter": {
+      "calls": 2,
+      "selectorCount": 1,
+      "selectors": [
+        "->engine +[ArcCrashKeysReporter setArcCrashKeysObserver:]"
+      ]
+    },
+    "ArcImageRep": {
+      "calls": 8,
+      "selectorCount": 4,
+      "selectors": [
+        "->engine +[ArcImageRep decodeFromData:scale:completion:]",
+        "->engine +[ArcImageRep decodeFromData:scale:desiredWidth:desiredHeight:maxDecodedBytes:completion:]",
+        "->engine -[ArcImageRep initWithArcImageRep:]",
+        "->engine -[ArcImageRep toNSImage]"
+      ]
+    },
+    "ArcImportSourceProfile": {
+      "calls": 88,
+      "selectorCount": 3,
+      "selectors": [
+        "->engine -[ArcImportSourceProfile availableExtensions:]",
+        "->engine -[ArcImportSourceProfile initWithImportSourceProfile:]",
+        "->engine -[ArcImportSourceProfile type]"
+      ]
+    },
+    "ArcPerformanceController": {
+      "calls": 2,
+      "selectorCount": 1,
+      "selectors": [
+        "->engine +[ArcPerformanceController setArcPerformanceObserver:]"
+      ]
+    },
+    "ArcSearchEngine": {
+      "calls": 12666,
+      "selectorCount": 9,
+      "selectors": [
+        "->engine -[ArcSearchEngine faviconUrl]",
+        "->engine -[ArcSearchEngine init:keyword:url:faviconUrl:]",
+        "->engine -[ArcSearchEngine initWithTemplateURLData:]",
+        "->engine -[ArcSearchEngine isPrepopulated]",
+        "->engine -[ArcSearchEngine keyword]",
+        "->engine -[ArcSearchEngine name]",
+        "->engine -[ArcSearchEngine status]",
+        "->engine -[ArcSearchEngine templateURLData]",
+        "->engine -[ArcSearchEngine url]"
+      ]
+    },
+    "ArcSecureContext": {
+      "calls": 12,
+      "selectorCount": 2,
+      "selectors": [
+        "->engine -[ArcSecureContext initWithSecureContext:]",
+        "->engine -[ArcSecureContext state]"
+      ]
+    },
+    "ArcSessionID": {
+      "calls": 21,
+      "selectorCount": 1,
+      "selectors": [
+        "->engine -[ArcSessionID identifier]"
+      ]
+    },
+    "ArcSiteSettingInfo": {
+      "calls": 40,
+      "selectorCount": 2,
+      "selectors": [
+        "->engine -[ArcSiteSettingInfo initWithSiteSettingInfo:]",
+        "->engine -[ArcSiteSettingInfo siteSetting]"
+      ]
+    },
+    "ArcTracingController": {
+      "calls": 2,
+      "selectorCount": 1,
+      "selectors": [
+        "->engine -[ArcTracingController setDelegate:]"
+      ]
+    },
+    "ArcURLLoadCancellationToken": {
+      "calls": 9,
+      "selectorCount": 1,
+      "selectors": [
+        "->engine -[ArcURLLoadCancellationToken initWithToken:]"
+      ]
+    },
+    "ArcURLLoadConfiguration": {
+      "calls": 72,
+      "selectorCount": 8,
+      "selectors": [
+        "->engine -[ArcURLLoadConfiguration setBlockLocalRequest:]",
+        "->engine -[ArcURLLoadConfiguration setCachePolicy:]",
+        "->engine -[ArcURLLoadConfiguration setFollowRedirects:]",
+        "->engine -[ArcURLLoadConfiguration setHeaders:]",
+        "->engine -[ArcURLLoadConfiguration setMethod:]",
+        "->engine -[ArcURLLoadConfiguration setStreamResponseData:]",
+        "->engine -[ArcURLLoadConfiguration setTimeout:]",
+        "->engine -[ArcURLLoadConfiguration setUrl:]"
+      ]
+    },
+    "ArcWebContents": {
+      "calls": 1337,
+      "selectorCount": 72,
+      "selectors": [
+        "->engine +[ArcWebContents createWithProfile:configuration:]",
+        "->engine +[ArcWebContents wrapperForWebContents:]",
+        "->engine -[ArcWebContents backForwardList]",
+        "->engine -[ArcWebContents blockedResourceCount]",
+        "->engine -[ArcWebContents boostIDE]",
+        "->engine -[ArcWebContents canGoBack]",
+        "->engine -[ArcWebContents canGoForward]",
+        "->engine -[ArcWebContents closeWithForegroundCommitTiming:]",
+        "->engine -[ArcWebContents devTools]",
+        "->engine -[ArcWebContents diagnosticId]",
+        "->engine -[ArcWebContents favicon]",
+        "->engine -[ArcWebContents foregroundForInsertion]",
+        "->engine -[ArcWebContents freeformTextFieldActive]",
+        "->engine -[ArcWebContents hadFormOrUserEdits]",
+        "->engine -[ArcWebContents hasDirtyTextField]",
+        "->engine -[ArcWebContents hasFocus]",
+        "->engine -[ArcWebContents ignoreDisablePiPAttribute:]",
+        "->engine -[ArcWebContents initWithWebContents:]",
+        "->engine -[ArcWebContents inputEvent]",
+        "->engine -[ArcWebContents insertStylesheet:stylesheet:]",
+        "->engine -[ArcWebContents isLoading]",
+        "->engine -[ArcWebContents isReadyToDisplay]",
+        "->engine -[ArcWebContents isScaleFactorOne]",
+        "->engine -[ArcWebContents loadProgress]",
+        "->engine -[ArcWebContents mediaSession]",
+        "->engine -[ArcWebContents nativeView]",
+        "->engine -[ArcWebContents navigationController]",
+        "->engine -[ArcWebContents navigationID]",
+        "->engine -[ArcWebContents passwordTextFieldActive]",
+        "->engine -[ArcWebContents pendingRenderFrameViewportSize]",
+        "->engine -[ArcWebContents rootBackgroundColor]",
+        "->engine -[ArcWebContents selectedText]",
+        "->engine -[ArcWebContents sessionId]",
+        "->engine -[ArcWebContents setBackForwardList:]",
+        "->engine -[ArcWebContents setBlockedResourceCount:]",
+        "->engine -[ArcWebContents setCanGoBack:]",
+        "->engine -[ArcWebContents setCanGoForward:]",
+        "->engine -[ArcWebContents setFavicon:]",
+        "->engine -[ArcWebContents setFreeformTextFieldActive:]",
+        "->engine -[ArcWebContents setHadFormOrUserEdits:]",
+        "->engine -[ArcWebContents setHasDirtyTextField:]",
+        "->engine -[ArcWebContents setHasFocus:]",
+        "->engine -[ArcWebContents setIsLoading:]",
+        "->engine -[ArcWebContents setIsReadyToDisplay:]",
+        "->engine -[ArcWebContents setLoadProgress:]",
+        "->engine -[ArcWebContents setNavigationDelegate:]",
+        "->engine -[ArcWebContents setNavigationID:]",
+        "->engine -[ArcWebContents setPasswordTextFieldActive:]",
+        "->engine -[ArcWebContents setPendingRenderFrameViewportSize:]",
+        "->engine -[ArcWebContents setRootBackgroundColor:]",
+        "->engine -[ArcWebContents setSelectedText:]",
+        "->engine -[ArcWebContents setState:]",
+        "->engine -[ArcWebContents setTabTraits:]",
+        "->engine -[ArcWebContents setThemeColor:]",
+        "->engine -[ArcWebContents setTitle:]",
+        "->engine -[ArcWebContents setTopBandColorDelegate:]",
+        "->engine -[ArcWebContents setUIDelegate:]",
+        "->engine -[ArcWebContents setUndoableFieldActive:]",
+        "->engine -[ArcWebContents setUrl:]",
+        "->engine -[ArcWebContents setVisibility:]",
+        "->engine -[ArcWebContents setZoomLevel:]",
+        "->engine -[ArcWebContents state]",
+        "->engine -[ArcWebContents tabTraits]",
+        "->engine -[ArcWebContents themeColor]",
+        "->engine -[ArcWebContents thumbnailsGenerator]",
+        "->engine -[ArcWebContents title]",
+        "->engine -[ArcWebContents uiDelegate]",
+        "->engine -[ArcWebContents undoableFieldActive]",
+        "->engine -[ArcWebContents url]",
+        "->engine -[ArcWebContents visibility]",
+        "->engine -[ArcWebContents webContents]",
+        "->engine -[ArcWebContents zoomLevel]"
+      ]
+    },
+    "ArcWebContentsBoostIDE": {
+      "calls": 18,
+      "selectorCount": 3,
+      "selectors": [
+        "->engine -[ArcWebContentsBoostIDE initWithArcWebContents:]",
+        "->engine -[ArcWebContentsBoostIDE initWithBoostIDE:]",
+        "->engine -[ArcWebContentsBoostIDE setDelegate:]"
+      ]
+    },
+    "ArcWebContentsConfiguration": {
+      "calls": 85,
+      "selectorCount": 17,
+      "selectors": [
+        "->engine -[ArcWebContentsConfiguration disallowDownloads]",
+        "->engine -[ArcWebContentsConfiguration forcedViewSize]",
+        "->engine -[ArcWebContentsConfiguration foreground]",
+        "->engine -[ArcWebContentsConfiguration initiallyHidden]",
+        "->engine -[ArcWebContentsConfiguration initiallyMuted]",
+        "->engine -[ArcWebContentsConfiguration setDisallowAutoplay:]",
+        "->engine -[ArcWebContentsConfiguration setDisallowContextMenus:]",
+        "->engine -[ArcWebContentsConfiguration setDisallowDownloads:]",
+        "->engine -[ArcWebContentsConfiguration setForceAllowAutoplay:]",
+        "->engine -[ArcWebContentsConfiguration setForceDisplayPDFInline:]",
+        "->engine -[ArcWebContentsConfiguration setForcedViewSize:]",
+        "->engine -[ArcWebContentsConfiguration setForeground:]",
+        "->engine -[ArcWebContentsConfiguration setInitiallyHidden:]",
+        "->engine -[ArcWebContentsConfiguration setInitiallyMuted:]",
+        "->engine -[ArcWebContentsConfiguration setTransparentBackground:]",
+        "->engine -[ArcWebContentsConfiguration setUntracked:]",
+        "->engine -[ArcWebContentsConfiguration transparentBackground]"
+      ]
+    },
+    "ArcWebContentsDevTools": {
+      "calls": 12,
+      "selectorCount": 2,
+      "selectors": [
+        "->engine -[ArcWebContentsDevTools initWithArcWebContents:]",
+        "->engine -[ArcWebContentsDevTools setDelegate:]"
+      ]
+    },
+    "ArcWebContentsMediaSession": {
+      "calls": 44,
+      "selectorCount": 3,
+      "selectors": [
+        "->engine -[ArcWebContentsMediaSession getMediaContentTypes:]",
+        "->engine -[ArcWebContentsMediaSession initWithArcWebContents:]",
+        "->engine -[ArcWebContentsMediaSession setDelegate:]"
+      ]
+    },
+    "ArcWebContentsNavigationController": {
+      "calls": 20,
+      "selectorCount": 4,
+      "selectors": [
+        "->engine -[ArcWebContentsNavigationController addObserver:]",
+        "->engine -[ArcWebContentsNavigationController load:initiatorOrigin:]",
+        "->engine -[ArcWebContentsNavigationController load:initiatorOrigin:transition:fromAddressBar:typedWithHttpScheme:]",
+        "->engine -[ArcWebContentsNavigationController removeObserver:]"
+      ]
+    },
+    "ArcWebContentsThumbnailsGenerator": {
+      "calls": 16,
+      "selectorCount": 3,
+      "selectors": [
+        "->engine -[ArcWebContentsThumbnailsGenerator addObserver:]",
+        "->engine -[ArcWebContentsThumbnailsGenerator initWithArcWebContents:]",
+        "->engine -[ArcWebContentsThumbnailsGenerator removeObserver:]"
+      ]
+    },
+    "_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate": {
+      "calls": 13,
+      "selectorCount": 4,
+      "selectors": [
+        "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:]",
+        "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFinish:]",
+        "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveData:withData:]",
+        "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:]"
+      ]
+    }
+  },
+  "methods": {
+    "->engine +[ArcBrowserContext wrapperForProfile:]": 9,
+    "->engine +[ArcColor colorWithSkColor:]": 209,
+    "->engine +[ArcCrashKeysReporter setArcCrashKeysObserver:]": 2,
+    "->engine +[ArcImageRep decodeFromData:scale:completion:]": 2,
+    "->engine +[ArcImageRep decodeFromData:scale:desiredWidth:desiredHeight:maxDecodedBytes:completion:]": 2,
+    "->engine +[ArcPerformanceController setArcPerformanceObserver:]": 2,
+    "->engine +[ArcWebContents createWithProfile:configuration:]": 5,
+    "->engine +[ArcWebContents wrapperForWebContents:]": 81,
+    "->engine -[ArcBackForwardList initWithBackForwardList:]": 12,
+    "->engine -[ArcBackForwardListItem initWithBackForwardListItem:]": 36,
+    "->engine -[ArcBrowser context]": 8,
+    "->engine -[ArcBrowser createWebContents:]": 5,
+    "->engine -[ArcBrowser isCastEnabled]": 47,
+    "->engine -[ArcBrowser isInitialized]": 13,
+    "->engine -[ArcBrowser isJavaScriptFromAppleEventsAllowed]": 47,
+    "->engine -[ArcBrowser setDelegate:]": 8,
+    "->engine -[ArcBrowser setWindow:]": 4,
+    "->engine -[ArcBrowser setWindowIdentifier:]": 4,
+    "->engine -[ArcBrowser sidePanel]": 4,
+    "->engine -[ArcBrowser takeOwnershipOfWebContents:]": 5,
+    "->engine -[ArcBrowser type]": 4,
+    "->engine -[ArcBrowserApplication availableBrowserContextAttributes]": 111,
+    "->engine -[ArcBrowserApplication availableImportSourceProfiles:]": 2,
+    "->engine -[ArcBrowserApplication createBrowser:withDelegate:forWindow:]": 4,
+    "->engine -[ArcBrowserApplication createBrowserContext:isHidden:type:completion:error:]": 1,
+    "->engine -[ArcBrowserApplication disableAccessibility]": 2,
+    "->engine -[ArcBrowserApplication ensureBasicAccessibilityEnabled]": 416,
+    "->engine -[ArcBrowserApplication getBrowserContext:type:]": 4,
+    "->engine -[ArcBrowserApplication getNonDefaultFlags:]": 2,
+    "->engine -[ArcBrowserApplication init:]": 2,
+    "->engine -[ArcBrowserApplication initialize:]": 2,
+    "->engine -[ArcBrowserApplication isEncryptionAvailable]": 4,
+    "->engine -[ArcBrowserApplication isFeatureEnabled:]": 4,
+    "->engine -[ArcBrowserApplication loadUrl:withDelegate:]": 7,
+    "->engine -[ArcBrowserApplication run]": 2,
+    "->engine -[ArcBrowserApplication setAccessibilityObserver:]": 2,
+    "->engine -[ArcBrowserApplication setExcludedDomains:]": 2,
+    "->engine -[ArcBrowserApplication setFeatureEnabled:enabled:]": 34,
+    "->engine -[ArcBrowserApplication setHistogramSamplesDelegate:]": 2,
+    "->engine -[ArcBrowserApplication setNotificationCenter:]": 2,
+    "->engine -[ArcBrowserApplication setOnWebContentsCloseDebugLogCallback:]": 2,
+    "->engine -[ArcBrowserApplication setStringFeatureValue:value:]": 4,
+    "->engine -[ArcBrowserApplication tracingController]": 2,
+    "->engine -[ArcBrowserApplication tryToTerminate:]": 2,
+    "->engine -[ArcBrowserApplicationConfiguration argv]": 2,
+    "->engine -[ArcBrowserApplicationConfiguration init:argv:profilePath:applicationID:isProduction:sessionRestorationPolicy:shouldLoadAllProfilesAtStartup:quitRunLoopOnTermination:userDefaultsSuiteName:]": 2,
+    "->engine -[ArcBrowserContext downloads]": 4,
+    "->engine -[ArcBrowserContext extensions]": 124,
+    "->engine -[ArcBrowserContext favicon:completion:]": 3,
+    "->engine -[ArcBrowserContext getContentSettingForOrigin:withContentSettingType:]": 20,
+    "->engine -[ArcBrowserContext history]": 4,
+    "->engine -[ArcBrowserContext id]": 18,
+    "->engine -[ArcBrowserContext initWithProfile:]": 4,
+    "->engine -[ArcBrowserContext loadUrl:withDelegate:]": 2,
+    "->engine -[ArcBrowserContext preferences]": 174,
+    "->engine -[ArcBrowserContext profile]": 238,
+    "->engine -[ArcBrowserContext serviceNamed:]": 302,
+    "->engine -[ArcBrowserContext setDelegate:]": 4,
+    "->engine -[ArcBrowserContextAttributes directoryBasename]": 209,
+    "->engine -[ArcBrowserContextAttributes initWithEntry:]": 209,
+    "->engine -[ArcBrowserContextAttributes userColor]": 209,
+    "->engine -[ArcBrowserContextAttributes userVisibleName]": 301,
+    "->engine -[ArcBrowserContextDownloads initWithArcBrowserContext:]": 4,
+    "->engine -[ArcBrowserContextDownloads owner]": 4,
+    "->engine -[ArcBrowserContextDownloads setDelegate:]": 4,
+    "->engine -[ArcBrowserContextExtensions initWithArcBrowserContext:]": 4,
+    "->engine -[ArcBrowserContextExtensions initWithBrowserContextExtensions:forBrowserContext:]": 4,
+    "->engine -[ArcBrowserContextExtensions listExtensions]": 113,
+    "->engine -[ArcBrowserContextExtensions setDelegate:]": 11,
+    "->engine -[ArcBrowserContextHistory initWithArcBrowserContext:]": 4,
+    "->engine -[ArcBrowserContextHistory owner]": 4,
+    "->engine -[ArcBrowserContextHistory setDelegate:]": 4,
+    "->engine -[ArcBrowserContextID directoryBasename]": 18,
+    "->engine -[ArcBrowserContextID initWithDirectoryBasename:isIncognito:]": 4,
+    "->engine -[ArcBrowserContextID isIncognito]": 8,
+    "->engine -[ArcBrowserContextPreferences addObserver:]": 4,
+    "->engine -[ArcBrowserContextPreferences addSearchEngine:error:]": 19,
+    "->engine -[ArcBrowserContextPreferences downloadFilePath]": 34,
+    "->engine -[ArcBrowserContextPreferences getDefaultSearchEngine]": 27,
+    "->engine -[ArcBrowserContextPreferences getSearchEngines]": 31,
+    "->engine -[ArcBrowserContextPreferences initWithArcBrowserContext:]": 4,
+    "->engine -[ArcBrowserContextPreferences keywordSearchSpaceTriggeringEnabled]": 4,
+    "->engine -[ArcBrowserContextPreferences owner]": 42,
+    "->engine -[ArcBrowserContextPreferences promptForDownloadPath]": 27,
+    "->engine -[ArcBrowserContextPreferences searchSuggestEnabled]": 27,
+    "->engine -[ArcBrowserContextPreferences setKeywordSearchSpaceTriggeringEnabled:]": 1,
+    "->engine -[ArcBrowserCreateParams initWithBrowserCreateParams:]": 4,
+    "->engine -[ArcBrowserSidePanel initWithArcBrowser:]": 4,
+    "->engine -[ArcBrowserSidePanel initWithSidePanel:]": 4,
+    "->engine -[ArcBrowserSidePanel setDelegate:]": 4,
+    "->engine -[ArcColor a]": 209,
+    "->engine -[ArcColor b]": 209,
+    "->engine -[ArcColor g]": 209,
+    "->engine -[ArcColor initWithR:g:b:a:]": 209,
+    "->engine -[ArcColor r]": 209,
+    "->engine -[ArcColor4f a]": 1,
+    "->engine -[ArcColor4f b]": 1,
+    "->engine -[ArcColor4f g]": 1,
+    "->engine -[ArcColor4f initWithR:g:b:a:]": 1,
+    "->engine -[ArcColor4f r]": 1,
+    "->engine -[ArcCpuInfo architecture]": 2,
+    "->engine -[ArcCpuInfo armImplementer]": 2,
+    "->engine -[ArcCpuInfo armPartNumber]": 2,
+    "->engine -[ArcCpuInfo extFamily]": 2,
+    "->engine -[ArcCpuInfo extModel]": 2,
+    "->engine -[ArcCpuInfo family]": 2,
+    "->engine -[ArcCpuInfo hasAESNI]": 2,
+    "->engine -[ArcCpuInfo hasAVX2]": 2,
+    "->engine -[ArcCpuInfo hasAVX]": 2,
+    "->engine -[ArcCpuInfo hasBMI2]": 2,
+    "->engine -[ArcCpuInfo hasBTI]": 2,
+    "->engine -[ArcCpuInfo hasFMA3]": 2,
+    "->engine -[ArcCpuInfo hasMMX]": 2,
+    "->engine -[ArcCpuInfo hasMTE]": 2,
+    "->engine -[ArcCpuInfo hasPOPCNT]": 2,
+    "->engine -[ArcCpuInfo hasSSE2]": 2,
+    "->engine -[ArcCpuInfo hasSSE3]": 2,
+    "->engine -[ArcCpuInfo hasSSE41]": 2,
+    "->engine -[ArcCpuInfo hasSSE42]": 2,
+    "->engine -[ArcCpuInfo hasSSE]": 2,
+    "->engine -[ArcCpuInfo hasSSSE3]": 2,
+    "->engine -[ArcCpuInfo isHypervisorActive]": 2,
+    "->engine -[ArcCpuInfo model]": 2,
+    "->engine -[ArcCpuInfo stepping]": 2,
+    "->engine -[ArcCpuInfo type]": 2,
+    "->engine -[ArcCpuInfo vendor]": 2,
+    "->engine -[ArcImageRep initWithArcImageRep:]": 2,
+    "->engine -[ArcImageRep toNSImage]": 2,
+    "->engine -[ArcImportSourceProfile availableExtensions:]": 8,
+    "->engine -[ArcImportSourceProfile initWithImportSourceProfile:]": 8,
+    "->engine -[ArcImportSourceProfile type]": 72,
+    "->engine -[ArcSearchEngine faviconUrl]": 24,
+    "->engine -[ArcSearchEngine init:keyword:url:faviconUrl:]": 38,
+    "->engine -[ArcSearchEngine initWithTemplateURLData:]": 414,
+    "->engine -[ArcSearchEngine isPrepopulated]": 1717,
+    "->engine -[ArcSearchEngine keyword]": 281,
+    "->engine -[ArcSearchEngine name]": 24,
+    "->engine -[ArcSearchEngine status]": 411,
+    "->engine -[ArcSearchEngine templateURLData]": 19,
+    "->engine -[ArcSearchEngine url]": 9738,
+    "->engine -[ArcSecureContext initWithSecureContext:]": 6,
+    "->engine -[ArcSecureContext state]": 6,
+    "->engine -[ArcSessionID identifier]": 21,
+    "->engine -[ArcSiteSettingInfo initWithSiteSettingInfo:]": 20,
+    "->engine -[ArcSiteSettingInfo siteSetting]": 20,
+    "->engine -[ArcTracingController setDelegate:]": 2,
+    "->engine -[ArcURLLoadCancellationToken initWithToken:]": 9,
+    "->engine -[ArcURLLoadConfiguration setBlockLocalRequest:]": 9,
+    "->engine -[ArcURLLoadConfiguration setCachePolicy:]": 9,
+    "->engine -[ArcURLLoadConfiguration setFollowRedirects:]": 9,
+    "->engine -[ArcURLLoadConfiguration setHeaders:]": 9,
+    "->engine -[ArcURLLoadConfiguration setMethod:]": 9,
+    "->engine -[ArcURLLoadConfiguration setStreamResponseData:]": 9,
+    "->engine -[ArcURLLoadConfiguration setTimeout:]": 9,
+    "->engine -[ArcURLLoadConfiguration setUrl:]": 9,
+    "->engine -[ArcWebContents backForwardList]": 24,
+    "->engine -[ArcWebContents blockedResourceCount]": 12,
+    "->engine -[ArcWebContents boostIDE]": 6,
+    "->engine -[ArcWebContents canGoBack]": 46,
+    "->engine -[ArcWebContents canGoForward]": 46,
+    "->engine -[ArcWebContents closeWithForegroundCommitTiming:]": 4,
+    "->engine -[ArcWebContents devTools]": 6,
+    "->engine -[ArcWebContents diagnosticId]": 6,
+    "->engine -[ArcWebContents favicon]": 24,
+    "->engine -[ArcWebContents foregroundForInsertion]": 5,
+    "->engine -[ArcWebContents freeformTextFieldActive]": 18,
+    "->engine -[ArcWebContents hadFormOrUserEdits]": 18,
+    "->engine -[ArcWebContents hasDirtyTextField]": 18,
+    "->engine -[ArcWebContents hasFocus]": 12,
+    "->engine -[ArcWebContents ignoreDisablePiPAttribute:]": 6,
+    "->engine -[ArcWebContents initWithWebContents:]": 6,
+    "->engine -[ArcWebContents inputEvent]": 12,
+    "->engine -[ArcWebContents insertStylesheet:stylesheet:]": 8,
+    "->engine -[ArcWebContents isLoading]": 46,
+    "->engine -[ArcWebContents isReadyToDisplay]": 16,
+    "->engine -[ArcWebContents isScaleFactorOne]": 39,
+    "->engine -[ArcWebContents loadProgress]": 58,
+    "->engine -[ArcWebContents mediaSession]": 38,
+    "->engine -[ArcWebContents nativeView]": 6,
+    "->engine -[ArcWebContents navigationController]": 15,
+    "->engine -[ArcWebContents navigationID]": 24,
+    "->engine -[ArcWebContents passwordTextFieldActive]": 18,
+    "->engine -[ArcWebContents pendingRenderFrameViewportSize]": 14,
+    "->engine -[ArcWebContents rootBackgroundColor]": 14,
+    "->engine -[ArcWebContents selectedText]": 12,
+    "->engine -[ArcWebContents sessionId]": 13,
+    "->engine -[ArcWebContents setBackForwardList:]": 12,
+    "->engine -[ArcWebContents setBlockedResourceCount:]": 6,
+    "->engine -[ArcWebContents setCanGoBack:]": 23,
+    "->engine -[ArcWebContents setCanGoForward:]": 23,
+    "->engine -[ArcWebContents setFavicon:]": 12,
+    "->engine -[ArcWebContents setFreeformTextFieldActive:]": 6,
+    "->engine -[ArcWebContents setHadFormOrUserEdits:]": 6,
+    "->engine -[ArcWebContents setHasDirtyTextField:]": 6,
+    "->engine -[ArcWebContents setHasFocus:]": 6,
+    "->engine -[ArcWebContents setIsLoading:]": 23,
+    "->engine -[ArcWebContents setIsReadyToDisplay:]": 8,
+    "->engine -[ArcWebContents setLoadProgress:]": 29,
+    "->engine -[ArcWebContents setNavigationDelegate:]": 6,
+    "->engine -[ArcWebContents setNavigationID:]": 12,
+    "->engine -[ArcWebContents setPasswordTextFieldActive:]": 6,
+    "->engine -[ArcWebContents setPendingRenderFrameViewportSize:]": 7,
+    "->engine -[ArcWebContents setRootBackgroundColor:]": 7,
+    "->engine -[ArcWebContents setSelectedText:]": 6,
+    "->engine -[ArcWebContents setState:]": 6,
+    "->engine -[ArcWebContents setTabTraits:]": 12,
+    "->engine -[ArcWebContents setThemeColor:]": 6,
+    "->engine -[ArcWebContents setTitle:]": 18,
+    "->engine -[ArcWebContents setTopBandColorDelegate:]": 6,
+    "->engine -[ArcWebContents setUIDelegate:]": 6,
+    "->engine -[ArcWebContents setUndoableFieldActive:]": 6,
+    "->engine -[ArcWebContents setUrl:]": 12,
+    "->engine -[ArcWebContents setVisibility:]": 7,
+    "->engine -[ArcWebContents setZoomLevel:]": 12,
+    "->engine -[ArcWebContents state]": 12,
+    "->engine -[ArcWebContents tabTraits]": 56,
+    "->engine -[ArcWebContents themeColor]": 12,
+    "->engine -[ArcWebContents thumbnailsGenerator]": 10,
+    "->engine -[ArcWebContents title]": 36,
+    "->engine -[ArcWebContents uiDelegate]": 6,
+    "->engine -[ArcWebContents undoableFieldActive]": 18,
+    "->engine -[ArcWebContents url]": 24,
+    "->engine -[ArcWebContents visibility]": 14,
+    "->engine -[ArcWebContents webContents]": 154,
+    "->engine -[ArcWebContents zoomLevel]": 24,
+    "->engine -[ArcWebContentsBoostIDE initWithArcWebContents:]": 6,
+    "->engine -[ArcWebContentsBoostIDE initWithBoostIDE:]": 6,
+    "->engine -[ArcWebContentsBoostIDE setDelegate:]": 6,
+    "->engine -[ArcWebContentsConfiguration disallowDownloads]": 5,
+    "->engine -[ArcWebContentsConfiguration forcedViewSize]": 5,
+    "->engine -[ArcWebContentsConfiguration foreground]": 5,
+    "->engine -[ArcWebContentsConfiguration initiallyHidden]": 5,
+    "->engine -[ArcWebContentsConfiguration initiallyMuted]": 5,
+    "->engine -[ArcWebContentsConfiguration setDisallowAutoplay:]": 5,
+    "->engine -[ArcWebContentsConfiguration setDisallowContextMenus:]": 5,
+    "->engine -[ArcWebContentsConfiguration setDisallowDownloads:]": 5,
+    "->engine -[ArcWebContentsConfiguration setForceAllowAutoplay:]": 5,
+    "->engine -[ArcWebContentsConfiguration setForceDisplayPDFInline:]": 5,
+    "->engine -[ArcWebContentsConfiguration setForcedViewSize:]": 5,
+    "->engine -[ArcWebContentsConfiguration setForeground:]": 5,
+    "->engine -[ArcWebContentsConfiguration setInitiallyHidden:]": 5,
+    "->engine -[ArcWebContentsConfiguration setInitiallyMuted:]": 5,
+    "->engine -[ArcWebContentsConfiguration setTransparentBackground:]": 5,
+    "->engine -[ArcWebContentsConfiguration setUntracked:]": 5,
+    "->engine -[ArcWebContentsConfiguration transparentBackground]": 5,
+    "->engine -[ArcWebContentsDevTools initWithArcWebContents:]": 6,
+    "->engine -[ArcWebContentsDevTools setDelegate:]": 6,
+    "->engine -[ArcWebContentsMediaSession getMediaContentTypes:]": 32,
+    "->engine -[ArcWebContentsMediaSession initWithArcWebContents:]": 6,
+    "->engine -[ArcWebContentsMediaSession setDelegate:]": 6,
+    "->engine -[ArcWebContentsNavigationController addObserver:]": 6,
+    "->engine -[ArcWebContentsNavigationController load:initiatorOrigin:]": 5,
+    "->engine -[ArcWebContentsNavigationController load:initiatorOrigin:transition:fromAddressBar:typedWithHttpScheme:]": 5,
+    "->engine -[ArcWebContentsNavigationController removeObserver:]": 4,
+    "->engine -[ArcWebContentsThumbnailsGenerator addObserver:]": 6,
+    "->engine -[ArcWebContentsThumbnailsGenerator initWithArcWebContents:]": 6,
+    "->engine -[ArcWebContentsThumbnailsGenerator removeObserver:]": 4,
+    "engine->app -[ADK.ADKApplication didConnectToNetworkProcess]": 4,
+    "engine->app -[ADK.ADKApplication didInitializeBrowserProcess]": 2,
+    "engine->app -[ADK.ADKApplication didReceiveGPUInfoUpdate:]": 2,
+    "engine->app -[ADK.AccessibilityObserver accessibilityModeChanged:]": 2,
+    "engine->app -[ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdate:]": 1,
+    "engine->app -[ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:]": 4,
+    "engine->app -[ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:]": 4,
+    "engine->app -[ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:]": 1,
+    "engine->app -[ADK.ChromiumBrowser browser:didUpdateExtensionToolbarActions:]": 4,
+    "engine->app -[ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:]": 18,
+    "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]": 67,
+    "engine->app -[ADK.WebContentChromium webContents:didChangeAvailableMediaActions:]": 6,
+    "engine->app -[ADK.WebContentChromium webContents:didChangeStatusText:]": 23,
+    "engine->app -[ADK.WebContentChromium webContents:didChangeVisibleSecurityState:]": 6,
+    "engine->app -[ADK.WebContentChromium webContents:didCloseWithSessionID:]": 4,
+    "engine->app -[ADK.WebContentChromium webContents:didCommitNavigation:]": 6,
+    "engine->app -[ADK.WebContentChromium webContents:didFinishNavigation:]": 6,
+    "engine->app -[ADK.WebContentChromium webContents:didStartProvisionalNavigation:]": 6,
+    "engine->app -[ADK.WebContentChromium webContentsActivate:]": 6,
+    "engine->app -[ADK.WebContentChromium webContentsClosingImminent:withSessionID:]": 4,
+    "engine->app -[ADK.WebContentChromium webContentsPiPControllerDestroyed:]": 4,
+    "engine->app -[ADKClientLive.BrowserExtensionsLifeCycleManager browserContextDidExtensionSystemReady:]": 1,
+    "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:]": 7,
+    "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFinish:]": 2,
+    "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveData:withData:]": 2,
+    "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:]": 2
+  }
+}

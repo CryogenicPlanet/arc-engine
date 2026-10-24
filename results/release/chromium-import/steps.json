@@ -1,0 +1,100 @@
+{
+  "scenario": "chromium-import",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-rel156.app",
+  "slug": "rel156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "import accepted",
+      "outcome": "pass",
+      "detail": "none "
+    },
+    {
+      "step": "history category ends without error",
+      "outcome": "pass",
+      "detail": "{\"category\":1,\"event\":\"category-end\"}"
+    },
+    {
+      "step": "bookmarks category ends without error",
+      "outcome": "pass",
+      "detail": "{\"category\":2,\"event\":\"category-end\"}"
+    },
+    {
+      "step": "cookies category ends without error",
+      "outcome": "pass",
+      "detail": "{\"category\":4,\"event\":\"category-end\"}"
+    },
+    {
+      "step": "passwords category ends without error",
+      "outcome": "pass",
+      "detail": "{\"category\":8,\"event\":\"category-end\"}"
+    },
+    {
+      "step": "extensions category ends without error",
+      "outcome": "pass",
+      "detail": "{\"category\":128,\"event\":\"category-end\"}"
+    },
+    {
+      "step": "cards category ends without error",
+      "outcome": "pass",
+      "detail": "{\"category\":256,\"event\":\"category-end\"}"
+    },
+    {
+      "step": "import ends without error",
+      "outcome": "pass",
+      "detail": "{\"event\":\"end\"}"
+    },
+    {
+      "step": "cookie imported and decrypted",
+      "outcome": "pass",
+      "detail": "{\"name\":\"imported_7f3a\",\"value\":\"v1\",\"domain\":\"127.0.0.1\",\"path\":\"/\",\"expires\":1824344437.816,\"size\":15,\"httpOnly\":false,\"secure\":false,\"session\":false,\"priority\":\"Medium\",\"sourceScheme\":\"NonSecure\",\"sourcePort\":80}"
+    },
+    {
+      "step": "secure httponly cookie keeps its flags",
+      "outcome": "pass",
+      "detail": "{\"name\":\"session_7f3a\",\"value\":\"secret\",\"domain\":\".example.com\",\"path\":\"/\",\"expires\":1824344437.816,\"size\":18,\"httpOnly\":true,\"secure\":true,\"session\":false,\"priority\":\"Medium\",\"sourceScheme\":\"Secure\",\"sourcePort\":443}"
+    },
+    {
+      "step": "existing cookie kept (skipExistingCookies)",
+      "outcome": "pass",
+      "detail": "{\"name\":\"existing_7f3a\",\"value\":\"ours\",\"domain\":\"127.0.0.1\",\"path\":\"/\",\"expires\":1792812044.636,\"size\":17,\"httpOnly\":false,\"secure\":false,\"session\":false,\"priority\":\"Medium\",\"sourceScheme\":\"NonSecure\",\"sourcePort\":80}"
+    },
+    {
+      "step": "expired cookie not imported",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "imported cookie sent to the site",
+      "outcome": "pass",
+      "detail": "imported_7f3a=v1; existing_7f3a=ours"
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 8 helpers exited"
+    },
+    {
+      "step": "login imported",
+      "outcome": "pass",
+      "detail": "[{\"username_value\":\"fixture-user-7f3a\",\"signon_realm\":\"https://accounts.example.com/\",\"n\":35}]"
+    },
+    {
+      "step": "never-save entry not imported",
+      "outcome": "pass",
+      "detail": "[{\"username_value\":\"fixture-user-7f3a\",\"signon_realm\":\"https://accounts.example.com/\",\"n\":35}]"
+    },
+    {
+      "step": "card imported",
+      "outcome": "pass",
+      "detail": "[{\"name_on_card\":\"Card Holder 7f3a\",\"expiration_month\":4,\"expiration_year\":2031,\"nickname\":\"Fixture card\",\"n\":35}]"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+launch pass native ready, CDP target list available
+empty name rejected pass {"error":2,"returned":false}
+create accepted pass {"error":"none","returned":true}
+create completes with a new profile directory pass Profile 1
+listed with its visible name pass Default=Default, Profile 1=Profile 7f3a
+get by directory returns it pass Profile 1
+get by visible name pass nil
+load default incognito pass Default (incognito)
+load missing gives nil pass nil
+delete by visible name pass {"error":3,"returned":false}
+delete by directory pass {"error":"none","returned":true}
+delete missing rejected pass {"error":3,"returned":false}
+names after delete pass Default=Default
+quit pass Browser.close; browser + 5 helpers exited
+all steps pass

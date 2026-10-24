@@ -21,7 +21,7 @@ static void WriteJSON(id object, NSString *path) {
 }
 static NSDictionary *Shortcuts(void) {
   NSEventModifierFlags command = NSEventModifierFlagCommand;
-  // These are the seven default menu equivalents in shortcut-menu-inventory.json.
+  // The seven cmd-* entries are default menu equivalents in shortcut-menu-inventory.json.
   // The virtual key codes describe a US ANSI layout; no hardware/layout coverage.
   return @{
     @"cmd-t":@{@"characters":@"t", @"keyCode":@17, @"flags":@(command)},
@@ -30,7 +30,11 @@ static NSDictionary *Shortcuts(void) {
     @"cmd-w":@{@"characters":@"w", @"keyCode":@13, @"flags":@(command)},
     @"cmd-shift-t":@{@"characters":@"T", @"keyCode":@17, @"flags":@(command | NSEventModifierFlagShift)},
     @"cmd-n":@{@"characters":@"n", @"keyCode":@45, @"flags":@(command)},
-    @"cmd-option-n":@{@"characters":@"n", @"keyCode":@45, @"flags":@(command | NSEventModifierFlagOption)}
+    @"cmd-option-n":@{@"characters":@"n", @"keyCode":@45, @"flags":@(command | NSEventModifierFlagOption)},
+    // Not a shortcut: Return commits the command bar. Arc's command bar field
+    // advertises AXConfirm but does not act on it (no navigation, no new tab),
+    // so the scenario confirms it the way a person does, through this route.
+    @"return":@{@"characters":@"\r", @"keyCode":@36, @"flags":@0}
   };
 }
 static void Install(void) {
@@ -71,6 +75,7 @@ static NSDictionary *Dispatch(NSString *shortcut, NSString *identifier) {
     windowNumber:number context:nil characters:characters charactersIgnoringModifiers:characters isARepeat:NO keyCode:keyCode];
   Require(gDown && gUp && gDown.window == window && gUp.window == window, @"could not construct exact-window local events");
   BOOL activeBefore = NSApp.isActive;
+  NSString *responder = window.firstResponder ? NSStringFromClass(window.firstResponder.class) : @"(none)";
   gDownSeen = NO; gUpSeen = NO; gDispatching = YES;
   BOOL downReturned = NO, upReturned = NO;
   @try {
@@ -83,7 +88,7 @@ static NSDictionary *Dispatch(NSString *shortcut, NSString *identifier) {
     @"mainThread":@(NSThread.isMainThread), @"keyWindowMatchedBefore":@YES,
     @"downReturned":@(downReturned), @"upReturned":@(upReturned),
     @"localMonitorInstalled":@((BOOL)(gMonitor != nil)), @"localMonitorSawDown":@(gDownSeen), @"localMonitorSawUp":@(gUpSeen),
-    @"appActiveBefore":@(activeBefore), @"appActiveAfter":@(NSApp.isActive),
+    @"appActiveBefore":@(activeBefore), @"appActiveAfter":@(NSApp.isActive), @"firstResponderBefore":responder,
     @"scope":@"app-event routing; not WindowServer/hardware delivery"};
   gDown = nil; gUp = nil;
   return receipt;

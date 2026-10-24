@@ -1,0 +1,80 @@
+{
+  "scenario": "profiles-public-api",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-rel156.app",
+  "slug": "rel156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "empty name rejected",
+      "outcome": "pass",
+      "detail": "{\"error\":2,\"returned\":false}"
+    },
+    {
+      "step": "create accepted",
+      "outcome": "pass",
+      "detail": "{\"error\":\"none\",\"returned\":true}"
+    },
+    {
+      "step": "create completes with a new profile directory",
+      "outcome": "pass",
+      "detail": "Profile 1"
+    },
+    {
+      "step": "listed with its visible name",
+      "outcome": "pass",
+      "detail": "Default=Default, Profile 1=Profile 7f3a"
+    },
+    {
+      "step": "get by directory returns it",
+      "outcome": "pass",
+      "detail": "Profile 1"
+    },
+    {
+      "step": "get by visible name",
+      "outcome": "pass",
+      "detail": "nil"
+    },
+    {
+      "step": "load default incognito",
+      "outcome": "pass",
+      "detail": "Default (incognito)"
+    },
+    {
+      "step": "load missing gives nil",
+      "outcome": "pass",
+      "detail": "nil"
+    },
+    {
+      "step": "delete by visible name",
+      "outcome": "pass",
+      "detail": "{\"error\":3,\"returned\":false}"
+    },
+    {
+      "step": "delete by directory",
+      "outcome": "pass",
+      "detail": "{\"error\":\"none\",\"returned\":true}"
+    },
+    {
+      "step": "delete missing rejected",
+      "outcome": "pass",
+      "detail": "{\"error\":3,\"returned\":false}"
+    },
+    {
+      "step": "names after delete",
+      "outcome": "pass",
+      "detail": "Default=Default"
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 5 helpers exited"
+    }
+  ]
+}

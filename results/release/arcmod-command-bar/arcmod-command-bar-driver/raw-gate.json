@@ -1,0 +1,79 @@
+{
+  "passed": true,
+  "rawBytes": 880436,
+  "rawSha256": "86b62d08e5669092875489a83e657afd05ea0984fa13ba7a351c7fe3d665fe2f",
+  "rawEventCount": 4550,
+  "preSetterCursor": 805158,
+  "sequenceGaps": 0,
+  "mainIdentityDepthOrderMismatches": 0,
+  "backgroundEvents": 4,
+  "pairedMainInvocations": 2272,
+  "preexistingRun": {
+    "line": 28,
+    "offset": 7080,
+    "endOffset": 7257,
+    "event": {
+      "seq": 27,
+      "ev": "call",
+      "thread": "main",
+      "depth": 0,
+      "from": "app",
+      "dir": "->engine",
+      "cls": "ArcBrowserApplication",
+      "kind": "-",
+      "sel": "run",
+      "self": "<ArcBrowserApplication#3>",
+      "args": []
+    }
+  },
+  "targetCall": {
+    "line": 4201,
+    "offset": 805158,
+    "endOffset": 805467,
+    "event": {
+      "seq": 4200,
+      "ev": "call",
+      "thread": "main",
+      "depth": 1,
+      "from": "app",
+      "dir": "->engine",
+      "cls": "ArcBrowser",
+      "kind": "-",
+      "sel": "autocomplete:cursorPosition:preventInlineAutocomplete:startFresh:keyword:error:completion:",
+      "self": "<ArcBrowser#73>",
+      "args": [
+        "http://127.0.0.1:56621/a",
+        24,
+        false,
+        true,
+        "",
+        "<ptr>",
+        "<block>"
+      ]
+    }
+  },
+  "targetReturn": {
+    "line": 4368,
+    "offset": 841201,
+    "endOffset": 841446,
+    "event": {
+      "seq": 4367,
+      "ev": "ret",
+      "thread": "main",
+      "depth": 1,
+      "from": "app",
+      "dir": "->engine",
+      "cls": "ArcBrowser",
+      "kind": "-",
+      "sel": "autocomplete:cursorPosition:preventInlineAutocomplete:startFresh:keyword:error:completion:",
+      "self": "<ArcBrowser#73>",
+      "ret": true
+    }
+  },
+  "genuineAppResultReads": 2,
+  "prefixEqualsFinalExactInvocation": true,
+  "allPostCursorMainCallsPaired": true,
+  "blockInvocation": "uninstrumented-unknown",
+  "completionDone": "uninstrumented-unknown",
+  "scope": "New exact app autocomplete/true return, complete main pairing and genuine app result consumption. No block-callback, navigation, parity or shutdown inference."
+}

@@ -1,0 +1,98 @@
+{
+  "passed": true,
+  "rawBytes": 1188541,
+  "rawSHA256": "61b9796ff4ee4f104142b07660b749a05bdc652c49d95f96e2ea578bd434c17e",
+  "rawRows": 6204,
+  "appOriginCalls": 2831,
+  "phases": [
+    {
+      "phase": 1,
+      "start": 866898,
+      "end": 939753,
+      "call": {
+        "line": 4547,
+        "offset": 873413,
+        "end": 873613,
+        "event": {
+          "seq": 4546,
+          "ev": "call",
+          "thread": "main",
+          "depth": 1,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcBrowserApplication",
+          "kind": "-",
+          "sel": "tryToTerminate:",
+          "self": "<ArcBrowserApplication#3>",
+          "args": [
+            "<block>"
+          ]
+        }
+      },
+      "returned": {
+        "line": 4548,
+        "offset": 873613,
+        "end": 873801,
+        "event": {
+          "seq": 4547,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 1,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcBrowserApplication",
+          "kind": "-",
+          "sel": "tryToTerminate:",
+          "self": "<ArcBrowserApplication#3>",
+          "ret": 2
+        }
+      }
+    },
+    {
+      "phase": 2,
+      "start": 940167,
+      "end": 1188541,
+      "call": {
+        "line": 4931,
+        "offset": 946682,
+        "end": 946882,
+        "event": {
+          "seq": 4930,
+          "ev": "call",
+          "thread": "main",
+          "depth": 1,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcBrowserApplication",
+          "kind": "-",
+          "sel": "tryToTerminate:",
+          "self": "<ArcBrowserApplication#3>",
+          "args": [
+            "<block>"
+          ]
+        }
+      },
+      "returned": {
+        "line": 4932,
+        "offset": 946882,
+        "end": 947070,
+        "event": {
+          "seq": 4931,
+          "ev": "ret",
+          "thread": "main",
+          "depth": 1,
+          "from": "app",
+          "dir": "->engine",
+          "cls": "ArcBrowserApplication",
+          "kind": "-",
+          "sel": "tryToTerminate:",
+          "self": "<ArcBrowserApplication#3>",
+          "ret": 2
+        }
+      }
+    }
+  ],
+  "blockExecution": "unobserved",
+  "returnSemantics": "unsigned representation only; no enum names",
+  "scope": "Exact app-origin public termination call/return per cursor-bounded Quit; all raw rows retained. No block completion or OS exit-status inference."
+}

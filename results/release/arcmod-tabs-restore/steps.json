@@ -1,0 +1,35 @@
+{
+  "scenario": "arcmod-tabs-restore",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-rel156.app",
+  "slug": "rel156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "restore tab visibly selected",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "native archive closes tab",
+      "outcome": "fail",
+      "detail": ""
+    },
+    {
+      "step": "scenario actions",
+      "outcome": "inconclusive",
+      "detail": "Error: expected one native control; observed 0"
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 9 helpers exited"
+    }
+  ]
+}

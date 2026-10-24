@@ -6,6 +6,35 @@ Facts, locations, procedures and the step-by-step runbook are in `ENGINE.md`.
 Static research is complete and reviewed: report `../arc/notes/engine-feasibility.md`, class and protocol
 index `specs/README.md` (146 classes, 1,964 declared methods, 26 protocols; declared coverage, not behavior).
 
+## Night status (2026-10-23 ~21:00 PDT): native UI, PiP, Chromium import
+
+Screen unlocked; native-UI scenarios ran for the first time. Harness fixes: native actions bring the agent
+app to the front (macOS only performs menu actions in the active app); Arc's sidebar tab press (custom AX
+action with no target, -25200 on Arc's engine too) falls back to DevTools Target.activateTarget.
+Goldens on Arc's engine: arcmod-settings, -tabs-restore, -command-bar, -disposable-import, -agent-mcp,
+-profiles, application-termination-denial, pip-flags.
+
+Release engine vs those goldens: all steps pass for arcmod-settings (0/0 diff), -command-bar (0/0),
+-profiles (UI create/switch/independent data/restart), -agent-mcp, application-termination-denial,
+pip-flags, chromium-import, plus launch-slice, tabs-navigation, media, media-pip, profiles-public-api.
+Visual check on a disposable copy of ArcMod's profile (real-profile-visual): sidebar, command bar and
+Settings render; relaunch OK; 0 crashes; copy deleted.
+
+Fixed today: PiP policies reach Blink (4f6526a); Chromium-family import of cookies, passwords, cards and
+extensions (0d4b282); ActivateContents -> app webContentsActivate: (d42b96f).
+
+Open, in order:
+- arcmod-tabs-restore: a tab opened in the background (DevTools, background:true) and then selected keeps
+  isReadyToDisplay NO / loadProgress 0.7 on ours (YES / 1 on Arc's), and the app's Archive Tab then does
+  nothing. May affect real background tabs.
+- Safari "exported data" import (public type 12, arcmod-disposable-import) is rejected by ours.
+- Chromium-family "sessions" (2048, open tabs via didImportSessionWindows:) not implemented.
+- Extra webContentsActivate: when the tab is already selected (Arc's engine sends none then); extra
+  webContentsClosingImminent:withSessionID:. Missing setInputEvent for keys / didConsumeKey..., camera and
+  microphone state callbacks, thumbnailReady, webContentsRenderViewReady.
+- arcmod-spaces (Previous Space shows no selected tab) and arcmod-key-shortcuts (synthesized Cmd+W runs
+  closeWindow:) fail on Arc's engine itself; marked OPEN in the scenarios.
+
 ## Evening status (2026-10-23 ~16:00 PDT)
 
 Release engine (`out/Release`, packaged as ArcMod agent `rel156` via `ARC_ENGINE_OUT=out/Release

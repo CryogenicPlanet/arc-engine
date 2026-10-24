@@ -15,6 +15,7 @@
 import type { ScenarioContext, NativeNode, NativeSnapshot } from "../launch-slice/run";
 import { verifyAgentEndpoint } from "../../../arc/tools/agent-cdp";
 import { nativeState } from "../../../arc/tools/agent-native";
+import { isTabFallback } from "./native";
 import { appendFileSync, chmodSync, existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
@@ -36,7 +37,7 @@ type Identity={pid:number;executable:string;start:string};
 
 export default async function scenario(c:ScenarioContext){
   const assert=(name:string,ok:unknown,detail="")=>{c.assert(name,ok,detail);if(!ok)throw new Error(name+(detail?": "+detail:""));};
-  assert("Profiles uses caller-aware standard disposable recording",c.recorded&&!c.traced&&["trace156","ours156"].includes(c.slug));
+  assert("Profiles uses caller-aware standard disposable recording",c.recorded&&!c.traced&&["trace156","ours156","rel156"].includes(c.slug));
   const app=resolve(import.meta.dir,`../../../arc/build/ArcModAgent-${c.slug}.app`),executable=join(app,"Contents/MacOS/Arc"),bundle=`company.thebrowser.Browser.mod.agent.${c.slug}`;
   assert("Profiles uses exact canonical disposable app",c.app===app&&realpathSync(c.app)===app);
   const support=join(process.env.HOME!,"Library/Application Support"),profile=join(support,`ArcModAgent-${c.slug}`);
@@ -92,9 +93,15 @@ export default async function scenario(c:ScenarioContext){
       const intent={nonce,pid,sequence,identifier:node.identifier,label:node.label,path:node.path,fingerprint:node.fingerprint,kind,value,attempts:1,retries:false};
       appendFileSync(join(directory,"actions.jsonl"),JSON.stringify({event:"intent",...intent})+"\n",{mode:0o600});
       try{
-        const receipt=nativeState(c.slug,c.port,{pid,path:node.path,fingerprint:node.fingerprint,kind,...(value===undefined?{}:{value})});
+        // Sidebar tab presses go through c.perform for its DevTools fallback (native.ts isTabFallback); that
+        // receipt has no AX pid/bundle fields, and owner() re-verifies the endpoint PID. Menu actions only work
+        // in the active app, so everything else brings the agent to the front first, as c.action does.
+        const tabPress=kind==="perform"&&value!.startsWith("Name:press");
+        if(!tabPress)c.front();
+        const receipt=(tabPress?c.perform(node,value!).receipt:nativeState(c.slug,c.port,{pid,path:node.path,fingerprint:node.fingerprint,kind,...(value===undefined?{}:{value})})) as Record<string,unknown>|undefined;
         appendFileSync(join(directory,"actions.jsonl"),JSON.stringify({event:"receipt",...intent,receipt})+"\n",{mode:0o600});
-        if(receipt.pid!==pid||receipt.bundle!==bundle||receipt.action!==kind||receipt.dispatched!==true)throw new Error("Profiles native receipt mismatch");owner();
+        if(tabPress&&isTabFallback(value,receipt)){owner();return;}
+        if(!receipt||receipt.pid!==pid||receipt.bundle!==bundle||receipt.action!==kind||receipt.dispatched!==true)throw new Error("Profiles native receipt mismatch");owner();
       }catch(error){appendFileSync(join(directory,"actions.jsonl"),JSON.stringify({event:"uncertain-no-retry",...intent,error:String(error)})+"\n",{mode:0o600});throw error;}
     };
     // Repeat observations only. Ownership/protocol/mutation failures propagate.
@@ -106,9 +113,9 @@ export default async function scenario(c:ScenarioContext){
       assert("Profiles owned browser window appears",await poll(()=>{s=state();if(!s.elements.some(n=>n.role==="AXWindow"))return;browser(s);return true;},5000));
     };
     const closeMenu=(s:Snapshot,parent:Node)=>dispatch(unique(s,n=>under(n,parent)&&n.role==="AXMenu"&&n.actions.includes("AXCancel"),"owned cancellable menu"),"perform","AXCancel");
-    const openMenu=(label:"File"|"Spaces")=>{
+    const openMenu=(label:"File"|"Spaces"|"Tabs")=>{
       const s=state();noSheet(s);
-      dispatch(unique(s,n=>n.role==="AXMenuBarItem"&&n.identifier===(label==="File"?"_NS:2190":"_NS:1674")&&n.label===label,`exact ${label} menu`));
+      dispatch(unique(s,n=>n.role==="AXMenuBarItem"&&n.identifier===({File:"_NS:2190",Spaces:"_NS:1674",Tabs:"_NS:1685"} as const)[label]&&n.label===label,`exact ${label} menu`));
       const fresh=state(),bar=unique(fresh,n=>n.role==="AXMenuBarItem"&&n.label===label,"opened menu bar");
       return {s:fresh,bar,items:fresh.elements.filter(n=>under(n,bar)&&n.role==="AXMenuItem")};
     };
@@ -133,15 +140,21 @@ export default async function scenario(c:ScenarioContext){
       dispatch(unique(menu.s,n=>under(n,menu.bar)&&n.role==="AXMenuItem"&&n.identifier==="_NS:84"&&n.label==="Change Profile","exact Change Profile command"));
       const v=await poll(()=>changeSheet(state()),5000);assert("owned exact Change Profile editor appears",v!==undefined);return v!;
     };
+    // The picker is a SwiftUI menu button whose AX label is its identifier; Arc shows the selected profile as a
+    // separate static text beside it in the same sheet (observed on Arc's engine), not as a picker descendant.
     const pickerLabel=(s:Snapshot,picker:Node,names:readonly string[])=>{
-      const matches=names.filter(name=>picker.label===name||picker.value===name||s.elements.some(n=>under(n,picker)&&n.role==="AXStaticText"&&text(n)===name));
+      const sheet=sheets(s)[0];
+      const matches=names.filter(name=>picker.label===name||picker.value===name||s.elements.some(n=>sheet!==undefined&&under(n,sheet)&&!under(n,picker)&&n.role==="AXStaticText"&&text(n)===name));
       if(matches.length!==1)throw new Error("Profiles picker lacks one exact observed display-name readback");return matches[0]!;
     };
     const profileMenu=(s:Snapshot)=>{
       const editor=changeSheet(s);if(!editor)throw new Error("Profiles picker editor disappeared");
       const menus=s.elements.filter(n=>under(n,editor.picker)&&n.role==="AXMenu");if(!menus.length)return;
       if(menus.length!==1)throw new Error("Profiles picker menu ambiguous");
-      const menu=menus[0]!,rows=s.elements.filter(n=>under(n,menu)&&["AXMenuItem","AXButton"].includes(n.role)&&n.actions.includes("AXPress"));
+      // Arc's picker menu separates profiles from New Profile with a disabled untitled item (its label falls back
+      // to the identifier "_popUpItemAction:"). It is a separator, not a profile.
+      const separator=(n:Node)=>n.role==="AXMenuItem"&&!n.enabled&&n.label===n.identifier;
+      const menu=menus[0]!,rows=s.elements.filter(n=>under(n,menu)&&["AXMenuItem","AXButton"].includes(n.role)&&n.actions.includes("AXPress")&&!separator(n));
       if(rows.filter(n=>n.label==="New Profile").length!==1)throw new Error("Profiles picker lacks exact unique New Profile option");
       return {s,editor,menu,profiles:rows.filter(n=>n.label!=="New Profile")};
     };
@@ -196,8 +209,25 @@ export default async function scenario(c:ScenarioContext){
     };
     const switchTo=async(destination:string)=>{await openChange();const v=await inventory(2);expectedNames(v.names,2);await switchFromEditor(destination,v.selected);};
     const targets=()=>{owner();const values=c.cdp("list") as Target[];owner();return values;};
+    // After a restart Arc restores the Space's tab unloaded with no tab selected (observed on Arc's engine), so
+    // the fixture has no CDP target and run.ts's DevTools tab fallback has nothing to activate. Its sidebar tab's
+    // custom press fails over AX (-25200); if that has no effect either, select it with the native Tabs > Next Tab.
+    const loadFixtureTab=async()=>{
+      const s=state(),w=browser(s);noSheet(s);
+      const tab=unique(s,n=>under(n,w)&&n.role==="AXButton"&&n.label===c.EXPECT.aTitle,"sole owned unloaded fixture tab"),action=tab.actions.find(a=>a==="AXPress"||a.startsWith("Name:press"));
+      if(!action)throw new Error("Profiles unloaded fixture lacks advertised native selection");
+      try{dispatch(tab,"perform",action);}catch{/* journaled by dispatch; checked by the target poll below */}
+      const loaded=()=>poll(()=>targets().some(t=>t.url===c.base+"/a")?true:undefined,3000);
+      if(await loaded()){save("unloaded-fixture-selection.json",{route:"custom press"});return;}
+      for(let attempt=1;attempt<=3;attempt++){
+        const menu=openMenu("Tabs");
+        dispatch(unique(menu.s,n=>under(n,menu.bar)&&n.role==="AXMenuItem"&&n.identifier==="_NS:1402"&&n.label==="Next Tab","exact Next Tab command"));
+        if(await loaded()){save("unloaded-fixture-selection.json",{route:"Tabs > Next Tab",attempt});return;}
+      }
+    };
     const fixture=async(label:string,initial=false)=>{
       let values=targets().filter(t=>t.url===c.base+"/a");if(initial&&values.length===0){c.open(c.base+"/a");owner();}
+      else if(values.length===0&&!await poll(()=>targets().some(t=>t.url===c.base+"/a")?true:undefined,3000))await loadFixtureTab();
       const v=await poll(()=>{values=targets().filter(t=>t.url===c.base+"/a");if(values.length>1)throw new Error("Profiles duplicate fixture A CDP targets");return values.length===1&&values[0]!.title===c.EXPECT.aTitle?values[0]:undefined;},10000);
       assert(`Profiles ${label} has unique exact fixture URL/title target`,v!==undefined);
       assert(`Profiles ${label} reads exact fixture document`,c.evaluate(v!.id,"location.href")===c.base+"/a"&&c.evaluate(v!.id,"document.title")===c.EXPECT.aTitle);owner();
@@ -263,9 +293,15 @@ export default async function scenario(c:ScenarioContext){
         return {s,sheet,submit,row:rows[0]!};
       };
       const step=await ui.poll(selection,5000);assert("Profiles sole Space selection step appears",step!==undefined);
-      assert("Profiles initially no selected Space by submit validity",step!.submit.enabled===false);ui.dispatch(step!.row);
-      const selectedSubmit=await ui.poll(()=>{const v=selection();return v?.submit.enabled&&v.submit.actions.includes("AXPress")?v.submit:undefined;},3000);
-      assert("sole bound Space press enables advertised Create Profile",selectedSubmit!==undefined);
+      // Arc pre-selects the current Space: its row is an AXToggle checkbox with value 1 and Create Profile is
+      // already enabled (observed on Arc's engine). Pressing it would deselect it, so press only an unselected row.
+      const toggle=(n:Node)=>n.role==="AXCheckBox"&&(n.value===0||n.value===1);
+      assert("Profiles sole Space row exposes a toggle state",toggle(step!.row),JSON.stringify({role:step!.row.role,value:step!.row.value}));
+      if(step!.row.value===0){
+        assert("Profiles unselected Space leaves Create Profile disabled",step!.submit.enabled===false);ui.dispatch(step!.row);
+      }else assert("Profiles preselected sole Space has Create Profile enabled",step!.submit.enabled===true);
+      const selectedSubmit=await ui.poll(()=>{const v=selection();return v?.row.value===1&&v.submit.enabled&&v.submit.actions.includes("AXPress")?v.submit:undefined;},3000);
+      assert("sole selected Space enables advertised Create Profile",selectedSubmit!==undefined);
       ui.dispatch(selectedSubmit!);
     }else ui.dispatch(readySubmit!);
     // Known creation editor may remain while completion is in flight. Only its

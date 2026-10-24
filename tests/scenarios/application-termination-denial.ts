@@ -11,8 +11,9 @@
 import type { ScenarioContext, NativeNode, NativeSnapshot } from "../launch-slice/run";
 import { verifyAgentEndpoint, type CDPEvent } from "../../../arc/tools/agent-cdp";
 import { nativeState } from "../../../arc/tools/agent-native";
+import { isTabFallback } from "./native";
 import { appendFileSync, chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { assertTerminationRawPrefix, validateTerminationPhases, type QuitPhase } from "./application-termination-denial-raw";
 
 export const morningPlan = [
@@ -71,7 +72,7 @@ export function observeTerminationIdentity(
 
 export default async function scenario(c:ScenarioContext) {
   const assert=(name:string,ok:unknown,detail="")=>{c.assert(name,ok,detail);if(!ok)throw new Error(name+(detail?": "+detail:""));};
-  assert("termination denial uses caller-aware standard disposable recording",c.recorded&&!c.traced&&["trace156","ours156"].includes(c.slug));
+  assert("termination denial uses caller-aware standard disposable recording",c.recorded&&!c.traced&&["trace156","ours156","rel156"].includes(c.slug));
   const expectedApp=resolve(import.meta.dir,`../../../arc/build/ArcModAgent-${c.slug}.app`);
   assert("termination denial uses exact agent app",c.app===expectedApp&&realpathSync(c.app)===expectedApp);
   const executable=join(expectedApp,"Contents/MacOS/Arc"),bundle=`company.thebrowser.Browser.mod.agent.${c.slug}`;
@@ -117,6 +118,9 @@ export default async function scenario(c:ScenarioContext) {
     const match=/^\s*(\d+)\s+(\d+)\s+(.+)$/.exec(line);if(!match)throw new Error("invalid process observation");
     return {pid:Number(match[1]),ppid:Number(match[2]),executable:match[3]!};
   });
+  // A process that has exited but is not yet reaped by its parent stays in the process table as "<defunct>"
+  // (no longer the owned executable). It has terminated; the owned-identity checks apply to live entries.
+  const exited=(p:{executable:string})=>p.executable==="<defunct>";
   const identity=(p:ReturnType<typeof processTable>[number]):ProcessIdentity=>{
     const start=command(["/bin/ps","-p",String(p.pid),"-o","lstart="]).trim();
     if(!start)throw new Error("process start identity unavailable");return {...p,start};
@@ -156,11 +160,17 @@ export default async function scenario(c:ScenarioContext) {
     const intent={sequence:++sequence,pid,identifier:node.identifier,label:node.label,path:node.path,fingerprint:node.fingerprint,kind,value,attempts:1,retries:false};
     journal({event:"intent",...intent});
     try{
+      // The sidebar tab press goes through c.perform for its DevTools fallback (native.ts isTabFallback); that
+      // receipt has no AX pid/bundle fields, and owner() re-verifies the endpoint PID. Menu actions only work in
+      // the active app, so everything else brings the agent to the front first, as c.action does.
+      const tabPress=kind==="perform"&&value!.startsWith("Name:press");
+      if(!tabPress)c.front();
       // Exported direct action has a receipt only; it does not snapshot a dying
       // application after OK. The helper rechecks PID and fresh fingerprint.
-      const receipt=nativeState(c.slug,c.port,{path:node.path,fingerprint:node.fingerprint,pid,kind,...(value===undefined?{}:{value})});
+      const receipt=(tabPress?c.perform(node,value!).receipt:nativeState(c.slug,c.port,{path:node.path,fingerprint:node.fingerprint,pid,kind,...(value===undefined?{}:{value})})) as Record<string,unknown>|undefined;
       journal({event:"receipt",...intent,receipt});
-      if(receipt.pid!==pid||receipt.bundle!==bundle||receipt.action!==kind||receipt.dispatched!==true)throw new Error("native dispatch receipt mismatch");
+      if(tabPress&&isTabFallback(value,receipt)){owner();return;}
+      if(!receipt||receipt.pid!==pid||receipt.bundle!==bundle||receipt.action!==kind||receipt.dispatched!==true)throw new Error("native dispatch receipt mismatch");
     }catch(error){journal({event:"uncertain-no-retry",...intent,error:String(error)});throw error;}
   };
   // Only observations repeat; action exceptions, malformed states and ownership
@@ -234,7 +244,7 @@ export default async function scenario(c:ScenarioContext) {
     const cursor=async()=>{const bytes=await poll(rawSnapshot,3000);assert("termination pre-action recorder has complete byte cursor",bytes!==undefined);return bytes!.length;};
     const recorded=new Map<number,ProcessIdentity>();
     const descendants=(phase:number)=>{
-      owner();const table=processTable(),ids=new Set<number>([pid!]);
+      owner();const table=processTable().filter(p=>!exited(p)),ids=new Set<number>([pid!]);
       for(let i=0;i<table.length;i++){const found=table.filter(p=>ids.has(p.ppid)&&!ids.has(p.pid));if(!found.length)break;for(const p of found)ids.add(p.pid);}
       const helpers=table.filter(p=>p.pid!==pid&&ids.has(p.pid));
       assert(`Quit ${phase} has actual nonempty descendant snapshot`,helpers.length>0);
@@ -308,9 +318,18 @@ export default async function scenario(c:ScenarioContext) {
     const identities=[browser,...recorded.values()],deadline=acceptedAt+15000;
     let allGone=false,firstObservedGoneAt:number|undefined;
     while(Date.now()<=deadline){
-      pageEvents();const table=processTable();
+      pageEvents();const table=processTable().filter(p=>!exited(p));
       for(const p of table.filter(p=>identities.some(i=>i.pid===p.pid))){
         const original=identities.find(i=>i.pid===p.pid)!;
+        // While a process is exiting, ps can no longer resolve its executable path and prints the kernel's short
+        // process name (at most 16 characters, possibly parenthesized). That entry is still present, so it keeps
+        // allGone false, but its path can no longer be compared; anything else is an identity change.
+        if(p.executable!==original.executable){
+          const short=p.executable.replace(/^\((.*)\)$/,"$1");
+          journal({event:"exiting-process-name",pid:p.pid,observed:p.executable,expected:original.executable});
+          if(!short||short.length>16||!basename(original.executable).startsWith(short))throw new Error(`owned executable changed during termination observation: ${p.pid} ${p.executable}`);
+          continue;
+        }
         observeTerminationIdentity(p,original,()=>{
           const result=Bun.spawnSync(["/bin/ps","-p",String(p.pid),"-o","lstart="],{stdout:"pipe",stderr:"pipe",timeout:3000});
           return {success:result.success,exitCode:result.exitCode,signalCode:result.signalCode,stdout:result.stdout.toString(),stderr:result.stderr.toString()};
@@ -334,7 +353,7 @@ export default async function scenario(c:ScenarioContext) {
     for(const path of [join(process.env.HOME!,"Library/Logs/DiagnosticReports"),"/Library/Logs/DiagnosticReports"]){
       const d=noFollow(path);if(!d)continue;
       if(d.isSymbolicLink()||!d.isDirectory())throw new Error("crash report observation directory unsafe");
-      const names=readdirSync(path).filter(n=>/^(?:Arc|ArcModAgent-(?:trace156|ours156))(?:[ _-].*)?\.ips$/.test(n));
+      const names=readdirSync(path).filter(n=>/^(?:Arc|ArcModAgent-(?:trace156|ours156|rel156))(?:[ _-].*)?\.ips$/.test(n));
       if(names.length>2048)throw new Error("crash directory candidate count exceeds bound");
       const fresh=names.filter(n=>{const st=noFollow(join(path,n));if(!st||st.isSymbolicLink()||!st.isFile())throw new Error("crash candidate is not a regular file");return st.mtimeMs>=startTime-2000;});
       if(fresh.length>16)throw new Error("fresh crash candidate count exceeds bound");

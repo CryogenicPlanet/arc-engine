@@ -1,0 +1,85 @@
+{
+  "scenario": "save-offers-accept",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-rel156.app",
+  "slug": "rel156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "login form loaded",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "login submitted",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "password saved through the offer",
+      "outcome": "pass",
+      "detail": "credentials"
+    },
+    {
+      "step": "login form reloaded",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "saved login filled on revisit",
+      "outcome": "pass",
+      "detail": "not filled"
+    },
+    {
+      "step": "address form loaded",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "address submitted",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "address saved through the offer",
+      "outcome": "pass",
+      "detail": "credentials,address"
+    },
+    {
+      "step": "engine alive after saving address",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "card form loaded",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "card submitted",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "card saved through the offer",
+      "outcome": "pass",
+      "detail": "no offer"
+    },
+    {
+      "step": "engine alive after saving card",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "quit",
+      "outcome": "fail",
+      "detail": "SIGTERM (Browser.close did not exit in 15 s); browser + 10 helpers exited"
+    }
+  ]
+}

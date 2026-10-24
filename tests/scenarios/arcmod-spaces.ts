@@ -9,6 +9,7 @@
 // default-tab count is inferred without the checked one-to-two Space guards.
 import type { ScenarioContext, NativeNode, NativeSnapshot } from "../launch-slice/run";
 import { verifyAgentEndpoint } from "../../../arc/tools/agent-cdp";
+import { isTabFallback } from "./native";
 import { appendFileSync, existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
@@ -91,6 +92,9 @@ export default async function scenario(c:ScenarioContext) {
         const result=(kind==="perform"?c.perform(node,value!):c.action(node,kind,value)) as {receipt?:Receipt};
         appendFileSync(join(directory,"actions.jsonl"),JSON.stringify({event:"receipt",...intent,receipt:result.receipt??null})+"\n");
         owner();const receipt=result.receipt;
+        // A sidebar tab press falls back to DevTools (native.ts isTabFallback); that receipt has no AX
+        // pid/bundle fields, and owner() above already re-verified the endpoint belongs to this PID.
+        if(kind==="perform"&&isTabFallback(value,receipt))return;
         if(!receipt||receipt.pid!==pid||receipt.bundle!==bundle||receipt.action!==kind||receipt.dispatched!==true)throw new Error("Space native action receipt identity/dispatch mismatch");
       }catch(error){appendFileSync(join(directory,"actions.jsonl"),JSON.stringify({event:"uncertain-no-retry",...intent,error:String(error)})+"\n");throw error;}
     };
@@ -100,14 +104,30 @@ export default async function scenario(c:ScenarioContext) {
       const end=Date.now()+ms;while(Date.now()<end){owner();const value=read();owner();if(value!==undefined)return value;await c.sleep(250);}return;
     };
     const ensureWindow=async()=>{
-      const s=state();if(s.elements.some(n=>n.role==="AXWindow")){window(s);return;}
+      // Arc creates its first window asynchronously after the readiness record, and AX can report the window
+      // before exposing it as AXWindow. Wait for it instead of opening a second one.
+      const s=(await poll(()=>{const v=state();return v.elements.some(n=>n.role==="AXWindow")?v:undefined;},5000))??state();
+      if(s.elements.some(n=>n.role==="AXWindow")){window(s);return;}
       const item=unique(s,n=>n.identifier==="newWindow"&&n.role==="AXMenuItem"&&n.enabled&&n.actions.includes("AXPress"),"bounded New Window setup");
       dispatch(item,"press");
       if(!await poll(()=>{const value=state();if(!value.elements.some(n=>n.role==="AXWindow"))return;window(value);return true;},5000))throw new Error("Space browser window did not appear after sole New Window attempt");
     };
-    const sidebarName=(s:Snapshot)=>{
-      const browser=window(s),name=unique(s,n=>under(n,browser)&&n.identifier==="sidebarSpaceName"&&n.role==="AXStaticText","current Space name");
-      if(typeof name.value!=="string")throw new Error("current Space name lacks a string value");return name.value;
+    // Arc's sidebar is a paged list that keeps every Space's page (its sidebarSpaceName and tab list) in the AX
+    // tree, with no AX selection state (observed on Arc's engine with two Spaces). So with several pages, the
+    // current Space is the page holding the tab shown in the content panel; with no tab selected (a new, empty
+    // Space) the window title is the current Space's name. Returns undefined when that cannot be determined.
+    const fixtureTitles:Record<string,string>={[`${c.base}/a`]:c.EXPECT.aTitle,[`${c.base}/b`]:c.EXPECT.bTitle};
+    const sidebarName=(s:Snapshot):string|undefined=>{
+      const browser=window(s),names=s.elements.filter(n=>under(n,browser)&&n.identifier==="sidebarSpaceName"&&n.role==="AXStaticText");
+      if(!names.length||names.some(n=>typeof n.value!=="string"))throw new Error("Space pages lack string sidebar names");
+      if(names.length===1)return names[0]!.value as string;
+      const pages=names.map(n=>({name:n.value as string,page:n.path.slice(0,n.path.lastIndexOf("."))}));
+      const address=s.elements.filter(n=>under(n,browser)&&n.identifier==="contentPanelTextField");
+      if(!address.length){const titled=pages.filter(p=>p.name===browser.label);return titled.length===1?titled[0]!.name:undefined;}
+      const title=address.length===1&&typeof address[0]!.value==="string"?fixtureTitles[address[0]!.value]:undefined;
+      const tabs=title===undefined?[]:s.elements.filter(n=>under(n,browser)&&n.role==="AXButton"&&n.label===title);
+      const owners=tabs.length===1?pages.filter(p=>tabs[0]!.path.startsWith(p.page+".")):[];
+      return owners.length===1?owners[0]!.name:undefined;
     };
     const selected=(s:Snapshot,name:string,url:string)=>{
       const browser=window(s),address=s.elements.filter(n=>under(n,browser)&&n.identifier==="contentPanelTextField"&&n.value===url);
@@ -155,7 +175,7 @@ export default async function scenario(c:ScenarioContext) {
       return target;
     };
     const switchTo=async(label:"Previous Space"|"Next Space",name:string,url:string)=>{
-      const before=sidebarName(state());assert(`${label} starts in distinct known Space`,before!==name);
+      const before=sidebarName(state());assert(`${label} starts in distinct known Space`,before!==undefined&&before!==name);
       const {items,spaces}=await spaceMenu(2);
       assert("created Space remains uniquely named in menu",spaces.filter(n=>n.label===NAME).length===1);
       const matches=items.filter(n=>n.label===label&&n.identifier===(label==="Previous Space"?"_NS:1108":"_NS:808")&&n.enabled&&n.actions.includes("AXPress"));
@@ -173,16 +193,25 @@ export default async function scenario(c:ScenarioContext) {
     profileIdentity=inspectProfile("initial launched profile",true);
     firstA=await ui.nativePage("/a",c.EXPECT.aTitle);
     originalName=ui.sidebarName(ui.state());
-    assert("original Space name is distinct from fixed new name",originalName!==NAME);
+    assert("original Space name is distinct from fixed new name",originalName!==undefined&&originalName!==NAME);
     const initial=await ui.spaceMenu(1);writeFileSync(join(directory,"initial-space.json"),JSON.stringify({nonce,pid:firstPID,profile:profileCanonical,profileIdentity,originalName,menuLabels:initial.spaces.map(n=>n.label)},null,2));
     const createItems=initial.items.filter(n=>n.identifier==="_NS:1195"&&n.label==="New Space…"&&n.enabled&&n.actions.includes("AXPress"));
     assert("Space creation has one exact enabled New Space menu action",createItems.length===1);ui.dispatch(createItems[0]!,"press");
-    const editor=await ui.poll(()=>{const s=ui.state(),browser=ui.window(s),matches=s.elements.filter(n=>ui.under(n,browser)&&n.identifier==="spaceCreationSpaceNameTextField");return matches.length?{s,browser,matches}:undefined;},5000);
+    // Arc's SwiftUI name field does not expose its spaceCreationSpaceNameTextField ID over AX (observed on
+    // Arc's engine); only the Create Space button carries its ID. The name field is the text field inside the
+    // same creation view as that button.
+    const nameFields=(s:Snapshot,browser:NativeNode)=>{
+      const create=s.elements.filter(n=>ui.under(n,browser)&&n.identifier==="spaceCreationCreateSpaceButton"&&n.role==="AXButton");
+      if(create.length!==1)return [];
+      const view=create[0]!.path.slice(0,create[0]!.path.lastIndexOf("."));
+      return s.elements.filter(n=>n.path.startsWith(view+".")&&(n.identifier==="spaceCreationSpaceNameTextField"||n.role==="AXTextField"));
+    };
+    const editor=await ui.poll(()=>{const s=ui.state(),browser=ui.window(s),matches=nameFields(s,browser);return matches.length?{s,browser,matches}:undefined;},5000);
     assert("Space name editor appears in owned browser window",editor!==undefined);
     const fields=editor!.matches;
     assert("Space name editor is unique enabled nonsecure and actually settable",fields.length===1&&fields[0]!.role==="AXTextField"&&fields[0]!.subrole!=="AXSecureTextField"&&fields[0]!.enabled&&fields[0]!.valueSettable&&typeof fields[0]!.value==="string");
     ui.dispatch(fields[0]!,"set",NAME);
-    assert("Space name setter has exact native readback",await ui.poll(()=>{const s=ui.state(),browser=ui.window(s),matches=s.elements.filter(n=>ui.under(n,browser)&&n.identifier==="spaceCreationSpaceNameTextField");return matches.length===1&&matches[0]!.value===NAME?true:undefined;},5000));
+    assert("Space name setter has exact native readback",await ui.poll(()=>{const s=ui.state(),browser=ui.window(s),matches=nameFields(s,browser);return matches.length===1&&matches[0]!.value===NAME?true:undefined;},5000));
     const button=await ui.poll(()=>{
       const s=ui.state(),browser=ui.window(s),matches=s.elements.filter(n=>ui.under(n,browser)&&n.identifier==="spaceCreationCreateSpaceButton"&&n.role==="AXButton");
       if(matches.length>1)throw new Error("Create Space button became ambiguous");
@@ -197,7 +226,10 @@ export default async function scenario(c:ScenarioContext) {
     firstB=await ui.nativePage("/b",c.EXPECT.bTitle);
     assert("fixture B is selected inside fixed new Space",ui.selected(ui.state(),NAME,`${c.base}/b`));
     const targets=ui.exactTargets();assert("native Space fixtures retain their created CDP IDs",targets.a.id===firstA&&targets.b.id===firstB);
-    await ui.switchTo("Previous Space",originalName,`${c.base}/a`);
+    // OPEN (not passing on Arc's engine): after Previous Space, Space 1 shows no selected tab (window title
+    // "Space 1", no content-panel address) although fixture A was selected there before creating the new Space,
+    // whether A was selected via the DevTools fallback or via Tabs > Next Tab.
+    await ui.switchTo("Previous Space",originalName!,`${c.base}/a`);
     await ui.switchTo("Next Space",NAME,`${c.base}/b`);
     ui.exactTargets();ui.owner();
   }finally{await c.quit(first,"Space initial standard graceful quit");}
@@ -212,12 +244,16 @@ export default async function scenario(c:ScenarioContext) {
     const ui=controls(second,pid!);await ui.ensureWindow();
     // CDP target IDs may change across real restart. Require fixed URL/title
     // identities, not equality with the previous process's transient IDs.
-    const restored=await ui.poll(()=>{
-      const values=ui.targets();return ["/a","/b"].every(path=>values.some(t=>t.url===c.base+path))?true:undefined;
-    },10000);
-    assert("both Space fixture URLs survive real process restart",restored);
-    const targets=ui.exactTargets();
-    assert("restarted Space fixture documents have fixed content",c.evaluate(targets.a.id,"location.href")===`${c.base}/a`&&c.evaluate(targets.a.id,"document.title")===c.EXPECT.aTitle&&c.evaluate(targets.b.id,"location.href")===`${c.base}/b`&&c.evaluate(targets.b.id,"document.title")===c.EXPECT.bTitle);ui.owner();
+    // Arc restores tabs lazily: a tab gets a page (CDP target) only once it is shown (observed on Arc's engine
+    // in arcmod-profiles; this restart branch has not run yet). So check right away that both tabs are restored in their own Space pages, and check their CDP
+    // documents after the Previous/Next round trip below has shown both Spaces.
+    assert("both Space fixture tabs survive real process restart in their own Spaces",await ui.poll(()=>{
+      const s=ui.state(),browser=ui.window(s),pages=s.elements.filter(n=>ui.under(n,browser)&&n.identifier==="sidebarSpaceName");
+      const page=(title:string)=>{const tabs=s.elements.filter(n=>ui.under(n,browser)&&n.role==="AXButton"&&n.label===title);
+        return tabs.length===1?pages.filter(p=>tabs[0]!.path.startsWith(p.path.slice(0,p.path.lastIndexOf("."))+".")).map(p=>p.value):[];};
+      const a=page(c.EXPECT.aTitle),b=page(c.EXPECT.bTitle);
+      return a.length===1&&a[0]===originalName&&b.length===1&&b[0]===NAME?true:undefined;
+    },10000));
     const inventory=await ui.spaceMenu(2),named=inventory.spaces.filter(n=>n.label===NAME&&n.enabled&&n.actions.includes("AXPress"));
     assert("fixed new Space menu entry persists uniquely after restart",named.length===1);
     // A newly opened agent window need not restore the last selected Space.
@@ -227,7 +263,9 @@ export default async function scenario(c:ScenarioContext) {
     assert("restarted named Space restores selected fixture B",await ui.poll(()=>ui.selected(ui.state(),NAME,`${c.base}/b`)?true:undefined));
     await ui.switchTo("Previous Space",originalName!,`${c.base}/a`);
     await ui.switchTo("Next Space",NAME,`${c.base}/b`);
-    ui.exactTargets();ui.owner();
+    await ui.poll(()=>{const v=ui.targets();return ["/a","/b"].every(path=>v.some(t=>t.url===c.base+path))?true:undefined;},10000);
+    const targets=ui.exactTargets();
+    assert("restarted Space fixture documents have fixed content",c.evaluate(targets.a.id,"location.href")===`${c.base}/a`&&c.evaluate(targets.a.id,"document.title")===c.EXPECT.aTitle&&c.evaluate(targets.b.id,"location.href")===`${c.base}/b`&&c.evaluate(targets.b.id,"document.title")===c.EXPECT.bTitle);ui.owner();
     writeFileSync(join(directory,"restart.json"),JSON.stringify({nonce,profile:profileCanonical,profileIdentity,firstPID,secondPID:pid,originalName,newName:NAME,firstTargets:{a:firstA,b:firstB},restoredTargets:targets,scope:"Two checked Spaces; native creation/name, previous/next selected fixture persistence. No default-tab count, profile assignment or boundary-parity claim."},null,2));
   }finally{await c.quit(second,"Space restart standard graceful quit");}
 }

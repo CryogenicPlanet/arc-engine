@@ -1,4 +1,13 @@
 import type { ScenarioContext, NativeNode } from "../launch-slice/run";
+// Arc's sidebar tab buttons advertise only a custom "Name:press" action, which AX cannot perform (-25200, on
+// Arc's own engine too). c.perform() then selects the tab through DevTools Target.activateTarget, so its
+// receipt names the activated CDP target instead of the AX helper's pid/bundle/action/dispatched fields.
+export type TabFallbackReceipt = { fallback: "Target.activateTarget"; targetId: string };
+export const isTabFallback = (actionName: string | undefined, receipt: unknown): receipt is TabFallbackReceipt => {
+  if (!actionName?.startsWith("Name:press") || !receipt || typeof receipt !== "object") return false;
+  const r = receipt as Record<string, unknown>;
+  return r.fallback === "Target.activateTarget" && typeof r.targetId === "string" && r.targetId.length > 0;
+};
 export function observed(c: ScenarioContext, match: (node: NativeNode) => boolean): NativeNode {
   const nodes = c.native().elements.filter(n => n.enabled && match(n));
   if (nodes.length !== 1) throw new Error(`expected one native control; observed ${nodes.length}`);
