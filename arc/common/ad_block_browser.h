@@ -70,6 +70,11 @@ void GetRendererAdBlockDebugInfo(
 // Core must call this immediately after creating a WebContents, before its
 // first navigation, so all RenderFrameCreated notifications are observed.
 void InitializeRendererBridge(content::WebContents* contents);
+
+// Arc's Picture-in-Picture policies, sent to the main frame's renderer process (dropped while it has no live
+// frame, like Arc's engine).
+void SetRendererSkipUserActivationForPiP(content::WebContents* contents, bool enabled);
+void SetRendererIgnoreDisablePiPAttribute(content::WebContents* contents, bool enabled);
 }  // namespace arc
 
 #endif  // ARC_COMMON_AD_BLOCK_BROWSER_H_

@@ -42,6 +42,9 @@ interface RenderFrameAgent {
   // The acknowledgement also confirms the first-frame process-agent fallback
   // has installed its associated-interface binder.
   SetRendererHost(pending_associated_remote<RendererHost> host) => ();
+  // Arc's renderer-process Picture-in-Picture policies (process-wide, like Arc's engine).
+  SetSkipUserActivationForPiP(bool enabled);
+  SetIgnoreDisablePiPAttribute(bool enabled);
   // Receiver swaps the cached config; application is at document start only.
   ConfigureEffects(array<HostEffectsConfiguration> configuration);
 };

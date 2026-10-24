@@ -25,6 +25,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/web/arc_renderer_policies.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_dom_event.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -106,6 +107,14 @@ class RenderFrameAgent final : public content::RenderFrameObserver,
     host_.reset();
     host_.Bind(std::move(host));
     std::move(callback).Run();
+  }
+
+  // Arc's engine stores these in renderer-process globals, not per frame or per navigation.
+  void SetSkipUserActivationForPiP(bool enabled) override {
+    blink::SetArcSkipUserActivationForPictureInPicture(enabled);
+  }
+  void SetIgnoreDisablePiPAttribute(bool enabled) override {
+    blink::SetArcIgnoreDisablePictureInPictureAttribute(enabled);
   }
 
   void AdBlockConfigurationChanged() {

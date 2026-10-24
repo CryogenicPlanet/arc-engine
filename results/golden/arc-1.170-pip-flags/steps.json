@@ -1,0 +1,60 @@
+{
+  "scenario": "pip-flags",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-trace156.app",
+  "slug": "trace156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "video and media metadata",
+      "outcome": "pass",
+      "detail": "{\"width\":64,\"height\":64,\"advancing\":true,\"paused\":false,\"title\":\"ArcCore media 7f3a\"}"
+    },
+    {
+      "step": "no gesture: PiP refused",
+      "outcome": "pass",
+      "detail": "true"
+    },
+    {
+      "step": "skip user activation: PiP without a gesture",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "PiP exits",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "disablepictureinpicture honored",
+      "outcome": "pass",
+      "detail": "InvalidStateError"
+    },
+    {
+      "step": "ignore attribute: PiP despite disablepictureinpicture",
+      "outcome": "pass",
+      "detail": "entered"
+    },
+    {
+      "step": "PiP exits again",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "skip off: gesture required again",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 7 helpers exited"
+    }
+  ]
+}

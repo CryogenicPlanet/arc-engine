@@ -220,6 +220,20 @@ void InitializeRendererBridge(content::WebContents* contents) {
   RendererBridge::For(contents);
 }
 
+void SetRendererSkipUserActivationForPiP(content::WebContents* contents, bool enabled) {
+  auto* bridge = RendererBridge::For(contents);
+  if (auto* agent = bridge ? bridge->Agent() : nullptr) {
+    agent->SetSkipUserActivationForPiP(enabled);
+  }
+}
+
+void SetRendererIgnoreDisablePiPAttribute(content::WebContents* contents, bool enabled) {
+  auto* bridge = RendererBridge::For(contents);
+  if (auto* agent = bridge ? bridge->Agent() : nullptr) {
+    agent->SetIgnoreDisablePiPAttribute(enabled);
+  }
+}
+
 }  // namespace arc
 
 @implementation ArcWebContents (RendererStylesheets)

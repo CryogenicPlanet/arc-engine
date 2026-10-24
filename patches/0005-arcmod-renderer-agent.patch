@@ -46,6 +46,35 @@ index d460c0fb69..7528d4e050 100644
  #if BUILDFLAG(ENABLE_EXTENSIONS_CORE)
    extensions::ExtensionsRendererClient::Get()->RunScriptsAtDocumentStart(
        render_frame);
+diff --git a/third_party/blink/public/BUILD.gn b/third_party/blink/public/BUILD.gn
+index 6dc75e2d3f..47a03652ff 100644
+--- a/third_party/blink/public/BUILD.gn
++++ b/third_party/blink/public/BUILD.gn
+@@ -253,6 +253,7 @@ source_set("blink_headers") {
+     "platform/web_worker_fetch_context.h",
+     "platform/websocket_handshake_throttle.h",
+     "platform/websocket_handshake_throttle_provider.h",
++    "web/arc_renderer_policies.h",
+     "web/blink.h",
+     "web/extension_script_streamer.h",
+     "web/modules/autofill/web_form_element_observer.h",
+diff --git a/third_party/blink/public/web/arc_renderer_policies.h b/third_party/blink/public/web/arc_renderer_policies.h
+new file mode 100644
+index 0000000000..917c0512be
+--- /dev/null
++++ b/third_party/blink/public/web/arc_renderer_policies.h
+@@ -0,0 +1,11 @@
++// Copyright 2026 ArcMod.
++#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_ARC_RENDERER_POLICIES_H_
++#define THIRD_PARTY_BLINK_PUBLIC_WEB_ARC_RENDERER_POLICIES_H_
++#include "third_party/blink/public/platform/web_common.h"
++namespace blink {
++BLINK_EXPORT void SetArcSkipUserActivationForPictureInPicture(bool enabled);
++BLINK_EXPORT bool ArcSkipUserActivationForPictureInPicture();
++BLINK_EXPORT void SetArcIgnoreDisablePictureInPictureAttribute(bool enabled);
++BLINK_EXPORT bool ArcIgnoreDisablePictureInPictureAttribute();
++}  // namespace blink
++#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_ARC_RENDERER_POLICIES_H_
 diff --git a/third_party/blink/public/web/web_dom_event.h b/third_party/blink/public/web/web_dom_event.h
 index 06f64de960..59fce13123 100644
 --- a/third_party/blink/public/web/web_dom_event.h
@@ -123,3 +152,95 @@ index 3383e1d976..e85b20abcb 100644
    }
    NOTREACHED();
  }
+diff --git a/third_party/blink/renderer/core/exported/web_view_impl.cc b/third_party/blink/renderer/core/exported/web_view_impl.cc
+index 210e182a80..b4dcd8a2a3 100644
+--- a/third_party/blink/renderer/core/exported/web_view_impl.cc
++++ b/third_party/blink/renderer/core/exported/web_view_impl.cc
+@@ -70,6 +70,7 @@
+ #include "third_party/blink/public/platform/web_runtime_features.h"
+ #include "third_party/blink/public/platform/web_text_input_info.h"
+ #include "third_party/blink/public/platform/web_url_request.h"
++#include "third_party/blink/public/web/arc_renderer_policies.h"
+ #include "third_party/blink/public/web/web_autofill_client.h"
+ #include "third_party/blink/public/web/web_console_message.h"
+ #include "third_party/blink/public/web/web_element.h"
+@@ -4510,4 +4511,25 @@ void WebViewImpl::UpdatePageBrowsingContextGroup(
+   page->UpdateBrowsingContextGroup(browsing_context_group_token);
+ }
+ 
++namespace {
++bool g_arc_skip_pip_user_activation = false;
++bool g_arc_ignore_disable_pip_attribute = true;
++bool IsArcHostRenderer() {
++  return base::CommandLine::ForCurrentProcess()->HasSwitch("arcmod-host-app");
++}
++}  // namespace
++
++void SetArcSkipUserActivationForPictureInPicture(bool enabled) {
++  if (IsArcHostRenderer()) g_arc_skip_pip_user_activation = enabled;
++}
++bool ArcSkipUserActivationForPictureInPicture() {
++  return IsArcHostRenderer() && g_arc_skip_pip_user_activation;
++}
++void SetArcIgnoreDisablePictureInPictureAttribute(bool enabled) {
++  if (IsArcHostRenderer()) g_arc_ignore_disable_pip_attribute = enabled;
++}
++bool ArcIgnoreDisablePictureInPictureAttribute() {
++  return IsArcHostRenderer() && g_arc_ignore_disable_pip_attribute;
++}
++
+ }  // namespace blink
+diff --git a/third_party/blink/renderer/modules/document_picture_in_picture/picture_in_picture_controller_impl.cc b/third_party/blink/renderer/modules/document_picture_in_picture/picture_in_picture_controller_impl.cc
+index 235575b37b..596e366d6f 100644
+--- a/third_party/blink/renderer/modules/document_picture_in_picture/picture_in_picture_controller_impl.cc
++++ b/third_party/blink/renderer/modules/document_picture_in_picture/picture_in_picture_controller_impl.cc
+@@ -14,6 +14,7 @@
+ #include "services/network/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
+ #include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
+ #include "third_party/blink/public/platform/web_media_player.h"
++#include "third_party/blink/public/web/arc_renderer_policies.h"
+ #include "third_party/blink/public/web/web_picture_in_picture_window_options.h"
+ #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+ #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+@@ -126,7 +127,8 @@ PictureInPictureControllerImpl::IsElementAllowedInternal(
+   if (!video_element.HasVideo())
+     return Status::kVideoTrackNotAvailable;
+ 
+-  if (video_element.FastHasAttribute(html_names::kDisablepictureinpictureAttr))
++  if (!ArcIgnoreDisablePictureInPictureAttribute() &&
++      video_element.FastHasAttribute(html_names::kDisablepictureinpictureAttr))
+     return Status::kDisabledByAttribute;
+ 
+   if (video_element.IsInAutoPIP())
+@@ -429,7 +431,8 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
+   const bool consumed_pip_request_token = ConsumePictureInPictureRequestToken();
+   const bool has_user_activation =
+       LocalFrame::HasTransientUserActivation(opener.GetFrame());
+-  if (!consumed_pip_request_token && !has_user_activation) {
++  if (!consumed_pip_request_token && !has_user_activation &&
++      !ArcSkipUserActivationForPictureInPicture()) {
+     resolver->RejectWithDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Document PiP requires user activation");
+     return;
+diff --git a/third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.cc b/third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.cc
+index a71d3d4310..e1bae3e627 100644
+--- a/third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.cc
++++ b/third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.cc
+@@ -4,6 +4,7 @@
+ 
+ #include "third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.h"
+ 
++#include "third_party/blink/public/web/arc_renderer_policies.h"
+ #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+ #include "third_party/blink/renderer/core/dom/document.h"
+ #include "third_party/blink/renderer/core/dom/dom_exception.h"
+@@ -122,7 +123,8 @@ void HTMLVideoElementPictureInPicture::CheckIfPictureInPictureIsAllowed(
+   // token (for example, during `MediaSession` `enterpictureinpicture`), which
+   // is consumed immediately here. If either is present, both are consumed to
+   // avoid leaving dangling activation or Picture-in-Picture request tokens.
+-  if (controller.PictureInPictureElement()) {
++  if (ArcSkipUserActivationForPictureInPicture() ||
++      controller.PictureInPictureElement()) {
+     return;
+   }
+ 

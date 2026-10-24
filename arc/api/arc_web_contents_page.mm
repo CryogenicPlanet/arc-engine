@@ -1,6 +1,7 @@
 // Copyright 2026 ArcMod. Everyday page features on ArcWebContents: find, zoom, print, save, fullscreen, unload.
 #import "arc/api/arc_internal.h"
 #include "arc/browser/core_values.h"
+#include "arc/common/ad_block_browser.h"
 
 #include <array>
 #include <memory>
@@ -117,8 +118,6 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(FindCompletionState);
 // Per-tab flags set by the app.
 class PageFlags : public content::WebContentsUserData<PageFlags> {
  public:
-  bool ignore_disable_pip_attribute = false;
-  bool skip_user_activation_for_pip = false;
   std::array<float, 4> safe_area = {0, 0, 0, 0};
 
  private:
@@ -349,20 +348,14 @@ BrowserWindowInterface* BrowserFor(content::WebContents* contents) {
   return YES;
 }
 
-// Arc's auto picture-in-picture flags. The app sends NO (Chrome's default behavior) in every recorded scenario;
-// honoring YES needs the renderer to ignore disablePictureInPicture / the activation requirement (not yet).
+// Arc's auto picture-in-picture flags, forwarded to the main frame's renderer process like Arc's engine
+// (renderer-process globals: ignore starts true, skip false).
 - (void)ignoreDisablePiPAttribute:(BOOL)ignore {
-  if (content::WebContents* contents = [self webContents]) {
-    PageFlags::CreateForWebContents(contents);
-    PageFlags::FromWebContents(contents)->ignore_disable_pip_attribute = ignore;
-  }
+  arc::SetRendererIgnoreDisablePiPAttribute([self webContents], ignore);
 }
 
 - (void)skipUserActivationForPiP:(BOOL)skip {
-  if (content::WebContents* contents = [self webContents]) {
-    PageFlags::CreateForWebContents(contents);
-    PageFlags::FromWebContents(contents)->skip_user_activation_for_pip = skip;
-  }
+  arc::SetRendererSkipUserActivationForPiP([self webContents], skip);
 }
 
 // Kept for the page's safe-area insets (CSS env(safe-area-inset-*)); not forwarded to Blink yet.
