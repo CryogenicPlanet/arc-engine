@@ -19,3 +19,14 @@ results/sessions/proposals/source-only-adoption-transaction-v4/run-parent-v4/sta
 results/realcopy/
 results/realcopy.log
 logs/realcopy-package.log
+
+# Chromium git-index snapshots and query logs from the overnight workers (tens of MB each; GitHub rejects
+# files over 100 MB). Removed from history before the first push; copies in ../arc-engine-stripped-artifacts.
+*.alternate-index
+chromium-index.before
+chromium-private.index
+index-before.*
+index-now.*
+current-index.snapshot
+*.stage-v.nul
+run-parent-v4/*-query.log
