@@ -6,8 +6,11 @@
 set -euo pipefail
 E="$(cd "$(dirname "$0")" && pwd)"
 SLUG="${1:-ours156}"
+# ArcMod is the parent repo when this is its engine/ submodule, else a sibling checkout (../arc).
+ARCMOD="$E/../arc"
+[ -f "$E/../tools/build-mod.ts" ] && ARCMOD="$E/.."
 STOCK="$E/swap/stock-1.168.0/Arc.app"
 FRAMEWORK="$E/chromium/src/${ARC_ENGINE_OUT:-out/Base}/Chromium.app/Contents/Frameworks/ArcCore.framework"
-[ -d "$STOCK" ] || { echo "missing $STOCK (unpack ../arc/bin/Arc-1.168.0-88413.app.tar.xz there)"; exit 1; }
+[ -d "$STOCK" ] || { echo "missing $STOCK (unpack ArcMod's bin/Arc-1.168.0-88413.app.tar.xz there)"; exit 1; }
 [ -d "$FRAMEWORK" ] || { echo "missing $FRAMEWORK (build first: ./build-babysit.sh)"; exit 1; }
-cd "$E/../arc" && bun tools/build-mod.ts --agent "$SLUG" --source "$STOCK" --engine "$FRAMEWORK"
+cd "$ARCMOD" && bun tools/build-mod.ts --agent "$SLUG" --source "$STOCK" --engine "$FRAMEWORK"
