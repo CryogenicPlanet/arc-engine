@@ -2,7 +2,8 @@
 
 ## Context
 
-- Read `README.md`, then `NEXT.md` (current status and the open list). Before writing code under `arc/`,
+- Read `README.md`, the status issue (https://github.com/CryogenicPlanet/arc-engine/issues/1), then `NEXT.md`
+  (the plan and notes on open items). Before writing code under `arc/`,
   read `arc/ARCHITECTURE.md`; its rules are binding. `ENGINE.md` has facts about Arc's engine and
   procedures that worked.
 - The target: Arc 1.168.0's app layer runs on our `ArcCore.framework`, built from Chromium
@@ -23,8 +24,10 @@
 - Release builds: `autoninja -C chromium/src/out/Release chrome`, then
   `ARC_ENGINE_OUT=out/Release ./package-engine.sh rel156`, then `logs/run-release.sh <scenario…>`.
   Record new goldens on Arc's engine with `bun tests/scenarios/record-golden.ts <scenario>`.
-- Record status and open items in `NEXT.md` and durable facts in `ENGINE.md`. Don't add new note,
-  report or status files; delete scratch files before you commit.
+- When something starts or stops working, update the status issue
+  (`gh issue edit 1 -R CryogenicPlanet/arc-engine --body-file <file>`, keeping its layout and the
+  "Updated" date). Put the plan and technical notes in `NEXT.md` and durable facts in `ENGINE.md`.
+  Don't add new note, report or status files; delete scratch files before you commit.
 - Keep commits focused. Never commit `chromium/`, build output, `results/ours/`, `results/realcopy/`,
   browser data or files over 40 MB (GitHub rejects files over 100 MB).
 - For shared coordination, fetch `https://chirp.cryo.wtf/init` at session start and follow the live

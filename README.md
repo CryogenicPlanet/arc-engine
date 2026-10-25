@@ -5,7 +5,7 @@ Arc Engine is the browser engine for [ArcMod](https://github.com/CryogenicPlanet
 security updates.
 
 > **Experimental.** Most of Arc works on it in automated tests, but it isn't ready for your
-> daily profile yet. See [Status](#status).
+> daily profile yet. See the [status issue](https://github.com/CryogenicPlanet/arc-engine/issues/1).
 
 Arc for macOS is two pieces. The Swift app draws everything you see: the sidebar, spaces, the
 command bar and Little Arc. Underneath it, `ArcCore.framework` is The Browser Company's build of
@@ -66,26 +66,11 @@ steps. Without `--engine`, ArcMod keeps using Arc's own engine.
 
 ## Status
 
-Every engine method Arc's app calls is implemented. These behave like Arc's engine in recorded
-scenarios:
-
-- launching, quitting (with the quit warning) and relaunching with cookies and storage intact;
-- profiles: creating and switching them in Arc's UI, with separate data that survives a restart;
-- Settings, the command bar and ArcMod's agent tools;
-- tabs and navigation;
-- downloads;
-- media and picture-in-picture, including Arc's auto-PiP;
-- PDFs;
-- bookmarks and history;
-- importing from Chrome, Edge, Brave, Vivaldi, Opera and Arc: history, bookmarks, cookies,
-  passwords, cards and extensions;
-- extensions' page actions;
-- password, address and card save offers;
-- passkey dialogs.
-
-Still open: archiving a tab that was opened in the background, importing a folder that Safari
-exported, importing open tabs from Chromium browsers, and Boosts' color filters.
-[NEXT.md](NEXT.md) has the full list.
+Every engine method Arc's app calls is implemented, and most of Arc behaves like it does on
+Arc's own engine: launching, profiles, Settings, the command bar, tabs, downloads, media and
+picture-in-picture, PDFs, bookmarks, history, importing from other browsers and more. The
+pinned [status issue](https://github.com/CryogenicPlanet/arc-engine/issues/1) lists what works, what doesn't and what hasn't been checked
+yet, and it's kept up to date.
 
 ## How it's tested
 
