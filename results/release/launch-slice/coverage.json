@@ -1,7 +1,7 @@
 {
   "engineClassCount": 34,
-  "engineSelectorCount": 225,
-  "callbackSelectorCount": 25,
+  "engineSelectorCount": 226,
+  "callbackSelectorCount": 26,
   "scenario": "launch-slice",
   "accepted": true,
   "errors": [],
@@ -9,9 +9,9 @@
     "launch-1",
     "launch-2"
   ],
-  "classCount": 41,
-  "selectorCount": 250,
-  "callCount": 6266,
+  "classCount": 42,
+  "selectorCount": 252,
+  "callCount": 6250,
   "classes": {
     "ADK.ADKApplication": {
       "calls": 8,
@@ -20,6 +20,13 @@
         "engine->app -[ADK.ADKApplication didConnectToNetworkProcess]",
         "engine->app -[ADK.ADKApplication didInitializeBrowserProcess]",
         "engine->app -[ADK.ADKApplication didReceiveGPUInfoUpdate:]"
+      ]
+    },
+    "ADK.AccessibilityObserver": {
+      "calls": 1,
+      "selectorCount": 1,
+      "selectors": [
+        "engine->app -[ADK.AccessibilityObserver accessibilityModeChanged:]"
       ]
     },
     "ADK.BrowserContextDelegateBridge": {
@@ -46,7 +53,7 @@
       ]
     },
     "ADK.CrashKeysObserverBridge": {
-      "calls": 70,
+      "calls": 71,
       "selectorCount": 1,
       "selectors": [
         "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]"
@@ -97,13 +104,14 @@
       ]
     },
     "ArcBrowserApplication": {
-      "calls": 103,
-      "selectorCount": 21,
+      "calls": 104,
+      "selectorCount": 22,
       "selectors": [
         "->engine -[ArcBrowserApplication availableBrowserContextAttributes]",
         "->engine -[ArcBrowserApplication availableImportSourceProfiles:]",
         "->engine -[ArcBrowserApplication createBrowser:withDelegate:forWindow:]",
         "->engine -[ArcBrowserApplication disableAccessibility]",
+        "->engine -[ArcBrowserApplication ensureBasicAccessibilityEnabled]",
         "->engine -[ArcBrowserApplication getBrowserContext:type:]",
         "->engine -[ArcBrowserApplication getNonDefaultFlags:]",
         "->engine -[ArcBrowserApplication init:]",
@@ -363,14 +371,14 @@
       ]
     },
     "ArcURLLoadCancellationToken": {
-      "calls": 10,
+      "calls": 8,
       "selectorCount": 1,
       "selectors": [
         "->engine -[ArcURLLoadCancellationToken initWithToken:]"
       ]
     },
     "ArcURLLoadConfiguration": {
-      "calls": 80,
+      "calls": 64,
       "selectorCount": 8,
       "selectors": [
         "->engine -[ArcURLLoadConfiguration setBlockLocalRequest:]",
@@ -384,7 +392,7 @@
       ]
     },
     "ArcWebContents": {
-      "calls": 871,
+      "calls": 872,
       "selectorCount": 67,
       "selectors": [
         "->engine +[ArcWebContents wrapperForWebContents:]",
@@ -500,7 +508,7 @@
       ]
     },
     "_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate": {
-      "calls": 14,
+      "calls": 12,
       "selectorCount": 4,
       "selectors": [
         "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:]",
@@ -530,13 +538,14 @@
     "->engine -[ArcBrowserApplication availableImportSourceProfiles:]": 2,
     "->engine -[ArcBrowserApplication createBrowser:withDelegate:forWindow:]": 2,
     "->engine -[ArcBrowserApplication disableAccessibility]": 2,
+    "->engine -[ArcBrowserApplication ensureBasicAccessibilityEnabled]": 3,
     "->engine -[ArcBrowserApplication getBrowserContext:type:]": 2,
     "->engine -[ArcBrowserApplication getNonDefaultFlags:]": 2,
     "->engine -[ArcBrowserApplication init:]": 2,
     "->engine -[ArcBrowserApplication initialize:]": 2,
     "->engine -[ArcBrowserApplication isEncryptionAvailable]": 4,
     "->engine -[ArcBrowserApplication isFeatureEnabled:]": 4,
-    "->engine -[ArcBrowserApplication loadUrl:withDelegate:]": 8,
+    "->engine -[ArcBrowserApplication loadUrl:withDelegate:]": 6,
     "->engine -[ArcBrowserApplication run]": 2,
     "->engine -[ArcBrowserApplication setAccessibilityObserver:]": 2,
     "->engine -[ArcBrowserApplication setExcludedDomains:]": 2,
@@ -648,15 +657,15 @@
     "->engine -[ArcSecureContext state]": 6,
     "->engine -[ArcSessionID identifier]": 11,
     "->engine -[ArcTracingController setDelegate:]": 2,
-    "->engine -[ArcURLLoadCancellationToken initWithToken:]": 10,
-    "->engine -[ArcURLLoadConfiguration setBlockLocalRequest:]": 10,
-    "->engine -[ArcURLLoadConfiguration setCachePolicy:]": 10,
-    "->engine -[ArcURLLoadConfiguration setFollowRedirects:]": 10,
-    "->engine -[ArcURLLoadConfiguration setHeaders:]": 10,
-    "->engine -[ArcURLLoadConfiguration setMethod:]": 10,
-    "->engine -[ArcURLLoadConfiguration setStreamResponseData:]": 10,
-    "->engine -[ArcURLLoadConfiguration setTimeout:]": 10,
-    "->engine -[ArcURLLoadConfiguration setUrl:]": 10,
+    "->engine -[ArcURLLoadCancellationToken initWithToken:]": 8,
+    "->engine -[ArcURLLoadConfiguration setBlockLocalRequest:]": 8,
+    "->engine -[ArcURLLoadConfiguration setCachePolicy:]": 8,
+    "->engine -[ArcURLLoadConfiguration setFollowRedirects:]": 8,
+    "->engine -[ArcURLLoadConfiguration setHeaders:]": 8,
+    "->engine -[ArcURLLoadConfiguration setMethod:]": 8,
+    "->engine -[ArcURLLoadConfiguration setStreamResponseData:]": 8,
+    "->engine -[ArcURLLoadConfiguration setTimeout:]": 8,
+    "->engine -[ArcURLLoadConfiguration setUrl:]": 8,
     "->engine -[ArcWebContents backForwardList]": 20,
     "->engine -[ArcWebContents blockedResourceCount]": 6,
     "->engine -[ArcWebContents boostIDE]": 3,
@@ -672,9 +681,9 @@
     "->engine -[ArcWebContents ignoreDisablePiPAttribute:]": 3,
     "->engine -[ArcWebContents initWithWebContents:]": 3,
     "->engine -[ArcWebContents inputEvent]": 6,
-    "->engine -[ArcWebContents insertStylesheet:stylesheet:]": 11,
+    "->engine -[ArcWebContents insertStylesheet:stylesheet:]": 10,
     "->engine -[ArcWebContents isLoading]": 36,
-    "->engine -[ArcWebContents isReadyToDisplay]": 26,
+    "->engine -[ArcWebContents isReadyToDisplay]": 28,
     "->engine -[ArcWebContents loadProgress]": 42,
     "->engine -[ArcWebContents mediaSession]": 9,
     "->engine -[ArcWebContents nativeView]": 3,
@@ -695,7 +704,7 @@
     "->engine -[ArcWebContents setHasDirtyTextField:]": 3,
     "->engine -[ArcWebContents setHasFocus:]": 3,
     "->engine -[ArcWebContents setIsLoading:]": 18,
-    "->engine -[ArcWebContents setIsReadyToDisplay:]": 13,
+    "->engine -[ArcWebContents setIsReadyToDisplay:]": 14,
     "->engine -[ArcWebContents setLoadProgress:]": 21,
     "->engine -[ArcWebContents setNavigationDelegate:]": 3,
     "->engine -[ArcWebContents setNavigationID:]": 12,
@@ -721,7 +730,7 @@
     "->engine -[ArcWebContents undoableFieldActive]": 10,
     "->engine -[ArcWebContents url]": 24,
     "->engine -[ArcWebContents visibility]": 12,
-    "->engine -[ArcWebContents webContents]": 80,
+    "->engine -[ArcWebContents webContents]": 79,
     "->engine -[ArcWebContents zoomLevel]": 18,
     "->engine -[ArcWebContentsBoostIDE initWithArcWebContents:]": 3,
     "->engine -[ArcWebContentsBoostIDE initWithBoostIDE:]": 3,
@@ -739,12 +748,13 @@
     "engine->app -[ADK.ADKApplication didConnectToNetworkProcess]": 4,
     "engine->app -[ADK.ADKApplication didInitializeBrowserProcess]": 2,
     "engine->app -[ADK.ADKApplication didReceiveGPUInfoUpdate:]": 2,
+    "engine->app -[ADK.AccessibilityObserver accessibilityModeChanged:]": 1,
     "engine->app -[ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:]": 2,
     "engine->app -[ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:]": 2,
     "engine->app -[ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:]": 3,
     "engine->app -[ADK.ChromiumBrowser browser:didUpdateExtensionToolbarActions:]": 2,
     "engine->app -[ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:]": 16,
-    "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]": 70,
+    "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]": 71,
     "engine->app -[ADK.WebContentChromium webContents:decidePolicyForNavigationAction:]": 1,
     "engine->app -[ADK.WebContentChromium webContents:didChangeAvailableMediaActions:]": 3,
     "engine->app -[ADK.WebContentChromium webContents:didChangeStatusText:]": 19,
@@ -757,7 +767,7 @@
     "engine->app -[ADK.WebContentChromium webContents:didStartProvisionalNavigation:]": 4,
     "engine->app -[ADK.WebContentChromium webContentsClosingImminent:withSessionID:]": 1,
     "engine->app -[ADK.WebContentChromium webContentsPiPControllerDestroyed:]": 1,
-    "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:]": 8,
+    "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFail:withError:]": 6,
     "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didFinish:]": 2,
     "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveData:withData:]": 2,
     "engine->app -[_TtCC15URLLoaderClient19URLLoaderClientImpl12DataDelegate didReceiveHeaders:withFinalURL:withCode:withHeaders:]": 2

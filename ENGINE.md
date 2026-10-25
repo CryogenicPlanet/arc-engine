@@ -62,6 +62,11 @@ All releases are at `https://releases.arc.net/release/Arc-<ver>-<build>.zip`. Ve
   mouse-tracking methods).
 - **Engine swap verified:** the 1.168.0 app layer plus 1.170.0's ArcCore ran all master mod features and
   reported Chromium 156.0.8078.48 (§5.1).
+- **Tab views:** the app adds each tab's `nativeView` to its own view hierarchy and shows a selected tab only
+  once `isReadyToDisplay` is YES (`WebContentViewController` covers it with a placeholder until then, or
+  until a timeout). Arc's engine returns its own `WebContentsHostView`. Ours returns Chromium's
+  `WebContentsViewCocoa`, which Chromium hides for contents created hidden, such as background tabs, so
+  `nativeView` unhides it (`background-tab-select`).
 
 **Composition** (`results/arccore-vs-chromium-156.md`, `results/arc-files-1.170.0.txt`):
 - 7,823 source paths are compiled into the engine (only files that log or assert are visible):

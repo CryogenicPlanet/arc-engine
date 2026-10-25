@@ -54,6 +54,8 @@ not every method of a class.
 - `media` covers playback, pause and metadata; `media-pip` and `pip-flags` cover picture-in-picture.
 - `tabs-restore` covers Archive Tab and Restore Last Closed Tab; `sessions-tab-restart` covers restoring
   closed tabs after a restart.
+- `background-tab-select` selects a tab opened in the background and checks that it becomes visible and
+  paints. It needs no native UI, so it also runs with the screen locked.
 - `dialogs` covers alert, confirm and prompt; beforeunload and HTTP authentication have their own files.
 - `chromium-import` builds an encrypted fixture Chrome profile and imports cookies, passwords, cards,
   history and bookmarks from it.

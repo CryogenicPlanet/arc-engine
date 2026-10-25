@@ -818,7 +818,16 @@ uint64_t NextDiagnosticID() {
 - (id)uiDelegate { return _uiDelegate; }
 - (void)setActionsDelegate:(id)delegate { _actionsDelegate = delegate; }
 - (void)setTopBandColorDelegate:(id)delegate { _topBandColorDelegate = delegate; }
-- (NSView*)nativeView { return _contents ? _contents->GetNativeView().GetNativeNSView() : nil; }
+- (NSView*)nativeView {
+  NSView* view = _contents ? _contents->GetNativeView().GetNativeNSView() : nil;
+  // Chromium hides the view of contents created hidden (background tabs, and createWithProfile: by default)
+  // and leaves showing it to a views host. Arc's app hosts the view itself, so its hierarchy decides
+  // visibility: left hidden, a selected background tab never paints or becomes ready to display.
+  if (view.hidden) {
+    view.hidden = NO;
+  }
+  return view;
+}
 - (NSView*)createPaneHostView { return [[WebContentsPaneHostView alloc] initWithFrame:NSZeroRect]; }
 - (void)attachToPaneHostView:(NSView*)host {
   if (![host isMemberOfClass:[WebContentsPaneHostView class]]) {

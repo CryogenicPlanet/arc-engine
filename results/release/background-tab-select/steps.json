@@ -1,0 +1,45 @@
+{
+  "scenario": "background-tab-select",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-rel156.app",
+  "slug": "rel156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "first tab visible",
+      "outcome": "pass",
+      "detail": "visible"
+    },
+    {
+      "step": "background tab opens hidden",
+      "outcome": "pass",
+      "detail": "hidden"
+    },
+    {
+      "step": "selected background tab becomes visible",
+      "outcome": "pass",
+      "detail": "visible"
+    },
+    {
+      "step": "first tab hidden after the switch",
+      "outcome": "pass",
+      "detail": "hidden"
+    },
+    {
+      "step": "selected background tab paints",
+      "outcome": "pass",
+      "detail": "painted"
+    },
+    {
+      "step": "quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 9 helpers exited"
+    }
+  ]
+}

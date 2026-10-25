@@ -1,6 +1,6 @@
 # Arc Engine: plan and notes
 
-Updated 2026-10-24. [README.md](README.md) explains the project,
+Updated 2026-10-25. [README.md](README.md) explains the project,
 [ENGINE.md](ENGINE.md) has facts about Arc's engine and procedures that worked, and
 [arc/ARCHITECTURE.md](arc/ARCHITECTURE.md) has the rules for code in `arc/`.
 
@@ -11,8 +11,11 @@ This file keeps the plan and technical notes for the open items.
 
 ## Notes on open items
 
-- **Background tabs** (`arcmod-tabs-restore`): Arc's engine reports YES and 1 for
-  `isReadyToDisplay` and `loadProgress` on the same steps. This may affect real background tabs.
+- **Background tabs** (`arcmod-tabs-restore`): a selected background tab now shows and paints
+  (`background-tab-select`, run with the screen locked). Whether Archive Tab then works needs
+  `arcmod-tabs-restore`, which drives the native UI and so needs an unlocked screen. Separately, ours
+  publishes an extra `loadProgress` step (0.7) that Arc's engine doesn't, so a few getters return 0.7
+  where Arc's return 1.
 - **Quit skips Chromium's shutdown.** Arc's app exits the process once `tryToTerminate:` replies, and
   `quitRunLoopOnTermination` is stored but unused; Arc's engine quits its main loop and shuts down the
   browser runner instead. `arc_app_termination.mm` flushes what we know defers writes (cookies, storage
