@@ -6,7 +6,7 @@ Updated 2026-10-24. [README.md](README.md) explains the project,
 
 ## Status
 
-What works and what doesn't is the pinned [status issue](https://github.com/CryogenicPlanet/arc-engine/issues/1); update it there, not here.
+Known problems are listed in the pinned [status issue](https://github.com/CryogenicPlanet/arc-engine/issues/1); update them there, not here.
 This file keeps the plan and technical notes for the open items.
 
 ## Notes on open items

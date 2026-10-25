@@ -68,9 +68,8 @@ steps. Without `--engine`, ArcMod keeps using Arc's own engine.
 
 Every engine method Arc's app calls is implemented, and most of Arc behaves like it does on
 Arc's own engine: launching, profiles, Settings, the command bar, tabs, downloads, media and
-picture-in-picture, PDFs, bookmarks, history, importing from other browsers and more. The
-pinned [status issue](https://github.com/CryogenicPlanet/arc-engine/issues/1) lists what works, what doesn't and what hasn't been checked
-yet, and it's kept up to date.
+picture-in-picture, PDFs, bookmarks, history, importing from other browsers and more. Known
+problems are listed in the pinned [status issue](https://github.com/CryogenicPlanet/arc-engine/issues/1), which is kept up to date.
 
 ## How it's tested
 

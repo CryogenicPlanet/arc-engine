@@ -24,7 +24,7 @@
 - Release builds: `autoninja -C chromium/src/out/Release chrome`, then
   `ARC_ENGINE_OUT=out/Release ./package-engine.sh rel156`, then `logs/run-release.sh <scenario…>`.
   Record new goldens on Arc's engine with `bun tests/scenarios/record-golden.ts <scenario>`.
-- When something starts or stops working, update the status issue
+- When you find or fix a problem, update the status issue's list of known problems
   (`gh issue edit 1 -R CryogenicPlanet/arc-engine --body-file <file>`, keeping its layout and the
   "Updated" date). Put the plan and technical notes in `NEXT.md` and durable facts in `ENGINE.md`.
   Don't add new note, report or status files; delete scratch files before you commit.
