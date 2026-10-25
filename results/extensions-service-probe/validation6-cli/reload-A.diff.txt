@@ -1,6 +1,0 @@
-methods differing: 3 (missing 0, extra 0, returns 3, callback args 0, counts 0; internal-only 0, ours-internal 0)
-callback sequence: {"golden": 5, "ours": 5, "first_divergence": 0, "golden_from": ["ADKClientLive.BrowserExtensionsLifeCycleManager browserContext:didDisableExtension:", "ADK.ChromiumBrowser browser:didUpdateExtensionToolbarActions:", "ADKClientLive.BrowserExtensionsLifeCycleManager browserContext:didChangePinnedExtensionOrder:", "ADK.ChromiumBrowser browser:didUpdateExtensionToolbarActions:", "ADKClientLive.BrowserExtensionsLifeCycleManager browserContext:didInstallExtension:"], "ours_from": ["ADK.ChromiumBrowser browser:didUpdateExtensionToolbarActions:", "ADK.ChromiumBrowser browser:didUpdateExtensionToolbarA
-caller attribution: on (app calls + engine setters)
-return_mismatch {"method": "->engine -ArcExtensionInfo hasAction", "call": 1, "args": "[]", "golden": "false", "ours": "true"}
-return_mismatch {"method": "->engine -ArcExtensionInfo icon", "call": 1, "args": "[]", "golden": "null", "ours": "\"image(32x32)\""}
-return_mismatch {"method": "->engine -ArcExtensionToolbarAction tooltipText", "call": 0, "args": "[]", "golden": "\"Service fixture B\\nHas access to this site\"", "ours": "\"Service fixture B\\nAllowed to read & change this site\""}

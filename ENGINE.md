@@ -87,7 +87,7 @@ All releases are at `https://releases.arc.net/release/Arc-<ver>-<build>.zip`. Ve
 
 ## 3. Where everything lives
 
-**Mac** (`~/general/arc-engine`, a local git repo; heavy dirs are untracked):
+**This repo** (github.com/CryogenicPlanet/arc-engine, checked out at `~/general/arc-engine`; heavy dirs are untracked):
 - `chromium/src`: Google's Chromium 156.0.8078.48 (31 GB, no history, hooks run) with `patches/` applied.
 - `chromium/src/out/Base/Chromium.app`: stock release build, unstripped. `Chromium Framework.framework` is
   613 MB with 1,373,940 named functions.
@@ -176,79 +176,21 @@ builds ArcMod (`--validation`, `--source <abs path>`).
   - Heap 20 GB on the 32 GB VM plus 32 GB swap. The first run, with a 26 GB heap and no swap, was OOM-killed at 1h40m.
   - `phase-b2-ghidra.sh` saves the analysis first. Rerun it to redo only export and decompile.
 
-## 5. Runbook once the decompile lands
+## 5. How we got here
 
-### 5.1 Arc-layer extraction (VM; write `vm/arc_layer.py`)
+- 2026-10-22: the engine swap was proven (Arc 1.168.0's app on Arc 1.170.0's ArcCore). Static research on
+  ArcCore 1.170.0 produced `specs/` (one file per class) and `research/engine-feasibility.md`; the working
+  files of that research run are in `research/2026-10-22-sol/`.
+- 2026-10-23: route decided: compile Chromium with our own `arc/` layer; CEF was rejected
+  (`results/cef-mapping.md`). ArcCore 1.170.0 was decompiled on the VM (§3). Functions Arc's layer reaches
+  were named by guess-and-check against the Chromium source, not by mechanical matching.
+- 2026-10-23: the engine was built, first by parallel Codex workers (until their usage limit), then by the
+  lead directly. The workers' notes, probe scripts, proposal patches and probe outputs were removed from
+  the tree on 2026-10-24; git history before that commit has them.
 
-- Seeds: every function in an `Arc*::` namespace (functions.tsv). Add every function whose pseudo-C references
-  a `../../arc/` path string or an `arc.mojom.` name. Add the C exports.
-- Closure: follow callees from the seeds, stopping at functions that match stock Chromium (§5.2).
-- Output: `results/arc-layer-functions.tsv` (address, size, name, seed reason) and an aggregate size.
-  Copy only these back to the Mac, compressed. Outbound VM traffic is metered.
+## 6. Open questions
 
-### 5.2 Naming the functions Arc's layer reaches (agents, not full matching)
-
-Decision 2026-10-23: no full mechanical matching. Agents identify functions by guess-and-check against
-the Chromium 156.0.8078.48 source on `arcmod-engine` (`~/work/chromium/full/src`), using unique strings,
-file paths, histogram names and call patterns. They only cover functions reachable from Arc's layer (§5.1).
-Optional cheap helper: pre-label functions that reference a string unique to one Chromium source location.
-The Ghidra analysis of our own build was stopped as unnecessary. If mechanical matching is ever wanted,
-use our build's symbol table plus disassembly (string refs, call targets) instead of Ghidra. Notes kept below.
-
-#### Mechanical matching (optional, not planned)
-
-- Needs per-function features for both binaries: referenced strings, constants, callee names and counts.
-  ArcCore's come from the saved Ghidra project, via a new script `vm/ghidra/ExportFeatures.java`.
-- Base build: upload `Chromium Framework` (613 MB) from the Mac. It must be this macOS arm64 build; a Linux
-  build would not match. Import it into a second Ghidra project, where its symbols give names for free.
-  Expect hours of analysis. Then run the same feature export.
-- Match by unique string and constant sets first, then propagate along call edges. Unmatched ArcCore
-  functions are TBC's code or edited Chromium code. Matched-but-different functions show edits.
-- Alternatives if this is too slow: Ghidra Version Tracking, or matching only the closure from §5.1.
-
-### 5.3 Agents (Codex on exe.dev, billed to the ChatGPT subscription; see the `exe-dev` skill)
-
-Status 2026-10-23: Rahul's own sub-agents (Sol) are doing the decompile review and spec work, so don't start a
-parallel agent pilot. Coordinate with Rahul first.
-
-- Use a separate pooled VM (no extra compute cost) so agents never pressure the Ghidra or analysis VM.
-- On the VM, configure `~/.codex/config.toml`: `model_provider = "exe-llm"`, base URL
-  `https://llm.int.exe.xyz/v1`, `requires_openai_auth = false`. *Not yet verified.* Check models with
-  `curl -s https://llm.int.exe.xyz/openai/v1/models`.
-- Work unit: one Arc class (or a group of small classes). Inputs: its pseudo-C, matched Chromium names,
-  the Chromium 156 source, and the app's call sites (`~/general/arc/ghidra/decomp`).
-- Output: a spec per class (`specs/<Class>.md`): each method's behavior, the Chromium APIs it uses, state, threading.
-  Every claim cites function addresses.
-- A second agent reviews each spec against the pseudo-C. The final check is behavioral (§6).
-
-### 5.4 Contract headers
-
-- Generate `arc/public/ArcCore.h` from `dyld_info` names plus otool type encodings: classes, methods, properties,
-  protocols, ivars where needed. Then diff it against the app's actual usage.
-
-### 5.5 Route decision
-
-- CEF mapping: for each method the app uses, classify it as one of CEF public API, Chrome internals or
-  Arc-only. Then write `~/general/arc/notes/engine-feasibility.md` with the recommendation.
-
-## 6. Building our engine (if we compile)
-
-- Add `arc/` inside `chromium/src` (versioned here as patches, or as a separate git repo synced in).
-  Model the framework target on Chrome's mac framework target: product `ArcCore.framework`, with
-  `-exported_symbols_list` holding the 259 names, ChromeMain exported, and Info.plist ids and versions as in §2
-  (compat version ≥ 8059.0.40).
-- Helpers must be named `Browser Helper*.app`. Arc's app or ArcCore looks them up by these names.
-  *To verify:* which code constructs the names (`kAperitifHelpers` hints at a table).
-- Implement in launch order: `ArcBrowserApplication` → `ArcBrowserContext` → `ArcBrowser` → `ArcWebContents`
-  → navigation, devtools, downloads → UI hooks → extras. Test after each step by swapping our framework
-  into an ArcMod validation build (§4.1).
-- Rebuilds per Chromium release are incremental. Keep our changes as clean patches on top of Google's tags.
-
-## 7. Open questions
-
-- What is Aperitif (`libaperitif.dylib`, the second helper set)? Is it needed?
-- Which of the 69 protocols are callbacks into the app, and what does the app implement?
-- How much code sits behind the 111 visible `arc/` files (answered by §5.1)?
-- Which stock Chromium functions did TBC edit (§5.2)?
-- Does CEF cover enough of the 834 methods to skip compiling (§5.5)?
-- Did TBC build ArcCore as an official build (ThinLTO/PGO)? That affects matching quality.
+- What is Aperitif (`libaperitif.dylib`, the second helper set)? Our engine doesn't build it, and no
+  recorded scenario has needed it so far.
+- Did TBC build ArcCore as an official build (ThinLTO/PGO)? That matters for performance comparisons, not
+  for behavior.

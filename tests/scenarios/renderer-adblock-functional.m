@@ -1,8 +1,7 @@
 // Test-owned public API adapter. Recorder canonical forwarders remain installed.
 // Callback receipts below are sidecars, not canonical instrumented block calls.
 // ABI: arc/tools/arccore-1.170.0-objc.tsv372,382-383,387,409-410,2394,3282-3283.
-// Semantics: arc/common/renderer_exclusion_feature_gate_evidence.md and
-// renderer_debug_cache_evidence.md; debug may route to a different live agent.
+// Debug output may route to a different live agent.
 #import <Foundation/Foundation.h>
 #import <objc/message.h>
 #import <objc/runtime.h>

@@ -1,8 +1,8 @@
 // Copyright 2026 ArcMod. Color schemes and color filters of Boosts and tabs.
 //
 // Arc's engine applies both through Blink Page state (a preferred-color-scheme optional layered above the
-// media overrides, and an HSLA paint filter); see arc/common/RENDERER_VISUAL_GAPS.md. Neither exists in this
-// Chromium yet (renderer_effects_*_proposal.patch are unapplied). Until they land:
+// media overrides, and an HSLA paint filter). Neither exists in this Chromium yet (unapplied drafts,
+// renderer_effects_*_proposal.patch, are in git history). Until they land:
 //  - schemes are applied through the existing stylesheet path as `color-scheme` on the root element, which
 //    restyles UA-drawn parts and `light-dark()` but does not flip `prefers-color-scheme` media queries;
 //  - filters are recorded (per tab and per profile host) for the future renderer transport.

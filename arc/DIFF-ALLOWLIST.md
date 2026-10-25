@@ -1,7 +1,7 @@
 # Allowed boundary differences (ours vs Arc's engine)
 
 Each entry: what differs in `tests/recorder/diff.py` output, and why it is not a behavior difference for the
-app. Only the lead adds entries; packages request them in their reports.
+app. Add an entry only with a reason the app can't observe the difference.
 
 | Difference | Reason |
 |---|---|

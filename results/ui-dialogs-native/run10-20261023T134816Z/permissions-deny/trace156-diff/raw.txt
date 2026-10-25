@@ -1,8 +1,0 @@
-methods differing: 18 (missing 1, extra 0, returns 2, callback args 2, counts 13; internal-only 0, ours-internal 0)
-callback sequence: {"golden": 48, "ours": 47, "first_divergence": 27, "golden_from": ["ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.WebContentChromium webContents:didChangeAvailableMediaActions:", "ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:"], "ours_from": ["ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:", "ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "ADK.WebContentChromium webContents:didChangeAvailableMediaActions:", "ADK.Chromiu
-caller attribution: off (a transcript predates it)
-missing {"method": "engine->app -ADK.WebContentChromium webContentsClosePermission:", "golden_calls": 1, "example": {"args": "[\"<ArcWebContents#1>\"]", "ret": "null"}}
-return_mismatch {"method": "->engine -ArcSessionID identifier", "call": 0, "args": "[]", "golden": "954478093", "ours": "1749833940"}
-return_mismatch {"method": "->engine -ArcWebContents loadProgress", "call": 2, "args": "[]", "golden": "0.7", "ours": "1"}
-arg_mismatch {"method": "engine->app -ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:", "call": 0, "golden": "[\"<ArcBrowser#1>\", 954478093]", "ours": "[\"<ArcBrowser#1>\", 1749833940]"}
-arg_mismatch {"method": "engine->app -ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:", "call": 15, "golden": "[\"ProfileKeepAlive-origin\", \"kExtensionUpdater\"]", "ours": "[\"nav_reentrancy_caller1-LoadIf_pending\", \"true\"]"}

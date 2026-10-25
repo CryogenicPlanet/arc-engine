@@ -2,8 +2,8 @@
 
 Goal: Arc's app (1.168.0) runs on an `ArcCore.framework` built from Chromium source, **feature complete and
 behaving 1-1 with Arc's own engine at the app↔engine boundary**, so Arc can follow Chromium releases.
-This file is binding for everyone writing code under `arc/`. Decisions here are made by the lead; ask the lead
-(through your report) before deviating.
+This file is binding for everyone writing code under `arc/`. If a rule stops fitting, change it here in its own
+commit rather than working around it.
 
 ## Acceptance: the boundary diff, not compilation
 
@@ -22,8 +22,8 @@ This file is binding for everyone writing code under `arc/`. Decisions here are 
 - `arc/api/<area>.mm`: ObjC classes. One primary `@implementation` per class, in exactly one file. Extra
   surface on a class owned by someone else goes in a category in your own file (`@implementation ArcWebContents
   (DevTools)`), never by editing their file.
-- `arc/api/arc_internal.h`: shared internal declarations (native accessors, conversions). Add to it only
-  through the lead or in a clearly separated section with your work package name.
+- `arc/api/arc_internal.h`: shared internal declarations (native accessors, conversions). Keep additions
+  grouped by area, in a clearly labeled section.
 - `arc/browser/`: C++ (observers, the BrowserWindow implementation, helpers).
 - Unimplemented methods are stubs installed at load (`arc/api/arc_api_stubs.mm`, table from
   `arc/tools/gen_api_table.py`). After adding or removing a primary `@implementation`, rerun the generator.
@@ -82,7 +82,7 @@ Never leave a lookup returning null where Chrome dereferences it: that's a crash
 ## Host mode (patches)
 
 Chromium changes live only in `patches/*.patch` (applied by `sync-chromium.sh`). Keep them minimal and gated on
-`--arcmod-host-app` where behavior differs from Chrome. A new patch needs the lead.
+`--arcmod-host-app` where behavior differs from Chrome. Add a new patch only when `arc/` can't do the job, and regenerate patches with `arc/tools/regen-patches.sh`.
 
 ## Build, run, check (shared machine, one `out/Base`)
 
@@ -90,7 +90,7 @@ Chromium changes live only in `patches/*.patch` (applied by `sync-chromium.sh`).
   Typical: `arc/tools/locked.sh sh -c './build-babysit.sh && ./try-engine.sh 30'`.
 - Fast syntax check of one file without the lock: `arc/tools/check-file.sh arc/api/<file>.mm`.
 - Never touch `/Applications/Arc.app`, the real Arc profile, `~/Library/Application Support/Arc`, or ArcMod's
-  normal data. Agent apps and their data under `ArcModAgent-*` are disposable. No VMs, no pushes, no commits
-  (the lead reviews and commits).
+  normal data. Agent apps and their data under `ArcModAgent-*` are disposable. Don't use the exe.dev VM
+  without Rahul's approval.
 - Chromium style: `-Werror`, ARC, `base::NoDestructor` for statics, no raw `strcmp`-style buffer calls,
   `std::string_view`, `base::SysNSStringToUTF8` etc.

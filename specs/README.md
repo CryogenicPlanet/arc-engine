@@ -4,7 +4,7 @@
 
 The verified readiness selection covers 146 Arc-prefixed metadata classes and 1,964 exact declared method identities. These are bounded static research specifications. Declared coverage does not establish complete behavior recovery, receiver reachability, full native ABI compatibility, implementation readiness, or runtime acceptance. No runtime native changes were performed by this research.
 
-[Main feasibility report](../../arc/notes/engine-feasibility.md); [combined methods](methods.tsv); [protocol index](protocol-index.tsv).
+[Main feasibility report](../research/engine-feasibility.md); [combined methods](methods.tsv); [protocol index](protocol-index.tsv).
 
 [Readiness selection](../research/2026-10-22-sol/evidence/CLASS-REVISIONS-READY); [global synthesis](../research/2026-10-22-sol/evidence/agents/review/synthesis/engine-feasibility.md); [global completion proof](../research/2026-10-22-sol/evidence/review-synthesis.completion.json).
 
