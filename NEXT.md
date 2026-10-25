@@ -13,7 +13,13 @@ This file keeps the plan and technical notes for the open items.
 
 - **Background tabs** (`arcmod-tabs-restore`): Arc's engine reports YES and 1 for
   `isReadyToDisplay` and `loadProgress` on the same steps. This may affect real background tabs.
-- **Importing open tabs** (category 2048) from Chromium browsers. Three things block a direct port:
+- **Quit skips Chromium's shutdown.** Arc's app exits the process once `tryToTerminate:` replies, and
+  `quitRunLoopOnTermination` is stored but unused; Arc's engine quits its main loop and shuts down the
+  browser runner instead. `arc_app_termination.mm` flushes what we know defers writes (cookies, storage
+  partitions, prefs, local state, sessions, bookmarks, history). Anything else that commits on a timer can
+  still lose its last few seconds; running Chromium's shutdown after the reply would cover all of it.
+- **Importing open tabs** (category 2048) from Chromium browsers. Arc's engine copies the source
+  profile's `Sessions` folder first ("Could not copy source profile's Sessions directory"). Three things block a direct port:
   Chromium 156 encrypts session files by default (`kEncryptSessionStorage`: `Sessions_Encrypted`,
   file version 5, read through an `os_crypt_async::Encryptor`), and the `Encryptor` constructor that
   takes a key is private to Chromium's own crypto classes, so another browser's Safe Storage key can't
