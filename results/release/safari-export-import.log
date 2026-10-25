@@ -1,0 +1,19 @@
+seed launch pass native ready, CDP target list available
+seed import accepted pass none 
+seed quit pass Browser.close; browser + 5 helpers exited
+seed password imported pass [{"event":"initialize"},{"event":"start"},{"category":8,"event":"category-start"},{"category":8,"event":"category-end"},{"event":"end"}]
+export launch pass native ready, CDP target list available
+export import accepted pass none 
+export quit pass Browser.close; browser + 3 helpers exited
+one initialize, then one start pass [{"event":"initialize"},{"event":"start"},{"category":256,"event":"category-start"},{"category":256,"error":"This category cannot be imported from this source.","event":"category-end"},{"category":2,"event":"category-start"},{"category":2,"event":"category-end"},{"category":1,"event":"category-start"},{"category":1,"event":"category-end"},{"category":8,"event":"category-start"},{"category":8,"event":"category-end"},{"event":"end"}]
+history starts and ends once, without error pass [{"event":"initialize"},{"event":"start"},{"category":256,"event":"category-start"},{"category":256,"error":"This category cannot be imported from this source.","event":"category-end"},{"category":2,"event":"category-start"},{"category":2,"event":"category-end"},{"category":1,"event":"category-start"},{"category":1,"event":"category-end"},{"category":8,"event":"category-start"},{"category":8,"event":"category-end"},{"event":"end"}]
+bookmarks starts and ends once, without error pass [{"event":"initialize"},{"event":"start"},{"category":256,"event":"category-start"},{"category":256,"error":"This category cannot be imported from this source.","event":"category-end"},{"category":2,"event":"category-start"},{"category":2,"event":"category-end"},{"category":1,"event":"category-start"},{"category":1,"event":"category-end"},{"category":8,"event":"category-start"},{"category":8,"event":"category-end"},{"event":"end"}]
+passwords starts and ends once, without error pass [{"event":"initialize"},{"event":"start"},{"category":256,"event":"category-start"},{"category":256,"error":"This category cannot be imported from this source.","event":"category-end"},{"category":2,"event":"category-start"},{"category":2,"event":"category-end"},{"category":1,"event":"category-start"},{"category":1,"event":"category-end"},{"category":8,"event":"category-start"},{"category":8,"event":"category-end"},{"event":"end"}]
+cards end once with an error pass [{"event":"initialize"},{"event":"start"},{"category":256,"event":"category-start"},{"category":256,"error":"This category cannot be imported from this source.","event":"category-end"},{"category":2,"event":"category-start"},{"category":2,"event":"category-end"},{"category":1,"event":"category-start"},{"category":1,"event":"category-end"},{"category":8,"event":"category-start"},{"category":8,"event":"category-end"},{"event":"end"}]
+import ends last, without error pass [{"event":"initialize"},{"event":"start"},{"category":256,"event":"category-start"},{"category":256,"error":"This category cannot be imported from this source.","event":"category-end"},{"category":2,"event":"category-start"},{"category":2,"event":"category-end"},{"category":1,"event":"category-start"},{"category":1,"event":"category-end"},{"category":8,"event":"category-start"},{"category":8,"event":"category-end"},{"event":"end"}]
+bookmark imported pass 
+history entry imported with its title and time pass {"url":"https://history.example.com/safari-7f3a","title":"Safari History 7f3a","visit_count":4,"last_visit_time":13437381399838000}
+history entries Chromium's Safari importer skips are skipped pass []
+saved password kept over the export's conflicting one pass 1
+non-conflicting login imported pass 1
+all steps pass

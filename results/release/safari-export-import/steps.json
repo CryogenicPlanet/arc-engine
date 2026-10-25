@@ -1,0 +1,100 @@
+{
+  "scenario": "safari-export-import",
+  "app": "/Users/cryogenicplanet/general/arc/build/ArcModAgent-rel156.app",
+  "slug": "rel156",
+  "traced": false,
+  "recorded": true,
+  "port": "9333",
+  "steps": [
+    {
+      "step": "seed launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "seed import accepted",
+      "outcome": "pass",
+      "detail": "none "
+    },
+    {
+      "step": "seed quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 5 helpers exited"
+    },
+    {
+      "step": "seed password imported",
+      "outcome": "pass",
+      "detail": "[{\"event\":\"initialize\"},{\"event\":\"start\"},{\"category\":8,\"event\":\"category-start\"},{\"category\":8,\"event\":\"category-end\"},{\"event\":\"end\"}]"
+    },
+    {
+      "step": "export launch",
+      "outcome": "pass",
+      "detail": "native ready, CDP target list available"
+    },
+    {
+      "step": "export import accepted",
+      "outcome": "pass",
+      "detail": "none "
+    },
+    {
+      "step": "export quit",
+      "outcome": "pass",
+      "detail": "Browser.close; browser + 3 helpers exited"
+    },
+    {
+      "step": "one initialize, then one start",
+      "outcome": "pass",
+      "detail": "[{\"event\":\"initialize\"},{\"event\":\"start\"},{\"category\":256,\"event\":\"category-start\"},{\"category\":256,\"error\":\"This category cannot be imported from this source.\",\"event\":\"category-end\"},{\"category\":2,\"event\":\"category-start\"},{\"category\":2,\"event\":\"category-end\"},{\"category\":1,\"event\":\"category-start\"},{\"category\":1,\"event\":\"category-end\"},{\"category\":8,\"event\":\"category-start\"},{\"category\":8,\"event\":\"category-end\"},{\"event\":\"end\"}]"
+    },
+    {
+      "step": "history starts and ends once, without error",
+      "outcome": "pass",
+      "detail": "[{\"event\":\"initialize\"},{\"event\":\"start\"},{\"category\":256,\"event\":\"category-start\"},{\"category\":256,\"error\":\"This category cannot be imported from this source.\",\"event\":\"category-end\"},{\"category\":2,\"event\":\"category-start\"},{\"category\":2,\"event\":\"category-end\"},{\"category\":1,\"event\":\"category-start\"},{\"category\":1,\"event\":\"category-end\"},{\"category\":8,\"event\":\"category-start\"},{\"category\":8,\"event\":\"category-end\"},{\"event\":\"end\"}]"
+    },
+    {
+      "step": "bookmarks starts and ends once, without error",
+      "outcome": "pass",
+      "detail": "[{\"event\":\"initialize\"},{\"event\":\"start\"},{\"category\":256,\"event\":\"category-start\"},{\"category\":256,\"error\":\"This category cannot be imported from this source.\",\"event\":\"category-end\"},{\"category\":2,\"event\":\"category-start\"},{\"category\":2,\"event\":\"category-end\"},{\"category\":1,\"event\":\"category-start\"},{\"category\":1,\"event\":\"category-end\"},{\"category\":8,\"event\":\"category-start\"},{\"category\":8,\"event\":\"category-end\"},{\"event\":\"end\"}]"
+    },
+    {
+      "step": "passwords starts and ends once, without error",
+      "outcome": "pass",
+      "detail": "[{\"event\":\"initialize\"},{\"event\":\"start\"},{\"category\":256,\"event\":\"category-start\"},{\"category\":256,\"error\":\"This category cannot be imported from this source.\",\"event\":\"category-end\"},{\"category\":2,\"event\":\"category-start\"},{\"category\":2,\"event\":\"category-end\"},{\"category\":1,\"event\":\"category-start\"},{\"category\":1,\"event\":\"category-end\"},{\"category\":8,\"event\":\"category-start\"},{\"category\":8,\"event\":\"category-end\"},{\"event\":\"end\"}]"
+    },
+    {
+      "step": "cards end once with an error",
+      "outcome": "pass",
+      "detail": "[{\"event\":\"initialize\"},{\"event\":\"start\"},{\"category\":256,\"event\":\"category-start\"},{\"category\":256,\"error\":\"This category cannot be imported from this source.\",\"event\":\"category-end\"},{\"category\":2,\"event\":\"category-start\"},{\"category\":2,\"event\":\"category-end\"},{\"category\":1,\"event\":\"category-start\"},{\"category\":1,\"event\":\"category-end\"},{\"category\":8,\"event\":\"category-start\"},{\"category\":8,\"event\":\"category-end\"},{\"event\":\"end\"}]"
+    },
+    {
+      "step": "import ends last, without error",
+      "outcome": "pass",
+      "detail": "[{\"event\":\"initialize\"},{\"event\":\"start\"},{\"category\":256,\"event\":\"category-start\"},{\"category\":256,\"error\":\"This category cannot be imported from this source.\",\"event\":\"category-end\"},{\"category\":2,\"event\":\"category-start\"},{\"category\":2,\"event\":\"category-end\"},{\"category\":1,\"event\":\"category-start\"},{\"category\":1,\"event\":\"category-end\"},{\"category\":8,\"event\":\"category-start\"},{\"category\":8,\"event\":\"category-end\"},{\"event\":\"end\"}]"
+    },
+    {
+      "step": "bookmark imported",
+      "outcome": "pass",
+      "detail": ""
+    },
+    {
+      "step": "history entry imported with its title and time",
+      "outcome": "pass",
+      "detail": "{\"url\":\"https://history.example.com/safari-7f3a\",\"title\":\"Safari History 7f3a\",\"visit_count\":4,\"last_visit_time\":13437381399838000}"
+    },
+    {
+      "step": "history entries Chromium's Safari importer skips are skipped",
+      "outcome": "pass",
+      "detail": "[]"
+    },
+    {
+      "step": "saved password kept over the export's conflicting one",
+      "outcome": "pass",
+      "detail": "1"
+    },
+    {
+      "step": "non-conflicting login imported",
+      "outcome": "pass",
+      "detail": "1"
+    }
+  ]
+}

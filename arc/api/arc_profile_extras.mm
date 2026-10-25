@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -17,6 +18,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -51,6 +53,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -297,21 +300,94 @@ constexpr long long kTypeSafari = 4;
 // A folder Safari exported (File → Export Browsing Data), as Arc's app unpacks it.
 constexpr long long kTypeSafariExport = 12;
 
-// The export's bookmarks are an HTML file in its folder; Safari names it Bookmarks.html.
-base::FilePath FindSafariExportBookmarks(const base::FilePath& directory) {
-  std::vector<base::FilePath> found;
-  base::FileEnumerator files(directory, /*recursive=*/false, base::FileEnumerator::FILES);
-  for (base::FilePath path = files.Next(); !path.empty(); path = files.Next()) {
-    if (!path.MatchesExtension(FILE_PATH_LITERAL(".html"))) {
+// The files in a Safari export. Each is Safari's name for it, else a file whose name starts the same way (a
+// profile's "History - Work.json"). Like Arc's engine, any .html file can be the bookmarks and any .csv file
+// the passwords; a .json file has to be named for history, since an export has other JSON files.
+struct SafariExportFiles {
+  base::FilePath bookmarks;  // Bookmarks.html
+  base::FilePath history;    // History.json
+  base::FilePath passwords;  // Passwords.csv
+};
+
+SafariExportFiles FindSafariExportFiles(const base::FilePath& directory) {
+  std::vector<base::FilePath> files;
+  base::FileEnumerator enumerator(directory, /*recursive=*/false, base::FileEnumerator::FILES);
+  for (base::FilePath path = enumerator.Next(); !path.empty(); path = enumerator.Next()) {
+    files.push_back(path);
+  }
+  std::sort(files.begin(), files.end());
+  const auto find = [&files](const base::FilePath::StringType& extension, std::string_view stem, bool any) {
+    base::FilePath prefixed;
+    base::FilePath first;
+    for (const base::FilePath& path : files) {
+      if (!path.MatchesExtension(extension)) {
+        continue;
+      }
+      const std::string name = path.BaseName().RemoveFinalExtension().value();
+      if (base::EqualsCaseInsensitiveASCII(name, stem)) {
+        return path;
+      }
+      if (prefixed.empty() && base::StartsWith(name, stem, base::CompareCase::INSENSITIVE_ASCII)) {
+        prefixed = path;
+      }
+      if (first.empty()) {
+        first = path;
+      }
+    }
+    return !prefixed.empty() ? prefixed : any ? first : base::FilePath();
+  };
+  return {find(FILE_PATH_LITERAL(".html"), "Bookmarks", true), find(FILE_PATH_LITERAL(".json"), "History", false),
+          find(FILE_PATH_LITERAL(".csv"), "Passwords", true)};
+}
+
+// Chromium's Safari importer (safari_data_importer.cc) treats a visit as a redirect when the page it led to
+// differs in scheme, host or path, or gained a query.
+bool IsSafariRedirect(const GURL& source, const GURL& destination) {
+  if (source == destination || !source.is_valid() || !destination.is_valid()) {
+    return false;
+  }
+  return source.GetScheme() != destination.GetScheme() || source.GetHost() != destination.GetHost() ||
+         source.GetPath() != destination.GetPath() || (!source.has_query() && destination.has_query());
+}
+
+// Safari's History.json: {"history": [{"url", "title", "visit_count", "time_usec", "source_url",
+// "destination_url"}, ...]}. Skips what Chromium's Safari importer skips: entries without a usable http(s) URL
+// or a visit time, visits older than history keeps, and redirects. nullopt if the file isn't a history export.
+std::optional<history::URLRows> ReadSafariHistory(base::FilePath path) {
+  std::string contents;
+  if (!base::ReadFileToStringWithMaxSize(path, &contents, 128 * 1024 * 1024)) {
+    return std::nullopt;
+  }
+  const base::Time oldest = base::Time::Now() - base::Days(history::HistoryBackend::kExpireDaysThreshold);
+  std::optional<base::DictValue> root = base::JSONReader::ReadDict(contents, base::JSON_PARSE_RFC);
+  const base::ListValue* entries = root ? root->FindList("history") : nullptr;
+  if (!entries) {
+    return std::nullopt;
+  }
+  history::URLRows rows;
+  for (const base::Value& entry : *entries) {
+    const base::DictValue* dict = entry.GetIfDict();
+    const std::string* url = dict ? dict->FindString("url") : nullptr;
+    const std::optional<double> usec = dict ? dict->FindDouble("time_usec") : std::nullopt;
+    GURL gurl(url ? *url : std::string());
+    if (!gurl.is_valid() || !gurl.SchemeIsHTTPOrHTTPS() || !usec) {
       continue;
     }
-    if (base::EqualsCaseInsensitiveASCII(path.BaseName().value(), "Bookmarks.html")) {
-      return path;
+    const base::Time visited = base::Time::UnixEpoch() + base::Microseconds(base::saturated_cast<int64_t>(*usec));
+    const std::string* source = dict->FindString("source_url");
+    const std::string* destination = dict->FindString("destination_url");
+    if (visited < oldest || (source && destination && IsSafariRedirect(GURL(*source), GURL(*destination)))) {
+      continue;
     }
-    found.push_back(path);
+    history::URLRow row(gurl);
+    if (const std::string* title = dict->FindString("title")) {
+      row.set_title(base::UTF8ToUTF16(*title));
+    }
+    row.set_visit_count(std::max(1, dict->FindInt("visit_count").value_or(1)));
+    row.set_last_visit(visited);
+    rows.push_back(std::move(row));
   }
-  std::sort(found.begin(), found.end());
-  return found.empty() ? base::FilePath() : found.front();
+  return rows;
 }
 
 bool IsChromiumFamily(long long type) {
@@ -529,6 +605,54 @@ ChromiumFamilyData ReadChromiumFamily(base::FilePath dir,
   return data;
 }
 
+// Imports one CSV file of passwords into the profile store through Chromium's sandboxed parser, then deletes
+// itself. Saved passwords win over conflicting rows; the rest are imported. |done| hears whether it worked.
+class PasswordFileImport {
+ public:
+  static void Run(Profile* profile, const base::FilePath& path, base::OnceCallback<void(bool)> done = {}) {
+    // The presenter never finishes initializing without a profile store.
+    if (!ProfilePasswordStoreFactory::GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS)) {
+      if (done) {
+        std::move(done).Run(false);
+      }
+      return;
+    }
+    // Owns itself until the import result arrives.
+    (new PasswordFileImport(profile, std::move(done)))->Start(path);
+  }
+
+ private:
+  PasswordFileImport(Profile* profile, base::OnceCallback<void(bool)> done)
+      : presenter_(AffiliationServiceFactory::GetForProfile(profile),
+                   ProfilePasswordStoreFactory::GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS),
+                   AccountPasswordStoreFactory::GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS)),
+        importer_(presenter_),
+        done_(std::move(done)) {}
+
+  void Start(const base::FilePath& path) {
+    presenter_.Init(base::BindOnce(&PasswordFileImport::Import, base::Unretained(this), path));
+  }
+  void Import(base::FilePath path) {
+    importer_.Import(path, password_manager::PasswordForm::Store::kProfileStore,
+                     base::BindOnce(&PasswordFileImport::Done, base::Unretained(this)));
+  }
+  void Done(const password_manager::ImportResults& results) {
+    if (results.status == password_manager::ImportResults::CONFLICTS) {
+      // The importer waits for the user to pick conflicts to replace; replace none.
+      importer_.ContinueImport({}, base::BindOnce(&PasswordFileImport::Done, base::Unretained(this)));
+      return;
+    }
+    if (done_) {
+      std::move(done_).Run(results.status == password_manager::ImportResults::SUCCESS);
+    }
+    base::SequencedTaskRunner::GetCurrentDefault()->DeleteSoon(FROM_HERE, this);
+  }
+
+  password_manager::SavedPasswordsPresenter presenter_;
+  password_manager::PasswordImporter importer_;
+  base::OnceCallback<void(bool)> done_;
+};
+
 // One import run. Delegate callbacks follow ArcImportDelegate; everything runs on the main thread. The run
 // keeps itself alive until it ends.
 class ImportSession final : public importer::ImporterProgressObserver,
@@ -582,14 +706,25 @@ class ImportSession final : public importer::ImporterProgressObserver,
   // A cancelled import (a locked Firefox profile, a crashed utility process) can end before it starts, or with
   // categories still open.
   void ImportEnded() override {
-    NSError* error = started_ && !open_categories_ ? nil : MakeError(@"The import was interrupted.");
-    NotifyStart();
+    const long long unfinished = open_categories_ | (host_categories_ & ~ended_categories_);
+    if (started_ && !unfinished) {
+      HostImportDone();
+      return;
+    }
+    host_error_ = MakeError(@"The import was interrupted.");
+    if (!started_) {
+      NotifyStart();
+      ReportUnsupported(SupportedMask());
+    }
     for (long long bit = 1; bit <= kCategoryMask; bit <<= 1) {
-      if (open_categories_ & bit) {
-        NotifyCategoryEnd(bit, error);
+      if (unfinished & bit) {
+        if (!(open_categories_ & bit)) {
+          NotifyCategoryStart(bit);
+        }
+        NotifyCategoryEnd(bit, host_error_);
       }
     }
-    Finish(error);
+    HostImportDone();
   }
 
  private:
@@ -607,24 +742,86 @@ class ImportSession final : public importer::ImporterProgressObserver,
   // file importer; its other data isn't imported yet.
   long long SupportedMask() const {
     if (source_.type == kTypeSafariExport) {
-      return safari_export_bookmarks_.empty() ? 0 : kCategoryBookmarks;
+      return (safari_export_.bookmarks.empty() ? 0 : kCategoryBookmarks) |
+             (safari_export_.history.empty() ? 0 : kCategoryHistory) |
+             (safari_export_.passwords.empty() ? 0 : kCategoryPasswords);
     }
     return HostMask();
   }
 
-  // Safari export: find the bookmarks file off the main thread, then import it through the host.
+  // Safari export: find its files off the main thread. The bookmarks go through the host's bookmarks file
+  // importer; history and passwords follow once it's done.
   void StartSafariExport() {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&FindSafariExportBookmarks, base::FilePath(ArcUTF8(source_.sourcePath))),
+        base::BindOnce(&FindSafariExportFiles, base::FilePath(ArcUTF8(source_.sourcePath))),
         base::BindOnce(
-            [](std::weak_ptr<ImportSession> weak, base::FilePath bookmarks) {
+            [](std::weak_ptr<ImportSession> weak, SafariExportFiles files) {
               if (auto session = weak.lock()) {
-                session->safari_export_bookmarks_ = std::move(bookmarks);
+                session->safari_export_ = std::move(files);
                 session->StartChromiumHost();
               }
             },
             weak_from_this()));
+  }
+  void HostImportDone() {
+    if (source_.type == kTypeSafariExport) {
+      ImportSafariHistory();
+    } else {
+      Finish(host_error_);
+    }
+  }
+  void ImportSafariHistory() {
+    if (!(categories_ & kCategoryHistory) || safari_export_.history.empty()) {
+      ImportSafariPasswords();
+      return;
+    }
+    NotifyCategoryStart(kCategoryHistory);
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&ReadSafariHistory, safari_export_.history),
+        base::BindOnce(
+            [](std::weak_ptr<ImportSession> weak, std::optional<history::URLRows> rows) {
+              if (auto session = weak.lock()) {
+                session->FinishSafariHistory(std::move(rows));
+              }
+            },
+            weak_from_this()));
+  }
+  void FinishSafariHistory(std::optional<history::URLRows> rows) {
+    if (rows && profile_) {
+      if (!rows->empty()) {
+        writer_->AddHistoryPage(*rows, history::SOURCE_SAFARI_IMPORTED);
+      }
+      NotifyCategoryEnd(kCategoryHistory, nil);
+    } else {
+      NotifyCategoryEnd(kCategoryHistory, MakeError(@"The history could not be read."));
+    }
+    ImportSafariPasswords();
+  }
+  void ImportSafariPasswords() {
+    Profile* profile = profile_.get();
+    if (!(categories_ & kCategoryPasswords) || safari_export_.passwords.empty()) {
+      Finish(host_error_);
+      return;
+    }
+    NotifyCategoryStart(kCategoryPasswords);
+    if (!profile) {
+      NotifyCategoryEnd(kCategoryPasswords, MakeError(@"The profile is gone."));
+      Finish(host_error_);
+      return;
+    }
+    PasswordFileImport::Run(profile, safari_export_.passwords,
+                            base::BindOnce(
+                                [](std::weak_ptr<ImportSession> weak, bool ok) {
+                                  if (auto session = weak.lock()) {
+                                    session->NotifyCategoryEnd(
+                                        kCategoryPasswords,
+                                        ok ? nil : MakeError(@"The passwords could not be read."));
+                                    session->Finish(session->host_error_);
+                                  }
+                                },
+                                weak_from_this()));
   }
   // What Arc's Chromium importer reads from Chrome, Edge, Brave, Vivaldi, Opera and Arc profiles.
   static long long FamilyMask() {
@@ -650,6 +847,7 @@ class ImportSession final : public importer::ImporterProgressObserver,
   }
   void NotifyCategoryEnd(long long category, NSError* error) {
     open_categories_ &= ~category;
+    ended_categories_ |= category;
     if ([delegate_ respondsToSelector:@selector(didImportCategoryEnd:withCategory:withError:)]) {
       [delegate_ didImportCategoryEnd:ArcImportSourceProfileCopy(source_) withCategory:category withError:error];
     }
@@ -691,7 +889,7 @@ class ImportSession final : public importer::ImporterProgressObserver,
       source.source_path = base::FilePath(ArcUTF8(source_.sourcePath));
     } else if (source_.type == kTypeSafariExport) {
       source.importer_type = user_data_importer::TYPE_BOOKMARKS_FILE;
-      source.source_path = safari_export_bookmarks_;
+      source.source_path = safari_export_.bookmarks;
     } else {
       source.importer_type = user_data_importer::TYPE_SAFARI;
       // Chromium's Safari importer reads from the user library directory itself.
@@ -703,11 +901,20 @@ class ImportSession final : public importer::ImporterProgressObserver,
         items |= mapping.item;
       }
     }
+    if (source_.type == kTypeSafariExport) {
+      // The host imports only the export's bookmarks.
+      items &= user_data_importer::FAVORITES;
+    }
     source.services_supported = items;
+    for (const auto& mapping : kItemMappings) {
+      if (items & mapping.item) {
+        host_categories_ |= mapping.category;
+      }
+    }
     if (!items) {
       NotifyStart();
       ReportUnsupported(SupportedMask());
-      Finish(nil);
+      HostImportDone();
       return;
     }
     // The host deletes itself after ImportEnded. Headless: no lock dialog; a locked Firefox profile cancels.
@@ -818,38 +1025,14 @@ class ImportSession final : public importer::ImporterProgressObserver,
   const std::vector<std::string> allowed_extensions_;
   const bool skip_existing_cookies_;
   // Safari export: its bookmarks HTML file (empty until found, or if there's none).
-  base::FilePath safari_export_bookmarks_;
+  SafariExportFiles safari_export_;
   bool started_ = false;
   long long open_categories_ = 0;
+  long long ended_categories_ = 0;
+  // Categories handed to Chromium's importer host, and the error an interrupted host import ends with.
+  long long host_categories_ = 0;
+  NSError* host_error_ = nil;
   std::shared_ptr<ImportSession> keepalive_;
-};
-
-// Imports one CSV file of passwords into the profile store, then deletes itself.
-class PasswordFileImport {
- public:
-  static void Run(Profile* profile, const base::FilePath& path) {
-    // Owns itself until the import result arrives.
-    (new PasswordFileImport(profile))->Start(path);
-  }
-
- private:
-  explicit PasswordFileImport(Profile* profile)
-      : presenter_(AffiliationServiceFactory::GetForProfile(profile),
-                   ProfilePasswordStoreFactory::GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS),
-                   AccountPasswordStoreFactory::GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS)),
-        importer_(presenter_) {}
-
-  void Start(const base::FilePath& path) {
-    presenter_.Init(base::BindOnce(&PasswordFileImport::Import, base::Unretained(this), path));
-  }
-  void Import(base::FilePath path) {
-    importer_.Import(path, password_manager::PasswordForm::Store::kProfileStore,
-                     base::BindOnce(&PasswordFileImport::Done, base::Unretained(this)));
-  }
-  void Done(const password_manager::ImportResults&) { delete this; }
-
-  password_manager::SavedPasswordsPresenter presenter_;
-  password_manager::PasswordImporter importer_;
 };
 
 std::optional<int64_t> NodeIdOf(id<ArcExtrasBookmarkNode> node) {

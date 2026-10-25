@@ -57,5 +57,8 @@ not every method of a class.
 - `dialogs` covers alert, confirm and prompt; beforeunload and HTTP authentication have their own files.
 - `chromium-import` builds an encrypted fixture Chrome profile and imports cookies, passwords, cards,
   history and bookmarks from it.
+- `safari-export-import` imports a fixture Safari export folder (bookmarks, history, passwords) and checks
+  that all three are on disk after a quit. `arcmod-disposable-import` covers the bookmarks-only import
+  against Arc's engine.
 - Extension installs use DevTools `Extensions.loadUnpacked`, which doesn't exercise Arc's own
   install-unpacked action.

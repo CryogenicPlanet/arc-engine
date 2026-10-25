@@ -2,7 +2,8 @@
 // import:withCategories:withAllowedExtensions:...). It captures the app's ArcBrowserApplication the first time
 // the app lists profiles, waits for the scenario's go file, loads the Default context and imports the
 // scenario's fixture Chrome profile through a stand-in source object (our engine reads only the source's
-// public properties), then writes <dir>/result.json with the delegate events.
+// public properties), then writes <dir>/result.json with the delegate events. The go file can set the
+// source's type, name and app path (safari-export-import uses type 12 with an export folder).
 #import <AppKit/AppKit.h>
 #import <objc/message.h>
 #import <objc/runtime.h>
@@ -61,11 +62,11 @@ static void After(double seconds, dispatch_block_t block) {
 
 static void Import(NSDictionary* request) {
   ChromiumImportFixtureSource* source = [[ChromiumImportFixtureSource alloc] init];
-  source.name = @"Chrome";
+  source.name = request[@"name"] ?: @"Chrome";
   source.profileName = @"Fixture 7f3a";
   source.sourcePath = request[@"source"];
-  source.appPath = @"/Applications/Google Chrome.app";
-  source.type = 2;
+  source.appPath = request[@"appPath"] ?: @"/Applications/Google Chrome.app";
+  source.type = request[@"type"] ? [request[@"type"] longLongValue] : 2;
   source.supportedCategories = [request[@"categories"] longLongValue];
   gDelegate = [[ChromiumImportDelegate alloc] init];
   NSError* error = nil;
