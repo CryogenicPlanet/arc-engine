@@ -11,6 +11,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/browser_window/public/global_browser_collection.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -111,10 +113,15 @@ class TerminationRequest final {
         });
         ++pending_flushes_;
         profile->GetPrefs()->CommitPendingWrite(FlushCompletion());
-        // Bookmarks save a few seconds after a change, and Arc exits without destroying the profile.
+        // Bookmarks save a few seconds after a change and history commits every 10 s, and Arc exits
+        // without destroying the profile.
         if (auto* bookmarks = BookmarkModelFactory::GetForBrowserContextIfExists(profile)) {
           ++pending_flushes_;
           bookmarks->CommitPendingWrite(FlushCompletion());
+        }
+        if (auto* history = HistoryServiceFactory::GetForProfileWithoutCreating(profile)) {
+          ++pending_flushes_;
+          history->CommitPendingWrite(FlushCompletion());
         }
       }
       ProfileManager::ShutdownSessionServices();

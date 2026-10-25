@@ -1,7 +1,7 @@
 {
   "engineClassCount": 34,
-  "engineSelectorCount": 225,
-  "callbackSelectorCount": 25,
+  "engineSelectorCount": 226,
+  "callbackSelectorCount": 26,
   "scenario": "launch-slice",
   "accepted": true,
   "errors": [],
@@ -9,9 +9,9 @@
     "launch-1",
     "launch-2"
   ],
-  "classCount": 41,
-  "selectorCount": 250,
-  "callCount": 6291,
+  "classCount": 42,
+  "selectorCount": 252,
+  "callCount": 6266,
   "classes": {
     "ADK.ADKApplication": {
       "calls": 8,
@@ -20,6 +20,13 @@
         "engine->app -[ADK.ADKApplication didConnectToNetworkProcess]",
         "engine->app -[ADK.ADKApplication didInitializeBrowserProcess]",
         "engine->app -[ADK.ADKApplication didReceiveGPUInfoUpdate:]"
+      ]
+    },
+    "ADK.AccessibilityObserver": {
+      "calls": 1,
+      "selectorCount": 1,
+      "selectors": [
+        "engine->app -[ADK.AccessibilityObserver accessibilityModeChanged:]"
       ]
     },
     "ADK.BrowserContextDelegateBridge": {
@@ -46,7 +53,7 @@
       ]
     },
     "ADK.CrashKeysObserverBridge": {
-      "calls": 70,
+      "calls": 71,
       "selectorCount": 1,
       "selectors": [
         "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]"
@@ -97,13 +104,14 @@
       ]
     },
     "ArcBrowserApplication": {
-      "calls": 101,
-      "selectorCount": 21,
+      "calls": 102,
+      "selectorCount": 22,
       "selectors": [
         "->engine -[ArcBrowserApplication availableBrowserContextAttributes]",
         "->engine -[ArcBrowserApplication availableImportSourceProfiles:]",
         "->engine -[ArcBrowserApplication createBrowser:withDelegate:forWindow:]",
         "->engine -[ArcBrowserApplication disableAccessibility]",
+        "->engine -[ArcBrowserApplication ensureBasicAccessibilityEnabled]",
         "->engine -[ArcBrowserApplication getBrowserContext:type:]",
         "->engine -[ArcBrowserApplication getNonDefaultFlags:]",
         "->engine -[ArcBrowserApplication init:]",
@@ -327,7 +335,7 @@
       ]
     },
     "ArcSearchEngine": {
-      "calls": 4354,
+      "calls": 4338,
       "selectorCount": 8,
       "selectors": [
         "->engine -[ArcSearchEngine faviconUrl]",
@@ -384,7 +392,7 @@
       ]
     },
     "ArcWebContents": {
-      "calls": 883,
+      "calls": 871,
       "selectorCount": 67,
       "selectors": [
         "->engine +[ArcWebContents wrapperForWebContents:]",
@@ -530,6 +538,7 @@
     "->engine -[ArcBrowserApplication availableImportSourceProfiles:]": 2,
     "->engine -[ArcBrowserApplication createBrowser:withDelegate:forWindow:]": 2,
     "->engine -[ArcBrowserApplication disableAccessibility]": 2,
+    "->engine -[ArcBrowserApplication ensureBasicAccessibilityEnabled]": 1,
     "->engine -[ArcBrowserApplication getBrowserContext:type:]": 2,
     "->engine -[ArcBrowserApplication getNonDefaultFlags:]": 2,
     "->engine -[ArcBrowserApplication init:]": 2,
@@ -643,7 +652,7 @@
     "->engine -[ArcSearchEngine keyword]": 35,
     "->engine -[ArcSearchEngine name]": 14,
     "->engine -[ArcSearchEngine status]": 41,
-    "->engine -[ArcSearchEngine url]": 4133,
+    "->engine -[ArcSearchEngine url]": 4117,
     "->engine -[ArcSecureContext initWithSecureContext:]": 6,
     "->engine -[ArcSecureContext state]": 6,
     "->engine -[ArcSessionID identifier]": 11,
@@ -674,12 +683,12 @@
     "->engine -[ArcWebContents inputEvent]": 6,
     "->engine -[ArcWebContents insertStylesheet:stylesheet:]": 11,
     "->engine -[ArcWebContents isLoading]": 36,
-    "->engine -[ArcWebContents isReadyToDisplay]": 28,
-    "->engine -[ArcWebContents loadProgress]": 44,
+    "->engine -[ArcWebContents isReadyToDisplay]": 26,
+    "->engine -[ArcWebContents loadProgress]": 42,
     "->engine -[ArcWebContents mediaSession]": 9,
     "->engine -[ArcWebContents nativeView]": 3,
     "->engine -[ArcWebContents navigationController]": 4,
-    "->engine -[ArcWebContents navigationID]": 26,
+    "->engine -[ArcWebContents navigationID]": 24,
     "->engine -[ArcWebContents passwordTextFieldActive]": 10,
     "->engine -[ArcWebContents pendingRenderFrameViewportSize]": 18,
     "->engine -[ArcWebContents rootBackgroundColor]": 18,
@@ -695,10 +704,10 @@
     "->engine -[ArcWebContents setHasDirtyTextField:]": 3,
     "->engine -[ArcWebContents setHasFocus:]": 3,
     "->engine -[ArcWebContents setIsLoading:]": 18,
-    "->engine -[ArcWebContents setIsReadyToDisplay:]": 14,
-    "->engine -[ArcWebContents setLoadProgress:]": 22,
+    "->engine -[ArcWebContents setIsReadyToDisplay:]": 13,
+    "->engine -[ArcWebContents setLoadProgress:]": 21,
     "->engine -[ArcWebContents setNavigationDelegate:]": 3,
-    "->engine -[ArcWebContents setNavigationID:]": 13,
+    "->engine -[ArcWebContents setNavigationID:]": 12,
     "->engine -[ArcWebContents setPasswordTextFieldActive:]": 3,
     "->engine -[ArcWebContents setPendingRenderFrameViewportSize:]": 9,
     "->engine -[ArcWebContents setRootBackgroundColor:]": 9,
@@ -710,7 +719,7 @@
     "->engine -[ArcWebContents setTopBandColorDelegate:]": 3,
     "->engine -[ArcWebContents setUIDelegate:]": 3,
     "->engine -[ArcWebContents setUndoableFieldActive:]": 3,
-    "->engine -[ArcWebContents setUrl:]": 13,
+    "->engine -[ArcWebContents setUrl:]": 12,
     "->engine -[ArcWebContents setVisibility:]": 6,
     "->engine -[ArcWebContents setZoomLevel:]": 9,
     "->engine -[ArcWebContents state]": 6,
@@ -719,7 +728,7 @@
     "->engine -[ArcWebContents thumbnailsGenerator]": 4,
     "->engine -[ArcWebContents title]": 26,
     "->engine -[ArcWebContents undoableFieldActive]": 10,
-    "->engine -[ArcWebContents url]": 26,
+    "->engine -[ArcWebContents url]": 24,
     "->engine -[ArcWebContents visibility]": 12,
     "->engine -[ArcWebContents webContents]": 80,
     "->engine -[ArcWebContents zoomLevel]": 18,
@@ -739,12 +748,13 @@
     "engine->app -[ADK.ADKApplication didConnectToNetworkProcess]": 4,
     "engine->app -[ADK.ADKApplication didInitializeBrowserProcess]": 2,
     "engine->app -[ADK.ADKApplication didReceiveGPUInfoUpdate:]": 2,
+    "engine->app -[ADK.AccessibilityObserver accessibilityModeChanged:]": 1,
     "engine->app -[ADK.BrowserContextDelegateBridge browserContextPreferencesDidUpdateSearchEngines:]": 2,
     "engine->app -[ADK.BrowserContextDownloadDelegateBridge browserContext:downloadManagerInitializedWithItems:]": 2,
     "engine->app -[ADK.ChromiumBrowser browser:didCreateNewWebContents:isActive:]": 3,
     "engine->app -[ADK.ChromiumBrowser browser:didUpdateExtensionToolbarActions:]": 2,
     "engine->app -[ADK.ChromiumBrowser browser:extensionGroupIdForTabWithSessionId:]": 16,
-    "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]": 70,
+    "engine->app -[ADK.CrashKeysObserverBridge onCrashKeyEmitted:value:]": 71,
     "engine->app -[ADK.WebContentChromium webContents:decidePolicyForNavigationAction:]": 1,
     "engine->app -[ADK.WebContentChromium webContents:didChangeAvailableMediaActions:]": 3,
     "engine->app -[ADK.WebContentChromium webContents:didChangeStatusText:]": 19,
