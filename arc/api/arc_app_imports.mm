@@ -347,6 +347,12 @@ ARC_EXPORT @interface ArcImportSourceProfile : NSObject {
   }
   return self;
 }
+// Defined inside the implementation so it can read the snapshot.
+id ArcImportSourceProfileCopy(id profile) {
+  if (![profile isKindOfClass:[ArcImportSourceProfile class]]) return profile;
+  return [[ArcImportSourceProfile alloc]
+      initWithImportSourceProfile:&static_cast<ArcImportSourceProfile*>(profile)->_snapshot];
+}
 - (NSString*)name { return ArcNSString(_snapshot.name); }
 - (NSString*)profileName { return ArcNSString(_snapshot.profile_name); }
 - (NSString*)sourcePath { return ArcNSString(_snapshot.source_path); }

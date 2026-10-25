@@ -3,12 +3,14 @@
 #import "arc/api/arc_internal.h"
 #include "arc/api/arc_chromium_import.h"
 
+#include <algorithm>
 #include <memory>
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -16,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -291,6 +294,25 @@ constexpr long long kCategoryMask = 0xfff;
 constexpr long long kTypeChrome = 2;
 constexpr long long kTypeFirefox = 3;
 constexpr long long kTypeSafari = 4;
+// A folder Safari exported (File → Export Browsing Data), as Arc's app unpacks it.
+constexpr long long kTypeSafariExport = 12;
+
+// The export's bookmarks are an HTML file in its folder; Safari names it Bookmarks.html.
+base::FilePath FindSafariExportBookmarks(const base::FilePath& directory) {
+  std::vector<base::FilePath> found;
+  base::FileEnumerator files(directory, /*recursive=*/false, base::FileEnumerator::FILES);
+  for (base::FilePath path = files.Next(); !path.empty(); path = files.Next()) {
+    if (!path.MatchesExtension(FILE_PATH_LITERAL(".html"))) {
+      continue;
+    }
+    if (base::EqualsCaseInsensitiveASCII(path.BaseName().value(), "Bookmarks.html")) {
+      return path;
+    }
+    found.push_back(path);
+  }
+  std::sort(found.begin(), found.end());
+  return found.empty() ? base::FilePath() : found.front();
+}
 
 bool IsChromiumFamily(long long type) {
   // Chrome, Edge, Brave, Vivaldi, Opera, Opera GX, Arc.
@@ -512,11 +534,10 @@ ChromiumFamilyData ReadChromiumFamily(base::FilePath dir,
 class ImportSession final : public importer::ImporterProgressObserver,
                             public std::enable_shared_from_this<ImportSession> {
  public:
-  ImportSession(ArcBrowserContext* context, Profile* profile, id delegate, long long categories,
+  ImportSession(Profile* profile, id delegate, long long categories,
                 id<ArcExtrasImportSourceProfile> source, scoped_refptr<ProfileWriter> writer,
                 std::vector<std::string> allowed_extensions, bool skip_existing_cookies)
-      : context_(context),
-        profile_(profile->GetWeakPtr()),
+      : profile_(profile->GetWeakPtr()),
         delegate_(delegate),
         categories_(categories),
         source_(source),
@@ -528,10 +549,12 @@ class ImportSession final : public importer::ImporterProgressObserver,
   void Start() {
     keepalive_ = shared_from_this();
     if ([delegate_ respondsToSelector:@selector(didImportInitialize:)]) {
-      [delegate_ didImportInitialize:context_];
+      [delegate_ didImportInitialize:ArcImportSourceProfileCopy(source_)];
     }
     if (source_.type == kTypeFirefox || source_.type == kTypeSafari) {
       StartChromiumHost();
+    } else if (source_.type == kTypeSafariExport) {
+      StartSafariExport();
     } else {
       StartChromiumFamily();
     }
@@ -539,8 +562,12 @@ class ImportSession final : public importer::ImporterProgressObserver,
 
   // importer::ImporterProgressObserver:
   void ImportStarted() override {
+    // Chromium's importer host reports this twice: when it's asked to start and when its utility process begins.
+    if (started_) {
+      return;
+    }
     NotifyStart();
-    ReportUnsupported(HostMask());
+    ReportUnsupported(SupportedMask());
   }
   void ImportItemStarted(user_data_importer::ImportItem item) override {
     if (long long category = CategoryFor(item)) {
@@ -552,7 +579,18 @@ class ImportSession final : public importer::ImporterProgressObserver,
       NotifyCategoryEnd(category, nil);
     }
   }
-  void ImportEnded() override { Finish(nil); }
+  // A cancelled import (a locked Firefox profile, a crashed utility process) can end before it starts, or with
+  // categories still open.
+  void ImportEnded() override {
+    NSError* error = started_ && !open_categories_ ? nil : MakeError(@"The import was interrupted.");
+    NotifyStart();
+    for (long long bit = 1; bit <= kCategoryMask; bit <<= 1) {
+      if (open_categories_ & bit) {
+        NotifyCategoryEnd(bit, error);
+      }
+    }
+    Finish(error);
+  }
 
  private:
   static long long CategoryFor(user_data_importer::ImportItem item) {
@@ -565,25 +603,55 @@ class ImportSession final : public importer::ImporterProgressObserver,
   }
   // Categories Chromium's importer host (Firefox, Safari) can import.
   static long long HostMask() { return kCategoryHistory | kCategoryBookmarks | kCategoryPasswords; }
+  // What this session's source can import: a Safari export's bookmarks file goes through the host's bookmarks
+  // file importer; its other data isn't imported yet.
+  long long SupportedMask() const {
+    if (source_.type == kTypeSafariExport) {
+      return safari_export_bookmarks_.empty() ? 0 : kCategoryBookmarks;
+    }
+    return HostMask();
+  }
+
+  // Safari export: find the bookmarks file off the main thread, then import it through the host.
+  void StartSafariExport() {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&FindSafariExportBookmarks, base::FilePath(ArcUTF8(source_.sourcePath))),
+        base::BindOnce(
+            [](std::weak_ptr<ImportSession> weak, base::FilePath bookmarks) {
+              if (auto session = weak.lock()) {
+                session->safari_export_bookmarks_ = std::move(bookmarks);
+                session->StartChromiumHost();
+              }
+            },
+            weak_from_this()));
+  }
   // What Arc's Chromium importer reads from Chrome, Edge, Brave, Vivaldi, Opera and Arc profiles.
   static long long FamilyMask() {
     return kCategoryHistory | kCategoryBookmarks | kCategoryCookies | kCategoryPasswords | kCategoryExtensions |
            kCategoryCreditCards;
   }
 
+  // Once per import.
   void NotifyStart() {
+    if (started_) {
+      return;
+    }
+    started_ = true;
     if ([delegate_ respondsToSelector:@selector(didImportStart:)]) {
-      [delegate_ didImportStart:context_];
+      [delegate_ didImportStart:ArcImportSourceProfileCopy(source_)];
     }
   }
   void NotifyCategoryStart(long long category) {
+    open_categories_ |= category;
     if ([delegate_ respondsToSelector:@selector(didImportCategoryStart:withCategory:)]) {
-      [delegate_ didImportCategoryStart:context_ withCategory:category];
+      [delegate_ didImportCategoryStart:ArcImportSourceProfileCopy(source_) withCategory:category];
     }
   }
   void NotifyCategoryEnd(long long category, NSError* error) {
+    open_categories_ &= ~category;
     if ([delegate_ respondsToSelector:@selector(didImportCategoryEnd:withCategory:withError:)]) {
-      [delegate_ didImportCategoryEnd:context_ withCategory:category withError:error];
+      [delegate_ didImportCategoryEnd:ArcImportSourceProfileCopy(source_) withCategory:category withError:error];
     }
   }
   // Requested categories outside |supported| (cookies, cards, extensions, sessions, ...) end with an error.
@@ -598,7 +666,7 @@ class ImportSession final : public importer::ImporterProgressObserver,
   }
   void Finish(NSError* error) {
     if ([delegate_ respondsToSelector:@selector(didImportEnd:withError:)]) {
-      [delegate_ didImportEnd:context_ withError:error];
+      [delegate_ didImportEnd:ArcImportSourceProfileCopy(source_) withError:error];
     }
     // Drop the self reference after the caller (possibly the importer host) has unwound.
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
@@ -621,6 +689,9 @@ class ImportSession final : public importer::ImporterProgressObserver,
     if (source_.type == kTypeFirefox) {
       source.importer_type = user_data_importer::TYPE_FIREFOX;
       source.source_path = base::FilePath(ArcUTF8(source_.sourcePath));
+    } else if (source_.type == kTypeSafariExport) {
+      source.importer_type = user_data_importer::TYPE_BOOKMARKS_FILE;
+      source.source_path = safari_export_bookmarks_;
     } else {
       source.importer_type = user_data_importer::TYPE_SAFARI;
       // Chromium's Safari importer reads from the user library directory itself.
@@ -628,14 +699,14 @@ class ImportSession final : public importer::ImporterProgressObserver,
     }
     uint16_t items = 0;
     for (const auto& mapping : kItemMappings) {
-      if (categories_ & mapping.category) {
+      if (categories_ & mapping.category & SupportedMask()) {
         items |= mapping.item;
       }
     }
     source.services_supported = items;
     if (!items) {
       NotifyStart();
-      ReportUnsupported(HostMask());
+      ReportUnsupported(SupportedMask());
       Finish(nil);
       return;
     }
@@ -739,7 +810,6 @@ class ImportSession final : public importer::ImporterProgressObserver,
             weak_from_this()));
   }
 
-  __weak ArcBrowserContext* context_;
   base::WeakPtr<Profile> profile_;
   __weak id delegate_;
   const long long categories_;
@@ -747,6 +817,10 @@ class ImportSession final : public importer::ImporterProgressObserver,
   scoped_refptr<ProfileWriter> writer_;
   const std::vector<std::string> allowed_extensions_;
   const bool skip_existing_cookies_;
+  // Safari export: its bookmarks HTML file (empty until found, or if there's none).
+  base::FilePath safari_export_bookmarks_;
+  bool started_ = false;
+  long long open_categories_ = 0;
   std::shared_ptr<ImportSession> keepalive_;
 };
 
@@ -811,7 +885,8 @@ withBookmarkImportTargets:(id)targets
     return Fail(error, @"Invalid import source.");
   }
   id<ArcExtrasImportSourceProfile> source = sourceProfile;
-  if (source.type != kTypeFirefox && source.type != kTypeSafari && !IsChromiumFamily(source.type)) {
+  if (source.type != kTypeFirefox && source.type != kTypeSafari && source.type != kTypeSafariExport &&
+      !IsChromiumFamily(source.type)) {
     return Fail(error, @"This import source is not supported.");
   }
   // Bookmark targets must be existing folders.
@@ -840,7 +915,7 @@ withBookmarkImportTargets:(id)targets
       extension_ids.push_back(ArcUTF8(extension));
     }
   }
-  std::make_shared<ImportSession>(self, profile, delegate, categories & kCategoryMask, source, std::move(writer),
+  std::make_shared<ImportSession>(profile, delegate, categories & kCategoryMask, source, std::move(writer),
                                   std::move(extension_ids), skipExistingCookies)
       ->Start();
   return YES;

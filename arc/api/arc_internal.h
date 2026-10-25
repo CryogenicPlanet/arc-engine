@@ -135,6 +135,12 @@ void InstallExtensionProfileInitializationHook();
 // The app's ArcBrowserApplicationDelegate (ADKApplication), weak; nil before -[ArcBrowserApplication init:].
 id ArcBrowserApplicationDelegateObject();
 
+// ---- app package: import source profiles (implemented in arc/api/arc_app_imports.mm) -----------
+
+// A new ArcImportSourceProfile with |profile|'s values. ArcCore passes a fresh one to each import delegate
+// callback. Anything that isn't an ArcImportSourceProfile is returned as is.
+id ArcImportSourceProfileCopy(id profile);
+
 // ---- app package: URL loading (implemented in arc/api/arc_app_*.mm) ------------------------------
 
 @class ArcURLLoadConfiguration;
