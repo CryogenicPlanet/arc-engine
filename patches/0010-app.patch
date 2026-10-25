@@ -77,6 +77,138 @@ index 8b5f84e085..38bc3631e2 100644
    static crash_reporter::CrashKeyString<1024> active_url("url-chunk");
    active_url.Set(url.possibly_invalid_spec());
  
+diff --git a/components/bookmarks/browser/bookmark_model.cc b/components/bookmarks/browser/bookmark_model.cc
+index 3dc2181e28..6f0d24f66a 100644
+--- a/components/bookmarks/browser/bookmark_model.cc
++++ b/components/bookmarks/browser/bookmark_model.cc
+@@ -11,6 +11,7 @@
+ #include <string>
+ #include <utility>
+ 
++#include "base/barrier_closure.h"
+ #include "base/check.h"
+ #include "base/check_op.h"
+ #include "base/debug/crash_logging.h"
+@@ -1230,6 +1231,18 @@ void BookmarkModel::CommitPendingWriteForTest() {
+   }
+ }
+ 
++void BookmarkModel::CommitPendingWrite(base::OnceClosure done) {
++  base::RepeatingClosure barrier = base::BarrierClosure(
++      (local_or_syncable_store_ ? 1 : 0) + (account_store_ ? 1 : 0),
++      std::move(done));
++  if (local_or_syncable_store_) {
++    local_or_syncable_store_->CommitPendingWrite(barrier);
++  }
++  if (account_store_) {
++    account_store_->CommitPendingWrite(barrier);
++  }
++}
++
+ bool BookmarkModel::LocalOrSyncableStorageHasPendingWriteForTest() const {
+   return local_or_syncable_store_->HasScheduledSaveForTesting();  // IN-TEST
+ }
+diff --git a/components/bookmarks/browser/bookmark_model.h b/components/bookmarks/browser/bookmark_model.h
+index 0cd8a9554d..03ea75c25b 100644
+--- a/components/bookmarks/browser/bookmark_model.h
++++ b/components/bookmarks/browser/bookmark_model.h
+@@ -17,6 +17,7 @@
+ #include "base/check_op.h"
+ #include "base/compiler_specific.h"
+ #include "base/containers/flat_map.h"
++#include "base/functional/callback_forward.h"
+ #include "base/memory/raw_ptr.h"
+ #include "base/memory/scoped_refptr.h"
+ #include "base/memory/weak_ptr.h"
+@@ -456,6 +457,9 @@ class BookmarkModel : public BookmarkUndoProvider,
+   // cleanly first.
+   void CommitPendingWriteForTest();
+ 
++  // ArcMod: writes pending changes now and runs `done` on the calling sequence once they're on disk.
++  void CommitPendingWrite(base::OnceClosure done);
++
+   // Returns whether pending writes are pending/scheduled.
+   bool LocalOrSyncableStorageHasPendingWriteForTest() const;
+   bool AccountStorageHasPendingWriteForTest() const;
+diff --git a/components/bookmarks/browser/bookmark_storage.cc b/components/bookmarks/browser/bookmark_storage.cc
+index 1290d5b7b3..22d0bac643 100644
+--- a/components/bookmarks/browser/bookmark_storage.cc
++++ b/components/bookmarks/browser/bookmark_storage.cc
+@@ -19,6 +19,7 @@
+ #include "base/memory/scoped_refptr.h"
+ #include "base/notreached.h"
+ #include "base/numerics/safe_conversions.h"
++#include "base/task/bind_post_task.h"
+ #include "base/task/sequenced_task_runner.h"
+ #include "base/task/task_traits.h"
+ #include "base/task/thread_pool.h"
+@@ -179,8 +180,9 @@ BookmarkStorage::BookmarkStorage(
+     const base::FilePath& clear_text_file_path,
+     const base::FilePath& encrypted_file_path)
+     : model_(model),
+-      backend_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
++      backend_task_runner_(base::ThreadPool::CreateUpdateableSequencedTaskRunner(
+           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
++           base::ThreadPolicy::PREFER_BACKGROUND,
+            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+       permanent_node_selection_(permanent_node_selection),
+       encryptor_(std::move(encryptor)),
+@@ -318,6 +320,22 @@ void BookmarkStorage::SaveNowIfScheduledForTesting() {
+   SaveNowIfScheduled();
+ }
+ 
++void BookmarkStorage::CommitPendingWrite(base::OnceClosure done) {
++  // Arc quits without waiting for the startup fence on best-effort tasks to lift.
++  backend_task_runner_->UpdatePriority(base::TaskPriority::USER_BLOCKING);
++  SaveNowIfScheduled();
++  // The save task posts the secondary file's write to the same sequence, so wait one more turn for it.
++  backend_task_runner_->PostTask(
++      FROM_HERE,
++      base::BindOnce(
++          [](scoped_refptr<base::SequencedTaskRunner> runner,
++             base::OnceClosure done) {
++            runner->PostTask(FROM_HERE, std::move(done));
++          },
++          backend_task_runner_,
++          base::BindPostTaskToCurrentDefault(std::move(done))));
++}
++
+ void BookmarkStorage::SaveNowIfScheduled() {
+   if (writer_.HasPendingWrite()) {
+     writer_.DoScheduledWrite();
+diff --git a/components/bookmarks/browser/bookmark_storage.h b/components/bookmarks/browser/bookmark_storage.h
+index 6e791d2ecf..3459251a3a 100644
+--- a/components/bookmarks/browser/bookmark_storage.h
++++ b/components/bookmarks/browser/bookmark_storage.h
+@@ -14,6 +14,7 @@
+ #include "base/memory/ref_counted.h"
+ #include "base/memory/scoped_refptr.h"
+ #include "base/memory/weak_ptr.h"
++#include "base/task/updateable_sequenced_task_runner.h"
+ #include "base/time/time.h"
+ #include "components/bookmarks/browser/bookmark_node.h"
+ #include "components/bookmarks/browser/titled_url_index.h"
+@@ -103,6 +104,10 @@ class BookmarkStorage
+   // If there is a pending write, performs it immediately.
+   void SaveNowIfScheduledForTesting();
+ 
++  // ArcMod: performs a pending write immediately and runs `done` on the calling sequence once every write
++  // posted so far, including the secondary file's, has finished. Arc exits without destroying profiles.
++  void CommitPendingWrite(base::OnceClosure done);
++
+   // Saves the given `json_content` to the clear text or encrypted file right
+   // away based on `encryption_type`. The 'json_content' should be a clear text
+   // JSON string coming from a bookmarks file that was properly loaded. It will
+@@ -144,7 +149,8 @@ class BookmarkStorage
+   const raw_ptr<const BookmarkModel> model_;
+ 
+   // Sequenced task runner where disk writes will be performed at.
+-  const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
++  // ArcMod: updateable, so a save at quit isn't held back by the best-effort startup fence.
++  const scoped_refptr<base::UpdateableSequencedTaskRunner> backend_task_runner_;
+ 
+   const PermanentNodeSelection permanent_node_selection_;
+ 
 diff --git a/components/variations/variations_crash_keys.cc b/components/variations/variations_crash_keys.cc
 index 692d192414..b2b068b567 100644
 --- a/components/variations/variations_crash_keys.cc
