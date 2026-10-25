@@ -13,6 +13,15 @@ This file keeps the plan and technical notes for the open items.
 
 - **Background tabs** (`arcmod-tabs-restore`): Arc's engine reports YES and 1 for
   `isReadyToDisplay` and `loadProgress` on the same steps. This may affect real background tabs.
+- **Importing open tabs** (category 2048) from Chromium browsers. Three things block a direct port:
+  Chromium 156 encrypts session files by default (`kEncryptSessionStorage`: `Sessions_Encrypted`,
+  file version 5, read through an `os_crypt_async::Encryptor`), and the `Encryptor` constructor that
+  takes a key is private to Chromium's own crypto classes, so another browser's Safe Storage key can't
+  be plugged in. `CommandStorageBackend::InitIfNecessary` creates a `Sessions` folder and deletes old
+  session files, so it may only ever run on a temporary copy. `SessionFileReader` is internal. The way
+  forward is either a small reader for the session file format (cleartext version 3 files in
+  `Sessions/` first, then version 5 files decrypted with the source browser's Safe Storage key) or a
+  patch that exposes a keyed `Encryptor` for import.
 - **Boosts' color filters** need a renderer transport. Unapplied drafts
   (`renderer_effects_*_proposal.patch`) are in git history before the 2026-10-24 cleanup.
 - **`webContentsRenderViewReady:`**: Arc's engine sends it rarely (8 of about 60 recorded launches).
